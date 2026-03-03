@@ -1582,6 +1582,42 @@ Object.assign(pages, {
 
         const isPaused = store.state.automationsPaused || false;
 
+        // Lightweight next-run calculator from cron schedule
+        function getNextRunLabel(schedule, isEnabled) {
+            if (!isEnabled || !schedule) return null;
+            try {
+                const parts = schedule.trim().split(/\s+/);
+                if (parts.length < 5) return null;
+                const [min, hour, dom, mon, dow] = parts;
+                const now = new Date();
+                if (dom === '*' && mon === '*') {
+                    const hours = hour.includes(',') ? hour.split(',').map(Number) : [parseInt(hour)];
+                    const mins = min.includes(',') ? min.split(',').map(Number) : [parseInt(min)];
+                    if (hours.some(isNaN) || mins.some(isNaN)) return null;
+                    for (let dayOffset = 0; dayOffset < 8; dayOffset++) {
+                        for (const h of hours) {
+                            for (const m of mins) {
+                                const candidate = new Date(now);
+                                candidate.setDate(candidate.getDate() + dayOffset);
+                                candidate.setHours(h, m, 0, 0);
+                                if (candidate > now) {
+                                    if (dow !== '*') {
+                                        const allowedDays = dow.split(',').map(Number);
+                                        if (!allowedDays.includes(candidate.getDay())) continue;
+                                    }
+                                    const diff = candidate - now;
+                                    if (diff < 3600000) return `in ${Math.round(diff / 60000)}m`;
+                                    if (diff < 86400000) return `in ${Math.round(diff / 3600000)}h`;
+                                    return `in ${Math.round(diff / 86400000)}d`;
+                                }
+                            }
+                        }
+                    }
+                }
+                return null;
+            } catch { return null; }
+        }
+
         // Calculate automation statistics
         const activeRules = automations.filter(a => a.is_enabled).length;
         const totalRules = automations.length;
@@ -1987,6 +2023,10 @@ Object.assign(pages, {
                                                 return 'Never';
                                             })()}
                                         </span>
+                                        ${(() => {
+                                            const nextRun = getNextRunLabel(rule.schedule, rule.is_enabled);
+                                            return nextRun ? `<span class="automation-card-stat" style="color: var(--primary-500);">${components.icon('arrow-right', 12)} Next: ${nextRun}</span>` : '';
+                                        })()}
                                     </div>
                                 </div>
                                 <div class="automation-card-actions">
