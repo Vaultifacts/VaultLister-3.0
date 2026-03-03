@@ -19844,7 +19844,19 @@ const pages = {
             { id: 'description_refresh', name: 'Description Refresh', platform: 'poshmark', description: 'Update descriptions with trending keywords', category: 'maintenance' },
             { id: 'error_retry', name: 'Auto Error Recovery', platform: 'all', description: 'Auto-retry failed listings with error correction', category: 'maintenance' },
             // Repricing automations
-            { id: 'auto_reprice', name: 'Repricing Automation', platform: 'all', description: 'Automatically adjust prices based on market rules and competitor pricing', category: 'pricing' }
+            { id: 'auto_reprice', name: 'Repricing Automation', platform: 'all', description: 'Automatically adjust prices based on market rules and competitor pricing', category: 'pricing' },
+            // Mercari automations
+            { id: 'mercari_refresh', name: 'Mercari Daily Refresh', platform: 'mercari', description: 'Refresh all Mercari listings daily to boost visibility', category: 'sharing' },
+            { id: 'mercari_relist', name: 'Mercari Relist Stale', platform: 'mercari', description: 'Relist Mercari items with no activity for 60+ days', category: 'maintenance' },
+            { id: 'mercari_price_drop', name: 'Mercari Price Drop', platform: 'mercari', description: 'Weekly price drops on stale Mercari listings', category: 'pricing' },
+            // Depop automations
+            { id: 'depop_refresh', name: 'Depop Daily Refresh', platform: 'depop', description: 'Refresh all Depop listings daily to boost visibility', category: 'sharing' },
+            { id: 'depop_share', name: 'Depop Share Listings', platform: 'depop', description: 'Share your Depop listings to increase exposure', category: 'sharing' },
+            { id: 'depop_price_drop', name: 'Depop Price Drop', platform: 'depop', description: 'Weekly price drops on stale Depop listings', category: 'pricing' },
+            // Grailed automations
+            { id: 'grailed_bump', name: 'Grailed Daily Bump', platform: 'grailed', description: 'Bump all Grailed listings daily for more visibility', category: 'sharing' },
+            { id: 'grailed_relist', name: 'Grailed Relist Stale', platform: 'grailed', description: 'Relist Grailed items with no activity for 60+ days', category: 'maintenance' },
+            { id: 'grailed_price_drop', name: 'Grailed Price Drop', platform: 'grailed', description: 'Weekly price drops on stale Grailed listings', category: 'pricing' }
         ];
 
         // Merge presets with existing rules to show enabled state
@@ -42863,7 +42875,16 @@ const handlers = {
             { id: 'delist_stale', name: 'Delist Stale Items', category: 'maintenance' },
             { id: 'smart_relisting', name: 'Smart Relisting', category: 'maintenance' },
             { id: 'description_refresh', name: 'Description Refresh', category: 'maintenance' },
-            { id: 'auto_reprice', name: 'Repricing Automation', category: 'pricing' }
+            { id: 'auto_reprice', name: 'Repricing Automation', category: 'pricing' },
+            { id: 'mercari_refresh', name: 'Mercari Daily Refresh', category: 'sharing' },
+            { id: 'mercari_relist', name: 'Mercari Relist Stale', category: 'maintenance' },
+            { id: 'mercari_price_drop', name: 'Mercari Price Drop', category: 'pricing' },
+            { id: 'depop_refresh', name: 'Depop Daily Refresh', category: 'sharing' },
+            { id: 'depop_share', name: 'Depop Share Listings', category: 'sharing' },
+            { id: 'depop_price_drop', name: 'Depop Price Drop', category: 'pricing' },
+            { id: 'grailed_bump', name: 'Grailed Daily Bump', category: 'sharing' },
+            { id: 'grailed_relist', name: 'Grailed Relist Stale', category: 'maintenance' },
+            { id: 'grailed_price_drop', name: 'Grailed Price Drop', category: 'pricing' }
         ];
         const rule = allPresets.find(p => p.id === automationId) || { name: 'Automation', category: 'sharing' };
 

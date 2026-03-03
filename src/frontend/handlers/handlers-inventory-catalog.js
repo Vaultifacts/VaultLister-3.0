@@ -730,7 +730,16 @@ Object.assign(handlers, {
             { id: 'delist_stale', name: 'Delist Stale Items', category: 'maintenance' },
             { id: 'smart_relisting', name: 'Smart Relisting', category: 'maintenance' },
             { id: 'description_refresh', name: 'Description Refresh', category: 'maintenance' },
-            { id: 'auto_reprice', name: 'Repricing Automation', category: 'pricing' }
+            { id: 'auto_reprice', name: 'Repricing Automation', category: 'pricing' },
+            { id: 'mercari_refresh', name: 'Mercari Daily Refresh', category: 'sharing' },
+            { id: 'mercari_relist', name: 'Mercari Relist Stale', category: 'maintenance' },
+            { id: 'mercari_price_drop', name: 'Mercari Price Drop', category: 'pricing' },
+            { id: 'depop_refresh', name: 'Depop Daily Refresh', category: 'sharing' },
+            { id: 'depop_share', name: 'Depop Share Listings', category: 'sharing' },
+            { id: 'depop_price_drop', name: 'Depop Price Drop', category: 'pricing' },
+            { id: 'grailed_bump', name: 'Grailed Daily Bump', category: 'sharing' },
+            { id: 'grailed_relist', name: 'Grailed Relist Stale', category: 'maintenance' },
+            { id: 'grailed_price_drop', name: 'Grailed Price Drop', category: 'pricing' }
         ];
         const rule = allPresets.find(p => p.id === automationId) || { name: 'Automation', category: 'sharing' };
 

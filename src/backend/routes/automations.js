@@ -679,6 +679,81 @@ export async function automationsRouter(ctx) {
                 type: 'custom',
                 conditions: {},
                 actions: { retryFailed: true, maxRetries: 3 }
+            },
+            // Mercari presets
+            'mercari_refresh': {
+                name: 'Mercari Daily Refresh',
+                type: 'share',
+                platform: 'mercari',
+                schedule: '0 9,15,20 * * *',
+                conditions: { maxItems: 50 },
+                actions: { shareAll: true }
+            },
+            'mercari_relist': {
+                name: 'Mercari Relist Stale',
+                type: 'relist',
+                platform: 'mercari',
+                schedule: '0 10 * * 1',
+                conditions: { minDaysListed: 60 },
+                actions: { relist: true }
+            },
+            'mercari_price_drop': {
+                name: 'Mercari Price Drop',
+                type: 'price_drop',
+                platform: 'mercari',
+                schedule: '0 9 * * 0',
+                conditions: { minDaysListed: 7 },
+                actions: { dropPercentage: 10, minPrice: 10 }
+            },
+            // Depop presets
+            'depop_refresh': {
+                name: 'Depop Daily Refresh',
+                type: 'share',
+                platform: 'depop',
+                schedule: '0 10,16,21 * * *',
+                conditions: { maxItems: 50 },
+                actions: { shareAll: true }
+            },
+            'depop_share': {
+                name: 'Depop Share Listings',
+                type: 'share',
+                platform: 'depop',
+                schedule: '0 12,18 * * *',
+                conditions: { maxItems: 30 },
+                actions: { shareAll: true }
+            },
+            'depop_price_drop': {
+                name: 'Depop Price Drop',
+                type: 'price_drop',
+                platform: 'depop',
+                schedule: '0 9 * * 0',
+                conditions: { minDaysListed: 7 },
+                actions: { dropPercentage: 10, minPrice: 8 }
+            },
+            // Grailed presets
+            'grailed_bump': {
+                name: 'Grailed Daily Bump',
+                type: 'share',
+                platform: 'grailed',
+                schedule: '0 9,14,19 * * *',
+                conditions: { maxItems: 50 },
+                actions: { shareAll: true }
+            },
+            'grailed_relist': {
+                name: 'Grailed Relist Stale',
+                type: 'relist',
+                platform: 'grailed',
+                schedule: '0 10 * * 1',
+                conditions: { minDaysListed: 60 },
+                actions: { relist: true }
+            },
+            'grailed_price_drop': {
+                name: 'Grailed Price Drop',
+                type: 'price_drop',
+                platform: 'grailed',
+                schedule: '0 9 * * 0',
+                conditions: { minDaysListed: 7 },
+                actions: { dropPercentage: 10, minPrice: 15 }
             }
         };
 
