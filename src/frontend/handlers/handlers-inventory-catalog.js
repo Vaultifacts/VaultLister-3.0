@@ -2673,10 +2673,26 @@ Object.assign(handlers, {
                         <h4 class="text-sm font-semibold text-gray-500 mb-1">Listed At</h4>
                         <p>${listing.listed_at ? new Date(listing.listed_at).toLocaleString() : 'Not listed yet'}</p>
                     </div>
+                    ${listing.platform_url ? `
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-500 mb-1">Live URL</h4>
+                        <a href="${escapeHtml(listing.platform_url)}" target="_blank" rel="noopener" class="text-blue-600 underline text-sm break-all">${escapeHtml(listing.platform_url)}</a>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="modals.close()">Close</button>
+                ${listing.platform === 'ebay' && !listing.platform_listing_id ? `
+                <button class="btn btn-warning" id="publish-ebay-btn-${listingId}" onclick="handlers.publishToEbay('${listingId}')">
+                    ${components.icon('upload', 16)} Publish to eBay
+                </button>
+                ` : ''}
+                ${listing.platform === 'etsy' && !listing.platform_listing_id ? `
+                <button class="btn btn-warning" id="publish-etsy-btn-${listingId}" onclick="handlers.publishToEtsy('${listingId}')">
+                    ${components.icon('upload', 16)} Publish to Etsy
+                </button>
+                ` : ''}
                 <button class="btn btn-primary" onclick="modals.close(); handlers.editListing('${listingId}')">
                     ${components.icon('edit', 16)} Edit
                 </button>
@@ -2837,6 +2853,48 @@ Object.assign(handlers, {
             }
         } catch (error) {
             toast.error('Failed to restore listing: ' + error.message);
+        }
+    },
+
+
+    publishToEbay: async function(listingId) {
+        const listing = store.state.listings.find(l => l.id === listingId);
+        if (!listing) { toast.error('Listing not found'); return; }
+
+        const btn = document.getElementById(`publish-ebay-btn-${listingId}`);
+        if (btn) { btn.disabled = true; btn.textContent = 'Publishing…'; }
+
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post(`/listings/${listingId}/publish-ebay`, {});
+            modals.close();
+            toast.success(`Listed on eBay! ${result.listingUrl}`, { duration: 8000 });
+            await handlers.loadListings();
+            if (store.state.currentPage === 'listings') renderApp(pages.listings());
+        } catch (error) {
+            toast.error('eBay publish failed: ' + error.message);
+            if (btn) { btn.disabled = false; btn.textContent = 'Publish to eBay'; }
+        }
+    },
+
+
+    publishToEtsy: async function(listingId) {
+        const listing = store.state.listings.find(l => l.id === listingId);
+        if (!listing) { toast.error('Listing not found'); return; }
+
+        const btn = document.getElementById(`publish-etsy-btn-${listingId}`);
+        if (btn) { btn.disabled = true; btn.textContent = 'Publishing…'; }
+
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post(`/listings/${listingId}/publish-etsy`, {});
+            modals.close();
+            toast.success(`Listed on Etsy! ${result.listingUrl}`, { duration: 8000 });
+            await handlers.loadListings();
+            if (store.state.currentPage === 'listings') renderApp(pages.listings());
+        } catch (error) {
+            toast.error('Etsy publish failed: ' + error.message);
+            if (btn) { btn.disabled = false; btn.textContent = 'Publish to Etsy'; }
         }
     },
 
@@ -6023,16 +6081,22 @@ Object.assign(handlers, {
         const countEl = document.getElementById('crosslist-selected-count');
         const basicBtn = document.getElementById('basic-crosslist-btn');
         const advancedBtn = document.getElementById('advanced-crosslist-btn');
+        const ebayBtn = document.getElementById('publish-ebay-crosslist-btn');
+        const etsyBtn = document.getElementById('publish-etsy-crosslist-btn');
 
         if (selected.length > 0) {
             summary?.classList.remove('hidden');
             if (countEl) countEl.textContent = selected.length;
             basicBtn?.removeAttribute('disabled');
             advancedBtn?.removeAttribute('disabled');
+            ebayBtn?.removeAttribute('disabled');
+            etsyBtn?.removeAttribute('disabled');
         } else {
             summary?.classList.add('hidden');
             basicBtn?.setAttribute('disabled', 'true');
             advancedBtn?.setAttribute('disabled', 'true');
+            ebayBtn?.setAttribute('disabled', 'true');
+            etsyBtn?.setAttribute('disabled', 'true');
         }
 
         // Store selection in state
@@ -6072,6 +6136,108 @@ Object.assign(handlers, {
         }
 
         modals.advancedCrosslist(selectedItemIds);
+    },
+
+
+    publishSelectedToEbay: async function() {
+        const selectedItemIds = store.state.crosslistSelectedItems || [];
+        if (selectedItemIds.length === 0) {
+            return toast.warning('Please select at least one item');
+        }
+
+        const btn = document.getElementById('publish-ebay-crosslist-btn');
+        if (btn) { btn.disabled = true; btn.querySelector('.font-semibold').textContent = `Publishing ${selectedItemIds.length} item(s)…`; }
+
+        const results = [];
+        const errors = [];
+
+        try {
+            await api.ensureCSRFToken();
+
+            for (const inventoryId of selectedItemIds) {
+                try {
+                    // Create draft listing first
+                    const crosslistResp = await api.post('/listings/crosslist', {
+                        itemIds: [inventoryId],
+                        platforms: ['ebay']
+                    });
+                    const created = crosslistResp?.created?.[0];
+                    const skipped = crosslistResp?.skipped?.[0];
+                    const listingId = created?.id || skipped?.existingId;
+                    if (!listingId) { errors.push(`No listing ID returned for item ${inventoryId}`); continue; }
+
+                    // Publish to eBay
+                    const publishResp = await api.post(`/listings/${listingId}/publish-ebay`, {});
+                    results.push(publishResp);
+                } catch (err) {
+                    errors.push(err.message);
+                }
+            }
+
+            await handlers.loadListings();
+            if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+
+            if (results.length > 0) {
+                toast.success(`${results.length} item(s) published to eBay! Check the Listings tab for links.`, { duration: 8000 });
+            }
+            if (errors.length > 0) {
+                toast.error(`${errors.length} item(s) failed: ${errors[0]}`);
+            }
+        } catch (error) {
+            toast.error('eBay publish failed: ' + error.message);
+        } finally {
+            if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('upload', 16)} Publish to eBay`; }
+        }
+    },
+
+
+    publishSelectedToEtsy: async function() {
+        const selectedItemIds = store.state.crosslistSelectedItems || [];
+        if (selectedItemIds.length === 0) {
+            return toast.warning('Please select at least one item');
+        }
+
+        const btn = document.getElementById('publish-etsy-crosslist-btn');
+        if (btn) { btn.disabled = true; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').textContent = `Publishing ${selectedItemIds.length} item(s)…`; }
+
+        const results = [];
+        const errors = [];
+
+        try {
+            await api.ensureCSRFToken();
+
+            for (const inventoryId of selectedItemIds) {
+                try {
+                    const crosslistResp = await api.post('/listings/crosslist', {
+                        itemIds: [inventoryId],
+                        platforms: ['etsy']
+                    });
+                    const created = crosslistResp?.created?.[0];
+                    const skipped = crosslistResp?.skipped?.[0];
+                    const listingId = created?.id || skipped?.existingId;
+                    if (!listingId) { errors.push(`No listing ID returned for item ${inventoryId}`); continue; }
+
+                    const publishResp = await api.post(`/listings/${listingId}/publish-etsy`, {});
+                    results.push(publishResp);
+                } catch (err) {
+                    errors.push(err.message);
+                }
+            }
+
+            await handlers.loadListings();
+            if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+
+            if (results.length > 0) {
+                toast.success(`${results.length} item(s) published to Etsy! Check the Listings tab for links.`, { duration: 8000 });
+            }
+            if (errors.length > 0) {
+                toast.error(`${errors.length} item(s) failed: ${errors[0]}`);
+            }
+        } catch (error) {
+            toast.error('Etsy publish failed: ' + error.message);
+        } finally {
+            if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('upload', 16)} Publish to Etsy`; }
+        }
     },
 
 

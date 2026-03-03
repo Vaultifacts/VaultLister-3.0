@@ -1255,6 +1255,21 @@ Object.assign(pages, {
                             </button>
                         </div>
 
+                        <div class="mt-3 grid grid-cols-2 gap-3">
+                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToEbay()" id="publish-ebay-crosslist-btn" disabled>
+                                <div class="text-left">
+                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to eBay</div>
+                                    <div class="text-xs opacity-90">Cross-list and go live on eBay</div>
+                                </div>
+                            </button>
+                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToEtsy()" id="publish-etsy-crosslist-btn" disabled>
+                                <div class="text-left">
+                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to Etsy</div>
+                                    <div class="text-xs opacity-90">Cross-list and go live on Etsy</div>
+                                </div>
+                            </button>
+                        </div>
+
                         <div class="mt-4 p-4 border-l-4 border-blue-500 bg-blue-50 rounded">
                             <div class="text-sm text-blue-900">
                                 <div class="font-semibold mb-1">💡 Tips:</div>

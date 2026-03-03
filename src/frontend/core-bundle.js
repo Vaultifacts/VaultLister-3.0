@@ -26370,13 +26370,15 @@ async function initApp() {
 
     // Online/offline handlers are in offlineManager.init()
 
-    // Email OAuth callback handler via postMessage
+    // OAuth callback handler via postMessage (handles both same-origin and cross-origin via ngrok)
     window.addEventListener('message', (event) => {
-        if (event.origin !== window.location.origin) return;
         if (event.data && event.data.type === 'email-oauth-success') {
             // Handled in connectGmail function
         } else if (event.data && event.data.type === 'email-oauth-error') {
             // Handled in connectGmail function
+        } else if (event.data && event.data.type === 'oauthComplete') {
+            // Marketplace OAuth complete — dispatch as CustomEvent so shop handler picks it up
+            window.dispatchEvent(new CustomEvent('oauthComplete', { detail: event.data }));
         }
     });
 

@@ -1623,25 +1623,33 @@ Object.assign(handlers, {
             // Show loading toast
             toast.info('Waiting for authorization...');
 
-            // Listen for OAuth callback
-            window.addEventListener('oauthComplete', async function handler(event) {
-                if (event.detail.platform === platform || !event.detail.platform) {
-                    window.removeEventListener('oauthComplete', handler);
-
-                    if (event.detail.success) {
-                        toast.success(`${platform} connected successfully!`);
-                        await handlers.loadShops();
-
-                        // Refresh page if on shops page
-                        if (store.state.currentPage === 'shops') {
-                            const pageContent = pages.shops();
-                            document.querySelector('.page-content').innerHTML = pageContent;
-                        }
-                    } else {
-                        toast.error(event.detail.error || 'OAuth connection failed');
-                    }
+            // Listen for OAuth callback — handles both same-origin (CustomEvent) and cross-origin (postMessage via ngrok)
+            const oauthHandler = async (event) => {
+                let detail;
+                if (event.type === 'oauthComplete') {
+                    if (!event.detail.platform || event.detail.platform === platform) detail = event.detail;
+                } else if (event.type === 'message') {
+                    if (event.data && event.data.type === 'oauthComplete' && (!event.data.platform || event.data.platform === platform)) detail = event.data;
                 }
-            });
+                if (!detail) return;
+                window.removeEventListener('oauthComplete', oauthHandler);
+                window.removeEventListener('message', oauthHandler);
+
+                if (detail.success) {
+                    toast.success(`${platform} connected successfully!`);
+                    await handlers.loadShops();
+
+                    // Refresh page if on shops page
+                    if (store.state.currentPage === 'shops') {
+                        const pageContent = pages.shops();
+                        document.querySelector('.page-content').innerHTML = pageContent;
+                    }
+                } else {
+                    toast.error(detail.error || 'OAuth connection failed');
+                }
+            };
+            window.addEventListener('oauthComplete', oauthHandler);
+            window.addEventListener('message', oauthHandler);
 
         } catch (error) {
             console.error('OAuth error:', error);

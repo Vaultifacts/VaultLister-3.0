@@ -2,6 +2,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query, escapeLike } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { publishListingToEbay } from '../services/platformSync/ebayPublish.js';
+import { publishListingToEtsy } from '../services/platformSync/etsyPublish.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
@@ -1243,6 +1245,87 @@ export async function listingsRouter(ctx) {
         } catch (error) {
             logger.error('[Listings] Error calculating time-to-sell', user?.id, { detail: error.message });
             return { status: 500, data: { error: 'Failed to calculate time-to-sell' } };
+        }
+    }
+
+    // POST /api/listings/:id/publish-ebay - Push a listing live to eBay via the Sell API
+    if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-ebay$/)) {
+        const listingId = path.slice(1).replace('/publish-ebay', '');
+
+        try {
+            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+
+            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+
+            const shop = query.get(
+                "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = 1",
+                [user.id]
+            );
+            if (!shop) return { status: 400, data: { error: 'No connected eBay shop found. Connect eBay in My Shops first.' } };
+            if (!shop.oauth_token) return { status: 400, data: { error: 'eBay shop has no OAuth token. Reconnect eBay in My Shops.' } };
+
+            const result = await publishListingToEbay(shop, listing, inventory);
+
+            // Update listing record with eBay listing ID and URL
+            query.run(
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+            );
+
+            return {
+                status: 200,
+                data: {
+                    success: true,
+                    offerId: result.offerId,
+                    listingId: result.listingId,
+                    sku: result.sku,
+                    listingUrl: result.listingUrl
+                }
+            };
+        } catch (error) {
+            logger.error('[Listings] eBay publish error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: error.message } };
+        }
+    }
+
+    // POST /api/listings/:id/publish-etsy - Push a listing live to Etsy via the Listings API v3
+    if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-etsy$/)) {
+        const listingId = path.slice(1).replace('/publish-etsy', '');
+
+        try {
+            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+
+            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+
+            const shop = query.get(
+                "SELECT * FROM shops WHERE user_id = ? AND platform = 'etsy' AND is_connected = 1",
+                [user.id]
+            );
+            if (!shop) return { status: 400, data: { error: 'No connected Etsy shop found. Connect Etsy in My Shops first.' } };
+            if (!shop.oauth_token) return { status: 400, data: { error: 'Etsy shop has no OAuth token. Reconnect Etsy in My Shops.' } };
+
+            const result = await publishListingToEtsy(shop, listing, inventory);
+
+            query.run(
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+            );
+
+            return {
+                status: 200,
+                data: {
+                    success: true,
+                    listingId: result.listingId,
+                    listingUrl: result.listingUrl
+                }
+            };
+        } catch (error) {
+            logger.error('[Listings] Etsy publish error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: error.message } };
         }
     }
 

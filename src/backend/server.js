@@ -695,9 +695,9 @@ const server = Bun.serve({
             if (error) {
                 // Notify opener of failure
                 if (window.opener) {
-                    window.opener.dispatchEvent(new CustomEvent('oauthComplete', {
-                        detail: { success: false, error: ${JSON.stringify(errorDescription || error || '')} }
-                    }));
+                    var errMsg = ${JSON.stringify(errorDescription || error || '')};
+                    try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: false, error: errMsg } })); } catch(e) {}
+                    window.opener.postMessage({ type: 'oauthComplete', success: false, error: errMsg }, '*');
                 }
                 setTimeout(() => window.close(), 2000);
                 return;
@@ -705,9 +705,8 @@ const server = Bun.serve({
 
             if (!code || !state) {
                 if (window.opener) {
-                    window.opener.dispatchEvent(new CustomEvent('oauthComplete', {
-                        detail: { success: false, error: 'Missing authorization code or state' }
-                    }));
+                    try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: false, error: 'Missing authorization code or state' } })); } catch(e) {}
+                    window.opener.postMessage({ type: 'oauthComplete', success: false, error: 'Missing authorization code or state' }, '*');
                 }
                 setTimeout(() => window.close(), 2000);
                 return;
@@ -736,9 +735,8 @@ const server = Bun.serve({
                 if (result.success) {
                     document.querySelector('.container').innerHTML = '<h2 class="success">✓ Connected Successfully!</h2><p>You can close this window.</p>';
                     if (window.opener) {
-                        window.opener.dispatchEvent(new CustomEvent('oauthComplete', {
-                            detail: { success: true, platform: platform, username: result.username }
-                        }));
+                        try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: true, platform: platform, username: result.username } })); } catch(e) {}
+                        window.opener.postMessage({ type: 'oauthComplete', success: true, platform: platform, username: result.username }, '*');
                     }
                 } else {
                     var c = document.querySelector('.container');
@@ -746,9 +744,9 @@ const server = Bun.serve({
                     var h = document.createElement('h2'); h.className = 'error'; h.textContent = 'Connection Failed'; c.appendChild(h);
                     var p = document.createElement('p'); p.textContent = result.error || 'Unknown error'; c.appendChild(p);
                     if (window.opener) {
-                        window.opener.dispatchEvent(new CustomEvent('oauthComplete', {
-                            detail: { success: false, error: result.error || 'Connection failed' }
-                        }));
+                        var errDetail = result.error || 'Connection failed';
+                        try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: false, error: errDetail } })); } catch(e) {}
+                        window.opener.postMessage({ type: 'oauthComplete', success: false, error: errDetail }, '*');
                     }
                 }
             } catch (err) {
@@ -757,9 +755,8 @@ const server = Bun.serve({
                 var h = document.createElement('h2'); h.className = 'error'; h.textContent = 'Error'; c.appendChild(h);
                 var p = document.createElement('p'); p.textContent = err.message; c.appendChild(p);
                 if (window.opener) {
-                    window.opener.dispatchEvent(new CustomEvent('oauthComplete', {
-                        detail: { success: false, error: err.message }
-                    }));
+                    try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: false, error: err.message } })); } catch(e) {}
+                    window.opener.postMessage({ type: 'oauthComplete', success: false, error: err.message }, '*');
                 }
             }
 
