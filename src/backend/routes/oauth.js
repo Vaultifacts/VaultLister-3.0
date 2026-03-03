@@ -42,7 +42,7 @@ export async function oauthRouter(ctx) {
         // Build authorization URL
         const authUrl = new URL(config.authorizationUrl);
         authUrl.searchParams.set('client_id', config.clientId);
-        authUrl.searchParams.set('redirect_uri', redirectUri);
+        authUrl.searchParams.set('redirect_uri', config.redirectUri || redirectUri);
         authUrl.searchParams.set('response_type', 'code');
         authUrl.searchParams.set('state', stateToken);
         authUrl.searchParams.set('scope', config.scopes.join(' '));
@@ -447,7 +447,7 @@ function getOAuthConfig(platform, mode) {
                 revokeUrl: `${apiBase}/identity/v1/oauth2/revoke`,
                 clientId: process.env.EBAY_CLIENT_ID,
                 clientSecret: process.env.EBAY_CLIENT_SECRET,
-                redirectUri: process.env.OAUTH_REDIRECT_URI,
+                redirectUri: process.env.EBAY_REDIRECT_URI || process.env.OAUTH_REDIRECT_URI,
                 scopes: [
                     'https://api.ebay.com/oauth/api_scope/sell.inventory',
                     'https://api.ebay.com/oauth/api_scope/sell.account',
