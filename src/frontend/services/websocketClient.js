@@ -260,6 +260,36 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('[WS] Initial connection failed:', err.message);
         });
     }
+
+    // Desktop notification handler for automation events
+    window.wsSubscribe.onNotification((data) => {
+        const notif = data.notification;
+        if (!notif) return;
+
+        const prefs = window.store?.state?.automationNotifPrefs ||
+            (() => { try { return JSON.parse(localStorage.getItem('vaultlister_automation_notif_prefs') || '{}'); } catch { return {}; } })();
+
+        if (!prefs.desktop_enabled) return;
+
+        const t = notif.type || '';
+        if (t.includes('automation_completed') || t.includes('automation_success')) {
+            if (!prefs.on_success) return;
+        } else if (t.includes('automation_failed')) {
+            if (!prefs.on_failure) return;
+        } else if (t.includes('automation_partial')) {
+            if (!prefs.on_partial) return;
+        } else {
+            return;
+        }
+
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            new Notification(notif.title || 'Automation Update', {
+                body: notif.message || '',
+                icon: '/icons/icon-192.png',
+                tag: 'automation-' + (notif.id || Date.now())
+            });
+        }
+    });
 });
 
 export default wsClient;

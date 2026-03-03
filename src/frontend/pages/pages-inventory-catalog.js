@@ -1995,7 +1995,7 @@ Object.assign(pages, {
                                                 return Math.round(ago / 86400000) + 'd ago';
                                             })();
                                             return `
-                                        <span class="automation-card-stat">
+                                        <span class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/'/g, "\\'")}', '${rule.id}')" title="View run history">
                                             ${components.icon('activity', 12)} ${runCount} runs
                                         </span>
                                         <span class="automation-card-stat">

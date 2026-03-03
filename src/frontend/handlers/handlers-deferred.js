@@ -15630,10 +15630,59 @@ Object.assign(handlers, {
         try { localStorage.setItem('vaultlister_automation_notif_prefs', JSON.stringify(current)); } catch (e) {}
         // Persist to backend
         api.ensureCSRFToken().then(() => api.post('/automations/notification-prefs', current)).catch(() => {});
+        if (current.desktop_enabled && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
+    },
+
+    showAutomationRunHistory: function(ruleName, ruleId) {
+        const runHistory = store.state.automationHistoryRuns || [];
+        const ruleRuns = runHistory.filter(r => r.automation_name === ruleName || r.automation_id === ruleId || r.action === ruleName);
+
+        const rows = ruleRuns.length === 0
+            ? '<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--gray-400);">No runs recorded yet</td></tr>'
+            : ruleRuns.slice(0, 25).map(r => {
+                const ts = r.started_at || r.timestamp || r.created_at;
+                const date = ts ? new Date(ts).toLocaleString() : '—';
+                const status = r.status || 'unknown';
+                const statusColor = status === 'success' ? 'var(--success-500)' : status === 'failed' ? 'var(--danger-500)' : 'var(--warning-500)';
+                const duration = r.duration_ms ? (r.duration_ms / 1000).toFixed(1) + 's' : '—';
+                const items = r.items_processed != null ? `${r.items_succeeded || 0}/${r.items_processed}` : '—';
+                const msg = escapeHtml(r.result_message || r.error_message || r.result || '');
+                return `<tr>
+                    <td style="white-space:nowrap;">${date}</td>
+                    <td><span style="color:${statusColor}; font-weight:600; text-transform:capitalize;">${status}</span></td>
+                    <td>${items}</td>
+                    <td>${duration}</td>
+                    <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${msg}">${msg}</td>
+                </tr>`;
+            }).join('');
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${escapeHtml(ruleName)} — Run History</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--gray-200); text-align:left;">
+                            <th style="padding:8px 12px;">Time</th>
+                            <th style="padding:8px 12px;">Status</th>
+                            <th style="padding:8px 12px;">Items</th>
+                            <th style="padding:8px 12px;">Duration</th>
+                            <th style="padding:8px 12px;">Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <p class="text-xs text-gray-400 mt-3">${ruleRuns.length} total run${ruleRuns.length !== 1 ? 's' : ''}</p>
+            </div>
+        `);
     },
 
     // Update automation schedule settings,
