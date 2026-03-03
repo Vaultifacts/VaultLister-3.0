@@ -1298,6 +1298,12 @@ Object.assign(pages, {
                                     <div class="text-xs opacity-90">Cross-list via browser automation</div>
                                 </div>
                             </button>
+                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToGrailed()" id="publish-grailed-crosslist-btn" disabled>
+                                <div class="text-left">
+                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to Grailed</div>
+                                    <div class="text-xs opacity-90">Cross-list via browser automation</div>
+                                </div>
+                            </button>
                         </div>
 
                         <div class="mt-4 p-4 border-l-4 border-blue-500 bg-blue-50 rounded">
