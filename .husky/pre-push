@@ -1,0 +1,73 @@
+#!/usr/bin/env sh
+
+echo "Running pre-push checks..."
+
+# Syntax check on critical files
+echo "Validating JavaScript syntax..."
+node --check src/frontend/app.js || {
+    echo "Syntax error in app.js! Push aborted."
+    exit 1
+}
+node --check src/backend/server.js || {
+    echo "Syntax error in server.js! Push aborted."
+    exit 1
+}
+
+# Verify auth infrastructure integrity
+echo "Checking auth infrastructure..."
+if ! grep -v '^\s*//' src/frontend/app.js | grep -q 'token: this.state.token'; then
+    echo "ERROR: store.persist() does not persist tokens! Push aborted."
+    echo "The Remember Me feature requires token persistence in store.persist()."
+    exit 1
+fi
+if ! grep -v '^\s*//' src/frontend/app.js | grep -q 'refreshToken: this.state.refreshToken'; then
+    echo "ERROR: store.persist() does not persist refresh tokens! Push aborted."
+    exit 1
+fi
+
+# Verify CSP integrity
+echo "Checking CSP configuration..."
+if ! grep -v '^\s*//' src/backend/middleware/securityHeaders.js | grep -q "'unsafe-inline'"; then
+    echo "ERROR: CSP missing unsafe-inline! Push aborted."
+    echo "The SPA requires unsafe-inline in script-src for compatibility."
+    exit 1
+fi
+
+# Run unit tests (allow up to KNOWN_FAILURES pre-existing failures)
+# Read baseline from .test-baseline file (centralized, not hardcoded)
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+BASELINE_FILE="${REPO_ROOT}/.test-baseline"
+if [ -f "$BASELINE_FILE" ]; then
+    KNOWN_FAILURES=$(grep -v '^\s*#' "$BASELINE_FILE" | grep -oP 'KNOWN_FAILURES=\K\d+' 2>/dev/null | head -1)
+else
+    KNOWN_FAILURES=0
+fi
+# Validate KNOWN_FAILURES is numeric
+case "$KNOWN_FAILURES" in
+    ''|*[!0-9]*) KNOWN_FAILURES=0 ;;
+esac
+echo "Running unit tests (known pre-existing failures: ${KNOWN_FAILURES})..."
+PORT="${PORT:-3001}"
+if curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
+    TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true /home/openclawuser/.bun/bin/bun test src/tests/ 2>&1) || true
+    FAIL_COUNT=$(echo "$TEST_OUTPUT" | grep -oP '^\s*\K\d+(?=\s+fail)' | tail -1)
+    FAIL_COUNT="${FAIL_COUNT:-0}"
+    # Validate FAIL_COUNT is numeric
+    case "$FAIL_COUNT" in
+        ''|*[!0-9]*) FAIL_COUNT=0 ;;
+    esac
+    echo "$TEST_OUTPUT" | tail -5
+    if [ "$FAIL_COUNT" -gt "$KNOWN_FAILURES" ]; then
+        echo ""
+        echo "REGRESSION DETECTED: ${FAIL_COUNT} failures (baseline: ${KNOWN_FAILURES})"
+        echo "Push aborted. Fix the new test failures before pushing."
+        exit 1
+    fi
+    echo "Test gate passed (${FAIL_COUNT}/${KNOWN_FAILURES} known failures)."
+else
+    echo "ERROR: Server not running on port ${PORT}. Cannot run tests."
+    echo "Start the server with 'bun run dev:bg' then try the push again."
+    exit 1
+fi
+
+echo "Pre-push checks passed!"

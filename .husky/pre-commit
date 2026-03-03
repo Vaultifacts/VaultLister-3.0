@@ -1,0 +1,180 @@
+#!/usr/bin/env sh
+
+echo "Running pre-commit checks..."
+
+# === OpenClaw Persona File Guard ===
+PERSONA_FILES=$(git diff --cached --name-only | grep -E '^(AGENTS|BOOTSTRAP|IDENTITY|SOUL|TOOLS|USER)\.md$|^e2e-diag\.mjs$|^\.openclaw/' || true)
+if [ -n "$PERSONA_FILES" ]; then
+    echo "❌ BLOCKED: OpenClaw workspace files detected in staging area."
+    echo "These files should never be committed to VaultLister:"
+    echo "$PERSONA_FILES"
+    echo "Unstage them with: git reset HEAD <file>"
+    exit 1
+fi
+
+# === .env Protection ===
+if git diff --cached --name-only | grep -qE '^\.(env|env\..*)$'; then
+    echo "ERROR: Attempting to commit .env file!"
+    echo "The .env file should never be committed."
+    exit 1
+fi
+
+# Check for console.log statements (warn only)
+echo "Checking for debug statements..."
+CONSOLE_LOGS=$(git diff --cached --name-only --diff-filter=ACM | xargs grep -Il "console.log" 2>/dev/null | grep -v "test" | grep -v "scripts" || true)
+if [ -n "$CONSOLE_LOGS" ]; then
+    echo "Warning: Found console.log statements in:"
+    echo "$CONSOLE_LOGS"
+    echo "Consider removing before production."
+fi
+
+# Check for hardcoded secrets
+echo "Checking for potential secrets..."
+if git diff --cached --name-only --diff-filter=ACM | grep -v "app\.js" | grep -vE "\.(css|html|md|svg)$" | xargs grep -IE "(password|secret|api_key|apikey|token)\s*[:=]\s*['\"][^'\"]{8,}" 2>/dev/null | grep -vE "_(at|by|id|type|count|name|status|expires|created|updated)\b" | grep -v "test" | grep -v "example" | grep -v "demo" | grep -v "process.env" | grep -v "data-" | grep -v "placeholder" | grep -v "aria-"; then
+    echo "Error: Potential hardcoded secrets detected!"
+    exit 1
+fi
+
+# For app.js specifically, check only new/changed lines in the diff
+if git diff --cached --name-only --diff-filter=ACM | grep -q "app\.js"; then
+    APPJS_SECRETS=$(git diff --cached -- src/frontend/app.js | grep "^+" | grep -v "^+++" | grep -IE "(password|secret|api_key|apikey)\s*[:=]\s*['\"][^'\"]{8,}" | grep -vE "_(at|by|id|type|count|name|status|expires|created|updated)\b" | grep -vi "test\|example\|process\.env\|getItem\|setItem\|removeItem\|localStorage\|sessionStorage" || true)
+    if [ -n "$APPJS_SECRETS" ]; then
+        echo "Error: Potential hardcoded secrets detected in app.js diff:"
+        echo "$APPJS_SECRETS"
+        exit 1
+    fi
+fi
+
+# Prevent committing temp/debug files
+echo "Checking for temp files..."
+TEMP_FILES=$(git diff --cached --name-only | grep -iE "(temp_.*\.json|notion_tmp\.json|tempnotion)" || true)
+if [ -n "$TEMP_FILES" ]; then
+    echo "Error: Attempting to commit temporary files:"
+    echo "$TEMP_FILES"
+    echo "These files should be in .gitignore."
+    exit 1
+fi
+
+# Check for .only or .skip in test files (prevents broken CI)
+echo "Checking for .only/.skip in tests..."
+ONLY_SKIP=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(test|spec)\.js$" | xargs grep -In "\.only\|\.skip" 2>/dev/null || true)
+if [ -n "$ONLY_SKIP" ]; then
+    echo "Error: Found .only or .skip in test files:"
+    echo "$ONLY_SKIP"
+    exit 1
+fi
+
+# Check for debugger statements
+echo "Checking for debugger statements..."
+DEBUGGER=$(git diff --cached --name-only --diff-filter=ACM | grep "\.js$" | xargs grep -In "^\s*debugger" 2>/dev/null | grep -v "node_modules" || true)
+if [ -n "$DEBUGGER" ]; then
+    echo "Error: Found debugger statements:"
+    echo "$DEBUGGER"
+    exit 1
+fi
+
+# Check for large files (>5MB)
+echo "Checking for large files..."
+LARGE_FILE_LIST=$(mktemp 2>/dev/null || echo "/tmp/pre-commit-large-$$")
+git diff --cached --name-only --diff-filter=ACM | while IFS= read -r f; do
+    if [ -f "$f" ]; then
+        size=$(wc -c < "$f" 2>/dev/null || echo 0)
+        if [ "$size" -gt 5242880 ]; then
+            echo "  $f ($((size/1048576))MB)" >> "$LARGE_FILE_LIST"
+        fi
+    fi
+done
+if [ -s "$LARGE_FILE_LIST" ]; then
+    echo "Error: Files over 5MB detected:"
+    cat "$LARGE_FILE_LIST"
+    rm -f "$LARGE_FILE_LIST"
+    exit 1
+fi
+rm -f "$LARGE_FILE_LIST"
+
+# Run quick syntax validation on staged files
+echo "Validating staged JavaScript files..."
+STAGED_JS=$(git diff --cached --name-only --diff-filter=ACM | grep "\.js$" || true)
+for file in $STAGED_JS; do
+    if [ -f "$file" ]; then
+        node --check "$file" 2>/dev/null || {
+            echo "Syntax error in: $file"
+            exit 1
+        }
+    fi
+done
+
+# === Auth Infrastructure Integrity Check ===
+if git diff --cached --name-only | grep -q "^src/frontend/app.js$"; then
+    echo "Checking auth infrastructure integrity in app.js..."
+    if ! grep -v '^\s*//' src/frontend/app.js | grep -q 'token: this.state.token'; then
+        echo ""
+        echo "ERROR: store.persist() no longer saves the auth token!"
+        echo "This breaks Remember Me. The line 'token: this.state.token' must exist in persist()."
+        exit 1
+    fi
+    if ! grep -v '^\s*//' src/frontend/app.js | grep -q 'refreshToken: this.state.refreshToken'; then
+        echo ""
+        echo "ERROR: store.persist() no longer saves the refresh token!"
+        echo "This breaks Remember Me. The line 'refreshToken: this.state.refreshToken' must exist in persist()."
+        exit 1
+    fi
+fi
+
+# === CSP Integrity Check ===
+if git diff --cached --name-only | grep -q "^src/backend/middleware/securityHeaders.js$"; then
+    echo "Checking CSP integrity in securityHeaders.js..."
+    if ! grep -v '^\s*//' src/backend/middleware/securityHeaders.js | grep -q "'unsafe-inline'"; then
+        echo ""
+        echo "ERROR: CSP script-src missing 'unsafe-inline'!"
+        echo "The SPA architecture requires unsafe-inline. Do not remove it."
+        exit 1
+    fi
+fi
+
+# === Critical File Test Gate ===
+CRITICAL_FILES="src/frontend/app.js src/backend/middleware/securityHeaders.js"
+CRITICAL_CHANGED=""
+for cfile in $CRITICAL_FILES; do
+    if git diff --cached --name-only | grep -q "^${cfile}$"; then
+        CRITICAL_CHANGED="$CRITICAL_CHANGED $cfile"
+    fi
+done
+
+if [ -n "$CRITICAL_CHANGED" ]; then
+    # Skip test gate if changes are only comments or whitespace
+    CODE_CHANGES=0
+    for cfile in $CRITICAL_CHANGED; do
+        REAL_DIFF=$(git diff --cached "$cfile" | grep "^[+-]" | grep -v "^[+-][+-][+-]" | grep -v "^[+-]\s*//" | grep -v "^[+-]\s*$" | grep -v "^[+-]\s*\*" | head -1 || true)
+        if [ -n "$REAL_DIFF" ]; then
+            CODE_CHANGES=1
+            break
+        fi
+    done
+
+    if [ "$CODE_CHANGES" -eq 0 ]; then
+        echo "Critical files modified (comments/whitespace only) — skipping test gate."
+    else
+        echo ""
+        echo "Critical files modified:$CRITICAL_CHANGED"
+        echo "Running auth and security tests..."
+
+        PORT="${PORT:-3001}"
+        if curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
+            DISABLE_CSRF=true DISABLE_RATE_LIMIT=true /home/openclawuser/.bun/bin/bun test src/tests/auth.test.js src/tests/security.test.js 2>&1 || {
+                echo ""
+                echo "ERROR: Auth/security tests FAILED after modifying critical files!"
+                echo "Commit blocked. Fix the failing tests or revert the changes."
+                exit 1
+            }
+            echo "Auth/security tests passed."
+        else
+            echo ""
+            echo "ERROR: Server not running on port ${PORT}. Cannot run tests against critical file changes."
+            echo "Start the server with 'bun run dev:bg' before committing changes to:$CRITICAL_CHANGED"
+            exit 1
+        fi
+    fi
+fi
+
+echo "Pre-commit checks passed!"

@@ -1,0 +1,265 @@
+// WebSocket Client for VaultLister Frontend
+// Real-time updates for inventory, sales, and notifications
+
+class VaultListerSocket {
+    constructor() {
+        this.ws = null;
+        this.url = null;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 5;
+        this.reconnectDelay = 1000;
+        this.handlers = new Map();
+        this.pendingMessages = [];
+        this.maxPendingMessages = 100;
+        this.authenticated = false;
+        this.connectionId = null;
+        this.reconnectTimerId = null;
+        this.connecting = false;
+    }
+
+    // Initialize WebSocket connection
+    connect(token) {
+        // Guard against multiple simultaneous connections
+        if (this.connecting || (this.ws && this.ws.readyState === WebSocket.OPEN)) {
+            return Promise.resolve();
+        }
+
+        // Cancel any pending reconnect
+        this.cancelReconnect();
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        this.url = `${protocol}//${window.location.host}/ws`;
+        this.token = token;
+        this.connecting = true;
+
+        return new Promise((resolve, reject) => {
+            try {
+                this.ws = new WebSocket(this.url);
+
+                this.ws.onopen = () => {
+                    console.log('[WS] Connected');
+                    this.reconnectAttempts = 0;
+                    this.connecting = false;
+
+                    // Authenticate immediately
+                    if (this.token) {
+                        this.send({ type: 'auth', token: this.token });
+                    }
+
+                    resolve();
+                };
+
+                this.ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        this.handleMessage(data);
+                    } catch (e) {
+                        console.error('[WS] Parse error:', e);
+                    }
+                };
+
+                this.ws.onclose = (event) => {
+                    console.log('[WS] Disconnected:', event.code, event.reason);
+                    this.authenticated = false;
+                    this.attemptReconnect();
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('[WS] Error:', error);
+                    this.connecting = false;
+                    reject(error);
+                };
+            } catch (error) {
+                this.connecting = false;
+                reject(error);
+            }
+        });
+    }
+
+    // Handle incoming messages
+    handleMessage(data) {
+        // Handle auth response
+        if (data.type === 'auth_success') {
+            this.authenticated = true;
+            this.flushPendingMessages();
+            console.log('[WS] Authenticated');
+        }
+
+        if (data.type === 'connected') {
+            this.connectionId = data.connectionId;
+        }
+
+        // Call type-specific handlers
+        const handlers = this.handlers.get(data.type) || [];
+        handlers.forEach(handler => {
+            try {
+                handler(data);
+            } catch (e) {
+                console.error('[WS] Handler error:', e);
+            }
+        });
+
+        // Call wildcard handlers
+        const wildcardHandlers = this.handlers.get('*') || [];
+        wildcardHandlers.forEach(handler => {
+            try {
+                handler(data);
+            } catch (e) {
+                console.error('[WS] Wildcard handler error:', e);
+            }
+        });
+    }
+
+    // Send message
+    send(data) {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(data));
+        } else if (this.pendingMessages.length < this.maxPendingMessages) {
+            this.pendingMessages.push(data);
+        }
+    }
+
+    // Subscribe to topics
+    subscribe(topics) {
+        this.send({
+            type: 'subscribe',
+            topics: Array.isArray(topics) ? topics : [topics]
+        });
+    }
+
+    // Unsubscribe from topics
+    unsubscribe(topics) {
+        this.send({
+            type: 'unsubscribe',
+            topics: Array.isArray(topics) ? topics : [topics]
+        });
+    }
+
+    // Register event handler
+    on(type, handler) {
+        if (!this.handlers.has(type)) {
+            this.handlers.set(type, []);
+        }
+        this.handlers.get(type).push(handler);
+
+        // Return unsubscribe function
+        return () => this.off(type, handler);
+    }
+
+    // Remove event handler
+    off(type, handler) {
+        if (this.handlers.has(type)) {
+            const handlers = this.handlers.get(type);
+            const index = handlers.indexOf(handler);
+            if (index > -1) {
+                handlers.splice(index, 1);
+            }
+        }
+    }
+
+    // Flush pending messages after authentication
+    flushPendingMessages() {
+        while (this.pendingMessages.length > 0) {
+            const message = this.pendingMessages.shift();
+            this.send(message);
+        }
+    }
+
+    // Cancel any pending reconnect timer
+    cancelReconnect() {
+        if (this.reconnectTimerId !== null) {
+            clearTimeout(this.reconnectTimerId);
+            this.reconnectTimerId = null;
+        }
+    }
+
+    // Attempt reconnection with exponential backoff
+    attemptReconnect() {
+        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+            console.log('[WS] Max reconnect attempts reached');
+            this.emit('max_reconnect_reached');
+            return;
+        }
+
+        this.reconnectAttempts++;
+        const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1) * (0.5 + Math.random() * 0.5);
+
+        console.log(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+
+        this.reconnectTimerId = setTimeout(() => {
+            this.reconnectTimerId = null;
+            if (this.token) {
+                this.connect(this.token).catch(() => {});
+            }
+        }, delay);
+    }
+
+    // Emit event to handlers
+    emit(type, data = {}) {
+        this.handleMessage({ type, ...data });
+    }
+
+    // Disconnect
+    disconnect() {
+        this.cancelReconnect();
+        this.connecting = false;
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
+            this.authenticated = false;
+        }
+    }
+
+    // Check if connected
+    isConnected() {
+        return this.ws && this.ws.readyState === WebSocket.OPEN && this.authenticated;
+    }
+}
+
+// Singleton instance
+const wsClient = new VaultListerSocket();
+
+// Export for use in app.js
+window.VaultListerSocket = wsClient;
+
+// Convenience methods for common events
+window.wsSubscribe = {
+    // Inventory updates
+    onInventoryCreated: (handler) => wsClient.on('inventory.created', handler),
+    onInventoryUpdated: (handler) => wsClient.on('inventory.updated', handler),
+    onInventoryDeleted: (handler) => wsClient.on('inventory.deleted', handler),
+
+    // Listing updates
+    onListingCreated: (handler) => wsClient.on('listing.created', handler),
+    onListingUpdated: (handler) => wsClient.on('listing.updated', handler),
+    onListingSold: (handler) => wsClient.on('listing.sold', handler),
+
+    // Sale updates
+    onSaleCreated: (handler) => wsClient.on('sale.created', handler),
+    onSaleShipped: (handler) => wsClient.on('sale.shipped', handler),
+    onSaleDelivered: (handler) => wsClient.on('sale.delivered', handler),
+
+    // Offer updates
+    onOfferReceived: (handler) => wsClient.on('offer.received', handler),
+    onOfferAccepted: (handler) => wsClient.on('offer.accepted', handler),
+
+    // Generic notifications
+    onNotification: (handler) => wsClient.on('notification', handler),
+
+    // Connection events
+    onConnected: (handler) => wsClient.on('auth_success', handler),
+    onDisconnected: (handler) => wsClient.on('max_reconnect_reached', handler)
+};
+
+// Auto-initialize when token is available
+document.addEventListener('DOMContentLoaded', () => {
+    // Check for stored token
+    const token = localStorage.getItem('token');
+    if (token) {
+        wsClient.connect(token).catch(err => {
+            console.log('[WS] Initial connection failed:', err.message);
+        });
+    }
+});
+
+export default wsClient;

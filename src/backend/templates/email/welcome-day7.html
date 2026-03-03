@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Tips to Boost Your Sales</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f3f4f6; }
+        .container { max-width: 600px; margin: 0 auto; background: white; }
+        .header { background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 30px 20px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 24px; }
+        .content { padding: 40px 30px; }
+        .content h2 { color: #1f2937; margin-top: 0; }
+        .content p { color: #4b5563; line-height: 1.6; }
+        .tip-card { background: #f9fafb; border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .tip-card h3 { color: #1f2937; margin: 0 0 10px; display: flex; align-items: center; }
+        .tip-card h3 span { margin-right: 10px; }
+        .tip-card p { color: #6b7280; margin: 0; font-size: 14px; }
+        .stats-box { background: #eef2ff; border-radius: 12px; padding: 25px; margin: 30px 0; text-align: center; }
+        .stats-box h3 { color: #4f46e5; margin: 0 0 15px; }
+        .stat { display: inline-block; margin: 0 20px; }
+        .stat-value { font-size: 32px; font-weight: bold; color: #4f46e5; }
+        .stat-label { font-size: 12px; color: #6b7280; }
+        .cta-button { display: inline-block; background: #4f46e5; color: white !important; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; }
+        .footer p { color: #9ca3af; font-size: 13px; margin: 5px 0; }
+        .footer a { color: #6366f1; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Pro Tips to Boost Your Sales</h1>
+        </div>
+
+        <div class="content">
+            <h2>Hi {{name}},</h2>
+
+            <p>You've been with VaultLister for a week now! Here are some pro tips from our top sellers to help you maximize your success:</p>
+
+            <div class="tip-card">
+                <h3><span>📸</span> Photo Quality Matters</h3>
+                <p>Items with 5+ clear photos sell 40% faster. Use natural lighting, show details, and include measurements. Our AI Photo Editor can help enhance your images!</p>
+            </div>
+
+            <div class="tip-card">
+                <h3><span>🏷️</span> Price Strategically</h3>
+                <p>Check our Market Intel tool to see what similar items are selling for. Price competitively but don't undersell - your item's condition matters!</p>
+            </div>
+
+            <div class="tip-card">
+                <h3><span>🔄</span> Refresh Listings Regularly</h3>
+                <p>Use our auto-relisting feature to keep your items at the top of search results. Fresh listings get more visibility!</p>
+            </div>
+
+            <div class="tip-card">
+                <h3><span>📝</span> Write Compelling Descriptions</h3>
+                <p>Include brand, size, condition, measurements, and styling tips. Our AI can generate descriptions from your photos!</p>
+            </div>
+
+            <div class="tip-card">
+                <h3><span>⏰</span> List at Peak Times</h3>
+                <p>Evenings (7-10 PM) and weekends see the most buyer activity. Schedule your listings to go live during peak hours.</p>
+            </div>
+
+            <div class="stats-box">
+                <h3>Did You Know?</h3>
+                <div class="stat">
+                    <div class="stat-value">3x</div>
+                    <div class="stat-label">Faster Sales</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">47%</div>
+                    <div class="stat-label">Higher Prices</div>
+                </div>
+                <p style="margin-top: 15px; color: #6b7280; font-size: 13px;">Average results for sellers who cross-list to 3+ platforms</p>
+            </div>
+
+            <a href="{{dashboardUrl}}" class="cta-button">Apply These Tips Now</a>
+
+            <p>Ready to level up? Explore our <a href="{{analyticsUrl}}" style="color: #4f46e5;">Analytics Dashboard</a> to track your progress.</p>
+
+            <p>Here's to your success!<br>The VaultLister Team</p>
+        </div>
+
+        <div class="footer">
+            <p><a href="{{unsubscribeUrl}}">Unsubscribe</a> | <a href="{{preferencesUrl}}">Email Preferences</a></p>
+            <p>© {{year}} VaultLister. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

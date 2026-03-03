@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Started with Your First Listing</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f3f4f6; }
+        .container { max-width: 600px; margin: 0 auto; background: white; }
+        .header { background: #4f46e5; padding: 30px 20px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 24px; }
+        .content { padding: 40px 30px; }
+        .content h2 { color: #1f2937; margin-top: 0; }
+        .content p { color: #4b5563; line-height: 1.6; }
+        .cta-button { display: inline-block; background: #4f46e5; color: white !important; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .step { display: flex; margin: 25px 0; }
+        .step-number { width: 36px; height: 36px; background: #4f46e5; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; flex-shrink: 0; }
+        .step-content h3 { margin: 0 0 5px; color: #1f2937; }
+        .step-content p { margin: 0; color: #6b7280; font-size: 14px; }
+        .tip-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px 20px; margin: 25px 0; border-radius: 0 8px 8px 0; }
+        .tip-box h4 { color: #92400e; margin: 0 0 5px; font-size: 14px; }
+        .tip-box p { color: #78350f; margin: 0; font-size: 14px; }
+        .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; }
+        .footer p { color: #9ca3af; font-size: 13px; margin: 5px 0; }
+        .footer a { color: #6366f1; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ready to Create Your First Listing?</h1>
+        </div>
+
+        <div class="content">
+            <h2>Hi {{name}},</h2>
+
+            <p>It's been a couple of days since you joined VaultLister. We noticed you haven't created your first listing yet - let's change that!</p>
+
+            <p>Creating a listing takes just a few minutes, and with our AI tools, it's easier than ever:</p>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Add Photos</h3>
+                    <p>Take clear photos or upload existing ones. Our AI can help enhance them!</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Generate Description</h3>
+                    <p>Let our AI write a compelling description based on your photos.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Set Your Price</h3>
+                    <p>Use our price suggestions based on market data to price competitively.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Cross-List</h3>
+                    <p>Publish to multiple platforms with one click!</p>
+                </div>
+            </div>
+
+            <a href="{{createListingUrl}}" class="cta-button">Create Your First Listing</a>
+
+            <div class="tip-box">
+                <h4>💡 Pro Tip</h4>
+                <p>Items listed on multiple platforms sell 3x faster on average. Connect your accounts in Settings to enable cross-listing!</p>
+            </div>
+
+            <p>Questions? Our help chatbot is available 24/7, or you can reply to this email.</p>
+
+            <p>Let's make your first sale!<br>The VaultLister Team</p>
+        </div>
+
+        <div class="footer">
+            <p><a href="{{unsubscribeUrl}}">Unsubscribe</a> | <a href="{{preferencesUrl}}">Email Preferences</a></p>
+            <p>© {{year}} VaultLister. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

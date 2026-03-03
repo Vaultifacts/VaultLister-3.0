@@ -1,0 +1,387 @@
+// Sales Routes
+import { v4 as uuidv4 } from 'uuid';
+import { query } from '../db/database.js';
+import { logger } from '../shared/logger.js';
+
+export async function salesRouter(ctx) {
+    const { method, path, body, query: queryParams, user } = ctx;
+
+    // GET /api/sales - List all sales
+    if (method === 'GET' && (path === '/' || path === '')) {
+        const { platform, status, startDate, endDate, limit = 50, offset = 0 } = queryParams;
+
+        let sql = `
+            SELECT s.*, s.item_cost, s.customer_shipping_cost, s.seller_shipping_cost,
+                   l.title as listing_title, i.title as inventory_title, i.images as item_images
+            FROM sales s
+            LEFT JOIN listings l ON s.listing_id = l.id
+            LEFT JOIN inventory i ON s.inventory_id = i.id
+            WHERE s.user_id = ?
+        `;
+        const params = [user.id];
+
+        if (platform) {
+            sql += ' AND s.platform = ?';
+            params.push(platform);
+        }
+
+        if (status) {
+            sql += ' AND s.status = ?';
+            params.push(status);
+        }
+
+        if (startDate) {
+            sql += ' AND s.created_at >= ?';
+            params.push(startDate);
+        }
+
+        if (endDate) {
+            sql += ' AND s.created_at <= ?';
+            params.push(endDate);
+        }
+
+        sql += ' ORDER BY s.created_at DESC LIMIT ? OFFSET ?';
+        const cappedLimit = Math.min(parseInt(limit) || 50, 100);
+        const cappedOffset = Math.max(parseInt(offset) || 0, 0);
+        params.push(cappedLimit, cappedOffset);
+
+        const sales = query.all(sql, params);
+
+        sales.forEach(sale => {
+            try {
+                sale.item_images = JSON.parse(sale.item_images || '[]');
+            } catch (e) {
+                sale.item_images = [];
+            }
+            // Map created_at to sold_at for frontend compatibility
+            sale.sold_at = sale.created_at;
+        });
+
+        // Build COUNT query with same filters as main query
+        let countSql = 'SELECT COUNT(*) as count FROM sales WHERE user_id = ?';
+        const countParams = [user.id];
+
+        if (platform) {
+            countSql += ' AND platform = ?';
+            countParams.push(platform);
+        }
+
+        if (status) {
+            countSql += ' AND status = ?';
+            countParams.push(status);
+        }
+
+        if (startDate) {
+            countSql += ' AND created_at >= ?';
+            countParams.push(startDate);
+        }
+
+        if (endDate) {
+            countSql += ' AND created_at <= ?';
+            countParams.push(endDate);
+        }
+
+        const total = query.get(countSql, countParams)?.count || 0;
+
+        return { status: 200, data: { sales, total } };
+    }
+
+    // GET /api/sales/:id - Get single sale
+    if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
+        const id = path.slice(1);
+        const sale = query.get(`
+            SELECT s.*, s.item_cost, s.customer_shipping_cost, s.seller_shipping_cost,
+                   l.*, i.title as inventory_title, i.images as item_images
+            FROM sales s
+            LEFT JOIN listings l ON s.listing_id = l.id
+            LEFT JOIN inventory i ON s.inventory_id = i.id
+            WHERE s.id = ? AND s.user_id = ?
+        `, [id, user.id]);
+
+        if (!sale) {
+            return { status: 404, data: { error: 'Sale not found' } };
+        }
+
+        try {
+            sale.item_images = JSON.parse(sale.item_images || '[]');
+        } catch (e) {
+            sale.item_images = [];
+        }
+
+        return { status: 200, data: { sale } };
+    }
+
+    // POST /api/sales - Record new sale
+    if (method === 'POST' && (path === '/' || path === '')) {
+        const {
+            listingId, inventoryId, platform, platformOrderId,
+            buyerUsername, buyerAddress, salePrice, platformFee,
+            shippingCost, customerShippingCost, sellerShippingCost,
+            taxAmount, notes, quantity = 1
+        } = body;
+
+        if (!platform || !salePrice) {
+            return { status: 400, data: { error: 'Platform and sale price required' } };
+        }
+
+        // Validate platform enum
+        const VALID_PLATFORMS = ['poshmark', 'ebay', 'whatnot', 'depop', 'facebook', 'mercari', 'grailed', 'etsy', 'shopify', 'amazon', 'other'];
+        if (!VALID_PLATFORMS.includes(platform.toLowerCase())) {
+            return { status: 400, data: { error: `Invalid platform. Must be one of: ${VALID_PLATFORMS.join(', ')}` } };
+        }
+
+        const id = uuidv4();
+
+        // Wrap multi-step sale creation in a transaction to ensure data integrity
+        let itemCost = 0;
+        let sale;
+
+        try {
+            const db = query.db || require('../db/database.js').default;
+            const transaction = db.transaction(() => {
+                // Use FIFO costing if inventory item exists
+                if (inventoryId) {
+                    // Get cost layers in FIFO order (oldest first)
+                    const layers = query.all(`
+                        SELECT * FROM inventory_cost_layers
+                        WHERE inventory_id = ? AND quantity_remaining > 0
+                        ORDER BY purchase_date ASC, created_at ASC
+                    `, [inventoryId]);
+
+                    let remainingQty = quantity;
+                    for (const layer of layers) {
+                        if (remainingQty <= 0) break;
+
+                        const qtyToConsume = Math.min(remainingQty, layer.quantity_remaining);
+                        const layerCOGS = qtyToConsume * layer.unit_cost;
+
+                        // Prevent integer overflow in cost calculations
+                        if (!isFinite(layerCOGS) || layerCOGS > 999999999) {
+                            throw new Error('Cost calculation exceeds maximum allowed value');
+                        }
+
+                        itemCost += layerCOGS;
+                        remainingQty -= qtyToConsume;
+
+                        // Update layer
+                        query.run(`
+                            UPDATE inventory_cost_layers
+                            SET quantity_remaining = quantity_remaining - ?, updated_at = CURRENT_TIMESTAMP
+                            WHERE id = ?
+                        `, [qtyToConsume, layer.id]);
+                    }
+
+                    // If no cost layers, fall back to inventory cost_price
+                    if (itemCost === 0) {
+                        const item = query.get('SELECT cost_price FROM inventory WHERE id = ?', [inventoryId]);
+                        itemCost = (item?.cost_price || 0) * quantity;
+                    }
+                }
+
+                // Calculate net profit with new formula
+                const actualSellerShipping = sellerShippingCost !== undefined ? sellerShippingCost : (shippingCost || 0);
+                const netProfit = salePrice - (platformFee || 0) - itemCost - actualSellerShipping - (taxAmount || 0);
+
+                query.run(`
+                    INSERT INTO sales (
+                        id, user_id, listing_id, inventory_id, platform, platform_order_id,
+                        buyer_username, buyer_address, sale_price, platform_fee,
+                        shipping_cost, customer_shipping_cost, seller_shipping_cost,
+                        item_cost, tax_amount, net_profit, notes, status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `, [
+                    id, user.id, listingId, inventoryId, platform, platformOrderId,
+                    buyerUsername, buyerAddress, salePrice, platformFee || 0,
+                    shippingCost || 0, customerShippingCost || 0, actualSellerShipping,
+                    itemCost, taxAmount || 0, netProfit, notes, 'pending'
+                ]);
+
+                // Update inventory status atomically - check current status to prevent race condition
+                if (inventoryId) {
+                    const result = query.run(
+                        'UPDATE inventory SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status != ?',
+                        ['sold', inventoryId, user.id, 'sold']
+                    );
+
+                    // If changes === 0, the item was already sold by another concurrent request
+                    if (result.changes === 0) {
+                        const currentItem = query.get('SELECT status FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+                        if (currentItem?.status === 'sold') {
+                            throw new Error('INVENTORY_ALREADY_SOLD');
+                        }
+                    }
+                }
+
+                // Update listing status with race condition protection
+                if (listingId) {
+                    query.run('UPDATE listings SET status = ?, sold_at = CURRENT_TIMESTAMP WHERE id = ? AND status != ?', ['sold', listingId, 'sold']);
+                }
+
+                // Log sustainability impact
+                if (inventoryId) {
+                    const item = query.get('SELECT category FROM inventory WHERE id = ?', [inventoryId]);
+                    if (item) {
+                        query.run(`
+                            INSERT INTO sustainability_log (id, user_id, inventory_id, sale_id, category, water_saved_liters, co2_saved_kg, waste_prevented_kg)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        `, [uuidv4(), user.id, inventoryId, id, item.category, 2700, 10, 0.5]);
+                    }
+                }
+            });
+
+            // Execute the transaction
+            transaction();
+
+            // Fetch the created sale after successful transaction
+            sale = query.get('SELECT * FROM sales WHERE id = ?', [id]);
+        } catch (error) {
+            // Handle specific transaction errors
+            if (error.message === 'INVENTORY_ALREADY_SOLD') {
+                return { status: 409, data: { error: 'Inventory item already sold' } };
+            }
+            logger.error('[Sales] Sale creation transaction failed', user?.id, { detail: error?.message });
+            throw error;
+        }
+
+        return { status: 201, data: { sale } };
+    }
+
+    // PUT /api/sales/:id - Update sale
+    if (method === 'PUT' && path.match(/^\/[a-f0-9-]+$/)) {
+        const id = path.slice(1);
+
+        const existing = query.get('SELECT * FROM sales WHERE id = ? AND user_id = ?', [id, user.id]);
+        if (!existing) {
+            return { status: 404, data: { error: 'Sale not found' } };
+        }
+
+        const {
+            status, trackingNumber, carrier, notes,
+            shippedAt, deliveredAt
+        } = body;
+
+        const updates = [];
+        const values = [];
+
+        if (status !== undefined) {
+            updates.push('status = ?');
+            values.push(status);
+        }
+
+        if (trackingNumber !== undefined) {
+            updates.push('tracking_number = ?');
+            values.push(trackingNumber);
+        }
+
+        if (carrier !== undefined) {
+            updates.push('carrier = ?');
+            values.push(carrier);
+        }
+
+        if (notes !== undefined) {
+            updates.push('notes = ?');
+            values.push(notes);
+        }
+
+        if (shippedAt !== undefined) {
+            updates.push('shipped_at = ?');
+            values.push(shippedAt);
+        } else if (status === 'shipped' && !existing.shipped_at) {
+            updates.push('shipped_at = CURRENT_TIMESTAMP');
+        }
+
+        if (deliveredAt !== undefined) {
+            updates.push('delivered_at = ?');
+            values.push(deliveredAt);
+        } else if (status === 'delivered' && !existing.delivered_at) {
+            updates.push('delivered_at = CURRENT_TIMESTAMP');
+        }
+
+        if (updates.length > 0) {
+            values.push(id);
+            query.run(
+                `UPDATE sales SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                values
+            );
+        }
+
+        const sale = query.get('SELECT * FROM sales WHERE id = ?', [id]);
+
+        return { status: 200, data: { sale } };
+    }
+
+    // DELETE /api/sales/:id - Delete sale
+    if (method === 'DELETE' && path.match(/^\/[a-f0-9-]+$/)) {
+        const id = path.slice(1);
+
+        const existing = query.get('SELECT * FROM sales WHERE id = ? AND user_id = ?', [id, user.id]);
+        if (!existing) {
+            return { status: 404, data: { error: 'Sale not found' } };
+        }
+
+        // Restore inventory status if linked
+        if (existing.inventory_id) {
+            query.run('UPDATE inventory SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', ['active', existing.inventory_id]);
+        }
+
+        // Restore listing status if linked
+        if (existing.listing_id) {
+            query.run('UPDATE listings SET status = ?, sold_at = NULL WHERE id = ?', ['active', existing.listing_id]);
+        }
+
+        const result = query.run('DELETE FROM sales WHERE id = ? AND user_id = ?', [id, user.id]);
+
+        if (result.changes === 0) {
+            return { status: 404, data: { error: 'Sale not found' } };
+        }
+
+        return { status: 200, data: { message: 'Sale deleted successfully' } };
+    }
+
+    // GET /api/sales/stats - Get sales statistics
+    if (method === 'GET' && path === '/stats') {
+        const { period = '30d' } = queryParams;
+
+        let dateFilter = '';
+        if (period === '7d') {
+            dateFilter = "AND created_at >= datetime('now', '-7 days')";
+        } else if (period === '30d') {
+            dateFilter = "AND created_at >= datetime('now', '-30 days')";
+        } else if (period === '90d') {
+            dateFilter = "AND created_at >= datetime('now', '-90 days')";
+        } else if (period === '1y') {
+            dateFilter = "AND created_at >= datetime('now', '-1 year')";
+        }
+
+        const stats = {
+            totalSales: query.get(`SELECT COUNT(*) as count FROM sales WHERE user_id = ? ${dateFilter}`, [user.id])?.count || 0,
+            totalRevenue: query.get(`SELECT SUM(sale_price) as total FROM sales WHERE user_id = ? ${dateFilter}`, [user.id])?.total || 0,
+            totalProfit: query.get(`SELECT SUM(net_profit) as total FROM sales WHERE user_id = ? ${dateFilter}`, [user.id])?.total || 0,
+            avgSalePrice: query.get(`SELECT AVG(sale_price) as avg FROM sales WHERE user_id = ? ${dateFilter}`, [user.id])?.avg || 0,
+            byPlatform: query.all(`
+                SELECT platform, COUNT(*) as sales, SUM(sale_price) as revenue, SUM(net_profit) as profit
+                FROM sales WHERE user_id = ? ${dateFilter}
+                GROUP BY platform ORDER BY revenue DESC
+            `, [user.id]),
+            byStatus: query.all(`
+                SELECT status, COUNT(*) as count
+                FROM sales WHERE user_id = ? ${dateFilter}
+                GROUP BY status
+            `, [user.id]),
+            recentSales: query.all(`
+                SELECT DATE(created_at) as date, COUNT(*) as sales, SUM(sale_price) as revenue
+                FROM sales WHERE user_id = ? ${dateFilter}
+                GROUP BY DATE(created_at)
+                ORDER BY date DESC LIMIT 30
+            `, [user.id]),
+            pendingShipments: query.get(
+                'SELECT COUNT(*) as count FROM sales WHERE user_id = ? AND status IN (?, ?)',
+                [user.id, 'pending', 'confirmed']
+            )?.count || 0
+        };
+
+        return { status: 200, data: { stats } };
+    }
+
+    return { status: 404, data: { error: 'Route not found' } };
+}

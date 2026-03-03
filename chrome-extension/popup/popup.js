@@ -1,0 +1,244 @@
+// VaultLister Extension Popup Logic
+
+let state = {
+    isAuthenticated: false,
+    scrapedCount: 0,
+    trackedCount: 0,
+    syncQueue: []
+};
+
+// DOM Elements
+const loading = document.getElementById('loading');
+const loginView = document.getElementById('login-view');
+const mainView = document.getElementById('main-view');
+const loginForm = document.getElementById('login-form');
+const logoutBtn = document.getElementById('logout-btn');
+const scrapeBtn = document.getElementById('scrape-btn');
+const priceTrackBtn = document.getElementById('price-track-btn');
+const openAppBtn = document.getElementById('open-app-btn');
+const syncBtn = document.getElementById('sync-btn');
+const scrapedCountEl = document.getElementById('scraped-count');
+const trackedCountEl = document.getElementById('tracked-count');
+const syncQueueEl = document.getElementById('sync-queue');
+
+// Initialize
+async function init() {
+    showLoading();
+
+    try {
+        await api.loadToken();
+
+        if (api.isAuthenticated()) {
+            await loadStats();
+            showMainView();
+        } else {
+            showLoginView();
+        }
+    } catch (error) {
+        console.error('Init error:', error);
+        showLoginView();
+    }
+}
+
+// Views
+function showLoading() {
+    loading.classList.remove('hidden');
+    loginView.classList.add('hidden');
+    mainView.classList.add('hidden');
+}
+
+function showLoginView() {
+    loading.classList.add('hidden');
+    loginView.classList.remove('hidden');
+    mainView.classList.add('hidden');
+}
+
+function showMainView() {
+    loading.classList.add('hidden');
+    loginView.classList.add('hidden');
+    mainView.classList.remove('hidden');
+}
+
+// Load Stats
+async function loadStats() {
+    try {
+        const [scrapedResult, trackedResult, syncResult] = await Promise.all([
+            api.getScrapedProducts({ limit: 1 }).catch(() => ({ count: 0 })),
+            api.getPriceTracking({ limit: 1 }).catch(() => ({ count: 0 })),
+            api.getSyncQueue().catch(() => ({ items: [] }))
+        ]);
+
+        state.scrapedCount = scrapedResult.count || 0;
+        state.trackedCount = trackedResult.count || 0;
+        state.syncQueue = syncResult.items || [];
+
+        updateUI();
+    } catch (error) {
+        console.error('Failed to load stats:', error);
+    }
+}
+
+// Update UI
+function updateUI() {
+    scrapedCountEl.textContent = state.scrapedCount;
+    trackedCountEl.textContent = state.trackedCount;
+
+    // Update sync queue
+    if (state.syncQueue.length === 0) {
+        syncQueueEl.innerHTML = '<p class="empty-state">No pending actions</p>';
+    } else {
+        syncQueueEl.innerHTML = state.syncQueue.map(item => `
+            <div class="sync-item">
+                <div class="sync-item-info">
+                    <div class="sync-item-title">${item.action_type}</div>
+                    <div class="sync-item-meta">${new Date(item.created_at).toLocaleDateString()}</div>
+                </div>
+                <button class="sync-item-action" onclick="processSyncItem('${item.id}')">
+                    Process
+                </button>
+            </div>
+        `).join('');
+    }
+}
+
+// Login
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        showLoading();
+        await api.login(email, password);
+        await loadStats();
+        showMainView();
+        showToast('Logged in successfully!', 'success');
+    } catch (error) {
+        showLoginView();
+        showToast('Login failed: ' + error.message, 'error');
+    }
+});
+
+// Logout
+logoutBtn.addEventListener('click', async () => {
+    try {
+        await api.logout();
+        state.isAuthenticated = false;
+        showLoginView();
+        showToast('Logged out successfully', 'success');
+    } catch (error) {
+        showToast('Logout failed', 'error');
+    }
+});
+
+// Scrape Product
+scrapeBtn.addEventListener('click', async () => {
+    try {
+        // Get active tab
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        if (!tab.url.includes('amazon.com') && !tab.url.includes('nordstrom.com')) {
+            showToast('Please visit Amazon or Nordstrom first', 'error');
+            return;
+        }
+
+        // Send message to content script
+        chrome.tabs.sendMessage(tab.id, { action: 'scrapeProduct' }, (response) => {
+            if (chrome.runtime.lastError) {
+                showToast('Scraping failed. Reload the page and try again.', 'error');
+                return;
+            }
+
+            if (response.success) {
+                showToast('Product captured successfully!', 'success');
+                loadStats();
+            } else {
+                showToast('Scraping failed: ' + response.error, 'error');
+            }
+        });
+    } catch (error) {
+        showToast('Failed to scrape product', 'error');
+    }
+});
+
+// Track Price
+priceTrackBtn.addEventListener('click', async () => {
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        if (!tab.url.includes('amazon.com') && !tab.url.includes('nordstrom.com')) {
+            showToast('Please visit Amazon or Nordstrom first', 'error');
+            return;
+        }
+
+        // Scrape first, then add to price tracking
+        chrome.tabs.sendMessage(tab.id, { action: 'scrapeProduct' }, async (response) => {
+            if (chrome.runtime.lastError || !response.success) {
+                showToast('Failed to track price', 'error');
+                return;
+            }
+
+            showToast('Price tracking enabled!', 'success');
+            loadStats();
+        });
+    } catch (error) {
+        showToast('Failed to track price', 'error');
+    }
+});
+
+// Open App
+openAppBtn.addEventListener('click', () => {
+    chrome.tabs.create({ url: 'http://localhost:3000' });
+});
+
+// Sync Now
+syncBtn.addEventListener('click', async () => {
+    try {
+        showToast('Syncing...', 'success');
+
+        // Process all items in sync queue
+        for (const item of state.syncQueue) {
+            await api.processSyncItem(item.id);
+        }
+
+        await loadStats();
+        showToast('Sync completed!', 'success');
+    } catch (error) {
+        showToast('Sync failed', 'error');
+    }
+});
+
+// Process Sync Item
+window.processSyncItem = async function(itemId) {
+    try {
+        await api.processSyncItem(itemId);
+        await loadStats();
+        showToast('Item processed!', 'success');
+    } catch (error) {
+        showToast('Failed to process item', 'error');
+    }
+};
+
+// Toast Notification
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 3000);
+}
+
+// Listen for messages from background script
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'productScraped') {
+        loadStats();
+    } else if (request.action === 'priceAlert') {
+        showToast(`Price drop: ${request.data.productName}`, 'success');
+    }
+});
+
+// Initialize on load
+init();

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>We Miss You!</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f3f4f6; }
+        .container { max-width: 600px; margin: 0 auto; background: white; }
+        .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 40px 20px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 28px; }
+        .header p { color: rgba(255,255,255,0.9); margin: 15px 0 0; font-size: 16px; }
+        .content { padding: 40px 30px; }
+        .content h2 { color: #1f2937; margin-top: 0; }
+        .content p { color: #4b5563; line-height: 1.6; }
+        .updates-box { background: #f9fafb; border-radius: 12px; padding: 25px; margin: 25px 0; }
+        .updates-box h3 { color: #1f2937; margin: 0 0 15px; }
+        .update-item { display: flex; align-items: flex-start; margin: 15px 0; }
+        .update-item .emoji { font-size: 20px; margin-right: 12px; }
+        .update-item .text { color: #4b5563; font-size: 14px; }
+        .cta-button { display: inline-block; background: #4f46e5; color: white !important; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .cta-secondary { display: inline-block; color: #4f46e5 !important; text-decoration: none; padding: 14px 28px; border: 2px solid #4f46e5; border-radius: 8px; font-weight: 600; margin: 10px; }
+        .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; }
+        .footer p { color: #9ca3af; font-size: 13px; margin: 5px 0; }
+        .footer a { color: #6366f1; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>We Miss You! 👋</h1>
+            <p>It's been a while since we've seen you</p>
+        </div>
+
+        <div class="content">
+            <h2>Hi {{name}},</h2>
+
+            <p>We noticed you haven't logged into VaultLister recently. Your inventory is waiting for you, and there's never been a better time to get back to selling!</p>
+
+            <div class="updates-box">
+                <h3>What's New While You Were Away</h3>
+
+                <div class="update-item">
+                    <span class="emoji">🤖</span>
+                    <span class="text"><strong>AI Listing Generator 2.0</strong> - Even better descriptions and smarter pricing suggestions</span>
+                </div>
+
+                <div class="update-item">
+                    <span class="emoji">📊</span>
+                    <span class="text"><strong>Enhanced Analytics</strong> - Track your performance with new metrics and insights</span>
+                </div>
+
+                <div class="update-item">
+                    <span class="emoji">🔄</span>
+                    <span class="text"><strong>Auto-Relisting</strong> - Keep your listings fresh automatically</span>
+                </div>
+
+                <div class="update-item">
+                    <span class="emoji">📱</span>
+                    <span class="text"><strong>Mobile App (Coming Soon)</strong> - Manage your inventory on the go</span>
+                </div>
+            </div>
+
+            <p>The resale market is booming right now. Don't miss out on potential sales!</p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{dashboardUrl}}" class="cta-button">Return to Dashboard</a>
+                <br>
+                <a href="{{inventoryUrl}}" class="cta-secondary">Check Your Inventory</a>
+            </div>
+
+            <p>If you need any help getting started again, our support team is here for you. Just reply to this email!</p>
+
+            <p>We hope to see you soon!<br>The VaultLister Team</p>
+        </div>
+
+        <div class="footer">
+            <p>No longer interested? <a href="{{unsubscribeUrl}}">Unsubscribe</a></p>
+            <p>© {{year}} VaultLister. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

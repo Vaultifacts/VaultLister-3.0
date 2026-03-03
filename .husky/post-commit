@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+# === Auto-log commits to STATUS.md ===
+STATUS_FILE="memory/STATUS.md"
+if [ -f "$STATUS_FILE" ]; then
+    COMMIT_MSG=$(git log -1 --pretty=%s 2>/dev/null | tr '\n' ' ' | head -c 200 || echo "unknown")
+    COMMIT_HASH=$(git log -1 --pretty=%h 2>/dev/null || echo "???????")
+    RAW_AGENT_ID="${CLAUDE_AGENT_ID:-CLI}"
+    case "$RAW_AGENT_ID" in
+        CLI|Bot) AGENT_ID="$RAW_AGENT_ID" ;;
+        *) AGENT_ID="CLI" ;;
+    esac
+    DATE_NOW=$(date '+%Y-%m-%d %H:%M')
+    CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
+    LOG_ENTRY="- **${DATE_NOW} ${AGENT_ID}** (${COMMIT_HASH}): ${COMMIT_MSG} [${CHANGED_FILES}]"
+    (
+        flock 200
+        MARKER_LINE=$(grep -n "^<!-- Most recent first" "$STATUS_FILE" | head -1 | cut -d: -f1)
+        if [ -n "$MARKER_LINE" ]; then
+            { head -n "$MARKER_LINE" "$STATUS_FILE"; printf '%s\n' "$LOG_ENTRY"; tail -n "+$((MARKER_LINE + 1))" "$STATUS_FILE"; } > "${STATUS_FILE}.tmp" && mv "${STATUS_FILE}.tmp" "$STATUS_FILE"
+        else
+            echo "WARNING: STATUS.md marker not found — commit log entry skipped" >&2
+        fi
+        if [ "$AGENT_ID" = "Bot" ]; then
+            FILE_COUNT=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null | wc -l)
+            FILE_COUNT=$(echo "$FILE_COUNT" | tr -d '[:space:]')
+
+            # === Auto-review Bot commits ===
+            REVIEW_SCRIPT="$HOME/scripts/auto-review.sh"
+            AUTO_SCORE=""
+            AUTO_SUFFIX=""
+            if [ -x "$REVIEW_SCRIPT" ]; then
+                AUTO_SCORE=$(bash "$REVIEW_SCRIPT" HEAD --score 2>/dev/null || echo "")
+                AUTO_SCORE=$(echo "$AUTO_SCORE" | tr -d '[:space:]')
+                if [ -n "$AUTO_SCORE" ] && [ "$AUTO_SCORE" -eq "$AUTO_SCORE" ] 2>/dev/null; then
+                    if [ "$AUTO_SCORE" -ge 8 ]; then
+                        AUTO_SUFFIX=" — AUTO-REVIEWED: PASS ($AUTO_SCORE/10)"
+                    elif [ "$AUTO_SCORE" -lt 6 ]; then
+                        # Get top issues for the alert
+                        TOP_ISSUES=$(bash "$REVIEW_SCRIPT" HEAD --oneline 2>/dev/null | sed 's/.*| //' | head -c 150 || echo "low score")
+                        AUTO_SUFFIX=" — AUTO: $AUTO_SCORE/10 WARNING"
+                        # Send Telegram alert for low-scoring commits (async, don't block)
+                        if [ -f "$HOME/scripts/tg-notify.sh" ]; then
+                            bash "$HOME/scripts/tg-notify.sh" "Bot commit $COMMIT_HASH scored $AUTO_SCORE/10: $TOP_ISSUES" &
+                        fi
+                    else
+                        AUTO_SUFFIX=" — AUTO: $AUTO_SCORE/10"
+                    fi
+                fi
+            fi
+
+            # Log review result to review-log.jsonl for weekly aggregation
+            REVIEW_LOG="${HOME}/.openclaw/logs/review-log.jsonl"
+            mkdir -p "$(dirname "$REVIEW_LOG")" 2>/dev/null
+            if [ -n "$AUTO_SCORE" ]; then
+                FULL_HASH=$(git rev-parse HEAD 2>/dev/null || echo "")
+                REVIEW_JSON=$(bash "$REVIEW_SCRIPT" HEAD --json 2>/dev/null || echo "")
+                if [ -n "$REVIEW_JSON" ]; then
+                    # Append agent and timestamp
+                    REVIEW_JSON=$(echo "$REVIEW_JSON" | sed "s/}$/,\"agent\":\"$AGENT_ID\",\"ts\":\"$(date -Iseconds)\"}/")
+                    echo "$REVIEW_JSON" >> "$REVIEW_LOG" 2>/dev/null
+                fi
+            fi
+
+            REVIEW_ENTRY="- (${COMMIT_HASH}) ${COMMIT_MSG} [${FILE_COUNT} files]${AUTO_SUFFIX}"
+            REVIEW_LINE=$(grep -n "^<!-- Post-commit hook auto-adds Bot commits here" "$STATUS_FILE" | head -1 | cut -d: -f1)
+            if [ -n "$REVIEW_LINE" ]; then
+                { head -n "$REVIEW_LINE" "$STATUS_FILE"; printf '%s\n' "$REVIEW_ENTRY"; tail -n "+$((REVIEW_LINE + 1))" "$STATUS_FILE"; } > "${STATUS_FILE}.tmp" && mv "${STATUS_FILE}.tmp" "$STATUS_FILE"
+            else
+                echo "WARNING: STATUS.md Pending Review marker not found — review entry skipped" >&2
+            fi
+        fi
+    ) 200>"${STATUS_FILE}.lock"
+fi

@@ -1,0 +1,466 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DISABLE_CSRF: true
+  DISABLE_RATE_LIMIT: true
+  NODE_ENV: test
+  JWT_SECRET: ci-test-secret-do-not-use-in-production
+  PORT: '3001'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1.2.2
+        with:
+          bun-version: '1.3.9'
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check JavaScript syntax
+        run: find src -name "*.js" -exec node --check {} +
+
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1.2.2
+        with:
+          bun-version: '1.3.9'
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Initialize database
+        run: bun run db:init
+
+      - name: Seed test data
+        run: bun run db:seed
+
+      - name: Start server
+        run: |
+          bun run start &
+          for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health > /dev/null && break; sleep 1; done
+          curl -sf http://localhost:3001/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+
+      - name: Run unit tests with coverage
+        run: |
+          set +e
+          bun test --coverage src/tests/ 2>&1 | tee /tmp/test-output.txt
+          TEST_EXIT=$?
+          set -e
+
+          if [ $TEST_EXIT -eq 0 ]; then
+            echo "All tests passed!"
+          else
+            # Read known-failure baseline
+            KNOWN_FAILURES=$(grep -v '^\s*#' .test-baseline | grep -oP 'KNOWN_FAILURES=\K\d+' | head -1)
+            KNOWN_FAILURES=${KNOWN_FAILURES:-0}
+            ACTUAL_FAILURES=$(grep -oP '\d+ fail' /tmp/test-output.txt | grep -oP '^\d+' | head -1)
+            ACTUAL_FAILURES=${ACTUAL_FAILURES:-999}
+
+            echo "Failures: $ACTUAL_FAILURES / Baseline: $KNOWN_FAILURES"
+            if [ "$ACTUAL_FAILURES" -le "$KNOWN_FAILURES" ]; then
+              echo "::warning::$ACTUAL_FAILURES test failure(s) within known baseline of $KNOWN_FAILURES"
+            else
+              echo "::error::$ACTUAL_FAILURES test failure(s) exceeds baseline of $KNOWN_FAILURES"
+              exit 1
+            fi
+          fi
+
+          # Check coverage thresholds
+          LINE_COV=$(grep 'All files' /tmp/test-output.txt | grep -oP '\d+\.\d+' | tail -1)
+          FUNC_COV=$(grep 'All files' /tmp/test-output.txt | grep -oP '\d+\.\d+' | head -1)
+          echo "Coverage: Functions=${FUNC_COV}% Lines=${LINE_COV}%"
+
+          # Enforce minimum 60% line coverage
+          if [ -n "$LINE_COV" ]; then
+            THRESHOLD=60
+            if [ "$(echo "$LINE_COV < $THRESHOLD" | bc)" -eq 1 ]; then
+              echo "::error::Line coverage ${LINE_COV}% is below ${THRESHOLD}% threshold"
+              exit 1
+            fi
+            echo "Line coverage ${LINE_COV}% meets ${THRESHOLD}% threshold"
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: unit-test-results
+          path: test-results/
+          retention-days: 7
+
+  test-e2e:
+    name: E2E Tests (Guardian)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1.2.2
+        with:
+          bun-version: '1.3.9'
+
+      - name: Setup Node.js (for Playwright)
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Initialize database
+        run: bun run db:init
+
+      - name: Seed test data
+        run: bun run db:seed
+
+      - name: Start server and wait for ready
+        run: |
+          bun run start &
+          for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health > /dev/null && break; sleep 1; done
+          curl -sf http://localhost:3001/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+
+      - name: Run E2E guardian tests
+        run: npx playwright test --project=chromium --grep @quinn-v3-guardian
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1.2.2
+        with:
+          bun-version: '1.3.9'
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run security tests
+        run: |
+          bun run db:init
+          bun run db:seed
+          bun run start &
+          for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health > /dev/null && break; sleep 1; done
+          curl -sf http://localhost:3001/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+          bun test src/tests/security.test.js
+
+      - name: Check for hardcoded secrets
+        run: |
+          if grep -rn "password\s*=\s*['\"][^'\"]*['\"]" src/ --include="*.js" | grep -v "password.*=.*body" | grep -v "password.*=.*formData" | grep -v "password.*=.*process.env" | grep -v "test" | grep -v "demo" | grep -v "placeholder" | grep -v "TODO"; then
+            echo "::error::Potential hardcoded secrets found"
+            exit 1
+          fi
+          echo "No hardcoded secrets found"
+
+      - name: Run security audit
+        run: bun run scripts/security-audit.js || echo "Security audit completed with warnings"
+
+  dep-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      - name: Generate package-lock and audit
+        run: |
+          npm install --package-lock-only --ignore-scripts
+          npm audit --audit-level=high
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Build Docker image
+        run: docker build -t vaultlister:ci .
+
+  accessibility-audit:
+    name: Accessibility Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1.2.2
+        with:
+          bun-version: '1.3.9'
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run accessibility audit
+        run: bun run scripts/accessibility-audit.js || echo "::warning::Accessibility audit found issues (see above)"
+
+      - name: Upload accessibility report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: accessibility-report
+          path: accessibility-report.json
+          retention-days: 7
+
+  visual-tests:
+    name: Visual Tests (Shard ${{ matrix.shard }}/3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1.2.2
+        with:
+          bun-version: '1.3.9'
+
+      - name: Setup Node.js (visual-test.js requires Node)
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Initialize database
+        run: |
+          bun run db:init
+          bun run db:seed
+
+      - name: Start server and wait for ready
+        run: |
+          bun run start &
+          for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health > /dev/null && break; sleep 1; done
+          curl -sf http://localhost:3001/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+
+      - name: Run visual tests (shard ${{ matrix.shard }}/3)
+        run: |
+          set +e
+          node scripts/visual-test.js run-suite tests/visual/ --shard ${{ matrix.shard }}/3 2>&1 | tee /tmp/visual-output.txt
+          set -e
+
+          # Extract pass/fail counts
+          PASSED=$(grep -oP '\d+ passed' /tmp/visual-output.txt | grep -oP '^\d+' | head -1)
+          FAILED=$(grep -oP '\d+ failed' /tmp/visual-output.txt | grep -oP '^\d+' | head -1)
+          PASSED=${PASSED:-0}
+          FAILED=${FAILED:-0}
+          TOTAL=$((PASSED + FAILED))
+
+          if [ "$TOTAL" -gt 0 ]; then
+            RATE=$(echo "scale=1; $PASSED * 100 / $TOTAL" | bc)
+            echo "Visual test pass rate (shard ${{ matrix.shard }}): ${RATE}% ($PASSED/$TOTAL)"
+          fi
+
+          # Warn but don't fail — visual tests are advisory
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::warning::$FAILED visual test(s) failed in shard ${{ matrix.shard }}"
+          fi
+
+      - name: Upload visual test screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: visual-test-screenshots-shard-${{ matrix.shard }}
+          path: screenshots/
+          retention-days: 7
+
+  performance-check:
+    name: Performance Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [test-unit]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1.2.2
+        with:
+          bun-version: '1.3.9'
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Initialize database
+        run: |
+          bun run db:init
+          bun run db:seed
+
+      - name: Start server and wait for ready
+        run: |
+          bun run start &
+          for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health > /dev/null && break; sleep 1; done
+          curl -sf http://localhost:3001/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+
+      - name: Run load test (baseline)
+        run: |
+          CONCURRENT_USERS=10 REQUESTS_PER_USER=5 bun run scripts/load-test.js | tee /tmp/load-test-output.txt
+        env:
+          BASE_URL: http://localhost:3001
+
+      - name: Check response time threshold
+        run: |
+          if grep -q "p95" /tmp/load-test-output.txt; then
+            echo "Load test results:"
+            cat /tmp/load-test-output.txt
+          else
+            echo "Performance baseline check completed (no p95 data available)"
+          fi
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint, test-unit]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1.2.2
+        with:
+          bun-version: '1.3.9'
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build frontend
+        run: bun run build
+
+      - name: Check build size
+        run: |
+          BUILD_SIZE=$(stat -c%s dist/app.js)
+          MAX_SIZE=3145728
+          echo "Build size: ${BUILD_SIZE} bytes ($(( BUILD_SIZE / 1024 )) KB)"
+          echo "Threshold: ${MAX_SIZE} bytes (3 MB)"
+          if [ "$BUILD_SIZE" -gt "$MAX_SIZE" ]; then
+            echo "::error::Build size ${BUILD_SIZE} exceeds 3 MB threshold"
+            exit 1
+          fi
+          echo "Build size within threshold"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dist
+          path: dist/
+          retention-days: 30

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaultLister Helper</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Loading State -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+
+        <!-- Not Logged In -->
+        <div id="login-view" class="view hidden">
+            <div class="header">
+                <h1>VaultLister Helper</h1>
+                <p class="subtitle">Quick product capture & cross-listing</p>
+            </div>
+
+            <div class="content">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="email" required placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="password" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+
+                <p class="help-text">
+                    Don't have an account? <a href="http://localhost:3000" target="_blank">Sign up</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Logged In - Main View -->
+        <div id="main-view" class="view hidden">
+            <div class="header">
+                <h1>VaultLister Helper</h1>
+                <button id="logout-btn" class="btn-icon" title="Logout">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="content">
+                <!-- Quick Actions -->
+                <div class="section">
+                    <h3>Quick Actions</h3>
+                    <div class="action-grid">
+                        <button id="scrape-btn" class="action-card">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                            </svg>
+                            <span>Capture Product</span>
+                        </button>
+
+                        <button id="price-track-btn" class="action-card">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                            <span>Track Price</span>
+                        </button>
+
+                        <button id="open-app-btn" class="action-card">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+                            </svg>
+                            <span>Open VaultLister</span>
+                        </button>
+
+                        <button id="sync-btn" class="action-card">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                            </svg>
+                            <span>Sync Now</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="section">
+                    <h3>Stats</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="scraped-count">0</div>
+                            <div class="stat-label">Scraped Products</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="tracked-count">0</div>
+                            <div class="stat-label">Price Tracking</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sync Queue -->
+                <div class="section">
+                    <h3>Sync Queue</h3>
+                    <div id="sync-queue" class="sync-queue">
+                        <p class="empty-state">No pending actions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="../lib/api.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

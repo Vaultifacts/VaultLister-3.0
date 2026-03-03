@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaultLister Icon Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        h1 { color: #1f2937; margin-bottom: 8px; }
+        p { color: #6b7280; margin-bottom: 24px; }
+        .icons { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; }
+        .icon-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        canvas { border: 1px solid #e5e7eb; border-radius: 8px; }
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { opacity: 0.9; }
+        .instructions {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-top: 24px;
+        }
+        .instructions h3 { margin-bottom: 12px; color: #1f2937; }
+        .instructions ol { margin-left: 20px; color: #4b5563; }
+        .instructions li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <h1>VaultLister Icon Generator</h1>
+    <p>Generate PNG icons for the Chrome extension</p>
+
+    <div class="icons">
+        <div class="icon-box">
+            <canvas id="icon128" width="128" height="128"></canvas>
+            <span>128x128</span>
+        </div>
+        <div class="icon-box">
+            <canvas id="icon48" width="48" height="48"></canvas>
+            <span>48x48</span>
+        </div>
+        <div class="icon-box">
+            <canvas id="icon16" width="16" height="16"></canvas>
+            <span>16x16</span>
+        </div>
+    </div>
+
+    <button onclick="downloadAll()">Download All Icons</button>
+
+    <div class="instructions">
+        <h3>Instructions</h3>
+        <ol>
+            <li>Click "Download All Icons" to save the PNG files</li>
+            <li>Move the downloaded files to this icons folder</li>
+            <li>Rename them to: icon16.png, icon48.png, icon128.png</li>
+            <li>Reload the extension in Chrome</li>
+        </ol>
+    </div>
+
+    <script>
+        function drawIcon(canvas) {
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#6366f1');
+            gradient.addColorStop(1, '#8b5cf6');
+
+            // Draw rounded rectangle background
+            const radius = size * 0.15;
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.fill();
+
+            // Draw vault/box icon
+            ctx.strokeStyle = 'white';
+            ctx.fillStyle = 'white';
+            ctx.lineWidth = size * 0.06;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const boxSize = size * 0.4;
+
+            // Draw box outline
+            ctx.beginPath();
+            ctx.moveTo(centerX - boxSize/2, centerY - boxSize/3);
+            ctx.lineTo(centerX, centerY - boxSize/2 - boxSize/6);
+            ctx.lineTo(centerX + boxSize/2, centerY - boxSize/3);
+            ctx.lineTo(centerX + boxSize/2, centerY + boxSize/3);
+            ctx.lineTo(centerX, centerY + boxSize/2 + boxSize/6);
+            ctx.lineTo(centerX - boxSize/2, centerY + boxSize/3);
+            ctx.closePath();
+            ctx.stroke();
+
+            // Draw middle line
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - boxSize/2 - boxSize/6);
+            ctx.lineTo(centerX, centerY + boxSize/2 + boxSize/6);
+            ctx.stroke();
+
+            // Draw bottom edge
+            ctx.beginPath();
+            ctx.moveTo(centerX - boxSize/2, centerY + boxSize/3);
+            ctx.lineTo(centerX, centerY + boxSize/6);
+            ctx.lineTo(centerX + boxSize/2, centerY + boxSize/3);
+            ctx.stroke();
+
+            // Draw "V" for VaultLister
+            ctx.lineWidth = size * 0.04;
+            ctx.beginPath();
+            ctx.moveTo(centerX - boxSize/6, centerY - boxSize/8);
+            ctx.lineTo(centerX, centerY + boxSize/10);
+            ctx.lineTo(centerX + boxSize/6, centerY - boxSize/8);
+            ctx.stroke();
+        }
+
+        // Draw all icons
+        ['icon128', 'icon48', 'icon16'].forEach(id => {
+            drawIcon(document.getElementById(id));
+        });
+
+        function downloadAll() {
+            const sizes = [
+                { id: 'icon128', filename: 'icon128.png' },
+                { id: 'icon48', filename: 'icon48.png' },
+                { id: 'icon16', filename: 'icon16.png' }
+            ];
+
+            sizes.forEach(({ id, filename }) => {
+                const canvas = document.getElementById(id);
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>

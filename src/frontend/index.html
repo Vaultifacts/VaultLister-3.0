@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="description" content="VaultLister - All-in-one multi-channel reselling platform">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <title>VaultLister - Multi-Channel Reselling Platform</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.webmanifest">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css?v=19">
+
+    <!-- Component Scripts -->
+    <script src="/components/photoEditor.js" defer></script>
+    <script src="/components/chatWidget.js" defer></script>
+
+    <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
+    <script type="module" src="/services/websocketClient.js"></script>
+
+    <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
+    <script src="/core-bundle.js?v=19" defer></script>
+    <!-- Phase 2: Route-group chunks loaded on demand by router.js -->
+</head>
+<body>
+    <!-- App Shell -->
+    <div id="app"></div>
+
+    <!-- Loading Screen (outside #app so renderApp can't accidentally destroy it) -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                    <rect width="64" height="64" rx="16" fill="#6366f1"/>
+                    <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
+                </svg>
+            </div>
+            <h1 class="loading-title">VaultLister</h1>
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading your closet...</p>
+        </div>
+    </div>
+
+    <!-- Fail-safe: catches stuck loading screen AND blank white screen -->
+    <script>
+        (function() {
+            var appRendered = false;
+
+            // Mark app as rendered when initApp succeeds (called from app.js)
+            window.__markAppRendered = function() { appRendered = true; };
+
+            // Catch fatal JS errors (syntax errors, module load failures)
+            var fatalError = null;
+            window.addEventListener('error', function(e) {
+                if (e.filename && (e.filename.indexOf('/core/') !== -1 || e.filename.indexOf('/ui/') !== -1 || e.filename.indexOf('/pages/') !== -1 || e.filename.indexOf('/handlers/') !== -1 || e.filename.indexOf('/init.js') !== -1 || e.filename.indexOf('app.js') !== -1)) {
+                    fatalError = e.message || 'Script error';
+                }
+            });
+
+            function hideLoading() {
+                var ls = document.getElementById('loading-screen');
+                if (ls) { ls.classList.add('hidden'); ls.remove(); }
+                if (window.__loadingTimeout) { clearTimeout(window.__loadingTimeout); window.__loadingTimeout = null; }
+            }
+
+            function showRecovery() {
+                hideLoading();
+                var app = document.getElementById('app');
+                if (!app || app.innerHTML.trim().length > 50) return; // Already has content
+                app.innerHTML =
+                    '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Inter,system-ui,sans-serif;background:#f9fafb;">' +
+                        '<div style="text-align:center;max-width:400px;padding:2rem;">' +
+                            '<svg width="64" height="64" viewBox="0 0 64 64" fill="none" style="margin:0 auto 1rem;display:block;"><rect width="64" height="64" rx="16" fill="#6366f1"/><path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/></svg>' +
+                            '<h2 style="margin:0 0 0.5rem;color:#111827;font-size:1.25rem;">VaultLister failed to load</h2>' +
+                            '<p style="color:#6b7280;font-size:0.9rem;margin:0 0 1.5rem;">' + (fatalError || 'The app took too long to start or encountered an error.') + '</p>' +
+                            '<button onclick="location.reload()" style="background:#6366f1;color:#fff;border:none;padding:0.625rem 1.5rem;border-radius:0.5rem;font-size:0.9rem;cursor:pointer;font-weight:600;">Reload Page</button>' +
+                        '</div>' +
+                    '</div>';
+            }
+
+            // Primary fail-safe: 6 seconds
+            window.__loadingTimeout = setTimeout(function() {
+                if (!appRendered) showRecovery(); else hideLoading();
+            }, 6000);
+
+            // Secondary fail-safe: after page fully loads + 3 more seconds
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    if (!appRendered) showRecovery(); else hideLoading();
+                }, 3000);
+            });
+        })();
+    </script>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container" role="region" aria-label="Notifications" aria-live="polite" data-testid="toast-container"></div>
+
+    <!-- Modal Container -->
+    <div id="modal-container" data-testid="modal-container"></div>
+
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator hidden" data-testid="offline-indicator">
+        <span class="offline-icon">📡</span>
+        <span>You're offline. Changes will sync when you reconnect.</span>
+    </div>
+
+    <!-- Voice Command Indicator -->
+    <div id="voice-indicator" class="voice-indicator hidden">
+        <div class="voice-pulse"></div>
+        <span>Listening...</span>
+    </div>
+
+    <!-- Chat Widget Container -->
+    <div id="chat-widget-container"></div>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.log('SW registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,354 @@
+// Push Notification Routes
+// Device registration, sending, and management
+
+import { v4 as uuidv4 } from 'uuid';
+import { query } from '../db/database.js';
+import { logger } from '../shared/logger.js';
+
+// In production, use Firebase Admin SDK or AWS SNS
+// For now, we'll store tokens and provide the infrastructure
+
+export async function pushNotificationsRouter(ctx) {
+    const { method, path, user, body } = ctx;
+
+    // POST /api/notifications/register-device - Register device for push notifications
+    if (method === 'POST' && path === '/register-device') {
+        try {
+            const { token, platform, deviceId, deviceName } = body;
+
+            if (!token || !platform) {
+                return { status: 400, data: { error: 'Token and platform are required' } };
+            }
+
+            // Validate platform
+            const validPlatforms = ['ios', 'android', 'web'];
+            if (!validPlatforms.includes(platform)) {
+                return { status: 400, data: { error: 'Invalid platform' } };
+            }
+
+            // Check if device already registered
+            const existing = query.get(
+                'SELECT id FROM push_devices WHERE token = ?',
+                [token]
+            );
+
+            if (existing) {
+                // Update existing registration
+                query.run(`
+                    UPDATE push_devices SET
+                        user_id = ?,
+                        device_name = COALESCE(?, device_name),
+                        updated_at = datetime('now'),
+                        last_active_at = datetime('now')
+                    WHERE id = ?
+                `, [user?.id || null, deviceName, existing.id]);
+
+                return {
+                    status: 200,
+                    data: { message: 'Device updated', deviceId: existing.id }
+                };
+            }
+
+            // Register new device
+            const id = uuidv4();
+            query.run(`
+                INSERT INTO push_devices (id, user_id, token, platform, device_id, device_name, created_at, updated_at, last_active_at)
+                VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
+            `, [id, user?.id || null, token, platform, deviceId, deviceName]);
+
+            return {
+                status: 201,
+                data: { message: 'Device registered', deviceId: id }
+            };
+        } catch (error) {
+            logger.error('[PushNotifications] Error registering device', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
+    // POST /api/notifications/unregister-device - Unregister device
+    if (method === 'POST' && path === '/unregister-device') {
+        try {
+            if (!user) {
+                return { status: 401, data: { error: 'Authentication required' } };
+            }
+
+            const { token } = body;
+
+            if (!token) {
+                return { status: 400, data: { error: 'Token is required' } };
+            }
+
+            query.run('DELETE FROM push_devices WHERE token = ? AND user_id = ?', [token, user.id]);
+
+            return { status: 200, data: { message: 'Device unregistered' } };
+        } catch (error) {
+            logger.error('[PushNotifications] Error unregistering device', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
+    // Protected routes require authentication
+    if (!user) {
+        return { status: 401, data: { error: 'Authentication required' } };
+    }
+
+    // GET /api/notifications/devices - List user's registered devices
+    if (method === 'GET' && path === '/devices') {
+        try {
+            const devices = query.all(`
+                SELECT id, platform, device_name, created_at, last_active_at
+                FROM push_devices
+                WHERE user_id = ?
+                ORDER BY last_active_at DESC
+            `, [user.id]);
+
+            return { status: 200, data: { devices: devices || [] } };
+        } catch (error) {
+            logger.error('[PushNotifications] Error listing devices', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
+    // DELETE /api/notifications/devices/:id - Remove a device
+    if (method === 'DELETE' && path.startsWith('/devices/')) {
+        try {
+            const deviceId = path.split('/').pop();
+
+            query.run(
+                'DELETE FROM push_devices WHERE id = ? AND user_id = ?',
+                [deviceId, user.id]
+            );
+
+            return { status: 200, data: { message: 'Device removed' } };
+        } catch (error) {
+            logger.error('[PushNotifications] Error removing device', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
+    // GET /api/notifications/preferences - Get notification preferences
+    if (method === 'GET' && path === '/preferences') {
+        try {
+            const prefs = query.get(`
+                SELECT * FROM notification_preferences WHERE user_id = ?
+            `, [user.id]);
+
+            // Default preferences if none exist
+            const defaults = {
+                sales: true,
+                offers: true,
+                messages: true,
+                inventory_alerts: true,
+                marketing: false,
+                weekly_digest: true,
+                quiet_hours_enabled: false,
+                quiet_hours_start: '22:00',
+                quiet_hours_end: '08:00'
+            };
+
+            return {
+                status: 200,
+                data: { preferences: prefs || defaults }
+            };
+        } catch (error) {
+            logger.error('[PushNotifications] Error fetching notification preferences', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
+    // PUT /api/notifications/preferences - Update notification preferences
+    if (method === 'PUT' && path === '/preferences') {
+        try {
+            const {
+                sales, offers, messages, inventory_alerts, marketing,
+                weekly_digest, quiet_hours_enabled, quiet_hours_start, quiet_hours_end
+            } = body;
+
+            // Upsert preferences
+            query.run(`
+                INSERT INTO notification_preferences (
+                    id, user_id, sales, offers, messages, inventory_alerts, marketing,
+                    weekly_digest, quiet_hours_enabled, quiet_hours_start, quiet_hours_end,
+                    created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+                ON CONFLICT(user_id) DO UPDATE SET
+                    sales = excluded.sales,
+                    offers = excluded.offers,
+                    messages = excluded.messages,
+                    inventory_alerts = excluded.inventory_alerts,
+                    marketing = excluded.marketing,
+                    weekly_digest = excluded.weekly_digest,
+                    quiet_hours_enabled = excluded.quiet_hours_enabled,
+                    quiet_hours_start = excluded.quiet_hours_start,
+                    quiet_hours_end = excluded.quiet_hours_end,
+                    updated_at = datetime('now')
+            `, [
+                uuidv4(), user.id,
+                sales ? 1 : 0, offers ? 1 : 0, messages ? 1 : 0,
+                inventory_alerts ? 1 : 0, marketing ? 1 : 0, weekly_digest ? 1 : 0,
+                quiet_hours_enabled ? 1 : 0, quiet_hours_start, quiet_hours_end
+            ]);
+
+            return { status: 200, data: { message: 'Preferences updated' } };
+        } catch (error) {
+            logger.error('[PushNotifications] Error updating notification preferences', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
+    // POST /api/notifications/send - Send notification (enterprise only)
+    if (method === 'POST' && path === '/send') {
+        try {
+            if (user.subscription_tier !== 'enterprise') {
+                return { status: 403, data: { error: 'Enterprise subscription required' } };
+            }
+
+            const { title, body: notificationBody, data, channel } = body;
+
+            if (!title || !notificationBody) {
+                return { status: 400, data: { error: 'title and body are required' } };
+            }
+
+            if (title.length > 200) {
+                return { status: 400, data: { error: 'Title must be 200 characters or less' } };
+            }
+            if (notificationBody.length > 1000) {
+                return { status: 400, data: { error: 'Body must be 1000 characters or less' } };
+            }
+
+            // SECURITY: IDOR fix — always send to the authenticated user only.
+            // Arbitrary userId targeting was removed to prevent one enterprise user from
+            // pushing notifications to another user's devices.
+            const targetUserId = user.id;
+
+            // Get user's devices
+            const devices = query.all(
+                'SELECT * FROM push_devices WHERE user_id = ?',
+                [targetUserId]
+            );
+
+            if (!devices || devices.length === 0) {
+                return { status: 404, data: { error: 'No devices registered for user' } };
+            }
+
+            // In production, send via FCM/APNs
+            // For now, log and record the notification
+            const notificationId = uuidv4();
+            query.run(`
+                INSERT INTO push_notification_log (id, user_id, title, body, data, channel, status, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, 'sent', datetime('now'))
+            `, [notificationId, targetUserId, title, notificationBody, JSON.stringify(data || {}), channel || 'general']);
+
+            logger.info(`[Push] Notification sent to ${devices.length} device(s) for user ${targetUserId}`);
+
+            return {
+                status: 200,
+                data: {
+                    message: `Notification sent to ${devices.length} device(s)`,
+                    notificationId
+                }
+            };
+        } catch (error) {
+            logger.error('[PushNotifications] Error sending push notification', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
+    // POST /api/notifications/send-batch - Send to multiple users (enterprise only)
+    if (method === 'POST' && path === '/send-batch') {
+        try {
+            if (user.subscription_tier !== 'enterprise') {
+                return { status: 403, data: { error: 'Enterprise subscription required' } };
+            }
+
+            const { userIds, title, body: notificationBody, data, channel } = body;
+
+            if (!userIds || !Array.isArray(userIds) || !title || !notificationBody) {
+                return { status: 400, data: { error: 'userIds array, title, and body are required' } };
+            }
+
+            let sent = 0;
+            for (const userId of userIds) {
+                const devices = query.all(
+                    'SELECT * FROM push_devices WHERE user_id = ? LIMIT 20',
+                    [userId]
+                );
+
+                if (devices && devices.length > 0) {
+                    const notificationId = uuidv4();
+                    query.run(`
+                        INSERT INTO push_notification_log (id, user_id, title, body, data, channel, status, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, 'sent', datetime('now'))
+                    `, [notificationId, userId, title, notificationBody, JSON.stringify(data || {}), channel || 'general']);
+                    sent++;
+                }
+            }
+
+            return {
+                status: 200,
+                data: { message: `Notifications sent to ${sent} user(s)` }
+            };
+        } catch (error) {
+            logger.error('[PushNotifications] Error sending batch push notifications', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
+    return { status: 404, data: { error: 'Not found' } };
+}
+
+// Database migration
+export const migration = `
+-- Push notification devices
+CREATE TABLE IF NOT EXISTS push_devices (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    token TEXT NOT NULL UNIQUE,
+    platform TEXT NOT NULL,
+    device_id TEXT,
+    device_name TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    last_active_at TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_push_devices_user ON push_devices(user_id);
+CREATE INDEX IF NOT EXISTS idx_push_devices_token ON push_devices(token);
+
+-- Notification preferences
+CREATE TABLE IF NOT EXISTS notification_preferences (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL UNIQUE,
+    sales INTEGER DEFAULT 1,
+    offers INTEGER DEFAULT 1,
+    messages INTEGER DEFAULT 1,
+    inventory_alerts INTEGER DEFAULT 1,
+    marketing INTEGER DEFAULT 0,
+    weekly_digest INTEGER DEFAULT 1,
+    quiet_hours_enabled INTEGER DEFAULT 0,
+    quiet_hours_start TEXT DEFAULT '22:00',
+    quiet_hours_end TEXT DEFAULT '08:00',
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Push notification log
+CREATE TABLE IF NOT EXISTS push_notification_log (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    data TEXT,
+    channel TEXT DEFAULT 'general',
+    status TEXT DEFAULT 'pending',
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_push_log_user ON push_notification_log(user_id, created_at DESC);
+`;
+
+export default pushNotificationsRouter;

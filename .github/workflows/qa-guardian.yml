@@ -1,0 +1,134 @@
+name: QA Guardian
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Run nightly at 6 AM UTC to catch environment drift
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-guardian-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DISABLE_CSRF: true
+  DISABLE_RATE_LIMIT: true
+  NODE_ENV: test
+
+jobs:
+  unit-tests:
+    name: Unit Tests (Guardian Gate)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: '1.1'
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Initialize database
+        run: |
+          bun run db:init
+          bun run db:seed
+
+      - name: Run unit tests
+        run: bun test src/tests/
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: test-results/
+          retention-days: 7
+
+  guardian-e2e:
+    name: QA Guardian E2E Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [unit-tests]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: '1.1'
+
+      - name: Setup Node.js (for Playwright)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Initialize database
+        run: |
+          bun run db:init
+          bun run db:seed
+
+      - name: Start server and wait for ready
+        run: |
+          PORT=3001 DISABLE_CSRF=true DISABLE_RATE_LIMIT=true bun run start &
+          for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health > /dev/null && break; sleep 1; done
+          curl -sf http://localhost:3001/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+
+      - name: Run QA Guardian specs
+        run: npx playwright test --grep @quinn-v3-guardian --project=chromium --workers=1
+        env:
+          PORT: '3001'
+          DISABLE_CSRF: true
+          DISABLE_RATE_LIMIT: true
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-guardian-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+      - name: Upload visual baseline screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-guardian-screenshots
+          path: e2e/tests/qa-guardian.spec.js-snapshots/
+          retention-days: 30

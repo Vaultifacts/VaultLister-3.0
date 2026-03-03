@@ -1,0 +1,86 @@
+{
+  "name": "vaultlister",
+  "version": "1.0.0",
+  "description": "All-in-one multi-channel reselling platform",
+  "type": "module",
+  "scripts": {
+    "dev": "bun scripts/build-dev-bundle.js && bun --watch src/backend/server.js",
+    "dev:bundle": "bun scripts/build-dev-bundle.js",
+    "dev:bg": "bun scripts/server-manager.js start",
+    "dev:test-bg": "NODE_ENV=test bun scripts/server-manager.js start",
+    "dev:stop": "bun scripts/server-manager.js stop",
+    "dev:status": "bun scripts/server-manager.js status",
+    "test:setup": "bun run dev:stop && bun scripts/kill-port.js 3001 && bun run dev:test-bg",
+    "start": "bun run src/backend/server.js",
+    "build": "bun scripts/build-frontend.js",
+    "build:prod": "NODE_ENV=production bun scripts/build-frontend.js",
+    "build:analyze": "bun scripts/build-frontend.js 2>&1 | tee bundle-stats.txt",
+    "test": "NODE_ENV=test bun test",
+    "test:coverage": "NODE_ENV=test bun test --coverage",
+    "test:api": "NODE_ENV=test bun test src/tests/api.test.js",
+    "test:security": "NODE_ENV=test bun test src/tests/security.test.js",
+    "test:e2e": "bun run test:setup && NODE_ENV=test npx playwright test",
+    "test:e2e:ui": "bun run test:setup && NODE_ENV=test npx playwright test --ui",
+    "test:e2e:headed": "bun run test:setup && NODE_ENV=test npx playwright test --headed",
+    "test:all": "bun run test:setup && bun run test:api && bun run test:security && NODE_ENV=test npx playwright test",
+    "audit:ethics": "bun run scripts/ethics-audit.js",
+    "audit:lighthouse": "bun run scripts/lighthouse-audit.js",
+    "audit:all": "bun run audit:ethics && bun run audit:lighthouse",
+    "db:init": "bun run src/backend/db/init.js",
+    "db:seed": "bun run src/backend/db/seed.js",
+    "db:reset": "bun run db:init && bun run db:seed",
+    "db:backup": "bun run scripts/backup.js",
+    "db:backup:compress": "bun run scripts/backup.js --compress",
+    "db:restore": "bun run scripts/restore.js",
+    "automation:test": "bun run src/shared/automations/test-runner.js",
+    "dev:clean": "node -e \"const{rmSync,mkdirSync}=require('fs');for(const d of['data','logs','screenshots']){try{rmSync(d,{recursive:true})}catch{};try{mkdirSync(d,{recursive:true})}catch{}}\"",
+    "visual-test": "node scripts/visual-test.js",
+    "test:visual": "node scripts/visual-test.js",
+    "sync-visual-prompt": "bun scripts/sync-visual-test-prompt.js",
+    "lint": "node --check src/frontend/app.js && node --check src/backend/server.js && echo 'Syntax OK'",
+    "prepare": "husky install || true"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "@notionhq/client": "^5.9.0",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^9.4.3",
+    "ioredis": "^5.9.2",
+    "jsonwebtoken": "^9.0.2",
+    "nanoid": "^5.1.6",
+    "nodemailer": "^7.0.13",
+    "otplib": "^13.2.1",
+    "qrcode": "^1.5.4",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
+    "@playwright/test": "^1.58.1",
+    "@types/bun": "^1.1.0",
+    "pixelmatch": "^7.1.0",
+    "pngjs": "^7.0.0"
+  },
+  "keywords": [
+    "reselling",
+    "crosslisting",
+    "poshmark",
+    "ebay",
+    "mercari",
+    "inventory",
+    "automation"
+  ],
+  "author": "VaultLister Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vaultifacts/vaultlister.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Vaultifacts/vaultlister/issues"
+  },
+  "homepage": "https://github.com/Vaultifacts/vaultlister#readme",
+  "engines": {
+    "bun": ">=1.0.0",
+    "node": ">=18.0.0"
+  }
+}
