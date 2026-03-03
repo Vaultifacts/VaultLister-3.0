@@ -767,5 +767,64 @@ export async function automationsRouter(ctx) {
         return { status: 200, data: { stats } };
     }
 
+    // GET /api/automations/schedule-settings - Get schedule settings
+    if (method === 'GET' && path === '/schedule-settings') {
+        const row = query.get(
+            'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
+            [user.id, 'automation_schedule']
+        );
+
+        const defaults = {
+            frequency: 'daily',
+            startTime: '09:00',
+            endTime: '21:00',
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            timezone: 'America/New_York'
+        };
+
+        let settings = defaults;
+        if (row) {
+            try { settings = { ...defaults, ...JSON.parse(row.settings) }; } catch (_) {}
+        }
+
+        return { status: 200, data: { settings } };
+    }
+
+    // POST /api/automations/schedule-settings - Save schedule settings
+    if (method === 'POST' && path === '/schedule-settings') {
+        const { frequency, startTime, endTime, daysOfWeek, timezone } = body;
+
+        const validFrequencies = ['hourly', 'every_4h', 'daily', 'twice_daily', 'weekly'];
+        if (frequency && !validFrequencies.includes(frequency)) {
+            return { status: 400, data: { error: 'Invalid frequency' } };
+        }
+
+        if (daysOfWeek && (!Array.isArray(daysOfWeek) || daysOfWeek.some(d => d < 0 || d > 6))) {
+            return { status: 400, data: { error: 'Invalid daysOfWeek (must be array of 0-6)' } };
+        }
+
+        const settings = JSON.stringify({ frequency, startTime, endTime, daysOfWeek, timezone });
+
+        // Upsert into user_preferences
+        const existing = query.get(
+            'SELECT id FROM user_preferences WHERE user_id = ? AND key = ?',
+            [user.id, 'automation_schedule']
+        );
+
+        if (existing) {
+            query.run(
+                'UPDATE user_preferences SET settings = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND key = ?',
+                [settings, user.id, 'automation_schedule']
+            );
+        } else {
+            query.run(
+                'INSERT INTO user_preferences (id, user_id, key, settings) VALUES (?, ?, ?, ?)',
+                [uuidv4(), user.id, 'automation_schedule', settings]
+            );
+        }
+
+        return { status: 200, data: { settings: body, message: 'Schedule settings saved' } };
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

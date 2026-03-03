@@ -15619,9 +15619,12 @@ Object.assign(handlers, {
 
         store.setState({ automationSchedule: current });
 
-        // Save to localStorage
+        // Save to localStorage + backend
         try {
             localStorage.setItem('vaultlister_automation_schedule', JSON.stringify(current));
+            api.post('/automations/schedule-settings', current).catch(e =>
+                console.error('Failed to save schedule to server:', e)
+            );
         } catch (e) {
             console.error('Failed to save automation schedule:', e);
         }

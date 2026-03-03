@@ -981,21 +981,40 @@ async function executeRunAutomationTask(payload) {
     query.run(`UPDATE automation_rules SET last_run_at = datetime('now'), run_count = run_count + 1, error_count = error_count + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
         [result.itemsFailed > 0 ? 1 : 0, ruleId]);
 
-    // Send in-app notification for automation results
+    // Send in-app notification + WebSocket push for automation results
     try {
         const { createOAuthNotification, NotificationTypes } = await import('../services/notificationService.js');
+        let notification;
         if (result.itemsFailed > 0 && result.itemsSucceeded === 0) {
-            createOAuthNotification(rule.user_id, rule.platform || 'automation', NotificationTypes.AUTOMATION_FAILED, {
+            notification = createOAuthNotification(rule.user_id, rule.platform || 'automation', NotificationTypes.AUTOMATION_FAILED, {
                 message: result.message, error: result.message, ruleId, ruleName: rule.name
             });
         } else if (result.itemsFailed > 0) {
-            createOAuthNotification(rule.user_id, rule.platform || 'automation', NotificationTypes.AUTOMATION_PARTIAL, {
+            notification = createOAuthNotification(rule.user_id, rule.platform || 'automation', NotificationTypes.AUTOMATION_PARTIAL, {
                 message: `${rule.name}: ${result.itemsSucceeded} succeeded, ${result.itemsFailed} failed`, ruleId, ruleName: rule.name
             });
         } else if (result.itemsProcessed > 0) {
-            createOAuthNotification(rule.user_id, rule.platform || 'automation', NotificationTypes.AUTOMATION_COMPLETED, {
+            notification = createOAuthNotification(rule.user_id, rule.platform || 'automation', NotificationTypes.AUTOMATION_COMPLETED, {
                 message: result.message, ruleId, ruleName: rule.name
             });
+        }
+
+        // Push notification via WebSocket for real-time display
+        if (notification) {
+            try {
+                const { websocketService } = await import('../services/websocket.js');
+                websocketService.sendToUser(rule.user_id, {
+                    type: 'notification',
+                    notification: {
+                        id: notification.id,
+                        type: notification.type,
+                        title: notification.title,
+                        message: notification.message,
+                        data: notification.data,
+                        created_at: notification.created_at
+                    }
+                });
+            } catch (_) { /* WS not available */ }
         }
     } catch (notifyErr) {
         logger.error('[TaskWorker] Failed to create automation notification:', notifyErr.message);
