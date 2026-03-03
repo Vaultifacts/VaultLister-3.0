@@ -20329,27 +20329,35 @@ const pages = {
                                     </div>
                                     <div class="text-sm text-gray-500">${rule.description}</div>
                                     <div class="automation-card-stats">
+                                        ${(() => {
+                                            const ruleRuns = runHistory.filter(r => r.automation_name === rule.name || r.automation_id === rule.id || r.action === rule.name);
+                                            const runCount = ruleRuns.length;
+                                            const successCount = ruleRuns.filter(r => r.status === 'success').length;
+                                            const successRate = runCount > 0 ? Math.round((successCount / runCount) * 100) : 0;
+                                            const lastRun = ruleRuns[0];
+                                            const lastRunLabel = (() => {
+                                                if (!lastRun) return 'Never';
+                                                const ts = lastRun.started_at || lastRun.timestamp || lastRun.created_at;
+                                                if (!ts) return 'Never';
+                                                const ago = Date.now() - new Date(ts).getTime();
+                                                if (ago < 3600000) return Math.round(ago / 60000) + 'm ago';
+                                                if (ago < 86400000) return Math.round(ago / 3600000) + 'h ago';
+                                                return Math.round(ago / 86400000) + 'd ago';
+                                            })();
+                                            return `
                                         <span class="automation-card-stat">
-                                            ${components.icon('activity', 12)} ${Math.floor(Math.random() * 50) + 10} runs
+                                            ${components.icon('activity', 12)} ${runCount} runs
                                         </span>
                                         <span class="automation-card-stat">
-                                            ${components.icon('check-circle', 12)} 98% success
+                                            ${components.icon('check-circle', 12)} ${runCount > 0 ? successRate + '%' : '—'} success
                                         </span>
                                         <span class="automation-card-stat automation-last-run">
-                                            ${components.icon('clock', 12)} ${(() => {
-                                                const lastRun = runHistory.find(r => r.action === rule.name);
-                                                if (lastRun) {
-                                                    const ago = Date.now() - new Date(lastRun.timestamp).getTime();
-                                                    if (ago < 3600000) return Math.round(ago / 60000) + 'm ago';
-                                                    if (ago < 86400000) return Math.round(ago / 3600000) + 'h ago';
-                                                    return Math.round(ago / 86400000) + 'd ago';
-                                                }
-                                                return 'Never';
-                                            })()}
+                                            ${components.icon('clock', 12)} ${lastRunLabel}
                                         </span>
                                         ${(() => {
                                             const nextRun = getNextRunLabel(rule.schedule, rule.is_enabled);
-                                            return nextRun ? `<span class="automation-card-stat" style="color: var(--primary-500);">${components.icon('arrow-right', 12)} Next: ${nextRun}</span>` : '';
+                                            return nextRun ? '<span class="automation-card-stat" style="color: var(--primary-500);">' + components.icon('arrow-right', 12) + ' Next: ' + nextRun + '</span>' : '';
+                                        })()}`;
                                         })()}
                                     </div>
                                 </div>
