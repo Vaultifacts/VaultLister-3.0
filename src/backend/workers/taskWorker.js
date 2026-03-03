@@ -953,6 +953,212 @@ function executeCustom(rule, conditions, actions) {
     return { message: `Custom automation "${rule.name}" executed`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
 }
 
+async function executePlatformBot(platform, rule, conditions, actions) {
+    switch (platform) {
+        case 'mercari':  return await executeMercariBot(rule, conditions, actions);
+        case 'depop':    return await executeDepopBot(rule, conditions, actions);
+        case 'grailed':  return await executeGrailedBot(rule, conditions, actions);
+        case 'facebook': return await executeFacebookBot(rule, conditions, actions);
+        case 'whatnot':  return await executeWhatnotBot(rule, conditions, actions);
+        default:
+            logAutomationAction(rule.user_id, rule.id, rule.type, platform, 'skipped', 'unsupported_platform', null,
+                `No Playwright bot available for platform: ${platform}`);
+            return { message: `${platform}: No bot available`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+    }
+}
+
+async function executeMercariBot(rule, conditions, actions) {
+    try {
+        const { getMercariBot } = await import('../../shared/automations/mercari-bot.js');
+        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
+        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
+
+        const shop = query.get(
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            [rule.user_id, 'mercari']
+        );
+        if (!shop) {
+            logAutomationAction(rule.user_id, rule.id, rule.type, 'mercari', 'failure', 'mercari_no_shop', null,
+                'No connected Mercari account found');
+            return { message: 'Mercari: No connected account', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+        }
+
+        auditLog('mercari', `${rule.type}_start`, { userId: rule.user_id });
+        const bot = await getMercariBot({ headless: true });
+
+        let result;
+        if (actions.relist) {
+            const maxItems = conditions.maxItems || 50;
+            result = await bot.refreshAllListings({ maxRefresh: maxItems, delayBetween: jitteredDelay(4000) });
+            const refreshed = result?.refreshed || 0;
+            logAutomationAction(rule.user_id, rule.id, rule.type, 'mercari', 'success', 'mercari_refresh', null,
+                `Refreshed ${refreshed} Mercari listings`);
+            auditLog('mercari', 'refresh_success', { userId: rule.user_id, refreshed });
+            await bot.close();
+            return { message: `Mercari refresh: ${refreshed} listings bumped`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
+        } else {
+            // Default: refresh all
+            result = await bot.refreshAllListings({ maxRefresh: conditions.maxItems || 50, delayBetween: jitteredDelay(4000) });
+            const refreshed = result?.refreshed || 0;
+            logAutomationAction(rule.user_id, rule.id, rule.type, 'mercari', 'success', 'mercari_share', null,
+                `Shared/refreshed ${refreshed} Mercari listings`);
+            auditLog('mercari', 'share_success', { userId: rule.user_id, refreshed });
+            await bot.close();
+            return { message: `Mercari share: ${refreshed} listings refreshed`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
+        }
+    } catch (err) {
+        logAutomationAction(rule.user_id, rule.id, rule.type, 'mercari', 'failure', 'mercari_error', null, err.message);
+        logger.error('[TaskWorker] Mercari bot failed:', err.message);
+        return { message: `Mercari: Failed — ${err.message}`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
+    }
+}
+
+async function executeDepopBot(rule, conditions, actions) {
+    try {
+        const { getDepopBot } = await import('../../shared/automations/depop-bot.js');
+        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
+        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
+
+        const shop = query.get(
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            [rule.user_id, 'depop']
+        );
+        if (!shop) {
+            logAutomationAction(rule.user_id, rule.id, rule.type, 'depop', 'failure', 'depop_no_shop', null,
+                'No connected Depop account found');
+            return { message: 'Depop: No connected account', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+        }
+
+        auditLog('depop', `${rule.type}_start`, { userId: rule.user_id });
+        const bot = await getDepopBot({ headless: true });
+
+        let result;
+        if (rule.type === 'share' && shop.platform_username) {
+            result = await bot.refreshAllListings(shop.platform_username, { maxRefresh: conditions.maxItems || 50, delayBetween: jitteredDelay(3500) });
+            const refreshed = result?.refreshed || 0;
+            logAutomationAction(rule.user_id, rule.id, 'share', 'depop', 'success', 'depop_share', null,
+                `Shared/refreshed ${refreshed} Depop listings`);
+            auditLog('depop', 'share_success', { userId: rule.user_id, refreshed });
+            await bot.close();
+            return { message: `Depop share: ${refreshed} listings refreshed`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
+        } else if (shop.platform_username) {
+            result = await bot.refreshAllListings(shop.platform_username, { maxRefresh: conditions.maxItems || 50, delayBetween: jitteredDelay(3500) });
+            const refreshed = result?.refreshed || 0;
+            logAutomationAction(rule.user_id, rule.id, rule.type, 'depop', 'success', 'depop_refresh', null,
+                `Refreshed ${refreshed} Depop listings`);
+            auditLog('depop', 'refresh_success', { userId: rule.user_id, refreshed });
+            await bot.close();
+            return { message: `Depop refresh: ${refreshed} listings bumped`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
+        } else {
+            await bot.close();
+            return { message: 'Depop: No platform username configured', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+        }
+    } catch (err) {
+        logAutomationAction(rule.user_id, rule.id, rule.type, 'depop', 'failure', 'depop_error', null, err.message);
+        logger.error('[TaskWorker] Depop bot failed:', err.message);
+        return { message: `Depop: Failed — ${err.message}`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
+    }
+}
+
+async function executeGrailedBot(rule, conditions, actions) {
+    try {
+        const { getGrailedBot } = await import('../../shared/automations/grailed-bot.js');
+        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
+        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
+
+        const shop = query.get(
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            [rule.user_id, 'grailed']
+        );
+        if (!shop) {
+            logAutomationAction(rule.user_id, rule.id, rule.type, 'grailed', 'failure', 'grailed_no_shop', null,
+                'No connected Grailed account found');
+            return { message: 'Grailed: No connected account', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+        }
+
+        auditLog('grailed', `${rule.type}_start`, { userId: rule.user_id });
+        const bot = await getGrailedBot({ headless: true });
+        const result = await bot.bumpAllListings({ maxBumps: conditions.maxItems || 50, delayBetween: jitteredDelay(4000) });
+        const bumped = result?.bumped || 0;
+
+        logAutomationAction(rule.user_id, rule.id, rule.type, 'grailed', 'success', 'grailed_bump', null,
+            `Bumped ${bumped} Grailed listings`);
+        auditLog('grailed', 'bump_success', { userId: rule.user_id, bumped });
+        await bot.close();
+        return { message: `Grailed bump: ${bumped} listings bumped`, itemsProcessed: bumped, itemsSucceeded: bumped, itemsFailed: result?.skipped || 0 };
+    } catch (err) {
+        logAutomationAction(rule.user_id, rule.id, rule.type, 'grailed', 'failure', 'grailed_error', null, err.message);
+        logger.error('[TaskWorker] Grailed bot failed:', err.message);
+        return { message: `Grailed: Failed — ${err.message}`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
+    }
+}
+
+async function executeFacebookBot(rule, conditions, actions) {
+    try {
+        const { getFacebookBot } = await import('../../shared/automations/facebook-bot.js');
+        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
+        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
+
+        const shop = query.get(
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            [rule.user_id, 'facebook']
+        );
+        if (!shop) {
+            logAutomationAction(rule.user_id, rule.id, rule.type, 'facebook', 'failure', 'facebook_no_shop', null,
+                'No connected Facebook account found');
+            return { message: 'Facebook: No connected account', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+        }
+
+        auditLog('facebook', `${rule.type}_start`, { userId: rule.user_id });
+        const bot = await getFacebookBot({ headless: true });
+        const result = await bot.refreshAllListings({ maxRefresh: conditions.maxItems || 50, delayBetween: jitteredDelay(5000) });
+        const refreshed = result?.refreshed || 0;
+
+        logAutomationAction(rule.user_id, rule.id, rule.type, 'facebook', 'success', 'facebook_refresh', null,
+            `Refreshed ${refreshed} Facebook Marketplace listings`);
+        auditLog('facebook', 'refresh_success', { userId: rule.user_id, refreshed });
+        await bot.close();
+        return { message: `Facebook refresh: ${refreshed} listings refreshed`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
+    } catch (err) {
+        logAutomationAction(rule.user_id, rule.id, rule.type, 'facebook', 'failure', 'facebook_error', null, err.message);
+        logger.error('[TaskWorker] Facebook bot failed:', err.message);
+        return { message: `Facebook: Failed — ${err.message}`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
+    }
+}
+
+async function executeWhatnotBot(rule, conditions, actions) {
+    try {
+        const { getWhatnotBot } = await import('../../shared/automations/whatnot-bot.js');
+        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
+        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
+
+        const shop = query.get(
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            [rule.user_id, 'whatnot']
+        );
+        if (!shop) {
+            logAutomationAction(rule.user_id, rule.id, rule.type, 'whatnot', 'failure', 'whatnot_no_shop', null,
+                'No connected Whatnot account found');
+            return { message: 'Whatnot: No connected account', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+        }
+
+        auditLog('whatnot', `${rule.type}_start`, { userId: rule.user_id });
+        const bot = await getWhatnotBot({ headless: true });
+        const result = await bot.refreshAllListings({ maxRefresh: conditions.maxItems || 50, delayBetween: jitteredDelay(4000) });
+        const refreshed = result?.refreshed || 0;
+
+        logAutomationAction(rule.user_id, rule.id, rule.type, 'whatnot', 'success', 'whatnot_refresh', null,
+            `Refreshed ${refreshed} Whatnot listings`);
+        auditLog('whatnot', 'refresh_success', { userId: rule.user_id, refreshed });
+        await bot.close();
+        return { message: `Whatnot refresh: ${refreshed} listings refreshed`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
+    } catch (err) {
+        logAutomationAction(rule.user_id, rule.id, rule.type, 'whatnot', 'failure', 'whatnot_error', null, err.message);
+        logger.error('[TaskWorker] Whatnot bot failed:', err.message);
+        return { message: `Whatnot: Failed — ${err.message}`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
+    }
+}
+
 // --- Main automation dispatcher ---
 async function executeRunAutomationTask(payload) {
     const { ruleId, userId } = payload;
@@ -966,16 +1172,24 @@ async function executeRunAutomationTask(payload) {
 
     logger.info(`[TaskWorker] Running automation: ${rule.name} (${rule.type}) for user ${rule.user_id}`);
 
+    // Route to platform-specific Playwright bots when applicable
+    const platform = rule.platform;
+    const botPlatforms = ['mercari', 'depop', 'grailed', 'facebook', 'whatnot'];
     let result;
-    switch (rule.type) {
-        case 'price_drop': result = executePriceDrop(rule, conditions, actions); break;
-        case 'relist':     result = executeRelist(rule, conditions, actions); break;
-        case 'share':      result = actions.communityShare ? await executeCommunityShare(rule, conditions, actions) : executeShare(rule, conditions, actions); break;
-        case 'offer':      result = executeOffer(rule, conditions, actions); break;
-        case 'follow':     result = executeFollow(rule, conditions, actions); break;
-        case 'otl':        result = await executeOtl(rule, conditions, actions); break;
-        case 'custom':
-        default:           result = executeCustom(rule, conditions, actions); break;
+
+    if (botPlatforms.includes(platform) && (rule.type === 'share' || rule.type === 'relist')) {
+        result = await executePlatformBot(platform, rule, conditions, actions);
+    } else {
+        switch (rule.type) {
+            case 'price_drop': result = executePriceDrop(rule, conditions, actions); break;
+            case 'relist':     result = executeRelist(rule, conditions, actions); break;
+            case 'share':      result = actions.communityShare ? await executeCommunityShare(rule, conditions, actions) : executeShare(rule, conditions, actions); break;
+            case 'offer':      result = executeOffer(rule, conditions, actions); break;
+            case 'follow':     result = executeFollow(rule, conditions, actions); break;
+            case 'otl':        result = await executeOtl(rule, conditions, actions); break;
+            case 'custom':
+            default:           result = executeCustom(rule, conditions, actions); break;
+        }
     }
 
     query.run(`UPDATE automation_rules SET last_run_at = datetime('now'), run_count = run_count + 1, error_count = error_count + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
