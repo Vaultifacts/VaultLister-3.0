@@ -1222,7 +1222,13 @@ Object.assign(handlers, {
             { id: 'depop_price_drop', name: 'Depop Price Drop', category: 'pricing' },
             { id: 'grailed_bump', name: 'Grailed Daily Bump', category: 'sharing' },
             { id: 'grailed_relist', name: 'Grailed Relist Stale', category: 'maintenance' },
-            { id: 'grailed_price_drop', name: 'Grailed Price Drop', category: 'pricing' }
+            { id: 'grailed_price_drop', name: 'Grailed Price Drop', category: 'pricing' },
+            { id: 'facebook_refresh', name: 'Facebook Daily Refresh', category: 'sharing' },
+            { id: 'facebook_relist', name: 'Facebook Relist Stale', category: 'maintenance' },
+            { id: 'facebook_price_drop', name: 'Facebook Price Drop', category: 'pricing' },
+            { id: 'whatnot_refresh', name: 'Whatnot Daily Refresh', category: 'sharing' },
+            { id: 'whatnot_relist', name: 'Whatnot Relist Stale', category: 'maintenance' },
+            { id: 'whatnot_price_drop', name: 'Whatnot Price Drop', category: 'pricing' }
         ];
         const rule = allPresets.find(p => p.id === automationId) || { name: 'Automation', category: 'sharing' };
 
@@ -15564,6 +15570,15 @@ Object.assign(handlers, {
         store.setState({ automationCategoryFilter: category });
         // Persist to localStorage
         try { localStorage.setItem('vaultlister_automation_category_filter', category); } catch (e) { console.warn('Failed to save filter preference:', e); }
+        if (store.state.currentPage === 'automations') {
+            const pageContent = pages.automations();
+            document.querySelector('.page-content').innerHTML = pageContent;
+        }
+    },
+
+    filterAutomationPlatform: function(platform) {
+        store.setState({ automationPlatformFilter: platform });
+        try { localStorage.setItem('vaultlister_automation_platform_filter', platform); } catch (e) { console.warn('Failed to save filter preference:', e); }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
             document.querySelector('.page-content').innerHTML = pageContent;

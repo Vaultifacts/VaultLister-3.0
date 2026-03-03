@@ -19856,7 +19856,15 @@ const pages = {
             // Grailed automations
             { id: 'grailed_bump', name: 'Grailed Daily Bump', platform: 'grailed', description: 'Bump all Grailed listings daily for more visibility', category: 'sharing' },
             { id: 'grailed_relist', name: 'Grailed Relist Stale', platform: 'grailed', description: 'Relist Grailed items with no activity for 60+ days', category: 'maintenance' },
-            { id: 'grailed_price_drop', name: 'Grailed Price Drop', platform: 'grailed', description: 'Weekly price drops on stale Grailed listings', category: 'pricing' }
+            { id: 'grailed_price_drop', name: 'Grailed Price Drop', platform: 'grailed', description: 'Weekly price drops on stale Grailed listings', category: 'pricing' },
+            // Facebook Marketplace automations
+            { id: 'facebook_refresh', name: 'Facebook Daily Refresh', platform: 'facebook', description: 'Refresh all Facebook Marketplace listings daily', category: 'sharing' },
+            { id: 'facebook_relist', name: 'Facebook Relist Stale', platform: 'facebook', description: 'Relist Facebook items with no activity for 60+ days', category: 'maintenance' },
+            { id: 'facebook_price_drop', name: 'Facebook Price Drop', platform: 'facebook', description: 'Weekly price drops on stale Facebook listings', category: 'pricing' },
+            // Whatnot automations
+            { id: 'whatnot_refresh', name: 'Whatnot Daily Refresh', platform: 'whatnot', description: 'Refresh all Whatnot listings daily for more visibility', category: 'sharing' },
+            { id: 'whatnot_relist', name: 'Whatnot Relist Stale', platform: 'whatnot', description: 'Relist Whatnot items with no activity for 60+ days', category: 'maintenance' },
+            { id: 'whatnot_price_drop', name: 'Whatnot Price Drop', platform: 'whatnot', description: 'Weekly price drops on stale Whatnot listings', category: 'pricing' }
         ];
 
         // Merge presets with existing rules to show enabled state
@@ -20244,8 +20252,17 @@ const pages = {
                         <h3 class="card-title">Available Automations</h3>
                         <p class="text-sm text-gray-500">Toggle automations on or off. All automations are available - no need to add or delete.</p>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <input type="text" class="form-input" placeholder="Search automations..." value="${escapeHtml(store.state.automationSearchQuery || '')}" onkeyup="handlers.searchAutomations(this.value)" style="width: 200px; height: 36px;">
+                        <select class="form-select" onchange="handlers.filterAutomationPlatform(this.value)" style="width: 140px; height: 36px;">
+                            <option value="all" ${(store.state.automationPlatformFilter || 'all') === 'all' ? 'selected' : ''}>All Platforms</option>
+                            <option value="poshmark" ${store.state.automationPlatformFilter === 'poshmark' ? 'selected' : ''}>Poshmark</option>
+                            <option value="mercari" ${store.state.automationPlatformFilter === 'mercari' ? 'selected' : ''}>Mercari</option>
+                            <option value="depop" ${store.state.automationPlatformFilter === 'depop' ? 'selected' : ''}>Depop</option>
+                            <option value="grailed" ${store.state.automationPlatformFilter === 'grailed' ? 'selected' : ''}>Grailed</option>
+                            <option value="facebook" ${store.state.automationPlatformFilter === 'facebook' ? 'selected' : ''}>Facebook</option>
+                            <option value="whatnot" ${store.state.automationPlatformFilter === 'whatnot' ? 'selected' : ''}>Whatnot</option>
+                        </select>
                         <select class="form-select" onchange="handlers.filterAutomationCategory(this.value)" style="width: 140px; height: 36px;">
                             <option value="all" ${(store.state.automationCategoryFilter || 'all') === 'all' ? 'selected' : ''}>All Categories</option>
                             ${Object.entries(categoryLabels).map(([key, val]) => `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`).join('')}
@@ -20257,9 +20274,11 @@ const pages = {
                         ${automations.filter(rule => {
                             const searchQ = (store.state.automationSearchQuery || '').toLowerCase();
                             const catFilter = store.state.automationCategoryFilter || 'all';
+                            const platFilter = store.state.automationPlatformFilter || 'all';
                             const matchesSearch = !searchQ || rule.name.toLowerCase().includes(searchQ) || rule.description.toLowerCase().includes(searchQ);
                             const matchesCat = catFilter === 'all' || rule.category === catFilter;
-                            return matchesSearch && matchesCat;
+                            const matchesPlat = platFilter === 'all' || rule.platform === platFilter || rule.platform === 'all';
+                            return matchesSearch && matchesCat && matchesPlat;
                         }).map(rule => `
                             <div class="automation-card" draggable="true">
                                 <div class="automation-card-content">
@@ -42884,7 +42903,13 @@ const handlers = {
             { id: 'depop_price_drop', name: 'Depop Price Drop', category: 'pricing' },
             { id: 'grailed_bump', name: 'Grailed Daily Bump', category: 'sharing' },
             { id: 'grailed_relist', name: 'Grailed Relist Stale', category: 'maintenance' },
-            { id: 'grailed_price_drop', name: 'Grailed Price Drop', category: 'pricing' }
+            { id: 'grailed_price_drop', name: 'Grailed Price Drop', category: 'pricing' },
+            { id: 'facebook_refresh', name: 'Facebook Daily Refresh', category: 'sharing' },
+            { id: 'facebook_relist', name: 'Facebook Relist Stale', category: 'maintenance' },
+            { id: 'facebook_price_drop', name: 'Facebook Price Drop', category: 'pricing' },
+            { id: 'whatnot_refresh', name: 'Whatnot Daily Refresh', category: 'sharing' },
+            { id: 'whatnot_relist', name: 'Whatnot Relist Stale', category: 'maintenance' },
+            { id: 'whatnot_price_drop', name: 'Whatnot Price Drop', category: 'pricing' }
         ];
         const rule = allPresets.find(p => p.id === automationId) || { name: 'Automation', category: 'sharing' };
 
@@ -57633,6 +57658,15 @@ const handlers = {
         store.setState({ automationCategoryFilter: category });
         // Persist to localStorage
         try { localStorage.setItem('vaultlister_automation_category_filter', category); } catch (e) { console.warn('Failed to save filter preference:', e); }
+        if (store.state.currentPage === 'automations') {
+            const pageContent = pages.automations();
+            document.querySelector('.page-content').innerHTML = pageContent;
+        }
+    },
+
+    filterAutomationPlatform: function(platform) {
+        store.setState({ automationPlatformFilter: platform });
+        try { localStorage.setItem('vaultlister_automation_platform_filter', platform); } catch (e) { console.warn('Failed to save filter preference:', e); }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
             document.querySelector('.page-content').innerHTML = pageContent;

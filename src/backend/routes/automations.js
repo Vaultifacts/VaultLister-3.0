@@ -754,6 +754,56 @@ export async function automationsRouter(ctx) {
                 schedule: '0 9 * * 0',
                 conditions: { minDaysListed: 7 },
                 actions: { dropPercentage: 10, minPrice: 15 }
+            },
+            // Facebook Marketplace presets
+            'facebook_refresh': {
+                name: 'Facebook Daily Refresh',
+                type: 'share',
+                platform: 'facebook',
+                schedule: '0 10,16 * * *',
+                conditions: { maxItems: 20 },
+                actions: { shareAll: true }
+            },
+            'facebook_relist': {
+                name: 'Facebook Relist Stale',
+                type: 'relist',
+                platform: 'facebook',
+                schedule: '0 10 * * 1',
+                conditions: { minDaysListed: 60 },
+                actions: { relist: true }
+            },
+            'facebook_price_drop': {
+                name: 'Facebook Price Drop',
+                type: 'price_drop',
+                platform: 'facebook',
+                schedule: '0 9 * * 0',
+                conditions: { minDaysListed: 7 },
+                actions: { dropPercentage: 10, minPrice: 10 }
+            },
+            // Whatnot presets
+            'whatnot_refresh': {
+                name: 'Whatnot Daily Refresh',
+                type: 'share',
+                platform: 'whatnot',
+                schedule: '0 11,17 * * *',
+                conditions: { maxItems: 30 },
+                actions: { shareAll: true }
+            },
+            'whatnot_relist': {
+                name: 'Whatnot Relist Stale',
+                type: 'relist',
+                platform: 'whatnot',
+                schedule: '0 10 * * 1',
+                conditions: { minDaysListed: 60 },
+                actions: { relist: true }
+            },
+            'whatnot_price_drop': {
+                name: 'Whatnot Price Drop',
+                type: 'price_drop',
+                platform: 'whatnot',
+                schedule: '0 9 * * 0',
+                conditions: { minDaysListed: 7 },
+                actions: { dropPercentage: 10, minPrice: 10 }
             }
         };
 
