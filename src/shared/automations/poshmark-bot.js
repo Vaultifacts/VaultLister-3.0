@@ -531,6 +531,73 @@ export class PoshmarkBot {
     }
 
     /**
+     * Share items from the community feed (other closets) to increase visibility
+     * @param {Object} options - { maxShares, delayBetween, feedType }
+     */
+    async shareCommunity(options = {}) {
+        const {
+            maxShares = 50,
+            delayBetween = 3000,
+            feedType = 'feed' // 'feed', 'brand', 'category'
+        } = options;
+
+        console.log(`[PoshmarkBot] Community sharing from ${feedType}, max ${maxShares} items`);
+
+        try {
+            await this.page.goto(`${POSHMARK_URL}/${feedType}`, { waitUntil: 'networkidle' });
+            await this.page.waitForTimeout(randomDelay(2000, 3500));
+
+            let shared = 0;
+
+            // Scroll and share items from the feed
+            while (shared < maxShares) {
+                const tiles = await this.page.$$('[data-test="tile"], .card--small');
+                const unsharedTiles = tiles.slice(shared, shared + 10);
+
+                if (unsharedTiles.length === 0) {
+                    // Scroll down to load more
+                    await this.page.evaluate(() => window.scrollBy(0, 800));
+                    await this.page.waitForTimeout(randomDelay(1500, 2500));
+                    const newTiles = await this.page.$$('[data-test="tile"], .card--small');
+                    if (newTiles.length <= shared) break; // No new items loaded
+                    continue;
+                }
+
+                for (const tile of unsharedTiles) {
+                    if (shared >= maxShares) break;
+
+                    try {
+                        const shareBtn = await tile.$('[data-test="tile-share"], button[aria-label*="share" i]');
+                        if (shareBtn) {
+                            await shareBtn.click();
+                            await this.page.waitForTimeout(randomDelay(500, 1000));
+
+                            const toFollowers = await this.page.$('[data-test="share-to-followers"]');
+                            if (toFollowers) {
+                                await toFollowers.click();
+                                shared++;
+                                this.stats.shares++;
+                                console.log(`[PoshmarkBot] Community shared ${shared}/${maxShares}`);
+                            }
+
+                            await this.page.waitForTimeout(delayBetween + randomDelay(500, 1500));
+                        }
+                    } catch (e) {
+                        console.log('[PoshmarkBot] Community share item error:', e.message);
+                    }
+                }
+            }
+
+            console.log(`[PoshmarkBot] Community share complete. Shared ${shared} items.`);
+            return { shared };
+        } catch (error) {
+            console.error('[PoshmarkBot] Community share error:', error.message);
+            this.stats.errors++;
+            throw error;
+        }
+    }
+
+    /**
      * Get stats
      */
     getStats() {

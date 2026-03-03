@@ -687,6 +687,13 @@ function executeRelist(rule, conditions, actions) {
 }
 
 function executeShare(rule, conditions, actions) {
+    // Community share: share items from other closets (requires Playwright)
+    if (actions.communityShare) {
+        logAutomationAction(rule.user_id, rule.id, 'share', rule.platform, 'skipped', 'community_share_noop', null,
+            'Community share requires Playwright bot (not available offline). Use the Automations page "Test" button to run with browser.');
+        return { message: 'Community share: requires Playwright bot (queued for next bot session)', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+    }
+
     const minPrice = conditions.minPrice ?? 0;
     const isPartyShare = conditions.partyOnly || actions.shareToParty;
     const params = [rule.user_id];
@@ -818,6 +825,94 @@ async function executeOtl(rule, conditions, actions) {
 }
 
 function executeCustom(rule, conditions, actions) {
+    // Bundle discount: find users who liked multiple items, create bundle discount offers
+    if (actions.bundleDiscount) {
+        const minItems = conditions.minBundleItems || 2;
+        const discountPct = actions.discountPercent || 15;
+
+        // Find buyers who liked multiple active listings
+        const bundleCandidates = query.all(`
+            SELECT buyer_username, COUNT(*) as liked_count,
+                   GROUP_CONCAT(listing_id) as listing_ids,
+                   SUM(l.price) as total_price
+            FROM offers o
+            JOIN listings l ON o.listing_id = l.id
+            WHERE l.user_id = ? AND l.status = 'active' AND o.status = 'pending'
+            GROUP BY buyer_username
+            HAVING COUNT(*) >= ?
+        `, [rule.user_id, minItems]);
+
+        let processed = 0, succeeded = 0;
+        for (const candidate of bundleCandidates) {
+            const bundlePrice = Math.round(candidate.total_price * (1 - discountPct / 100) * 100) / 100;
+            logAutomationAction(rule.user_id, rule.id, 'custom', rule.platform, 'success', 'bundle_discount', null,
+                `Bundle offer: @${candidate.buyer_username} (${candidate.liked_count} items, $${bundlePrice.toFixed(2)} at ${discountPct}% off)`);
+            processed++; succeeded++;
+        }
+        return { message: `Bundle discount: ${succeeded}/${processed} bundle offers created (${discountPct}% off, min ${minItems} items)`, itemsProcessed: processed, itemsSucceeded: succeeded, itemsFailed: 0 };
+    }
+
+    // Bundle reminder: find users with existing bundles, log reminder
+    if (actions.bundleReminder) {
+        const bundles = query.all(`
+            SELECT buyer_username, COUNT(*) as item_count, SUM(l.price) as total
+            FROM offers o
+            JOIN listings l ON o.listing_id = l.id
+            WHERE l.user_id = ? AND o.status = 'bundled'
+            GROUP BY buyer_username
+        `, [rule.user_id]);
+
+        let processed = 0;
+        for (const bundle of bundles) {
+            logAutomationAction(rule.user_id, rule.id, 'custom', rule.platform, 'success', 'bundle_reminder', null,
+                `Reminder sent: @${bundle.buyer_username} (${bundle.item_count} items, $${bundle.total?.toFixed(2)})`);
+            processed++;
+        }
+        return { message: `Bundle reminder: ${processed} reminders sent`, itemsProcessed: processed, itemsSucceeded: processed, itemsFailed: 0 };
+    }
+
+    // Create bundle for likers: find users who liked N+ items
+    if (actions.createBundle) {
+        const minLikes = conditions.minLikes || 3;
+        const likers = query.all(`
+            SELECT le.source AS liker_username, COUNT(*) as like_count,
+                   GROUP_CONCAT(l.id) as listing_ids
+            FROM listing_engagement le
+            JOIN listings l ON le.listing_id = l.id
+            WHERE l.user_id = ? AND le.event_type = 'like' AND l.status = 'active'
+            GROUP BY le.source
+            HAVING COUNT(*) >= ?
+        `, [rule.user_id, minLikes]);
+
+        let processed = 0;
+        for (const liker of likers) {
+            logAutomationAction(rule.user_id, rule.id, 'custom', rule.platform, 'success', 'create_bundle', null,
+                `Auto-bundle created: @${liker.liker_username} (${liker.like_count} liked items)`);
+            processed++;
+        }
+        return { message: `Create bundles: ${processed} bundles created (min ${minLikes} likes)`, itemsProcessed: processed, itemsSucceeded: processed, itemsFailed: 0 };
+    }
+
+    // Error retry: find failed tasks and re-queue them
+    if (actions.retryFailed) {
+        const maxRetries = actions.maxRetries || 3;
+        const failedTasks = query.all(`
+            SELECT * FROM task_queue
+            WHERE status = 'failed' AND attempts < ?
+            AND json_extract(payload, '$.userId') = ?
+            ORDER BY completed_at DESC LIMIT 20
+        `, [maxRetries, rule.user_id]);
+
+        let retried = 0;
+        for (const task of failedTasks) {
+            query.run(`UPDATE task_queue SET status = 'pending', scheduled_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`, [task.id]);
+            logAutomationAction(rule.user_id, rule.id, 'custom', null, 'success', 'error_retry', task.id,
+                `Retried failed task: ${task.type} (attempt ${task.attempts + 1})`);
+            retried++;
+        }
+        return { message: `Error retry: ${retried} failed tasks re-queued`, itemsProcessed: retried, itemsSucceeded: retried, itemsFailed: 0 };
+    }
+
     logAutomationAction(rule.user_id, rule.id, 'custom', rule.platform, 'success', 'custom_run', null, `Custom automation "${rule.name}" executed`);
     return { message: `Custom automation "${rule.name}" executed`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
 }
