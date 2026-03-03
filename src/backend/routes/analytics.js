@@ -280,6 +280,111 @@ export async function analyticsRouter(ctx) {
         }
     }
 
+    // GET /api/analytics/inventory-deep - Aging, sell-through, margins
+    if (method === 'GET' && path === '/inventory-deep') {
+        try {
+            // Aging report: items by days since created
+            const aging = query.all(`
+                SELECT
+                    i.id, i.title, i.sku, i.category, i.brand,
+                    i.cost_price, i.list_price, i.status,
+                    CAST(julianday('now') - julianday(i.created_at) AS INTEGER) as days_old,
+                    (SELECT COUNT(*) FROM listings l WHERE l.inventory_id = i.id AND l.status = 'active') as active_listings,
+                    (SELECT SUM(l.views) FROM listings l WHERE l.inventory_id = i.id) as total_views
+                FROM inventory i
+                WHERE i.user_id = ? AND i.status IN ('active', 'draft')
+                ORDER BY days_old DESC
+            `, [user.id]);
+
+            // Aging buckets
+            const agingBuckets = [
+                { label: '0-7 days', min: 0, max: 7, count: 0, value: 0 },
+                { label: '8-30 days', min: 8, max: 30, count: 0, value: 0 },
+                { label: '31-60 days', min: 31, max: 60, count: 0, value: 0 },
+                { label: '61-90 days', min: 61, max: 90, count: 0, value: 0 },
+                { label: '90+ days', min: 91, max: 99999, count: 0, value: 0 }
+            ];
+            aging.forEach(item => {
+                const bucket = agingBuckets.find(b => item.days_old >= b.min && item.days_old <= b.max);
+                if (bucket) {
+                    bucket.count++;
+                    bucket.value += (item.list_price || 0);
+                }
+            });
+
+            // Sell-through rate by category
+            const sellThrough = query.all(`
+                SELECT
+                    category,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = 'sold' THEN 1 ELSE 0 END) as sold,
+                    ROUND(SUM(CASE WHEN status = 'sold' THEN 1.0 ELSE 0 END) / COUNT(*) * 100, 1) as sell_rate,
+                    AVG(CASE WHEN status = 'sold' THEN julianday(updated_at) - julianday(created_at) END) as avg_days_to_sell
+                FROM inventory
+                WHERE user_id = ? AND status != 'deleted'
+                GROUP BY category
+                HAVING total >= 2
+                ORDER BY sell_rate DESC
+            `, [user.id]);
+
+            // Margin analysis by category
+            const margins = query.all(`
+                SELECT
+                    i.category,
+                    COUNT(*) as sold_count,
+                    ROUND(AVG(s.sale_price), 2) as avg_sale_price,
+                    ROUND(AVG(i.cost_price), 2) as avg_cost,
+                    ROUND(AVG(s.sale_price - i.cost_price - COALESCE(s.platform_fee, 0) - COALESCE(s.shipping_cost, 0)), 2) as avg_net_profit,
+                    ROUND(AVG((s.sale_price - i.cost_price - COALESCE(s.platform_fee, 0) - COALESCE(s.shipping_cost, 0)) / NULLIF(s.sale_price, 0) * 100), 1) as margin_pct,
+                    ROUND(SUM(s.sale_price - i.cost_price - COALESCE(s.platform_fee, 0) - COALESCE(s.shipping_cost, 0)), 2) as total_profit
+                FROM sales s
+                JOIN inventory i ON s.inventory_id = i.id
+                WHERE s.user_id = ?
+                GROUP BY i.category
+                HAVING sold_count >= 1
+                ORDER BY total_profit DESC
+            `, [user.id]);
+
+            // Dead stock: active items > 60 days with 0 views
+            const deadStock = aging.filter(i => i.days_old >= 60 && (!i.total_views || i.total_views === 0));
+
+            // Overall stats
+            const overallSellThrough = query.get(`
+                SELECT
+                    ROUND(SUM(CASE WHEN status = 'sold' THEN 1.0 ELSE 0 END) / NULLIF(COUNT(*), 0) * 100, 1) as rate,
+                    ROUND(AVG(CASE WHEN status = 'sold' THEN julianday(updated_at) - julianday(created_at) END), 1) as avg_days
+                FROM inventory WHERE user_id = ? AND status != 'deleted'
+            `, [user.id]) || { rate: 0, avg_days: 0 };
+
+            const overallMargin = query.get(`
+                SELECT
+                    ROUND(AVG((s.sale_price - i.cost_price - COALESCE(s.platform_fee, 0) - COALESCE(s.shipping_cost, 0)) / NULLIF(s.sale_price, 0) * 100), 1) as margin_pct,
+                    ROUND(SUM(s.sale_price - i.cost_price - COALESCE(s.platform_fee, 0) - COALESCE(s.shipping_cost, 0)), 2) as total_profit
+                FROM sales s JOIN inventory i ON s.inventory_id = i.id WHERE s.user_id = ?
+            `, [user.id]) || { margin_pct: 0, total_profit: 0 };
+
+            return {
+                status: 200,
+                data: {
+                    aging: aging.slice(0, 50),
+                    agingBuckets,
+                    sellThrough,
+                    margins,
+                    deadStock: deadStock.slice(0, 20),
+                    overall: {
+                        sell_through_rate: overallSellThrough.rate || 0,
+                        avg_days_to_sell: overallSellThrough.avg_days || 0,
+                        margin_pct: overallMargin.margin_pct || 0,
+                        total_profit: overallMargin.total_profit || 0
+                    }
+                }
+            };
+        } catch (error) {
+            logger.error('[Analytics] Inventory deep analytics error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Failed to fetch inventory analytics' } };
+        }
+    }
+
     // GET /api/analytics/performance - Performance metrics (advanced tier)
     if (method === 'GET' && path === '/performance') {
         if (analyticsLevel === 'basic') {

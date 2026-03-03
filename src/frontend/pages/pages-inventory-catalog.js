@@ -36,6 +36,23 @@ Object.assign(pages, {
         }, 0) / items.length)) : 0;
 
         return `
+            <!-- Inventory Tab Bar -->
+            <div class="flex gap-0 mb-4" style="border-bottom: 2px solid var(--gray-200);">
+                <button class="inv-tab-btn active" data-tab="catalog" onclick="handlers.switchInventoryTab('catalog')"
+                    style="padding: 10px 20px; background: none; border: none; cursor: pointer; font-weight: 600; border-bottom: 2px solid var(--primary-600); color: var(--primary-600); margin-bottom: -2px;">
+                    ${components.icon('grid', 16)} Catalog
+                </button>
+                <button class="inv-tab-btn" data-tab="analytics" onclick="handlers.switchInventoryTab('analytics')"
+                    style="padding: 10px 20px; background: none; border: none; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; color: var(--gray-600); margin-bottom: -2px;">
+                    ${components.icon('bar-chart-2', 16)} Analytics
+                </button>
+            </div>
+
+            <div class="inv-tab-pane" data-tab="analytics" style="display:none;">
+                ${store.state.inventoryAnalytics ? handlers._renderInventoryAnalyticsContent() : '<div class="text-center py-8 text-gray-500">Loading analytics...</div>'}
+            </div>
+
+            <div class="inv-tab-pane active" data-tab="catalog" style="display:block;">
             <!-- Inventory Hero Section -->
             <div class="inventory-hero">
                 <div class="inventory-hero-main">
@@ -463,6 +480,7 @@ Object.assign(pages, {
                 <button class="bulk-clear-btn" data-testid="bulk-clear-selection-btn" onclick="handlers.clearSelection()" title="Clear selection">
                     ${components.icon('close', 16)}
                 </button>
+            </div>
             </div>
         `;
     },
@@ -1675,10 +1693,13 @@ Object.assign(pages, {
                     <p class="page-description">Enable or disable automation rules and configure scheduling</p>
                 </div>
                 <div class="flex gap-2">
+                    <button class="btn btn-ghost" onclick="handlers.exportAutomationHistoryCSV()" title="Export run history to CSV">
+                        ${components.icon('download', 16)} CSV
+                    </button>
                     <button class="btn btn-secondary" onclick="handlers.showAutomationHistory()">
                         ${components.icon('history', 16)} Run History
                     </button>
-                    <button class="btn btn-primary" onclick="handlers.showAutomationWizard()">
+                    <button class="btn btn-primary" onclick="handlers.showCreateCustomAutomation()">
                         ${components.icon('plus', 16)} Create Custom
                     </button>
                 </div>
@@ -3022,5 +3043,120 @@ Object.assign(pages, {
     },
 
     // Report Builder Page,
+
+    platformHealth() {
+        const healthData = store.state.platformHealth || {};
+        const platforms = healthData.platforms || [];
+        const overallHealth = healthData.overall_health || 0;
+
+        const platformColors = {
+            poshmark: '#7c3aed', ebay: '#0064d2', mercari: '#00b0a0', depop: '#ff2300',
+            grailed: '#000', etsy: '#f1641e', shopify: '#96bf48', facebook: '#1877f2', whatnot: '#ff4757'
+        };
+
+        const statusIcons = {
+            healthy: { icon: 'check-circle', color: 'var(--success)' },
+            warning: { icon: 'alert-triangle', color: 'var(--warning-600)' },
+            critical: { icon: 'x-circle', color: 'var(--error)' }
+        };
+
+        return `
+            <div class="page-header flex justify-between items-start">
+                <div>
+                    <h1 class="page-title">${components.icon('activity', 24)} Platform Health</h1>
+                    <p class="page-description">Monitor connection status across all your selling platforms</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="btn btn-secondary" onclick="handlers.refreshPlatformHealth()">
+                        ${components.icon('refresh-cw', 16)} Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Overall Health -->
+            <div class="card mb-6">
+                <div class="card-body flex items-center gap-6">
+                    <div style="position:relative;width:80px;height:80px;">
+                        <svg viewBox="0 0 36 36" style="width:80px;height:80px;transform:rotate(-90deg);">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none" stroke="var(--gray-200)" stroke-width="3"/>
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none" stroke="${overallHealth >= 80 ? 'var(--success)' : overallHealth >= 50 ? 'var(--warning-600)' : 'var(--error)'}"
+                                stroke-width="3" stroke-dasharray="${overallHealth}, 100"/>
+                        </svg>
+                        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;font-weight:700;">
+                            ${overallHealth}
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold">Overall Health Score</h2>
+                        <p class="text-sm text-gray-500">${platforms.length} platform${platforms.length !== 1 ? 's' : ''} connected</p>
+                    </div>
+                    <div style="margin-left:auto;" class="flex gap-4">
+                        <div class="text-center">
+                            <div class="text-xl font-bold" style="color:var(--success);">${platforms.filter(p => p.status === 'healthy').length}</div>
+                            <div class="text-xs text-gray-500">Healthy</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xl font-bold" style="color:var(--warning-600);">${platforms.filter(p => p.status === 'warning').length}</div>
+                            <div class="text-xs text-gray-500">Warning</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xl font-bold" style="color:var(--error);">${platforms.filter(p => p.status === 'critical').length}</div>
+                            <div class="text-xs text-gray-500">Critical</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Cards -->
+            <div class="grid grid-cols-2 gap-4">
+                ${platforms.length > 0 ? platforms.map(p => {
+                    const si = statusIcons[p.status] || statusIcons.warning;
+                    const color = platformColors[p.platform] || 'var(--gray-600)';
+                    const tokenExpiry = p.token_expires_at ? new Date(p.token_expires_at) : null;
+                    const tokenLabel = tokenExpiry
+                        ? (tokenExpiry < new Date() ? 'Expired' : 'Expires ' + tokenExpiry.toLocaleDateString())
+                        : 'N/A';
+                    const lastSync = p.last_sync_at ? new Date(p.last_sync_at).toLocaleString() : 'Never';
+                    return `
+                    <div class="card" style="border-left: 4px solid ${color};">
+                        <div class="card-body">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-2">
+                                    ${components.platformBadge(p.platform)}
+                                    <div>
+                                        <span class="font-semibold">${p.platform.charAt(0).toUpperCase() + p.platform.slice(1)}</span>
+                                        ${p.username ? '<span class="text-sm text-gray-500 ml-1">@' + escapeHtml(p.username) + '</span>' : ''}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1" style="color:${si.color};">
+                                    ${components.icon(si.icon, 18)}
+                                    <span class="text-sm font-medium">${p.health_score}/100</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+                                <div><span class="text-gray-500">Status:</span> <span class="${p.is_connected ? 'text-success' : 'text-error'}">${p.is_connected ? 'Connected' : 'Disconnected'}</span></div>
+                                <div><span class="text-gray-500">Type:</span> ${p.connection_type === 'oauth' ? 'OAuth' : 'Manual'}</div>
+                                <div><span class="text-gray-500">Last Sync:</span> ${lastSync}</div>
+                                <div><span class="text-gray-500">Token:</span> <span style="color:${tokenExpiry && tokenExpiry < new Date() ? 'var(--error)' : 'inherit'};">${tokenLabel}</span></div>
+                                <div><span class="text-gray-500">Active Listings:</span> ${p.listings?.active || 0}</div>
+                                <div><span class="text-gray-500">Errors:</span> <span style="color:${(p.listings?.errors || 0) > 0 ? 'var(--error)' : 'inherit'};">${p.listings?.errors || 0}</span></div>
+                            </div>
+                            ${p.issues.length > 0 ? '<div class="text-xs" style="padding:8px;background:var(--error-50, #fef2f2);border-radius:var(--radius-sm);color:var(--error-700);">' + p.issues.map(i => components.icon('alert-circle', 12) + ' ' + escapeHtml(i)).join('<br>') + '</div>' : '<div class="text-xs" style="padding:8px;background:var(--success-50, #f0fdf4);border-radius:var(--radius-sm);color:var(--success-700);">' + components.icon('check', 12) + ' All systems operational</div>'}
+                        </div>
+                    </div>
+                    `;
+                }).join('') : `
+                    <div class="card" style="grid-column: 1/-1;">
+                        <div class="card-body text-center py-8 text-gray-500">
+                            <p>No platforms connected yet.</p>
+                            <button class="btn btn-primary mt-3" onclick="router.navigate('shops')">Connect a Platform</button>
+                        </div>
+                    </div>
+                `}
+            </div>
+        `;
+    },
 
 });

@@ -26747,6 +26747,162 @@ Object.assign(handlers, {
             console.error('Failed to load images:', e);
             toast.error('Failed to load images');
         }
+    },
+
+    // ============================================
+    // Automation Templates/Presets Editor
+    // ============================================
+
+    showCreateCustomAutomation: function() {
+        const platforms = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot', 'all'];
+        const categories = ['sharing', 'engagement', 'offers', 'bundles', 'pricing', 'maintenance'];
+        const actionTypes = [
+            { value: 'share_listing', label: 'Share Listing' }, { value: 'send_offer', label: 'Send Offer' },
+            { value: 'price_drop', label: 'Price Drop' }, { value: 'relist', label: 'Relist Item' },
+            { value: 'follow_user', label: 'Follow User' }, { value: 'delist', label: 'Delist Item' },
+            { value: 'cross_list', label: 'Cross-List' }, { value: 'bump', label: 'Bump/Refresh Listing' }
+        ];
+        const conditionTypes = [
+            { value: 'days_listed', label: 'Days Listed', input: 'number', placeholder: 'e.g., 30' },
+            { value: 'price_above', label: 'Price Above ($)', input: 'number', placeholder: 'e.g., 50' },
+            { value: 'price_below', label: 'Price Below ($)', input: 'number', placeholder: 'e.g., 20' },
+            { value: 'no_likes', label: 'No Likes After (days)', input: 'number', placeholder: 'e.g., 7' },
+            { value: 'views_below', label: 'Views Below', input: 'number', placeholder: 'e.g., 10' },
+            { value: 'category_is', label: 'Category Is', input: 'text', placeholder: 'e.g., Shoes' },
+            { value: 'brand_is', label: 'Brand Is', input: 'text', placeholder: 'e.g., Nike' },
+            { value: 'has_offers', label: 'Has Pending Offers', input: 'none' }
+        ];
+        modals.show(`
+            <div class="modal-header"><h2 class="modal-title">${components.icon('plus', 20)} Create Custom Automation</h2><button class="modal-close" onclick="modals.close()" aria-label="Close">&times;</button></div>
+            <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+                <div class="form-group mb-4"><label class="form-label">Automation Name</label><input type="text" id="custom-auto-name" class="form-input" placeholder="e.g., Weekly Price Drop for Stale Items"></div>
+                <div class="flex gap-3 mb-4"><div class="form-group" style="flex:1;"><label class="form-label">Platform</label><select id="custom-auto-platform" class="form-select">${platforms.map(p => '<option value="' + p + '">' + (p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1)) + '</option>').join('')}</select></div><div class="form-group" style="flex:1;"><label class="form-label">Category</label><select id="custom-auto-category" class="form-select">${categories.map(c => '<option value="' + c + '">' + c.charAt(0).toUpperCase() + c.slice(1) + '</option>').join('')}</select></div></div>
+                <div class="form-group mb-4"><label class="form-label">Description</label><textarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?"></textarea></div>
+                <div class="form-group mb-4"><label class="form-label">Schedule</label><select id="custom-auto-schedule" class="form-select" onchange="document.getElementById('custom-auto-cron-input').style.display = this.value === 'custom' ? 'block' : 'none'"><option value="0 */6 * * *">Every 6 hours</option><option value="0 9 * * *">Daily at 9 AM</option><option value="0 9,21 * * *">Twice daily</option><option value="0 9 * * 1">Weekly</option><option value="custom">Custom Cron...</option></select><input type="text" id="custom-auto-cron-input" class="form-input mt-2" style="display:none;" placeholder="e.g., 0 */4 * * *"></div>
+                <h3 class="text-md font-semibold mb-2">Conditions</h3>
+                <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map(c => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"></div></div>
+                <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addConditionRow()">+ Add Condition</button>
+                <h3 class="text-md font-semibold mb-2">Actions</h3>
+                <div id="custom-auto-actions" class="mb-4"><div class="flex gap-2 mb-2 action-row"><select class="form-select action-type" style="flex:1;"><option value="">Select action...</option>${actionTypes.map(a => '<option value="' + a.value + '">' + a.label + '</option>').join('')}</select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"></div></div>
+                <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addActionRow()">+ Add Action</button>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveCustomAutomation()">${components.icon('save', 16)} Create Automation</button></div>
+        `, 'modal-lg');
+    },
+
+    _updateConditionInput: function(selectEl) {
+        const opt = selectEl.options[selectEl.selectedIndex];
+        const input = selectEl.closest('.condition-row').querySelector('.condition-value');
+        const inputType = opt.dataset.input || 'text';
+        if (inputType === 'none') { input.style.display = 'none'; } else { input.style.display = ''; input.type = inputType; input.placeholder = opt.dataset.placeholder || 'Value'; }
+    },
+
+    _addConditionRow: function() {
+        const container = document.getElementById('custom-auto-conditions');
+        const row = document.createElement('div');
+        row.className = 'flex gap-2 mb-2 condition-row';
+        row.innerHTML = '<select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>';
+        container.appendChild(row);
+    },
+
+    _addActionRow: function() {
+        const container = document.getElementById('custom-auto-actions');
+        const row = document.createElement('div');
+        row.className = 'flex gap-2 mb-2 action-row';
+        row.innerHTML = '<select class="form-select action-type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>';
+        container.appendChild(row);
+    },
+
+    saveCustomAutomation: async function() {
+        const name = document.getElementById('custom-auto-name')?.value?.trim();
+        const platform = document.getElementById('custom-auto-platform')?.value;
+        const category = document.getElementById('custom-auto-category')?.value;
+        const description = document.getElementById('custom-auto-desc')?.value?.trim();
+        const scheduleSelect = document.getElementById('custom-auto-schedule')?.value;
+        const customCron = document.getElementById('custom-auto-cron-input')?.value?.trim();
+        const schedule = scheduleSelect === 'custom' ? customCron : scheduleSelect;
+        if (!name) { toast.error('Please enter a name'); return; }
+        if (!schedule) { toast.error('Please select a schedule'); return; }
+        const conditions = [];
+        document.querySelectorAll('#custom-auto-conditions .condition-row').forEach(row => {
+            const type = row.querySelector('.condition-type')?.value;
+            const value = row.querySelector('.condition-value')?.value;
+            if (type) conditions.push({ type, value: value || true });
+        });
+        const actions = [];
+        document.querySelectorAll('#custom-auto-actions .action-row').forEach(row => {
+            const type = row.querySelector('.action-type')?.value;
+            const param = row.querySelector('.action-param')?.value;
+            if (type) actions.push({ type, param: param || null });
+        });
+        if (actions.length === 0) { toast.error('Add at least one action'); return; }
+        try {
+            await api.post('/automations', { name, platform, category, description, schedule, type: 'custom', conditions: JSON.stringify(conditions), actions: JSON.stringify(actions), is_enabled: 1 });
+            modals.close();
+            toast.success('Custom automation created');
+            await handlers.loadAutomationRules();
+            renderApp(pages.automations());
+        } catch (err) { toast.error('Failed to create automation: ' + (err.message || 'Unknown error')); }
+    },
+
+    exportAutomationHistoryCSV: function() {
+        const runs = store.state.automationHistoryRuns || [];
+        if (runs.length === 0) { toast.error('No run history to export'); return; }
+        const escCSV = (v) => { const s = String(v ?? ''); if (/[,"\n\r]/.test(s) || /^[=+\-@]/.test(s)) return '"' + s.replace(/"/g, '""') + '"'; return s; };
+        const headers = ['Date', 'Automation', 'Type', 'Status', 'Duration (ms)', 'Items Processed', 'Items Succeeded', 'Items Failed', 'Result', 'Error'];
+        const rows = [headers.join(',')];
+        runs.forEach(r => { rows.push([escCSV(r.started_at || r.timestamp), escCSV(r.automation_name || r.action), escCSV(r.automation_type || r.type), escCSV(r.status), escCSV(r.duration_ms), escCSV(r.items_processed), escCSV(r.items_succeeded), escCSV(r.items_failed), escCSV(r.result_message || r.result), escCSV(r.error_message)].join(',')); });
+        const csv = rows.join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'automation-history-' + new Date().toISOString().split('T')[0] + '.csv';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        toast.success('Exported ' + runs.length + ' run(s) to CSV');
+    },
+
+    loadPlatformHealth: async function() {
+        try { const res = await api.get('/shops/health'); store.setState({ platformHealth: res.data || res }); return res.data || res; }
+        catch (err) { toast.error('Failed to load platform health'); return null; }
+    },
+
+    refreshPlatformHealth: async function() {
+        toast.info('Refreshing platform health...');
+        await handlers.loadPlatformHealth();
+        renderApp(pages.platformHealth());
+    },
+
+    loadInventoryAnalytics: async function() {
+        try { const res = await api.get('/analytics/inventory-deep'); store.setState({ inventoryAnalytics: res.data || res }); return res.data || res; }
+        catch (err) { toast.error('Failed to load inventory analytics'); return null; }
+    },
+
+    switchInventoryTab: function(tabName) {
+        document.querySelectorAll('.inv-tab-btn').forEach(btn => {
+            if (btn.dataset.tab === tabName) { btn.classList.add('active'); btn.style.borderBottom = '2px solid var(--primary-600)'; btn.style.color = 'var(--primary-600)'; }
+            else { btn.classList.remove('active'); btn.style.borderBottom = '2px solid transparent'; btn.style.color = 'var(--gray-600)'; }
+        });
+        document.querySelectorAll('.inv-tab-pane').forEach(pane => { pane.style.display = pane.dataset.tab === tabName ? 'block' : 'none'; });
+        if (tabName === 'analytics' && !store.state.inventoryAnalytics) {
+            handlers.loadInventoryAnalytics().then(() => {
+                const pane = document.querySelector('.inv-tab-pane[data-tab="analytics"]');
+                if (pane) pane.innerHTML = handlers._renderInventoryAnalyticsContent();
+            });
+        }
+    },
+
+    _renderInventoryAnalyticsContent: function() {
+        const data = store.state.inventoryAnalytics;
+        if (!data) return '<div class="text-center py-8 text-gray-500">Loading analytics...</div>';
+        const overall = data.overall || {};
+        const agingBuckets = data.agingBuckets || [];
+        const sellThrough = data.sellThrough || [];
+        const margins = data.margins || [];
+        const deadStock = data.deadStock || [];
+        const maxBucket = Math.max(...agingBuckets.map(b => b.count), 1);
+        return '<div class="grid grid-cols-4 gap-4 mb-6"><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--primary-600);">' + (overall.sell_through_rate || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Sell-Through Rate</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--success);">' + (overall.avg_days_to_sell || 0).toFixed(0) + '</div><div class="text-xs text-gray-500">Avg Days to Sell</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--warning-600);">' + (overall.margin_pct || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Avg Margin</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:' + ((overall.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (overall.total_profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div><div class="text-xs text-gray-500">Total Profit</div></div></div></div>' +
+            '<div class="card mb-6"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('clock', 18) + ' Inventory Aging</h3><div class="flex gap-3 items-end" style="height:120px;">' + agingBuckets.map(b => { const pct = (b.count / maxBucket * 100); const color = b.min >= 91 ? 'var(--error)' : b.min >= 61 ? 'var(--warning-600)' : b.min >= 31 ? 'var(--warning-400)' : 'var(--success)'; return '<div style="flex:1;text-align:center;"><div style="background:' + color + ';height:' + Math.max(pct, 4) + '%;border-radius:4px 4px 0 0;margin:0 2px;position:relative;"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600;">' + b.count + '</span></div><div style="font-size:10px;color:var(--gray-500);margin-top:4px;">' + b.label + '</div><div style="font-size:9px;color:var(--gray-400);">$' + Math.round(b.value).toLocaleString() + '</div></div>'; }).join('') + '</div></div></div>' +
+            '<div class="grid grid-cols-2 gap-4 mb-6"><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('trending-up', 18) + ' Sell-Through by Category</h3>' + (sellThrough.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Total</th><th>Sold</th><th>Rate</th><th>Avg Days</th></tr></thead><tbody>' + sellThrough.map(s => '<tr><td>' + escapeHtml(s.category || 'Uncategorized') + '</td><td>' + s.total + '</td><td>' + s.sold + '</td><td style="color:' + (s.sell_rate >= 50 ? 'var(--success)' : s.sell_rate >= 25 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (s.sell_rate || 0).toFixed(1) + '%</td><td>' + (s.avg_days_to_sell ? s.avg_days_to_sell.toFixed(0) + 'd' : '—') + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No data yet</p>') + '</div></div><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Margin by Category</h3>' + (margins.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Sold</th><th>Avg Sale</th><th>Margin</th><th>Profit</th></tr></thead><tbody>' + margins.map(m => '<tr><td>' + escapeHtml(m.category || 'Uncategorized') + '</td><td>' + m.sold_count + '</td><td>$' + (m.avg_sale_price || 0).toFixed(0) + '</td><td style="color:' + ((m.margin_pct || 0) >= 30 ? 'var(--success)' : (m.margin_pct || 0) >= 15 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (m.margin_pct || 0).toFixed(1) + '%</td><td style="color:' + ((m.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (m.total_profit || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No sales data yet</p>') + '</div></div></div>' +
+            (deadStock.length > 0 ? '<div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3" style="color:var(--error);">' + components.icon('alert-triangle', 18) + ' Dead Stock (' + deadStock.length + ' items)</h3><table class="table table-sm"><thead><tr><th>Title</th><th>SKU</th><th>Days</th><th>Price</th></tr></thead><tbody>' + deadStock.slice(0, 10).map(d => '<tr><td>' + escapeHtml(d.title || '') + '</td><td>' + escapeHtml(d.sku || '—') + '</td><td style="color:var(--error);">' + d.days_old + 'd</td><td>$' + (d.list_price || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table></div></div>' : '');
     }
 });
 

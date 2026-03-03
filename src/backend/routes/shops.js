@@ -317,6 +317,111 @@ export async function shopsRouter(ctx) {
         }
     }
 
+    // GET /api/shops/health - Platform connection health dashboard
+    if (method === 'GET' && path === '/health') {
+        try {
+            const shops = query.all(
+                `SELECT id, platform, platform_username, is_connected, last_sync_at, sync_status,
+                    oauth_token_expires_at, consecutive_refresh_failures, last_token_refresh_at,
+                    token_refresh_error, connection_type, created_at, updated_at
+                FROM shops WHERE user_id = ?`,
+                [user.id]
+            );
+
+            const health = shops.map(shop => {
+                const now = Date.now();
+                const tokenExpiry = shop.oauth_token_expires_at ? new Date(shop.oauth_token_expires_at).getTime() : null;
+                const lastSync = shop.last_sync_at ? new Date(shop.last_sync_at).getTime() : null;
+                const refreshFailures = shop.consecutive_refresh_failures || 0;
+
+                // Calculate health score (0-100)
+                let score = 100;
+                let issues = [];
+
+                // Token health
+                if (shop.connection_type === 'oauth') {
+                    if (!tokenExpiry) {
+                        score -= 30;
+                        issues.push('No OAuth token');
+                    } else if (tokenExpiry < now) {
+                        score -= 40;
+                        issues.push('Token expired');
+                    } else if (tokenExpiry - now < 3600000) {
+                        score -= 15;
+                        issues.push('Token expiring soon');
+                    }
+                }
+
+                // Refresh failures
+                if (refreshFailures >= 5) {
+                    score -= 30;
+                    issues.push('Auto-disconnected (5+ failures)');
+                } else if (refreshFailures >= 3) {
+                    score -= 15;
+                    issues.push(`${refreshFailures} consecutive refresh failures`);
+                }
+
+                // Sync freshness
+                if (!lastSync) {
+                    score -= 10;
+                    issues.push('Never synced');
+                } else if (now - lastSync > 86400000 * 7) {
+                    score -= 15;
+                    issues.push('Last sync > 7 days ago');
+                } else if (now - lastSync > 86400000) {
+                    score -= 5;
+                    issues.push('Last sync > 24h ago');
+                }
+
+                // Connection status
+                if (!shop.is_connected) {
+                    score = Math.min(score, 20);
+                    issues.push('Disconnected');
+                }
+
+                // Get listing/error counts for this platform
+                const listingStats = query.get(
+                    `SELECT COUNT(*) as total,
+                        SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+                        SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) as errors
+                    FROM listings WHERE user_id = ? AND platform = ?`,
+                    [user.id, shop.platform]
+                ) || { total: 0, active: 0, errors: 0 };
+
+                if (listingStats.errors > 0) {
+                    score -= Math.min(10, listingStats.errors * 2);
+                    issues.push(`${listingStats.errors} listing errors`);
+                }
+
+                return {
+                    platform: shop.platform,
+                    username: shop.platform_username,
+                    is_connected: !!shop.is_connected,
+                    connection_type: shop.connection_type || 'manual',
+                    health_score: Math.max(0, score),
+                    status: score >= 80 ? 'healthy' : score >= 50 ? 'warning' : 'critical',
+                    issues,
+                    token_expires_at: shop.oauth_token_expires_at,
+                    last_sync_at: shop.last_sync_at,
+                    sync_status: shop.sync_status || 'idle',
+                    refresh_failures: refreshFailures,
+                    last_refresh_error: shop.token_refresh_error,
+                    listings: listingStats,
+                    connected_since: shop.created_at
+                };
+            });
+
+            const overall = health.length > 0
+                ? Math.round(health.reduce((sum, h) => sum + h.health_score, 0) / health.length)
+                : 0;
+
+            return { status: 200, data: { platforms: health, overall_health: overall } };
+        } catch (error) {
+            logger.error('[Shops] Error fetching platform health', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
     // GET /api/shops/sync-status - Get sync status for all shops
     if (method === 'GET' && path === '/sync-status') {
         try {

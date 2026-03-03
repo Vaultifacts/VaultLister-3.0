@@ -136,6 +136,11 @@ async function initApp() {
     router.register('analytics', () => renderApp(pages.analytics()));
     router.register('financials', () => renderApp(pages.financials()));
     router.register('shops', () => renderApp(pages.shops()));
+    router.register('platform-health', async () => {
+        renderApp(pages.platformHealth());
+        await handlers.loadPlatformHealth();
+        renderApp(pages.platformHealth());
+    });
     router.register('recently-deleted', async () => {
         renderApp(pages.recentlyDeleted());
         await handlers.loadDeletedItems();

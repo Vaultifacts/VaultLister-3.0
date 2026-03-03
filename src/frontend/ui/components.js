@@ -211,6 +211,7 @@ const components = {
             ]},
             { section: 'Business', items: [
                 { id: 'shops', label: 'My Shops', icon: 'shops' },
+                { id: 'platform-health', label: 'Platform Health', icon: 'activity' },
                 { id: 'transactions', label: 'Transactions', icon: 'dollar' },
                 { id: 'financials', label: 'Financials', icon: 'dollar' },
                 { id: 'analytics', label: 'Analytics', icon: 'analytics' },
@@ -716,6 +717,7 @@ const components = {
             'calendar': { label: 'Calendar', section: 'Tools' },
             'size-charts': { label: 'Size Charts', section: 'Tools' },
             'shops': { label: 'My Shops', section: 'Business' },
+            'platform-health': { label: 'Platform Health', section: 'Business' },
             'transactions': { label: 'Transactions', section: 'Business' },
             'financials': { label: 'Financials', section: 'Business' },
             'analytics': { label: 'Analytics', section: 'Business' },

@@ -164,6 +164,52 @@ export async function automationsRouter(ctx) {
         }
     }
 
+    // GET /api/automations/history/export - Export run history as CSV
+    if (method === 'GET' && path === '/history/export') {
+        try {
+            const runs = query.all(
+                'SELECT * FROM automation_runs WHERE user_id = ? ORDER BY started_at DESC',
+                [user.id]
+            );
+
+            const headers = ['Date', 'Automation', 'Type', 'Status', 'Duration (ms)', 'Items Processed', 'Items Succeeded', 'Items Failed', 'Result', 'Error'];
+            const escCSV = (v) => {
+                const s = String(v ?? '');
+                if (/[,"\n\r]/.test(s) || s.startsWith('=') || s.startsWith('+') || s.startsWith('-') || s.startsWith('@')) {
+                    return '"' + s.replace(/"/g, '""') + '"';
+                }
+                return s;
+            };
+            const csvRows = [headers.join(',')];
+            runs.forEach(r => {
+                csvRows.push([
+                    escCSV(r.started_at),
+                    escCSV(r.automation_name),
+                    escCSV(r.automation_type),
+                    escCSV(r.status),
+                    escCSV(r.duration_ms),
+                    escCSV(r.items_processed),
+                    escCSV(r.items_succeeded),
+                    escCSV(r.items_failed),
+                    escCSV(r.result_message),
+                    escCSV(r.error_message)
+                ].join(','));
+            });
+
+            return {
+                status: 200,
+                headers: {
+                    'Content-Type': 'text/csv',
+                    'Content-Disposition': `attachment; filename="automation-history-${new Date().toISOString().split('T')[0]}.csv"`
+                },
+                data: csvRows.join('\n')
+            };
+        } catch (error) {
+            logger.error('[Automations] failed to export history', user?.id, { detail: error?.message || 'Unknown error' });
+            return { status: 500, data: { error: 'Failed to export automation history' } };
+        }
+    }
+
     // DELETE /api/automations/history - Clear automation run history
     if (method === 'DELETE' && path === '/history') {
         try {
