@@ -1267,7 +1267,7 @@ Object.assign(pages, {
                             </button>
                         </div>
 
-                        <div class="mt-3 grid grid-cols-2 gap-3">
+                        <div class="mt-3 grid grid-cols-3 gap-3">
                             <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToEbay()" id="publish-ebay-crosslist-btn" disabled>
                                 <div class="text-left">
                                     <div class="font-semibold">${components.icon('upload', 16)} Publish to eBay</div>
@@ -1289,6 +1289,12 @@ Object.assign(pages, {
                             <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToMercari()" id="publish-mercari-crosslist-btn" disabled>
                                 <div class="text-left">
                                     <div class="font-semibold">${components.icon('upload', 16)} Publish to Mercari</div>
+                                    <div class="text-xs opacity-90">Cross-list via browser automation</div>
+                                </div>
+                            </button>
+                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToDepop()" id="publish-depop-crosslist-btn" disabled>
+                                <div class="text-left">
+                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to Depop</div>
                                     <div class="text-xs opacity-90">Cross-list via browser automation</div>
                                 </div>
                             </button>

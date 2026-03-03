@@ -161,7 +161,8 @@ function runMigrations() {
             '083_add_audit_log_table.sql',
             '084_add_missing_columns.sql',
             '085_add_missing_indexes.sql',
-            '086_rum_metrics.sql'
+            '086_rum_metrics.sql',
+            '087_oauth_pkce.sql'
         ];
 
         for (const migrationFile of migrationFiles) {

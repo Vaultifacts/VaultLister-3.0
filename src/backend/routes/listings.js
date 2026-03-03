@@ -6,6 +6,7 @@ import { publishListingToEbay } from '../services/platformSync/ebayPublish.js';
 import { publishListingToEtsy } from '../services/platformSync/etsyPublish.js';
 import { publishListingToPoshmark } from '../services/platformSync/poshmarkPublish.js';
 import { publishListingToMercari } from '../services/platformSync/mercariPublish.js';
+import { publishListingToDepop } from '../services/platformSync/depopPublish.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
@@ -1391,6 +1392,38 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Mercari publish error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: error.message } };
+        }
+    }
+
+    // POST /api/listings/:id/publish-depop - Push a listing live to Depop via browser automation
+    if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish-depop$/)) {
+        const listingId = path.slice(1).replace('/publish-depop', '');
+
+        try {
+            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+
+            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+
+            const result = await publishListingToDepop(null, listing, inventory);
+
+            query.run(
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+            );
+
+            return {
+                status: 200,
+                data: {
+                    success: true,
+                    listingId: result.listingId,
+                    listingUrl: result.listingUrl
+                }
+            };
+        } catch (error) {
+            logger.error('[Listings] Depop publish error', user?.id, { detail: error.message });
             return { status: 500, data: { error: error.message } };
         }
     }
