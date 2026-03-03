@@ -55783,6 +55783,8 @@ const handlers = {
         try {
             const saved = localStorage.getItem('vaultlister_automation_category_filter');
             if (saved) store.setState({ automationCategoryFilter: saved });
+            const savedPlatform = localStorage.getItem('vaultlister_automation_platform_filter');
+            if (savedPlatform) store.setState({ automationPlatformFilter: savedPlatform });
         } catch (e) {}
     },
 
