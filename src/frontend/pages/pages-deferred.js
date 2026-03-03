@@ -1483,6 +1483,39 @@ Object.assign(pages, {
             .filter(a => a.is_enabled)
             .reduce((sum, a) => sum + (timeSavedPerAutomation[a.category] || 15), 0);
 
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        const runsToday = runHistory.filter(r => {
+            const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
+            return ts >= todayStart.getTime();
+        }).length;
+        const totalItemsProcessed = runHistory.reduce((sum, r) => sum + (r.items_processed || r.items_succeeded || 0), 0);
+        const dailyChart = Array.from({length: 7}, () => ({ success: 0, failed: 0 }));
+        const nowMs = Date.now();
+        const dayMs = 86400000;
+        runHistory.forEach(r => {
+            const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
+            const daysAgo = Math.floor((nowMs - ts) / dayMs);
+            if (daysAgo >= 0 && daysAgo < 7) {
+                const idx = 6 - daysAgo;
+                if (r.status === 'success') dailyChart[idx].success++;
+                else if (r.status === 'failed' || r.status === 'failure') dailyChart[idx].failed++;
+                else dailyChart[idx].success++;
+            }
+        });
+        const maxDaily = Math.max(...dailyChart.map(d => d.success + d.failed), 1);
+        const dayLabels = Array.from({length: 7}, (_, i) => {
+            const d = new Date(nowMs - (6-i) * dayMs);
+            return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+        });
+        const categoryRunCounts = {};
+        runHistory.forEach(r => {
+            const ruleName = r.automation_name || r.action || '';
+            const matchedRule = automations.find(a => a.name === ruleName || a.id === r.automation_id);
+            if (matchedRule) {
+                categoryRunCounts[matchedRule.category] = (categoryRunCounts[matchedRule.category] || 0) + 1;
+            }
+        });
+
         // Group automations by category for breakdown
         const categoryStats = {};
         automations.forEach(a => {
@@ -1581,7 +1614,7 @@ Object.assign(pages, {
                             ${components.icon('activity', 20)}
                         </div>
                         <div>
-                            <div class="automation-stat-value">24</div>
+                            <div class="automation-stat-value">${runsToday}</div>
                             <div class="automation-stat-label">Runs Today</div>
                         </div>
                     </div>
@@ -1634,7 +1667,7 @@ Object.assign(pages, {
                             <div class="metric-content">
                                 <div class="metric-value">${Math.round(timeSavedToday * 7 / 60)}h ${timeSavedToday * 7 % 60}m</div>
                                 <div class="metric-label">Time Saved This Week</div>
-                                <div class="metric-comparison positive">+23% vs last week</div>
+                                <div class="metric-comparison neutral">Est. at $30/hr</div>
                             </div>
                         </div>
                         <div class="performance-metric-card">
@@ -1642,9 +1675,9 @@ Object.assign(pages, {
                                 ${components.icon('zap', 24)}
                             </div>
                             <div class="metric-content">
-                                <div class="metric-value">847</div>
-                                <div class="metric-label">Actions Completed</div>
-                                <div class="metric-comparison positive">+156 this week</div>
+                                <div class="metric-value">${totalItemsProcessed.toLocaleString()}</div>
+                                <div class="metric-label">Items Processed</div>
+                                <div class="metric-comparison neutral">${totalRuns} total runs</div>
                             </div>
                         </div>
                         <div class="performance-metric-card">
@@ -1674,9 +1707,9 @@ Object.assign(pages, {
                         <div class="breakdown-bars">
                             ${Object.entries(categoryStats).map(([cat, stats]) => {
                                 const catInfo = categoryLabels[cat] || { label: cat, color: '#6b7280' };
-                                const actionsCount = stats.active * Math.floor(Math.random() * 50 + 20);
-                                const maxActions = 200;
-                                const barWidth = Math.min((actionsCount / maxActions) * 100, 100);
+                                const actionsCount = categoryRunCounts[cat] || 0;
+                                const maxCatActions = Math.max(...Object.values(categoryRunCounts), 1);
+                                const barWidth = maxCatActions > 0 ? Math.min((actionsCount / maxCatActions) * 100, 100) : 0;
                                 return `
                                     <div class="breakdown-row">
                                         <div class="breakdown-label">${catInfo.label}</div>
