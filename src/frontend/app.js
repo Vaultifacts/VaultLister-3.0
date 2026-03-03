@@ -57825,6 +57825,7 @@ const handlers = {
         }
         store.setState({ automationNotifPrefs: { ...current } });
         try { localStorage.setItem('vaultlister_automation_notif_prefs', JSON.stringify(current)); } catch (e) {}
+        api.ensureCSRFToken().then(() => api.post('/automations/notification-prefs', current)).catch(() => {});
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
             document.querySelector('.page-content').innerHTML = pageContent;

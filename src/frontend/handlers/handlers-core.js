@@ -485,16 +485,20 @@ const handlers = {
         try {
             const data = await api.get('/automations');
             store.setState({ automations: data.rules });
-            // Load run history + stats in parallel (non-critical)
-            const [histResult, statsResult] = await Promise.allSettled([
+            // Load run history + stats + notif prefs in parallel (non-critical)
+            const [histResult, statsResult, notifResult] = await Promise.allSettled([
                 api.get('/automations/history?limit=50'),
-                api.get('/automations/stats')
+                api.get('/automations/stats'),
+                api.get('/automations/notification-prefs')
             ]);
             if (histResult.status === 'fulfilled') {
                 store.setState({ automationHistoryRuns: histResult.value.runs || [] });
             }
             if (statsResult.status === 'fulfilled') {
                 store.setState({ automationStats: statsResult.value.stats || {} });
+            }
+            if (notifResult.status === 'fulfilled' && notifResult.value.prefs) {
+                store.setState({ automationNotifPrefs: notifResult.value.prefs });
             }
             // Don't call router.handleRoute() - it creates an infinite loop
             // The router already handles rendering after calling this function

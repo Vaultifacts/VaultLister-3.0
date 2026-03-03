@@ -951,5 +951,51 @@ export async function automationsRouter(ctx) {
         return { status: 200, data: { settings: body, message: 'Schedule settings saved' } };
     }
 
+    // GET /api/automations/notification-prefs - Get notification preferences
+    if (method === 'GET' && path === '/notification-prefs') {
+        const row = query.get(
+            'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
+            [user.id, 'automation_notifications']
+        );
+
+        const defaults = {
+            on_success: true, on_failure: true, on_partial: true,
+            daily_summary: false, desktop_enabled: true, email_enabled: false
+        };
+
+        let prefs = defaults;
+        if (row) {
+            try { prefs = { ...defaults, ...JSON.parse(row.settings) }; } catch (_) {}
+        }
+
+        return { status: 200, data: { prefs } };
+    }
+
+    // POST /api/automations/notification-prefs - Save notification preferences
+    if (method === 'POST' && path === '/notification-prefs') {
+        const { on_success, on_failure, on_partial, daily_summary, desktop_enabled, email_enabled } = body;
+
+        const prefs = JSON.stringify({ on_success, on_failure, on_partial, daily_summary, desktop_enabled, email_enabled });
+
+        const existing = query.get(
+            'SELECT id FROM user_preferences WHERE user_id = ? AND key = ?',
+            [user.id, 'automation_notifications']
+        );
+
+        if (existing) {
+            query.run(
+                'UPDATE user_preferences SET settings = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND key = ?',
+                [prefs, user.id, 'automation_notifications']
+            );
+        } else {
+            query.run(
+                'INSERT INTO user_preferences (id, user_id, key, settings) VALUES (?, ?, ?, ?)',
+                [uuidv4(), user.id, 'automation_notifications', prefs]
+            );
+        }
+
+        return { status: 200, data: { prefs: body, message: 'Notification preferences saved' } };
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }
