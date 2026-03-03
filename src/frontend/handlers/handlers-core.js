@@ -807,6 +807,8 @@ const handlers = {
             if (saved) store.setState({ automationCategoryFilter: saved });
             const savedPlatform = localStorage.getItem('vaultlister_automation_platform_filter');
             if (savedPlatform) store.setState({ automationPlatformFilter: savedPlatform });
+            const savedNotifPrefs = localStorage.getItem('vaultlister_automation_notif_prefs');
+            if (savedNotifPrefs) try { store.setState({ automationNotifPrefs: JSON.parse(savedNotifPrefs) }); } catch (_) {}
         } catch (e) {}
     },
 

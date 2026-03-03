@@ -57806,6 +57806,31 @@ const handlers = {
         `);
     },
 
+    updateAutomationNotifPref: function(key, value) {
+        const current = store.state.automationNotifPrefs || {
+            on_success: true, on_failure: true, on_partial: true,
+            daily_summary: false, desktop_enabled: true, email_enabled: false
+        };
+        if (key === '_mute_all') {
+            Object.keys(current).forEach(k => { current[k] = false; });
+        } else if (key === '_enable_recommended') {
+            current.on_failure = true;
+            current.on_partial = true;
+            current.desktop_enabled = true;
+            current.on_success = false;
+            current.daily_summary = false;
+            current.email_enabled = false;
+        } else {
+            current[key] = value;
+        }
+        store.setState({ automationNotifPrefs: { ...current } });
+        try { localStorage.setItem('vaultlister_automation_notif_prefs', JSON.stringify(current)); } catch (e) {}
+        if (store.state.currentPage === 'automations') {
+            const pageContent = pages.automations();
+            document.querySelector('.page-content').innerHTML = pageContent;
+        }
+    },
+
     // Update automation schedule settings
     updateAutomationSchedule: function(setting, value) {
         const current = store.state.automationSchedule || {

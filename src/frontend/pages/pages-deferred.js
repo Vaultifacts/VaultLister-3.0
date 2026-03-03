@@ -1854,6 +1854,86 @@ Object.assign(pages, {
                 </div>
             </div>
 
+            <!-- Notification Preferences -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Notification Preferences</h3>
+                    <p class="text-sm text-gray-500">Choose which automation events trigger notifications</p>
+                </div>
+                <div class="card-body">
+                    ${(() => {
+                        const notifPrefs = store.state.automationNotifPrefs || {
+                            on_success: true,
+                            on_failure: true,
+                            on_partial: true,
+                            daily_summary: false,
+                            desktop_enabled: true,
+                            email_enabled: false
+                        };
+                        return `
+                    <div class="grid grid-cols-3 gap-6">
+                        <div>
+                            <label class="form-label mb-3">Event Types</label>
+                            <div class="flex flex-col gap-3">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.on_success ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('on_success', this.checked)"
+                                        style="accent-color: var(--success-500);">
+                                    <span class="text-sm">${components.icon('check-circle', 14)} Successful runs</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.on_failure ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('on_failure', this.checked)"
+                                        style="accent-color: var(--error-500);">
+                                    <span class="text-sm">${components.icon('alert-triangle', 14)} Failed runs</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.on_partial ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('on_partial', this.checked)"
+                                        style="accent-color: var(--warning-500);">
+                                    <span class="text-sm">${components.icon('alert-circle', 14)} Partial completions</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.daily_summary ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('daily_summary', this.checked)"
+                                        style="accent-color: var(--primary-500);">
+                                    <span class="text-sm">${components.icon('bar-chart', 14)} Daily summary digest</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label mb-3">Channels</label>
+                            <div class="flex flex-col gap-3">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('desktop_enabled', this.checked)"
+                                        style="accent-color: var(--primary-500);">
+                                    <span class="text-sm">${components.icon('monitor', 14)} Desktop notifications</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.email_enabled ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('email_enabled', this.checked)"
+                                        style="accent-color: var(--primary-500);">
+                                    <span class="text-sm">${components.icon('mail', 14)} Email notifications</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label mb-3">Quick Actions</label>
+                            <div class="flex flex-col gap-2">
+                                <button class="btn btn-sm btn-secondary" onclick="handlers.updateAutomationNotifPref('_mute_all', true)">
+                                    ${components.icon('bell-off', 14)} Mute All
+                                </button>
+                                <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_recommended', true)">
+                                    ${components.icon('bell', 14)} Recommended
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+                    })()}
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                     <div>
