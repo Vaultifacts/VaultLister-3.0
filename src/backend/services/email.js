@@ -219,11 +219,43 @@ export async function sendSecurityAlertEmail(user, alertType, details) {
     return sendEmail(user.email, `Security Alert: ${alertMessages[alertType] || alertType}`, html);
 }
 
+export async function sendAutomationNotificationEmail(user, notification) {
+    const statusColors = { success: '#059669', error: '#DC2626', warning: '#D97706' };
+    const color = statusColors[notification.type] || '#4F46E5';
+    const safeTitle = escapeHtml(notification.title || 'Automation Update');
+    const safeMessage = escapeHtml(notification.message || '');
+    const safeUser = escapeHtml(user.username || user.email);
+
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: ${color};">${safeTitle}</h2>
+            <p>Hi ${safeUser},</p>
+            <p>${safeMessage}</p>
+            ${notification.data ? `
+                <div style="background-color: #F3F4F6; padding: 16px; border-radius: 6px; margin: 20px 0;">
+                    <p style="margin: 0; color: #374151;">
+                        <strong>Details:</strong><br>
+                        Platform: ${escapeHtml(notification.data.platform || 'N/A')}<br>
+                        Rule: ${escapeHtml(notification.data.ruleName || 'N/A')}
+                    </p>
+                </div>
+            ` : ''}
+            <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
+            <p style="color: #9CA3AF; font-size: 12px;">
+                This is an automated notification from VaultLister.
+            </p>
+        </div>
+    `;
+
+    return sendEmail(user.email, safeTitle + ' - VaultLister', html);
+}
+
 export default {
     init: initEmailService,
     sendVerificationEmail,
     sendPasswordResetEmail,
     sendMFAEnabledEmail,
     sendMFADisabledEmail,
-    sendSecurityAlertEmail
+    sendSecurityAlertEmail,
+    sendAutomationNotificationEmail
 };

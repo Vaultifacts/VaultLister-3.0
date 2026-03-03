@@ -25499,6 +25499,8 @@ const handlers = {
         try {
             const saved = localStorage.getItem('vaultlister_automation_category_filter');
             if (saved) store.setState({ automationCategoryFilter: saved });
+            const savedSort = localStorage.getItem('vaultlister_automation_sort');
+            if (savedSort) store.setState({ automationSortBy: savedSort });
         } catch (e) {}
     },
 

@@ -1229,6 +1229,30 @@ async function executeRunAutomationTask(payload) {
                     }
                 });
             } catch (_) { /* WS not available */ }
+
+            // Send email notification if user has email_enabled
+            try {
+                const prefRow = query.get(
+                    'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
+                    [rule.user_id, 'automation_notifications']
+                );
+                if (prefRow) {
+                    const prefs = JSON.parse(prefRow.settings);
+                    if (prefs.email_enabled) {
+                        const nType = notification.type;
+                        const shouldEmail = (nType === 'success' && prefs.on_success) ||
+                            (nType === 'error' && prefs.on_failure) ||
+                            (nType === 'warning' && prefs.on_partial);
+                        if (shouldEmail) {
+                            const userRow = query.get('SELECT email, username FROM users WHERE id = ?', [rule.user_id]);
+                            if (userRow?.email) {
+                                const { sendAutomationNotificationEmail } = await import('../services/email.js');
+                                await sendAutomationNotificationEmail(userRow, notification);
+                            }
+                        }
+                    }
+                }
+            } catch (_) { /* Email not configured or failed */ }
         }
     } catch (notifyErr) {
         logger.error('[TaskWorker] Failed to create automation notification:', notifyErr.message);

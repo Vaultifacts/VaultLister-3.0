@@ -318,7 +318,12 @@ Object.assign(pages, {
                                                     if (itemListings.length === 0) {
                                                         return '<span class="text-xs text-gray-500">Not listed</span>';
                                                     }
-                                                    return itemListings.map(l => components.platformBadge(l.platform)).join('');
+                                                    return itemListings.map(l => {
+                                                        const statusColors = { active: 'var(--success)', pending: 'var(--warning-600)', draft: 'var(--gray-400)', error: 'var(--error)', ended: 'var(--error)', sold: 'var(--primary-500)', archived: 'var(--gray-400)' };
+                                                        const sc = statusColors[l.status] || 'var(--gray-400)';
+                                                        const dot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + sc + ';margin-left:-2px;margin-right:4px;" title="' + ((l.status || 'unknown').charAt(0).toUpperCase() + (l.status || 'unknown').slice(1)) + '"></span>';
+                                                        return components.platformBadge(l.platform) + dot;
+                                                    }).join(' ');
                                                 })()}
                                             </div>
                                         </td>
@@ -1946,6 +1951,13 @@ Object.assign(pages, {
                             <option value="all" ${(store.state.automationCategoryFilter || 'all') === 'all' ? 'selected' : ''}>All Categories</option>
                             ${Object.entries(categoryLabels).map(([key, val]) => `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`).join('')}
                         </select>
+                        <select class="form-select" onchange="handlers.sortAutomations(this.value)" style="width: 140px; height: 36px;">
+                            <option value="name_asc" ${(store.state.automationSortBy || 'name_asc') === 'name_asc' ? 'selected' : ''}>Name A-Z</option>
+                            <option value="name_desc" ${store.state.automationSortBy === 'name_desc' ? 'selected' : ''}>Name Z-A</option>
+                            <option value="last_run" ${store.state.automationSortBy === 'last_run' ? 'selected' : ''}>Last Run</option>
+                            <option value="run_count" ${store.state.automationSortBy === 'run_count' ? 'selected' : ''}>Most Runs</option>
+                            <option value="enabled" ${store.state.automationSortBy === 'enabled' ? 'selected' : ''}>Enabled First</option>
+                        </select>
                         ${(() => {
                             const platFilter = store.state.automationPlatformFilter || 'all';
                             if (platFilter === 'all') return '';
@@ -1965,6 +1977,15 @@ Object.assign(pages, {
                             const matchesCat = catFilter === 'all' || rule.category === catFilter;
                             const matchesPlat = platFilter === 'all' || rule.platform === platFilter || rule.platform === 'all';
                             return matchesSearch && matchesCat && matchesPlat;
+                        }).sort((a, b) => {
+                            const sortBy = store.state.automationSortBy || 'name_asc';
+                            switch (sortBy) {
+                                case 'name_desc': return b.name.localeCompare(a.name);
+                                case 'last_run': return (b.last_run_at || '').localeCompare(a.last_run_at || '');
+                                case 'run_count': return (b.run_count || 0) - (a.run_count || 0);
+                                case 'enabled': return (b.is_enabled ? 1 : 0) - (a.is_enabled ? 1 : 0);
+                                default: return a.name.localeCompare(b.name);
+                            }
                         }).map(rule => `
                             <div class="automation-card" draggable="true">
                                 <div class="automation-card-content">
@@ -2014,6 +2035,9 @@ Object.assign(pages, {
                                 <div class="automation-card-actions">
                                     <button class="btn btn-secondary" onclick="handlers.testAutomation('${rule.id}')" title="Test Run" style="padding: 10px 16px;">
                                         ${components.icon('play', 16)} Test
+                                    </button>
+                                    <button class="btn btn-ghost" onclick="handlers.editRuleSchedule('${rule.id}', '${escapeHtml(rule.name)}', '${(rule.schedule || '').replace(/'/g, "\\'")}')" title="Schedule" style="padding: 10px;">
+                                        ${components.icon('clock', 20)}
                                     </button>
                                     <button class="btn btn-ghost" onclick="handlers.configureAutomation('${rule.id}', '${escapeHtml(rule.name)}', '${escapeHtml(rule.description)}', '${rule.platform}', '${rule.category}')" title="Configure" style="padding: 10px;">
                                         ${components.icon('settings', 20)}

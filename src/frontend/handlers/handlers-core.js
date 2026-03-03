@@ -813,6 +813,8 @@ const handlers = {
             if (savedPlatform) store.setState({ automationPlatformFilter: savedPlatform });
             const savedNotifPrefs = localStorage.getItem('vaultlister_automation_notif_prefs');
             if (savedNotifPrefs) try { store.setState({ automationNotifPrefs: JSON.parse(savedNotifPrefs) }); } catch (_) {}
+            const savedSort = localStorage.getItem('vaultlister_automation_sort');
+            if (savedSort) store.setState({ automationSortBy: savedSort });
         } catch (e) {}
     },
 
