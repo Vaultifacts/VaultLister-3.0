@@ -99,6 +99,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..', '..');
 const PUBLIC_DIR = join(ROOT_DIR, 'public');
 const FRONTEND_DIR = join(ROOT_DIR, 'src', 'frontend');
+const SHARED_DIR = join(ROOT_DIR, 'src', 'shared');
 const DIST_DIR = join(ROOT_DIR, 'dist');
 const IS_PROD = process.env.NODE_ENV === 'production';
 
@@ -486,6 +487,7 @@ function serveStatic(pathname, request) {
 
     const resolvedPublicDir = path.resolve(PUBLIC_DIR);
     const resolvedFrontendDir = path.resolve(FRONTEND_DIR);
+    const resolvedSharedDir = path.resolve(SHARED_DIR);
     const resolvedDistDir = path.resolve(DIST_DIR);
 
     if (IS_PROD && pathname.endsWith('.js')) {
@@ -509,8 +511,16 @@ function serveStatic(pathname, request) {
             const newResolvedPath = path.resolve(filePath);
             isValidPath = newResolvedPath.startsWith(resolvedFrontendDir);
 
-            if (!isValidPath) {
-                return null;
+            if (!isValidPath || !existsSync(filePath)) {
+                // Try shared directory (for /shared/* paths like presets.js)
+                const sharedPath = join(SHARED_DIR, pathname.replace(/^\/shared\//, '/'));
+                const resolvedShared = path.resolve(sharedPath);
+                if (resolvedShared.startsWith(resolvedSharedDir) && existsSync(sharedPath)) {
+                    filePath = sharedPath;
+                    isValidPath = true;
+                } else {
+                    return null;
+                }
             }
         }
     }

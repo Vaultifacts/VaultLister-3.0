@@ -34,6 +34,9 @@
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
     <script type="module" src="/services/websocketClient.js"></script>
 
+    <!-- Shared modules (loaded before core bundle for global availability) -->
+    <script src="/shared/automations/presets.js" defer></script>
+
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
     <script src="/core-bundle.js?v=19" defer></script>
     <!-- Phase 2: Route-group chunks loaded on demand by router.js -->

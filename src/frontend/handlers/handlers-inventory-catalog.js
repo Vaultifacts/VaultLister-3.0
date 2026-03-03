@@ -710,43 +710,7 @@ Object.assign(handlers, {
 
 
     testAutomation: async function(automationId) {
-        const allPresets = [
-            { id: 'daily_share', name: 'Daily Closet Share', category: 'sharing' },
-            { id: 'party_share', name: 'Party Share', category: 'sharing' },
-            { id: 'community_share', name: 'Community Share', category: 'sharing' },
-            { id: 'follow_back', name: 'Follow Back', category: 'engagement' },
-            { id: 'unfollow_inactive', name: 'Unfollow Inactive Users', category: 'engagement' },
-            { id: 'follow_targeted', name: 'Follow Targeted Users', category: 'engagement' },
-            { id: 'send_offers', name: 'Send Offers to Likers', category: 'offers' },
-            { id: 'auto_accept', name: 'Auto Accept Offers > 80%', category: 'offers' },
-            { id: 'decline_lowball', name: 'Decline Lowball Offers', category: 'offers' },
-            { id: 'counter_offers', name: 'Auto Counter Offers', category: 'offers' },
-            { id: 'bundle_discount', name: 'Bundle Discount Offers', category: 'bundles' },
-            { id: 'bundle_reminder', name: 'Bundle Reminder', category: 'bundles' },
-            { id: 'bundle_for_likers', name: 'Create Bundle for Likers', category: 'bundles' },
-            { id: 'weekly_drop', name: 'Weekly Price Drop', category: 'pricing' },
-            { id: 'ccl_rotation', name: 'CCL Price Rotation', category: 'pricing' },
-            { id: 'relist_stale', name: 'Relist Stale Items', category: 'maintenance' },
-            { id: 'delist_stale', name: 'Delist Stale Items', category: 'maintenance' },
-            { id: 'smart_relisting', name: 'Smart Relisting', category: 'maintenance' },
-            { id: 'description_refresh', name: 'Description Refresh', category: 'maintenance' },
-            { id: 'auto_reprice', name: 'Repricing Automation', category: 'pricing' },
-            { id: 'mercari_refresh', name: 'Mercari Daily Refresh', category: 'sharing' },
-            { id: 'mercari_relist', name: 'Mercari Relist Stale', category: 'maintenance' },
-            { id: 'mercari_price_drop', name: 'Mercari Price Drop', category: 'pricing' },
-            { id: 'depop_refresh', name: 'Depop Daily Refresh', category: 'sharing' },
-            { id: 'depop_share', name: 'Depop Share Listings', category: 'sharing' },
-            { id: 'depop_price_drop', name: 'Depop Price Drop', category: 'pricing' },
-            { id: 'grailed_bump', name: 'Grailed Daily Bump', category: 'sharing' },
-            { id: 'grailed_relist', name: 'Grailed Relist Stale', category: 'maintenance' },
-            { id: 'grailed_price_drop', name: 'Grailed Price Drop', category: 'pricing' },
-            { id: 'facebook_refresh', name: 'Facebook Daily Refresh', category: 'sharing' },
-            { id: 'facebook_relist', name: 'Facebook Relist Stale', category: 'maintenance' },
-            { id: 'facebook_price_drop', name: 'Facebook Price Drop', category: 'pricing' },
-            { id: 'whatnot_refresh', name: 'Whatnot Daily Refresh', category: 'sharing' },
-            { id: 'whatnot_relist', name: 'Whatnot Relist Stale', category: 'maintenance' },
-            { id: 'whatnot_price_drop', name: 'Whatnot Price Drop', category: 'pricing' }
-        ];
+        const allPresets = (window.AUTOMATION_PRESETS || []).map(p => ({ id: p.id, name: p.name, category: p.category }));
         const rule = allPresets.find(p => p.id === automationId) || { name: 'Automation', category: 'sharing' };
 
         // Show loading modal
