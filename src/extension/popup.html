@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaultLister Quick Lister</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="popup-container">
+        <div class="popup-header">
+            <h1>VaultLister</h1>
+            <span class="version">v1.0</span>
+        </div>
+
+        <div id="connection-status" class="status-bar status-disconnected">
+            <span class="status-dot"></span>
+            <span id="status-text">Not connected</span>
+        </div>
+
+        <div id="settings-section" class="section">
+            <label class="field-label" for="server-url">VaultLister Server URL</label>
+            <input type="url" id="server-url" placeholder="http://localhost:3000" value="http://localhost:3000">
+            <label class="field-label" for="api-token">API Token</label>
+            <input type="password" id="api-token" placeholder="Paste your token from Settings">
+            <button id="connect-btn" class="btn btn-primary">Connect</button>
+        </div>
+
+        <div id="import-section" class="section hidden">
+            <button id="scrape-btn" class="btn btn-primary btn-full">
+                Import Current Listing
+            </button>
+            <div id="scrape-result" class="result-box hidden"></div>
+
+            <div class="divider"></div>
+
+            <h3>Quick Cross-List</h3>
+            <div id="platforms" class="platform-grid">
+                <label class="platform-option">
+                    <input type="checkbox" value="poshmark"> Poshmark
+                </label>
+                <label class="platform-option">
+                    <input type="checkbox" value="ebay"> eBay
+                </label>
+                <label class="platform-option">
+                    <input type="checkbox" value="mercari"> Mercari
+                </label>
+                <label class="platform-option">
+                    <input type="checkbox" value="depop"> Depop
+                </label>
+                <label class="platform-option">
+                    <input type="checkbox" value="grailed"> Grailed
+                </label>
+                <label class="platform-option">
+                    <input type="checkbox" value="etsy"> Etsy
+                </label>
+                <label class="platform-option">
+                    <input type="checkbox" value="facebook"> Facebook
+                </label>
+                <label class="platform-option">
+                    <input type="checkbox" value="whatnot"> Whatnot
+                </label>
+                <label class="platform-option">
+                    <input type="checkbox" value="shopify"> Shopify
+                </label>
+            </div>
+            <button id="crosslist-btn" class="btn btn-success btn-full" disabled>
+                Cross-List to Selected
+            </button>
+            <div id="crosslist-result" class="result-box hidden"></div>
+        </div>
+
+        <div class="popup-footer">
+            <a href="#" id="open-app-link">Open VaultLister</a>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>

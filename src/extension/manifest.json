@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "VaultLister Quick Lister",
+  "version": "1.0.0",
+  "description": "Quickly import listings from any marketplace into VaultLister for cross-listing",
+  "permissions": ["activeTab", "storage", "scripting"],
+  "host_permissions": [
+    "https://poshmark.com/*",
+    "https://poshmark.ca/*",
+    "https://www.mercari.com/*",
+    "https://www.depop.com/*",
+    "https://www.grailed.com/*",
+    "https://www.facebook.com/marketplace/*",
+    "https://www.whatnot.com/*",
+    "https://www.ebay.com/*",
+    "https://www.etsy.com/*",
+    "https://www.shopify.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.svg",
+      "48": "icons/icon48.svg",
+      "128": "icons/icon128.svg"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://poshmark.com/listing/*",
+        "https://poshmark.ca/listing/*",
+        "https://www.mercari.com/item/*",
+        "https://www.depop.com/products/*",
+        "https://www.grailed.com/listings/*",
+        "https://www.facebook.com/marketplace/item/*",
+        "https://www.whatnot.com/product/*",
+        "https://www.ebay.com/itm/*",
+        "https://www.etsy.com/listing/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.svg",
+    "48": "icons/icon48.svg",
+    "128": "icons/icon128.svg"
+  }
+}
