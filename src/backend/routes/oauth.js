@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { encryptToken, decryptToken, generateStateToken } from '../utils/encryption.js';
+import { createHash, randomBytes } from 'crypto';
 import { queueTask } from '../workers/taskWorker.js';
 import { logger } from '../shared/logger.js';
 
@@ -24,11 +25,20 @@ export async function oauthRouter(ctx) {
         const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
         const redirectUri = process.env.OAUTH_REDIRECT_URI || 'http://localhost:3000/oauth-callback';
 
-        // Store state in database
+        // Generate PKCE values for platforms that require it (Etsy v3)
+        const PKCE_PLATFORMS = new Set(['etsy']);
+        let codeVerifier = null;
+        let codeChallenge = null;
+        if (PKCE_PLATFORMS.has(platform)) {
+            codeVerifier = randomBytes(32).toString('base64url'); // 43 chars, URL-safe
+            codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
+        }
+
+        // Store state in database (code_verifier stored for PKCE token exchange)
         query.run(`
-            INSERT INTO oauth_states (id, user_id, platform, state_token, redirect_uri, expires_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `, [stateId, user.id, platform, stateToken, redirectUri, expiresAt.toISOString()]);
+            INSERT INTO oauth_states (id, user_id, platform, state_token, redirect_uri, expires_at, code_verifier)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [stateId, user.id, platform, stateToken, redirectUri, expiresAt.toISOString(), codeVerifier]);
 
         // Get OAuth config based on mode
         const oauthMode = process.env.OAUTH_MODE || 'mock';
@@ -45,6 +55,10 @@ export async function oauthRouter(ctx) {
         authUrl.searchParams.set('redirect_uri', config.redirectUri || redirectUri);
         authUrl.searchParams.set('response_type', 'code');
         authUrl.searchParams.set('state', stateToken);
+        if (codeChallenge) {
+            authUrl.searchParams.set('code_challenge', codeChallenge);
+            authUrl.searchParams.set('code_challenge_method', 'S256');
+        }
         // Scope URLs must NOT be percent-encoded (eBay rejects %3A%2F%2F).
         // Manually append scope with only spaces encoded as %20.
         const scopeParam = config.scopes.join(' ').replace(/ /g, '%20');
@@ -106,7 +120,7 @@ export async function oauthRouter(ctx) {
         }
 
         try {
-            const tokenResponse = await exchangeCodeForTokens(platform, code, config, oauthMode);
+            const tokenResponse = await exchangeCodeForTokens(platform, code, config, oauthMode, stateRecord.code_verifier);
 
             // Encrypt tokens before storage
             const encryptedAccessToken = encryptToken(tokenResponse.access_token);
@@ -580,7 +594,7 @@ function getOAuthConfig(platform, mode) {
 /**
  * Exchange authorization code for access and refresh tokens
  */
-async function exchangeCodeForTokens(platform, code, config, mode) {
+async function exchangeCodeForTokens(platform, code, config, mode, codeVerifier = null) {
     if (mode === 'mock') {
         // Mock token exchange - instant success
         return {
@@ -592,18 +606,27 @@ async function exchangeCodeForTokens(platform, code, config, mode) {
         };
     }
 
-    // Real token exchange (to be implemented when switching from mock)
+    // Build token request body
+    const bodyParams = {
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: config.redirectUri
+    };
+
+    // PKCE flow: include code_verifier + client_id in body instead of Basic Auth
+    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+    if (codeVerifier) {
+        bodyParams.client_id = config.clientId;
+        bodyParams.code_verifier = codeVerifier;
+    } else {
+        // Standard confidential client flow: Basic Auth with client_id:client_secret
+        headers['Authorization'] = 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
+    }
+
     const response = await fetch(config.tokenUrl, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64')
-        },
-        body: new URLSearchParams({
-            grant_type: 'authorization_code',
-            code: code,
-            redirect_uri: config.redirectUri
-        }),
+        headers,
+        body: new URLSearchParams(bodyParams),
         signal: AbortSignal.timeout(30000)
     });
 

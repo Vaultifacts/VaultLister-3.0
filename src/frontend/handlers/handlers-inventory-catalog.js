@@ -2698,6 +2698,11 @@ Object.assign(handlers, {
                     ${components.icon('upload', 16)} Publish to Poshmark
                 </button>
                 ` : ''}
+                ${listing.platform === 'mercari' && !listing.platform_listing_id ? `
+                <button class="btn btn-warning" id="publish-mercari-btn-${listingId}" onclick="handlers.publishToMercari('${listingId}')">
+                    ${components.icon('upload', 16)} Publish to Mercari
+                </button>
+                ` : ''}
                 <button class="btn btn-primary" onclick="modals.close(); handlers.editListing('${listingId}')">
                     ${components.icon('edit', 16)} Edit
                 </button>
@@ -6086,9 +6091,10 @@ Object.assign(handlers, {
         const countEl = document.getElementById('crosslist-selected-count');
         const basicBtn = document.getElementById('basic-crosslist-btn');
         const advancedBtn = document.getElementById('advanced-crosslist-btn');
-        const ebayBtn = document.getElementById('publish-ebay-crosslist-btn');
-        const etsyBtn = document.getElementById('publish-etsy-crosslist-btn');
+        const ebayBtn     = document.getElementById('publish-ebay-crosslist-btn');
+        const etsyBtn     = document.getElementById('publish-etsy-crosslist-btn');
         const poshmarkBtn = document.getElementById('publish-poshmark-crosslist-btn');
+        const mercariBtn  = document.getElementById('publish-mercari-crosslist-btn');
 
         if (selected.length > 0) {
             summary?.classList.remove('hidden');
@@ -6098,6 +6104,7 @@ Object.assign(handlers, {
             ebayBtn?.removeAttribute('disabled');
             etsyBtn?.removeAttribute('disabled');
             poshmarkBtn?.removeAttribute('disabled');
+            mercariBtn?.removeAttribute('disabled');
         } else {
             summary?.classList.add('hidden');
             basicBtn?.setAttribute('disabled', 'true');
@@ -6105,6 +6112,7 @@ Object.assign(handlers, {
             ebayBtn?.setAttribute('disabled', 'true');
             etsyBtn?.setAttribute('disabled', 'true');
             poshmarkBtn?.setAttribute('disabled', 'true');
+            mercariBtn?.setAttribute('disabled', 'true');
         }
 
         // Store selection in state
@@ -6316,6 +6324,77 @@ Object.assign(handlers, {
             toast.error('Poshmark publish failed: ' + error.message);
         } finally {
             if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('upload', 16)} Publish to Poshmark`; }
+        }
+    },
+
+
+    publishToMercari: async function(listingId) {
+        const listing = store.state.listings.find(l => l.id === listingId);
+        if (!listing) { toast.error('Listing not found'); return; }
+
+        const btn = document.getElementById(`publish-mercari-btn-${listingId}`);
+        if (btn) { btn.disabled = true; btn.textContent = 'Publishing…'; }
+
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post(`/listings/${listingId}/publish-mercari`, {});
+            modals.close();
+            toast.success(`Listed on Mercari! ${result.listingUrl}`, { duration: 8000 });
+            await handlers.loadListings();
+            if (store.state.currentPage === 'listings') renderApp(pages.listings());
+        } catch (error) {
+            toast.error('Mercari publish failed: ' + error.message);
+            if (btn) { btn.disabled = false; btn.textContent = 'Publish to Mercari'; }
+        }
+    },
+
+
+    publishSelectedToMercari: async function() {
+        const selectedItemIds = store.state.crosslistSelectedItems || [];
+        if (selectedItemIds.length === 0) {
+            return toast.warning('Please select at least one item');
+        }
+
+        const btn = document.getElementById('publish-mercari-crosslist-btn');
+        if (btn) { btn.disabled = true; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').textContent = `Publishing ${selectedItemIds.length} item(s)…`; }
+
+        const results = [];
+        const errors = [];
+
+        try {
+            await api.ensureCSRFToken();
+
+            for (const inventoryId of selectedItemIds) {
+                try {
+                    const crosslistResp = await api.post('/listings/crosslist', {
+                        itemIds: [inventoryId],
+                        platforms: ['mercari']
+                    });
+                    const created = crosslistResp?.created?.[0];
+                    const skipped = crosslistResp?.skipped?.[0];
+                    const listingId = created?.id || skipped?.existingId;
+                    if (!listingId) { errors.push(`No listing ID returned for item ${inventoryId}`); continue; }
+
+                    const publishResp = await api.post(`/listings/${listingId}/publish-mercari`, {});
+                    results.push(publishResp);
+                } catch (err) {
+                    errors.push(err.message);
+                }
+            }
+
+            await handlers.loadListings();
+            if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+
+            if (results.length > 0) {
+                toast.success(`${results.length} item(s) published to Mercari! Check the Listings tab for links.`, { duration: 8000 });
+            }
+            if (errors.length > 0) {
+                toast.error(`${errors.length} item(s) failed: ${errors[0]}`);
+            }
+        } catch (error) {
+            toast.error('Mercari publish failed: ' + error.message);
+        } finally {
+            if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('upload', 16)} Publish to Mercari`; }
         }
     },
 
