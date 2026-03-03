@@ -1191,6 +1191,15 @@ Object.assign(pages, {
     crosslist() {
         const activeInventory = store.state.inventory.filter(i => i.status === 'active') || [];
 
+        // Build a map: inventoryId → [platforms already published to]
+        const publishedMap = {};
+        (store.state.listings || []).forEach(l => {
+            if (l.platform_listing_id) {
+                if (!publishedMap[l.inventory_id]) publishedMap[l.inventory_id] = [];
+                publishedMap[l.inventory_id].push(l.platform);
+            }
+        });
+
         return `
             <div class="page-header">
                 <h1 class="page-title">Cross-List</h1>
@@ -1223,6 +1232,13 @@ Object.assign(pages, {
                                     `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.title)}" style="width:48px;height:48px;object-fit:cover;border-radius:var(--radius-md)">` :
                                     `<div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--primary-100);color:var(--primary-600);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:20px;">${firstLetter}</div>`;
 
+                                const platforms = publishedMap[item.id] || [];
+                                const badgeHtml = platforms.length > 0
+                                    ? `<div class="flex flex-wrap gap-1 mt-1">${platforms.map(p =>
+                                        `<span style="font-size:10px;padding:1px 6px;border-radius:9999px;background:var(--success-100);color:var(--success-700);font-weight:500;">${escapeHtml(p)}</span>`
+                                      ).join('')}</div>`
+                                    : '';
+
                                 return `
                                     <label class="flex items-center gap-4 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style="border-color: var(--gray-200)">
                                         <input type="checkbox" class="crosslist-item-checkbox" value="${item.id}" onchange="handlers.updateCrosslistSelection()">
@@ -1230,6 +1246,7 @@ Object.assign(pages, {
                                         <div class="flex-1">
                                             <div class="font-medium">${escapeHtml(item.title)}</div>
                                             <div class="text-sm text-gray-500">${item.brand ? escapeHtml(item.brand) + ' · ' : ''}$${item.list_price}</div>
+                                            ${badgeHtml}
                                         </div>
                                         <div class="text-xs text-gray-500">${item.quantity || 1} in stock</div>
                                     </label>
@@ -1245,9 +1262,21 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
                         <div id="crosslist-selection-summary" class="mb-4 p-4 bg-gray-50 rounded-lg hidden">
-                            <div class="font-medium text-sm mb-1">Selection Summary</div>
-                            <div class="text-sm text-gray-600">
-                                <span id="crosslist-selected-count">0</span> item(s) selected
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-medium text-sm mb-1">Selection Summary</div>
+                                    <div class="text-sm text-gray-600">
+                                        <span id="crosslist-selected-count">0</span> item(s) selected
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="btn btn-ghost btn-sm" onclick="handlers.bulkAdjustCrosslistPrice()" id="bulk-price-crosslist-btn" title="Adjust prices for selected items">
+                                        ${components.icon('dollar-sign', 14)} Adjust Prices
+                                    </button>
+                                    <button class="btn btn-ghost btn-sm text-red-600" onclick="handlers.bulkDelistSelected()" id="bulk-delist-crosslist-btn" title="Remove published listings for selected items">
+                                        ${components.icon('x-circle', 14)} Delist Selected
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

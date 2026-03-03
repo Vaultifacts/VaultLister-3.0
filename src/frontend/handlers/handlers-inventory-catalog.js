@@ -6849,6 +6849,118 @@ Object.assign(handlers, {
     },
 
 
+    bulkAdjustCrosslistPrice: async function() {
+        const selectedItemIds = store.state.crosslistSelectedItems || [];
+        if (selectedItemIds.length === 0) return toast.warning('Please select at least one item');
+
+        const existing = document.getElementById('bulk-price-modal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.id = 'bulk-price-modal';
+        modal.innerHTML = `
+            <div class="modal" style="max-width:420px;">
+                <div class="modal-header">
+                    <h3>${components.icon('dollar-sign', 18)} Bulk Price Adjustment</h3>
+                    <button class="btn btn-ghost" onclick="document.getElementById('bulk-price-modal').remove()">&#10005;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-sm text-gray-600 mb-4">Adjust prices for ${selectedItemIds.length} selected item(s)</p>
+                    <div class="flex flex-col gap-3">
+                        <label class="flex items-center gap-2">
+                            <input type="radio" name="price-type" value="percentage" checked> Percentage
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="radio" name="price-type" value="flat"> Flat Amount
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="price-adj-value" class="form-input" style="width:120px" placeholder="e.g. 10" step="0.01">
+                            <span class="text-sm text-gray-500" id="price-adj-unit">%</span>
+                        </div>
+                        <p class="text-xs text-gray-400">Use positive to increase, negative to decrease (e.g. -15 = 15% off)</p>
+                    </div>
+                </div>
+                <div class="modal-footer flex gap-2 justify-end">
+                    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('bulk-price-modal').remove()">Cancel</button>
+                    <button class="btn btn-primary btn-sm" id="apply-price-adj-btn">Apply</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+
+        // Toggle unit label
+        modal.querySelectorAll('input[name="price-type"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.getElementById('price-adj-unit').textContent = radio.value === 'percentage' ? '%' : '$';
+            });
+        });
+
+        document.getElementById('apply-price-adj-btn').addEventListener('click', async () => {
+            const type = modal.querySelector('input[name="price-type"]:checked')?.value || 'percentage';
+            const value = parseFloat(document.getElementById('price-adj-value')?.value);
+            if (isNaN(value) || value === 0) return toast.warning('Enter a non-zero value');
+
+            try {
+                await api.ensureCSRFToken();
+                await api.post('/inventory/bulk', {
+                    action: 'updatePrice',
+                    ids: selectedItemIds,
+                    data: { adjustment: { type, value } }
+                });
+                document.getElementById('bulk-price-modal').remove();
+                toast.success(`Prices updated for ${selectedItemIds.length} item(s)`);
+                await handlers.loadInventory();
+                if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+            } catch (err) {
+                toast.error('Price update failed: ' + err.message);
+            }
+        });
+    },
+
+
+    bulkDelistSelected: async function() {
+        const selectedItemIds = store.state.crosslistSelectedItems || [];
+        if (selectedItemIds.length === 0) return toast.warning('Please select at least one item');
+
+        // Find all published listings for these inventory items
+        const listings = (store.state.listings || []).filter(l =>
+            selectedItemIds.includes(l.inventory_id) && l.platform_listing_id
+        );
+
+        if (listings.length === 0) {
+            return toast.info('No published listings found for selected items');
+        }
+
+        if (!confirm(`Delist ${listings.length} published listing(s) across ${[...new Set(listings.map(l => l.platform))].length} platform(s)? This marks them as ended in VaultLister.`)) {
+            return;
+        }
+
+        let success = 0;
+        let errors = [];
+
+        try {
+            await api.ensureCSRFToken();
+
+            for (const listing of listings) {
+                try {
+                    await api.post(`/listings/${listing.id}/delist`, {});
+                    success++;
+                } catch (err) {
+                    errors.push(`${listing.platform}: ${err.message}`);
+                }
+            }
+
+            await handlers.loadListings();
+            if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+
+            if (success > 0) toast.success(`${success} listing(s) delisted`);
+            if (errors.length > 0) toast.error(`${errors.length} failed: ${errors[0]}`);
+        } catch (err) {
+            toast.error('Delist failed: ' + err.message);
+        }
+    },
+
+
     togglePlatformPanel: function(platform, checked) {
         const panel = document.getElementById(`panel-${platform}`);
         const noMessage = document.getElementById('no-platforms-message');

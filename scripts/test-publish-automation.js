@@ -11,6 +11,14 @@
 //   bun scripts/test-publish-automation.js poshmark → one platform only
 
 import { chromium } from 'playwright';
+import { Database } from 'bun:sqlite';
+import crypto from 'crypto';
+import { existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DB_PATH = process.env.DB_PATH || join(__dirname, '..', 'data', 'vaultlister.db');
 
 const PLATFORMS = {
     poshmark: {
@@ -131,12 +139,90 @@ async function testShopify() {
     }
 }
 
+// Decrypt an OAuth token stored as "iv_hex:ciphertext_hex"
+function decryptToken(encrypted) {
+    const key = process.env.OAUTH_ENCRYPTION_KEY || 'dev-only-key-not-for-production!!';
+    const keyBuffer = Buffer.alloc(32);
+    Buffer.from(key, 'utf8').copy(keyBuffer);
+    const [ivHex, cipherHex] = encrypted.split(':');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', keyBuffer, Buffer.from(ivHex, 'hex'));
+    return decipher.update(cipherHex, 'hex', 'utf8') + decipher.final('utf8');
+}
+
+// Get a connected shop's OAuth token from the DB
+function getShopToken(platform) {
+    if (!existsSync(DB_PATH)) return null;
+    try {
+        const db = new Database(DB_PATH, { readonly: true });
+        const row = db.query('SELECT oauth_token FROM shops WHERE platform = ? AND is_connected = 1 AND oauth_token IS NOT NULL LIMIT 1').get(platform);
+        db.close();
+        if (!row?.oauth_token) return null;
+        return decryptToken(row.oauth_token);
+    } catch { return null; }
+}
+
+async function testEbay() {
+    const token = getShopToken('ebay');
+    if (!token) {
+        return { name: 'ebay', pass: false, warning: 'No connected eBay shop in DB — skip', error: null };
+    }
+    const env = process.env.EBAY_ENVIRONMENT || 'sandbox';
+    const base = env === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
+    try {
+        const res = await fetch(`${base}/sell/inventory/v1/inventory_item?limit=1`, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+            signal: AbortSignal.timeout(15000),
+        });
+        if (res.ok || res.status === 200) {
+            return { name: 'ebay', pass: true, warning: null, error: null };
+        }
+        if (res.status === 401) {
+            return { name: 'ebay', pass: false, warning: null, error: `Token expired or invalid (HTTP 401) — re-connect eBay in My Shops` };
+        }
+        return { name: 'ebay', pass: false, warning: null, error: `API ping failed — HTTP ${res.status}` };
+    } catch (err) {
+        return { name: 'ebay', pass: false, warning: null, error: `API ping error: ${err.message.split('\n')[0]}` };
+    }
+}
+
+async function testEtsy() {
+    const token = getShopToken('etsy');
+    if (!token) {
+        return { name: 'etsy', pass: false, warning: 'No connected Etsy shop in DB — skip', error: null };
+    }
+    const clientId = process.env.ETSY_CLIENT_ID;
+    if (!clientId) {
+        return { name: 'etsy', pass: false, warning: 'ETSY_CLIENT_ID not set — skip', error: null };
+    }
+    try {
+        const res = await fetch('https://openapi.etsy.com/v3/application/users/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'x-api-key': clientId,
+                'Accept': 'application/json'
+            },
+            signal: AbortSignal.timeout(15000),
+        });
+        if (res.ok) {
+            return { name: 'etsy', pass: true, warning: null, error: null };
+        }
+        if (res.status === 401) {
+            return { name: 'etsy', pass: false, warning: null, error: `Token expired or invalid (HTTP 401) — re-connect Etsy in My Shops` };
+        }
+        return { name: 'etsy', pass: false, warning: null, error: `API ping failed — HTTP ${res.status}` };
+    } catch (err) {
+        return { name: 'etsy', pass: false, warning: null, error: `API ping error: ${err.message.split('\n')[0]}` };
+    }
+}
+
 async function main() {
     const arg = process.argv[2]?.toLowerCase();
-    if (arg === 'shopify') {
-        console.log(`\n${BOLD}${CYAN}VaultLister — Automation Smoke Test (Shopify only)${RESET}\n`);
-        process.stdout.write(`  Testing shopify       ... `);
-        const r = await testShopify();
+    // API-based platform single-test shortcuts
+    const API_PLATFORMS = { shopify: testShopify, ebay: testEbay, etsy: testEtsy };
+    if (arg && API_PLATFORMS[arg]) {
+        console.log(`\n${BOLD}${CYAN}VaultLister — Automation Smoke Test (${arg} only)${RESET}\n`);
+        process.stdout.write(`  Testing ${arg.padEnd(12, ' ')} ... `);
+        const r = await API_PLATFORMS[arg]();
         if (r.pass)         console.log(`${GREEN}PASS${RESET} — API ping OK`);
         else if (r.warning) console.log(`${YELLOW}SKIP${RESET} — ${r.warning}`);
         else                console.log(`${RED}FAIL${RESET} — ${r.error}`);
@@ -149,13 +235,13 @@ async function main() {
         : PLATFORMS;
 
     if (!targets) {
-        console.error(`${RED}Unknown platform: "${arg}". Valid: ${Object.keys(PLATFORMS).join(', ')}, shopify${RESET}`);
+        console.error(`${RED}Unknown platform: "${arg}". Valid: ${Object.keys(PLATFORMS).join(', ')}, ebay, etsy, shopify${RESET}`);
         process.exit(1);
     }
 
     const names = Object.keys(targets);
     console.log(`\n${BOLD}${CYAN}VaultLister — Automation Smoke Test${RESET}`);
-    console.log(`${CYAN}Platforms: ${names.join(', ')}${arg ? '' : ', shopify (API ping)'}${RESET}`);
+    console.log(`${CYAN}Platforms: ${names.join(', ')}${arg ? '' : ', ebay, etsy, shopify (API pings)'}${RESET}`);
     console.log(`${CYAN}Mode: dry-run (no credentials submitted)\n${RESET}`);
 
     const results = [];
@@ -173,14 +259,16 @@ async function main() {
         }
     }
 
-    // Shopify REST API credential ping (always runs when testing all platforms)
+    // API-based platform pings (always run when testing all platforms)
     if (!arg) {
-        process.stdout.write(`  Testing shopify       ... `);
-        const shopResult = await testShopify();
-        results.push(shopResult);
-        if (shopResult.pass)         console.log(`${GREEN}PASS${RESET} — API ping OK`);
-        else if (shopResult.warning) console.log(`${YELLOW}SKIP${RESET} — ${shopResult.warning}`);
-        else                         console.log(`${RED}FAIL${RESET} — ${shopResult.error}`);
+        for (const [apiName, testFn] of Object.entries(API_PLATFORMS)) {
+            process.stdout.write(`  Testing ${apiName.padEnd(12, ' ')} ... `);
+            const r = await testFn();
+            results.push(r);
+            if (r.pass)         console.log(`${GREEN}PASS${RESET} — API ping OK`);
+            else if (r.warning) console.log(`${YELLOW}SKIP${RESET} — ${r.warning}`);
+            else                console.log(`${RED}FAIL${RESET} — ${r.error}`);
+        }
     }
 
     const passed  = results.filter(r => r.pass).length;
@@ -190,18 +278,18 @@ async function main() {
 
     console.log(`\n${BOLD}Results: ${GREEN}${passed} passed${RESET}  ${YELLOW}${warned} warned${RESET}  ${RED}${failed} failed${RESET}  / ${total} total${RESET}\n`);
 
-    const shopifySkips  = results.filter(r => r.name === 'shopify' && r.warning).length;
-    const botWarnings   = warned - shopifySkips;
+    const apiSkips      = results.filter(r => ['shopify', 'ebay', 'etsy'].includes(r.name) && r.warning).length;
+    const botWarnings   = warned - apiSkips;
     const launchFails   = results.filter(r => r.error?.startsWith('Browser launch failed')).length;
     const selectorFails = failed - launchFails;
 
-    if (shopifySkips > 0) {
-        console.log(`${YELLOW}Shopify skipped — add SHOPIFY_STORE_URL + SHOPIFY_ACCESS_TOKEN to .env to run the API ping.${RESET}`);
+    if (apiSkips > 0) {
+        console.log(`${YELLOW}API platform(s) skipped — connect shops in My Shops page or add credentials to .env.${RESET}`);
     }
     if (botWarnings > 0) {
         console.log(`${YELLOW}Bot-detection warnings: usually a transient rate-limit — retry in a few minutes.${RESET}`);
     }
-    if (botWarnings > 0 || shopifySkips > 0) console.log('');
+    if (botWarnings > 0 || apiSkips > 0) console.log('');
 
     if (launchFails > 0 && selectorFails === 0) {
         console.log(`${YELLOW}All browser failures: Playwright CDP pipe timed out (Windows security restriction).`);
