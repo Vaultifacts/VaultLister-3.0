@@ -686,13 +686,49 @@ function executeRelist(rule, conditions, actions) {
     return { message: `${delistOnly ? 'Delist' : 'Relist'}: ${succeeded}/${processed} stale listings ${action} (>${minDays} days old)`, itemsProcessed: processed, itemsSucceeded: succeeded, itemsFailed: failed };
 }
 
-function executeShare(rule, conditions, actions) {
-    // Community share: share items from other closets (requires Playwright)
-    if (actions.communityShare) {
-        logAutomationAction(rule.user_id, rule.id, 'share', rule.platform, 'skipped', 'community_share_noop', null,
-            'Community share requires Playwright bot (not available offline). Use the Automations page "Test" button to run with browser.');
-        return { message: 'Community share: requires Playwright bot (queued for next bot session)', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+async function executeCommunityShare(rule, conditions, actions) {
+    try {
+        const { getPoshmarkBot } = await import('../../shared/automations/poshmark-bot.js');
+        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
+        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
+
+        const maxShares = conditions.maxShares || 50;
+
+        const shop = query.get(
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            [rule.user_id, 'poshmark']
+        );
+        if (!shop) {
+            logAutomationAction(rule.user_id, rule.id, 'share', 'poshmark', 'failure', 'community_share_no_shop', null,
+                'No connected Poshmark account found');
+            return { message: 'Community share: No connected Poshmark account', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+        }
+
+        auditLog('poshmark', 'community_share_start', { userId: rule.user_id, maxShares });
+
+        const bot = await getPoshmarkBot({ headless: true });
+        const result = await bot.shareCommunity({
+            maxShares,
+            delayBetween: jitteredDelay(3000),
+            feedType: conditions.feedType || 'feed'
+        });
+
+        await bot.close();
+
+        const shared = result?.shared || 0;
+        logAutomationAction(rule.user_id, rule.id, 'share', 'poshmark', 'success', 'community_share', null,
+            `Community shared ${shared} items from feed`);
+        auditLog('poshmark', 'community_share_success', { userId: rule.user_id, shared });
+
+        return { message: `Community share: ${shared} items shared from feed`, itemsProcessed: shared, itemsSucceeded: shared, itemsFailed: 0 };
+    } catch (err) {
+        logAutomationAction(rule.user_id, rule.id, 'share', 'poshmark', 'failure', 'community_share_error', null, err.message);
+        logger.error('[TaskWorker] Community share failed:', err.message);
+        return { message: `Community share: Failed — ${err.message}`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
     }
+}
+
+function executeShare(rule, conditions, actions) {
 
     const minPrice = conditions.minPrice ?? 0;
     const isPartyShare = conditions.partyOnly || actions.shareToParty;
@@ -934,7 +970,7 @@ async function executeRunAutomationTask(payload) {
     switch (rule.type) {
         case 'price_drop': result = executePriceDrop(rule, conditions, actions); break;
         case 'relist':     result = executeRelist(rule, conditions, actions); break;
-        case 'share':      result = executeShare(rule, conditions, actions); break;
+        case 'share':      result = actions.communityShare ? await executeCommunityShare(rule, conditions, actions) : executeShare(rule, conditions, actions); break;
         case 'offer':      result = executeOffer(rule, conditions, actions); break;
         case 'follow':     result = executeFollow(rule, conditions, actions); break;
         case 'otl':        result = await executeOtl(rule, conditions, actions); break;
@@ -944,6 +980,26 @@ async function executeRunAutomationTask(payload) {
 
     query.run(`UPDATE automation_rules SET last_run_at = datetime('now'), run_count = run_count + 1, error_count = error_count + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
         [result.itemsFailed > 0 ? 1 : 0, ruleId]);
+
+    // Send in-app notification for automation results
+    try {
+        const { createOAuthNotification, NotificationTypes } = await import('../services/notificationService.js');
+        if (result.itemsFailed > 0 && result.itemsSucceeded === 0) {
+            createOAuthNotification(rule.user_id, rule.platform || 'automation', NotificationTypes.AUTOMATION_FAILED, {
+                message: result.message, error: result.message, ruleId, ruleName: rule.name
+            });
+        } else if (result.itemsFailed > 0) {
+            createOAuthNotification(rule.user_id, rule.platform || 'automation', NotificationTypes.AUTOMATION_PARTIAL, {
+                message: `${rule.name}: ${result.itemsSucceeded} succeeded, ${result.itemsFailed} failed`, ruleId, ruleName: rule.name
+            });
+        } else if (result.itemsProcessed > 0) {
+            createOAuthNotification(rule.user_id, rule.platform || 'automation', NotificationTypes.AUTOMATION_COMPLETED, {
+                message: result.message, ruleId, ruleName: rule.name
+            });
+        }
+    } catch (notifyErr) {
+        logger.error('[TaskWorker] Failed to create automation notification:', notifyErr.message);
+    }
 
     return { message: result.message, itemsProcessed: result.itemsProcessed, itemsSucceeded: result.itemsSucceeded, itemsFailed: result.itemsFailed, ruleId, type: rule.type, ruleName: rule.name };
 }

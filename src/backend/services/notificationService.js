@@ -211,7 +211,10 @@ export const NotificationTypes = {
     OAUTH_DISCONNECTED: 'oauth_disconnected',
     SYNC_COMPLETED: 'sync_completed',
     SYNC_FAILED: 'sync_failed',
-    PLATFORM_ERROR: 'platform_error'
+    PLATFORM_ERROR: 'platform_error',
+    AUTOMATION_COMPLETED: 'automation_completed',
+    AUTOMATION_FAILED: 'automation_failed',
+    AUTOMATION_PARTIAL: 'automation_partial'
 };
 
 /**
@@ -257,6 +260,21 @@ export function createOAuthNotification(userId, platform, notificationType, extr
             type: 'error',
             title: `${safePlatform} error`,
             message: safeMessage || `An error occurred with your ${safePlatform} connection.`
+        },
+        [NotificationTypes.AUTOMATION_COMPLETED]: {
+            type: 'success',
+            title: `Automation completed`,
+            message: safeMessage || `Automation ran successfully.`
+        },
+        [NotificationTypes.AUTOMATION_FAILED]: {
+            type: 'error',
+            title: `Automation failed`,
+            message: safeMessage || `An automation failed. ${safeError}`
+        },
+        [NotificationTypes.AUTOMATION_PARTIAL]: {
+            type: 'warning',
+            title: `Automation partially completed`,
+            message: safeMessage || `An automation completed with some failures.`
         }
     };
 
