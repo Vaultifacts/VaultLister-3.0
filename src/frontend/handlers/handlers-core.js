@@ -485,12 +485,16 @@ const handlers = {
         try {
             const data = await api.get('/automations');
             store.setState({ automations: data.rules });
-            // Also load run history for failure banner
-            try {
-                const histData = await api.get('/automations/history?limit=50');
-                store.setState({ automationHistoryRuns: histData.runs || [] });
-            } catch (histErr) {
-                // Non-critical - failure banner just won't show
+            // Load run history + stats in parallel (non-critical)
+            const [histResult, statsResult] = await Promise.allSettled([
+                api.get('/automations/history?limit=50'),
+                api.get('/automations/stats')
+            ]);
+            if (histResult.status === 'fulfilled') {
+                store.setState({ automationHistoryRuns: histResult.value.runs || [] });
+            }
+            if (statsResult.status === 'fulfilled') {
+                store.setState({ automationStats: statsResult.value.stats || {} });
             }
             // Don't call router.handleRoute() - it creates an infinite loop
             // The router already handles rendering after calling this function

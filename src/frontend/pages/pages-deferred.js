@@ -1498,11 +1498,13 @@ Object.assign(pages, {
             } catch { return null; }
         }
 
-        // Calculate automation statistics
-        const activeRules = automations.filter(a => a.is_enabled).length;
-        const totalRules = automations.length;
-        const successfulRuns = runHistory.filter(r => r.status === 'success').length;
-        const totalRuns = runHistory.length;
+        // Calculate automation statistics — prefer API stats, fallback to local
+        const apiStats = store.state.automationStats || {};
+        const activeRules = apiStats.activeRules ?? automations.filter(a => a.is_enabled).length;
+        const totalRules = apiStats.totalRules ?? automations.length;
+        const successfulRuns = apiStats.successfulRuns ?? runHistory.filter(r => r.status === 'success').length;
+        const totalRuns = apiStats.totalRuns ?? runHistory.length;
+        const failedRuns = apiStats.failedRuns ?? runHistory.filter(r => r.status === 'failed' || r.status === 'failure').length;
         const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
 
         // Calculate time saved (mock calculation based on active automations)
