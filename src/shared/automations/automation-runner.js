@@ -3,6 +3,8 @@ import { query } from '../../backend/db/database.js';
 import { v4 as uuidv4 } from 'uuid';
 import { PoshmarkBot, getPoshmarkBot, closePoshmarkBot } from './poshmark-bot.js';
 import { logger } from '../../backend/shared/logger.js';
+import { auditLog } from '../../backend/services/platformSync/platformAuditLog.js';
+import RATE_LIMITS from './rate-limits.js';
 
 /**
  * AutomationRunner class
@@ -136,6 +138,7 @@ export class AutomationRunner {
 
             // Log success
             this.logAutomationAction(task.user_id, task.type, 'success', result);
+            auditLog('poshmark', `automation_${task.type}_success`, { taskId: task.id, result });
 
             console.log(`[Runner] Task completed: ${task.id}`);
         } catch (error) {
@@ -150,6 +153,7 @@ export class AutomationRunner {
 
             // Log failure
             this.logAutomationAction(task.user_id, task.type, 'failure', null, error.message);
+            auditLog('poshmark', `automation_${task.type}_failure`, { taskId: task.id, error: error.message });
 
             throw error;
         } finally {

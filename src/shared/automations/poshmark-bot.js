@@ -407,6 +407,130 @@ export class PoshmarkBot {
     }
 
     /**
+     * Send Offer to Likers — navigate to a listing and send OTL (Offer to Likers)
+     * @param {string} listingUrl - Full URL of the Poshmark listing
+     * @param {number} discountPercent - Percentage off list price (e.g. 20 = 20% off)
+     * @param {number} shippingDiscount - Shipping discount in dollars (0 = no discount, 4.99 = discounted shipping)
+     */
+    async sendOfferToLikers(listingUrl, discountPercent = 20, shippingDiscount = 0) {
+        console.log(`[PoshmarkBot] Sending OTL for ${listingUrl} — ${discountPercent}% off`);
+
+        try {
+            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.waitForTimeout(randomDelay(2000, 3500));
+
+            // Find the "Offer/Price Drop" or "Send Offer to Likers" button
+            const otlBtn = await this.page.$(
+                'button:has-text("Offer to Likers"), button:has-text("Price Drop"), [data-test="offer-to-likers"], [data-test*="price-drop"]'
+            );
+            if (!otlBtn) {
+                console.log('[PoshmarkBot] OTL button not found — listing may have no likers');
+                return { sent: false, reason: 'no_otl_button' };
+            }
+
+            await otlBtn.click();
+            await this.page.waitForTimeout(randomDelay(1500, 2500));
+
+            // Fill in the offer price (Poshmark shows a price input in the OTL modal)
+            const priceInput = await this.page.$(
+                'input[data-test="offer-price"], input[name="offerPrice"], input[placeholder*="price" i], input[type="number"]'
+            );
+            if (priceInput) {
+                // Read the current list price from the page
+                const listPriceText = await this.page.$eval(
+                    '[data-test="list-price"], .listing-price, [class*="price"]',
+                    el => el.textContent?.replace(/[^0-9.]/g, '') || '0'
+                ).catch(() => '0');
+                const listPrice = parseFloat(listPriceText);
+                if (listPrice > 0) {
+                    const offerPrice = Math.floor(listPrice * (1 - discountPercent / 100));
+                    await humanType(this.page, priceInput, String(offerPrice));
+                    await this.page.waitForTimeout(randomDelay(500, 1000));
+                }
+            }
+
+            // Check shipping discount checkbox if available and requested
+            if (shippingDiscount > 0) {
+                const shippingCheckbox = await this.page.$(
+                    'input[data-test*="shipping"], input[type="checkbox"][name*="shipping"]'
+                );
+                if (shippingCheckbox) {
+                    const checked = await shippingCheckbox.isChecked();
+                    if (!checked) await shippingCheckbox.click();
+                    await this.page.waitForTimeout(randomDelay(400, 800));
+                }
+            }
+
+            // Submit the OTL
+            const submitBtn = await this.page.$(
+                'button:has-text("Submit"), button:has-text("Send Offer"), button[data-test*="submit"], button[type="submit"]'
+            );
+            if (submitBtn) {
+                await submitBtn.click();
+                await this.page.waitForTimeout(randomDelay(2000, 3500));
+                this.stats.offers++;
+                console.log('[PoshmarkBot] OTL sent successfully');
+                return { sent: true };
+            }
+
+            return { sent: false, reason: 'submit_button_not_found' };
+        } catch (error) {
+            console.error('[PoshmarkBot] OTL error:', error.message);
+            this.stats.errors++;
+            return { sent: false, reason: error.message };
+        }
+    }
+
+    /**
+     * Send OTL to all active listings with likers
+     * @param {string} username - Poshmark username (closet owner)
+     * @param {Object} options - { discountPercent, shippingDiscount, maxOffers, delayBetween }
+     */
+    async sendOffersToAllListings(username, options = {}) {
+        const {
+            discountPercent = 20,
+            shippingDiscount = 0,
+            maxOffers = 50,
+            delayBetween = 5000
+        } = options;
+
+        console.log(`[PoshmarkBot] Sending OTLs for @${username} closet — up to ${maxOffers} listings`);
+
+        try {
+            await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'networkidle' });
+            await this.page.waitForTimeout(randomDelay(2000, 3500));
+
+            const listingLinks = await this.page.$$eval(
+                'a[href*="/listing/"], [data-test="closet-card"] a',
+                links => links.map(a => a.href).filter(Boolean)
+            );
+
+            const uniqueLinks = [...new Set(listingLinks)].slice(0, maxOffers);
+            console.log(`[PoshmarkBot] Found ${uniqueLinks.length} listings`);
+
+            let sent = 0;
+            let skipped = 0;
+
+            for (const link of uniqueLinks) {
+                const result = await this.sendOfferToLikers(link, discountPercent, shippingDiscount);
+                if (result.sent) {
+                    sent++;
+                } else {
+                    skipped++;
+                }
+                await this.page.waitForTimeout(randomDelay(delayBetween * 0.8, delayBetween * 1.3));
+            }
+
+            console.log(`[PoshmarkBot] OTL campaign done: ${sent} sent, ${skipped} skipped`);
+            return { sent, skipped, total: uniqueLinks.length };
+        } catch (error) {
+            console.error('[PoshmarkBot] OTL campaign error:', error.message);
+            this.stats.errors++;
+            throw error;
+        }
+    }
+
+    /**
      * Get stats
      */
     getStats() {

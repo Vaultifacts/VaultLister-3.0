@@ -872,7 +872,10 @@ Object.assign(pages, {
                                 <option value="mercari" ${platformFilter === 'mercari' ? 'selected' : ''}>Ⓜ️ Mercari</option>
                                 <option value="depop" ${platformFilter === 'depop' ? 'selected' : ''}>Ⓓ Depop</option>
                                 <option value="grailed" ${platformFilter === 'grailed' ? 'selected' : ''}>Ⓖ Grailed</option>
+                                <option value="etsy" ${platformFilter === 'etsy' ? 'selected' : ''}>Ⓔ Etsy</option>
                                 <option value="facebook" ${platformFilter === 'facebook' ? 'selected' : ''}>Ⓕ Facebook</option>
+                                <option value="whatnot" ${platformFilter === 'whatnot' ? 'selected' : ''}>Ⓦ Whatnot</option>
+                                <option value="shopify" ${platformFilter === 'shopify' ? 'selected' : ''}>Ⓢ Shopify</option>
                             </select>
                         </div>
                         <div style="margin-left: auto;">
@@ -1073,9 +1076,19 @@ Object.assign(pages, {
                                                     <button class="dropdown-item" onclick="handlers.editListing('${listing.id}')">
                                                         ${components.icon('edit', 14)} Edit
                                                     </button>
+                                                    ${listing.status === 'active' ? `
+                                                    <button class="dropdown-item" onclick="handlers.delistListing('${listing.id}')" style="color: var(--warning-600);">
+                                                        ${components.icon('x-circle', 14)} Delist
+                                                    </button>
+                                                    ` : ''}
+                                                    ${listing.status === 'ended' ? `
+                                                    <button class="dropdown-item" onclick="handlers.relistListing('${listing.id}')" style="color: var(--success-600);">
+                                                        ${components.icon('repeat', 14)} Relist
+                                                    </button>
+                                                    ` : ''}
                                                     ${isStale ? `
-                                                    <button class="dropdown-item text-warning" onclick="handlers.refreshListing('${listing.id}')" style="color: var(--warning-600);">
-                                                        ${components.icon('refresh-cw', 14)} Relist Now
+                                                    <button class="dropdown-item" onclick="handlers.refreshListing('${listing.id}')" style="color: var(--warning-600);">
+                                                        ${components.icon('refresh-cw', 14)} Refresh (Delist + Relist)
                                                     </button>
                                                     ` : ''}
                                                     <button class="dropdown-item" onclick="handlers.showPriceDropScheduler('${listing.id}')" style="color: var(--primary-600);">
