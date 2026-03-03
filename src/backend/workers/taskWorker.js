@@ -657,25 +657,33 @@ function executeRelist(rule, conditions, actions) {
 
     const listings = query.all(sql, params);
     let processed = 0, succeeded = 0, failed = 0;
+    const delistOnly = actions.delistOnly;
 
     for (const listing of listings) {
         try {
-            const newId = uuidv4();
-            query.run(`UPDATE listings SET status = 'ended', inventory_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [listing.id]);
-            query.run(`INSERT INTO listings (id, inventory_id, user_id, platform, title, description, price, original_price, shipping_price, category_path, condition_tag, status, images, platform_specific_data, views, likes, shares, listed_at, created_at, updated_at)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, 0, 0, 0, datetime('now'), datetime('now'), datetime('now'))`,
-                [newId, listing.inventory_id, listing.user_id, listing.platform, listing.title, listing.description,
-                 listing.price, listing.original_price, listing.shipping_price || 0, listing.category_path, listing.condition_tag,
-                 listing.images || '[]', listing.platform_specific_data || '{}']);
-            logAutomationAction(rule.user_id, rule.id, 'relist', listing.platform, 'success', 'relist', listing.id,
-                `Relisted "${listing.title}" (old: ${listing.id}, new: ${newId})`);
+            if (delistOnly) {
+                query.run(`UPDATE listings SET status = 'ended', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [listing.id]);
+                logAutomationAction(rule.user_id, rule.id, 'relist', listing.platform, 'success', 'delist', listing.id,
+                    `Delisted "${listing.title}" (stale >${minDays} days)`);
+            } else {
+                const newId = uuidv4();
+                query.run(`UPDATE listings SET status = 'ended', inventory_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [listing.id]);
+                query.run(`INSERT INTO listings (id, inventory_id, user_id, platform, title, description, price, original_price, shipping_price, category_path, condition_tag, status, images, platform_specific_data, views, likes, shares, listed_at, created_at, updated_at)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, 0, 0, 0, datetime('now'), datetime('now'), datetime('now'))`,
+                    [newId, listing.inventory_id, listing.user_id, listing.platform, listing.title, listing.description,
+                     listing.price, listing.original_price, listing.shipping_price || 0, listing.category_path, listing.condition_tag,
+                     listing.images || '[]', listing.platform_specific_data || '{}']);
+                logAutomationAction(rule.user_id, rule.id, 'relist', listing.platform, 'success', 'relist', listing.id,
+                    `Relisted "${listing.title}" (old: ${listing.id}, new: ${newId})`);
+            }
             processed++; succeeded++;
         } catch (err) {
-            logAutomationAction(rule.user_id, rule.id, 'relist', listing.platform, 'failure', 'relist', listing.id, err.message);
+            logAutomationAction(rule.user_id, rule.id, 'relist', listing.platform, 'failure', delistOnly ? 'delist' : 'relist', listing.id, err.message);
             processed++; failed++;
         }
     }
-    return { message: `Relist: ${succeeded}/${processed} stale listings relisted (>${minDays} days old)`, itemsProcessed: processed, itemsSucceeded: succeeded, itemsFailed: failed };
+    const action = delistOnly ? 'delisted' : 'relisted';
+    return { message: `${delistOnly ? 'Delist' : 'Relist'}: ${succeeded}/${processed} stale listings ${action} (>${minDays} days old)`, itemsProcessed: processed, itemsSucceeded: succeeded, itemsFailed: failed };
 }
 
 function executeShare(rule, conditions, actions) {
@@ -729,6 +737,20 @@ function executeOffer(rule, conditions, actions) {
                 logAutomationAction(rule.user_id, rule.id, 'offer', offer.platform, 'success', 'auto_decline', offer.offer_id,
                     `Declined $${offer.offer_amount.toFixed(2)} (${pct.toFixed(0)}% of $${offer.listing_price.toFixed(2)}) on "${offer.title}"`);
                 processed++; succeeded++;
+            } else if (actions.autoCounter && conditions.counterPercentage) {
+                const counterAmount = Math.round(offer.listing_price * (conditions.counterPercentage / 100) * 100) / 100;
+                if (counterAmount > offer.offer_amount) {
+                    query.run(`UPDATE offers SET status = 'countered', counter_amount = ?, auto_action = 'auto_counter', responded_at = datetime('now'), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [counterAmount, offer.offer_id]);
+                    logAutomationAction(rule.user_id, rule.id, 'offer', offer.platform, 'success', 'auto_counter', offer.offer_id,
+                        `Countered $${offer.offer_amount.toFixed(2)} with $${counterAmount.toFixed(2)} (${conditions.counterPercentage}% of $${offer.listing_price.toFixed(2)}) on "${offer.title}"`);
+                    processed++; succeeded++;
+                } else {
+                    // Counter would be less than or equal to offer — accept instead
+                    query.run(`UPDATE offers SET status = 'accepted', auto_action = 'auto_accept_counter', responded_at = datetime('now'), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [offer.offer_id]);
+                    logAutomationAction(rule.user_id, rule.id, 'offer', offer.platform, 'success', 'auto_accept_counter', offer.offer_id,
+                        `Accepted $${offer.offer_amount.toFixed(2)} (counter $${counterAmount.toFixed(2)} <= offer) on "${offer.title}"`);
+                    processed++; succeeded++;
+                }
             } else {
                 logAutomationAction(rule.user_id, rule.id, 'offer', offer.platform, 'skipped', 'offer_outside_criteria', offer.offer_id,
                     `Skipped $${offer.offer_amount.toFixed(2)} (${pct.toFixed(0)}%) — outside criteria`);
@@ -739,7 +761,7 @@ function executeOffer(rule, conditions, actions) {
             processed++; failed++;
         }
     }
-    const desc = actions.autoAccept ? `accept >=${conditions.minPercentage || 0}%` : `decline <=${conditions.maxPercentage || 0}%`;
+    const desc = actions.autoAccept ? `accept >=${conditions.minPercentage || 0}%` : actions.autoCounter ? `counter at ${conditions.counterPercentage || 0}%` : `decline <=${conditions.maxPercentage || 0}%`;
     return { message: pendingOffers.length === 0 ? 'Offer automation: no pending offers found' : `Offer automation (${desc}): ${succeeded}/${processed} offers processed`, itemsProcessed: processed, itemsSucceeded: succeeded, itemsFailed: failed };
 }
 
