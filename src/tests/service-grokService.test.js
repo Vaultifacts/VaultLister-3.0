@@ -9,10 +9,12 @@ import {
 // Save and clear env vars for predictable tests
 const originalApiKey = process.env.XAI_API_KEY;
 const originalMode = process.env.CHATBOT_MODE;
+const originalAnthropicKey = process.env.ANTHROPIC_API_KEY;
 
 beforeAll(() => {
     delete process.env.XAI_API_KEY;
     delete process.env.CHATBOT_MODE;
+    delete process.env.ANTHROPIC_API_KEY; // ensure mock mode during unit tests
 });
 
 afterAll(() => {
@@ -20,6 +22,8 @@ afterAll(() => {
     else delete process.env.XAI_API_KEY;
     if (originalMode) process.env.CHATBOT_MODE = originalMode;
     else delete process.env.CHATBOT_MODE;
+    if (originalAnthropicKey) process.env.ANTHROPIC_API_KEY = originalAnthropicKey;
+    else delete process.env.ANTHROPIC_API_KEY;
 });
 
 describe('isGrokConfigured', () => {
@@ -49,10 +53,12 @@ describe('getChatbotMode', () => {
         expect(getChatbotMode()).toBe('mock');
     });
 
-    test('returns env var value when set', () => {
+    test('returns grok when XAI_API_KEY and CHATBOT_MODE=api', () => {
         process.env.CHATBOT_MODE = 'api';
-        expect(getChatbotMode()).toBe('api');
+        process.env.XAI_API_KEY = 'test-key';
+        expect(getChatbotMode()).toBe('grok');
         delete process.env.CHATBOT_MODE;
+        delete process.env.XAI_API_KEY;
     });
 });
 

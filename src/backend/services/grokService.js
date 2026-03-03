@@ -1,20 +1,26 @@
-// Grok API Service (X.AI)
-// Provides chatbot responses using Grok API with mock mode fallback
+// Vault Buddy AI Service
+// Priority: Claude (Anthropic) → Grok (X.AI) → Mock (canned responses)
 
+import Anthropic from '@anthropic-ai/sdk';
+import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
-// VaultLister system prompt for Grok
-const VAULTLISTER_SYSTEM_PROMPT = `You are a helpful assistant for VaultLister, a multi-channel reselling platform.
+// Vault Buddy system prompt (used by both Claude and Grok)
+const VAULTLISTER_SYSTEM_PROMPT = `You are Vault Buddy, the AI assistant built into VaultLister — a multi-channel reselling platform.
 
 You help users with:
 - Managing inventory and listings
-- Cross-listing to platforms (Poshmark, eBay, Mercari, Depop, Grailed, Facebook)
-- Automating repetitive tasks
-- Understanding analytics and sales data
-- Using features like Image Bank, Templates, and AI generation
+- Cross-listing to platforms (Poshmark, eBay, Mercari, Depop, Grailed, Facebook, Whatnot)
+- Automating repetitive tasks (closet sharing, follow-back, offer rules)
+- Understanding analytics and sales performance
+- Using features: Image Bank, Templates, AI listing generation, barcode scanner
 
-Be concise, friendly, and actionable. Provide quick action buttons when relevant.
-Use emojis sparingly. Keep responses under 150 words unless detailed explanation is needed.`;
+Guidelines:
+- Be concise, friendly, and actionable
+- Reference the user's actual data when available (inventory count, recent sales, top platforms)
+- Provide specific navigation hints (e.g., "Go to Inventory → Cross-List")
+- Keep responses under 200 words unless a detailed explanation is clearly needed
+- Never fabricate inventory data — only reference what's provided in the user context`;
 
 // Canned responses for mock mode (pattern matching)
 const CANNED_RESPONSES = {
@@ -174,61 +180,132 @@ const CANNED_RESPONSES = {
 };
 
 /**
- * Get response from Grok API or mock mode
+ * Fetch a brief inventory/sales summary for the user to inject into Claude context.
  */
-export async function getGrokResponse(messages, userContext = {}) {
-    const apiKey = process.env.XAI_API_KEY;
-    const chatbotMode = process.env.CHATBOT_MODE || 'mock';
+function getUserStats(userId) {
+    try {
+        const inv = query.get(
+            `SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND deleted_at IS NULL`,
+            [userId]
+        );
+        const sales = query.get(
+            `SELECT COUNT(*) as count, ROUND(COALESCE(SUM(net_profit), 0), 2) as profit
+             FROM sales WHERE user_id = ? AND created_at > datetime('now', '-30 days')`,
+            [userId]
+        );
+        const topPlatform = query.get(
+            `SELECT platform, COUNT(*) as c FROM listings
+             WHERE user_id = ? AND deleted_at IS NULL
+             GROUP BY platform ORDER BY c DESC LIMIT 1`,
+            [userId]
+        );
+        const lines = [];
+        if (inv?.count) lines.push(`Inventory: ${inv.count} items`);
+        if (sales?.count) lines.push(`Last 30 days: ${sales.count} sales, $${sales.profit} profit`);
+        if (topPlatform?.platform) lines.push(`Top platform: ${topPlatform.platform} (${topPlatform.c} listings)`);
+        return lines.length ? lines.join(' | ') : null;
+    } catch {
+        return null;
+    }
+}
 
-    // Use mock mode if no API key or explicitly set to mock
-    if (!apiKey || chatbotMode === 'mock') {
-        return getMockResponse(messages[messages.length - 1].content, userContext);
+/**
+ * Call Claude (Anthropic) and return a normalised response object.
+ */
+async function getClaudeResponse(messages, userContext) {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    let systemPrompt = VAULTLISTER_SYSTEM_PROMPT;
+    if (userContext.userId) {
+        const stats = getUserStats(userContext.userId);
+        if (stats) systemPrompt += `\n\n[USER CONTEXT]\n${stats}`;
     }
 
-    // Call Grok API
+    const claudeMessages = messages.map(m => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.content
+    }));
+
     try {
-        let response;
-        try {
-            response = await fetch('https://api.x.ai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: 'grok-beta',
-                    messages: [
-                        { role: 'system', content: VAULTLISTER_SYSTEM_PROMPT },
-                        ...messages
-                    ],
-                    temperature: 0.7,
-                    max_tokens: 500
-                }),
-                signal: AbortSignal.timeout(60000)
-            });
-        } catch (fetchError) {
-            if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
-                logger.error('[GrokService] Grok API request timed out after 60s, falling back to mock', null, { detail: fetchError.message });
-                return getMockResponse(messages[messages.length - 1].content, userContext);
-            }
-            throw fetchError;
-        }
-
-        if (!response.ok) {
-            throw new Error(`Grok API error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
+        const response = await anthropic.messages.create({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 512,
+            system: systemPrompt,
+            messages: claudeMessages
+        });
+        const content = response.content[0].text;
         return {
-            content: data.choices[0].message.content,
-            quickActions: extractQuickActions(data.choices[0].message.content),
-            source: 'grok-api'
+            content,
+            quickActions: extractQuickActions(content),
+            source: 'claude'
         };
     } catch (error) {
-        logger.error('[GrokService] Grok API error', null, { detail: error.message });
-        // Fallback to mock mode on error
+        logger.error('[VaultBuddy] Claude API error, falling back to mock', null, { detail: error.message });
         return getMockResponse(messages[messages.length - 1].content, userContext);
     }
+}
+
+/**
+ * Get response from the best available AI provider.
+ * Priority: Claude (Anthropic) → Grok (X.AI) → Mock (canned responses)
+ */
+export async function getGrokResponse(messages, userContext = {}) {
+    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const grokKey = process.env.XAI_API_KEY;
+    const mode = process.env.CHATBOT_MODE || 'auto';
+
+    // Claude — primary (auto mode or explicit)
+    if (anthropicKey && mode !== 'grok' && mode !== 'mock') {
+        return getClaudeResponse(messages, userContext);
+    }
+
+    // Grok — secondary (explicit or fallback when no Anthropic key)
+    if (grokKey && mode !== 'mock') {
+        try {
+            let response;
+            try {
+                response = await fetch('https://api.x.ai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${grokKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'grok-beta',
+                        messages: [
+                            { role: 'system', content: VAULTLISTER_SYSTEM_PROMPT },
+                            ...messages
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 500
+                    }),
+                    signal: AbortSignal.timeout(60000)
+                });
+            } catch (fetchError) {
+                if (fetchError.name === 'TimeoutError' || fetchError.name === 'AbortError') {
+                    logger.error('[VaultBuddy] Grok API timed out, falling back to mock', null, { detail: fetchError.message });
+                    return getMockResponse(messages[messages.length - 1].content, userContext);
+                }
+                throw fetchError;
+            }
+
+            if (!response.ok) {
+                throw new Error(`Grok API error: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return {
+                content: data.choices[0].message.content,
+                quickActions: extractQuickActions(data.choices[0].message.content),
+                source: 'grok-api'
+            };
+        } catch (error) {
+            logger.error('[VaultBuddy] Grok API error, falling back to mock', null, { detail: error.message });
+        }
+    }
+
+    // Mock — last resort
+    return getMockResponse(messages[messages.length - 1].content, userContext);
 }
 
 /**
@@ -291,21 +368,24 @@ function extractQuickActions(content) {
 }
 
 /**
- * Check if Grok API is configured
+ * Return the active AI provider name for display in the UI.
+ */
+export function getChatbotMode() {
+    const mode = process.env.CHATBOT_MODE || 'auto';
+    if (process.env.ANTHROPIC_API_KEY && mode !== 'grok' && mode !== 'mock') return 'claude';
+    if (process.env.XAI_API_KEY && mode !== 'mock') return 'grok';
+    return 'mock';
+}
+
+/**
+ * @deprecated Use getChatbotMode() instead.
  */
 export function isGrokConfigured() {
     return !!(process.env.XAI_API_KEY && process.env.CHATBOT_MODE === 'api');
 }
 
-/**
- * Get chatbot mode
- */
-export function getChatbotMode() {
-    return process.env.CHATBOT_MODE || 'mock';
-}
-
 export default {
     getGrokResponse,
-    isGrokConfigured,
-    getChatbotMode
+    getChatbotMode,
+    isGrokConfigured
 };
