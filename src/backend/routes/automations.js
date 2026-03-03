@@ -214,7 +214,7 @@ export async function automationsRouter(ctx) {
             return { status: 400, data: { error: 'Name and type required' } };
         }
 
-        const validTypes = ['share', 'follow', 'offer', 'relist', 'price_drop', 'custom'];
+        const validTypes = ['share', 'follow', 'offer', 'relist', 'price_drop', 'otl', 'custom'];
         if (!validTypes.includes(type)) {
             return { status: 400, data: { error: 'Invalid automation type' } };
         }
@@ -513,6 +513,7 @@ export async function automationsRouter(ctx) {
         const { presetId, customizations } = body;
 
         const presets = {
+            // Legacy IDs (from GET /presets endpoint)
             'closet-share': {
                 name: 'Daily Closet Share',
                 type: 'share',
@@ -526,6 +527,158 @@ export async function automationsRouter(ctx) {
                 type: 'offer',
                 conditions: { minPercentage: 90 },
                 actions: { autoAccept: true }
+            },
+            // Frontend preset card IDs — Sharing
+            'daily_share': {
+                name: 'Daily Closet Share',
+                type: 'share',
+                platform: 'poshmark',
+                schedule: '0 9,14,19 * * *',
+                conditions: { minPrice: 0 },
+                actions: { shareAll: true, randomDelay: true }
+            },
+            'party_share': {
+                name: 'Posh Party Auto-Share',
+                type: 'share',
+                platform: 'poshmark',
+                conditions: { partyOnly: true },
+                actions: { shareToParty: true, randomDelay: true }
+            },
+            'community_share': {
+                name: 'Community Share',
+                type: 'share',
+                platform: 'poshmark',
+                conditions: {},
+                actions: { communityShare: true, randomDelay: true }
+            },
+            // Engagement
+            'follow_back': {
+                name: 'Follow Back',
+                type: 'follow',
+                platform: 'poshmark',
+                schedule: '0 10,18 * * *',
+                conditions: { maxFollows: 50 },
+                actions: { followBack: true }
+            },
+            'unfollow_inactive': {
+                name: 'Unfollow Inactive Users',
+                type: 'follow',
+                platform: 'poshmark',
+                schedule: '0 12 * * 0',
+                conditions: { inactiveDays: 7 },
+                actions: { unfollowInactive: true }
+            },
+            'follow_targeted': {
+                name: 'Follow Targeted Users',
+                type: 'follow',
+                platform: 'poshmark',
+                conditions: {},
+                actions: { followTargeted: true, maxFollows: 30 }
+            },
+            // Offers
+            'send_offers': {
+                name: 'Send Offers to Likers',
+                type: 'otl',
+                platform: 'poshmark',
+                schedule: '0 11,17 * * *',
+                conditions: { discountPercent: 20, shippingDiscount: 0, maxOffers: 50 },
+                actions: { sendOtl: true }
+            },
+            'auto_accept': {
+                name: 'Auto Accept Offers > 80%',
+                type: 'offer',
+                conditions: { minPercentage: 80 },
+                actions: { autoAccept: true }
+            },
+            'decline_lowball': {
+                name: 'Decline Lowball Offers',
+                type: 'offer',
+                conditions: { maxPercentage: 50 },
+                actions: { autoDecline: true }
+            },
+            'counter_offers': {
+                name: 'Auto Counter Offers',
+                type: 'offer',
+                conditions: { counterPercentage: 75 },
+                actions: { autoCounter: true }
+            },
+            // Bundles
+            'bundle_discount': {
+                name: 'Bundle Discount Offers',
+                type: 'offer',
+                platform: 'poshmark',
+                conditions: { minBundleItems: 2 },
+                actions: { bundleDiscount: true, discountPercent: 15 }
+            },
+            'bundle_reminder': {
+                name: 'Bundle Reminder',
+                type: 'custom',
+                platform: 'poshmark',
+                conditions: {},
+                actions: { bundleReminder: true }
+            },
+            'bundle_for_likers': {
+                name: 'Create Bundle for Likers',
+                type: 'custom',
+                platform: 'poshmark',
+                conditions: { minLikes: 3 },
+                actions: { createBundle: true }
+            },
+            // Pricing
+            'weekly_drop': {
+                name: 'Weekly Price Drop',
+                type: 'price_drop',
+                schedule: '0 9 * * 0',
+                conditions: { minDaysListed: 7 },
+                actions: { dropPercentage: 10, minPrice: 10 }
+            },
+            'ccl_rotation': {
+                name: 'CCL Price Rotation',
+                type: 'price_drop',
+                platform: 'poshmark',
+                schedule: '0 8 * * 1,4',
+                conditions: { minDaysListed: 3 },
+                actions: { dropPercentage: 5, minPrice: 5, cclRotation: true }
+            },
+            'auto_reprice': {
+                name: 'Repricing Automation',
+                type: 'price_drop',
+                conditions: { minDaysListed: 14 },
+                actions: { dropPercentage: 5, minPrice: 10, autoReprice: true }
+            },
+            // Maintenance
+            'relist_stale': {
+                name: 'Relist Stale Items',
+                type: 'relist',
+                schedule: '0 10 * * *',
+                conditions: { minDaysListed: 60 },
+                actions: { relist: true }
+            },
+            'delist_stale': {
+                name: 'Delist Stale Items',
+                type: 'relist',
+                schedule: '0 10 * * 1',
+                conditions: { minDaysListed: 90 },
+                actions: { delistOnly: true }
+            },
+            'smart_relisting': {
+                name: 'Smart Relisting',
+                type: 'relist',
+                conditions: { minDaysListed: 30 },
+                actions: { relist: true, optimizeTitle: true }
+            },
+            'description_refresh': {
+                name: 'Description Refresh',
+                type: 'custom',
+                platform: 'poshmark',
+                conditions: { minDaysListed: 14 },
+                actions: { refreshDescription: true }
+            },
+            'error_retry': {
+                name: 'Auto Error Recovery',
+                type: 'custom',
+                conditions: {},
+                actions: { retryFailed: true, maxRetries: 3 }
             }
         };
 

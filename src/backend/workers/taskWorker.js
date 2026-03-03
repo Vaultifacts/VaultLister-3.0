@@ -748,6 +748,53 @@ function executeFollow(rule, conditions, actions) {
     return { message: 'Follow: requires platform API (not available offline)', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
 }
 
+async function executeOtl(rule, conditions, actions) {
+    // OTL (Offer to Likers) requires Playwright — attempt to use PoshmarkBot
+    try {
+        const { getPoshmarkBot } = await import('../../shared/automations/poshmark-bot.js');
+        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
+        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
+
+        const discountPercent = conditions.discountPercent || 20;
+        const shippingDiscount = conditions.shippingDiscount || 0;
+        const maxOffers = conditions.maxOffers || 50;
+
+        // Get the shop credentials
+        const shop = query.get(
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            [rule.user_id, 'poshmark']
+        );
+        if (!shop || !shop.platform_username) {
+            logAutomationAction(rule.user_id, rule.id, 'otl', 'poshmark', 'failure', 'otl_no_shop', null,
+                'No connected Poshmark account found');
+            return { message: 'OTL: No connected Poshmark account', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+        }
+
+        auditLog('poshmark', 'otl_automation_start', { userId: rule.user_id, discountPercent, maxOffers });
+
+        const bot = await getPoshmarkBot({ headless: true });
+        const result = await bot.sendOffersToAllListings(shop.platform_username, {
+            discountPercent,
+            shippingDiscount,
+            maxOffers,
+            delayBetween: jitteredDelay(5000)
+        });
+
+        await bot.close();
+
+        const offersSent = result?.offersSent || 0;
+        logAutomationAction(rule.user_id, rule.id, 'otl', 'poshmark', 'success', 'otl_send', null,
+            `Sent ${offersSent} OTL offers (${discountPercent}% off)`);
+        auditLog('poshmark', 'otl_automation_success', { userId: rule.user_id, offersSent, discountPercent });
+
+        return { message: `OTL: Sent ${offersSent} offers (${discountPercent}% off)`, itemsProcessed: offersSent, itemsSucceeded: offersSent, itemsFailed: 0 };
+    } catch (err) {
+        logAutomationAction(rule.user_id, rule.id, 'otl', 'poshmark', 'failure', 'otl_error', null, err.message);
+        logger.error('[TaskWorker] OTL automation failed:', err.message);
+        return { message: `OTL: Failed — ${err.message}`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
+    }
+}
+
 function executeCustom(rule, conditions, actions) {
     logAutomationAction(rule.user_id, rule.id, 'custom', rule.platform, 'success', 'custom_run', null, `Custom automation "${rule.name}" executed`);
     return { message: `Custom automation "${rule.name}" executed`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
@@ -773,6 +820,7 @@ async function executeRunAutomationTask(payload) {
         case 'share':      result = executeShare(rule, conditions, actions); break;
         case 'offer':      result = executeOffer(rule, conditions, actions); break;
         case 'follow':     result = executeFollow(rule, conditions, actions); break;
+        case 'otl':        result = await executeOtl(rule, conditions, actions); break;
         case 'custom':
         default:           result = executeCustom(rule, conditions, actions); break;
     }
