@@ -2693,6 +2693,11 @@ Object.assign(handlers, {
                     ${components.icon('upload', 16)} Publish to Etsy
                 </button>
                 ` : ''}
+                ${listing.platform === 'poshmark' && !listing.platform_listing_id ? `
+                <button class="btn btn-warning" id="publish-poshmark-btn-${listingId}" onclick="handlers.publishToPoshmark('${listingId}')">
+                    ${components.icon('upload', 16)} Publish to Poshmark
+                </button>
+                ` : ''}
                 <button class="btn btn-primary" onclick="modals.close(); handlers.editListing('${listingId}')">
                     ${components.icon('edit', 16)} Edit
                 </button>
@@ -6083,6 +6088,7 @@ Object.assign(handlers, {
         const advancedBtn = document.getElementById('advanced-crosslist-btn');
         const ebayBtn = document.getElementById('publish-ebay-crosslist-btn');
         const etsyBtn = document.getElementById('publish-etsy-crosslist-btn');
+        const poshmarkBtn = document.getElementById('publish-poshmark-crosslist-btn');
 
         if (selected.length > 0) {
             summary?.classList.remove('hidden');
@@ -6091,12 +6097,14 @@ Object.assign(handlers, {
             advancedBtn?.removeAttribute('disabled');
             ebayBtn?.removeAttribute('disabled');
             etsyBtn?.removeAttribute('disabled');
+            poshmarkBtn?.removeAttribute('disabled');
         } else {
             summary?.classList.add('hidden');
             basicBtn?.setAttribute('disabled', 'true');
             advancedBtn?.setAttribute('disabled', 'true');
             ebayBtn?.setAttribute('disabled', 'true');
             etsyBtn?.setAttribute('disabled', 'true');
+            poshmarkBtn?.setAttribute('disabled', 'true');
         }
 
         // Store selection in state
@@ -6237,6 +6245,77 @@ Object.assign(handlers, {
             toast.error('Etsy publish failed: ' + error.message);
         } finally {
             if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('upload', 16)} Publish to Etsy`; }
+        }
+    },
+
+
+    publishToPoshmark: async function(listingId) {
+        const listing = store.state.listings.find(l => l.id === listingId);
+        if (!listing) { toast.error('Listing not found'); return; }
+
+        const btn = document.getElementById(`publish-poshmark-btn-${listingId}`);
+        if (btn) { btn.disabled = true; btn.textContent = 'Publishing…'; }
+
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post(`/listings/${listingId}/publish-poshmark`, {});
+            modals.close();
+            toast.success(`Listed on Poshmark! ${result.listingUrl}`, { duration: 8000 });
+            await handlers.loadListings();
+            if (store.state.currentPage === 'listings') renderApp(pages.listings());
+        } catch (error) {
+            toast.error('Poshmark publish failed: ' + error.message);
+            if (btn) { btn.disabled = false; btn.textContent = 'Publish to Poshmark'; }
+        }
+    },
+
+
+    publishSelectedToPoshmark: async function() {
+        const selectedItemIds = store.state.crosslistSelectedItems || [];
+        if (selectedItemIds.length === 0) {
+            return toast.warning('Please select at least one item');
+        }
+
+        const btn = document.getElementById('publish-poshmark-crosslist-btn');
+        if (btn) { btn.disabled = true; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').textContent = `Publishing ${selectedItemIds.length} item(s)…`; }
+
+        const results = [];
+        const errors = [];
+
+        try {
+            await api.ensureCSRFToken();
+
+            for (const inventoryId of selectedItemIds) {
+                try {
+                    const crosslistResp = await api.post('/listings/crosslist', {
+                        itemIds: [inventoryId],
+                        platforms: ['poshmark']
+                    });
+                    const created = crosslistResp?.created?.[0];
+                    const skipped = crosslistResp?.skipped?.[0];
+                    const listingId = created?.id || skipped?.existingId;
+                    if (!listingId) { errors.push(`No listing ID returned for item ${inventoryId}`); continue; }
+
+                    const publishResp = await api.post(`/listings/${listingId}/publish-poshmark`, {});
+                    results.push(publishResp);
+                } catch (err) {
+                    errors.push(err.message);
+                }
+            }
+
+            await handlers.loadListings();
+            if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+
+            if (results.length > 0) {
+                toast.success(`${results.length} item(s) published to Poshmark! Check the Listings tab for links.`, { duration: 8000 });
+            }
+            if (errors.length > 0) {
+                toast.error(`${errors.length} item(s) failed: ${errors[0]}`);
+            }
+        } catch (error) {
+            toast.error('Poshmark publish failed: ' + error.message);
+        } finally {
+            if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('upload', 16)} Publish to Poshmark`; }
         }
     },
 

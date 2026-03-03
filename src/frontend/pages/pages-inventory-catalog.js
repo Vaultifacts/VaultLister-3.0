@@ -1065,6 +1065,11 @@ Object.assign(pages, {
                                                     <button class="dropdown-item" onclick="handlers.viewListing('${listing.id}')">
                                                         ${components.icon('eye', 14)} View Details
                                                     </button>
+                                                    ${listing.platform_url ? `
+                                                    <a class="dropdown-item" href="${escapeHtml(listing.platform_url)}" target="_blank" rel="noopener" style="color: var(--success-700); text-decoration: none;">
+                                                        ${components.icon('external-link', 14)} View Live
+                                                    </a>
+                                                    ` : ''}
                                                     <button class="dropdown-item" onclick="handlers.editListing('${listing.id}')">
                                                         ${components.icon('edit', 14)} Edit
                                                     </button>
@@ -1099,6 +1104,7 @@ Object.assign(pages, {
                                                                     ${components.platformBadge(rl.platform)}
                                                                     <span class="font-medium">$${rl.price}</span>
                                                                     <span class="badge badge-${rl.status === 'active' ? 'success' : 'gray'} text-xs">${rl.status}</span>
+                                                                    ${rl.platform_url ? `<a href="${escapeHtml(rl.platform_url)}" target="_blank" rel="noopener" class="text-xs" style="color: var(--success-700);" title="View live listing">${components.icon('external-link', 12)}</a>` : ''}
                                                                 </div>
                                                             `).join('')}
                                                         </div>
@@ -1122,6 +1128,12 @@ Object.assign(pages, {
                                                                 <span class="text-gray-500">Listed:</span>
                                                                 <span class="font-medium">${listing.listed_at ? new Date(listing.listed_at).toLocaleString() : '-'}</span>
                                                             </div>
+                                                            ${listing.platform_url ? `
+                                                            <div class="flex justify-between">
+                                                                <span class="text-gray-500">Live URL:</span>
+                                                                <a href="${escapeHtml(listing.platform_url)}" target="_blank" rel="noopener" class="font-medium text-xs" style="color: var(--success-700);">View on ${escapeHtml(listing.platform || 'platform')} ${components.icon('external-link', 11)}</a>
+                                                            </div>
+                                                            ` : ''}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1255,7 +1267,7 @@ Object.assign(pages, {
                             </button>
                         </div>
 
-                        <div class="mt-3 grid grid-cols-2 gap-3">
+                        <div class="mt-3 grid grid-cols-3 gap-3">
                             <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToEbay()" id="publish-ebay-crosslist-btn" disabled>
                                 <div class="text-left">
                                     <div class="font-semibold">${components.icon('upload', 16)} Publish to eBay</div>
@@ -1266,6 +1278,12 @@ Object.assign(pages, {
                                 <div class="text-left">
                                     <div class="font-semibold">${components.icon('upload', 16)} Publish to Etsy</div>
                                     <div class="text-xs opacity-90">Cross-list and go live on Etsy</div>
+                                </div>
+                            </button>
+                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToPoshmark()" id="publish-poshmark-crosslist-btn" disabled>
+                                <div class="text-left">
+                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to Poshmark</div>
+                                    <div class="text-xs opacity-90">Cross-list via browser automation</div>
                                 </div>
                             </button>
                         </div>
