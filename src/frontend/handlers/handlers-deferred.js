@@ -15555,6 +15555,33 @@ Object.assign(handlers, {
         }
     },
 
+    bulkTogglePlatform: async function(platform, enable) {
+        try {
+            const allPresets = store.state.automations || [];
+            const presets = allPresets.filter(a => a.platform === platform || (a.platform === 'all' && platform !== 'all'));
+            let count = 0;
+            await api.ensureCSRFToken();
+            for (const preset of presets) {
+                const isEnabled = !!preset.is_enabled;
+                if (enable && !isEnabled) {
+                    await api.post(`/automations/${preset.id}/toggle`);
+                    count++;
+                } else if (!enable && isEnabled) {
+                    await api.post(`/automations/${preset.id}/toggle`);
+                    count++;
+                }
+            }
+            toast.success(`${count} ${platform} automation${count !== 1 ? 's' : ''} ${enable ? 'enabled' : 'disabled'}`);
+            await handlers.loadAutomations();
+            if (store.state.currentPage === 'automations') {
+                const pageContent = pages.automations();
+                document.querySelector('.page-content').innerHTML = pageContent;
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    },
+
     searchAutomations: function(query) {
         store.setState({ automationSearchQuery: query });
         if (store.state.currentPage === 'automations') {

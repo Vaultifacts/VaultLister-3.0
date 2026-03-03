@@ -1875,6 +1875,13 @@ Object.assign(pages, {
                             <option value="all" ${(store.state.automationCategoryFilter || 'all') === 'all' ? 'selected' : ''}>All Categories</option>
                             ${Object.entries(categoryLabels).map(([key, val]) => `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`).join('')}
                         </select>
+                        ${(() => {
+                            const platFilter = store.state.automationPlatformFilter || 'all';
+                            if (platFilter === 'all') return '';
+                            const platRules = automations.filter(a => a.platform === platFilter || a.platform === 'all');
+                            const allEnabled = platRules.every(a => a.is_enabled);
+                            return '<button class="btn btn-sm ' + (allEnabled ? 'btn-secondary' : 'btn-primary') + '" onclick="handlers.bulkTogglePlatform(\'' + platFilter + '\', ' + !allEnabled + ')" style="height: 36px; white-space: nowrap;">' + components.icon(allEnabled ? 'toggle-right' : 'toggle-left', 14) + (allEnabled ? ' Disable All' : ' Enable All') + '</button>';
+                        })()}
                     </div>
                 </div>
                 <div class="card-body">

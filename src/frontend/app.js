@@ -20319,6 +20319,13 @@ const pages = {
                             <option value="all" ${(store.state.automationCategoryFilter || 'all') === 'all' ? 'selected' : ''}>All Categories</option>
                             ${Object.entries(categoryLabels).map(([key, val]) => `<option value="${key}" ${store.state.automationCategoryFilter === key ? 'selected' : ''}>${val.label}</option>`).join('')}
                         </select>
+                        ${(() => {
+                            const platFilter = store.state.automationPlatformFilter || 'all';
+                            if (platFilter === 'all') return '';
+                            const platRules = automations.filter(a => a.platform === platFilter || a.platform === 'all');
+                            const allEnabled = platRules.every(a => a.is_enabled);
+                            return '<button class="btn btn-sm ' + (allEnabled ? 'btn-secondary' : 'btn-primary') + '" onclick="handlers.bulkTogglePlatform(\'' + platFilter + '\', ' + !allEnabled + ')" style="height: 36px; white-space: nowrap;">' + components.icon(allEnabled ? 'toggle-right' : 'toggle-left', 14) + (allEnabled ? ' Disable All' : ' Enable All') + '</button>';
+                        })()}
                     </div>
                 </div>
                 <div class="card-body">
@@ -57706,6 +57713,33 @@ const handlers = {
                 const pageContent = pages.automations();
                 document.querySelector('.page-content').innerHTML = pageContent;
             }
+        }
+    },
+
+    bulkTogglePlatform: async function(platform, enable) {
+        try {
+            const allPresets = store.state.automations || [];
+            const presets = allPresets.filter(a => a.platform === platform || (a.platform === 'all' && platform !== 'all'));
+            let count = 0;
+            await api.ensureCSRFToken();
+            for (const preset of presets) {
+                const isEnabled = !!preset.is_enabled;
+                if (enable && !isEnabled) {
+                    await api.post(`/automations/${preset.id}/toggle`);
+                    count++;
+                } else if (!enable && isEnabled) {
+                    await api.post(`/automations/${preset.id}/toggle`);
+                    count++;
+                }
+            }
+            toast.success(`${count} ${platform} automation${count !== 1 ? 's' : ''} ${enable ? 'enabled' : 'disabled'}`);
+            await handlers.loadAutomations();
+            if (store.state.currentPage === 'automations') {
+                const pageContent = pages.automations();
+                document.querySelector('.page-content').innerHTML = pageContent;
+            }
+        } catch (error) {
+            toast.error(error.message);
         }
     },
 
