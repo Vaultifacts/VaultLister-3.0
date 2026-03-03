@@ -113,10 +113,88 @@ export async function refreshExpiringTokens() {
             // Small delay between refreshes to be kind to APIs
             await new Promise(resolve => setTimeout(resolve, 500));
         }
+        // Platform health alerts check — run alongside token refresh
+        try {
+            await checkPlatformHealthAlerts();
+        } catch (healthErr) {
+            logger.error('[TokenRefresh] Health alert check failed:', healthErr.message);
+        }
     } catch (error) {
         logger.error('[TokenRefresh] Error in refresh cycle:', error);
     } finally {
         isRunning = false;
+    }
+}
+
+/**
+ * Check platform health and alert users when scores drop below threshold
+ */
+async function checkPlatformHealthAlerts() {
+    const HEALTH_THRESHOLD = 50; // Alert when below this score
+    const allShops = query.all(`
+        SELECT s.id, s.user_id, s.platform, s.platform_username, s.is_connected,
+            s.oauth_token_expires_at, s.consecutive_refresh_failures, s.last_sync_at,
+            s.connection_type, s.sync_status
+        FROM shops s WHERE s.is_connected = 1
+    `);
+
+    for (const shop of allShops) {
+        const now = Date.now();
+        const tokenExpiry = shop.oauth_token_expires_at ? new Date(shop.oauth_token_expires_at).getTime() : null;
+        const lastSync = shop.last_sync_at ? new Date(shop.last_sync_at).getTime() : null;
+        const failures = shop.consecutive_refresh_failures || 0;
+
+        let score = 100;
+        const issues = [];
+
+        if (shop.connection_type === 'oauth') {
+            if (!tokenExpiry) { score -= 30; issues.push('No OAuth token'); }
+            else if (tokenExpiry < now) { score -= 40; issues.push('Token expired'); }
+            else if (tokenExpiry - now < 3600000) { score -= 15; issues.push('Token expiring soon'); }
+        }
+        if (failures >= 5) { score -= 30; issues.push('5+ refresh failures'); }
+        else if (failures >= 3) { score -= 15; issues.push(`${failures} refresh failures`); }
+        if (!lastSync) { score -= 10; issues.push('Never synced'); }
+        else if (now - lastSync > 86400000 * 7) { score -= 15; issues.push('Sync stale >7 days'); }
+
+        const listingErrors = query.get(
+            "SELECT COUNT(*) as cnt FROM listings WHERE user_id = ? AND platform = ? AND status = 'error'",
+            [shop.user_id, shop.platform]
+        )?.cnt || 0;
+        if (listingErrors > 0) { score -= Math.min(10, listingErrors * 2); issues.push(`${listingErrors} listing errors`); }
+
+        score = Math.max(0, score);
+
+        if (score < HEALTH_THRESHOLD && issues.length > 0) {
+            // Check if we already sent a health alert in the last 6 hours
+            const recentAlert = query.get(`
+                SELECT id FROM notifications WHERE user_id = ? AND type = 'platform_health'
+                    AND data LIKE ? AND created_at >= datetime('now', '-6 hours')
+            `, [shop.user_id, `%${shop.platform}%`]);
+
+            if (!recentAlert) {
+                try {
+                    const { createNotification } = await import('./notificationService.js');
+                    createNotification(shop.user_id, {
+                        type: 'platform_health',
+                        title: `${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)} health alert`,
+                        message: `Health score dropped to ${score}/100. Issues: ${issues.join(', ')}`,
+                        data: JSON.stringify({ platform: shop.platform, score, issues })
+                    });
+
+                    const { websocketService } = await import('./websocket.js');
+                    websocketService.sendToUser(shop.user_id, {
+                        type: 'notification',
+                        notification: {
+                            type: 'platform_health',
+                            title: `${shop.platform} health: ${score}/100`,
+                            message: issues.join(', '),
+                            data: { platform: shop.platform, score }
+                        }
+                    });
+                } catch (_) { /* notification service not available */ }
+            }
+        }
     }
 }
 

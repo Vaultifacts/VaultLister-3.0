@@ -105,6 +105,28 @@ export async function automationsRouter(ctx) {
         return { status: 200, data: { logs, total } };
     }
 
+    // GET /api/automations/run/:runId/logs - Get action logs for a specific run
+    if (method === 'GET' && path.match(/^\/run\/[a-f0-9-]+\/logs$/)) {
+        const runId = path.split('/')[2];
+        try {
+            const run = query.get('SELECT * FROM automation_runs WHERE id = ? AND user_id = ?', [runId, user.id]);
+            if (!run) return { status: 404, data: { error: 'Run not found' } };
+
+            // Match logs by rule_id + time window of the run
+            const logs = query.all(`
+                SELECT * FROM automation_logs
+                WHERE user_id = ? AND rule_id = ?
+                    AND created_at >= ? AND created_at <= COALESCE(?, datetime('now'))
+                ORDER BY created_at ASC
+            `, [user.id, run.automation_id, run.started_at, run.completed_at]);
+
+            return { status: 200, data: { run, logs } };
+        } catch (error) {
+            logger.error('[Automations] failed to fetch run logs', user?.id, { detail: error?.message || 'Unknown error' });
+            return { status: 500, data: { error: 'Failed to fetch run logs' } };
+        }
+    }
+
     // GET /api/automations/history - Get detailed automation run history
     if (method === 'GET' && path === '/history') {
         const { status, type, limit = 50, offset = 0 } = queryParams;
@@ -1041,6 +1063,114 @@ export async function automationsRouter(ctx) {
         }
 
         return { status: 200, data: { prefs: body, message: 'Notification preferences saved' } };
+    }
+
+    // ============================================
+    // A/B Testing (Experiments)
+    // ============================================
+
+    // GET /api/automations/experiments - List experiments
+    if (method === 'GET' && path === '/experiments') {
+        try {
+            const experiments = query.all(`
+                SELECT e.*,
+                    br.name as base_name, br.schedule as base_schedule, br.run_count as base_runs,
+                    vr.name as variant_name, vr.schedule as variant_schedule, vr.run_count as variant_runs
+                FROM automation_experiments e
+                JOIN automation_rules br ON e.base_rule_id = br.id
+                JOIN automation_rules vr ON e.variant_rule_id = vr.id
+                WHERE e.user_id = ?
+                ORDER BY e.created_at DESC
+            `, [user.id]);
+
+            // Enrich with run stats
+            for (const exp of experiments) {
+                exp.base_stats = query.get(`
+                    SELECT COUNT(*) as runs,
+                        SUM(CASE WHEN status='success' THEN 1 ELSE 0 END) as successes,
+                        AVG(items_processed) as avg_items,
+                        AVG(duration_ms) as avg_duration
+                    FROM automation_runs WHERE automation_id = ? AND started_at >= ?
+                `, [exp.base_rule_id, exp.started_at]) || {};
+                exp.variant_stats = query.get(`
+                    SELECT COUNT(*) as runs,
+                        SUM(CASE WHEN status='success' THEN 1 ELSE 0 END) as successes,
+                        AVG(items_processed) as avg_items,
+                        AVG(duration_ms) as avg_duration
+                    FROM automation_runs WHERE automation_id = ? AND started_at >= ?
+                `, [exp.variant_rule_id, exp.started_at]) || {};
+            }
+
+            return { status: 200, data: { experiments } };
+        } catch (error) {
+            logger.error('[Automations] failed to fetch experiments', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to fetch experiments' } };
+        }
+    }
+
+    // POST /api/automations/experiments - Create experiment (clone rule as variant)
+    if (method === 'POST' && path === '/experiments') {
+        const { baseRuleId, variantName, variantSchedule, variantConditions, variantActions } = body;
+        if (!baseRuleId) return { status: 400, data: { error: 'baseRuleId required' } };
+
+        try {
+            const baseRule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [baseRuleId, user.id]);
+            if (!baseRule) return { status: 404, data: { error: 'Base rule not found' } };
+
+            // Clone the base rule as the variant
+            const variantId = uuidv4();
+            query.run(`
+                INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+            `, [
+                variantId, user.id,
+                variantName || baseRule.name + ' (Variant B)',
+                baseRule.type, baseRule.platform,
+                variantSchedule || baseRule.schedule,
+                variantConditions || baseRule.conditions,
+                variantActions || baseRule.actions
+            ]);
+
+            // Create experiment record
+            const experimentId = uuidv4();
+            query.run(`
+                INSERT INTO automation_experiments (id, user_id, name, base_rule_id, variant_rule_id, status)
+                VALUES (?, ?, ?, ?, ?, 'running')
+            `, [experimentId, user.id, `${baseRule.name}: A vs B`, baseRuleId, variantId]);
+
+            return { status: 201, data: { experiment: { id: experimentId, base_rule_id: baseRuleId, variant_rule_id: variantId } } };
+        } catch (error) {
+            logger.error('[Automations] failed to create experiment', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to create experiment' } };
+        }
+    }
+
+    // PUT /api/automations/experiments/:id - Update experiment (complete, pick winner)
+    if (method === 'PUT' && path.match(/^\/experiments\/[a-f0-9-]+$/)) {
+        const experimentId = path.split('/')[2];
+        const { status: newStatus, winner } = body;
+        try {
+            const exp = query.get('SELECT * FROM automation_experiments WHERE id = ? AND user_id = ?', [experimentId, user.id]);
+            if (!exp) return { status: 404, data: { error: 'Experiment not found' } };
+
+            if (newStatus === 'completed' && winner) {
+                query.run(`
+                    UPDATE automation_experiments SET status = 'completed', winner = ?, completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                `, [winner, experimentId]);
+
+                // Disable the loser
+                const loserId = winner === 'base' ? exp.variant_rule_id : exp.base_rule_id;
+                query.run('UPDATE automation_rules SET is_enabled = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [loserId]);
+            } else if (newStatus) {
+                query.run('UPDATE automation_experiments SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newStatus, experimentId]);
+            }
+
+            return { status: 200, data: { message: 'Experiment updated' } };
+        } catch (error) {
+            logger.error('[Automations] failed to update experiment', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to update experiment' } };
+        }
     }
 
     return { status: 404, data: { error: 'Route not found' } };

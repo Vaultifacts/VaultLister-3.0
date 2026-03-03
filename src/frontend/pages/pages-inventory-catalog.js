@@ -2158,6 +2158,29 @@ Object.assign(pages, {
                     </div>
                 </div>
             </div>
+
+            <!-- A/B Experiments Section -->
+            <div class="card mt-6">
+                <div class="card-header flex justify-between items-center">
+                    <div>
+                        <h3 class="card-title">${components.icon('git-branch', 18)} A/B Experiments</h3>
+                        <p class="text-sm text-gray-500">Compare two automation approaches side-by-side</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-ghost btn-sm" onclick="handlers.loadExperiments()">
+                            ${components.icon('refresh-cw', 14)} Refresh
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="handlers.showCreateExperiment()">
+                            ${components.icon('plus', 14)} New Experiment
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="experiments-list">
+                        ${store.state.automationExperiments ? handlers._renderExperimentsList(store.state.automationExperiments) : '<p class="text-gray-500 text-sm text-center py-4">Click Refresh to load experiments</p>'}
+                    </div>
+                </div>
+            </div>
         `;
     },
 

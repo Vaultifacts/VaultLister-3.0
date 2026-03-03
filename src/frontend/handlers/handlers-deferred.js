@@ -15811,7 +15811,7 @@ Object.assign(handlers, {
         const ruleRuns = runHistory.filter(r => r.automation_name === ruleName || r.automation_id === ruleId || r.action === ruleName);
 
         const rows = ruleRuns.length === 0
-            ? '<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--gray-400);">No runs recorded yet</td></tr>'
+            ? '<tr><td colspan="6" style="text-align:center; padding: 24px; color: var(--gray-400);">No runs recorded yet</td></tr>'
             : ruleRuns.slice(0, 25).map(r => {
                 const ts = r.started_at || r.timestamp || r.created_at;
                 const date = ts ? new Date(ts).toLocaleString() : '—';
@@ -15820,12 +15820,14 @@ Object.assign(handlers, {
                 const duration = r.duration_ms ? (r.duration_ms / 1000).toFixed(1) + 's' : '—';
                 const items = r.items_processed != null ? `${r.items_succeeded || 0}/${r.items_processed}` : '—';
                 const msg = escapeHtml(r.result_message || r.error_message || r.result || '');
-                return `<tr>
+                const runId = r.id || '';
+                return `<tr style="cursor:pointer;" onclick="handlers.showRunDetail('${runId}', '${escapeHtml(ruleName).replace(/'/g, "\\'")}')">
                     <td style="white-space:nowrap;">${date}</td>
                     <td><span style="color:${statusColor}; font-weight:600; text-transform:capitalize;">${status}</span></td>
                     <td>${items}</td>
                     <td>${duration}</td>
                     <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${msg}">${msg}</td>
+                    <td style="text-align:center;"><span style="color:var(--primary-500);font-size:12px;">${components.icon('chevron-right', 14)}</span></td>
                 </tr>`;
             }).join('');
 
@@ -15843,13 +15845,80 @@ Object.assign(handlers, {
                             <th style="padding:8px 12px;">Items</th>
                             <th style="padding:8px 12px;">Duration</th>
                             <th style="padding:8px 12px;">Message</th>
+                            <th style="padding:8px 12px;"></th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>
-                <p class="text-xs text-gray-400 mt-3">${ruleRuns.length} total run${ruleRuns.length !== 1 ? 's' : ''}</p>
+                <p class="text-xs text-gray-400 mt-3">${ruleRuns.length} total run${ruleRuns.length !== 1 ? 's' : ''}. Click a row for action-level detail.</p>
             </div>
         `);
+    },
+
+    showRunDetail: async function(runId, ruleName) {
+        if (!runId) { toast.error('No run ID'); return; }
+        try {
+            const res = await api.get('/automations/run/' + runId + '/logs');
+            const data = res.data || res;
+            const run = data.run || {};
+            const logs = data.logs || [];
+            const statusColor = run.status === 'success' ? 'var(--success)' : run.status === 'failed' ? 'var(--error)' : 'var(--warning-600)';
+            const logRows = logs.length === 0
+                ? '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--gray-400);">No action logs for this run</td></tr>'
+                : logs.map(l => {
+                    const lsc = l.status === 'success' ? 'var(--success)' : l.status === 'failure' ? 'var(--error)' : 'var(--warning-600)';
+                    return '<tr><td style="white-space:nowrap;font-size:12px;">' + new Date(l.created_at).toLocaleTimeString() + '</td>' +
+                        '<td><span style="color:' + lsc + ';font-weight:600;text-transform:capitalize;">' + (l.status || '—') + '</span></td>' +
+                        '<td>' + escapeHtml(l.action_taken || l.type || '—') + '</td>' +
+                        '<td>' + (l.duration_ms ? l.duration_ms + 'ms' : '—') + '</td>' +
+                        '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(l.details || l.error_message || '') + '">' + escapeHtml(l.details || l.error_message || '—') + '</td></tr>';
+                }).join('');
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${escapeHtml(ruleName)} — Run Detail</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body" style="max-height:65vh;overflow-y:auto;">
+                    <div class="flex gap-4 mb-4">
+                        <div class="card" style="flex:1;"><div class="card-body text-center py-2">
+                            <div class="text-lg font-bold" style="color:${statusColor};text-transform:capitalize;">${run.status || '—'}</div>
+                            <div class="text-xs text-gray-500">Status</div>
+                        </div></div>
+                        <div class="card" style="flex:1;"><div class="card-body text-center py-2">
+                            <div class="text-lg font-bold">${run.items_processed || 0}</div>
+                            <div class="text-xs text-gray-500">Processed</div>
+                        </div></div>
+                        <div class="card" style="flex:1;"><div class="card-body text-center py-2">
+                            <div class="text-lg font-bold" style="color:var(--success);">${run.items_succeeded || 0}</div>
+                            <div class="text-xs text-gray-500">Succeeded</div>
+                        </div></div>
+                        <div class="card" style="flex:1;"><div class="card-body text-center py-2">
+                            <div class="text-lg font-bold" style="color:var(--error);">${run.items_failed || 0}</div>
+                            <div class="text-xs text-gray-500">Failed</div>
+                        </div></div>
+                        <div class="card" style="flex:1;"><div class="card-body text-center py-2">
+                            <div class="text-lg font-bold">${run.duration_ms ? (run.duration_ms / 1000).toFixed(1) + 's' : '—'}</div>
+                            <div class="text-xs text-gray-500">Duration</div>
+                        </div></div>
+                    </div>
+                    ${run.error_message ? '<div class="mb-3" style="padding:8px;background:var(--error-50,#fef2f2);border-radius:var(--radius-sm);color:var(--error-700);font-size:13px;">' + components.icon('alert-circle', 14) + ' ' + escapeHtml(run.error_message) + '</div>' : ''}
+                    <h3 class="text-sm font-semibold mb-2">Action Log (${logs.length} entries)</h3>
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead><tr style="border-bottom:1px solid var(--gray-200);text-align:left;">
+                            <th style="padding:6px 8px;">Time</th>
+                            <th style="padding:6px 8px;">Status</th>
+                            <th style="padding:6px 8px;">Action</th>
+                            <th style="padding:6px 8px;">Duration</th>
+                            <th style="padding:6px 8px;">Details</th>
+                        </tr></thead>
+                        <tbody>${logRows}</tbody>
+                    </table>
+                    <p class="text-xs text-gray-400 mt-2">Started: ${run.started_at ? new Date(run.started_at).toLocaleString() : '—'} | Completed: ${run.completed_at ? new Date(run.completed_at).toLocaleString() : '—'}</p>
+                </div>
+            `);
+        } catch (e) {
+            toast.error('Failed to load run details');
+        }
     },
 
     // Update automation schedule settings,
@@ -26900,9 +26969,149 @@ Object.assign(handlers, {
         const deadStock = data.deadStock || [];
         const maxBucket = Math.max(...agingBuckets.map(b => b.count), 1);
         return '<div class="grid grid-cols-4 gap-4 mb-6"><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--primary-600);">' + (overall.sell_through_rate || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Sell-Through Rate</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--success);">' + (overall.avg_days_to_sell || 0).toFixed(0) + '</div><div class="text-xs text-gray-500">Avg Days to Sell</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--warning-600);">' + (overall.margin_pct || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Avg Margin</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:' + ((overall.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (overall.total_profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div><div class="text-xs text-gray-500">Total Profit</div></div></div></div>' +
+            '<div class="card mb-6"><div class="card-body"><div class="flex justify-between items-center mb-3"><h3 class="text-md font-semibold">' + components.icon('trending-up', 18) + ' Profit & Loss Timeline</h3><button class="btn btn-ghost btn-sm" onclick="handlers.loadPLTimeline()">' + components.icon('refresh-cw', 14) + ' Load</button></div><div id="pl-timeline-chart">' + (store.state.plTimeline ? handlers._renderPLChart(store.state.plTimeline) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to fetch monthly P&L data</p>') + '</div></div></div>' +
             '<div class="card mb-6"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('clock', 18) + ' Inventory Aging</h3><div class="flex gap-3 items-end" style="height:120px;">' + agingBuckets.map(b => { const pct = (b.count / maxBucket * 100); const color = b.min >= 91 ? 'var(--error)' : b.min >= 61 ? 'var(--warning-600)' : b.min >= 31 ? 'var(--warning-400)' : 'var(--success)'; return '<div style="flex:1;text-align:center;"><div style="background:' + color + ';height:' + Math.max(pct, 4) + '%;border-radius:4px 4px 0 0;margin:0 2px;position:relative;"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600;">' + b.count + '</span></div><div style="font-size:10px;color:var(--gray-500);margin-top:4px;">' + b.label + '</div><div style="font-size:9px;color:var(--gray-400);">$' + Math.round(b.value).toLocaleString() + '</div></div>'; }).join('') + '</div></div></div>' +
             '<div class="grid grid-cols-2 gap-4 mb-6"><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('trending-up', 18) + ' Sell-Through by Category</h3>' + (sellThrough.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Total</th><th>Sold</th><th>Rate</th><th>Avg Days</th></tr></thead><tbody>' + sellThrough.map(s => '<tr><td>' + escapeHtml(s.category || 'Uncategorized') + '</td><td>' + s.total + '</td><td>' + s.sold + '</td><td style="color:' + (s.sell_rate >= 50 ? 'var(--success)' : s.sell_rate >= 25 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (s.sell_rate || 0).toFixed(1) + '%</td><td>' + (s.avg_days_to_sell ? s.avg_days_to_sell.toFixed(0) + 'd' : '—') + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No data yet</p>') + '</div></div><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Margin by Category</h3>' + (margins.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Sold</th><th>Avg Sale</th><th>Margin</th><th>Profit</th></tr></thead><tbody>' + margins.map(m => '<tr><td>' + escapeHtml(m.category || 'Uncategorized') + '</td><td>' + m.sold_count + '</td><td>$' + (m.avg_sale_price || 0).toFixed(0) + '</td><td style="color:' + ((m.margin_pct || 0) >= 30 ? 'var(--success)' : (m.margin_pct || 0) >= 15 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (m.margin_pct || 0).toFixed(1) + '%</td><td style="color:' + ((m.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (m.total_profit || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No sales data yet</p>') + '</div></div></div>' +
             (deadStock.length > 0 ? '<div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3" style="color:var(--error);">' + components.icon('alert-triangle', 18) + ' Dead Stock (' + deadStock.length + ' items)</h3><table class="table table-sm"><thead><tr><th>Title</th><th>SKU</th><th>Days</th><th>Price</th></tr></thead><tbody>' + deadStock.slice(0, 10).map(d => '<tr><td>' + escapeHtml(d.title || '') + '</td><td>' + escapeHtml(d.sku || '—') + '</td><td style="color:var(--error);">' + d.days_old + 'd</td><td>$' + (d.list_price || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table></div></div>' : '');
+    },
+
+    loadPLTimeline: async function() {
+        try {
+            const res = await api.get('/analytics/sales?groupBy=month&period=1y');
+            const data = res.data || res;
+            const salesData = (data.salesData || []).reverse();
+            store.setState({ plTimeline: salesData });
+            const el = document.getElementById('pl-timeline-chart');
+            if (el) el.innerHTML = handlers._renderPLChart(salesData);
+        } catch (e) {
+            toast.error('Failed to load P&L data');
+        }
+    },
+
+    _renderPLChart: function(salesData) {
+        if (!salesData || salesData.length === 0) {
+            return '<p class="text-gray-500 text-sm text-center py-4">No sales data available</p>';
+        }
+        const width = 600, height = 200, padL = 50, padR = 20, padT = 20, padB = 40;
+        const chartW = width - padL - padR;
+        const chartH = height - padT - padB;
+        const n = salesData.length;
+        const revenues = salesData.map(d => d.revenue || 0);
+        const profits = salesData.map(d => d.profit || 0);
+        const allVals = [...revenues, ...profits];
+        const maxVal = Math.max(...allVals, 1);
+        const minVal = Math.min(...allVals, 0);
+        const range = maxVal - minVal || 1;
+        function toX(i) { return padL + (i / Math.max(n - 1, 1)) * chartW; }
+        function toY(v) { return padT + chartH - ((v - minVal) / range) * chartH; }
+        const revPoints = salesData.map((_, i) => toX(i) + ',' + toY(revenues[i])).join(' ');
+        const profPoints = salesData.map((_, i) => toX(i) + ',' + toY(profits[i])).join(' ');
+        const zeroY = toY(0);
+        const gridLines = [0, 0.25, 0.5, 0.75, 1].map(pct => {
+            const y = padT + pct * chartH;
+            const val = maxVal - pct * range;
+            return '<line x1="' + padL + '" y1="' + y + '" x2="' + (width - padR) + '" y2="' + y + '" stroke="var(--gray-200)" stroke-dasharray="4,4"/>' +
+                '<text x="' + (padL - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--gray-400)">$' + Math.round(val) + '</text>';
+        }).join('');
+        const xLabels = salesData.map((d, i) => '<text x="' + toX(i) + '" y="' + (height - 8) + '" text-anchor="middle" font-size="10" fill="var(--gray-500)">' + (d.period || '').slice(0, 7) + '</text>').join('');
+        const totalRevenue = revenues.reduce((a, b) => a + b, 0);
+        const totalProfit = profits.reduce((a, b) => a + b, 0);
+        return '<div class="flex gap-4 mb-2"><span class="text-xs"><span style="display:inline-block;width:12px;height:3px;background:var(--primary-500);vertical-align:middle;margin-right:4px;border-radius:2px;"></span>Revenue ($' + totalRevenue.toLocaleString(undefined, {maximumFractionDigits: 0}) + ')</span><span class="text-xs"><span style="display:inline-block;width:12px;height:3px;background:var(--success);vertical-align:middle;margin-right:4px;border-radius:2px;"></span>Profit ($' + totalProfit.toLocaleString(undefined, {maximumFractionDigits: 0}) + ')</span></div>' +
+            '<svg viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;">' + gridLines +
+            (minVal < 0 ? '<line x1="' + padL + '" y1="' + zeroY + '" x2="' + (width - padR) + '" y2="' + zeroY + '" stroke="var(--gray-400)" stroke-width="1"/>' : '') +
+            '<polyline points="' + revPoints + '" fill="none" stroke="var(--primary-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<polyline points="' + profPoints + '" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+            salesData.map((d, i) => '<circle cx="' + toX(i) + '" cy="' + toY(revenues[i]) + '" r="3" fill="var(--primary-500)"/><circle cx="' + toX(i) + '" cy="' + toY(profits[i]) + '" r="3" fill="var(--success)"/>').join('') +
+            xLabels + '</svg>';
+    },
+
+    loadExperiments: async function() {
+        try {
+            const res = await api.get('/automations/experiments');
+            const data = res.data || res;
+            store.setState({ automationExperiments: data.experiments || data || [] });
+            const el = document.getElementById('experiments-list');
+            if (el) el.innerHTML = handlers._renderExperimentsList(store.state.automationExperiments);
+        } catch (e) {
+            toast.error('Failed to load experiments');
+        }
+    },
+
+    showCreateExperiment: function() {
+        const rules = store.state.automations || [];
+        const enabledRules = rules.filter(r => r.is_enabled || r.exists);
+        if (enabledRules.length === 0) { toast.warning('Enable at least one automation rule first'); return; }
+        const ruleOptions = enabledRules.map(r => '<option value="' + r.id + '">' + escapeHtml(r.name) + '</option>').join('');
+        modals.show('<div class="modal-header"><h2 class="modal-title">' + components.icon('git-branch', 20) + ' Create A/B Experiment</h2><button class="modal-close" aria-label="Close" onclick="modals.close()">' + components.icon('close') + '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Select a base rule to clone as variant B. Modify the variant\'s schedule or conditions to test different approaches.</p><div class="form-group mb-4"><label class="form-label">Base Rule (A)</label><select id="exp-base-rule" class="form-select">' + ruleOptions + '</select></div><div class="form-group mb-4"><label class="form-label">Experiment Name (optional)</label><input type="text" id="exp-name" class="form-input" placeholder="e.g., Share frequency test"></div><div class="form-group mb-4"><label class="form-label">Notes</label><textarea id="exp-notes" class="form-input" rows="2" placeholder="What are you testing?"></textarea></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveExperiment()">' + components.icon('git-branch', 14) + ' Create Experiment</button></div>');
+    },
+
+    saveExperiment: async function() {
+        const baseRuleId = document.getElementById('exp-base-rule')?.value;
+        const name = document.getElementById('exp-name')?.value?.trim();
+        const notes = document.getElementById('exp-notes')?.value?.trim();
+        if (!baseRuleId) { toast.error('Select a base rule'); return; }
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/experiments', { baseRuleId, name: name || undefined, notes: notes || undefined });
+            toast.success('Experiment created — variant rule cloned');
+            modals.close();
+            handlers.loadExperiments();
+        } catch (e) {
+            toast.error('Failed to create experiment: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+    completeExperiment: async function(expId, winner) {
+        if (!confirm('Complete this experiment and disable the ' + (winner === 'base' ? 'variant' : 'base') + ' rule?')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/automations/experiments/' + expId, { status: 'completed', winner });
+            toast.success('Experiment completed — ' + winner + ' wins');
+            handlers.loadExperiments();
+        } catch (e) {
+            toast.error('Failed to complete experiment');
+        }
+    },
+
+    pauseExperiment: async function(expId, newStatus) {
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/automations/experiments/' + expId, { status: newStatus });
+            toast.success('Experiment ' + newStatus);
+            handlers.loadExperiments();
+        } catch (e) {
+            toast.error('Failed to update experiment');
+        }
+    },
+
+    _renderExperimentsList: function(experiments) {
+        if (!experiments || experiments.length === 0) {
+            return '<p class="text-gray-500 text-sm text-center py-4">No experiments yet. Create one to compare two automation approaches.</p>';
+        }
+        return experiments.map(exp => {
+            const statusColor = exp.status === 'running' ? 'var(--success)' : exp.status === 'paused' ? 'var(--warning-600)' : 'var(--gray-500)';
+            const statusIcon = exp.status === 'running' ? 'play' : exp.status === 'paused' ? 'pause' : 'check-circle';
+            const baseRuns = exp.base_run_count || 0;
+            const variantRuns = exp.variant_run_count || 0;
+            const baseSuccess = exp.base_success_rate != null ? exp.base_success_rate.toFixed(0) : '—';
+            const variantSuccess = exp.variant_success_rate != null ? exp.variant_success_rate.toFixed(0) : '—';
+            return '<div class="card mb-3" style="border-left:3px solid ' + statusColor + ';"><div class="card-body">' +
+                '<div class="flex justify-between items-start mb-2"><div><h4 class="font-semibold">' + components.icon(statusIcon, 14) + ' ' + escapeHtml(exp.name || 'Experiment') + '</h4>' +
+                '<span class="text-xs text-gray-400">Started ' + (exp.started_at ? new Date(exp.started_at).toLocaleDateString() : '—') + '</span></div>' +
+                '<span class="badge" style="background:' + statusColor + '20;color:' + statusColor + ';text-transform:capitalize;">' + exp.status + '</span></div>' +
+                (exp.notes ? '<p class="text-xs text-gray-500 mb-3">' + escapeHtml(exp.notes) + '</p>' : '') +
+                '<div class="grid grid-cols-2 gap-3 mb-3">' +
+                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--primary-50,#eff6ff);"><div class="text-xs text-gray-500 mb-1">Base (A)</div><div class="text-sm font-semibold">' + baseRuns + ' runs | ' + baseSuccess + '% success</div><div class="text-xs text-gray-400">' + escapeHtml(exp.base_rule_name || exp.base_rule_id || '') + '</div></div>' +
+                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--warning-50,#fffbeb);"><div class="text-xs text-gray-500 mb-1">Variant (B)</div><div class="text-sm font-semibold">' + variantRuns + ' runs | ' + variantSuccess + '% success</div><div class="text-xs text-gray-400">' + escapeHtml(exp.variant_rule_name || exp.variant_rule_id || '') + '</div></div></div>' +
+                (exp.winner ? '<div class="text-sm mb-2" style="color:var(--success);font-weight:600;">' + components.icon('award', 14) + ' Winner: ' + exp.winner.toUpperCase() + '</div>' : '') +
+                (exp.status !== 'completed' ? '<div class="flex gap-2">' +
+                '<button class="btn btn-xs btn-success" onclick="handlers.completeExperiment(\'' + exp.id + '\', \'base\')">' + components.icon('check', 12) + ' A Wins</button>' +
+                '<button class="btn btn-xs btn-warning" onclick="handlers.completeExperiment(\'' + exp.id + '\', \'variant\')">' + components.icon('check', 12) + ' B Wins</button>' +
+                '<button class="btn btn-xs btn-ghost" onclick="handlers.completeExperiment(\'' + exp.id + '\', \'inconclusive\')">Inconclusive</button>' +
+                '<button class="btn btn-xs btn-ghost" onclick="handlers.pauseExperiment(\'' + exp.id + '\', \'' + (exp.status === 'paused' ? 'running' : 'paused') + '\')">' +
+                components.icon(exp.status === 'paused' ? 'play' : 'pause', 12) + ' ' + (exp.status === 'paused' ? 'Resume' : 'Pause') + '</button></div>' : '') +
+                '</div></div>';
+        }).join('');
     }
 });
 
