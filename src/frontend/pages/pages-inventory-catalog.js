@@ -1582,6 +1582,20 @@ Object.assign(pages, {
 
         const isPaused = store.state.automationsPaused || false;
 
+        // Compute daily run counts for last 7 days for a given rule
+        function getDailyRunCounts(ruleName, ruleId) {
+            const counts = [0, 0, 0, 0, 0, 0, 0];
+            const now = Date.now();
+            const dayMs = 86400000;
+            runHistory.forEach(r => {
+                if (r.automation_name !== ruleName && r.automation_id !== ruleId && r.action !== ruleName) return;
+                const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
+                const daysAgo = Math.floor((now - ts) / dayMs);
+                if (daysAgo >= 0 && daysAgo < 7) counts[6 - daysAgo]++;
+            });
+            return counts;
+        }
+
         // Lightweight next-run calculator from cron schedule
         function getNextRunLabel(schedule, isEnabled) {
             if (!isEnabled || !schedule) return null;
@@ -2002,7 +2016,7 @@ Object.assign(pages, {
                                             <span>${rule.name}</span>
                                         </div>
                                         <div class="automation-card-sparkline">
-                                            ${components.sparkline([3, 5, 4, 7, 6, 8, 5], { width: 80, height: 24, color: rule.is_enabled ? 'var(--success-500)' : 'var(--gray-400)' })}
+                                            ${components.sparkline(getDailyRunCounts(rule.name, rule.id), { width: 80, height: 24, color: rule.is_enabled ? 'var(--success-500)' : 'var(--gray-400)' })}
                                         </div>
                                     </div>
                                     <div class="text-sm text-gray-500">${rule.description}</div>
