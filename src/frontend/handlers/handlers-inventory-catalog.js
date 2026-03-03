@@ -2713,6 +2713,16 @@ Object.assign(handlers, {
                     ${components.icon('upload', 16)} Publish to Grailed
                 </button>
                 ` : ''}
+                ${listing.platform === 'facebook' && !listing.platform_listing_id ? `
+                <button class="btn btn-warning" id="publish-facebook-btn-${listingId}" onclick="handlers.publishToFacebook('${listingId}')">
+                    ${components.icon('upload', 16)} Publish to Facebook
+                </button>
+                ` : ''}
+                ${listing.platform === 'whatnot' && !listing.platform_listing_id ? `
+                <button class="btn btn-warning" id="publish-whatnot-btn-${listingId}" onclick="handlers.publishToWhatnot('${listingId}')">
+                    ${components.icon('upload', 16)} Publish to Whatnot
+                </button>
+                ` : ''}
                 <button class="btn btn-primary" onclick="modals.close(); handlers.editListing('${listingId}')">
                     ${components.icon('edit', 16)} Edit
                 </button>
@@ -6107,6 +6117,9 @@ Object.assign(handlers, {
         const mercariBtn  = document.getElementById('publish-mercari-crosslist-btn');
         const depopBtn    = document.getElementById('publish-depop-crosslist-btn');
         const grailedBtn  = document.getElementById('publish-grailed-crosslist-btn');
+        const facebookBtn = document.getElementById('publish-facebook-crosslist-btn');
+        const whatnotBtn  = document.getElementById('publish-whatnot-crosslist-btn');
+        const allBtn      = document.getElementById('publish-all-crosslist-btn');
 
         if (selected.length > 0) {
             summary?.classList.remove('hidden');
@@ -6119,6 +6132,9 @@ Object.assign(handlers, {
             mercariBtn?.removeAttribute('disabled');
             depopBtn?.removeAttribute('disabled');
             grailedBtn?.removeAttribute('disabled');
+            facebookBtn?.removeAttribute('disabled');
+            whatnotBtn?.removeAttribute('disabled');
+            allBtn?.removeAttribute('disabled');
         } else {
             summary?.classList.add('hidden');
             basicBtn?.setAttribute('disabled', 'true');
@@ -6129,6 +6145,9 @@ Object.assign(handlers, {
             mercariBtn?.setAttribute('disabled', 'true');
             depopBtn?.setAttribute('disabled', 'true');
             grailedBtn?.setAttribute('disabled', 'true');
+            facebookBtn?.setAttribute('disabled', 'true');
+            whatnotBtn?.setAttribute('disabled', 'true');
+            allBtn?.setAttribute('disabled', 'true');
         }
 
         // Store selection in state
@@ -6553,6 +6572,159 @@ Object.assign(handlers, {
             toast.error('Grailed publish failed: ' + error.message);
         } finally {
             if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('upload', 16)} Publish to Grailed`; }
+        }
+    },
+
+
+    publishToFacebook: async function(listingId) {
+        const listing = store.state.listings.find(l => l.id === listingId);
+        if (!listing) { toast.error('Listing not found'); return; }
+
+        const btn = document.getElementById(`publish-facebook-btn-${listingId}`);
+        if (btn) { btn.disabled = true; btn.textContent = 'Publishing…'; }
+
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post(`/listings/${listingId}/publish-facebook`, {});
+            modals.close();
+            toast.success(`Listed on Facebook Marketplace! ${result.listingUrl}`, { duration: 8000 });
+            await handlers.loadListings();
+            if (store.state.currentPage === 'listings') renderApp(pages.listings());
+        } catch (error) {
+            toast.error('Facebook publish failed: ' + error.message);
+            if (btn) { btn.disabled = false; btn.textContent = 'Publish to Facebook'; }
+        }
+    },
+
+
+    publishSelectedToFacebook: async function() {
+        const selectedItemIds = store.state.crosslistSelectedItems || [];
+        if (selectedItemIds.length === 0) return toast.warning('Please select at least one item');
+
+        const btn = document.getElementById('publish-facebook-crosslist-btn');
+        if (btn) { btn.disabled = true; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').textContent = `Publishing ${selectedItemIds.length} item(s)…`; }
+
+        const results = [], errors = [];
+        try {
+            await api.ensureCSRFToken();
+            for (const inventoryId of selectedItemIds) {
+                try {
+                    const crosslistResp = await api.post('/listings/crosslist', { itemIds: [inventoryId], platforms: ['facebook'] });
+                    const listingId = crosslistResp?.created?.[0]?.id || crosslistResp?.skipped?.[0]?.existingId;
+                    if (!listingId) { errors.push(`No listing ID for item ${inventoryId}`); continue; }
+                    results.push(await api.post(`/listings/${listingId}/publish-facebook`, {}));
+                } catch (err) { errors.push(err.message); }
+            }
+            await handlers.loadListings();
+            if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+            if (results.length > 0) toast.success(`${results.length} item(s) published to Facebook Marketplace!`, { duration: 8000 });
+            if (errors.length > 0) toast.error(`${errors.length} item(s) failed: ${errors[0]}`);
+        } catch (error) {
+            toast.error('Facebook publish failed: ' + error.message);
+        } finally {
+            if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('upload', 16)} Publish to Facebook`; }
+        }
+    },
+
+
+    publishToWhatnot: async function(listingId) {
+        const listing = store.state.listings.find(l => l.id === listingId);
+        if (!listing) { toast.error('Listing not found'); return; }
+
+        const btn = document.getElementById(`publish-whatnot-btn-${listingId}`);
+        if (btn) { btn.disabled = true; btn.textContent = 'Publishing…'; }
+
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post(`/listings/${listingId}/publish-whatnot`, {});
+            modals.close();
+            toast.success(`Listed on Whatnot! ${result.listingUrl}`, { duration: 8000 });
+            await handlers.loadListings();
+            if (store.state.currentPage === 'listings') renderApp(pages.listings());
+        } catch (error) {
+            toast.error('Whatnot publish failed: ' + error.message);
+            if (btn) { btn.disabled = false; btn.textContent = 'Publish to Whatnot'; }
+        }
+    },
+
+
+    publishSelectedToWhatnot: async function() {
+        const selectedItemIds = store.state.crosslistSelectedItems || [];
+        if (selectedItemIds.length === 0) return toast.warning('Please select at least one item');
+
+        const btn = document.getElementById('publish-whatnot-crosslist-btn');
+        if (btn) { btn.disabled = true; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').textContent = `Publishing ${selectedItemIds.length} item(s)…`; }
+
+        const results = [], errors = [];
+        try {
+            await api.ensureCSRFToken();
+            for (const inventoryId of selectedItemIds) {
+                try {
+                    const crosslistResp = await api.post('/listings/crosslist', { itemIds: [inventoryId], platforms: ['whatnot'] });
+                    const listingId = crosslistResp?.created?.[0]?.id || crosslistResp?.skipped?.[0]?.existingId;
+                    if (!listingId) { errors.push(`No listing ID for item ${inventoryId}`); continue; }
+                    results.push(await api.post(`/listings/${listingId}/publish-whatnot`, {}));
+                } catch (err) { errors.push(err.message); }
+            }
+            await handlers.loadListings();
+            if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+            if (results.length > 0) toast.success(`${results.length} item(s) published to Whatnot!`, { duration: 8000 });
+            if (errors.length > 0) toast.error(`${errors.length} item(s) failed: ${errors[0]}`);
+        } catch (error) {
+            toast.error('Whatnot publish failed: ' + error.message);
+        } finally {
+            if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('upload', 16)} Publish to Whatnot`; }
+        }
+    },
+
+
+    publishSelectedToAll: async function() {
+        const selectedItemIds = store.state.crosslistSelectedItems || [];
+        if (selectedItemIds.length === 0) return toast.warning('Please select at least one item');
+
+        const btn = document.getElementById('publish-all-crosslist-btn');
+        if (btn) { btn.disabled = true; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').textContent = `Publishing to all platforms…`; }
+
+        const PLATFORMS = ['ebay', 'etsy', 'poshmark', 'mercari', 'depop', 'grailed', 'facebook', 'whatnot'];
+        const PUBLISH_ROUTES = {
+            ebay: 'publish-ebay', etsy: 'publish-etsy', poshmark: 'publish-poshmark',
+            mercari: 'publish-mercari', depop: 'publish-depop', grailed: 'publish-grailed',
+            facebook: 'publish-facebook', whatnot: 'publish-whatnot'
+        };
+
+        const summary = {};
+        for (const p of PLATFORMS) summary[p] = { success: 0, fail: 0 };
+
+        try {
+            await api.ensureCSRFToken();
+
+            for (const inventoryId of selectedItemIds) {
+                for (const platform of PLATFORMS) {
+                    try {
+                        const crosslistResp = await api.post('/listings/crosslist', { itemIds: [inventoryId], platforms: [platform] });
+                        const listingId = crosslistResp?.created?.[0]?.id || crosslistResp?.skipped?.[0]?.existingId;
+                        if (!listingId) { summary[platform].fail++; continue; }
+                        await api.post(`/listings/${listingId}/${PUBLISH_ROUTES[platform]}`, {});
+                        summary[platform].success++;
+                    } catch (err) {
+                        summary[platform].fail++;
+                    }
+                }
+            }
+
+            await handlers.loadListings();
+            if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+
+            const lines = PLATFORMS.map(p =>
+                summary[p].success > 0
+                    ? `${p.charAt(0).toUpperCase() + p.slice(1)}: ${summary[p].success} ✓`
+                    : `${p.charAt(0).toUpperCase() + p.slice(1)}: failed`
+            );
+            toast.success('Publish all complete:\n' + lines.join(' · '), { duration: 12000 });
+        } catch (error) {
+            toast.error('Publish all failed: ' + error.message);
+        } finally {
+            if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('zap', 16)} Publish to ALL Platforms`; }
         }
     },
 

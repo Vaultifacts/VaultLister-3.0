@@ -1267,41 +1267,61 @@ Object.assign(pages, {
                             </button>
                         </div>
 
-                        <div class="mt-3 grid grid-cols-3 gap-3">
-                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToEbay()" id="publish-ebay-crosslist-btn" disabled>
-                                <div class="text-left">
-                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to eBay</div>
-                                    <div class="text-xs opacity-90">Cross-list and go live on eBay</div>
+                        <div class="mt-3 mb-2">
+                            <button class="btn btn-success btn-lg w-full" onclick="handlers.publishSelectedToAll()" id="publish-all-crosslist-btn" disabled style="background: linear-gradient(135deg, var(--success-600), var(--primary-600)); border: none; font-size: 15px;">
+                                <div class="text-center">
+                                    <div class="font-semibold">${components.icon('zap', 18)} Publish to ALL Platforms</div>
+                                    <div class="text-xs opacity-90">eBay · Etsy · Poshmark · Mercari · Depop · Grailed · Facebook · Whatnot</div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToEtsy()" id="publish-etsy-crosslist-btn" disabled>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToEbay()" id="publish-ebay-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to Etsy</div>
-                                    <div class="text-xs opacity-90">Cross-list and go live on Etsy</div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} eBay</div>
+                                    <div class="text-xs opacity-90">API</div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToPoshmark()" id="publish-poshmark-crosslist-btn" disabled>
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToEtsy()" id="publish-etsy-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to Poshmark</div>
-                                    <div class="text-xs opacity-90">Cross-list via browser automation</div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Etsy</div>
+                                    <div class="text-xs opacity-90">API</div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToMercari()" id="publish-mercari-crosslist-btn" disabled>
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToPoshmark()" id="publish-poshmark-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to Mercari</div>
-                                    <div class="text-xs opacity-90">Cross-list via browser automation</div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Poshmark</div>
+                                    <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToDepop()" id="publish-depop-crosslist-btn" disabled>
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToMercari()" id="publish-mercari-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to Depop</div>
-                                    <div class="text-xs opacity-90">Cross-list via browser automation</div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Mercari</div>
+                                    <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning btn-lg" onclick="handlers.publishSelectedToGrailed()" id="publish-grailed-crosslist-btn" disabled>
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToDepop()" id="publish-depop-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold">${components.icon('upload', 16)} Publish to Grailed</div>
-                                    <div class="text-xs opacity-90">Cross-list via browser automation</div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Depop</div>
+                                    <div class="text-xs opacity-90">Auto</div>
+                                </div>
+                            </button>
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToGrailed()" id="publish-grailed-crosslist-btn" disabled>
+                                <div class="text-left">
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Grailed</div>
+                                    <div class="text-xs opacity-90">Auto</div>
+                                </div>
+                            </button>
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToFacebook()" id="publish-facebook-crosslist-btn" disabled>
+                                <div class="text-left">
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Facebook</div>
+                                    <div class="text-xs opacity-90">Auto</div>
+                                </div>
+                            </button>
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToWhatnot()" id="publish-whatnot-crosslist-btn" disabled>
+                                <div class="text-left">
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Whatnot</div>
+                                    <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
                         </div>
