@@ -4,6 +4,7 @@
 
 import { decryptToken } from '../../utils/encryption.js';
 import { logger } from '../../shared/logger.js';
+import { auditLog } from './platformAuditLog.js';
 
 // Ordered preference lists per VaultLister condition — resolveCondition() walks
 // this list and picks the first entry that the category's condition policy allows.
@@ -235,6 +236,9 @@ export async function publishListingToEbay(shop, listing, inventory) {
     const accessToken = decryptToken(shop.oauth_token);
     const sku = (inventory.sku || `VL-${listing.id.slice(0, 8)}`).replace(/[^a-zA-Z0-9_-]/g, '-');
 
+    auditLog('ebay', 'publish_attempt', { listingId: listing.id, sku });
+
+    try {
     // Step 1: Create/update eBay inventory item
     const title = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 80);
     const description = listing.description || inventory.description || title;
@@ -395,8 +399,14 @@ export async function publishListingToEbay(shop, listing, inventory) {
         : `https://www.sandbox.ebay.com/itm/${listingId}`;
 
     logger.info('[eBay Publish] Success', { sku, offerId, listingId, listingUrl });
+    auditLog('ebay', 'publish_success', { listingId, listingUrl, offerId, sku });
 
     return { offerId, listingId, sku, listingUrl };
+
+    } catch (err) {
+        auditLog('ebay', 'publish_failure', { listingId: listing.id, sku, error: err.message });
+        throw err;
+    }
 }
 
 export default { publishListingToEbay };

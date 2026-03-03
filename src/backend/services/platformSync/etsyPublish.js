@@ -4,6 +4,7 @@
 
 import { decryptToken } from '../../utils/encryption.js';
 import { logger } from '../../shared/logger.js';
+import { auditLog } from './platformAuditLog.js';
 
 const ETSY_API_BASE = 'https://openapi.etsy.com';
 
@@ -105,6 +106,10 @@ export async function publishListingToEtsy(shop, listing, inventory) {
     const price = parseFloat(listing.price || inventory.list_price || 0);
     if (!price || price <= 0) throw new Error('Listing price must be greater than zero');
 
+    auditLog('etsy', 'publish_attempt', { listingId: listing.id });
+
+    try {
+
     const conditionLabel = CONDITION_LABEL[inventory.condition?.toLowerCase()] || '';
     const description = [
         listing.description || inventory.description || title,
@@ -149,8 +154,14 @@ export async function publishListingToEtsy(shop, listing, inventory) {
     const listingUrl = createResult.data.url || `https://www.etsy.com/listing/${listingId}`;
 
     logger.info('[Etsy Publish] Success', { shopId, listingId, listingUrl });
+    auditLog('etsy', 'publish_success', { listingId, listingUrl });
 
     return { listingId, listingUrl };
+
+    } catch (err) {
+        auditLog('etsy', 'publish_failure', { listingId: listing.id, error: err.message });
+        throw err;
+    }
 }
 
 export default { publishListingToEtsy };
