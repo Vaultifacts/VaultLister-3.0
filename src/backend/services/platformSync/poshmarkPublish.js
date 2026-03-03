@@ -7,6 +7,7 @@
 
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
+import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 
 const POSHMARK_URL = 'https://poshmark.com';
 
@@ -49,6 +50,7 @@ export async function publishListingToPoshmark(shop, listing, inventory) {
     logger.info('[Poshmark Publish] Launching browser');
 
     const browser = await chromium.launch({ headless: true, slowMo: 50 });
+    let tempFiles = [];
 
     try {
         const context = await browser.newContext({
@@ -83,7 +85,21 @@ export async function publishListingToPoshmark(shop, listing, inventory) {
         await page.goto(`${POSHMARK_URL}/create-listing`, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(randomDelay(2000, 3000));
 
-        // Step 3: Title
+        // Step 3: Upload photos (before filling text fields — Poshmark requires photos first)
+        const photoInput = await page.$('input[type="file"][accept*="image"], input[type="file"]');
+        if (photoInput) {
+            const { files, tempFiles: tf } = await resolveImageFiles(inventory.images, 8);
+            tempFiles = tf;
+            if (files.length > 0) {
+                await photoInput.setInputFiles(files);
+                await page.waitForTimeout(randomDelay(1500, 3000));
+                logger.info('[Poshmark Publish] Uploaded images', { count: files.length });
+            }
+        } else {
+            logger.warn('[Poshmark Publish] Photo upload input not found, skipping');
+        }
+
+        // Step 4: Title
         const titleSelector = [
             'input[placeholder*="title" i]',
             '[data-test*="title"] input',
@@ -184,6 +200,7 @@ export async function publishListingToPoshmark(shop, listing, inventory) {
         return { listingId, listingUrl: finalUrl };
 
     } finally {
+        cleanupTempImages(tempFiles);
         await browser.close();
     }
 }

@@ -79,6 +79,12 @@ const PLATFORMS = [
         type: 'automation',
         vars: ['WHATNOT_USERNAME', 'WHATNOT_PASSWORD'],
         note: 'Add WHATNOT_USERNAME and WHATNOT_PASSWORD to .env'
+    },
+    {
+        name: 'Shopify (REST API)',
+        type: 'api',
+        vars: ['SHOPIFY_STORE_URL', 'SHOPIFY_ACCESS_TOKEN'],
+        note: 'Add SHOPIFY_STORE_URL (e.g. my-store.myshopify.com) and SHOPIFY_ACCESS_TOKEN (shpat_...) to .env'
     }
 ];
 

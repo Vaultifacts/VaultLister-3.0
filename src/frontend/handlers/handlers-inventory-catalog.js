@@ -2723,6 +2723,11 @@ Object.assign(handlers, {
                     ${components.icon('upload', 16)} Publish to Whatnot
                 </button>
                 ` : ''}
+                ${listing.platform === 'shopify' && !listing.platform_listing_id ? `
+                <button class="btn btn-warning" id="publish-shopify-btn-${listingId}" onclick="handlers.publishToShopify('${listingId}')">
+                    ${components.icon('upload', 16)} Publish to Shopify
+                </button>
+                ` : ''}
                 <button class="btn btn-primary" onclick="modals.close(); handlers.editListing('${listingId}')">
                     ${components.icon('edit', 16)} Edit
                 </button>
@@ -6119,6 +6124,7 @@ Object.assign(handlers, {
         const grailedBtn  = document.getElementById('publish-grailed-crosslist-btn');
         const facebookBtn = document.getElementById('publish-facebook-crosslist-btn');
         const whatnotBtn  = document.getElementById('publish-whatnot-crosslist-btn');
+        const shopifyBtn  = document.getElementById('publish-shopify-crosslist-btn');
         const allBtn      = document.getElementById('publish-all-crosslist-btn');
 
         if (selected.length > 0) {
@@ -6134,6 +6140,7 @@ Object.assign(handlers, {
             grailedBtn?.removeAttribute('disabled');
             facebookBtn?.removeAttribute('disabled');
             whatnotBtn?.removeAttribute('disabled');
+            shopifyBtn?.removeAttribute('disabled');
             allBtn?.removeAttribute('disabled');
         } else {
             summary?.classList.add('hidden');
@@ -6147,6 +6154,7 @@ Object.assign(handlers, {
             grailedBtn?.setAttribute('disabled', 'true');
             facebookBtn?.setAttribute('disabled', 'true');
             whatnotBtn?.setAttribute('disabled', 'true');
+            shopifyBtn?.setAttribute('disabled', 'true');
             allBtn?.setAttribute('disabled', 'true');
         }
 
@@ -6678,6 +6686,57 @@ Object.assign(handlers, {
     },
 
 
+    publishToShopify: async function(listingId) {
+        const listing = store.state.listings.find(l => l.id === listingId);
+        if (!listing) { toast.error('Listing not found'); return; }
+
+        const btn = document.getElementById(`publish-shopify-btn-${listingId}`);
+        if (btn) { btn.disabled = true; btn.textContent = 'Publishing…'; }
+
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post(`/listings/${listingId}/publish-shopify`, {});
+            modals.close();
+            toast.success(`Listed on Shopify! ${result.listingUrl}`, { duration: 8000 });
+            await handlers.loadListings();
+            if (store.state.currentPage === 'listings') renderApp(pages.listings());
+        } catch (error) {
+            toast.error('Shopify publish failed: ' + error.message);
+            if (btn) { btn.disabled = false; btn.textContent = 'Publish to Shopify'; }
+        }
+    },
+
+
+    publishSelectedToShopify: async function() {
+        const selectedItemIds = store.state.crosslistSelectedItems || [];
+        if (selectedItemIds.length === 0) return toast.warning('Please select at least one item');
+
+        const btn = document.getElementById('publish-shopify-crosslist-btn');
+        if (btn) { btn.disabled = true; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').textContent = `Publishing ${selectedItemIds.length} item(s)…`; }
+
+        const results = [], errors = [];
+        try {
+            await api.ensureCSRFToken();
+            for (const inventoryId of selectedItemIds) {
+                try {
+                    const crosslistResp = await api.post('/listings/crosslist', { itemIds: [inventoryId], platforms: ['shopify'] });
+                    const listingId = crosslistResp?.created?.[0]?.id || crosslistResp?.skipped?.[0]?.existingId;
+                    if (!listingId) { errors.push(`No listing ID for item ${inventoryId}`); continue; }
+                    results.push(await api.post(`/listings/${listingId}/publish-shopify`, {}));
+                } catch (err) { errors.push(err.message); }
+            }
+            await handlers.loadListings();
+            if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+            if (results.length > 0) toast.success(`${results.length} item(s) published to Shopify!`, { duration: 8000 });
+            if (errors.length > 0) toast.error(`${errors.length} item(s) failed: ${errors[0]}`);
+        } catch (error) {
+            toast.error('Shopify publish failed: ' + error.message);
+        } finally {
+            if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('upload', 16)} Shopify`; }
+        }
+    },
+
+
     publishSelectedToAll: async function() {
         const selectedItemIds = store.state.crosslistSelectedItems || [];
         if (selectedItemIds.length === 0) return toast.warning('Please select at least one item');
@@ -6685,15 +6744,15 @@ Object.assign(handlers, {
         const btn = document.getElementById('publish-all-crosslist-btn');
         if (btn) { btn.disabled = true; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').textContent = `Publishing to all platforms…`; }
 
-        const PLATFORMS = ['ebay', 'etsy', 'poshmark', 'mercari', 'depop', 'grailed', 'facebook', 'whatnot'];
+        const PLATFORMS = ['ebay', 'etsy', 'poshmark', 'mercari', 'depop', 'grailed', 'facebook', 'whatnot', 'shopify'];
         const PUBLISH_ROUTES = {
             ebay: 'publish-ebay', etsy: 'publish-etsy', poshmark: 'publish-poshmark',
             mercari: 'publish-mercari', depop: 'publish-depop', grailed: 'publish-grailed',
-            facebook: 'publish-facebook', whatnot: 'publish-whatnot'
+            facebook: 'publish-facebook', whatnot: 'publish-whatnot', shopify: 'publish-shopify'
         };
 
         const summary = {};
-        for (const p of PLATFORMS) summary[p] = { success: 0, fail: 0 };
+        for (const p of PLATFORMS) summary[p] = { success: 0, fail: 0, lastError: null };
 
         try {
             await api.ensureCSRFToken();
@@ -6703,11 +6762,12 @@ Object.assign(handlers, {
                     try {
                         const crosslistResp = await api.post('/listings/crosslist', { itemIds: [inventoryId], platforms: [platform] });
                         const listingId = crosslistResp?.created?.[0]?.id || crosslistResp?.skipped?.[0]?.existingId;
-                        if (!listingId) { summary[platform].fail++; continue; }
+                        if (!listingId) { summary[platform].fail++; summary[platform].lastError = 'Could not create listing'; continue; }
                         await api.post(`/listings/${listingId}/${PUBLISH_ROUTES[platform]}`, {});
                         summary[platform].success++;
                     } catch (err) {
                         summary[platform].fail++;
+                        summary[platform].lastError = err.message || 'Unknown error';
                     }
                 }
             }
@@ -6715,17 +6775,77 @@ Object.assign(handlers, {
             await handlers.loadListings();
             if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
 
-            const lines = PLATFORMS.map(p =>
-                summary[p].success > 0
-                    ? `${p.charAt(0).toUpperCase() + p.slice(1)}: ${summary[p].success} ✓`
-                    : `${p.charAt(0).toUpperCase() + p.slice(1)}: failed`
-            );
-            toast.success('Publish all complete:\n' + lines.join(' · '), { duration: 12000 });
+            handlers.showPublishAllResultsModal(summary, selectedItemIds.length);
         } catch (error) {
             toast.error('Publish all failed: ' + error.message);
         } finally {
             if (btn) { btn.disabled = false; if (btn.querySelector('.font-semibold')) btn.querySelector('.font-semibold').innerHTML = `${components.icon('zap', 16)} Publish to ALL Platforms`; }
         }
+    },
+
+    showPublishAllResultsModal: function(summary, itemCount) {
+        const existing = document.getElementById('publish-all-results-modal');
+        if (existing) existing.remove();
+
+        const totalSuccess = Object.values(summary).reduce((n, v) => n + v.success, 0);
+        const totalFail    = Object.values(summary).reduce((n, v) => n + v.fail, 0);
+        const failedPlatforms = Object.entries(summary).filter(([, v]) => v.fail > 0).map(([p]) => p);
+
+        const rows = Object.entries(summary).map(([platform, { success, fail, lastError }]) => {
+            const label = platform.charAt(0).toUpperCase() + platform.slice(1);
+            if (success > 0 && fail === 0) {
+                return `<tr><td class="py-2 pr-3 font-medium">${label}</td>
+                    <td class="py-2 pr-3 text-success-600">${success} published</td>
+                    <td class="py-2 pr-3">—</td>
+                    <td class="py-2 text-xs text-gray-400">—</td></tr>`;
+            } else if (success > 0) {
+                return `<tr><td class="py-2 pr-3 font-medium">${label}</td>
+                    <td class="py-2 pr-3 text-success-600">${success} published</td>
+                    <td class="py-2 pr-3 text-error-600">${fail} failed</td>
+                    <td class="py-2 text-xs text-error-500 max-w-xs truncate" title="${escapeHtml(lastError || '')}">${escapeHtml((lastError || '').slice(0, 60))}</td></tr>`;
+            } else {
+                return `<tr class="text-error-700"><td class="py-2 pr-3 font-medium">${label}</td>
+                    <td class="py-2 pr-3">—</td>
+                    <td class="py-2 pr-3 text-error-600">${fail} failed</td>
+                    <td class="py-2 text-xs text-error-500 max-w-xs truncate" title="${escapeHtml(lastError || '')}">${escapeHtml((lastError || '').slice(0, 60))}</td></tr>`;
+            }
+        }).join('');
+
+        const retryBtn = failedPlatforms.length > 0
+            ? `<button class="btn btn-outline-error btn-sm" onclick="document.getElementById('publish-all-results-modal').remove(); handlers.publishSelectedToAll();">
+                   ${components.icon('refresh-cw', 14)} Retry Failed Platforms
+               </button>`
+            : '';
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.id = 'publish-all-results-modal';
+        modal.innerHTML = `
+            <div class="modal" style="max-width:620px;">
+                <div class="modal-header">
+                    <h3>${components.icon('zap', 18)} Publish All — Results</h3>
+                    <button class="btn btn-ghost" onclick="document.getElementById('publish-all-results-modal').remove()">&#10005;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-sm text-gray-600 mb-4">${itemCount} item${itemCount !== 1 ? 's' : ''} · ${totalSuccess} publishes succeeded · ${totalFail} failed</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead><tr class="border-b border-gray-200 text-gray-500 text-xs uppercase">
+                                <th class="py-2 pr-3 text-left font-medium">Platform</th>
+                                <th class="py-2 pr-3 text-left font-medium">Succeeded</th>
+                                <th class="py-2 pr-3 text-left font-medium">Failed</th>
+                                <th class="py-2 text-left font-medium">Error</th>
+                            </tr></thead>
+                            <tbody class="divide-y divide-gray-100">${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer flex gap-2 justify-end">
+                    ${retryBtn}
+                    <button class="btn btn-primary btn-sm" onclick="document.getElementById('publish-all-results-modal').remove()">Close</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
     },
 
 

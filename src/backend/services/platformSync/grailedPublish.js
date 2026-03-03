@@ -9,6 +9,7 @@
 
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
+import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 
 const GRAILED_URL = 'https://www.grailed.com';
 
@@ -61,6 +62,7 @@ export async function publishListingToGrailed(shop, listing, inventory) {
     logger.info('[Grailed Publish] Launching browser');
 
     const browser = await chromium.launch({ headless: true, slowMo: 50 });
+    let tempFiles = [];
 
     try {
         const context = await browser.newContext({
@@ -101,7 +103,21 @@ export async function publishListingToGrailed(shop, listing, inventory) {
         await page.goto(`${GRAILED_URL}/sell`, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(randomDelay(2000, 3500));
 
-        // Step 3: Title / Item Name
+        // Step 3: Upload photos
+        const photoInput = await page.$('input[type="file"][accept*="image"], input[type="file"]');
+        if (photoInput) {
+            const { files, tempFiles: tf } = await resolveImageFiles(inventory.images, 10);
+            tempFiles = tf;
+            if (files.length > 0) {
+                await photoInput.setInputFiles(files);
+                await page.waitForTimeout(randomDelay(1500, 3000));
+                logger.info('[Grailed Publish] Uploaded images', { count: files.length });
+            }
+        } else {
+            logger.warn('[Grailed Publish] Photo upload input not found, skipping');
+        }
+
+        // Step 4: Title / Item Name
         const titleSelector = [
             'input[placeholder*="item" i]',
             'input[placeholder*="name" i]',
@@ -241,6 +257,7 @@ export async function publishListingToGrailed(shop, listing, inventory) {
         return { listingId, listingUrl };
 
     } finally {
+        cleanupTempImages(tempFiles);
         await browser.close();
     }
 }

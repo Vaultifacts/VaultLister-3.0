@@ -39,7 +39,8 @@
     "sync-visual-prompt": "bun scripts/sync-visual-test-prompt.js",
     "lint": "node --check src/frontend/app.js && node --check src/backend/server.js && echo 'Syntax OK'",
     "prepare": "husky install || true",
-    "check:credentials": "bun scripts/check-publish-credentials.js"
+    "check:credentials": "bun scripts/check-publish-credentials.js",
+    "test:automation": "bun scripts/test-publish-automation.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",

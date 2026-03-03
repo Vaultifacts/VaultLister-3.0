@@ -1271,7 +1271,7 @@ Object.assign(pages, {
                             <button class="btn btn-success btn-lg w-full" onclick="handlers.publishSelectedToAll()" id="publish-all-crosslist-btn" disabled style="background: linear-gradient(135deg, var(--success-600), var(--primary-600)); border: none; font-size: 15px;">
                                 <div class="text-center">
                                     <div class="font-semibold">${components.icon('zap', 18)} Publish to ALL Platforms</div>
-                                    <div class="text-xs opacity-90">eBay · Etsy · Poshmark · Mercari · Depop · Grailed · Facebook · Whatnot</div>
+                                    <div class="text-xs opacity-90">eBay · Etsy · Poshmark · Mercari · Depop · Grailed · Facebook · Whatnot · Shopify</div>
                                 </div>
                             </button>
                         </div>
@@ -1322,6 +1322,12 @@ Object.assign(pages, {
                                 <div class="text-left">
                                     <div class="font-semibold text-sm">${components.icon('upload', 14)} Whatnot</div>
                                     <div class="text-xs opacity-90">Auto</div>
+                                </div>
+                            </button>
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToShopify()" id="publish-shopify-crosslist-btn" disabled>
+                                <div class="text-left">
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Shopify</div>
+                                    <div class="text-xs opacity-90">API</div>
                                 </div>
                             </button>
                         </div>

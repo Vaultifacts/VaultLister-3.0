@@ -7,6 +7,7 @@
 
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
+import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 
 const DEPOP_URL = 'https://www.depop.com';
 
@@ -58,6 +59,7 @@ export async function publishListingToDepop(shop, listing, inventory) {
     logger.info('[Depop Publish] Launching browser');
 
     const browser = await chromium.launch({ headless: true, slowMo: 50 });
+    let tempFiles = [];
 
     try {
         const context = await browser.newContext({
@@ -97,7 +99,21 @@ export async function publishListingToDepop(shop, listing, inventory) {
         await page.goto(`${DEPOP_URL}/sell/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(randomDelay(2000, 3500));
 
-        // Step 3: Title
+        // Step 3: Upload photos
+        const photoInput = await page.$('input[type="file"][accept*="image"], input[type="file"]');
+        if (photoInput) {
+            const { files, tempFiles: tf } = await resolveImageFiles(inventory.images, 4);
+            tempFiles = tf;
+            if (files.length > 0) {
+                await photoInput.setInputFiles(files);
+                await page.waitForTimeout(randomDelay(1500, 3000));
+                logger.info('[Depop Publish] Uploaded images', { count: files.length });
+            }
+        } else {
+            logger.warn('[Depop Publish] Photo upload input not found, skipping');
+        }
+
+        // Step 4: Title
         const titleSelector = [
             'input[placeholder*="item name" i]',
             'input[placeholder*="title" i]',
@@ -206,6 +222,7 @@ export async function publishListingToDepop(shop, listing, inventory) {
         return { listingId, listingUrl };
 
     } finally {
+        cleanupTempImages(tempFiles);
         await browser.close();
     }
 }

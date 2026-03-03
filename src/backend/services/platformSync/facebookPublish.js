@@ -11,6 +11,7 @@
 
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
+import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 
 const FACEBOOK_URL = 'https://www.facebook.com';
 
@@ -84,6 +85,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
     logger.info('[Facebook Publish] Launching browser');
 
     const browser = await chromium.launch({ headless: true, slowMo: 80 });
+    let tempFiles = [];
 
     try {
         const context = await browser.newContext({
@@ -134,7 +136,21 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         await page.goto(`${FACEBOOK_URL}/marketplace/create/item`, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(randomDelay(2500, 4000));
 
-        // Step 3: Title
+        // Step 3: Upload photos (Facebook Marketplace expects photos before text fields)
+        const photoInput = await page.$('input[type="file"][accept*="image"], input[type="file"]');
+        if (photoInput) {
+            const { files, tempFiles: tf } = await resolveImageFiles(inventory.images, 10);
+            tempFiles = tf;
+            if (files.length > 0) {
+                await photoInput.setInputFiles(files);
+                await page.waitForTimeout(randomDelay(2000, 3500));
+                logger.info('[Facebook Publish] Uploaded images', { count: files.length });
+            }
+        } else {
+            logger.warn('[Facebook Publish] Photo upload input not found, skipping');
+        }
+
+        // Step 4: Title
         const titleSelector = [
             'input[placeholder*="item title" i]',
             'input[placeholder*="title" i]',
@@ -244,6 +260,7 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         return { listingId, listingUrl };
 
     } finally {
+        cleanupTempImages(tempFiles);
         await browser.close();
     }
 }

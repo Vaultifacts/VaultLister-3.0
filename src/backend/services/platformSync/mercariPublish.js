@@ -7,6 +7,7 @@
 
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
+import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 
 const MERCARI_URL = 'https://www.mercari.com';
 
@@ -58,6 +59,7 @@ export async function publishListingToMercari(shop, listing, inventory) {
     logger.info('[Mercari Publish] Launching browser');
 
     const browser = await chromium.launch({ headless: true, slowMo: 50 });
+    let tempFiles = [];
 
     try {
         const context = await browser.newContext({
@@ -104,7 +106,21 @@ export async function publishListingToMercari(shop, listing, inventory) {
         await page.goto(`${MERCARI_URL}/sell/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(randomDelay(2000, 3500));
 
-        // Step 3: Title
+        // Step 3: Upload photos
+        const photoInput = await page.$('input[type="file"][accept*="image"], input[type="file"]');
+        if (photoInput) {
+            const { files, tempFiles: tf } = await resolveImageFiles(inventory.images, 12);
+            tempFiles = tf;
+            if (files.length > 0) {
+                await photoInput.setInputFiles(files);
+                await page.waitForTimeout(randomDelay(1500, 3000));
+                logger.info('[Mercari Publish] Uploaded images', { count: files.length });
+            }
+        } else {
+            logger.warn('[Mercari Publish] Photo upload input not found, skipping');
+        }
+
+        // Step 4: Title
         const titleSelector = [
             'input[placeholder*="item name" i]',
             'input[placeholder*="title" i]',
@@ -217,6 +233,7 @@ export async function publishListingToMercari(shop, listing, inventory) {
         return { listingId, listingUrl };
 
     } finally {
+        cleanupTempImages(tempFiles);
         await browser.close();
     }
 }
