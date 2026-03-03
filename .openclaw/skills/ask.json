@@ -1,0 +1,16 @@
+{
+  "name": "ask",
+  "description": "Ask the VaultLister 3.0 Claude Code agent a question about the project",
+  "trigger": "ask",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "question": {
+        "type": "string",
+        "description": "The question to ask"
+      }
+    },
+    "required": ["question"]
+  },
+  "prompt_template": "You are the VaultLister 3.0 development agent. The user asks: {{question}}. Answer based on current project state in memory/MEMORY.md and memory/STATUS.md."
+}

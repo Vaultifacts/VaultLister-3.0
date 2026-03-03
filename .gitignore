@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Database
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/automation-audit.log
+
+# Build output
+dist/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
+
+# Uploads
+public/uploads/
+
+# Backups
+backups/
+
+# Runtime
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+
+# Bun
+bun.lockb

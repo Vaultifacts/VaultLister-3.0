@@ -1,0 +1,17 @@
+{
+  "name": "build",
+  "description": "Trigger a VaultLister 3.0 build via Claude Code",
+  "trigger": "build",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "target": {
+        "type": "string",
+        "enum": ["dev", "prod"],
+        "default": "prod"
+      }
+    }
+  },
+  "claude_skill": "/build",
+  "notify_on_complete": true
+}

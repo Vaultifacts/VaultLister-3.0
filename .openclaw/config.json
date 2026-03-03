@@ -1,0 +1,23 @@
+{
+  "project": "vaultlister-3",
+  "display_name": "VaultLister 3.0",
+  "channel": {
+    "type": "telegram",
+    "id": "[CONFIGURE]"
+  },
+  "webhooks": {
+    "inbound": "[CONFIGURE]",
+    "outbound": "[CONFIGURE]"
+  },
+  "skills": [
+    "ask",
+    "build",
+    "deploy",
+    "status"
+  ],
+  "workflows": [
+    "daily-heartbeat",
+    "on-build-complete"
+  ],
+  "memory_file": ".openclaw/memory/context.json"
+}

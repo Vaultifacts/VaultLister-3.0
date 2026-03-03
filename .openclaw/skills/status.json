@@ -1,0 +1,11 @@
+{
+  "name": "status",
+  "description": "Get VaultLister 3.0 current project status",
+  "trigger": "status",
+  "input_schema": {
+    "type": "object",
+    "properties": {}
+  },
+  "claude_skill": "/status",
+  "notify_on_complete": false
+}

@@ -1,0 +1,14 @@
+{
+  "current_task": "Post-scaffold setup — configure .env, install deps, set git remote",
+  "branch": "main",
+  "last_commit": "",
+  "test_baseline": "not run yet",
+  "pending_tasks": [
+    "Configure git remote to https://github.com/Vaultifacts/VaultLister-3.0.git",
+    "Create .env from .env.example",
+    "bun install",
+    "bun run db:init",
+    "Configure OpenClaw .openclaw/config.json"
+  ],
+  "last_updated": "2026-03-02T00:00:00Z"
+}

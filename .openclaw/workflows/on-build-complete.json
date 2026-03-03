@@ -1,0 +1,13 @@
+{
+  "name": "on-build-complete",
+  "description": "Notify on successful build completion",
+  "trigger": "webhook",
+  "event": "build_pass",
+  "steps": [
+    {
+      "type": "notify",
+      "channel": "telegram",
+      "message": "✅ VaultLister 3.0 build passed — {{message}}"
+    }
+  ]
+}

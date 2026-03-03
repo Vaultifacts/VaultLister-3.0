@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VaultLister 3.0 OpenClaw Memory Schema",
+  "type": "object",
+  "properties": {
+    "current_task": {
+      "type": "string",
+      "description": "Active task description — persisted across sessions"
+    },
+    "branch": {
+      "type": "string",
+      "description": "Current git branch"
+    },
+    "last_commit": {
+      "type": "string",
+      "description": "Last commit hash (short)"
+    },
+    "test_baseline": {
+      "type": "string",
+      "description": "Last known test pass/fail summary"
+    },
+    "pending_tasks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "High-priority tasks from STATUS.md"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of last update"
+    }
+  },
+  "required": ["current_task", "last_updated"]
+}
