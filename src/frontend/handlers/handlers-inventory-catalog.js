@@ -5302,6 +5302,94 @@ Object.assign(handlers, {
         }
     },
 
+    toggleAutomationSelect: function(ruleId, checked) {
+        const selected = [...(store.state.selectedAutomationIds || [])];
+        if (checked && !selected.includes(ruleId)) selected.push(ruleId);
+        else if (!checked) { const idx = selected.indexOf(ruleId); if (idx > -1) selected.splice(idx, 1); }
+        store.setState({ selectedAutomationIds: selected });
+        if (store.state.currentPage === 'automations') {
+            document.querySelector('.page-content').innerHTML = pages.automations();
+        }
+    },
+
+    clearAutomationSelection: function() {
+        store.setState({ selectedAutomationIds: [] });
+        if (store.state.currentPage === 'automations') {
+            document.querySelector('.page-content').innerHTML = pages.automations();
+        }
+    },
+
+    bulkToggleAutomations: async function(enable) {
+        const selected = store.state.selectedAutomationIds || [];
+        if (selected.length === 0) return;
+        try {
+            await api.ensureCSRFToken();
+            for (const id of selected) {
+                await api.put('/automations/' + id, { isEnabled: enable });
+            }
+            showToast((enable ? 'Enabled' : 'Disabled') + ' ' + selected.length + ' automations', 'success');
+            store.setState({ selectedAutomationIds: [] });
+            const rulesRes = await api.get('/automations');
+            if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
+            if (store.state.currentPage === 'automations') {
+                document.querySelector('.page-content').innerHTML = pages.automations();
+            }
+        } catch (e) {
+            showToast('Bulk action failed: ' + (e.message || e), 'error');
+        }
+    },
+
+    bulkScheduleAutomations: function() {
+        const selected = store.state.selectedAutomationIds || [];
+        if (selected.length === 0) return;
+        const presets = [
+            { label: 'Every Hour', cron: '0 * * * *' },
+            { label: 'Every 4 Hours', cron: '0 */4 * * *' },
+            { label: 'Twice Daily', cron: '0 8,20 * * *' },
+            { label: 'Three Times Daily', cron: '0 8,14,20 * * *' },
+            { label: 'Daily (9am)', cron: '0 9 * * *' },
+            { label: 'Weekly (Sunday)', cron: '0 9 * * 0' }
+        ];
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('clock', 20)} Bulk Schedule (${selected.length} rules)</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label">Apply schedule to all ${selected.length} selected automations:</label>
+                <select class="form-select" id="bulk-schedule-select">
+                    ${presets.map(p => '<option value="' + p.cron + '">' + p.label + '</option>').join('')}
+                </select>
+            </div>
+            <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.applyBulkSchedule()">Apply</button>
+            </div>
+        `);
+    },
+
+    applyBulkSchedule: async function() {
+        const selected = store.state.selectedAutomationIds || [];
+        const schedule = document.getElementById('bulk-schedule-select')?.value;
+        if (!schedule || selected.length === 0) return;
+        try {
+            await api.ensureCSRFToken();
+            for (const id of selected) {
+                await api.put('/automations/' + id, { schedule });
+            }
+            showToast('Schedule applied to ' + selected.length + ' automations', 'success');
+            modals.close();
+            store.setState({ selectedAutomationIds: [] });
+            const rulesRes = await api.get('/automations');
+            if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
+            if (store.state.currentPage === 'automations') {
+                document.querySelector('.page-content').innerHTML = pages.automations();
+            }
+        } catch (e) {
+            showToast('Failed to apply schedule: ' + (e.message || e), 'error');
+        }
+    },
+
     sortAutomations: function(value) {
         store.setState({ automationSortBy: value });
         try { localStorage.setItem('vaultlister_automation_sort', value); } catch (_) {}

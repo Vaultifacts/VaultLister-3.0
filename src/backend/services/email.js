@@ -250,6 +250,61 @@ export async function sendAutomationNotificationEmail(user, notification) {
     return sendEmail(user.email, safeTitle + ' - VaultLister', html);
 }
 
+export async function sendDailySummaryEmail(user, stats) {
+    const { totalRuns, successRuns, failedRuns, totalItems, topRules } = stats;
+    const successRate = totalRuns > 0 ? Math.round((successRuns / totalRuns) * 100) : 0;
+    const safeUser = escapeHtml(user.username || user.email);
+
+    const topRulesHtml = (topRules || []).map(r =>
+        `<tr><td style="padding:6px 12px;border-bottom:1px solid #E5E7EB;">${escapeHtml(r.automation_name)}</td>` +
+        `<td style="padding:6px 12px;border-bottom:1px solid #E5E7EB;text-align:center;">${r.runs}</td>` +
+        `<td style="padding:6px 12px;border-bottom:1px solid #E5E7EB;text-align:center;color:${r.successes === r.runs ? '#059669' : '#D97706'};">${r.runs > 0 ? Math.round((r.successes / r.runs) * 100) : 0}%</td></tr>`
+    ).join('');
+
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #4F46E5;">Daily Automation Summary</h2>
+            <p>Hi ${safeUser},</p>
+            <p>Here's your automation activity for the last 24 hours:</p>
+            <div style="display:flex;gap:16px;margin:20px 0;">
+                <div style="flex:1;background:#F0FDF4;padding:16px;border-radius:8px;text-align:center;">
+                    <div style="font-size:24px;font-weight:700;color:#059669;">${successRuns}</div>
+                    <div style="font-size:12px;color:#6B7280;">Successful</div>
+                </div>
+                <div style="flex:1;background:${failedRuns > 0 ? '#FEF2F2' : '#F9FAFB'};padding:16px;border-radius:8px;text-align:center;">
+                    <div style="font-size:24px;font-weight:700;color:${failedRuns > 0 ? '#DC2626' : '#6B7280'};">${failedRuns}</div>
+                    <div style="font-size:12px;color:#6B7280;">Failed</div>
+                </div>
+                <div style="flex:1;background:#F9FAFB;padding:16px;border-radius:8px;text-align:center;">
+                    <div style="font-size:24px;font-weight:700;color:#374151;">${totalItems}</div>
+                    <div style="font-size:12px;color:#6B7280;">Items Processed</div>
+                </div>
+                <div style="flex:1;background:#EFF6FF;padding:16px;border-radius:8px;text-align:center;">
+                    <div style="font-size:24px;font-weight:700;color:#4F46E5;">${successRate}%</div>
+                    <div style="font-size:12px;color:#6B7280;">Success Rate</div>
+                </div>
+            </div>
+            ${topRulesHtml ? `
+                <h3 style="color:#374151;font-size:16px;margin-top:24px;">Top Automations</h3>
+                <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                    <thead><tr style="background:#F9FAFB;">
+                        <th style="padding:8px 12px;text-align:left;">Rule</th>
+                        <th style="padding:8px 12px;text-align:center;">Runs</th>
+                        <th style="padding:8px 12px;text-align:center;">Success</th>
+                    </tr></thead>
+                    <tbody>${topRulesHtml}</tbody>
+                </table>
+            ` : ''}
+            <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
+            <p style="color: #9CA3AF; font-size: 12px;">
+                This is your daily automation summary from VaultLister. Manage preferences in Settings.
+            </p>
+        </div>
+    `;
+
+    return sendEmail(user.email, `Daily Summary: ${totalRuns} runs, ${successRate}% success - VaultLister`, html);
+}
+
 export default {
     init: initEmailService,
     sendVerificationEmail,
@@ -257,5 +312,6 @@ export default {
     sendMFAEnabledEmail,
     sendMFADisabledEmail,
     sendSecurityAlertEmail,
-    sendAutomationNotificationEmail
+    sendAutomationNotificationEmail,
+    sendDailySummaryEmail
 };

@@ -16,6 +16,8 @@ const BASE_RETRY_DELAY_MS = 5000; // 5 seconds base delay for exponential backof
 // FIXED 2026-02-24: Automation schedule checking integrated into taskWorker (Issue #3)
 const AUTOMATION_CHECK_INTERVAL_MS = 60 * 1000;
 let lastAutomationCheck = 0;
+const DAILY_SUMMARY_CHECK_MS = 60 * 60 * 1000; // Check every hour
+let lastDailySummaryCheck = 0;
 
 let workerInterval = null;
 let isProcessing = false;
@@ -70,6 +72,11 @@ async function processQueue() {
             lastAutomationCheck = now;
             try { await checkAutomationSchedules(); }
             catch (schedErr) { logger.error('[TaskWorker] Automation schedule check failed:', schedErr.message); }
+        }
+        if (now - lastDailySummaryCheck >= DAILY_SUMMARY_CHECK_MS) {
+            lastDailySummaryCheck = now;
+            try { await checkDailySummaries(); }
+            catch (err) { logger.error('[TaskWorker] Daily summary check failed:', err.message); }
         }
 
         // Get pending tasks up to the concurrency limit
@@ -231,6 +238,77 @@ async function processTask(task) {
 
     } finally {
         activeTasks--;
+    }
+}
+
+/**
+ * Check and send daily automation summary emails
+ */
+async function checkDailySummaries() {
+    const currentHour = new Date().getUTCHours();
+    if (currentHour !== 14) return; // Send at 2 PM UTC (~8 AM MST)
+
+    const users = query.all(`
+        SELECT up.user_id, up.settings, u.email, u.username
+        FROM user_preferences up
+        JOIN users u ON u.id = up.user_id
+        WHERE up.key = 'automation_notifications'
+    `);
+
+    const today = new Date().toISOString().split('T')[0];
+
+    for (const row of users) {
+        try {
+            const prefs = JSON.parse(row.settings);
+            if (!prefs.daily_summary || !prefs.email_enabled) continue;
+            if (!row.email) continue;
+
+            const sentKey = 'daily_summary_sent';
+            const lastSent = query.get('SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?', [row.user_id, sentKey]);
+            if (lastSent && lastSent.settings === today) continue;
+
+            const runs = query.all(`
+                SELECT status, COUNT(*) as count, SUM(items_processed) as total_items
+                FROM automation_runs
+                WHERE user_id = ? AND started_at >= datetime('now', '-24 hours')
+                GROUP BY status
+            `, [row.user_id]);
+
+            if (runs.length === 0) continue;
+
+            let totalRuns = 0, successRuns = 0, failedRuns = 0, totalItems = 0;
+            runs.forEach(r => {
+                totalRuns += r.count;
+                totalItems += r.total_items || 0;
+                if (r.status === 'success') successRuns = r.count;
+                if (r.status === 'failed') failedRuns = r.count;
+            });
+
+            const topRules = query.all(`
+                SELECT automation_name, COUNT(*) as runs,
+                    SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successes
+                FROM automation_runs
+                WHERE user_id = ? AND started_at >= datetime('now', '-24 hours')
+                GROUP BY automation_name ORDER BY runs DESC LIMIT 5
+            `, [row.user_id]);
+
+            const { sendDailySummaryEmail } = await import('../services/email.js');
+            await sendDailySummaryEmail(
+                { email: row.email, username: row.username },
+                { totalRuns, successRuns, failedRuns, totalItems, topRules }
+            );
+
+            const existing = query.get('SELECT id FROM user_preferences WHERE user_id = ? AND key = ?', [row.user_id, sentKey]);
+            if (existing) {
+                query.run('UPDATE user_preferences SET settings = ? WHERE user_id = ? AND key = ?', [today, row.user_id, sentKey]);
+            } else {
+                query.run('INSERT INTO user_preferences (id, user_id, key, settings) VALUES (?, ?, ?, ?)', [uuidv4(), row.user_id, sentKey, today]);
+            }
+
+            logger.info(`[TaskWorker] Daily summary sent to ${row.email}`);
+        } catch (e) {
+            logger.error(`[TaskWorker] Daily summary failed for user ${row.user_id}:`, e.message);
+        }
     }
 }
 

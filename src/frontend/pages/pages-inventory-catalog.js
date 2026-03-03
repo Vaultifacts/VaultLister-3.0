@@ -312,20 +312,30 @@ Object.assign(pages, {
                                             })() : ''}
                                         </td>
                                         <td>
-                                            <div class="flex gap-1">
-                                                ${(() => {
-                                                    const itemListings = (store.state.listings || []).filter(l => l.inventory_id === item.id);
-                                                    if (itemListings.length === 0) {
-                                                        return '<span class="text-xs text-gray-500">Not listed</span>';
-                                                    }
-                                                    return itemListings.map(l => {
+                                            ${(() => {
+                                                const itemListings = (store.state.listings || []).filter(l => l.inventory_id === item.id);
+                                                if (itemListings.length === 0) {
+                                                    return '<span class="text-xs text-gray-500">Not listed</span>';
+                                                }
+                                                const activeCount = itemListings.filter(l => l.status === 'active').length;
+                                                const hasError = itemListings.some(l => l.status === 'error');
+                                                const badgeColor = hasError ? 'var(--error)' : activeCount > 0 ? 'var(--success)' : 'var(--gray-500)';
+                                                const uid = 'listings-' + item.id.replace(/[^a-zA-Z0-9]/g, '');
+                                                return '<div>' +
+                                                    '<span onclick="const el=document.getElementById(\'' + uid + '\');el.style.display=el.style.display===\'none\'?\'block\':\'none\';" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;background:' + badgeColor + '15;color:' + badgeColor + ';border:1px solid ' + badgeColor + '40;">' +
+                                                    '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + badgeColor + ';"></span>' +
+                                                    itemListings.length + ' listing' + (itemListings.length !== 1 ? 's' : '') +
+                                                    '</span>' +
+                                                    '<div id="' + uid + '" style="display:none;margin-top:6px;">' +
+                                                    itemListings.map(l => {
                                                         const statusColors = { active: 'var(--success)', pending: 'var(--warning-600)', draft: 'var(--gray-400)', error: 'var(--error)', ended: 'var(--error)', sold: 'var(--primary-500)', archived: 'var(--gray-400)' };
                                                         const sc = statusColors[l.status] || 'var(--gray-400)';
-                                                        const dot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + sc + ';margin-left:-2px;margin-right:4px;" title="' + ((l.status || 'unknown').charAt(0).toUpperCase() + (l.status || 'unknown').slice(1)) + '"></span>';
-                                                        return components.platformBadge(l.platform) + dot;
-                                                    }).join(' ');
-                                                })()}
-                                            </div>
+                                                        const dot = '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + sc + ';"></span>';
+                                                        const price = l.price ? ' $' + parseFloat(l.price).toFixed(0) : '';
+                                                        return '<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">' + components.platformBadge(l.platform) + dot + '<span style="font-size:11px;color:var(--gray-600);">' + (l.status || '') + price + '</span></div>';
+                                                    }).join('') +
+                                                    '</div></div>';
+                                            })()}
                                         </td>
                                         <td class="font-medium">${item.quantity != null ? item.quantity : 1}</td>
                                         <td>
@@ -1603,6 +1613,42 @@ Object.assign(pages, {
             .filter(a => a.is_enabled)
             .reduce((sum, a) => sum + (timeSavedPerAutomation[a.category] || 15), 0);
 
+        // Compute real daily run counts for chart
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        const runsToday = runHistory.filter(r => {
+            const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
+            return ts >= todayStart.getTime();
+        }).length;
+        const totalItemsProcessed = runHistory.reduce((sum, r) => sum + (r.items_processed || r.items_succeeded || 0), 0);
+        // 7-day daily breakdown for chart
+        const dailyChart = Array.from({length: 7}, () => ({ success: 0, failed: 0 }));
+        const nowMs = Date.now();
+        const dayMs = 86400000;
+        runHistory.forEach(r => {
+            const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
+            const daysAgo = Math.floor((nowMs - ts) / dayMs);
+            if (daysAgo >= 0 && daysAgo < 7) {
+                const idx = 6 - daysAgo;
+                if (r.status === 'success') dailyChart[idx].success++;
+                else if (r.status === 'failed' || r.status === 'failure') dailyChart[idx].failed++;
+                else dailyChart[idx].success++; // partial counts as success for chart
+            }
+        });
+        const maxDaily = Math.max(...dailyChart.map(d => d.success + d.failed), 1);
+        const dayLabels = Array.from({length: 7}, (_, i) => {
+            const d = new Date(nowMs - (6-i) * dayMs);
+            return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+        });
+        // Per-category run counts (real data)
+        const categoryRunCounts = {};
+        runHistory.forEach(r => {
+            const ruleName = r.automation_name || r.action || '';
+            const matchedRule = automations.find(a => a.name === ruleName || a.id === r.automation_id);
+            if (matchedRule) {
+                categoryRunCounts[matchedRule.category] = (categoryRunCounts[matchedRule.category] || 0) + 1;
+            }
+        });
+
         // Group automations by category for breakdown
         const categoryStats = {};
         automations.forEach(a => {
@@ -1701,7 +1747,7 @@ Object.assign(pages, {
                             ${components.icon('activity', 20)}
                         </div>
                         <div>
-                            <div class="automation-stat-value">24</div>
+                            <div class="automation-stat-value">${runsToday}</div>
                             <div class="automation-stat-label">Runs Today</div>
                         </div>
                     </div>
@@ -1754,7 +1800,7 @@ Object.assign(pages, {
                             <div class="metric-content">
                                 <div class="metric-value">${Math.round(timeSavedToday * 7 / 60)}h ${timeSavedToday * 7 % 60}m</div>
                                 <div class="metric-label">Time Saved This Week</div>
-                                <div class="metric-comparison positive">+23% vs last week</div>
+                                <div class="metric-comparison neutral">Est. at $30/hr</div>
                             </div>
                         </div>
                         <div class="performance-metric-card">
@@ -1762,9 +1808,9 @@ Object.assign(pages, {
                                 ${components.icon('zap', 24)}
                             </div>
                             <div class="metric-content">
-                                <div class="metric-value">847</div>
-                                <div class="metric-label">Actions Completed</div>
-                                <div class="metric-comparison positive">+156 this week</div>
+                                <div class="metric-value">${totalItemsProcessed.toLocaleString()}</div>
+                                <div class="metric-label">Items Processed</div>
+                                <div class="metric-comparison neutral">${totalRuns} total runs</div>
                             </div>
                         </div>
                         <div class="performance-metric-card">
@@ -1794,9 +1840,9 @@ Object.assign(pages, {
                         <div class="breakdown-bars">
                             ${Object.entries(categoryStats).map(([cat, stats]) => {
                                 const catInfo = categoryLabels[cat] || { label: cat, color: '#6b7280' };
-                                const actionsCount = stats.active * Math.floor(Math.random() * 50 + 20);
-                                const maxActions = 200;
-                                const barWidth = Math.min((actionsCount / maxActions) * 100, 100);
+                                const actionsCount = categoryRunCounts[cat] || 0;
+                                const maxCatActions = Math.max(...Object.values(categoryRunCounts), 1);
+                                const barWidth = maxCatActions > 0 ? Math.min((actionsCount / maxCatActions) * 100, 100) : 0;
                                 return `
                                     <div class="breakdown-row">
                                         <div class="breakdown-label">${catInfo.label}</div>
@@ -1807,6 +1853,31 @@ Object.assign(pages, {
                                     </div>
                                 `;
                             }).join('')}
+                        </div>
+                    </div>
+                    <!-- 7-Day Run Chart -->
+                    <div class="mt-4" style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-3">Runs Per Day (Last 7 Days)</h4>
+                        <div style="display:flex;align-items:flex-end;gap:4px;height:100px;">
+                            ${dailyChart.map((d, i) => {
+                                const total = d.success + d.failed;
+                                const h = Math.round((total / maxDaily) * 80);
+                                const sh = total > 0 ? Math.round((d.success / total) * h) : 0;
+                                const fh = h - sh;
+                                return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0;">' +
+                                    '<div style="display:flex;flex-direction:column;justify-content:flex-end;height:80px;width:100%;">' +
+                                    (fh > 0 ? '<div style="background:var(--error);border-radius:3px 3px 0 0;height:' + fh + 'px;" title="' + d.failed + ' failed"></div>' : '') +
+                                    (sh > 0 ? '<div style="background:var(--success);border-radius:' + (fh > 0 ? '0' : '3px 3px') + ' 0 0;height:' + sh + 'px;" title="' + d.success + ' succeeded"></div>' : '') +
+                                    (total === 0 ? '<div style="background:var(--gray-200);border-radius:3px;height:2px;width:100%;"></div>' : '') +
+                                    '</div>' +
+                                    '<div style="font-size:10px;color:var(--gray-500);margin-top:4px;">' + dayLabels[i] + '</div>' +
+                                    '<div style="font-size:10px;color:var(--gray-600);font-weight:600;">' + total + '</div>' +
+                                    '</div>';
+                            }).join('')}
+                        </div>
+                        <div style="display:flex;gap:12px;margin-top:8px;font-size:11px;">
+                            <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--success);display:inline-block;"></span> Success</span>
+                            <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--error);display:inline-block;"></span> Failed</span>
                         </div>
                     </div>
                 </div>
@@ -1967,6 +2038,17 @@ Object.assign(pages, {
                         })()}
                     </div>
                 </div>
+                ${(() => {
+                    const sel = store.state.selectedAutomationIds || [];
+                    if (sel.length === 0) return '';
+                    return '<div style="padding:8px 16px;background:var(--primary-50);border-bottom:1px solid var(--primary-200);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+                        '<span class="text-sm font-medium" style="color:var(--primary-700);">' + sel.length + ' selected</span>' +
+                        '<button class="btn btn-xs btn-success" onclick="handlers.bulkToggleAutomations(true)">' + components.icon('toggle-right', 12) + ' Enable</button>' +
+                        '<button class="btn btn-xs btn-secondary" onclick="handlers.bulkToggleAutomations(false)">' + components.icon('toggle-left', 12) + ' Disable</button>' +
+                        '<button class="btn btn-xs btn-primary" onclick="handlers.bulkScheduleAutomations()">' + components.icon('clock', 12) + ' Set Schedule</button>' +
+                        '<button class="btn btn-xs btn-ghost" onclick="handlers.clearAutomationSelection()">' + components.icon('x', 12) + ' Clear</button>' +
+                        '</div>';
+                })()}
                 <div class="card-body">
                     <div class="flex flex-col gap-4">
                         ${automations.filter(rule => {
@@ -1987,10 +2069,11 @@ Object.assign(pages, {
                                 default: return a.name.localeCompare(b.name);
                             }
                         }).map(rule => `
-                            <div class="automation-card" draggable="true">
+                            <div class="automation-card" draggable="true" style="${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'outline: 2px solid var(--primary-500); outline-offset: -2px;' : ''}">
                                 <div class="automation-card-content">
                                     <div class="automation-card-header">
                                         <div class="automation-card-title">
+                                            <input type="checkbox" ${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'checked' : ''} onchange="handlers.toggleAutomationSelect('${rule.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-right:4px;">
                                             ${components.platformBadge(rule.platform)}
                                             <span>${rule.name}</span>
                                         </div>
