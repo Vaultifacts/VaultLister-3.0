@@ -12,6 +12,7 @@
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
+import { auditLog } from './platformAuditLog.js';
 
 const FACEBOOK_URL = 'https://www.facebook.com';
 
@@ -74,6 +75,8 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
     const price = parseFloat(listing.price || inventory.list_price || 0);
     if (!price || price <= 0) throw new Error('Listing price must be greater than zero');
+
+    auditLog('facebook', 'publish_attempt', { listingId: listing.id });
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 100);
     const description = (listing.description || inventory.description || title).slice(0, 9999);
@@ -257,8 +260,12 @@ export async function publishListingToFacebook(shop, listing, inventory) {
         const listingUrl = urlMatch ? `${FACEBOOK_URL}/marketplace/item/${listingId}/` : finalUrl;
 
         logger.info('[Facebook Publish] Success', { listingId, listingUrl });
+        auditLog('facebook', 'publish_success', { listingId, listingUrl });
         return { listingId, listingUrl };
 
+    } catch (err) {
+        auditLog('facebook', 'publish_failure', { listingId: listing.id, error: err.message });
+        throw err;
     } finally {
         cleanupTempImages(tempFiles);
         await browser.close();

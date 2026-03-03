@@ -8,6 +8,7 @@
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
+import { auditLog } from './platformAuditLog.js';
 
 const DEPOP_URL = 'https://www.depop.com';
 
@@ -51,6 +52,8 @@ export async function publishListingToDepop(shop, listing, inventory) {
 
     const price = parseFloat(listing.price || inventory.list_price || 0);
     if (!price || price <= 0) throw new Error('Listing price must be greater than zero');
+
+    auditLog('depop', 'publish_attempt', { listingId: listing.id });
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 75); // Depop max title: 75 chars
     const description = (listing.description || inventory.description || title).slice(0, 1000);
@@ -219,8 +222,12 @@ export async function publishListingToDepop(shop, listing, inventory) {
         const listingUrl = urlMatch ? finalUrl : `${DEPOP_URL}/products/${listingId}/`;
 
         logger.info('[Depop Publish] Success', { listingId, listingUrl });
+        auditLog('depop', 'publish_success', { listingId, listingUrl });
         return { listingId, listingUrl };
 
+    } catch (err) {
+        auditLog('depop', 'publish_failure', { listingId: listing.id, error: err.message });
+        throw err;
     } finally {
         cleanupTempImages(tempFiles);
         await browser.close();

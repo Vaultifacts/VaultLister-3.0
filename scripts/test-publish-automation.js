@@ -63,8 +63,15 @@ const BOLD  = '\x1b[1m';
 const RESET = '\x1b[0m';
 
 async function testPlatform(name, config) {
-    const browser = await chromium.launch({ headless: true, slowMo: 0 });
     const result = { name, pass: false, warning: null, error: null };
+    let browser;
+    try {
+        // Use system Chrome — avoids chrome-headless-shell issues on Windows
+        browser = await chromium.launch({ channel: 'chrome', headless: true, slowMo: 0, timeout: 30000 });
+    } catch (launchErr) {
+        result.error = `Browser launch failed: ${launchErr.message.split('\n')[0]}`;
+        return result;
+    }
 
     try {
         const context = await browser.newContext({ userAgent: UA, viewport: VIEWPORT });
@@ -96,26 +103,59 @@ async function testPlatform(name, config) {
     } catch (err) {
         result.error = err.message.split('\n')[0];
     } finally {
-        await browser.close();
+        await browser.close().catch(() => {});
     }
 
     return result;
 }
 
+async function testShopify() {
+    const storeUrl    = (process.env.SHOPIFY_STORE_URL || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const accessToken = process.env.SHOPIFY_ACCESS_TOKEN;
+
+    if (!storeUrl || !accessToken) {
+        return { name: 'shopify', pass: false, warning: 'SHOPIFY_STORE_URL / SHOPIFY_ACCESS_TOKEN not set — skip', error: null };
+    }
+
+    try {
+        const res = await fetch(`https://${storeUrl}/admin/api/2024-01/shop.json`, {
+            headers: { 'X-Shopify-Access-Token': accessToken },
+            signal: AbortSignal.timeout(15000),
+        });
+        if (res.ok) {
+            return { name: 'shopify', pass: true, warning: null, error: null };
+        }
+        return { name: 'shopify', pass: false, warning: null, error: `API ping failed — HTTP ${res.status} (check token write_products scope)` };
+    } catch (err) {
+        return { name: 'shopify', pass: false, warning: null, error: `API ping error: ${err.message.split('\n')[0]}` };
+    }
+}
+
 async function main() {
     const arg = process.argv[2]?.toLowerCase();
+    if (arg === 'shopify') {
+        console.log(`\n${BOLD}${CYAN}VaultLister — Automation Smoke Test (Shopify only)${RESET}\n`);
+        process.stdout.write(`  Testing shopify       ... `);
+        const r = await testShopify();
+        if (r.pass)         console.log(`${GREEN}PASS${RESET} — API ping OK`);
+        else if (r.warning) console.log(`${YELLOW}SKIP${RESET} — ${r.warning}`);
+        else                console.log(`${RED}FAIL${RESET} — ${r.error}`);
+        console.log('');
+        process.exit(r.pass ? 0 : 1);
+    }
+
     const targets = arg
         ? (PLATFORMS[arg] ? { [arg]: PLATFORMS[arg] } : null)
         : PLATFORMS;
 
     if (!targets) {
-        console.error(`${RED}Unknown platform: "${arg}". Valid: ${Object.keys(PLATFORMS).join(', ')}${RESET}`);
+        console.error(`${RED}Unknown platform: "${arg}". Valid: ${Object.keys(PLATFORMS).join(', ')}, shopify${RESET}`);
         process.exit(1);
     }
 
     const names = Object.keys(targets);
     console.log(`\n${BOLD}${CYAN}VaultLister — Automation Smoke Test${RESET}`);
-    console.log(`${CYAN}Platforms: ${names.join(', ')}${RESET}`);
+    console.log(`${CYAN}Platforms: ${names.join(', ')}${arg ? '' : ', shopify (API ping)'}${RESET}`);
     console.log(`${CYAN}Mode: dry-run (no credentials submitted)\n${RESET}`);
 
     const results = [];
@@ -133,6 +173,16 @@ async function main() {
         }
     }
 
+    // Shopify REST API credential ping (always runs when testing all platforms)
+    if (!arg) {
+        process.stdout.write(`  Testing shopify       ... `);
+        const shopResult = await testShopify();
+        results.push(shopResult);
+        if (shopResult.pass)         console.log(`${GREEN}PASS${RESET} — API ping OK`);
+        else if (shopResult.warning) console.log(`${YELLOW}SKIP${RESET} — ${shopResult.warning}`);
+        else                         console.log(`${RED}FAIL${RESET} — ${shopResult.error}`);
+    }
+
     const passed  = results.filter(r => r.pass).length;
     const warned  = results.filter(r => r.warning).length;
     const failed  = results.filter(r => r.error).length;
@@ -140,16 +190,32 @@ async function main() {
 
     console.log(`\n${BOLD}Results: ${GREEN}${passed} passed${RESET}  ${YELLOW}${warned} warned${RESET}  ${RED}${failed} failed${RESET}  / ${total} total${RESET}\n`);
 
-    if (warned > 0) {
-        console.log(`${YELLOW}Warnings indicate bot detection triggered before the login form loaded.`);
-        console.log(`This is usually a transient rate-limit — retry in a few minutes.${RESET}\n`);
-    }
+    const shopifySkips  = results.filter(r => r.name === 'shopify' && r.warning).length;
+    const botWarnings   = warned - shopifySkips;
+    const launchFails   = results.filter(r => r.error?.startsWith('Browser launch failed')).length;
+    const selectorFails = failed - launchFails;
 
-    if (failed > 0) {
-        console.log(`${RED}Failures indicate the platform's login page HTML has changed.`);
-        console.log(`Update the selector in this script to match the new markup.${RESET}\n`);
+    if (shopifySkips > 0) {
+        console.log(`${YELLOW}Shopify skipped — add SHOPIFY_STORE_URL + SHOPIFY_ACCESS_TOKEN to .env to run the API ping.${RESET}`);
+    }
+    if (botWarnings > 0) {
+        console.log(`${YELLOW}Bot-detection warnings: usually a transient rate-limit — retry in a few minutes.${RESET}`);
+    }
+    if (botWarnings > 0 || shopifySkips > 0) console.log('');
+
+    if (launchFails > 0 && selectorFails === 0) {
+        console.log(`${YELLOW}All browser failures: Playwright CDP pipe timed out (Windows security restriction).`);
+        console.log(`Run from a regular terminal to verify selectors — not from Claude Code's shell.${RESET}\n`);
         process.exit(1);
     }
+
+    if (selectorFails > 0) {
+        console.log(`${RED}Selector failures: platform login page HTML may have changed.`);
+        console.log(`Update the selector in PLATFORMS config to match the new markup.${RESET}\n`);
+        process.exit(1);
+    }
+
+    if (failed > 0) process.exit(1);
 }
 
 main().catch(err => {

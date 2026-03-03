@@ -14,18 +14,45 @@
 //   }
 //   await cleanupTempImages(tempFiles);
 
-import { existsSync, writeFileSync, unlinkSync, mkdirSync } from 'fs';
+import { existsSync, writeFileSync, unlinkSync, mkdirSync, statSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { logger } from '../../shared/logger.js';
+import sharp from 'sharp';
 
 const TEMP_DIR = join(tmpdir(), 'vaultlister-img-upload');
+
+const COMPRESS_MAX_BYTES = 2 * 1024 * 1024; // 2 MB — compress images above this size
+const COMPRESS_MAX_PX    = 2000;             // max width/height after resize
+const COMPRESS_QUALITY   = 85;               // JPEG quality for compressed output
 
 // Ensure temp dir exists on first use
 function ensureTempDir() {
     if (!existsSync(TEMP_DIR)) {
         mkdirSync(TEMP_DIR, { recursive: true });
     }
+}
+
+/**
+ * Compress an image file if it exceeds COMPRESS_MAX_BYTES.
+ * Resizes to max 2000px on the longest side and re-encodes as JPEG quality 85.
+ * If compression is applied, the new temp file path is added to tempFiles for cleanup.
+ * @param {string}   filePath  - Absolute path to the source image
+ * @param {string[]} tempFiles - Mutable array; compressed temp file appended if created
+ * @returns {Promise<string>} Path to use for upload (original or compressed)
+ */
+async function compressIfNeeded(filePath, tempFiles) {
+    const stat = statSync(filePath);
+    if (stat.size <= COMPRESS_MAX_BYTES) return filePath;
+    ensureTempDir();
+    const compressedPath = join(TEMP_DIR, `c-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`);
+    await sharp(filePath)
+        .resize(COMPRESS_MAX_PX, COMPRESS_MAX_PX, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: COMPRESS_QUALITY })
+        .toFile(compressedPath);
+    logger.info('[ImageUpload] Compressed image', { originalBytes: stat.size });
+    tempFiles.push(compressedPath);
+    return compressedPath;
 }
 
 /**
@@ -59,14 +86,14 @@ export async function resolveImageFiles(rawImages, maxImages = 8) {
                 // Download to temp file
                 const downloaded = await downloadToTemp(img);
                 if (downloaded) {
-                    files.push(downloaded);
-                    tempFiles.push(downloaded);
+                    tempFiles.push(downloaded); // register original for cleanup
+                    files.push(await compressIfNeeded(downloaded, tempFiles));
                 }
             } else {
                 // Local file path — normalize for the current OS
                 const localPath = img.replace(/\\/g, '/');
                 if (existsSync(localPath)) {
-                    files.push(localPath);
+                    files.push(await compressIfNeeded(localPath, tempFiles));
                 } else {
                     logger.warn('[ImageUpload] Local image not found, skipping', { path: localPath });
                 }

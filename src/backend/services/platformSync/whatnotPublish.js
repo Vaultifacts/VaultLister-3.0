@@ -12,6 +12,7 @@
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
+import { auditLog } from './platformAuditLog.js';
 
 const WHATNOT_URL = 'https://www.whatnot.com';
 
@@ -55,6 +56,8 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
 
     const price = parseFloat(listing.price || inventory.list_price || 0);
     if (!price || price <= 0) throw new Error('Listing price must be greater than zero');
+
+    auditLog('whatnot', 'publish_attempt', { listingId: listing.id });
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 100);
     const description = (listing.description || inventory.description || title).slice(0, 2000);
@@ -221,8 +224,12 @@ export async function publishListingToWhatnot(shop, listing, inventory) {
         const listingUrl = urlMatch ? finalUrl : `${WHATNOT_URL}/listing/${listingId}`;
 
         logger.info('[Whatnot Publish] Success', { listingId, listingUrl });
+        auditLog('whatnot', 'publish_success', { listingId, listingUrl });
         return { listingId, listingUrl };
 
+    } catch (err) {
+        auditLog('whatnot', 'publish_failure', { listingId: listing.id, error: err.message });
+        throw err;
     } finally {
         cleanupTempImages(tempFiles);
         await browser.close();

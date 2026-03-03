@@ -10,6 +10,7 @@
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
+import { auditLog } from './platformAuditLog.js';
 
 const GRAILED_URL = 'https://www.grailed.com';
 
@@ -53,6 +54,8 @@ export async function publishListingToGrailed(shop, listing, inventory) {
 
     const price = parseFloat(listing.price || inventory.list_price || 0);
     if (!price || price <= 0) throw new Error('Listing price must be greater than zero');
+
+    auditLog('grailed', 'publish_attempt', { listingId: listing.id });
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 60); // Grailed max title: 60 chars
     const description = (listing.description || inventory.description || title).slice(0, 1500);
@@ -254,8 +257,12 @@ export async function publishListingToGrailed(shop, listing, inventory) {
         const listingUrl = urlMatch ? finalUrl : `${GRAILED_URL}/listings/${listingId}`;
 
         logger.info('[Grailed Publish] Success', { listingId, listingUrl });
+        auditLog('grailed', 'publish_success', { listingId, listingUrl });
         return { listingId, listingUrl };
 
+    } catch (err) {
+        auditLog('grailed', 'publish_failure', { listingId: listing.id, error: err.message });
+        throw err;
     } finally {
         cleanupTempImages(tempFiles);
         await browser.close();

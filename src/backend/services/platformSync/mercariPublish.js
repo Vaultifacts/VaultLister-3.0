@@ -8,6 +8,7 @@
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
+import { auditLog } from './platformAuditLog.js';
 
 const MERCARI_URL = 'https://www.mercari.com';
 
@@ -51,6 +52,8 @@ export async function publishListingToMercari(shop, listing, inventory) {
 
     const price = parseFloat(listing.price || inventory.list_price || 0);
     if (!price || price <= 0) throw new Error('Listing price must be greater than zero');
+
+    auditLog('mercari', 'publish_attempt', { listingId: listing.id });
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 40); // Mercari max title: 40 chars
     const description = (listing.description || inventory.description || title).slice(0, 1000);
@@ -230,8 +233,12 @@ export async function publishListingToMercari(shop, listing, inventory) {
         const listingUrl = urlMatch ? `${MERCARI_URL}/item/${listingId}/` : finalUrl;
 
         logger.info('[Mercari Publish] Success', { listingId, listingUrl });
+        auditLog('mercari', 'publish_success', { listingId, listingUrl });
         return { listingId, listingUrl };
 
+    } catch (err) {
+        auditLog('mercari', 'publish_failure', { listingId: listing.id, error: err.message });
+        throw err;
     } finally {
         cleanupTempImages(tempFiles);
         await browser.close();

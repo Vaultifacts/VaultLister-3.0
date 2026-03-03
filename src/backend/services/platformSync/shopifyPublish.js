@@ -7,6 +7,7 @@
 // The access token must have write_products scope.
 
 import { logger } from '../../shared/logger.js';
+import { auditLog } from './platformAuditLog.js';
 
 const SHOPIFY_API_VERSION = '2024-01';
 
@@ -37,6 +38,8 @@ export async function publishListingToShopify(shop, listing, inventory) {
 
     const price = parseFloat(listing.price || inventory.list_price || 0);
     if (!price || price <= 0) throw new Error('Listing price must be greater than zero');
+
+    auditLog('shopify', 'publish_attempt', { listingId: listing.id });
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 255);
     const description = (listing.description || inventory.description || title);
@@ -93,7 +96,9 @@ export async function publishListingToShopify(shop, listing, inventory) {
 
     if (!response.ok) {
         const errBody = await response.text().catch(() => '');
-        throw new Error(`Shopify API error ${response.status}: ${errBody.slice(0, 300)}`);
+        const errMsg = `Shopify API error ${response.status}: ${errBody.slice(0, 300)}`;
+        auditLog('shopify', 'publish_failure', { listingId: listing.id, error: errMsg });
+        throw new Error(errMsg);
     }
 
     const data = await response.json();
@@ -107,6 +112,7 @@ export async function publishListingToShopify(shop, listing, inventory) {
     const listingUrl = `https://${storeUrl}/products/${product.handle}`;
 
     logger.info('[Shopify Publish] Success', { listingId, listingUrl });
+    auditLog('shopify', 'publish_success', { listingId, listingUrl });
     return { listingId, listingUrl };
 }
 

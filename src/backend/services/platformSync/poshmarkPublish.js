@@ -8,6 +8,7 @@
 import { chromium } from 'playwright';
 import { logger } from '../../shared/logger.js';
 import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
+import { auditLog } from './platformAuditLog.js';
 
 const POSHMARK_URL = 'https://poshmark.com';
 
@@ -41,6 +42,8 @@ export async function publishListingToPoshmark(shop, listing, inventory) {
 
     const price = parseFloat(listing.price || inventory.list_price || 0);
     if (!price || price <= 0) throw new Error('Listing price must be greater than zero');
+
+    auditLog('poshmark', 'publish_attempt', { listingId: listing.id });
 
     const title       = (listing.title || inventory.title || 'Item from VaultLister').slice(0, 80);
     const description = (listing.description || inventory.description || title).slice(0, 500);
@@ -197,8 +200,12 @@ export async function publishListingToPoshmark(shop, listing, inventory) {
         const listingId = urlMatch ? urlMatch[1] : `pm-${Date.now()}`;
 
         logger.info('[Poshmark Publish] Success', { listingId, listingUrl: finalUrl });
+        auditLog('poshmark', 'publish_success', { listingId, listingUrl: finalUrl });
         return { listingId, listingUrl: finalUrl };
 
+    } catch (err) {
+        auditLog('poshmark', 'publish_failure', { listingId: listing.id, error: err.message });
+        throw err;
     } finally {
         cleanupTempImages(tempFiles);
         await browser.close();
