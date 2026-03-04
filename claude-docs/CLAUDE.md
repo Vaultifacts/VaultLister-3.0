@@ -4,6 +4,34 @@
 
 ## Project Overview
 
+---
+
+## Project Context System (Project Brain)
+
+When starting work in this repository, Claude should first load the project context system.
+
+Primary context file:
+
+claude-docs/PROJECT_BRAIN.md
+
+This file coordinates the full project control system and points to the latest repository snapshot and roadmap.
+
+Claude should treat the following as authoritative project state:
+
+claude-docs/docs/project-control/STATE_SNAPSHOT.md  
+claude-docs/docs/project-control/PROJECT_ROADMAP.md  
+claude-docs/docs/project-control/COMPLETION_GATES.md  
+claude-docs/docs/project-control/PROGRESS_ACCOUNTING.md  
+
+These documents reflect the **actual repository state and development progress**.
+
+Before suggesting work Claude should:
+
+1. Read the snapshot
+2. Review the roadmap
+3. Check completion gates
+4. Avoid suggesting already-completed work
+
 **VaultLister** - Zero-cost, offline-capable multi-channel reselling platform for inventory management, cross-listing, and analytics.
 
 ---
