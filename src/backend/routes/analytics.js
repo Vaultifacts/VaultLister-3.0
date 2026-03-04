@@ -890,5 +890,36 @@ export async function analyticsRouter(ctx) {
         }
     }
 
+    // POST /api/analytics/apply-price-suggestions - Batch update prices from suggestions
+    if (method === 'POST' && path === '/apply-price-suggestions') {
+        const { items } = body;
+        if (!Array.isArray(items) || items.length === 0) {
+            return { status: 400, data: { error: 'items array required (each with id and suggested_price)' } };
+        }
+        try {
+            let updated = 0;
+            for (const item of items) {
+                if (!item.id || item.suggested_price == null) continue;
+                const existing = query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [item.id, user.id]);
+                if (!existing) continue;
+                query.run('UPDATE inventory SET list_price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    [item.suggested_price, item.id]);
+
+                // Log price change in price_history if table exists
+                try {
+                    query.run(`INSERT INTO price_history (id, inventory_id, user_id, old_price, new_price, change_reason)
+                        VALUES (?, ?, ?, ?, ?, ?)`,
+                        [uuidv4(), item.id, user.id, item.current_price || 0, item.suggested_price, 'auto_suggestion']);
+                } catch (_) { /* price_history table may not exist */ }
+
+                updated++;
+            }
+            return { status: 200, data: { updated, message: `Updated ${updated} item prices` } };
+        } catch (error) {
+            logger.error('[Analytics] apply price suggestions failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to apply price suggestions' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

@@ -19980,6 +19980,9 @@ const pages = {
                     <button class="btn btn-ghost" onclick="handlers.showImportAutomationRules()" title="Import rules from JSON">
                         ${components.icon('upload', 16)} Import
                     </button>
+                    <button class="btn btn-ghost" onclick="handlers.showImportFromURL()" title="Import rules from URL">
+                        ${components.icon('link', 16)} URL
+                    </button>
                     <button class="btn btn-ghost" onclick="handlers.showScheduleCalendar()" title="Schedule calendar view">
                         ${components.icon('calendar', 16)} Calendar
                     </button>
@@ -58836,7 +58839,7 @@ const handlers = {
                 <div id="supplier-list">
                     ${suppliers.length === 0 ? '<p class="text-gray-500 text-sm text-center py-4">No suppliers yet</p>' :
                     '<table class="table table-sm"><thead><tr><th>Name</th><th>Items</th><th>Avg Price</th><th>Actions</th></tr></thead><tbody>' +
-                    suppliers.map(s => '<tr><td class="font-semibold">' + escapeHtml(s.name) + '</td><td>' + (s.item_count || 0) + '</td><td>$' + (s.avg_price || 0).toFixed(2) + '</td><td><button class="btn btn-xs btn-danger" onclick="handlers.deleteSupplier(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/'/g, "\\'") + '\')">' + components.icon('trash', 12) + '</button></td></tr>').join('') +
+                    suppliers.map(s => '<tr><td class="font-semibold">' + escapeHtml(s.name) + '</td><td>' + (s.item_count || 0) + '</td><td>$' + (s.avg_price || 0).toFixed(2) + '</td><td class="flex gap-1"><button class="btn btn-xs btn-ghost" onclick="handlers.showSupplierPerformance(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/'/g, "\\'") + '\')" title="Performance">' + components.icon('trending-up', 12) + '</button><button class="btn btn-xs btn-danger" onclick="handlers.deleteSupplier(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/'/g, "\\'") + '\')">' + components.icon('trash', 12) + '</button></td></tr>').join('') +
                     '</tbody></table>'}
                 </div>
             </div>
@@ -58962,20 +58965,184 @@ const handlers = {
             return '<p class="text-gray-500 text-sm text-center py-4">No price suggestions — all items are well-priced or too new to evaluate.</p>';
         }
 
-        return '<table class="table table-sm"><thead><tr><th>Item</th><th>Age</th><th>Current</th><th>Suggested</th><th>Change</th><th>Reason</th></tr></thead><tbody>' +
+        return '<div class="flex justify-end mb-2"><button class="btn btn-primary btn-sm" onclick="handlers.applyAllPriceSuggestions()">' +
+            components.icon('check', 14) + ' Apply All (' + suggestions.length + ')</button></div>' +
+            '<table class="table table-sm"><thead><tr><th>Item</th><th>Age</th><th>Current</th><th>Suggested</th><th>Change</th><th>Reason</th><th></th></tr></thead><tbody>' +
             suggestions.slice(0, 20).map(s => {
                 const isDecrease = (s.price_change || 0) < 0;
                 const changeColor = isDecrease ? 'var(--error)' : 'var(--success)';
                 const changePrefix = isDecrease ? '' : '+';
                 return '<tr><td class="text-sm" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(s.title || '') + '</td>' +
                     '<td>' + (s.days_old || 0) + 'd</td>' +
-                    '<td>$' + (s.current_price || 0).toFixed(2) + '</td>' +
+                    '<td>$' + (s.list_price || s.current_price || 0).toFixed(2) + '</td>' +
                     '<td style="font-weight:600;">$' + (s.suggested_price || 0).toFixed(2) + '</td>' +
                     '<td style="color:' + changeColor + ';font-weight:600;">' + changePrefix + '$' + (s.price_change || 0).toFixed(2) + '</td>' +
-                    '<td class="text-xs text-gray-500">' + escapeHtml(s.reason || '') + '</td></tr>';
+                    '<td class="text-xs text-gray-500">' + escapeHtml(s.reason || '') + '</td>' +
+                    '<td><button class="btn btn-xs btn-ghost" onclick="handlers.applySinglePriceSuggestion(\'' + s.id + '\', ' + (s.suggested_price || 0) + ', ' + (s.list_price || s.current_price || 0) + ')">' + components.icon('check', 12) + '</button></td></tr>';
             }).join('') +
             '</tbody></table>' +
             (suggestions.length > 20 ? '<p class="text-xs text-gray-400 mt-2">Showing 20 of ' + suggestions.length + ' suggestions</p>' : '');
+    },
+
+    // --- Task #130: Import from URL ---
+    showImportFromURL: function() {
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('link', 20)} Import Rules from URL</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-gray-500 mb-4">Paste a URL to a JSON file containing automation rules. The file should have a rules array or a single rule object with name, type, platform, schedule, conditions, and actions fields.</p>
+                <div class="form-group">
+                    <label class="form-label">JSON URL</label>
+                    <input type="text" id="import-url-input" class="form-input" placeholder="https://example.com/rules.json">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.importFromURL()">
+                    ${components.icon('download', 14)} Import
+                </button>
+            </div>
+        `);
+    },
+
+    importFromURL: async function() {
+        const url = document.getElementById('import-url-input')?.value?.trim();
+        if (!url) { toast.error('URL is required'); return; }
+        try {
+            await api.ensureCSRFToken();
+            const res = await api.post('/automations/templates/import-url', { url });
+            const data = res.data || res;
+            toast.success('Imported ' + (data.count || 0) + ' rules');
+            modals.close();
+            const rulesRes = await api.get('/automations');
+            store.setState({ automations: (rulesRes.data || rulesRes).rules || rulesRes.data || rulesRes || [] });
+            renderApp(pages.automations());
+        } catch (e) {
+            toast.error('Import failed: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+    // --- Task #132: Batch Price Update ---
+    applyAllPriceSuggestions: async function() {
+        const suggestions = store.state.priceSuggestions || [];
+        if (suggestions.length === 0) { toast.warning('No suggestions to apply'); return; }
+        if (!confirm('Apply price changes to ' + suggestions.length + ' items?')) return;
+        try {
+            await api.ensureCSRFToken();
+            const items = suggestions.map(s => ({
+                id: s.id,
+                suggested_price: s.suggested_price,
+                current_price: s.list_price || s.current_price || 0
+            }));
+            const res = await api.post('/analytics/apply-price-suggestions', { items });
+            const data = res.data || res;
+            toast.success('Updated ' + (data.updated || 0) + ' item prices');
+            store.setState({ priceSuggestions: null });
+            handlers.loadPriceSuggestions();
+            // Refresh inventory
+            try {
+                const invRes = await api.get('/inventory');
+                store.setState({ inventory: (invRes.data || invRes).items || invRes.data || invRes || [] });
+            } catch (_) {}
+        } catch (e) {
+            toast.error('Failed to apply suggestions: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+    applySinglePriceSuggestion: async function(itemId, suggestedPrice, currentPrice) {
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/analytics/apply-price-suggestions', {
+                items: [{ id: itemId, suggested_price: suggestedPrice, current_price: currentPrice }]
+            });
+            toast.success('Price updated');
+            // Remove from suggestions list
+            const suggestions = (store.state.priceSuggestions || []).filter(s => s.id !== itemId);
+            store.setState({ priceSuggestions: suggestions });
+            const el = document.getElementById('price-suggestions-content');
+            if (el) el.innerHTML = handlers._renderPriceSuggestions(suggestions);
+        } catch (e) {
+            toast.error('Failed to update price');
+        }
+    },
+
+    // --- Task #133: Supplier Performance ---
+    showSupplierPerformance: async function(supplierId, supplierName) {
+        try {
+            const res = await api.get('/inventory/suppliers/' + supplierId + '/performance');
+            const data = res.data || res;
+            const stats = data.stats || {};
+            const trends = data.costTrends || [];
+            const recent = data.recentItems || [];
+
+            // Build cost trend mini chart
+            let trendChart = '';
+            if (trends.length > 1) {
+                const maxCost = Math.max(...trends.map(t => t.avg_cost || 0), 1);
+                const w = 300, h = 80, pad = 5;
+                const points = trends.map((t, i) => {
+                    const x = pad + (i / (trends.length - 1)) * (w - pad * 2);
+                    const y = pad + (1 - (t.avg_cost || 0) / maxCost) * (h - pad * 2);
+                    return x + ',' + y;
+                }).join(' ');
+                trendChart = '<div class="mb-3"><div class="text-xs text-gray-500 mb-1">Avg Cost Trend (6 months)</div>' +
+                    '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;height:80px;"><polyline points="' + points + '" fill="none" stroke="var(--primary-500)" stroke-width="2"/></svg>' +
+                    '<div class="flex justify-between text-xs text-gray-400"><span>' + (trends[0]?.month || '') + '</span><span>' + (trends[trends.length - 1]?.month || '') + '</span></div></div>';
+            }
+
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${components.icon('trending-up', 20)} ${escapeHtml(supplierName)} — Performance</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body">
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-xl font-bold">${stats.totalItems || 0}</div>
+                            <div class="text-xs text-gray-500">Total Items</div>
+                        </div></div>
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-xl font-bold" style="color:var(--success);">${(stats.sellThrough || 0).toFixed(1)}%</div>
+                            <div class="text-xs text-gray-500">Sell-Through</div>
+                        </div></div>
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-xl font-bold" style="color:${(stats.avgMargin || 0) >= 20 ? 'var(--success)' : 'var(--error)'};">${(stats.avgMargin || 0).toFixed(1)}%</div>
+                            <div class="text-xs text-gray-500">Avg Margin</div>
+                        </div></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-lg font-bold">$${(stats.totalCost || 0).toFixed(0)}</div>
+                            <div class="text-xs text-gray-500">Total Cost</div>
+                        </div></div>
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-lg font-bold" style="color:${(stats.totalProfit || 0) >= 0 ? 'var(--success)' : 'var(--error)'};">$${(stats.totalProfit || 0).toFixed(0)}</div>
+                            <div class="text-xs text-gray-500">Total Profit</div>
+                        </div></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-lg font-bold">${(stats.avgDaysToSell || 0).toFixed(0)}d</div>
+                            <div class="text-xs text-gray-500">Avg Days to Sell</div>
+                        </div></div>
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-lg font-bold">${stats.soldItems || 0}/${stats.totalItems || 0}</div>
+                            <div class="text-xs text-gray-500">Sold / Total</div>
+                        </div></div>
+                    </div>
+                    ${trendChart}
+                    ${recent.length > 0 ? '<h4 class="font-semibold text-sm mb-2">Recent Items</h4><table class="table table-sm"><thead><tr><th>Title</th><th>Cost</th><th>List</th><th>Status</th></tr></thead><tbody>' +
+                        recent.map(r => '<tr><td class="text-sm">' + escapeHtml(r.title || '') + '</td><td>$' + (r.cost_price || 0).toFixed(0) + '</td><td>$' + (r.list_price || 0).toFixed(0) + '</td><td><span class="badge badge-sm">' + (r.status || '—') + '</span></td></tr>').join('') + '</tbody></table>' : ''}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-ghost" onclick="modals.close()">Close</button>
+                </div>
+            `, 'modal-lg');
+        } catch (e) {
+            toast.error('Failed to load supplier performance');
+        }
     },
 
     _renderTemplateMarketplace: function(templates) {

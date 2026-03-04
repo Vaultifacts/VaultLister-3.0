@@ -1720,6 +1720,9 @@ Object.assign(pages, {
                     <button class="btn btn-ghost" onclick="handlers.showImportAutomationRules()" title="Import rules from JSON">
                         ${components.icon('upload', 16)} Import
                     </button>
+                    <button class="btn btn-ghost" onclick="handlers.showImportFromURL()" title="Import rules from URL">
+                        ${components.icon('link', 16)} URL
+                    </button>
                     <button class="btn btn-ghost" onclick="handlers.exportAutomationHistoryCSV()" title="Export run history to CSV">
                         ${components.icon('file-text', 16)} CSV
                     </button>

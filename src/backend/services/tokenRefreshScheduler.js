@@ -125,6 +125,12 @@ export async function refreshExpiringTokens() {
         } catch (forecastErr) {
             logger.error('[TokenRefresh] Forecast alert check failed:', forecastErr.message);
         }
+        // Profit margin alerts check
+        try {
+            await checkProfitMarginAlerts();
+        } catch (marginErr) {
+            logger.error('[TokenRefresh] Margin alert check failed:', marginErr.message);
+        }
     } catch (error) {
         logger.error('[TokenRefresh] Error in refresh cycle:', error);
     } finally {
@@ -264,6 +270,55 @@ async function checkInventoryForecastAlerts() {
             websocketService.sendToUser(user_id, {
                 type: 'notification',
                 notification: { type: 'inventory_forecast', title, message, data: { alerts } }
+            });
+        } catch (_) { /* notification service not available */ }
+    }
+}
+
+/**
+ * Check inventory profit margins and alert when below threshold
+ */
+async function checkProfitMarginAlerts() {
+    const MARGIN_THRESHOLD = 0.15; // Alert when margin drops below 15%
+    const users = query.all('SELECT DISTINCT user_id FROM inventory WHERE status = ?', ['active']);
+
+    for (const { user_id } of users) {
+        const lowMarginItems = query.all(`
+            SELECT i.category, COUNT(*) as item_count,
+                AVG(CASE WHEN i.list_price > 0 THEN (i.list_price - COALESCE(i.cost_price, 0)) / i.list_price ELSE 0 END) as avg_margin,
+                MIN(CASE WHEN i.list_price > 0 THEN (i.list_price - COALESCE(i.cost_price, 0)) / i.list_price ELSE 0 END) as min_margin
+            FROM inventory i
+            WHERE i.user_id = ? AND i.status = 'active' AND i.cost_price > 0 AND i.list_price > 0
+            GROUP BY i.category
+            HAVING avg_margin < ?
+        `, [user_id, MARGIN_THRESHOLD]);
+
+        if (lowMarginItems.length === 0) continue;
+
+        // 6-hour dedup
+        const recentAlert = query.get(
+            `SELECT id FROM notifications WHERE user_id = ? AND type = 'margin_alert' AND created_at >= datetime('now', '-6 hours')`,
+            [user_id]
+        );
+        if (recentAlert) continue;
+
+        const title = `${lowMarginItems.length} categor${lowMarginItems.length === 1 ? 'y' : 'ies'} below ${Math.round(MARGIN_THRESHOLD * 100)}% margin`;
+        const message = lowMarginItems.map(c =>
+            `${c.category || 'Uncategorized'}: ${Math.round((c.avg_margin || 0) * 100)}% avg (${c.item_count} items)`
+        ).join('; ');
+
+        try {
+            const { createNotification } = await import('./notificationService.js');
+            createNotification(user_id, {
+                type: 'margin_alert',
+                title,
+                message,
+                data: JSON.stringify({ categories: lowMarginItems })
+            });
+            const { websocketService } = await import('./websocket.js');
+            websocketService.sendToUser(user_id, {
+                type: 'notification',
+                notification: { type: 'margin_alert', title, message, data: { categories: lowMarginItems } }
             });
         } catch (_) { /* notification service not available */ }
     }

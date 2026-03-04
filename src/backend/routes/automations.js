@@ -1399,5 +1399,37 @@ export async function automationsRouter(ctx) {
         }
     }
 
+    // POST /api/automations/templates/import-url - Import rule from a JSON URL
+    if (method === 'POST' && path === '/templates/import-url') {
+        const { url } = body;
+        if (!url || typeof url !== 'string') return { status: 400, data: { error: 'url is required' } };
+        try {
+            const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+            if (!response.ok) return { status: 400, data: { error: 'Failed to fetch URL: ' + response.status } };
+            const json = await response.json();
+
+            // Support both single rule and array of rules
+            const rules = Array.isArray(json) ? json : (json.rules || [json]);
+            const imported = [];
+
+            for (const tpl of rules) {
+                if (!tpl.name || !tpl.type) continue;
+                const ruleId = uuidv4();
+                query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled, tags)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+                    [ruleId, user.id, tpl.name, tpl.type, tpl.platform || 'all', tpl.schedule || null,
+                     typeof tpl.conditions === 'string' ? tpl.conditions : JSON.stringify(tpl.conditions || {}),
+                     typeof tpl.actions === 'string' ? tpl.actions : JSON.stringify(tpl.actions || {}),
+                     typeof tpl.tags === 'string' ? tpl.tags : JSON.stringify(tpl.tags || [])]);
+                imported.push({ id: ruleId, name: tpl.name });
+            }
+
+            return { status: 201, data: { imported, count: imported.length } };
+        } catch (error) {
+            logger.error('[Automations] import from URL failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to import from URL: ' + (error?.message || 'Unknown error') } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

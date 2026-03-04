@@ -1007,6 +1007,54 @@ export async function inventoryRouter(ctx) {
         return { status: 200, data: { message: 'Supplier updated' } };
     }
 
+    // GET /api/inventory/suppliers/:id/performance - Supplier performance analytics
+    if (method === 'GET' && path.match(/^\/suppliers\/[a-f0-9-]+\/performance$/)) {
+        const supId = path.split('/')[2];
+        const sup = query.get('SELECT * FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
+        if (!sup) return { status: 404, data: { error: 'Supplier not found' } };
+
+        // Items from this supplier
+        const items = query.all(`
+            SELECT i.id, i.title, i.cost_price, i.list_price, i.status, i.created_at,
+                CAST(julianday('now') - julianday(i.created_at) AS INTEGER) as days_old,
+                (SELECT COUNT(*) FROM sales WHERE inventory_id = i.id) as sale_count,
+                (SELECT AVG(sale_price) FROM sales WHERE inventory_id = i.id) as avg_sale_price
+            FROM inventory i
+            WHERE i.user_id = ? AND i.supplier = ?
+            ORDER BY i.created_at DESC
+        `, [user.id, sup.name]);
+
+        const totalItems = items.length;
+        const activeItems = items.filter(i => i.status === 'active').length;
+        const soldItems = items.filter(i => i.sale_count > 0).length;
+        const totalCost = items.reduce((s, i) => s + (i.cost_price || 0), 0);
+        const totalRevenue = items.reduce((s, i) => s + ((i.avg_sale_price || 0) * (i.sale_count || 0)), 0);
+        const totalProfit = totalRevenue - totalCost;
+        const avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+        const sellThrough = totalItems > 0 ? (soldItems / totalItems) * 100 : 0;
+        const avgDaysToSell = items.filter(i => i.sale_count > 0).length > 0
+            ? items.filter(i => i.sale_count > 0).reduce((s, i) => s + (i.days_old || 0), 0) / items.filter(i => i.sale_count > 0).length
+            : 0;
+
+        // Monthly cost trends (last 6 months)
+        const costTrends = query.all(`
+            SELECT strftime('%Y-%m', i.created_at) as month,
+                COUNT(*) as items_sourced,
+                SUM(i.cost_price) as total_cost,
+                AVG(i.cost_price) as avg_cost
+            FROM inventory i
+            WHERE i.user_id = ? AND i.supplier = ? AND i.created_at >= datetime('now', '-6 months')
+            GROUP BY month ORDER BY month
+        `, [user.id, sup.name]);
+
+        return { status: 200, data: {
+            supplier: sup,
+            stats: { totalItems, activeItems, soldItems, totalCost, totalRevenue, totalProfit, avgMargin, sellThrough, avgDaysToSell },
+            costTrends,
+            recentItems: items.slice(0, 10)
+        }};
+    }
+
     // DELETE /api/inventory/suppliers/:id - Delete supplier
     if (method === 'DELETE' && path.match(/^\/suppliers\/[a-f0-9-]+$/)) {
         const supId = path.split('/')[2];
