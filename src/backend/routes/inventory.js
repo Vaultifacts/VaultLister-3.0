@@ -962,5 +962,59 @@ export async function inventoryRouter(ctx) {
         return { status: 200, data: { message: 'Category deleted' } };
     }
 
+    // ============================================
+    // Supplier Management
+    // ============================================
+
+    // GET /api/inventory/suppliers - List suppliers
+    if (method === 'GET' && path === '/suppliers') {
+        const suppliers = query.all(`
+            SELECT s.*,
+                (SELECT COUNT(*) FROM supplier_items WHERE supplier_id = s.id) as item_count,
+                (SELECT AVG(current_price) FROM supplier_items WHERE supplier_id = s.id) as avg_price
+            FROM suppliers s WHERE s.user_id = ? ORDER BY s.name
+        `, [user.id]);
+        return { status: 200, data: { suppliers } };
+    }
+
+    // POST /api/inventory/suppliers - Create supplier
+    if (method === 'POST' && path === '/suppliers') {
+        const { name, type, website, contact_email, contact_phone, address, notes, rating } = body;
+        if (!name?.trim()) return { status: 400, data: { error: 'Supplier name required' } };
+        const id = uuidv4();
+        query.run(`INSERT INTO suppliers (id, user_id, name, type, website, contact_email, contact_phone, address, notes, rating)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id, user.id, name.trim(), type || 'other', website || null, contact_email || null,
+             contact_phone || null, address || null, notes || null, rating || null]);
+        return { status: 201, data: { supplier: { id, name: name.trim() } } };
+    }
+
+    // PUT /api/inventory/suppliers/:id - Update supplier
+    if (method === 'PUT' && path.match(/^\/suppliers\/[a-f0-9-]+$/)) {
+        const supId = path.split('/')[2];
+        const sup = query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
+        if (!sup) return { status: 404, data: { error: 'Supplier not found' } };
+        const fields = ['name', 'type', 'website', 'contact_email', 'contact_phone', 'address', 'notes', 'rating', 'is_active'];
+        const updates = [];
+        const vals = [];
+        for (const f of fields) {
+            if (body[f] !== undefined) { updates.push(f + ' = ?'); vals.push(body[f]); }
+        }
+        if (updates.length > 0) {
+            vals.push(supId);
+            query.run(`UPDATE suppliers SET ${updates.join(', ')}, updated_at = datetime('now') WHERE id = ?`, vals);
+        }
+        return { status: 200, data: { message: 'Supplier updated' } };
+    }
+
+    // DELETE /api/inventory/suppliers/:id - Delete supplier
+    if (method === 'DELETE' && path.match(/^\/suppliers\/[a-f0-9-]+$/)) {
+        const supId = path.split('/')[2];
+        const sup = query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
+        if (!sup) return { status: 404, data: { error: 'Supplier not found' } };
+        query.run('DELETE FROM suppliers WHERE id = ?', [supId]);
+        return { status: 200, data: { message: 'Supplier deleted' } };
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

@@ -19986,6 +19986,7 @@ const pages = {
                     <button class="btn btn-ghost" onclick="handlers.showAutomationPerformance()" title="Compare rule performance">
                         ${components.icon('bar-chart', 16)} Performance
                     </button>
+                    ${store.state.automationTagFilter ? '<button class="btn btn-ghost" onclick="handlers.filterByRuleTag(\'\')" title="Clear tag filter" style="color:var(--primary-600);">' + components.icon('x', 16) + ' Tag: ' + escapeHtml(store.state.automationTagFilter) + '</button>' : ''}
                     <button class="btn btn-secondary" onclick="handlers.showAutomationHistory()">
                         ${components.icon('history', 16)} History
                     </button>
@@ -20330,10 +20331,13 @@ const pages = {
                             const searchQ = (store.state.automationSearchQuery || '').toLowerCase();
                             const catFilter = store.state.automationCategoryFilter || 'all';
                             const platFilter = store.state.automationPlatformFilter || 'all';
+                            const tagFilter = store.state.automationTagFilter || '';
                             const matchesSearch = !searchQ || rule.name.toLowerCase().includes(searchQ) || rule.description.toLowerCase().includes(searchQ);
                             const matchesCat = catFilter === 'all' || rule.category === catFilter;
                             const matchesPlat = platFilter === 'all' || rule.platform === platFilter || rule.platform === 'all';
-                            return matchesSearch && matchesCat && matchesPlat;
+                            const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
+                            const matchesTag = !tagFilter || ruleTags.includes(tagFilter);
+                            return matchesSearch && matchesCat && matchesPlat && matchesTag;
                         }).sort((a, b) => {
                             const sortBy = store.state.automationSortBy || 'name_asc';
                             switch (sortBy) {
@@ -20357,6 +20361,10 @@ const pages = {
                                         </div>
                                     </div>
                                     <div class="text-sm text-gray-500">${rule.description}</div>
+                                    ${(() => {
+                                        const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
+                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
+                                    })()}
                                     <div class="automation-card-stats">
                                         ${(() => {
                                             const ruleRuns = runHistory.filter(r => r.automation_name === rule.name || r.automation_id === rule.id || r.action === rule.name);
@@ -20406,6 +20414,9 @@ const pages = {
                                     <button class="btn btn-ghost" onclick="handlers.showRuleVersionHistory('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Version History" style="padding: 10px;">
                                         ${components.icon('git-commit', 20)}
                                     </button>
+                                    <button class="btn btn-ghost" onclick="handlers.showRuleTagEditor('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Tags" style="padding: 10px;">
+                                        ${components.icon('tag', 20)}
+                                    </button>
                                     <button class="btn btn-ghost" onclick="handlers.cloneAutomationRule('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Clone Rule" style="padding: 10px;">
                                         ${components.icon('copy', 20)}
                                     </button>
@@ -20418,6 +20429,24 @@ const pages = {
                                 </div>
                             </div>
                         `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Duration Trends Section -->
+            <div class="card mt-6">
+                <div class="card-header flex justify-between items-center">
+                    <div>
+                        <h3 class="card-title">${components.icon('trending-up', 18)} Run Duration Trends</h3>
+                        <p class="text-sm text-gray-500">Average execution time per rule over the last 30 days</p>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="handlers.loadDurationTrends()">
+                        ${components.icon('refresh-cw', 14)} Load
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="duration-trends-chart">
+                        ${store.state.durationTrends ? handlers._renderDurationTrendsChart(store.state.durationTrends) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to view execution time trends</p>'}
                     </div>
                 </div>
             </div>
@@ -58700,6 +58729,253 @@ const handlers = {
                 </table>
             </div>
         `, 'modal-lg');
+    },
+
+    // --- Task #126: Rule Tag Management ---
+    showRuleTagEditor: function(ruleId, ruleName) {
+        const rules = store.state.automations || [];
+        const rule = rules.find(r => r.id === ruleId);
+        const tags = (() => { try { return JSON.parse(rule?.tags || '[]'); } catch { return []; } })();
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('tag', 20)} Tags — ${escapeHtml(ruleName)}</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div id="rule-tags-list" class="flex flex-wrap gap-2 mb-4">
+                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
+                    ${tags.length === 0 ? '<span class="text-gray-400 text-sm">No tags yet</span>' : ''}
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="new-rule-tag" class="form-input" placeholder="Add a tag..." style="flex:1;" onkeydown="if(event.key==='Enter'){handlers.addRuleTag('${ruleId}');event.preventDefault();}">
+                    <button class="btn btn-primary btn-sm" onclick="handlers.addRuleTag('${ruleId}')">
+                        ${components.icon('plus', 14)} Add
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Press Enter or click Add. Tags help you organize and filter rules.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Close</button>
+            </div>
+        `);
+    },
+
+    addRuleTag: async function(ruleId) {
+        const input = document.getElementById('new-rule-tag');
+        const tag = (input?.value || '').trim();
+        if (!tag) return;
+        const rules = store.state.automations || [];
+        const rule = rules.find(r => r.id === ruleId);
+        const tags = (() => { try { return JSON.parse(rule?.tags || '[]'); } catch { return []; } })();
+        if (tags.includes(tag)) { toast.warning('Tag already exists'); return; }
+        tags.push(tag);
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/automations/' + ruleId, { tags });
+            rule.tags = JSON.stringify(tags);
+            store.setState({ automations: [...rules] });
+            toast.success('Tag added');
+            handlers.showRuleTagEditor(ruleId, rule.name);
+        } catch (e) {
+            toast.error('Failed to add tag');
+        }
+    },
+
+    removeRuleTag: async function(ruleId, tagToRemove) {
+        const rules = store.state.automations || [];
+        const rule = rules.find(r => r.id === ruleId);
+        const tags = (() => { try { return JSON.parse(rule?.tags || '[]'); } catch { return []; } })();
+        const updated = tags.filter(t => t !== tagToRemove);
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/automations/' + ruleId, { tags: updated });
+            rule.tags = JSON.stringify(updated);
+            store.setState({ automations: [...rules] });
+            toast.success('Tag removed');
+            handlers.showRuleTagEditor(ruleId, rule.name);
+        } catch (e) {
+            toast.error('Failed to remove tag');
+        }
+    },
+
+    filterByRuleTag: function(tag) {
+        store.setState({ automationTagFilter: tag || '' });
+        renderApp(pages.automations());
+    },
+
+    // --- Task #127: Supplier Management ---
+    loadSuppliers: async function() {
+        try {
+            const res = await api.get('/inventory/suppliers');
+            const data = res.data || res;
+            store.setState({ suppliers: data.suppliers || data || [] });
+            return data.suppliers || data || [];
+        } catch (e) {
+            toast.error('Failed to load suppliers');
+            return [];
+        }
+    },
+
+    showSupplierManager: async function() {
+        const suppliers = await handlers.loadSuppliers();
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('truck', 20)} Supplier Manager</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="new-supplier-name" class="form-input" placeholder="Supplier name" style="flex:1;">
+                    <input type="text" id="new-supplier-contact" class="form-input" placeholder="Contact email" style="flex:1;">
+                    <button class="btn btn-primary btn-sm" onclick="handlers.addSupplier()">
+                        ${components.icon('plus', 14)} Add
+                    </button>
+                </div>
+                <div id="supplier-list">
+                    ${suppliers.length === 0 ? '<p class="text-gray-500 text-sm text-center py-4">No suppliers yet</p>' :
+                    '<table class="table table-sm"><thead><tr><th>Name</th><th>Items</th><th>Avg Price</th><th>Actions</th></tr></thead><tbody>' +
+                    suppliers.map(s => '<tr><td class="font-semibold">' + escapeHtml(s.name) + '</td><td>' + (s.item_count || 0) + '</td><td>$' + (s.avg_price || 0).toFixed(2) + '</td><td><button class="btn btn-xs btn-danger" onclick="handlers.deleteSupplier(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/'/g, "\\'") + '\')">' + components.icon('trash', 12) + '</button></td></tr>').join('') +
+                    '</tbody></table>'}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Close</button>
+            </div>
+        `, 'modal-lg');
+    },
+
+    addSupplier: async function() {
+        const name = document.getElementById('new-supplier-name')?.value?.trim();
+        const contact = document.getElementById('new-supplier-contact')?.value?.trim();
+        if (!name) { toast.error('Supplier name is required'); return; }
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/inventory/suppliers', { name, contact_email: contact || undefined });
+            toast.success('Supplier added');
+            handlers.showSupplierManager();
+        } catch (e) {
+            toast.error('Failed to add supplier: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+    deleteSupplier: async function(id, name) {
+        if (!confirm('Delete supplier "' + name + '"?')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.delete('/inventory/suppliers/' + id);
+            toast.success('Supplier deleted');
+            handlers.showSupplierManager();
+        } catch (e) {
+            toast.error('Failed to delete supplier');
+        }
+    },
+
+    // --- Task #128: Duration Trends Chart ---
+    loadDurationTrends: async function() {
+        try {
+            const res = await api.get('/automations/duration-trends');
+            const data = res.data || res;
+            const trends = data.trends || [];
+            store.setState({ durationTrends: trends });
+            const el = document.getElementById('duration-trends-chart');
+            if (el) el.innerHTML = handlers._renderDurationTrendsChart(trends);
+        } catch (e) {
+            toast.error('Failed to load duration trends');
+        }
+    },
+
+    _renderDurationTrendsChart: function(trends) {
+        if (!trends || trends.length === 0) {
+            return '<p class="text-gray-500 text-sm text-center py-4">No duration data yet. Run some automations first.</p>';
+        }
+
+        // Group by rule name
+        const byName = {};
+        trends.forEach(t => {
+            if (!byName[t.name]) byName[t.name] = [];
+            byName[t.name].push(t);
+        });
+        const names = Object.keys(byName).slice(0, 6);
+        const colors = ['var(--primary-500)', 'var(--success)', 'var(--warning-500)', 'var(--error)', '#8b5cf6', '#ec4899'];
+
+        // Build SVG line chart per rule
+        const width = 600, height = 200, padL = 55, padR = 20, padT = 20, padB = 40;
+        const chartW = width - padL - padR;
+        const chartH = height - padT - padB;
+
+        // Collect all days across all rules
+        const allDays = [...new Set(trends.map(t => t.day))].sort();
+        const n = allDays.length;
+        if (n === 0) return '<p class="text-gray-500 text-sm text-center py-4">No data</p>';
+
+        const allDurations = trends.map(t => t.avg_duration || 0);
+        const maxDur = Math.max(...allDurations, 1);
+
+        function toX(i) { return padL + (i / Math.max(n - 1, 1)) * chartW; }
+        function toY(v) { return padT + chartH - (v / maxDur) * chartH; }
+
+        const gridLines = [0, 0.25, 0.5, 0.75, 1].map(pct => {
+            const y = padT + pct * chartH;
+            const val = maxDur - pct * maxDur;
+            return '<line x1="' + padL + '" y1="' + y + '" x2="' + (width - padR) + '" y2="' + y + '" stroke="var(--gray-200)" stroke-dasharray="4,4"/>' +
+                '<text x="' + (padL - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--gray-400)">' + Math.round(val) + 'ms</text>';
+        }).join('');
+
+        const xLabels = allDays.map((d, i) => '<text x="' + toX(i) + '" y="' + (height - 8) + '" text-anchor="middle" font-size="9" fill="var(--gray-500)">' + d.slice(5) + '</text>').join('');
+
+        const lines = names.map((name, ci) => {
+            const pts = byName[name];
+            const points = allDays.map((day, i) => {
+                const pt = pts.find(p => p.day === day);
+                return pt ? toX(i) + ',' + toY(pt.avg_duration || 0) : null;
+            }).filter(Boolean);
+            if (points.length < 2) return '';
+            return '<polyline points="' + points.join(' ') + '" fill="none" stroke="' + colors[ci % colors.length] + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        }).join('');
+
+        const legend = '<div class="flex flex-wrap gap-3 mb-2">' + names.map((name, ci) =>
+            '<span class="text-xs"><span style="display:inline-block;width:12px;height:3px;background:' + colors[ci % colors.length] + ';vertical-align:middle;margin-right:4px;border-radius:2px;"></span>' + escapeHtml(name) + '</span>'
+        ).join('') + '</div>';
+
+        return legend +
+            '<svg viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;">' +
+            gridLines + lines + xLabels + '</svg>';
+    },
+
+    // --- Task #129: Price Suggestions ---
+    loadPriceSuggestions: async function() {
+        try {
+            const res = await api.get('/analytics/price-suggestions');
+            const data = res.data || res;
+            store.setState({ priceSuggestions: data.suggestions || [] });
+            const el = document.getElementById('price-suggestions-content');
+            if (el) el.innerHTML = handlers._renderPriceSuggestions(data.suggestions || []);
+        } catch (e) {
+            toast.error('Failed to load price suggestions');
+        }
+    },
+
+    _renderPriceSuggestions: function(suggestions) {
+        if (!suggestions || suggestions.length === 0) {
+            return '<p class="text-gray-500 text-sm text-center py-4">No price suggestions — all items are well-priced or too new to evaluate.</p>';
+        }
+
+        return '<table class="table table-sm"><thead><tr><th>Item</th><th>Age</th><th>Current</th><th>Suggested</th><th>Change</th><th>Reason</th></tr></thead><tbody>' +
+            suggestions.slice(0, 20).map(s => {
+                const isDecrease = (s.price_change || 0) < 0;
+                const changeColor = isDecrease ? 'var(--error)' : 'var(--success)';
+                const changePrefix = isDecrease ? '' : '+';
+                return '<tr><td class="text-sm" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(s.title || '') + '</td>' +
+                    '<td>' + (s.days_old || 0) + 'd</td>' +
+                    '<td>$' + (s.current_price || 0).toFixed(2) + '</td>' +
+                    '<td style="font-weight:600;">$' + (s.suggested_price || 0).toFixed(2) + '</td>' +
+                    '<td style="color:' + changeColor + ';font-weight:600;">' + changePrefix + '$' + (s.price_change || 0).toFixed(2) + '</td>' +
+                    '<td class="text-xs text-gray-500">' + escapeHtml(s.reason || '') + '</td></tr>';
+            }).join('') +
+            '</tbody></table>' +
+            (suggestions.length > 20 ? '<p class="text-xs text-gray-400 mt-2">Showing 20 of ' + suggestions.length + ' suggestions</p>' : '');
     },
 
     _renderTemplateMarketplace: function(templates) {

@@ -26968,13 +26968,14 @@ Object.assign(handlers, {
         const margins = data.margins || [];
         const deadStock = data.deadStock || [];
         const maxBucket = Math.max(...agingBuckets.map(b => b.count), 1);
-        return '<div class="flex justify-between items-center mb-4"><h3 class="text-lg font-semibold">' + components.icon('bar-chart-2', 20) + ' Inventory Analytics</h3><button class="btn btn-ghost btn-sm" onclick="handlers.showCategoryManager()">' + components.icon('folder', 14) + ' Manage Categories</button></div>' +
+        return '<div class="flex justify-between items-center mb-4"><h3 class="text-lg font-semibold">' + components.icon('bar-chart-2', 20) + ' Inventory Analytics</h3><div class="flex gap-2"><button class="btn btn-ghost btn-sm" onclick="handlers.showSupplierManager()">' + components.icon('truck', 14) + ' Suppliers</button><button class="btn btn-ghost btn-sm" onclick="handlers.showCategoryManager()">' + components.icon('folder', 14) + ' Manage Categories</button></div></div>' +
             '<div class="grid grid-cols-4 gap-4 mb-6"><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--primary-600);">' + (overall.sell_through_rate || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Sell-Through Rate</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--success);">' + (overall.avg_days_to_sell || 0).toFixed(0) + '</div><div class="text-xs text-gray-500">Avg Days to Sell</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--warning-600);">' + (overall.margin_pct || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Avg Margin</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:' + ((overall.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (overall.total_profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div><div class="text-xs text-gray-500">Total Profit</div></div></div></div>' +
             '<div class="card mb-6"><div class="card-body"><div class="flex justify-between items-center mb-3"><h3 class="text-md font-semibold">' + components.icon('trending-up', 18) + ' Profit & Loss Timeline</h3><button class="btn btn-ghost btn-sm" onclick="handlers.loadPLTimeline()">' + components.icon('refresh-cw', 14) + ' Load</button></div><div id="pl-timeline-chart">' + (store.state.plTimeline ? handlers._renderPLChart(store.state.plTimeline) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to fetch monthly P&L data</p>') + '</div></div></div>' +
             '<div class="card mb-6"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('clock', 18) + ' Inventory Aging</h3><div class="flex gap-3 items-end" style="height:120px;">' + agingBuckets.map(b => { const pct = (b.count / maxBucket * 100); const color = b.min >= 91 ? 'var(--error)' : b.min >= 61 ? 'var(--warning-600)' : b.min >= 31 ? 'var(--warning-400)' : 'var(--success)'; return '<div style="flex:1;text-align:center;"><div style="background:' + color + ';height:' + Math.max(pct, 4) + '%;border-radius:4px 4px 0 0;margin:0 2px;position:relative;"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600;">' + b.count + '</span></div><div style="font-size:10px;color:var(--gray-500);margin-top:4px;">' + b.label + '</div><div style="font-size:9px;color:var(--gray-400);">$' + Math.round(b.value).toLocaleString() + '</div></div>'; }).join('') + '</div></div></div>' +
             '<div class="grid grid-cols-2 gap-4 mb-6"><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('trending-up', 18) + ' Sell-Through by Category</h3>' + (sellThrough.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Total</th><th>Sold</th><th>Rate</th><th>Avg Days</th></tr></thead><tbody>' + sellThrough.map(s => '<tr><td>' + escapeHtml(s.category || 'Uncategorized') + '</td><td>' + s.total + '</td><td>' + s.sold + '</td><td style="color:' + (s.sell_rate >= 50 ? 'var(--success)' : s.sell_rate >= 25 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (s.sell_rate || 0).toFixed(1) + '%</td><td>' + (s.avg_days_to_sell ? s.avg_days_to_sell.toFixed(0) + 'd' : '—') + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No data yet</p>') + '</div></div><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Margin by Category</h3>' + (margins.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Sold</th><th>Avg Sale</th><th>Margin</th><th>Profit</th></tr></thead><tbody>' + margins.map(m => '<tr><td>' + escapeHtml(m.category || 'Uncategorized') + '</td><td>' + m.sold_count + '</td><td>$' + (m.avg_sale_price || 0).toFixed(0) + '</td><td style="color:' + ((m.margin_pct || 0) >= 30 ? 'var(--success)' : (m.margin_pct || 0) >= 15 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (m.margin_pct || 0).toFixed(1) + '%</td><td style="color:' + ((m.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (m.total_profit || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No sales data yet</p>') + '</div></div></div>' +
             (sellThrough.length > 1 ? (() => { const totalItems = sellThrough.reduce((s, c) => s + (c.total || 0), 0); const totalSold = sellThrough.reduce((s, c) => s + (c.sold || 0), 0); const catColors = ['var(--primary-500)', 'var(--success)', 'var(--warning-500)', 'var(--error)', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']; const sorted = [...sellThrough].sort((a, b) => (b.total || 0) - (a.total || 0)); const maxItems = Math.max(...sorted.map(c => c.total || 0), 1); return '<div class="grid grid-cols-2 gap-4 mb-6">' + '<div class="card"><div class="card-body">' + '<h3 class="text-md font-semibold mb-3">' + components.icon('pie-chart', 18) + ' Category Distribution (' + totalItems + ' items)</h3>' + '<div class="flex flex-col gap-1">' + sorted.slice(0, 8).map((c, i) => { const pct = totalItems > 0 ? Math.round((c.total || 0) / totalItems * 100) : 0; return '<div class="flex items-center gap-2" style="font-size:12px;">' + '<span style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(c.category || 'Uncategorized') + '</span>' + '<div style="flex:1;height:16px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' + '<div style="height:100%;width:' + pct + '%;background:' + catColors[i % catColors.length] + ';border-radius:var(--radius-sm);"></div></div>' + '<span style="width:55px;text-align:right;font-weight:600;">' + (c.total || 0) + ' (' + pct + '%)</span></div>'; }).join('') + '</div></div></div>' + '<div class="card"><div class="card-body">' + '<h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Revenue by Category</h3>' + '<div class="flex flex-col gap-1">' + [...margins].sort((a, b) => (b.total_profit || 0) - (a.total_profit || 0)).slice(0, 8).map((m, i) => { const maxProfit = Math.max(...margins.map(x => Math.abs(x.total_profit || 0)), 1); const pct = Math.round(Math.abs(m.total_profit || 0) / maxProfit * 100); const isPositive = (m.total_profit || 0) >= 0; return '<div class="flex items-center gap-2" style="font-size:12px;">' + '<span style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(m.category || 'Uncategorized') + '</span>' + '<div style="flex:1;height:16px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' + '<div style="height:100%;width:' + pct + '%;background:' + (isPositive ? 'var(--success)' : 'var(--error)') + ';border-radius:var(--radius-sm);"></div></div>' + '<span style="width:60px;text-align:right;font-weight:600;color:' + (isPositive ? 'var(--success)' : 'var(--error)') + ';">$' + Math.round(m.total_profit || 0).toLocaleString() + '</span></div>'; }).join('') + '</div></div></div></div>'; })() : '') +
-            (deadStock.length > 0 ? '<div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3" style="color:var(--error);">' + components.icon('alert-triangle', 18) + ' Dead Stock (' + deadStock.length + ' items)</h3><table class="table table-sm"><thead><tr><th>Title</th><th>SKU</th><th>Days</th><th>Price</th></tr></thead><tbody>' + deadStock.slice(0, 10).map(d => '<tr><td>' + escapeHtml(d.title || '') + '</td><td>' + escapeHtml(d.sku || '—') + '</td><td style="color:var(--error);">' + d.days_old + 'd</td><td>$' + (d.list_price || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table></div></div>' : '');
+            (deadStock.length > 0 ? '<div class="card mb-6"><div class="card-body"><h3 class="text-md font-semibold mb-3" style="color:var(--error);">' + components.icon('alert-triangle', 18) + ' Dead Stock (' + deadStock.length + ' items)</h3><table class="table table-sm"><thead><tr><th>Title</th><th>SKU</th><th>Days</th><th>Price</th></tr></thead><tbody>' + deadStock.slice(0, 10).map(d => '<tr><td>' + escapeHtml(d.title || '') + '</td><td>' + escapeHtml(d.sku || '—') + '</td><td style="color:var(--error);">' + d.days_old + 'd</td><td>$' + (d.list_price || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table></div></div>' : '') +
+            '<div class="card mb-6"><div class="card-body"><div class="flex justify-between items-center mb-3"><h3 class="text-md font-semibold">' + components.icon('tag', 18) + ' Price Suggestions</h3><button class="btn btn-ghost btn-sm" onclick="handlers.loadPriceSuggestions()">' + components.icon('refresh-cw', 14) + ' Load</button></div><div id="price-suggestions-content">' + (store.state.priceSuggestions ? handlers._renderPriceSuggestions(store.state.priceSuggestions) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to get AI-powered pricing recommendations for aging inventory</p>') + '</div></div></div>';
     },
 
     loadPLTimeline: async function() {
@@ -27594,6 +27595,253 @@ Object.assign(handlers, {
                 </table>
             </div>
         `, 'modal-lg');
+    },
+
+    // --- Task #126: Rule Tag Management ---
+    showRuleTagEditor: function(ruleId, ruleName) {
+        const rules = store.state.automations || [];
+        const rule = rules.find(r => r.id === ruleId);
+        const tags = (() => { try { return JSON.parse(rule?.tags || '[]'); } catch { return []; } })();
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('tag', 20)} Tags — ${escapeHtml(ruleName)}</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div id="rule-tags-list" class="flex flex-wrap gap-2 mb-4">
+                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
+                    ${tags.length === 0 ? '<span class="text-gray-400 text-sm">No tags yet</span>' : ''}
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="new-rule-tag" class="form-input" placeholder="Add a tag..." style="flex:1;" onkeydown="if(event.key==='Enter'){handlers.addRuleTag('${ruleId}');event.preventDefault();}">
+                    <button class="btn btn-primary btn-sm" onclick="handlers.addRuleTag('${ruleId}')">
+                        ${components.icon('plus', 14)} Add
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Press Enter or click Add. Tags help you organize and filter rules.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Close</button>
+            </div>
+        `);
+    },
+
+    addRuleTag: async function(ruleId) {
+        const input = document.getElementById('new-rule-tag');
+        const tag = (input?.value || '').trim();
+        if (!tag) return;
+        const rules = store.state.automations || [];
+        const rule = rules.find(r => r.id === ruleId);
+        const tags = (() => { try { return JSON.parse(rule?.tags || '[]'); } catch { return []; } })();
+        if (tags.includes(tag)) { toast.warning('Tag already exists'); return; }
+        tags.push(tag);
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/automations/' + ruleId, { tags });
+            rule.tags = JSON.stringify(tags);
+            store.setState({ automations: [...rules] });
+            toast.success('Tag added');
+            handlers.showRuleTagEditor(ruleId, rule.name);
+        } catch (e) {
+            toast.error('Failed to add tag');
+        }
+    },
+
+    removeRuleTag: async function(ruleId, tagToRemove) {
+        const rules = store.state.automations || [];
+        const rule = rules.find(r => r.id === ruleId);
+        const tags = (() => { try { return JSON.parse(rule?.tags || '[]'); } catch { return []; } })();
+        const updated = tags.filter(t => t !== tagToRemove);
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/automations/' + ruleId, { tags: updated });
+            rule.tags = JSON.stringify(updated);
+            store.setState({ automations: [...rules] });
+            toast.success('Tag removed');
+            handlers.showRuleTagEditor(ruleId, rule.name);
+        } catch (e) {
+            toast.error('Failed to remove tag');
+        }
+    },
+
+    filterByRuleTag: function(tag) {
+        store.setState({ automationTagFilter: tag || '' });
+        renderApp(pages.automations());
+    },
+
+    // --- Task #127: Supplier Management ---
+    loadSuppliers: async function() {
+        try {
+            const res = await api.get('/inventory/suppliers');
+            const data = res.data || res;
+            store.setState({ suppliers: data.suppliers || data || [] });
+            return data.suppliers || data || [];
+        } catch (e) {
+            toast.error('Failed to load suppliers');
+            return [];
+        }
+    },
+
+    showSupplierManager: async function() {
+        const suppliers = await handlers.loadSuppliers();
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('truck', 20)} Supplier Manager</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="new-supplier-name" class="form-input" placeholder="Supplier name" style="flex:1;">
+                    <input type="text" id="new-supplier-contact" class="form-input" placeholder="Contact email" style="flex:1;">
+                    <button class="btn btn-primary btn-sm" onclick="handlers.addSupplier()">
+                        ${components.icon('plus', 14)} Add
+                    </button>
+                </div>
+                <div id="supplier-list">
+                    ${suppliers.length === 0 ? '<p class="text-gray-500 text-sm text-center py-4">No suppliers yet</p>' :
+                    '<table class="table table-sm"><thead><tr><th>Name</th><th>Items</th><th>Avg Price</th><th>Actions</th></tr></thead><tbody>' +
+                    suppliers.map(s => '<tr><td class="font-semibold">' + escapeHtml(s.name) + '</td><td>' + (s.item_count || 0) + '</td><td>$' + (s.avg_price || 0).toFixed(2) + '</td><td><button class="btn btn-xs btn-danger" onclick="handlers.deleteSupplier(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/'/g, "\\'") + '\')">' + components.icon('trash', 12) + '</button></td></tr>').join('') +
+                    '</tbody></table>'}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Close</button>
+            </div>
+        `, 'modal-lg');
+    },
+
+    addSupplier: async function() {
+        const name = document.getElementById('new-supplier-name')?.value?.trim();
+        const contact = document.getElementById('new-supplier-contact')?.value?.trim();
+        if (!name) { toast.error('Supplier name is required'); return; }
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/inventory/suppliers', { name, contact_email: contact || undefined });
+            toast.success('Supplier added');
+            handlers.showSupplierManager();
+        } catch (e) {
+            toast.error('Failed to add supplier: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+    deleteSupplier: async function(id, name) {
+        if (!confirm('Delete supplier "' + name + '"?')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.delete('/inventory/suppliers/' + id);
+            toast.success('Supplier deleted');
+            handlers.showSupplierManager();
+        } catch (e) {
+            toast.error('Failed to delete supplier');
+        }
+    },
+
+    // --- Task #128: Duration Trends Chart ---
+    loadDurationTrends: async function() {
+        try {
+            const res = await api.get('/automations/duration-trends');
+            const data = res.data || res;
+            const trends = data.trends || [];
+            store.setState({ durationTrends: trends });
+            const el = document.getElementById('duration-trends-chart');
+            if (el) el.innerHTML = handlers._renderDurationTrendsChart(trends);
+        } catch (e) {
+            toast.error('Failed to load duration trends');
+        }
+    },
+
+    _renderDurationTrendsChart: function(trends) {
+        if (!trends || trends.length === 0) {
+            return '<p class="text-gray-500 text-sm text-center py-4">No duration data yet. Run some automations first.</p>';
+        }
+
+        // Group by rule name
+        const byName = {};
+        trends.forEach(t => {
+            if (!byName[t.name]) byName[t.name] = [];
+            byName[t.name].push(t);
+        });
+        const names = Object.keys(byName).slice(0, 6);
+        const colors = ['var(--primary-500)', 'var(--success)', 'var(--warning-500)', 'var(--error)', '#8b5cf6', '#ec4899'];
+
+        // Build SVG line chart per rule
+        const width = 600, height = 200, padL = 55, padR = 20, padT = 20, padB = 40;
+        const chartW = width - padL - padR;
+        const chartH = height - padT - padB;
+
+        // Collect all days across all rules
+        const allDays = [...new Set(trends.map(t => t.day))].sort();
+        const n = allDays.length;
+        if (n === 0) return '<p class="text-gray-500 text-sm text-center py-4">No data</p>';
+
+        const allDurations = trends.map(t => t.avg_duration || 0);
+        const maxDur = Math.max(...allDurations, 1);
+
+        function toX(i) { return padL + (i / Math.max(n - 1, 1)) * chartW; }
+        function toY(v) { return padT + chartH - (v / maxDur) * chartH; }
+
+        const gridLines = [0, 0.25, 0.5, 0.75, 1].map(pct => {
+            const y = padT + pct * chartH;
+            const val = maxDur - pct * maxDur;
+            return '<line x1="' + padL + '" y1="' + y + '" x2="' + (width - padR) + '" y2="' + y + '" stroke="var(--gray-200)" stroke-dasharray="4,4"/>' +
+                '<text x="' + (padL - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--gray-400)">' + Math.round(val) + 'ms</text>';
+        }).join('');
+
+        const xLabels = allDays.map((d, i) => '<text x="' + toX(i) + '" y="' + (height - 8) + '" text-anchor="middle" font-size="9" fill="var(--gray-500)">' + d.slice(5) + '</text>').join('');
+
+        const lines = names.map((name, ci) => {
+            const pts = byName[name];
+            const points = allDays.map((day, i) => {
+                const pt = pts.find(p => p.day === day);
+                return pt ? toX(i) + ',' + toY(pt.avg_duration || 0) : null;
+            }).filter(Boolean);
+            if (points.length < 2) return '';
+            return '<polyline points="' + points.join(' ') + '" fill="none" stroke="' + colors[ci % colors.length] + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        }).join('');
+
+        const legend = '<div class="flex flex-wrap gap-3 mb-2">' + names.map((name, ci) =>
+            '<span class="text-xs"><span style="display:inline-block;width:12px;height:3px;background:' + colors[ci % colors.length] + ';vertical-align:middle;margin-right:4px;border-radius:2px;"></span>' + escapeHtml(name) + '</span>'
+        ).join('') + '</div>';
+
+        return legend +
+            '<svg viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;">' +
+            gridLines + lines + xLabels + '</svg>';
+    },
+
+    // --- Task #129: Price Suggestions ---
+    loadPriceSuggestions: async function() {
+        try {
+            const res = await api.get('/analytics/price-suggestions');
+            const data = res.data || res;
+            store.setState({ priceSuggestions: data.suggestions || [] });
+            const el = document.getElementById('price-suggestions-content');
+            if (el) el.innerHTML = handlers._renderPriceSuggestions(data.suggestions || []);
+        } catch (e) {
+            toast.error('Failed to load price suggestions');
+        }
+    },
+
+    _renderPriceSuggestions: function(suggestions) {
+        if (!suggestions || suggestions.length === 0) {
+            return '<p class="text-gray-500 text-sm text-center py-4">No price suggestions — all items are well-priced or too new to evaluate.</p>';
+        }
+
+        return '<table class="table table-sm"><thead><tr><th>Item</th><th>Age</th><th>Current</th><th>Suggested</th><th>Change</th><th>Reason</th></tr></thead><tbody>' +
+            suggestions.slice(0, 20).map(s => {
+                const isDecrease = (s.price_change || 0) < 0;
+                const changeColor = isDecrease ? 'var(--error)' : 'var(--success)';
+                const changePrefix = isDecrease ? '' : '+';
+                return '<tr><td class="text-sm" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(s.title || '') + '</td>' +
+                    '<td>' + (s.days_old || 0) + 'd</td>' +
+                    '<td>$' + (s.current_price || 0).toFixed(2) + '</td>' +
+                    '<td style="font-weight:600;">$' + (s.suggested_price || 0).toFixed(2) + '</td>' +
+                    '<td style="color:' + changeColor + ';font-weight:600;">' + changePrefix + '$' + (s.price_change || 0).toFixed(2) + '</td>' +
+                    '<td class="text-xs text-gray-500">' + escapeHtml(s.reason || '') + '</td></tr>';
+            }).join('') +
+            '</tbody></table>' +
+            (suggestions.length > 20 ? '<p class="text-xs text-gray-400 mt-2">Showing 20 of ' + suggestions.length + ' suggestions</p>' : '');
     },
 
     _renderTemplateMarketplace: function(templates) {

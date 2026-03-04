@@ -1596,6 +1596,7 @@ Object.assign(pages, {
                     <button class="btn btn-ghost" onclick="handlers.showAutomationPerformance()" title="Compare rule performance">
                         ${components.icon('bar-chart', 16)} Performance
                     </button>
+                    ${store.state.automationTagFilter ? '<button class="btn btn-ghost" onclick="handlers.filterByRuleTag(\'\')" title="Clear tag filter" style="color:var(--primary-600);">' + components.icon('x', 16) + ' Tag: ' + escapeHtml(store.state.automationTagFilter) + '</button>' : ''}
                     <button class="btn btn-secondary" onclick="handlers.showAutomationHistory()">
                         ${components.icon('history', 16)} History
                     </button>
@@ -2020,10 +2021,13 @@ Object.assign(pages, {
                             const searchQ = (store.state.automationSearchQuery || '').toLowerCase();
                             const catFilter = store.state.automationCategoryFilter || 'all';
                             const platFilter = store.state.automationPlatformFilter || 'all';
+                            const tagFilter = store.state.automationTagFilter || '';
                             const matchesSearch = !searchQ || rule.name.toLowerCase().includes(searchQ) || rule.description.toLowerCase().includes(searchQ);
                             const matchesCat = catFilter === 'all' || rule.category === catFilter;
                             const matchesPlat = platFilter === 'all' || rule.platform === platFilter || rule.platform === 'all';
-                            return matchesSearch && matchesCat && matchesPlat;
+                            const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
+                            const matchesTag = !tagFilter || ruleTags.includes(tagFilter);
+                            return matchesSearch && matchesCat && matchesPlat && matchesTag;
                         }).sort((a, b) => {
                             const sortBy = store.state.automationSortBy || 'name_asc';
                             switch (sortBy) {
@@ -2047,6 +2051,10 @@ Object.assign(pages, {
                                         </div>
                                     </div>
                                     <div class="text-sm text-gray-500">${rule.description}</div>
+                                    ${(() => {
+                                        const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
+                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
+                                    })()}
                                     <div class="automation-card-stats">
                                         ${(() => {
                                             const ruleRuns = runHistory.filter(r => r.automation_name === rule.name || r.automation_id === rule.id || r.action === rule.name);
@@ -2096,6 +2104,9 @@ Object.assign(pages, {
                                     <button class="btn btn-ghost" onclick="handlers.showRuleVersionHistory('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Version History" style="padding: 10px;">
                                         ${components.icon('git-commit', 20)}
                                     </button>
+                                    <button class="btn btn-ghost" onclick="handlers.showRuleTagEditor('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Tags" style="padding: 10px;">
+                                        ${components.icon('tag', 20)}
+                                    </button>
                                     <button class="btn btn-ghost" onclick="handlers.cloneAutomationRule('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Clone Rule" style="padding: 10px;">
                                         ${components.icon('copy', 20)}
                                     </button>
@@ -2108,6 +2119,24 @@ Object.assign(pages, {
                                 </div>
                             </div>
                         `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Duration Trends Section -->
+            <div class="card mt-6">
+                <div class="card-header flex justify-between items-center">
+                    <div>
+                        <h3 class="card-title">${components.icon('trending-up', 18)} Run Duration Trends</h3>
+                        <p class="text-sm text-gray-500">Average execution time per rule over the last 30 days</p>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="handlers.loadDurationTrends()">
+                        ${components.icon('refresh-cw', 14)} Load
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="duration-trends-chart">
+                        ${store.state.durationTrends ? handlers._renderDurationTrendsChart(store.state.durationTrends) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to view execution time trends</p>'}
                     </div>
                 </div>
             </div>

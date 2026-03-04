@@ -819,5 +819,76 @@ export async function analyticsRouter(ctx) {
         }
     }
 
+    // GET /api/analytics/price-suggestions - Age-based price recommendations
+    if (method === 'GET' && path === '/price-suggestions') {
+        try {
+            const items = query.all(`
+                SELECT i.id, i.title, i.sku, i.category, i.brand, i.cost_price, i.list_price, i.status,
+                    CAST(julianday('now') - julianday(i.created_at) AS INTEGER) as days_old,
+                    (SELECT COUNT(*) FROM listings WHERE inventory_id = i.id) as listing_count
+                FROM inventory i
+                WHERE i.user_id = ? AND i.status = 'active'
+                    AND CAST(julianday('now') - julianday(i.created_at) AS INTEGER) >= 30
+                ORDER BY CAST(julianday('now') - julianday(i.created_at) AS INTEGER) DESC
+                LIMIT 50
+            `, [user.id]);
+
+            const sellThrough = query.all(`
+                SELECT category, COUNT(DISTINCT s.id) * 1.0 / NULLIF(COUNT(DISTINCT i.id), 0) as sell_rate,
+                    AVG(CASE WHEN s.id IS NOT NULL THEN julianday(s.created_at) - julianday(i.created_at) END) as avg_days
+                FROM inventory i LEFT JOIN sales s ON s.inventory_id = i.id
+                WHERE i.user_id = ? GROUP BY category
+            `, [user.id]);
+            const rateMap = {};
+            for (const s of sellThrough) rateMap[s.category] = { sell_rate: s.sell_rate || 0, avg_days: s.avg_days || 0 };
+
+            const suggestions = items.map(item => {
+                const catData = rateMap[item.category] || {};
+                const daysOld = item.days_old || 0;
+                const costPrice = item.cost_price || 0;
+                const listPrice = item.list_price || 0;
+                const margin = listPrice > 0 ? (listPrice - costPrice) / listPrice : 0;
+
+                let action = 'hold';
+                let suggestedPrice = listPrice;
+                let reason = '';
+
+                if (daysOld >= 90 && margin > 0.3) {
+                    action = 'price_down';
+                    suggestedPrice = Math.round((costPrice + (listPrice - costPrice) * 0.5) * 100) / 100;
+                    reason = '90+ days old with good margin — reduce 50% of profit margin';
+                } else if (daysOld >= 60 && margin > 0.2) {
+                    action = 'price_down';
+                    suggestedPrice = Math.round((costPrice + (listPrice - costPrice) * 0.7) * 100) / 100;
+                    reason = '60+ days old — reduce 30% of profit margin';
+                } else if (daysOld >= 30 && (catData.sell_rate || 0) < 0.2) {
+                    action = 'price_down';
+                    suggestedPrice = Math.round(listPrice * 0.9 * 100) / 100;
+                    reason = 'Low category sell-through (<20%) — suggest 10% reduction';
+                } else if (daysOld >= 30 && (catData.sell_rate || 0) > 0.6 && margin < 0.4) {
+                    action = 'price_up';
+                    suggestedPrice = Math.round(listPrice * 1.1 * 100) / 100;
+                    reason = 'High demand category (>60% sell-through) — room to increase 10%';
+                }
+
+                if (action === 'hold') reason = 'Pricing appears reasonable for current age and market';
+
+                return {
+                    ...item,
+                    action,
+                    suggested_price: suggestedPrice,
+                    price_change: suggestedPrice - listPrice,
+                    reason,
+                    category_sell_rate: Math.round((catData.sell_rate || 0) * 100)
+                };
+            }).filter(s => s.action !== 'hold');
+
+            return { status: 200, data: { suggestions, total: suggestions.length } };
+        } catch (error) {
+            logger.error('[Analytics] price suggestions error', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to generate price suggestions' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

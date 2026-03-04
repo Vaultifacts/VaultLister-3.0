@@ -436,6 +436,11 @@ export async function automationsRouter(ctx) {
             values.push(isEnabled ? 1 : 0);
         }
 
+        if (body.tags !== undefined) {
+            updates.push('tags = ?');
+            values.push(JSON.stringify(body.tags));
+        }
+
         if (updates.length > 0) {
             values.push(id, user.id);
             query.run(
@@ -1309,6 +1314,27 @@ export async function automationsRouter(ctx) {
         } catch (error) {
             logger.error('[Automations] install template failed', user?.id, { detail: error?.message });
             return { status: 500, data: { error: 'Failed to install template' } };
+        }
+    }
+
+    // GET /api/automations/duration-trends - Run duration trends by day
+    if (method === 'GET' && path === '/duration-trends') {
+        try {
+            const trends = query.all(`
+                SELECT date(started_at) as day,
+                    automation_name as name,
+                    AVG(duration_ms) as avg_duration,
+                    COUNT(*) as run_count,
+                    SUM(CASE WHEN status='success' THEN 1 ELSE 0 END) as successes
+                FROM automation_runs
+                WHERE user_id = ? AND started_at >= datetime('now', '-30 days') AND duration_ms IS NOT NULL
+                GROUP BY day, automation_name
+                ORDER BY day DESC
+            `, [user.id]);
+            return { status: 200, data: { trends } };
+        } catch (error) {
+            logger.error('[Automations] duration trends failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to fetch trends' } };
         }
     }
 
