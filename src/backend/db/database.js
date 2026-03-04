@@ -162,7 +162,14 @@ function runMigrations() {
             '084_add_missing_columns.sql',
             '085_add_missing_indexes.sql',
             '086_rum_metrics.sql',
-            '087_oauth_pkce.sql'
+            '087_oauth_pkce.sql',
+            '088_automation_experiments.sql',
+            '089_automation_templates.sql',
+            '090_automation_rule_versions.sql',
+            '091_inventory_categories.sql',
+            '092_inventory_cost_tracking.sql',
+            '093_automation_sort_order.sql',
+            '094_automation_rule_tags.sql'
         ];
 
         for (const migrationFile of migrationFiles) {
