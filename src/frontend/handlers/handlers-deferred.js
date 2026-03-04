@@ -26968,7 +26968,8 @@ Object.assign(handlers, {
         const margins = data.margins || [];
         const deadStock = data.deadStock || [];
         const maxBucket = Math.max(...agingBuckets.map(b => b.count), 1);
-        return '<div class="grid grid-cols-4 gap-4 mb-6"><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--primary-600);">' + (overall.sell_through_rate || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Sell-Through Rate</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--success);">' + (overall.avg_days_to_sell || 0).toFixed(0) + '</div><div class="text-xs text-gray-500">Avg Days to Sell</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--warning-600);">' + (overall.margin_pct || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Avg Margin</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:' + ((overall.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (overall.total_profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div><div class="text-xs text-gray-500">Total Profit</div></div></div></div>' +
+        return '<div class="flex justify-between items-center mb-4"><h3 class="text-lg font-semibold">' + components.icon('bar-chart-2', 20) + ' Inventory Analytics</h3><button class="btn btn-ghost btn-sm" onclick="handlers.showCategoryManager()">' + components.icon('folder', 14) + ' Manage Categories</button></div>' +
+            '<div class="grid grid-cols-4 gap-4 mb-6"><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--primary-600);">' + (overall.sell_through_rate || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Sell-Through Rate</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--success);">' + (overall.avg_days_to_sell || 0).toFixed(0) + '</div><div class="text-xs text-gray-500">Avg Days to Sell</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--warning-600);">' + (overall.margin_pct || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Avg Margin</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:' + ((overall.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (overall.total_profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div><div class="text-xs text-gray-500">Total Profit</div></div></div></div>' +
             '<div class="card mb-6"><div class="card-body"><div class="flex justify-between items-center mb-3"><h3 class="text-md font-semibold">' + components.icon('trending-up', 18) + ' Profit & Loss Timeline</h3><button class="btn btn-ghost btn-sm" onclick="handlers.loadPLTimeline()">' + components.icon('refresh-cw', 14) + ' Load</button></div><div id="pl-timeline-chart">' + (store.state.plTimeline ? handlers._renderPLChart(store.state.plTimeline) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to fetch monthly P&L data</p>') + '</div></div></div>' +
             '<div class="card mb-6"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('clock', 18) + ' Inventory Aging</h3><div class="flex gap-3 items-end" style="height:120px;">' + agingBuckets.map(b => { const pct = (b.count / maxBucket * 100); const color = b.min >= 91 ? 'var(--error)' : b.min >= 61 ? 'var(--warning-600)' : b.min >= 31 ? 'var(--warning-400)' : 'var(--success)'; return '<div style="flex:1;text-align:center;"><div style="background:' + color + ';height:' + Math.max(pct, 4) + '%;border-radius:4px 4px 0 0;margin:0 2px;position:relative;"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600;">' + b.count + '</span></div><div style="font-size:10px;color:var(--gray-500);margin-top:4px;">' + b.label + '</div><div style="font-size:9px;color:var(--gray-400);">$' + Math.round(b.value).toLocaleString() + '</div></div>'; }).join('') + '</div></div></div>' +
             '<div class="grid grid-cols-2 gap-4 mb-6"><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('trending-up', 18) + ' Sell-Through by Category</h3>' + (sellThrough.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Total</th><th>Sold</th><th>Rate</th><th>Avg Days</th></tr></thead><tbody>' + sellThrough.map(s => '<tr><td>' + escapeHtml(s.category || 'Uncategorized') + '</td><td>' + s.total + '</td><td>' + s.sold + '</td><td style="color:' + (s.sell_rate >= 50 ? 'var(--success)' : s.sell_rate >= 25 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (s.sell_rate || 0).toFixed(1) + '%</td><td>' + (s.avg_days_to_sell ? s.avg_days_to_sell.toFixed(0) + 'd' : '—') + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No data yet</p>') + '</div></div><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Margin by Category</h3>' + (margins.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Sold</th><th>Avg Sale</th><th>Margin</th><th>Profit</th></tr></thead><tbody>' + margins.map(m => '<tr><td>' + escapeHtml(m.category || 'Uncategorized') + '</td><td>' + m.sold_count + '</td><td>$' + (m.avg_sale_price || 0).toFixed(0) + '</td><td style="color:' + ((m.margin_pct || 0) >= 30 ? 'var(--success)' : (m.margin_pct || 0) >= 15 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (m.margin_pct || 0).toFixed(1) + '%</td><td style="color:' + ((m.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (m.total_profit || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No sales data yet</p>') + '</div></div></div>' +
@@ -27202,6 +27203,141 @@ Object.assign(handlers, {
             toast.success('Installed "' + templateName + '"');
             handlers.loadTemplateMarketplace();
         } catch (e) { toast.error('Failed to install template'); }
+    },
+
+    // Rule versioning
+    showRuleVersionHistory: async function(ruleId, ruleName) {
+        try {
+            const res = await api.get('/automations/' + ruleId + '/versions');
+            const data = res.data || res;
+            const versions = data.versions || [];
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${components.icon('git-commit', 20)} Version History — ${escapeHtml(ruleName)}</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body" style="max-height:65vh;overflow-y:auto;">
+                    ${versions.length === 0 ? '<p class="text-gray-500 text-sm text-center py-4">No version history yet. Changes are tracked automatically when you edit rules.</p>' :
+                    '<table class="table table-sm"><thead><tr><th>Ver</th><th>Name</th><th>Platform</th><th>Changes</th><th>Date</th><th></th></tr></thead><tbody>' +
+                    versions.map(v => '<tr><td><span class="badge badge-sm">v' + v.version + '</span></td>' +
+                        '<td>' + escapeHtml(v.name) + '</td>' +
+                        '<td>' + escapeHtml(v.platform || 'all') + '</td>' +
+                        '<td class="text-xs text-gray-500">' + escapeHtml(v.change_summary || '') + '</td>' +
+                        '<td class="text-xs text-gray-400">' + (v.created_at ? new Date(v.created_at).toLocaleString() : '—') + '</td>' +
+                        '<td><button class="btn btn-xs btn-ghost" onclick="handlers.rollbackRule(\'' + ruleId + '\', \'' + v.id + '\', ' + v.version + ')" title="Rollback to this version">' +
+                        components.icon('rotate-ccw', 12) + ' Rollback</button></td></tr>').join('') +
+                    '</tbody></table>'}
+                </div>
+            `, 'modal-lg');
+        } catch (e) {
+            toast.error('Failed to load version history');
+        }
+    },
+
+    rollbackRule: async function(ruleId, versionId, versionNum) {
+        if (!confirm('Rollback this rule to version ' + versionNum + '? Current settings will be saved as a new version.')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/' + ruleId + '/rollback', { versionId });
+            toast.success('Rolled back to version ' + versionNum);
+            modals.close();
+        } catch (e) {
+            toast.error('Rollback failed: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+    // Inventory category management
+    loadCategories: async function() {
+        try {
+            const res = await api.get('/inventory/categories');
+            const data = res.data || res;
+            store.setState({ inventoryCategories: data.categories || [] });
+            return data.categories || [];
+        } catch (e) {
+            toast.error('Failed to load categories');
+            return [];
+        }
+    },
+
+    showCategoryManager: async function() {
+        const categories = await handlers.loadCategories();
+        const renderList = (cats) => {
+            if (!cats || cats.length === 0) return '<p class="text-gray-500 text-sm text-center py-4">No categories yet. Add one below.</p>';
+            return '<div class="flex flex-col gap-2">' + cats.map(c =>
+                '<div class="flex items-center gap-3 p-2" style="border:1px solid var(--border);border-radius:var(--radius-sm);border-left:4px solid ' + (c.color || '#6366f1') + ';">' +
+                '<div class="flex-1"><span class="font-semibold text-sm">' + escapeHtml(c.name) + '</span>' +
+                '<span class="text-xs text-gray-400 ml-2">' + (c.item_count || 0) + ' items</span></div>' +
+                '<input type="color" value="' + (c.color || '#6366f1') + '" onchange="handlers.updateCategory(\'' + c.id + '\', { color: this.value })" style="width:28px;height:28px;border:none;cursor:pointer;" title="Change color">' +
+                '<button class="btn btn-xs btn-ghost" onclick="handlers.renameCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/'/g, "\\'") + '\')" title="Rename">' + components.icon('edit-2', 12) + '</button>' +
+                '<button class="btn btn-xs btn-ghost" style="color:var(--error);" onclick="handlers.deleteCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/'/g, "\\'") + '\')" title="Delete">' + components.icon('trash-2', 12) + '</button></div>'
+            ).join('') + '</div>';
+        };
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('folder', 20)} Manage Categories</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div id="category-list">${renderList(categories)}</div>
+                <div class="flex gap-2 mt-4">
+                    <input type="text" id="new-cat-name" class="form-input flex-1" placeholder="New category name...">
+                    <input type="color" id="new-cat-color" value="#6366f1" style="width:40px;height:38px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;">
+                    <button class="btn btn-primary" onclick="handlers.createCategory()">
+                        ${components.icon('plus', 14)} Add
+                    </button>
+                </div>
+            </div>
+        `);
+    },
+
+    createCategory: async function() {
+        const name = document.getElementById('new-cat-name')?.value?.trim();
+        const color = document.getElementById('new-cat-color')?.value;
+        if (!name) { toast.error('Enter a category name'); return; }
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/inventory/categories', { name, color });
+            toast.success('Category "' + name + '" created');
+            handlers.showCategoryManager();
+        } catch (e) {
+            toast.error(e.message || 'Failed to create category');
+        }
+    },
+
+    updateCategory: async function(catId, updates) {
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/inventory/categories/' + catId, updates);
+            toast.success('Category updated');
+        } catch (e) {
+            toast.error('Failed to update category');
+        }
+    },
+
+    renameCategory: async function(catId, currentName) {
+        const newName = prompt('Rename category:', currentName);
+        if (!newName || newName.trim() === currentName) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/inventory/categories/' + catId, { name: newName.trim() });
+            toast.success('Category renamed — inventory items updated');
+            handlers.showCategoryManager();
+        } catch (e) {
+            toast.error('Failed to rename category');
+        }
+    },
+
+    deleteCategory: async function(catId, catName) {
+        if (!confirm('Delete "' + catName + '"? Items in this category will become uncategorized.')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.del('/inventory/categories/' + catId);
+            toast.success('Category "' + catName + '" deleted');
+            handlers.showCategoryManager();
+        } catch (e) {
+            toast.error('Failed to delete category');
+        }
     },
 
     _renderTemplateMarketplace: function(templates) {

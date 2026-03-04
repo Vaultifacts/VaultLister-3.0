@@ -119,6 +119,12 @@ export async function refreshExpiringTokens() {
         } catch (healthErr) {
             logger.error('[TokenRefresh] Health alert check failed:', healthErr.message);
         }
+        // Inventory forecast alerts check
+        try {
+            await checkInventoryForecastAlerts();
+        } catch (forecastErr) {
+            logger.error('[TokenRefresh] Forecast alert check failed:', forecastErr.message);
+        }
     } catch (error) {
         logger.error('[TokenRefresh] Error in refresh cycle:', error);
     } finally {
@@ -195,6 +201,71 @@ async function checkPlatformHealthAlerts() {
                 } catch (_) { /* notification service not available */ }
             }
         }
+    }
+}
+
+/**
+ * Check inventory forecast and alert users when categories have critical/low stock
+ */
+async function checkInventoryForecastAlerts() {
+    const users = query.all('SELECT DISTINCT user_id FROM inventory WHERE status = ?', ['active']);
+
+    for (const { user_id } of users) {
+        const velocity = query.all(`
+            SELECT i.category,
+                COUNT(DISTINCT i.id) as total_items,
+                COUNT(DISTINCT s.id) as sold_items,
+                COUNT(DISTINCT CASE WHEN i.status = 'active' THEN i.id END) as active_count
+            FROM inventory i
+            LEFT JOIN sales s ON s.inventory_id = i.id AND s.created_at >= datetime('now', '-90 days')
+            WHERE i.user_id = ?
+            GROUP BY i.category
+            HAVING active_count > 0
+        `, [user_id]);
+
+        const alerts = [];
+        for (const v of velocity) {
+            const monthlyVelocity = (v.sold_items || 0) / 3;
+            if (monthlyVelocity <= 0) continue;
+            const daysOfSupply = Math.round(v.active_count / monthlyVelocity * 30);
+            if (daysOfSupply < 14) {
+                alerts.push({ category: v.category || 'Uncategorized', daysOfSupply, active: v.active_count, health: 'critical' });
+            } else if (daysOfSupply < 30) {
+                alerts.push({ category: v.category || 'Uncategorized', daysOfSupply, active: v.active_count, health: 'low' });
+            }
+        }
+
+        if (alerts.length === 0) continue;
+
+        // 6-hour dedup
+        const recentAlert = query.get(
+            `SELECT id FROM notifications WHERE user_id = ? AND type = 'inventory_forecast' AND created_at >= datetime('now', '-6 hours')`,
+            [user_id]
+        );
+        if (recentAlert) continue;
+
+        const criticalCount = alerts.filter(a => a.health === 'critical').length;
+        const lowCount = alerts.filter(a => a.health === 'low').length;
+        const title = criticalCount > 0
+            ? `${criticalCount} categor${criticalCount === 1 ? 'y' : 'ies'} critically low on stock`
+            : `${lowCount} categor${lowCount === 1 ? 'y' : 'ies'} running low`;
+        const message = alerts.map(a => `${a.category}: ${a.daysOfSupply}d supply (${a.active} items)`).join('; ');
+
+        try {
+            const { createNotification } = await import('./notificationService.js');
+            createNotification(user_id, {
+                type: 'inventory_forecast',
+                title,
+                message,
+                data: JSON.stringify({ alerts })
+            });
+
+            const { websocketService } = await import('./websocket.js');
+            websocketService.sendToUser(user_id, {
+                type: 'notification',
+                notification: { type: 'inventory_forecast', title, message, data: { alerts } }
+            });
+        } catch (_) { /* notification service not available */ }
     }
 }
 

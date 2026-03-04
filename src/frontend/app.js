@@ -20375,6 +20375,12 @@ const pages = {
                                     <button class="btn btn-ghost" onclick="handlers.configureAutomation('${rule.id}', '${escapeHtml(rule.name)}', '${escapeHtml(rule.description)}', '${rule.platform}', '${rule.category}')" title="Configure" style="padding: 10px;">
                                         ${components.icon('settings', 20)}
                                     </button>
+                                    <button class="btn btn-ghost" onclick="handlers.shareAutomationAsTemplate('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Share as Template" style="padding: 10px;">
+                                        ${components.icon('share-2', 20)}
+                                    </button>
+                                    <button class="btn btn-ghost" onclick="handlers.showRuleVersionHistory('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Version History" style="padding: 10px;">
+                                        ${components.icon('git-commit', 20)}
+                                    </button>
                                     <label class="switch switch-lg switch-success" style="transform: scale(1.3);">
                                         <input type="checkbox" class="switch-input" ${rule.is_enabled ? 'checked' : ''}
                                             onchange="handlers.toggleAutomationPreset('${rule.id}', '${rule.name}', this.checked, ${rule.exists})">
@@ -58276,6 +58282,141 @@ const handlers = {
             toast.success('Installed "' + templateName + '"');
             handlers.loadTemplateMarketplace();
         } catch (e) { toast.error('Failed to install template'); }
+    },
+
+    // Rule versioning
+    showRuleVersionHistory: async function(ruleId, ruleName) {
+        try {
+            const res = await api.get('/automations/' + ruleId + '/versions');
+            const data = res.data || res;
+            const versions = data.versions || [];
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${components.icon('git-commit', 20)} Version History — ${escapeHtml(ruleName)}</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body" style="max-height:65vh;overflow-y:auto;">
+                    ${versions.length === 0 ? '<p class="text-gray-500 text-sm text-center py-4">No version history yet. Changes are tracked automatically when you edit rules.</p>' :
+                    '<table class="table table-sm"><thead><tr><th>Ver</th><th>Name</th><th>Platform</th><th>Changes</th><th>Date</th><th></th></tr></thead><tbody>' +
+                    versions.map(v => '<tr><td><span class="badge badge-sm">v' + v.version + '</span></td>' +
+                        '<td>' + escapeHtml(v.name) + '</td>' +
+                        '<td>' + escapeHtml(v.platform || 'all') + '</td>' +
+                        '<td class="text-xs text-gray-500">' + escapeHtml(v.change_summary || '') + '</td>' +
+                        '<td class="text-xs text-gray-400">' + (v.created_at ? new Date(v.created_at).toLocaleString() : '—') + '</td>' +
+                        '<td><button class="btn btn-xs btn-ghost" onclick="handlers.rollbackRule(\'' + ruleId + '\', \'' + v.id + '\', ' + v.version + ')" title="Rollback to this version">' +
+                        components.icon('rotate-ccw', 12) + ' Rollback</button></td></tr>').join('') +
+                    '</tbody></table>'}
+                </div>
+            `, 'modal-lg');
+        } catch (e) {
+            toast.error('Failed to load version history');
+        }
+    },
+
+    rollbackRule: async function(ruleId, versionId, versionNum) {
+        if (!confirm('Rollback this rule to version ' + versionNum + '? Current settings will be saved as a new version.')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/' + ruleId + '/rollback', { versionId });
+            toast.success('Rolled back to version ' + versionNum);
+            modals.close();
+        } catch (e) {
+            toast.error('Rollback failed: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+    // Inventory category management
+    loadCategories: async function() {
+        try {
+            const res = await api.get('/inventory/categories');
+            const data = res.data || res;
+            store.setState({ inventoryCategories: data.categories || [] });
+            return data.categories || [];
+        } catch (e) {
+            toast.error('Failed to load categories');
+            return [];
+        }
+    },
+
+    showCategoryManager: async function() {
+        const categories = await handlers.loadCategories();
+        const renderList = (cats) => {
+            if (!cats || cats.length === 0) return '<p class="text-gray-500 text-sm text-center py-4">No categories yet. Add one below.</p>';
+            return '<div class="flex flex-col gap-2">' + cats.map(c =>
+                '<div class="flex items-center gap-3 p-2" style="border:1px solid var(--border);border-radius:var(--radius-sm);border-left:4px solid ' + (c.color || '#6366f1') + ';">' +
+                '<div class="flex-1"><span class="font-semibold text-sm">' + escapeHtml(c.name) + '</span>' +
+                '<span class="text-xs text-gray-400 ml-2">' + (c.item_count || 0) + ' items</span></div>' +
+                '<input type="color" value="' + (c.color || '#6366f1') + '" onchange="handlers.updateCategory(\'' + c.id + '\', { color: this.value })" style="width:28px;height:28px;border:none;cursor:pointer;" title="Change color">' +
+                '<button class="btn btn-xs btn-ghost" onclick="handlers.renameCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/'/g, "\\'") + '\')" title="Rename">' + components.icon('edit-2', 12) + '</button>' +
+                '<button class="btn btn-xs btn-ghost" style="color:var(--error);" onclick="handlers.deleteCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/'/g, "\\'") + '\')" title="Delete">' + components.icon('trash-2', 12) + '</button></div>'
+            ).join('') + '</div>';
+        };
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('folder', 20)} Manage Categories</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div id="category-list">${renderList(categories)}</div>
+                <div class="flex gap-2 mt-4">
+                    <input type="text" id="new-cat-name" class="form-input flex-1" placeholder="New category name...">
+                    <input type="color" id="new-cat-color" value="#6366f1" style="width:40px;height:38px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;">
+                    <button class="btn btn-primary" onclick="handlers.createCategory()">
+                        ${components.icon('plus', 14)} Add
+                    </button>
+                </div>
+            </div>
+        `);
+    },
+
+    createCategory: async function() {
+        const name = document.getElementById('new-cat-name')?.value?.trim();
+        const color = document.getElementById('new-cat-color')?.value;
+        if (!name) { toast.error('Enter a category name'); return; }
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/inventory/categories', { name, color });
+            toast.success('Category "' + name + '" created');
+            handlers.showCategoryManager();
+        } catch (e) {
+            toast.error(e.message || 'Failed to create category');
+        }
+    },
+
+    updateCategory: async function(catId, updates) {
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/inventory/categories/' + catId, updates);
+            toast.success('Category updated');
+        } catch (e) {
+            toast.error('Failed to update category');
+        }
+    },
+
+    renameCategory: async function(catId, currentName) {
+        const newName = prompt('Rename category:', currentName);
+        if (!newName || newName.trim() === currentName) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/inventory/categories/' + catId, { name: newName.trim() });
+            toast.success('Category renamed — inventory items updated');
+            handlers.showCategoryManager();
+        } catch (e) {
+            toast.error('Failed to rename category');
+        }
+    },
+
+    deleteCategory: async function(catId, catName) {
+        if (!confirm('Delete "' + catName + '"? Items in this category will become uncategorized.')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.del('/inventory/categories/' + catId);
+            toast.success('Category "' + catName + '" deleted');
+            handlers.showCategoryManager();
+        } catch (e) {
+            toast.error('Failed to delete category');
+        }
     },
 
     _renderTemplateMarketplace: function(templates) {

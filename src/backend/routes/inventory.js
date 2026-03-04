@@ -899,5 +899,66 @@ export async function inventoryRouter(ctx) {
         };
     }
 
+    // ============================================
+    // Category Management
+    // ============================================
+
+    // GET /api/inventory/categories - List user categories
+    if (method === 'GET' && path === '/categories') {
+        const categories = query.all('SELECT * FROM inventory_categories WHERE user_id = ? ORDER BY sort_order, name', [user.id]);
+        // Also get counts per category from inventory
+        const counts = query.all(`SELECT category, COUNT(*) as count FROM inventory WHERE user_id = ? AND status = 'active' GROUP BY category`, [user.id]);
+        const countMap = {};
+        for (const c of counts) countMap[c.category || 'Uncategorized'] = c.count;
+        for (const cat of categories) cat.item_count = countMap[cat.name] || 0;
+        return { status: 200, data: { categories } };
+    }
+
+    // POST /api/inventory/categories - Create category
+    if (method === 'POST' && path === '/categories') {
+        const { name, color } = body;
+        if (!name || !name.trim()) return { status: 400, data: { error: 'Category name required' } };
+        const existing = query.get('SELECT id FROM inventory_categories WHERE user_id = ? AND name = ?', [user.id, name.trim()]);
+        if (existing) return { status: 409, data: { error: 'Category already exists' } };
+        const maxOrder = query.get('SELECT MAX(sort_order) as m FROM inventory_categories WHERE user_id = ?', [user.id]);
+        const id = uuidv4();
+        query.run('INSERT INTO inventory_categories (id, user_id, name, color, sort_order) VALUES (?, ?, ?, ?, ?)',
+            [id, user.id, name.trim(), color || '#6366f1', (maxOrder?.m || 0) + 1]);
+        return { status: 201, data: { category: { id, name: name.trim(), color: color || '#6366f1' } } };
+    }
+
+    // PUT /api/inventory/categories/:id - Update category
+    if (method === 'PUT' && path.match(/^\/categories\/[a-f0-9-]+$/)) {
+        const catId = path.split('/')[2];
+        const cat = query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
+        if (!cat) return { status: 404, data: { error: 'Category not found' } };
+        const { name, color, sort_order } = body;
+        const updates = [];
+        const vals = [];
+        if (name !== undefined) { updates.push('name = ?'); vals.push(name.trim()); }
+        if (color !== undefined) { updates.push('color = ?'); vals.push(color); }
+        if (sort_order !== undefined) { updates.push('sort_order = ?'); vals.push(sort_order); }
+        if (updates.length > 0) {
+            vals.push(catId);
+            query.run(`UPDATE inventory_categories SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, vals);
+            // If name changed, update inventory items
+            if (name !== undefined && name.trim() !== cat.name) {
+                query.run('UPDATE inventory SET category = ? WHERE user_id = ? AND category = ?', [name.trim(), user.id, cat.name]);
+            }
+        }
+        return { status: 200, data: { message: 'Category updated' } };
+    }
+
+    // DELETE /api/inventory/categories/:id - Delete category
+    if (method === 'DELETE' && path.match(/^\/categories\/[a-f0-9-]+$/)) {
+        const catId = path.split('/')[2];
+        const cat = query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
+        if (!cat) return { status: 404, data: { error: 'Category not found' } };
+        query.run('DELETE FROM inventory_categories WHERE id = ?', [catId]);
+        // Clear category on items (set to null)
+        query.run('UPDATE inventory SET category = NULL WHERE user_id = ? AND category = ?', [user.id, cat.name]);
+        return { status: 200, data: { message: 'Category deleted' } };
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

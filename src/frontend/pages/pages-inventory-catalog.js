@@ -2155,6 +2155,12 @@ Object.assign(pages, {
                                     <button class="btn btn-ghost" onclick="handlers.configureAutomation('${rule.id}', '${escapeHtml(rule.name)}', '${escapeHtml(rule.description)}', '${rule.platform}', '${rule.category}')" title="Configure" style="padding: 10px;">
                                         ${components.icon('settings', 20)}
                                     </button>
+                                    <button class="btn btn-ghost" onclick="handlers.shareAutomationAsTemplate('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Share as Template" style="padding: 10px;">
+                                        ${components.icon('share-2', 20)}
+                                    </button>
+                                    <button class="btn btn-ghost" onclick="handlers.showRuleVersionHistory('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Version History" style="padding: 10px;">
+                                        ${components.icon('git-commit', 20)}
+                                    </button>
                                     <label class="switch switch-lg switch-success" style="transform: scale(1.3);">
                                         <input type="checkbox" class="switch-input" ${rule.is_enabled ? 'checked' : ''}
                                             onchange="handlers.toggleAutomationPreset('${rule.id}', '${rule.name}', this.checked, ${rule.exists})">

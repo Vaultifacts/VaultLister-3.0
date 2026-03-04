@@ -376,6 +376,26 @@ export async function automationsRouter(ctx) {
 
         const { name, platform, schedule, conditions, actions, isEnabled } = body;
 
+        // Save version snapshot before update
+        try {
+            const maxVer = query.get('SELECT MAX(version) as v FROM automation_rule_versions WHERE rule_id = ?', [id]);
+            const nextVersion = (maxVer?.v || 0) + 1;
+            const changes = [];
+            if (name !== undefined && name !== existing.name) changes.push('name');
+            if (platform !== undefined && platform !== existing.platform) changes.push('platform');
+            if (schedule !== undefined && schedule !== existing.schedule) changes.push('schedule');
+            if (conditions !== undefined) changes.push('conditions');
+            if (actions !== undefined) changes.push('actions');
+            if (changes.length > 0) {
+                query.run(`INSERT INTO automation_rule_versions (id, rule_id, user_id, version, name, type, platform, schedule, conditions, actions, change_summary)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [uuidv4(), id, user.id, nextVersion, existing.name, existing.type, existing.platform, existing.schedule,
+                     existing.conditions, existing.actions, 'Changed: ' + changes.join(', ')]);
+            }
+        } catch (vErr) {
+            logger.warn('[Automations] version snapshot failed', { detail: vErr?.message });
+        }
+
         const updates = [];
         const values = [];
 
@@ -1272,6 +1292,52 @@ export async function automationsRouter(ctx) {
         } catch (error) {
             logger.error('[Automations] install template failed', user?.id, { detail: error?.message });
             return { status: 500, data: { error: 'Failed to install template' } };
+        }
+    }
+
+    // GET /api/automations/:id/versions - Get version history for a rule
+    if (method === 'GET' && path.match(/^\/[a-f0-9-]+\/versions$/)) {
+        const ruleId = path.split('/')[1];
+        try {
+            const rule = query.get('SELECT id FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+            if (!rule) return { status: 404, data: { error: 'Rule not found' } };
+            const versions = query.all('SELECT * FROM automation_rule_versions WHERE rule_id = ? ORDER BY version DESC LIMIT 50', [ruleId]);
+            for (const v of versions) {
+                try { v.conditions = JSON.parse(v.conditions); } catch { }
+                try { v.actions = JSON.parse(v.actions); } catch { }
+            }
+            return { status: 200, data: { versions } };
+        } catch (error) {
+            logger.error('[Automations] fetch versions failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to fetch versions' } };
+        }
+    }
+
+    // POST /api/automations/:id/rollback - Rollback to a specific version
+    if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/rollback$/)) {
+        const ruleId = path.split('/')[1];
+        const { versionId } = body;
+        if (!versionId) return { status: 400, data: { error: 'versionId required' } };
+        try {
+            const rule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+            if (!rule) return { status: 404, data: { error: 'Rule not found' } };
+            const ver = query.get('SELECT * FROM automation_rule_versions WHERE id = ? AND rule_id = ?', [versionId, ruleId]);
+            if (!ver) return { status: 404, data: { error: 'Version not found' } };
+
+            // Save current state as a new version before rollback
+            const maxVer = query.get('SELECT MAX(version) as v FROM automation_rule_versions WHERE rule_id = ?', [ruleId]);
+            query.run(`INSERT INTO automation_rule_versions (id, rule_id, user_id, version, name, type, platform, schedule, conditions, actions, change_summary)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [uuidv4(), ruleId, user.id, (maxVer?.v || 0) + 1, rule.name, rule.type, rule.platform, rule.schedule, rule.conditions, rule.actions, 'Pre-rollback snapshot']);
+
+            // Apply the old version
+            query.run(`UPDATE automation_rules SET name = ?, platform = ?, schedule = ?, conditions = ?, actions = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                [ver.name, ver.platform, ver.schedule, ver.conditions, ver.actions, ruleId]);
+
+            return { status: 200, data: { message: 'Rolled back to version ' + ver.version } };
+        } catch (error) {
+            logger.error('[Automations] rollback failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to rollback' } };
         }
     }
 
