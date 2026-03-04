@@ -337,7 +337,7 @@ export async function inventoryRouter(ctx) {
             sku, title, description, brand, category, subcategory,
             size, color, condition, costPrice, listPrice, quantity,
             lowStockThreshold, weight, dimensions, material, tags, images, location, binLocation, notes,
-            customFields
+            customFields, purchaseDate, supplier
         } = validation.sanitized;
 
         // Validate condition enum
@@ -413,13 +413,14 @@ export async function inventoryRouter(ctx) {
                 id, user_id, sku, title, description, brand, category, subcategory,
                 size, color, condition, cost_price, list_price, quantity, low_stock_threshold,
                 weight, dimensions, material, tags, images, location, bin_location, notes,
-                blockchain_hash, sustainability_score, custom_fields
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                blockchain_hash, sustainability_score, custom_fields, purchase_date, supplier
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             id, user.id, finalSku, title, description || null, brand || null, category || null, subcategory || null,
             size || null, color || null, condition || 'good', costPrice || 0, listPrice, qty, lowStockThreshold || 5,
             weight || null, dimensions || null, material || null, JSON.stringify(tags || []), JSON.stringify(images || []),
-            location || null, binLocation || null, notes || null, blockchainHash, JSON.stringify(sustainabilityScore || {}), JSON.stringify(customFields || {})
+            location || null, binLocation || null, notes || null, blockchainHash, JSON.stringify(sustainabilityScore || {}), JSON.stringify(customFields || {}),
+            purchaseDate || null, supplier || null
         ]);
 
         // Log sustainability impact
@@ -482,7 +483,7 @@ export async function inventoryRouter(ctx) {
             sku, title, description, brand, category, subcategory,
             size, color, condition, costPrice, listPrice, quantity,
             lowStockThreshold, weight, dimensions, material, tags, images, thumbnailUrl,
-            status, location, binLocation, notes, customFields
+            status, location, binLocation, notes, customFields, purchaseDate, supplier
         } = validation.sanitized;
 
         // Validate condition enum
@@ -517,7 +518,8 @@ export async function inventoryRouter(ctx) {
             sku, title, description, brand, category, subcategory,
             size, color, condition, cost_price: costPrice, list_price: listPrice,
             quantity, low_stock_threshold: lowStockThreshold, weight, dimensions, material, thumbnail_url: thumbnailUrl,
-            status, location, bin_location: binLocation, notes
+            status, location, bin_location: binLocation, notes,
+            purchase_date: purchaseDate, supplier
         };
 
         for (const [key, value] of Object.entries(fields)) {

@@ -1590,6 +1590,9 @@ Object.assign(pages, {
                     <button class="btn btn-ghost" onclick="handlers.exportAutomationHistoryCSV()" title="Export run history to CSV">
                         ${components.icon('file-text', 16)} CSV
                     </button>
+                    <button class="btn btn-ghost" onclick="handlers.showScheduleCalendar()" title="Schedule calendar view">
+                        ${components.icon('calendar', 16)} Calendar
+                    </button>
                     <button class="btn btn-ghost" onclick="handlers.showAutomationPerformance()" title="Compare rule performance">
                         ${components.icon('bar-chart', 16)} Performance
                     </button>
@@ -2031,10 +2034,11 @@ Object.assign(pages, {
                                 default: return a.name.localeCompare(b.name);
                             }
                         }).map(rule => `
-                            <div class="automation-card" draggable="true">
+                            <div class="automation-card" draggable="true" style="${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'outline: 2px solid var(--primary-500); outline-offset: -2px;' : ''}" ondragstart="handlers.onRuleDragStart(event, '${rule.id}')" ondragend="handlers.onRuleDragEnd(event)" ondragover="handlers.onRuleDragOver(event)" ondragleave="handlers.onRuleDragLeave(event)" ondrop="handlers.onRuleDrop(event, '${rule.id}')">
                                 <div class="automation-card-content">
                                     <div class="automation-card-header">
                                         <div class="automation-card-title">
+                                            <input type="checkbox" ${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'checked' : ''} onchange="handlers.toggleAutomationSelect('${rule.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-right:4px;">
                                             ${components.platformBadge(rule.platform)}
                                             <span>${rule.name}</span>
                                         </div>

@@ -214,7 +214,7 @@ export function validateInventoryData(data, isUpdate = false) {
     const passThrough = [
         'sku', 'size', 'color', 'condition', 'costPrice', 'listPrice',
         'quantity', 'weight', 'dimensions', 'material', 'tags', 'images',
-        'thumbnailUrl', 'status', 'customFields'
+        'thumbnailUrl', 'status', 'customFields', 'purchaseDate', 'supplier'
     ];
 
     passThrough.forEach(field => {

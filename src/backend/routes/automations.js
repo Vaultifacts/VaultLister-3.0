@@ -1312,6 +1312,21 @@ export async function automationsRouter(ctx) {
         }
     }
 
+    // POST /api/automations/reorder - Update sort order for rules
+    if (method === 'POST' && path === '/reorder') {
+        const { order } = body;
+        if (!Array.isArray(order)) return { status: 400, data: { error: 'order array required' } };
+        try {
+            for (let i = 0; i < order.length; i++) {
+                query.run('UPDATE automation_rules SET sort_order = ? WHERE id = ? AND user_id = ?', [i, order[i], user.id]);
+            }
+            return { status: 200, data: { message: 'Order updated', count: order.length } };
+        } catch (error) {
+            logger.error('[Automations] reorder failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to reorder' } };
+        }
+    }
+
     // GET /api/automations/:id/versions - Get version history for a rule
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+\/versions$/)) {
         const ruleId = path.split('/')[1];

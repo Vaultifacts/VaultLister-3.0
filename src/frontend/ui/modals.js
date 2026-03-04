@@ -389,6 +389,16 @@ const modals = {
                             <input type="number" class="form-input" name="listPrice" step="0.01" min="0" required id="base-list-price" oninput="handlers.syncPlatformPrices(this.value)">
                         </div>
                     </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Purchase Date</label>
+                            <input type="date" class="form-input" name="purchaseDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Supplier</label>
+                            <input type="text" class="form-input" name="supplier" placeholder="e.g., Goodwill, Estate Sale">
+                        </div>
+                    </div>
 
                     <!-- Platform-Specific Pricing -->
                     <div class="form-group">

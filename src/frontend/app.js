@@ -19980,6 +19980,9 @@ const pages = {
                     <button class="btn btn-ghost" onclick="handlers.showImportAutomationRules()" title="Import rules from JSON">
                         ${components.icon('upload', 16)} Import
                     </button>
+                    <button class="btn btn-ghost" onclick="handlers.showScheduleCalendar()" title="Schedule calendar view">
+                        ${components.icon('calendar', 16)} Calendar
+                    </button>
                     <button class="btn btn-ghost" onclick="handlers.showAutomationPerformance()" title="Compare rule performance">
                         ${components.icon('bar-chart', 16)} Performance
                     </button>
@@ -20341,10 +20344,11 @@ const pages = {
                                 default: return a.name.localeCompare(b.name);
                             }
                         }).map(rule => `
-                            <div class="automation-card" draggable="true">
+                            <div class="automation-card" draggable="true" style="${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'outline: 2px solid var(--primary-500); outline-offset: -2px;' : ''}" ondragstart="handlers.onRuleDragStart(event, '${rule.id}')" ondragend="handlers.onRuleDragEnd(event)" ondragover="handlers.onRuleDragOver(event)" ondragleave="handlers.onRuleDragLeave(event)" ondrop="handlers.onRuleDrop(event, '${rule.id}')">
                                 <div class="automation-card-content">
                                     <div class="automation-card-header">
                                         <div class="automation-card-title">
+                                            <input type="checkbox" ${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'checked' : ''} onchange="handlers.toggleAutomationSelect('${rule.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-right:4px;">
                                             ${components.platformBadge(rule.platform)}
                                             <span>${rule.name}</span>
                                         </div>
@@ -58441,6 +58445,131 @@ const handlers = {
         } catch (e) {
             toast.error('Failed to delete category');
         }
+    },
+
+    // Drag-and-drop reordering for automation cards
+    _draggedRuleId: null,
+
+    onRuleDragStart: function(e, ruleId) {
+        handlers._draggedRuleId = ruleId;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', ruleId);
+        e.currentTarget.style.opacity = '0.5';
+    },
+
+    onRuleDragEnd: function(e) {
+        e.currentTarget.style.opacity = '1';
+        handlers._draggedRuleId = null;
+        document.querySelectorAll('.automation-card').forEach(c => c.classList.remove('drag-over'));
+    },
+
+    onRuleDragOver: function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const card = e.currentTarget;
+        card.classList.add('drag-over');
+    },
+
+    onRuleDragLeave: function(e) {
+        e.currentTarget.classList.remove('drag-over');
+    },
+
+    onRuleDrop: async function(e, targetRuleId) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        const draggedId = handlers._draggedRuleId;
+        if (!draggedId || draggedId === targetRuleId) return;
+
+        const rules = store.state.automations || [];
+        const ruleIds = rules.map(r => r.id);
+        const fromIdx = ruleIds.indexOf(draggedId);
+        const toIdx = ruleIds.indexOf(targetRuleId);
+        if (fromIdx === -1 || toIdx === -1) return;
+
+        ruleIds.splice(fromIdx, 1);
+        ruleIds.splice(toIdx, 0, draggedId);
+
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/reorder', { order: ruleIds });
+            toast.success('Rules reordered');
+        } catch (e) {
+            toast.error('Failed to save order');
+        }
+    },
+
+    // Scheduling calendar view
+    showScheduleCalendar: function() {
+        const rules = store.state.automations || [];
+        const scheduledRules = rules.filter(r => r.schedule && r.is_enabled);
+
+        if (scheduledRules.length === 0) {
+            toast.warning('No scheduled automation rules');
+            return;
+        }
+
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const hours = [0, 3, 6, 9, 12, 15, 18, 21];
+
+        const parseCron = (cron) => {
+            if (!cron) return { mins: [], hours: [], dows: [0,1,2,3,4,5,6] };
+            const parts = cron.trim().split(/\s+/);
+            if (parts.length < 5) return { mins: [0], hours: [0], dows: [0,1,2,3,4,5,6] };
+            const parseField = (f, max) => {
+                if (f === '*') return Array.from({length: max}, (_, i) => i);
+                return f.split(',').flatMap(p => {
+                    if (p.includes('/')) { const [, step] = p.split('/'); const s = parseInt(step); return Array.from({length: Math.ceil(max/s)}, (_, i) => i * s); }
+                    if (p.includes('-')) { const [a, b] = p.split('-').map(Number); return Array.from({length: b-a+1}, (_, i) => a+i); }
+                    return [parseInt(p)];
+                }).filter(n => !isNaN(n) && n >= 0 && n < max);
+            };
+            return { mins: parseField(parts[0], 60), hours: parseField(parts[1], 24), dows: parseField(parts[4], 7) };
+        };
+
+        const grid = {};
+        for (const rule of scheduledRules) {
+            const { hours: h, dows } = parseCron(rule.schedule);
+            for (const dow of dows) {
+                for (const hr of h) {
+                    const slot = Math.floor(hr / 3);
+                    const key = dow + '-' + slot;
+                    if (!grid[key]) grid[key] = [];
+                    grid[key].push({ name: rule.name, platform: rule.platform, hour: hr });
+                }
+            }
+        }
+
+        const cellContent = (dow, slotIdx) => {
+            const key = dow + '-' + slotIdx;
+            const entries = grid[key] || [];
+            if (entries.length === 0) return '<td style="padding:4px;border:1px solid var(--gray-100);"></td>';
+            return '<td style="padding:4px;border:1px solid var(--gray-100);background:var(--primary-50,#eff6ff);">' +
+                entries.slice(0, 3).map(e => '<div style="font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;" title="' + escapeHtml(e.name) + ' (' + e.hour + ':00)">' +
+                '<span style="color:var(--primary-500);">●</span> ' + escapeHtml(e.name.slice(0, 12)) + '</div>').join('') +
+                (entries.length > 3 ? '<div style="font-size:9px;color:var(--gray-400);">+' + (entries.length - 3) + ' more</div>' : '') + '</td>';
+        };
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('calendar', 20)} Schedule Calendar</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body" style="overflow-x:auto;">
+                <p class="text-xs text-gray-500 mb-3">${scheduledRules.length} scheduled rule${scheduledRules.length > 1 ? 's' : ''} shown</p>
+                <table class="table table-sm" style="table-layout:fixed;">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">Time</th>
+                            ${days.map(d => '<th style="text-align:center;width:100px;">' + d + '</th>').join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${hours.map((h, si) => '<tr><td style="font-size:11px;font-weight:600;color:var(--gray-500);padding:4px;">' + h + ':00</td>' +
+                            days.map((_, di) => cellContent(di, si)).join('') + '</tr>').join('')}
+                    </tbody>
+                </table>
+            </div>
+        `, 'modal-lg');
     },
 
     // Clone automation rule

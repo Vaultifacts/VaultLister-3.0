@@ -26973,6 +26973,7 @@ Object.assign(handlers, {
             '<div class="card mb-6"><div class="card-body"><div class="flex justify-between items-center mb-3"><h3 class="text-md font-semibold">' + components.icon('trending-up', 18) + ' Profit & Loss Timeline</h3><button class="btn btn-ghost btn-sm" onclick="handlers.loadPLTimeline()">' + components.icon('refresh-cw', 14) + ' Load</button></div><div id="pl-timeline-chart">' + (store.state.plTimeline ? handlers._renderPLChart(store.state.plTimeline) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to fetch monthly P&L data</p>') + '</div></div></div>' +
             '<div class="card mb-6"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('clock', 18) + ' Inventory Aging</h3><div class="flex gap-3 items-end" style="height:120px;">' + agingBuckets.map(b => { const pct = (b.count / maxBucket * 100); const color = b.min >= 91 ? 'var(--error)' : b.min >= 61 ? 'var(--warning-600)' : b.min >= 31 ? 'var(--warning-400)' : 'var(--success)'; return '<div style="flex:1;text-align:center;"><div style="background:' + color + ';height:' + Math.max(pct, 4) + '%;border-radius:4px 4px 0 0;margin:0 2px;position:relative;"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600;">' + b.count + '</span></div><div style="font-size:10px;color:var(--gray-500);margin-top:4px;">' + b.label + '</div><div style="font-size:9px;color:var(--gray-400);">$' + Math.round(b.value).toLocaleString() + '</div></div>'; }).join('') + '</div></div></div>' +
             '<div class="grid grid-cols-2 gap-4 mb-6"><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('trending-up', 18) + ' Sell-Through by Category</h3>' + (sellThrough.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Total</th><th>Sold</th><th>Rate</th><th>Avg Days</th></tr></thead><tbody>' + sellThrough.map(s => '<tr><td>' + escapeHtml(s.category || 'Uncategorized') + '</td><td>' + s.total + '</td><td>' + s.sold + '</td><td style="color:' + (s.sell_rate >= 50 ? 'var(--success)' : s.sell_rate >= 25 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (s.sell_rate || 0).toFixed(1) + '%</td><td>' + (s.avg_days_to_sell ? s.avg_days_to_sell.toFixed(0) + 'd' : '—') + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No data yet</p>') + '</div></div><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Margin by Category</h3>' + (margins.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Sold</th><th>Avg Sale</th><th>Margin</th><th>Profit</th></tr></thead><tbody>' + margins.map(m => '<tr><td>' + escapeHtml(m.category || 'Uncategorized') + '</td><td>' + m.sold_count + '</td><td>$' + (m.avg_sale_price || 0).toFixed(0) + '</td><td style="color:' + ((m.margin_pct || 0) >= 30 ? 'var(--success)' : (m.margin_pct || 0) >= 15 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (m.margin_pct || 0).toFixed(1) + '%</td><td style="color:' + ((m.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (m.total_profit || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No sales data yet</p>') + '</div></div></div>' +
+            (sellThrough.length > 1 ? (() => { const totalItems = sellThrough.reduce((s, c) => s + (c.total || 0), 0); const totalSold = sellThrough.reduce((s, c) => s + (c.sold || 0), 0); const catColors = ['var(--primary-500)', 'var(--success)', 'var(--warning-500)', 'var(--error)', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']; const sorted = [...sellThrough].sort((a, b) => (b.total || 0) - (a.total || 0)); const maxItems = Math.max(...sorted.map(c => c.total || 0), 1); return '<div class="grid grid-cols-2 gap-4 mb-6">' + '<div class="card"><div class="card-body">' + '<h3 class="text-md font-semibold mb-3">' + components.icon('pie-chart', 18) + ' Category Distribution (' + totalItems + ' items)</h3>' + '<div class="flex flex-col gap-1">' + sorted.slice(0, 8).map((c, i) => { const pct = totalItems > 0 ? Math.round((c.total || 0) / totalItems * 100) : 0; return '<div class="flex items-center gap-2" style="font-size:12px;">' + '<span style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(c.category || 'Uncategorized') + '</span>' + '<div style="flex:1;height:16px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' + '<div style="height:100%;width:' + pct + '%;background:' + catColors[i % catColors.length] + ';border-radius:var(--radius-sm);"></div></div>' + '<span style="width:55px;text-align:right;font-weight:600;">' + (c.total || 0) + ' (' + pct + '%)</span></div>'; }).join('') + '</div></div></div>' + '<div class="card"><div class="card-body">' + '<h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Revenue by Category</h3>' + '<div class="flex flex-col gap-1">' + [...margins].sort((a, b) => (b.total_profit || 0) - (a.total_profit || 0)).slice(0, 8).map((m, i) => { const maxProfit = Math.max(...margins.map(x => Math.abs(x.total_profit || 0)), 1); const pct = Math.round(Math.abs(m.total_profit || 0) / maxProfit * 100); const isPositive = (m.total_profit || 0) >= 0; return '<div class="flex items-center gap-2" style="font-size:12px;">' + '<span style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(m.category || 'Uncategorized') + '</span>' + '<div style="flex:1;height:16px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' + '<div style="height:100%;width:' + pct + '%;background:' + (isPositive ? 'var(--success)' : 'var(--error)') + ';border-radius:var(--radius-sm);"></div></div>' + '<span style="width:60px;text-align:right;font-weight:600;color:' + (isPositive ? 'var(--success)' : 'var(--error)') + ';">$' + Math.round(m.total_profit || 0).toLocaleString() + '</span></div>'; }).join('') + '</div></div></div></div>'; })() : '') +
             (deadStock.length > 0 ? '<div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3" style="color:var(--error);">' + components.icon('alert-triangle', 18) + ' Dead Stock (' + deadStock.length + ' items)</h3><table class="table table-sm"><thead><tr><th>Title</th><th>SKU</th><th>Days</th><th>Price</th></tr></thead><tbody>' + deadStock.slice(0, 10).map(d => '<tr><td>' + escapeHtml(d.title || '') + '</td><td>' + escapeHtml(d.sku || '—') + '</td><td style="color:var(--error);">' + d.days_old + 'd</td><td>$' + (d.list_price || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table></div></div>' : '');
     },
 
@@ -27338,6 +27339,131 @@ Object.assign(handlers, {
         } catch (e) {
             toast.error('Failed to delete category');
         }
+    },
+
+    // Drag-and-drop reordering for automation cards
+    _draggedRuleId: null,
+
+    onRuleDragStart: function(e, ruleId) {
+        handlers._draggedRuleId = ruleId;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', ruleId);
+        e.currentTarget.style.opacity = '0.5';
+    },
+
+    onRuleDragEnd: function(e) {
+        e.currentTarget.style.opacity = '1';
+        handlers._draggedRuleId = null;
+        document.querySelectorAll('.automation-card').forEach(c => c.classList.remove('drag-over'));
+    },
+
+    onRuleDragOver: function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const card = e.currentTarget;
+        card.classList.add('drag-over');
+    },
+
+    onRuleDragLeave: function(e) {
+        e.currentTarget.classList.remove('drag-over');
+    },
+
+    onRuleDrop: async function(e, targetRuleId) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        const draggedId = handlers._draggedRuleId;
+        if (!draggedId || draggedId === targetRuleId) return;
+
+        const rules = store.state.automations || [];
+        const ruleIds = rules.map(r => r.id);
+        const fromIdx = ruleIds.indexOf(draggedId);
+        const toIdx = ruleIds.indexOf(targetRuleId);
+        if (fromIdx === -1 || toIdx === -1) return;
+
+        ruleIds.splice(fromIdx, 1);
+        ruleIds.splice(toIdx, 0, draggedId);
+
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/reorder', { order: ruleIds });
+            toast.success('Rules reordered');
+        } catch (e) {
+            toast.error('Failed to save order');
+        }
+    },
+
+    // Scheduling calendar view
+    showScheduleCalendar: function() {
+        const rules = store.state.automations || [];
+        const scheduledRules = rules.filter(r => r.schedule && r.is_enabled);
+
+        if (scheduledRules.length === 0) {
+            toast.warning('No scheduled automation rules');
+            return;
+        }
+
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const hours = [0, 3, 6, 9, 12, 15, 18, 21];
+
+        const parseCron = (cron) => {
+            if (!cron) return { mins: [], hours: [], dows: [0,1,2,3,4,5,6] };
+            const parts = cron.trim().split(/\s+/);
+            if (parts.length < 5) return { mins: [0], hours: [0], dows: [0,1,2,3,4,5,6] };
+            const parseField = (f, max) => {
+                if (f === '*') return Array.from({length: max}, (_, i) => i);
+                return f.split(',').flatMap(p => {
+                    if (p.includes('/')) { const [, step] = p.split('/'); const s = parseInt(step); return Array.from({length: Math.ceil(max/s)}, (_, i) => i * s); }
+                    if (p.includes('-')) { const [a, b] = p.split('-').map(Number); return Array.from({length: b-a+1}, (_, i) => a+i); }
+                    return [parseInt(p)];
+                }).filter(n => !isNaN(n) && n >= 0 && n < max);
+            };
+            return { mins: parseField(parts[0], 60), hours: parseField(parts[1], 24), dows: parseField(parts[4], 7) };
+        };
+
+        const grid = {};
+        for (const rule of scheduledRules) {
+            const { hours: h, dows } = parseCron(rule.schedule);
+            for (const dow of dows) {
+                for (const hr of h) {
+                    const slot = Math.floor(hr / 3);
+                    const key = dow + '-' + slot;
+                    if (!grid[key]) grid[key] = [];
+                    grid[key].push({ name: rule.name, platform: rule.platform, hour: hr });
+                }
+            }
+        }
+
+        const cellContent = (dow, slotIdx) => {
+            const key = dow + '-' + slotIdx;
+            const entries = grid[key] || [];
+            if (entries.length === 0) return '<td style="padding:4px;border:1px solid var(--gray-100);"></td>';
+            return '<td style="padding:4px;border:1px solid var(--gray-100);background:var(--primary-50,#eff6ff);">' +
+                entries.slice(0, 3).map(e => '<div style="font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;" title="' + escapeHtml(e.name) + ' (' + e.hour + ':00)">' +
+                '<span style="color:var(--primary-500);">●</span> ' + escapeHtml(e.name.slice(0, 12)) + '</div>').join('') +
+                (entries.length > 3 ? '<div style="font-size:9px;color:var(--gray-400);">+' + (entries.length - 3) + ' more</div>' : '') + '</td>';
+        };
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('calendar', 20)} Schedule Calendar</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body" style="overflow-x:auto;">
+                <p class="text-xs text-gray-500 mb-3">${scheduledRules.length} scheduled rule${scheduledRules.length > 1 ? 's' : ''} shown</p>
+                <table class="table table-sm" style="table-layout:fixed;">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">Time</th>
+                            ${days.map(d => '<th style="text-align:center;width:100px;">' + d + '</th>').join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${hours.map((h, si) => '<tr><td style="font-size:11px;font-weight:600;color:var(--gray-500);padding:4px;">' + h + ':00</td>' +
+                            days.map((_, di) => cellContent(di, si)).join('') + '</tr>').join('')}
+                    </tbody>
+                </table>
+            </div>
+        `, 'modal-lg');
     },
 
     // Clone automation rule

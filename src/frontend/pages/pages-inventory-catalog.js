@@ -1723,6 +1723,9 @@ Object.assign(pages, {
                     <button class="btn btn-ghost" onclick="handlers.exportAutomationHistoryCSV()" title="Export run history to CSV">
                         ${components.icon('file-text', 16)} CSV
                     </button>
+                    <button class="btn btn-ghost" onclick="handlers.showScheduleCalendar()" title="Schedule calendar view">
+                        ${components.icon('calendar', 16)} Calendar
+                    </button>
                     <button class="btn btn-ghost" onclick="handlers.showAutomationPerformance()" title="Compare rule performance">
                         ${components.icon('bar-chart', 16)} Performance
                     </button>
@@ -2120,7 +2123,7 @@ Object.assign(pages, {
                                 default: return a.name.localeCompare(b.name);
                             }
                         }).map(rule => `
-                            <div class="automation-card" draggable="true" style="${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'outline: 2px solid var(--primary-500); outline-offset: -2px;' : ''}">
+                            <div class="automation-card" draggable="true" style="${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'outline: 2px solid var(--primary-500); outline-offset: -2px;' : ''}" ondragstart="handlers.onRuleDragStart(event, '${rule.id}')" ondragend="handlers.onRuleDragEnd(event)" ondragover="handlers.onRuleDragOver(event)" ondragleave="handlers.onRuleDragLeave(event)" ondrop="handlers.onRuleDrop(event, '${rule.id}')">
                                 <div class="automation-card-content">
                                     <div class="automation-card-header">
                                         <div class="automation-card-title">
