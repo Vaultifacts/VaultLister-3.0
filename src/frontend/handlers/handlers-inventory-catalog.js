@@ -10657,6 +10657,136 @@ Object.assign(handlers, {
         }
     },
 
+    // Clone automation rule
+    cloneAutomationRule: async function(ruleId, ruleName) {
+        try {
+            await api.ensureCSRFToken();
+            const res = await api.post('/automations/' + ruleId + '/clone');
+            const data = res.data || res;
+            toast.success('Cloned "' + ruleName + '" — new rule created (disabled)');
+        } catch (e) {
+            toast.error('Failed to clone rule');
+        }
+    },
+
+    // Category filter for inventory catalog
+    filterByCategory: function(category) {
+        store.setState({ categoryFilter: category || '' });
+        renderApp(pages.inventory());
+    },
+
+    // Bulk category assignment
+    bulkSetCategory: async function() {
+        const selectedIds = store.state.selectedItems || [];
+        if (selectedIds.length === 0) { toast.warning('No items selected'); return; }
+        const categories = store.state.inventoryCategories || [];
+        const catOptions = categories.map(c => '<option value="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</option>').join('');
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('folder', 20)} Set Category</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-gray-500 mb-4">Assign a category to ${selectedIds.length} selected item${selectedIds.length > 1 ? 's' : ''}.</p>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select id="bulk-cat-select" class="form-select">
+                        <option value="">— Remove category —</option>
+                        ${catOptions}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.applyBulkCategory()">
+                    ${components.icon('check', 14)} Apply
+                </button>
+            </div>
+        `);
+    },
+
+    applyBulkCategory: async function() {
+        const category = document.getElementById('bulk-cat-select')?.value || null;
+        const selectedIds = store.state.selectedItems || [];
+        if (selectedIds.length === 0) return;
+        try {
+            await api.ensureCSRFToken();
+            let updated = 0;
+            for (const id of selectedIds) {
+                try {
+                    await api.put('/inventory/' + id, { category });
+                    updated++;
+                } catch { }
+            }
+            toast.success('Updated category on ' + updated + ' item' + (updated !== 1 ? 's' : ''));
+            modals.close();
+            handlers.clearSelection();
+            handlers.loadInventory();
+        } catch (e) {
+            toast.error('Failed to update categories');
+        }
+    },
+
+    // Automation performance comparison
+    showAutomationPerformance: function() {
+        const rules = store.state.automations || [];
+        const runHistory = store.state.automationHistory || [];
+        if (rules.length === 0) { toast.warning('No automation rules configured'); return; }
+
+        const perfData = rules.map(rule => {
+            const ruleRuns = runHistory.filter(r => r.automation_name === rule.name || r.automation_id === rule.id || r.action === rule.name);
+            const total = ruleRuns.length;
+            const successes = ruleRuns.filter(r => r.status === 'success').length;
+            const failures = ruleRuns.filter(r => r.status === 'failure').length;
+            const successRate = total > 0 ? Math.round(successes / total * 100) : 0;
+            const avgItems = total > 0 ? Math.round(ruleRuns.reduce((s, r) => s + (r.items_processed || 0), 0) / total) : 0;
+            const avgDuration = total > 0 ? Math.round(ruleRuns.reduce((s, r) => s + (r.duration_ms || 0), 0) / total / 1000) : 0;
+            return { name: rule.name, platform: rule.platform, enabled: rule.is_enabled, total, successes, failures, successRate, avgItems, avgDuration };
+        }).sort((a, b) => b.total - a.total);
+
+        const maxRuns = Math.max(...perfData.map(d => d.total), 1);
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('bar-chart', 20)} Automation Performance</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+                <div class="mb-4">
+                    <h4 class="text-sm font-semibold mb-2">Run Volume</h4>
+                    <div class="flex flex-col gap-1">
+                        ${perfData.slice(0, 15).map(d =>
+                            '<div class="flex items-center gap-2" style="font-size:12px;">' +
+                            '<span style="width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(d.name) + '">' + escapeHtml(d.name) + '</span>' +
+                            '<div style="flex:1;height:18px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' +
+                            '<div style="height:100%;width:' + (d.total / maxRuns * 100) + '%;background:' + (d.successRate >= 80 ? 'var(--success)' : d.successRate >= 50 ? 'var(--warning-500)' : 'var(--error)') + ';border-radius:var(--radius-sm);display:flex;align-items:center;padding-left:4px;">' +
+                            '<span style="color:white;font-size:10px;font-weight:600;">' + d.total + '</span></div></div>' +
+                            '<span style="width:40px;text-align:right;font-weight:600;color:' + (d.successRate >= 80 ? 'var(--success)' : d.successRate >= 50 ? 'var(--warning-600)' : 'var(--error)') + ';">' + d.successRate + '%</span></div>'
+                        ).join('')}
+                    </div>
+                </div>
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>Rule</th><th>Platform</th><th>Status</th><th>Runs</th><th>Success</th><th>Fail</th><th>Rate</th><th>Avg Items</th><th>Avg Time</th></tr>
+                    </thead>
+                    <tbody>
+                        ${perfData.map(d =>
+                            '<tr><td class="text-sm">' + escapeHtml(d.name) + '</td>' +
+                            '<td>' + components.platformBadge(d.platform) + '</td>' +
+                            '<td><span class="badge badge-sm" style="background:' + (d.enabled ? 'var(--success)20;color:var(--success)' : 'var(--gray-400)20;color:var(--gray-500)') + ';">' + (d.enabled ? 'Active' : 'Off') + '</span></td>' +
+                            '<td>' + d.total + '</td>' +
+                            '<td style="color:var(--success);">' + d.successes + '</td>' +
+                            '<td style="color:var(--error);">' + d.failures + '</td>' +
+                            '<td style="font-weight:600;color:' + (d.successRate >= 80 ? 'var(--success)' : d.successRate >= 50 ? 'var(--warning-600)' : 'var(--error)') + ';">' + d.successRate + '%</td>' +
+                            '<td>' + d.avgItems + '</td>' +
+                            '<td>' + d.avgDuration + 's</td></tr>'
+                        ).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `, 'modal-lg');
+    },
+
     _renderTemplateMarketplace: function(templates) {
         if (!templates || templates.length === 0) {
             return '<div class="text-center py-6"><p class="text-gray-500 mb-2">No shared templates yet</p><p class="text-xs text-gray-400">Share your automation rules to see them here</p></div>';

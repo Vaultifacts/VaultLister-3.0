@@ -479,6 +479,23 @@ export async function automationsRouter(ctx) {
         return { status: 200, data: { message: 'Rule deleted' } };
     }
 
+    // POST /api/automations/:id/clone - Clone/duplicate a rule
+    if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/clone$/)) {
+        const ruleId = path.split('/')[1];
+        const rule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+        if (!rule) return { status: 404, data: { error: 'Rule not found' } };
+
+        const newId = uuidv4();
+        query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+            [newId, user.id, rule.name + ' (Copy)', rule.type, rule.platform, rule.schedule, rule.conditions, rule.actions]);
+
+        const cloned = query.get('SELECT * FROM automation_rules WHERE id = ?', [newId]);
+        try { cloned.conditions = JSON.parse(cloned.conditions); } catch { cloned.conditions = {}; }
+        try { cloned.actions = JSON.parse(cloned.actions); } catch { cloned.actions = {}; }
+        return { status: 201, data: { rule: cloned } };
+    }
+
     // POST /api/automations/:id/run - Run rule manually
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/run$/)) {
         const id = path.split('/')[1];

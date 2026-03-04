@@ -4,7 +4,18 @@
 
 Object.assign(pages, {
     inventory() {
-        const items = store.state.inventory || [];
+        let items = store.state.inventory || [];
+
+        // Apply category filter if active
+        const categoryFilter = store.state.categoryFilter;
+        if (categoryFilter) {
+            items = items.filter(i => i.category === categoryFilter);
+        }
+
+        // Lazy-load categories on first render
+        if (!store.state.inventoryCategories && handlers.loadCategories) {
+            handlers.loadCategories();
+        }
 
         // Calculate inventory stats
         const totalItems = items.length;
@@ -176,6 +187,10 @@ Object.assign(pages, {
                 <div class="card-header">
                     <div class="flex items-center gap-2" style="position: relative;">
                         <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)">
+                        <select class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
+                            <option value="">All Categories</option>
+                            ${(store.state.inventoryCategories || []).map(c => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
+                        </select>
                         <button class="btn btn-secondary btn-sm" data-testid="inventory-filter-btn" onclick="handlers.showFilterMenu()">
                             ${components.icon('filter', 14)} Filters
                             ${store.state.activeFilters && Object.keys(store.state.activeFilters).length > 0 ? `<span class="badge badge-primary" style="margin-left: 4px; font-size: 10px;">${Object.keys(store.state.activeFilters).length}</span>` : ''}
@@ -462,6 +477,9 @@ Object.assign(pages, {
                     </button>
                     <button class="bulk-action-btn" data-testid="bulk-export-btn" onclick="handlers.exportSelected()" title="Export selected">
                         ${components.icon('download', 14)} Export
+                    </button>
+                    <button class="bulk-action-btn" data-testid="bulk-category-btn" onclick="handlers.bulkSetCategory()" title="Set category">
+                        ${components.icon('folder', 14)} Category
                     </button>
                     <button class="bulk-action-btn danger" data-testid="bulk-delete-btn" onclick="handlers.deleteSelected()" title="Delete selected">
                         ${components.icon('trash', 14)} Delete
@@ -1572,6 +1590,9 @@ Object.assign(pages, {
                     <button class="btn btn-ghost" onclick="handlers.exportAutomationHistoryCSV()" title="Export run history to CSV">
                         ${components.icon('file-text', 16)} CSV
                     </button>
+                    <button class="btn btn-ghost" onclick="handlers.showAutomationPerformance()" title="Compare rule performance">
+                        ${components.icon('bar-chart', 16)} Performance
+                    </button>
                     <button class="btn btn-secondary" onclick="handlers.showAutomationHistory()">
                         ${components.icon('history', 16)} History
                     </button>
@@ -2070,6 +2091,9 @@ Object.assign(pages, {
                                     </button>
                                     <button class="btn btn-ghost" onclick="handlers.showRuleVersionHistory('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Version History" style="padding: 10px;">
                                         ${components.icon('git-commit', 20)}
+                                    </button>
+                                    <button class="btn btn-ghost" onclick="handlers.cloneAutomationRule('${rule.id}', '${escapeHtml(rule.name).replace(/'/g, "\\'")}')" title="Clone Rule" style="padding: 10px;">
+                                        ${components.icon('copy', 20)}
                                     </button>
                                     <label class="switch switch-lg switch-success" style="transform: scale(1.3);">
                                         <input type="checkbox" class="switch-input" ${rule.is_enabled ? 'checked' : ''}
