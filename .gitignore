@@ -55,3 +55,10 @@ bun.lock
 
 # Project notes
 VaultLister 3.0.txt
+# Generated snapshot (recreated each run)
+claude-docs/docs/project-control/STATE_SNAPSHOT.md
+
+# Playwright artifacts
+e2e/screenshots/
+e2e/test-results/
+playwright-report/
