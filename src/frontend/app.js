@@ -19953,8 +19953,17 @@ const pages = {
                     <p class="page-description">Enable or disable automation rules and configure scheduling</p>
                 </div>
                 <div class="flex gap-2">
+                    <button class="btn btn-ghost" onclick="handlers.showTemplateMarketplace()" title="Browse shared templates">
+                        ${components.icon('shopping-bag', 16)} Templates
+                    </button>
+                    <button class="btn btn-ghost" onclick="handlers.exportAutomationRulesJSON()" title="Export rules as JSON">
+                        ${components.icon('download', 16)} Export
+                    </button>
+                    <button class="btn btn-ghost" onclick="handlers.showImportAutomationRules()" title="Import rules from JSON">
+                        ${components.icon('upload', 16)} Import
+                    </button>
                     <button class="btn btn-secondary" onclick="handlers.showAutomationHistory()">
-                        ${components.icon('history', 16)} Run History
+                        ${components.icon('history', 16)} History
                     </button>
                     <button class="btn btn-primary" onclick="handlers.showAutomationWizard()">
                         ${components.icon('plus', 16)} Create Custom
@@ -58135,18 +58144,20 @@ const handlers = {
         return experiments.map(exp => {
             const statusColor = exp.status === 'running' ? 'var(--success)' : exp.status === 'paused' ? 'var(--warning-600)' : 'var(--gray-500)';
             const statusIcon = exp.status === 'running' ? 'play' : exp.status === 'paused' ? 'pause' : 'check-circle';
-            const baseRuns = exp.base_run_count || 0;
-            const variantRuns = exp.variant_run_count || 0;
-            const baseSuccess = exp.base_success_rate != null ? exp.base_success_rate.toFixed(0) : '—';
-            const variantSuccess = exp.variant_success_rate != null ? exp.variant_success_rate.toFixed(0) : '—';
+            const bs = exp.base_stats || {};
+            const vs = exp.variant_stats || {};
+            const baseRuns = bs.runs || 0;
+            const variantRuns = vs.runs || 0;
+            const baseSuccess = baseRuns > 0 ? Math.round((bs.successes || 0) / baseRuns * 100) : '—';
+            const variantSuccess = variantRuns > 0 ? Math.round((vs.successes || 0) / variantRuns * 100) : '—';
             return '<div class="card mb-3" style="border-left:3px solid ' + statusColor + ';"><div class="card-body">' +
                 '<div class="flex justify-between items-start mb-2"><div><h4 class="font-semibold">' + components.icon(statusIcon, 14) + ' ' + escapeHtml(exp.name || 'Experiment') + '</h4>' +
                 '<span class="text-xs text-gray-400">Started ' + (exp.started_at ? new Date(exp.started_at).toLocaleDateString() : '—') + '</span></div>' +
                 '<span class="badge" style="background:' + statusColor + '20;color:' + statusColor + ';text-transform:capitalize;">' + exp.status + '</span></div>' +
                 (exp.notes ? '<p class="text-xs text-gray-500 mb-3">' + escapeHtml(exp.notes) + '</p>' : '') +
                 '<div class="grid grid-cols-2 gap-3 mb-3">' +
-                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--primary-50,#eff6ff);"><div class="text-xs text-gray-500 mb-1">Base (A)</div><div class="text-sm font-semibold">' + baseRuns + ' runs | ' + baseSuccess + '% success</div><div class="text-xs text-gray-400">' + escapeHtml(exp.base_rule_name || exp.base_rule_id || '') + '</div></div>' +
-                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--warning-50,#fffbeb);"><div class="text-xs text-gray-500 mb-1">Variant (B)</div><div class="text-sm font-semibold">' + variantRuns + ' runs | ' + variantSuccess + '% success</div><div class="text-xs text-gray-400">' + escapeHtml(exp.variant_rule_name || exp.variant_rule_id || '') + '</div></div></div>' +
+                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--primary-50,#eff6ff);"><div class="text-xs text-gray-500 mb-1">Base (A)</div><div class="text-sm font-semibold">' + baseRuns + ' runs | ' + baseSuccess + '% success</div>' + (bs.avg_items != null ? '<div class="text-xs text-gray-400">' + Math.round(bs.avg_items) + ' avg items</div>' : '') + '<div class="text-xs text-gray-400">' + escapeHtml(exp.base_name || exp.base_rule_id || '') + '</div></div>' +
+                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--warning-50,#fffbeb);"><div class="text-xs text-gray-500 mb-1">Variant (B)</div><div class="text-sm font-semibold">' + variantRuns + ' runs | ' + variantSuccess + '% success</div>' + (vs.avg_items != null ? '<div class="text-xs text-gray-400">' + Math.round(vs.avg_items) + ' avg items</div>' : '') + '<div class="text-xs text-gray-400">' + escapeHtml(exp.variant_name || exp.variant_rule_id || '') + '</div></div></div>' +
                 (exp.winner ? '<div class="text-sm mb-2" style="color:var(--success);font-weight:600;">' + components.icon('award', 14) + ' Winner: ' + exp.winner.toUpperCase() + '</div>' : '') +
                 (exp.status !== 'completed' ? '<div class="flex gap-2">' +
                 '<button class="btn btn-xs btn-success" onclick="handlers.completeExperiment(\'' + exp.id + '\', \'base\')">' + components.icon('check', 12) + ' A Wins</button>' +
@@ -58156,6 +58167,123 @@ const handlers = {
                 components.icon(exp.status === 'paused' ? 'play' : 'pause', 12) + ' ' + (exp.status === 'paused' ? 'Resume' : 'Pause') + '</button></div>' : '') +
                 '</div></div>';
         }).join('');
+    },
+
+    exportAutomationRulesJSON: async function() {
+        try {
+            const res = await api.get('/automations/export');
+            const data = res.data || res;
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'automation-rules-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click(); URL.revokeObjectURL(url);
+            toast.success('Exported ' + (data.count || 0) + ' rules');
+        } catch (e) { toast.error('Export failed'); }
+    },
+
+    showImportAutomationRules: function() {
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('upload', 20)} Import Automation Rules</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-gray-500 mb-4">Upload a JSON file exported from VaultLister. Duplicate rules (same name + platform) will be skipped.</p>
+                <div class="form-group"><input type="file" id="import-rules-file" accept=".json" class="form-input"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.importAutomationRules()">${components.icon('upload', 14)} Import</button>
+            </div>
+        `);
+    },
+
+    importAutomationRules: async function() {
+        const fileInput = document.getElementById('import-rules-file');
+        if (!fileInput?.files?.[0]) { toast.error('Select a file'); return; }
+        try {
+            const text = await fileInput.files[0].text();
+            const data = JSON.parse(text);
+            const rules = data.rules || data;
+            if (!Array.isArray(rules)) { toast.error('Invalid format'); return; }
+            await api.ensureCSRFToken();
+            const res = await api.post('/automations/import', { rules });
+            const result = res.data || res;
+            toast.success('Imported ' + (result.imported || 0) + ' rules, skipped ' + (result.skipped || 0));
+            modals.close();
+        } catch (e) { toast.error('Import failed: ' + (e.message || 'Invalid JSON')); }
+    },
+
+    loadForecast: async function() {
+        try {
+            const res = await api.get('/analytics/forecast');
+            const data = res.data || res;
+            store.setState({ inventoryForecast: data });
+            const el = document.getElementById('forecast-content');
+            if (el) el.innerHTML = handlers._renderForecastContent(data);
+        } catch (e) { toast.error('Failed to load forecast'); }
+    },
+
+    _renderForecastContent: function(data) {
+        if (!data || !data.forecasts) return '<p class="text-gray-500 text-sm text-center py-4">No data available</p>';
+        const forecasts = data.forecasts || [];
+        const overall = data.overall || {};
+        const healthColors = { critical: 'var(--error)', low: 'var(--warning-600)', healthy: 'var(--success)', overstocked: 'var(--primary-500)', 'no-data': 'var(--gray-400)' };
+        const healthLabels = { critical: 'Critical', low: 'Low Stock', healthy: 'Healthy', overstocked: 'Overstocked', 'no-data': 'No Data' };
+        return '<div class="grid grid-cols-4 gap-3 mb-4"><div class="card"><div class="card-body text-center py-2"><div class="text-xl font-bold">' + (overall.totalActive || 0) + '</div><div class="text-xs text-gray-500">Active Items</div></div></div><div class="card"><div class="card-body text-center py-2"><div class="text-xl font-bold">$' + Math.round(overall.totalValue || 0).toLocaleString() + '</div><div class="text-xs text-gray-500">Inventory Value</div></div></div><div class="card"><div class="card-body text-center py-2"><div class="text-xl font-bold" style="color:var(--error);">' + (overall.restockAlerts || 0) + '</div><div class="text-xs text-gray-500">Restock Alerts</div></div></div><div class="card"><div class="card-body text-center py-2"><div class="text-xl font-bold" style="color:var(--primary-500);">' + (overall.overstocked || 0) + '</div><div class="text-xs text-gray-500">Overstocked</div></div></div></div>' +
+            '<table class="table table-sm"><thead><tr><th>Category</th><th>Active</th><th>Value</th><th>Monthly Velocity</th><th>Days of Supply</th><th>Health</th><th>Projected Q</th></tr></thead><tbody>' +
+            forecasts.map(f => { const hc = healthColors[f.health] || 'var(--gray-400)'; return '<tr><td>' + escapeHtml(f.category) + '</td><td>' + f.active_count + '</td><td>$' + Math.round(f.active_value).toLocaleString() + '</td><td>' + f.monthly_velocity.toFixed(1) + '/mo</td><td style="color:' + hc + ';font-weight:600;">' + (f.days_of_supply != null ? f.days_of_supply + 'd' : '—') + '</td><td><span class="badge" style="background:' + hc + '20;color:' + hc + ';">' + (healthLabels[f.health] || f.health) + '</span></td><td>' + f.projected_quarterly_sales + '</td></tr>'; }).join('') + '</tbody></table>';
+    },
+
+    loadTemplateMarketplace: async function() {
+        try {
+            const res = await api.get('/automations/templates/shared');
+            const data = res.data || res;
+            store.setState({ automationTemplates: data.templates || [] });
+            const el = document.getElementById('template-marketplace');
+            if (el) el.innerHTML = handlers._renderTemplateMarketplace(store.state.automationTemplates);
+        } catch (e) { toast.error('Failed to load templates'); }
+    },
+
+    showTemplateMarketplace: function() {
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('shopping-bag', 20)} Automation Templates</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body" style="max-height:65vh;overflow-y:auto;">
+                <div id="template-marketplace"><p class="text-gray-500 text-sm text-center py-4">Loading templates...</p></div>
+            </div>
+        `);
+        handlers.loadTemplateMarketplace();
+    },
+
+    shareAutomationAsTemplate: async function(ruleId, ruleName) {
+        const description = prompt('Description for "' + ruleName + '" template:');
+        if (description === null) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/templates/share', { ruleId, description: description || ruleName });
+            toast.success('Shared "' + ruleName + '" as template');
+        } catch (e) { toast.error('Failed to share template'); }
+    },
+
+    installTemplate: async function(templateId, templateName) {
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/templates/install', { templateId });
+            toast.success('Installed "' + templateName + '"');
+            handlers.loadTemplateMarketplace();
+        } catch (e) { toast.error('Failed to install template'); }
+    },
+
+    _renderTemplateMarketplace: function(templates) {
+        if (!templates || templates.length === 0) return '<div class="text-center py-6"><p class="text-gray-500 mb-2">No shared templates yet</p><p class="text-xs text-gray-400">Share your automation rules to see them here</p></div>';
+        return '<div class="grid grid-cols-2 gap-3">' + templates.map(t => {
+            const tags = (() => { try { return JSON.parse(t.tags); } catch { return []; } })();
+            return '<div class="card"><div class="card-body"><div class="flex justify-between items-start mb-2"><h4 class="font-semibold text-sm">' + escapeHtml(t.name) + '</h4><span class="badge badge-sm">' + escapeHtml(t.platform || 'all') + '</span></div><p class="text-xs text-gray-500 mb-2">' + escapeHtml(t.description || '') + '</p><div class="flex items-center gap-2 mb-2"><span class="text-xs text-gray-400">' + components.icon('user', 10) + ' ' + escapeHtml(t.author_name || 'Unknown') + '</span><span class="text-xs text-gray-400">' + components.icon('download', 10) + ' ' + (t.install_count || 0) + '</span></div>' + (tags.length > 0 ? '<div class="flex gap-1 mb-2">' + tags.slice(0, 3).map(tag => '<span class="badge badge-sm" style="font-size:10px;">' + escapeHtml(tag) + '</span>').join('') + '</div>' : '') + '<button class="btn btn-xs btn-primary" onclick="handlers.installTemplate(\'' + t.id + '\', \'' + escapeHtml(t.name).replace(/'/g, "\\'") + '\')">' + components.icon('download', 12) + ' Install</button></div></div>';
+        }).join('') + '</div>';
     },
 
     // Update automation schedule settings

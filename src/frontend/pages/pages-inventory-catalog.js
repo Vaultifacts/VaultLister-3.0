@@ -1693,11 +1693,20 @@ Object.assign(pages, {
                     <p class="page-description">Enable or disable automation rules and configure scheduling</p>
                 </div>
                 <div class="flex gap-2">
+                    <button class="btn btn-ghost" onclick="handlers.showTemplateMarketplace()" title="Browse shared templates">
+                        ${components.icon('shopping-bag', 16)} Templates
+                    </button>
+                    <button class="btn btn-ghost" onclick="handlers.exportAutomationRulesJSON()" title="Export rules as JSON">
+                        ${components.icon('download', 16)} Export
+                    </button>
+                    <button class="btn btn-ghost" onclick="handlers.showImportAutomationRules()" title="Import rules from JSON">
+                        ${components.icon('upload', 16)} Import
+                    </button>
                     <button class="btn btn-ghost" onclick="handlers.exportAutomationHistoryCSV()" title="Export run history to CSV">
-                        ${components.icon('download', 16)} CSV
+                        ${components.icon('file-text', 16)} CSV
                     </button>
                     <button class="btn btn-secondary" onclick="handlers.showAutomationHistory()">
-                        ${components.icon('history', 16)} Run History
+                        ${components.icon('history', 16)} History
                     </button>
                     <button class="btn btn-primary" onclick="handlers.showCreateCustomAutomation()">
                         ${components.icon('plus', 16)} Create Custom

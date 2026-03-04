@@ -1173,5 +1173,107 @@ export async function automationsRouter(ctx) {
         }
     }
 
+    // GET /api/automations/export - Export all rules as JSON
+    if (method === 'GET' && path === '/export') {
+        try {
+            const rules = query.all('SELECT name, type, platform, schedule, conditions, actions FROM automation_rules WHERE user_id = ? ORDER BY name', [user.id]);
+            const parsed = rules.map(r => ({
+                ...r,
+                conditions: (() => { try { return JSON.parse(r.conditions); } catch { return r.conditions; } })(),
+                actions: (() => { try { return JSON.parse(r.actions); } catch { return r.actions; } })()
+            }));
+            return { status: 200, data: { rules: parsed, count: parsed.length, exported_at: new Date().toISOString() } };
+        } catch (error) {
+            logger.error('[Automations] export failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to export rules' } };
+        }
+    }
+
+    // POST /api/automations/import - Import rules from JSON
+    if (method === 'POST' && path === '/import') {
+        const { rules } = body;
+        if (!Array.isArray(rules) || rules.length === 0) return { status: 400, data: { error: 'rules array required' } };
+        if (rules.length > 100) return { status: 400, data: { error: 'Maximum 100 rules per import' } };
+
+        try {
+            let imported = 0, skipped = 0;
+            for (const r of rules) {
+                if (!r.name || !r.type) { skipped++; continue; }
+                const existing = query.get('SELECT id FROM automation_rules WHERE user_id = ? AND name = ? AND platform = ?', [user.id, r.name, r.platform || 'all']);
+                if (existing) { skipped++; continue; }
+                query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+                    [uuidv4(), user.id, r.name, r.type, r.platform || 'all', r.schedule || null,
+                     typeof r.conditions === 'string' ? r.conditions : JSON.stringify(r.conditions || {}),
+                     typeof r.actions === 'string' ? r.actions : JSON.stringify(r.actions || {})]);
+                imported++;
+            }
+            return { status: 200, data: { imported, skipped, total: rules.length } };
+        } catch (error) {
+            logger.error('[Automations] import failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to import rules' } };
+        }
+    }
+
+    // GET /api/automations/templates/shared - Browse shared templates
+    if (method === 'GET' && path === '/templates/shared') {
+        try {
+            const templates = query.all(`
+                SELECT t.*, u.username as author_name,
+                    (SELECT COUNT(*) FROM automation_template_installs WHERE template_id = t.id) as install_count
+                FROM automation_templates t
+                LEFT JOIN users u ON t.author_id = u.id
+                WHERE t.is_public = 1
+                ORDER BY t.created_at DESC
+                LIMIT 50
+            `);
+            const parsed = templates.map(t => ({
+                ...t,
+                conditions: (() => { try { return JSON.parse(t.conditions); } catch { return t.conditions; } })(),
+                actions: (() => { try { return JSON.parse(t.actions); } catch { return t.actions; } })()
+            }));
+            return { status: 200, data: { templates: parsed } };
+        } catch (error) {
+            logger.error('[Automations] browse templates failed', user?.id, { detail: error?.message });
+            return { status: 200, data: { templates: [] } };
+        }
+    }
+
+    // POST /api/automations/templates/share - Publish a rule as template
+    if (method === 'POST' && path === '/templates/share') {
+        const { ruleId, description, tags } = body;
+        if (!ruleId) return { status: 400, data: { error: 'ruleId required' } };
+        try {
+            const rule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+            if (!rule) return { status: 404, data: { error: 'Rule not found' } };
+            const templateId = uuidv4();
+            query.run(`INSERT INTO automation_templates (id, author_id, name, type, platform, schedule, conditions, actions, description, tags, is_public)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+                [templateId, user.id, rule.name, rule.type, rule.platform, rule.schedule, rule.conditions, rule.actions,
+                 description || rule.name, typeof tags === 'string' ? tags : JSON.stringify(tags || [])]);
+            return { status: 201, data: { template: { id: templateId } } };
+        } catch (error) {
+            logger.error('[Automations] share template failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to share template' } };
+        }
+    }
+
+    // POST /api/automations/templates/install - Install a shared template as a rule
+    if (method === 'POST' && path === '/templates/install') {
+        const { templateId } = body;
+        if (!templateId) return { status: 400, data: { error: 'templateId required' } };
+        try {
+            const tpl = query.get('SELECT * FROM automation_templates WHERE id = ? AND is_public = 1', [templateId]);
+            if (!tpl) return { status: 404, data: { error: 'Template not found' } };
+            const ruleId = uuidv4();
+            query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+                [ruleId, user.id, tpl.name, tpl.type, tpl.platform, tpl.schedule, tpl.conditions, tpl.actions]);
+            query.run('INSERT OR IGNORE INTO automation_template_installs (template_id, user_id) VALUES (?, ?)', [templateId, user.id]);
+            return { status: 201, data: { rule: { id: ruleId, name: tpl.name } } };
+        } catch (error) {
+            logger.error('[Automations] install template failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to install template' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

@@ -761,5 +761,63 @@ export async function analyticsRouter(ctx) {
         return { status: 200, data: { export: data, count: data.length, type, format } };
     }
 
+    // GET /api/analytics/forecast - Inventory forecasting
+    if (method === 'GET' && path === '/forecast') {
+        try {
+            // Sell-through velocity by category (last 90 days)
+            const velocity = query.all(`
+                SELECT i.category,
+                    COUNT(DISTINCT i.id) as total_items,
+                    COUNT(DISTINCT s.id) as sold_items,
+                    ROUND(COUNT(DISTINCT s.id) * 1.0 / NULLIF(COUNT(DISTINCT i.id), 0) * 100, 1) as sell_rate,
+                    ROUND(AVG(CASE WHEN s.id IS NOT NULL THEN julianday(s.created_at) - julianday(i.created_at) END), 1) as avg_days_to_sell,
+                    ROUND(COUNT(DISTINCT s.id) * 1.0 / 3, 1) as monthly_velocity,
+                    COUNT(DISTINCT CASE WHEN i.status = 'active' THEN i.id END) as active_count,
+                    ROUND(SUM(CASE WHEN i.status = 'active' THEN i.cost_price ELSE 0 END), 2) as active_cost_value
+                FROM inventory i
+                LEFT JOIN sales s ON s.inventory_id = i.id AND s.created_at >= datetime('now', '-90 days')
+                WHERE i.user_id = ?
+                GROUP BY i.category
+                HAVING total_items > 0
+                ORDER BY sell_rate DESC
+            `, [user.id]);
+
+            // Compute forecasts
+            const forecasts = velocity.map(v => {
+                const monthlyVelocity = v.monthly_velocity || 0;
+                const activeCount = v.active_count || 0;
+                const daysOfSupply = monthlyVelocity > 0 ? Math.round(activeCount / monthlyVelocity * 30) : null;
+                const needsRestock = daysOfSupply !== null && daysOfSupply < 30;
+                const projectedMonthlySales = Math.round(monthlyVelocity);
+                const projectedQuarterlySales = Math.round(monthlyVelocity * 3);
+
+                return {
+                    category: v.category || 'Uncategorized',
+                    active_count: activeCount,
+                    active_value: v.active_cost_value || 0,
+                    sell_rate: v.sell_rate || 0,
+                    avg_days_to_sell: v.avg_days_to_sell,
+                    monthly_velocity: monthlyVelocity,
+                    days_of_supply: daysOfSupply,
+                    needs_restock: needsRestock,
+                    projected_monthly_sales: projectedMonthlySales,
+                    projected_quarterly_sales: projectedQuarterlySales,
+                    health: daysOfSupply === null ? 'no-data' : daysOfSupply < 14 ? 'critical' : daysOfSupply < 30 ? 'low' : daysOfSupply < 90 ? 'healthy' : 'overstocked'
+                };
+            });
+
+            // Overall stats
+            const totalActive = forecasts.reduce((s, f) => s + f.active_count, 0);
+            const totalValue = forecasts.reduce((s, f) => s + f.active_value, 0);
+            const restockAlerts = forecasts.filter(f => f.needs_restock).length;
+            const overstocked = forecasts.filter(f => f.health === 'overstocked').length;
+
+            return { status: 200, data: { forecasts, overall: { totalActive, totalValue, restockAlerts, overstocked } } };
+        } catch (error) {
+            logger.error('[Analytics] forecast error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Failed to generate forecast' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }
