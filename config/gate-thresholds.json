@@ -1,0 +1,24 @@
+{
+  "performance": {
+    "startup_seconds": {
+      "target": 5,
+      "warn": 8,
+      "fail": 8
+    },
+    "health_latency_ms": {
+      "target": 200,
+      "warn": 300,
+      "fail": 300
+    },
+    "inventory_latency_ms": {
+      "target": 300,
+      "warn": 300,
+      "fail": 300
+    },
+    "search_latency_ms": {
+      "target": 300,
+      "warn": 300,
+      "fail": 300
+    }
+  }
+}
