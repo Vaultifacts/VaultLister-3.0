@@ -1,6 +1,6 @@
 ﻿# Runbook Checklist (Auto)
 
-Generated: 2026-03-05T15:14:33.7124487-07:00
+Generated: 2026-03-05T15:36:26.7022237-07:00
 RepoRoot: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vaultlister-3
 
 ## PREREQ
@@ -14,6 +14,26 @@ RepoRoot: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vault
 * [x] docs/evidence exists
 * [x] runbook_state.json exists
 * [x] RUNBOOK_DASHBOARD.md exists
+
+## Control Plane
+
+* [x] PROJECT_ROADMAP.md exists
+* [x] PROGRESS_ACCOUNTING.md exists
+* [x] REPOSITORY_ANALYSIS.md exists
+* [x] RISK_REGISTER.md exists
+* [x] roadmap has no pending milestone markers
+* [x] progress log has today's entry
+* [x] repository analysis has no known stale snapshot markers
+* [x] risk register has concrete entries
+
+## Freshness
+
+* [x] gate evaluation is fresh (<= 48h)
+* [x] runbook state is fresh (<= 48h)
+
+## Git Hygiene
+
+* [ ] git status clean (allow .mcp.json only)
 
 ## Step: ENV_SANITY
 

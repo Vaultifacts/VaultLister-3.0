@@ -65,6 +65,12 @@ function New-RunbookChecklist {
     $resultsPath = Join-Path $repoRoot "playwright-report/results.json"
     $checklistPath = Join-Path $evidenceDir "RUNBOOK_CHECKLIST.md"
     $masterBacklogPath = Join-Path $repoRoot "docs/runbooks/STRICT_EXECUTABLE_PLAYBOOK_v3_1.md"
+    $projectRoadmapPath = Join-Path $repoRoot "claude-docs/docs/project-control/PROJECT_ROADMAP.md"
+    $progressAccountingPath = Join-Path $repoRoot "claude-docs/docs/project-control/PROGRESS_ACCOUNTING.md"
+    $repositoryAnalysisPath = Join-Path $repoRoot "claude-docs/docs/project-control/REPOSITORY_ANALYSIS.md"
+    $riskRegisterPath = Join-Path $repoRoot "claude-docs/docs/project-control/RISK_REGISTER.md"
+    $gateEvalPath = Join-Path $repoRoot "docs/evidence/GATE_EVALUATION.json"
+    $freshnessHours = 48
 
     $loadedState = @{
         version = 1
@@ -111,6 +117,94 @@ function New-RunbookChecklist {
 
     $hasDashboard = Test-Path $dashboardPath
     $checks += @{ name = "RUNBOOK_DASHBOARD.md exists"; ok = $hasDashboard; required = $true; section = "Evidence System" }
+
+    $hasRoadmap = Test-Path $projectRoadmapPath
+    $checks += @{ name = "PROJECT_ROADMAP.md exists"; ok = $hasRoadmap; required = $true; section = "Control Plane" }
+
+    $hasProgress = Test-Path $progressAccountingPath
+    $checks += @{ name = "PROGRESS_ACCOUNTING.md exists"; ok = $hasProgress; required = $true; section = "Control Plane" }
+
+    $hasRepoAnalysis = Test-Path $repositoryAnalysisPath
+    $checks += @{ name = "REPOSITORY_ANALYSIS.md exists"; ok = $hasRepoAnalysis; required = $true; section = "Control Plane" }
+
+    $hasRiskRegister = Test-Path $riskRegisterPath
+    $checks += @{ name = "RISK_REGISTER.md exists"; ok = $hasRiskRegister; required = $true; section = "Control Plane" }
+
+    $roadmapAligned = $false
+    if ($hasRoadmap) {
+        $roadmapText = Get-Content -Path $projectRoadmapPath -Raw -Encoding UTF8
+        $roadmapAligned = ($roadmapText -notmatch "(?im)NOT STARTED|IN PROGRESS")
+    }
+    $checks += @{ name = "roadmap has no pending milestone markers"; ok = $roadmapAligned; required = $true; section = "Control Plane" }
+
+    $progressCurrent = $false
+    if ($hasProgress) {
+        $progressText = Get-Content -Path $progressAccountingPath -Raw -Encoding UTF8
+        $today = (Get-Date).ToString("yyyy-MM-dd")
+        $progressCurrent = $progressText -match [regex]::Escape($today)
+    }
+    $checks += @{ name = "progress log has today's entry"; ok = $progressCurrent; required = $true; section = "Control Plane" }
+
+    $repoAnalysisCurrent = $false
+    if ($hasRepoAnalysis) {
+        $repoAnalysisText = Get-Content -Path $repositoryAnalysisPath -Raw -Encoding UTF8
+        $repoAnalysisCurrent = ($repoAnalysisText -notmatch "(?im)42 commits ahead|372 fail|372 failures")
+    }
+    $checks += @{ name = "repository analysis has no known stale snapshot markers"; ok = $repoAnalysisCurrent; required = $true; section = "Control Plane" }
+
+    $riskRegisterPopulated = $false
+    if ($hasRiskRegister) {
+        $riskText = Get-Content -Path $riskRegisterPath -Raw -Encoding UTF8
+        $riskRegisterPopulated = $riskText -match "(?im)^\|\s*R-\d+"
+    }
+    $checks += @{ name = "risk register has concrete entries"; ok = $riskRegisterPopulated; required = $true; section = "Control Plane" }
+
+    $gateEvalFresh = $false
+    if (Test-Path $gateEvalPath) {
+        try {
+            $gateEval = ConvertTo-PlainHashtable -InputObject ((Get-Content -Path $gateEvalPath -Raw -Encoding UTF8 | ConvertFrom-Json))
+            if ($gateEval -is [hashtable] -and $gateEval.ContainsKey("generatedAt") -and $gateEval["generatedAt"]) {
+                $gen = [datetime]::Parse($gateEval["generatedAt"].ToString())
+                $gateEvalFresh = ((Get-Date) - $gen).TotalHours -le $freshnessHours
+            }
+        }
+        catch {
+            $gateEvalFresh = $false
+        }
+    }
+    $checks += @{ name = "gate evaluation is fresh (<= 48h)"; ok = $gateEvalFresh; required = $true; section = "Freshness" }
+
+    $runbookStateFresh = $false
+    if ($loadedState["steps"].Count -gt 0) {
+        $latest = $null
+        foreach ($stepName in $loadedState["steps"].Keys) {
+            $stepObj = $loadedState["steps"][$stepName]
+            if ($stepObj -is [hashtable] -and $stepObj.ContainsKey("timestamp") -and $stepObj["timestamp"]) {
+                try {
+                    $ts = [datetime]::Parse($stepObj["timestamp"].ToString())
+                    if ($null -eq $latest -or $ts -gt $latest) { $latest = $ts }
+                }
+                catch { }
+            }
+        }
+        if ($latest) {
+            $runbookStateFresh = ((Get-Date) - $latest).TotalHours -le $freshnessHours
+        }
+    }
+    $checks += @{ name = "runbook state is fresh (<= 48h)"; ok = $runbookStateFresh; required = $true; section = "Freshness" }
+
+    $gitCleanPolicy = $false
+    if (Get-Command git -ErrorAction SilentlyContinue) {
+        try {
+            $statusLines = @((& git status --short 2>$null) -split "`r?`n" | Where-Object { $_ -and $_.Trim().Length -gt 0 })
+            $disallowed = @($statusLines | Where-Object { $_ -notmatch "^\s*[ MADRCU\?\!]+\s+\.mcp\.json$" })
+            $gitCleanPolicy = ($disallowed.Count -eq 0)
+        }
+        catch {
+            $gitCleanPolicy = $false
+        }
+    }
+    $checks += @{ name = "git status clean (allow .mcp.json only)"; ok = $gitCleanPolicy; required = $true; section = "Git Hygiene" }
 
     $envStatusPass = $false
     if ($loadedState["steps"].ContainsKey("ENV_SANITY")) {
@@ -300,6 +394,26 @@ function New-RunbookChecklist {
     $lines += "* $(& $mark $hasEvidenceDir) docs/evidence exists"
     $lines += "* $(& $mark $hasStateFile) runbook_state.json exists"
     $lines += "* $(& $mark $hasDashboard) RUNBOOK_DASHBOARD.md exists"
+    $lines += ""
+    $lines += "## Control Plane"
+    $lines += ""
+    $lines += "* $(& $mark $hasRoadmap) PROJECT_ROADMAP.md exists"
+    $lines += "* $(& $mark $hasProgress) PROGRESS_ACCOUNTING.md exists"
+    $lines += "* $(& $mark $hasRepoAnalysis) REPOSITORY_ANALYSIS.md exists"
+    $lines += "* $(& $mark $hasRiskRegister) RISK_REGISTER.md exists"
+    $lines += "* $(& $mark $roadmapAligned) roadmap has no pending milestone markers"
+    $lines += "* $(& $mark $progressCurrent) progress log has today's entry"
+    $lines += "* $(& $mark $repoAnalysisCurrent) repository analysis has no known stale snapshot markers"
+    $lines += "* $(& $mark $riskRegisterPopulated) risk register has concrete entries"
+    $lines += ""
+    $lines += "## Freshness"
+    $lines += ""
+    $lines += "* $(& $mark $gateEvalFresh) gate evaluation is fresh (<= 48h)"
+    $lines += "* $(& $mark $runbookStateFresh) runbook state is fresh (<= 48h)"
+    $lines += ""
+    $lines += "## Git Hygiene"
+    $lines += ""
+    $lines += "* $(& $mark $gitCleanPolicy) git status clean (allow .mcp.json only)"
     $lines += ""
     $lines += "## Step: ENV_SANITY"
     $lines += ""

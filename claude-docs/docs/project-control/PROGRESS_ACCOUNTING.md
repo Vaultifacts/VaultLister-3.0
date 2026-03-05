@@ -2,6 +2,35 @@
 
 ---
 
+## 2026-03-05
+
+**What shipped:**
+- Gate automation stabilized (`gate:sync`, `gate:drift-check`)
+- Runbook CI checklist pipeline expanded and passing
+- Multi-step runbook state/dashboard/checklist evidence generation active
+- Remaining failing test buckets resolved (including connection-pool import path and encryption mock contamination issues)
+- RC snapshot markers created (`rc/baseline-2026-03-05`, `rc-baseline-2026-03-05`)
+
+**Verification outcomes:**
+- `npm run runbook:ci:all` -> PASS
+- `npm run gate:sync` -> PASS
+- `npm run gate:drift-check` -> PASS
+
+**Gate changes:**
+- CG-1 through CG-8: PASS
+- QG-1 through QG-4: PASS
+
+**Evidence updated:**
+- `docs/evidence/GATE_EVALUATION.json`
+- `docs/evidence/RUNBOOK_CHECKLIST.md`
+- `docs/evidence/RUNBOOK_DASHBOARD.md`
+- phase evidence under `docs/evidence/`
+
+**Current note:**
+- Local `.mcp.json` remains a user-local modified file and is intentionally excluded from required project artifacts.
+
+---
+
 ## 2026-03-04
 
 **What shipped:**
