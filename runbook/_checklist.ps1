@@ -197,7 +197,25 @@ function New-RunbookChecklist {
     if (Get-Command git -ErrorAction SilentlyContinue) {
         try {
             $statusLines = @((& git status --short 2>$null) -split "`r?`n" | Where-Object { $_ -and $_.Trim().Length -gt 0 })
-            $disallowed = @($statusLines | Where-Object { $_ -notmatch "^\s*[ MADRCU\?\!]+\s+\.mcp\.json$" })
+            $allowedPaths = @(
+                '\.mcp\.json',
+                'docs/evidence/RUNBOOK_CHECKLIST\.md',
+                'docs/evidence/RUNBOOK_DASHBOARD\.md',
+                'docs/evidence/runbook_state\.json'
+            )
+            $disallowed = @(
+                $statusLines | Where-Object {
+                    $line = $_
+                    $isAllowed = $false
+                    foreach ($ap in $allowedPaths) {
+                        if ($line -match ("^\s*[ MADRCU\?\!]+\s+" + $ap + "$")) {
+                            $isAllowed = $true
+                            break
+                        }
+                    }
+                    -not $isAllowed
+                }
+            )
             $gitCleanPolicy = ($disallowed.Count -eq 0)
         }
         catch {
