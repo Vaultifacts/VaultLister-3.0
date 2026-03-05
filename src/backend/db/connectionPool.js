@@ -2,14 +2,26 @@
 // better-sqlite3 is synchronous, so we implement a simple pool pattern
 // with query profiling for performance monitoring
 
-import Database from 'better-sqlite3';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import { logger } from '../shared/logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..', '..', '..');
 const DB_PATH = process.env.DB_PATH || join(ROOT_DIR, 'data', 'vaultlister.db');
+const require = createRequire(import.meta.url);
+
+let DatabaseCtor = null;
+function getDatabaseCtor() {
+    if (DatabaseCtor) return DatabaseCtor;
+    try {
+        DatabaseCtor = require('better-sqlite3');
+        return DatabaseCtor;
+    } catch (error) {
+        throw new Error(`Failed to load better-sqlite3: ${error.message}`);
+    }
+}
 
 // Configuration
 const POOL_SIZE = parseInt(process.env.DB_POOL_SIZE || '5');
@@ -38,6 +50,7 @@ class ConnectionPool {
 
     init() {
         if (this.initialized) return;
+        const Database = getDatabaseCtor();
 
         for (let i = 0; i < this.poolSize; i++) {
             const db = new Database(this.dbPath, {

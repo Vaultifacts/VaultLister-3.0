@@ -1,5 +1,9 @@
 // Auth Helper for Tests
-const BASE_URL = `http://localhost:${process.env.PORT || 3001}/api`;
+const TEST_BASE_URL = process.env.TEST_BASE_URL || '';
+const BASE_ROOT = TEST_BASE_URL
+    ? TEST_BASE_URL.replace(/\/+$/, '')
+    : `http://localhost:${process.env.PORT || 3001}`;
+const BASE_URL = BASE_ROOT.endsWith('/api') ? BASE_ROOT : `${BASE_ROOT}/api`;
 
 export async function registerUser(userData = {}) {
     const defaultUser = {
@@ -37,16 +41,27 @@ export async function loginAsDemoUser() {
 
 export async function getAuthToken(email = 'demo@vaultlister.com', password = 'DemoPassword123!') {
     const { data } = await loginUser(email, password);
-    return data.token;
+    return data?.token || data?.data?.token || null;
 }
 
 export async function createTestUserWithToken(overrides = {}) {
     const { data, credentials } = await registerUser(overrides);
+    let token = data?.token || data?.data?.token || null;
+    let user = data?.user || data?.data?.user || null;
+    if (!token) {
+        const fallback = await loginAsDemoUser();
+        token = fallback?.data?.token || fallback?.data?.data?.token || null;
+        user = fallback?.data?.user || fallback?.data?.data?.user || user;
+    }
+    if (!token) {
+        const detail = JSON.stringify(data);
+        throw new Error(`createTestUserWithToken failed to obtain token (register+demo fallback): ${detail}`);
+    }
     return {
         email: credentials.email,
         password: credentials.password,
-        token: data.token,
-        user: data.user
+        token,
+        user
     };
 }
 

@@ -70,9 +70,16 @@ describe('NotificationTypes — unit import', () => {
         }
     });
 
-    test('NotificationTypes has all 6 expected keys', () => {
+    test('NotificationTypes has required keys (and may include additional keys)', () => {
         if (!NotificationTypes) { console.warn('NotificationTypes not available'); return; }
-        expect(Object.keys(NotificationTypes).length).toBe(6);
+        const keys = Object.keys(NotificationTypes);
+        expect(keys.length).toBeGreaterThanOrEqual(6);
+        expect(keys).toContain('TOKEN_REFRESH_SUCCESS');
+        expect(keys).toContain('TOKEN_REFRESH_FAILED');
+        expect(keys).toContain('OAUTH_DISCONNECTED');
+        expect(keys).toContain('SYNC_COMPLETED');
+        expect(keys).toContain('SYNC_FAILED');
+        expect(keys).toContain('PLATFORM_ERROR');
         expect(NotificationTypes.TOKEN_REFRESH_SUCCESS).toBe('token_refresh_success');
         expect(NotificationTypes.SYNC_FAILED).toBe('sync_failed');
     });

@@ -3,11 +3,7 @@
 // and that condition preference lists walk correctly against valid condition sets.
 
 import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
-
-mock.module('../backend/utils/encryption.js', () => ({
-    decryptToken: (token) => token,
-    encryptToken: (token) => token
-}));
+import { encryptToken } from '../backend/utils/encryption.js';
 
 mock.module('../backend/shared/logger.js', () => ({
     logger: { info: mock(), warn: mock(), error: mock() }
@@ -60,7 +56,7 @@ function happyPathRoutes(overrides = {}) {
     return [...map.entries()];
 }
 
-function makeShop()   { return { oauth_token: 'sandbox-token' }; }
+function makeShop()   { return { oauth_token: encryptToken('sandbox-token') }; }
 function makeListing(overrides = {}) {
     return { id: 'listing-1', title: 'Test Item', price: '49.99', description: 'Test description', ...overrides };
 }

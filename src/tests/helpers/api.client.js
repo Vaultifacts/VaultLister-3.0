@@ -1,5 +1,9 @@
 // API Client Wrapper for Tests
-const BASE_URL = `http://localhost:${process.env.PORT || 3001}/api`;
+const TEST_BASE_URL = process.env.TEST_BASE_URL || '';
+const BASE_ROOT = TEST_BASE_URL
+    ? TEST_BASE_URL.replace(/\/+$/, '')
+    : `http://localhost:${process.env.PORT || 3001}`;
+const BASE_URL = BASE_ROOT.endsWith('/api') ? BASE_ROOT : `${BASE_ROOT}/api`;
 
 export class TestApiClient {
     constructor(token = null) {
