@@ -1,0 +1,18 @@
+{
+  "status": "healthy",
+  "timestamp": "2026-03-05T18:21:22.405Z",
+  "version": "1.0.0",
+  "uptime_seconds": 636,
+  "database": {
+    "status": "ok"
+  },
+  "migrations": {
+    "applied": 95
+  },
+  "disk": {
+    "status": "ok",
+    "path": "./data",
+    "free_bytes": 8165212160,
+    "total_bytes": 999556489216
+  }
+}

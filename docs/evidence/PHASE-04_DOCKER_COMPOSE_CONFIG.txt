@@ -1,0 +1,107 @@
+name: vaultlister-3
+services:
+  app:
+    build:
+      context: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vaultlister-3
+      dockerfile: Dockerfile
+    container_name: vaultlister-app
+    depends_on:
+      redis:
+        condition: service_started
+        required: true
+    environment:
+      ANTHROPIC_API_KEY: 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
+      APPLE_CLIENT_ID: ""
+      DATA_DIR: /app/data
+      EMAIL_FROM: noreply@vaultlister.com
+      GOOGLE_CLIENT_ID: ""
+      GOOGLE_CLIENT_SECRET: ""
+      JWT_SECRET: 8f98a67a3a8b8b3d2861fae2abd9a4ff1e8cf2a6ee49d5bc1e8bb25a8edc4cc0
+      LOG_DIR: /app/logs
+      NODE_ENV: development
+      OPENAI_API_KEY: '[CONFIGURE]'
+      PORT: "3000"
+      REDIS_URL: redis://:changeme@redis:6379
+      SMTP_HOST: ""
+      SMTP_PASS: ""
+      SMTP_PORT: "587"
+      SMTP_USER: ""
+    healthcheck:
+      test:
+        - CMD
+        - bun
+        - -e
+        - fetch('http://localhost:3000/api/health',{signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 10s
+    networks:
+      vaultlister-network: null
+    ports:
+      - mode: ingress
+        target: 3000
+        published: "3000"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: vaultlister-data
+        target: /app/data
+        volume: {}
+      - type: volume
+        source: vaultlister-logs
+        target: /app/logs
+        volume: {}
+      - type: volume
+        source: vaultlister-backups
+        target: /app/backups
+        volume: {}
+  redis:
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - allkeys-lru
+      - --requirepass
+      - changeme
+    container_name: vaultlister-redis
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - -a
+        - changeme
+        - ping
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    image: redis:7-alpine
+    networks:
+      vaultlister-network: null
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: redis-data
+        target: /data
+        volume: {}
+networks:
+  vaultlister-network:
+    name: vaultlister-3_vaultlister-network
+    driver: bridge
+volumes:
+  redis-data:
+    name: vaultlister-3_redis-data
+    driver: local
+  vaultlister-backups:
+    name: vaultlister-3_vaultlister-backups
+    driver: local
+  vaultlister-data:
+    name: vaultlister-3_vaultlister-data
+    driver: local
+  vaultlister-logs:
+    name: vaultlister-3_vaultlister-logs
+    driver: local

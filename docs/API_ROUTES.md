@@ -1,0 +1,81 @@
+# API Routes
+
+Generated from `src/backend/server.js` route map.
+
+| Path Prefix | Handler |
+|---|---|
+| /api/affiliate | affiliateRouter |
+| /api/ai | aiRouter |
+| /api/analytics | analyticsRouter |
+| /api/audit | auditLogRouter |
+| /api/auth | authRouter |
+| /api/automations | automationsRouter |
+| /api/barcode | barcodeRouter |
+| /api/batch-photo | batchPhotoRouter |
+| /api/billing | billingRouter |
+| /api/calendar | calendarRouter |
+| /api/chatbot | chatbotRouter |
+| /api/checklists | checklistsRouter |
+| /api/community | communityRouter |
+| /api/competitor-tracking | competitorTrackingRouter |
+| /api/csrf-token | async |
+| /api/duplicates | duplicatesRouter |
+| /api/email | emailOAuthRouter |
+| /api/email-marketing | emailMarketingRouter |
+| /api/expenses | expenseTrackerRouter |
+| /api/extension | extensionRouter |
+| /api/feature-flags | async |
+| /api/feedback | feedbackRouter |
+| /api/financials | financialsRouter |
+| /api/gdpr | gdprRouter |
+| /api/health | async |
+| /api/help | helpRouter |
+| /api/image-bank | imageBankRouter |
+| /api/inventory | inventoryRouter |
+| /api/inventory-import | inventoryImportRouter |
+| /api/legal | legalRouter |
+| /api/listings | listingsRouter |
+| /api/market-intel | marketIntelRouter |
+| /api/mfa | enhancedMFARouter |
+| /api/monitoring | monitoringRouter |
+| /api/notifications | notificationsRouter |
+| /api/notion | notionRouter |
+| /api/oauth | oauthRouter |
+| /api/offers | offersRouter |
+| /api/offline-sync | offlineSyncRouter |
+| /api/onboarding | onboardingRouter |
+| /api/orders | ordersRouter |
+| /api/outgoing-webhooks | outgoingWebhooksRouter |
+| /api/predictions | predictionsRouter |
+| /api/push-notifications | pushNotificationsRouter |
+| /api/push-subscriptions | pushSubscriptionsRouter |
+| /api/qr-analytics | qrAnalyticsRouter |
+| /api/rate-limits | rateLimitDashboardRouter |
+| /api/receipts | receiptParserRouter |
+| /api/recently-deleted | recentlyDeletedRouter |
+| /api/relisting | relistingRouter |
+| /api/reports | reportsRouter |
+| /api/roadmap | roadmapRouter |
+| /api/sales | salesRouter |
+| /api/sales-tools | salesEnhancementsRouter |
+| /api/search-analytics | searchAnalyticsRouter |
+| /api/security | securityRouter |
+| /api/shipping-labels-mgmt | shippingLabelsRouter |
+| /api/shipping-profiles | shippingProfilesRouter |
+| /api/shops | shopsRouter |
+| /api/size-charts | sizeChartsRouter |
+| /api/sku-rules | skuRulesRouter |
+| /api/sku-sync | skuSyncRouter |
+| /api/social-auth | socialAuthRouter |
+| /api/status | async |
+| /api/suppliers | suppliersRouter |
+| /api/tasks | tasksRouter |
+| /api/teams | teamsRouter |
+| /api/templates | templatesRouter |
+| /api/user-analytics | async |
+| /api/watermark | watermarkRouter |
+| /api/webhooks | webhooksRouter |
+| /api/whatnot | whatnotRouter |
+| /api/whatnot-enhanced | whatnotEnhancedRouter |
+
+Total route prefixes: 73

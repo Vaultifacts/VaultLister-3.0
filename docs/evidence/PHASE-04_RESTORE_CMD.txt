@@ -1,0 +1,26 @@
+VaultLister Database Restore
+============================
+
+Backup file: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vaultlister-3\docs\evidence\drill-backup.db
+Backup size: 35.54 MB
+
+Current database: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vaultlister-3\docs\evidence\drill-vaultlister.db
+Current size: 35.54 MB
+
+Backing up current database to: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vaultlister-3\docs\evidence\drill-vaultlister.db.pre-restore
+Validating backup integrity...
+Restoring database...
+
+Database restored successfully!
+Restored size: 35.54 MB
+
+Verifying data...
+  users: 3685 records
+  inventory: 1323 records
+  listings: 117 records
+  sales: 54 records
+  shops: 54 records
+
+Restore complete!
+
+Note: You may need to restart the server to pick up the changes.

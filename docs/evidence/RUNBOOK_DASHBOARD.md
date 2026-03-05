@@ -1,0 +1,12 @@
+﻿# Runbook Dashboard
+
+| Step | Status | Timestamp | Evidence |
+|---|---|---|---|
+| BACKUP_EVIDENCE | PASS | 2026-03-05T14:21:35.3110356-07:00 | [docs/evidence/BACKUP_EVIDENCE.md](docs/evidence/BACKUP_EVIDENCE.md) |
+| DEPLOYMENT_EVIDENCE | PASS | 2026-03-05T14:21:35.6949649-07:00 | [docs/evidence/DEPLOYMENT_EVIDENCE.md](docs/evidence/DEPLOYMENT_EVIDENCE.md) |
+| ENV_SANITY | PASS | 2026-03-05T13:45:23.6947481-07:00 | [docs/evidence/ENV_SANITY.md](docs/evidence/ENV_SANITY.md) |
+| LINT_SYNTAX | PASS | 2026-03-05T13:45:24.6345621-07:00 | [docs/evidence/LINT_SYNTAX.md](docs/evidence/LINT_SYNTAX.md) |
+| MONITORING_EVIDENCE | PASS | 2026-03-05T14:21:34.9199188-07:00 | [docs/evidence/MONITORING_EVIDENCE.md](docs/evidence/MONITORING_EVIDENCE.md) |
+| PERFORMANCE_EVIDENCE | PASS | 2026-03-05T14:21:36.1050816-07:00 | [docs/evidence/PERFORMANCE_EVIDENCE.md](docs/evidence/PERFORMANCE_EVIDENCE.md) |
+| SMOKE_PLAYWRIGHT | PASS | 2026-03-05T13:43:08.8368611-07:00 | [docs/evidence/SMOKE_PLAYWRIGHT.md](docs/evidence/SMOKE_PLAYWRIGHT.md) |
+| TEST_UNIT | PASS | 2026-03-05T14:21:34.5077073-07:00 | [docs/evidence/TEST_UNIT.md](docs/evidence/TEST_UNIT.md) |

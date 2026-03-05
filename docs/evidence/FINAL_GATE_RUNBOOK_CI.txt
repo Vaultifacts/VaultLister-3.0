@@ -1,0 +1,11 @@
+
+> vaultlister@1.0.0 runbook:ci:all
+> powershell -NoProfile -ExecutionPolicy Bypass -File ./runbook/all.ps1 -CI
+
+RepoRoot: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vaultlister-3
+v24.5.0
+11.5.1
+Skipping ENV_SANITY: already PASS
+Skipping LINT_SYNTAX: already PASS
+Skipping TEST_UNIT: already PASS
+Skipping SMOKE_PLAYWRIGHT: already PASS
