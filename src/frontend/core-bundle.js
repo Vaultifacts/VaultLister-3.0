@@ -1,3 +1,5 @@
+// GENERATED FILE - DO NOT EDIT DIRECTLY
+// Produced by scripts/build-dev-bundle.js from frontend source modules.
 // ──── src/frontend/core/utils.js ────
 'use strict';
 // Utility functions, error handlers, UI helpers

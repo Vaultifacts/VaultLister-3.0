@@ -1,6 +1,6 @@
 ﻿# Runbook Checklist (Auto)
 
-Generated: 2026-03-05T15:37:40.2359916-07:00
+Generated: 2026-03-05T16:11:05.8007004-07:00
 RepoRoot: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vaultlister-3
 
 ## PREREQ
@@ -33,7 +33,7 @@ RepoRoot: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vault
 
 ## Git Hygiene
 
-* [x] git status clean (allow .mcp.json only)
+* [ ] git status clean (allow .mcp.json only)
 
 ## Step: ENV_SANITY
 
