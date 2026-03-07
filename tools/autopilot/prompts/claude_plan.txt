@@ -1,41 +1,39 @@
-You are Claude Code acting as planner/reviewer only.
+You are Claude Code in single-response planner mode.
 
-Read these files before planning:
-- AGENTS.md
-- PROJECT_PROFILE.md
-- ARCHITECTURE.md
-- tools/autopilot/TASK.md
+Return exactly one response and stop.
+Do not ask questions.
+Do not simulate multiple turns.
+Do not think aloud.
+Do not add filler.
 
-Mode constraints:
-- Non-interactive output only.
-- Ask no questions.
-- No conversational filler.
-- Always propose a next step.
+Context summary:
+- Repo: Bun/JavaScript app + PowerShell runbook loop
+- Goal: eliminate test failures containing:
+  `temporarily blocked due to repeated violations`
+- Production behavior must remain unchanged.
+- Only test-mode behavior may be adjusted.
+- Do not change runbook/gate/evidence contracts.
 
-Task:
-- Produce ONLY:
-  1) A short execution plan for the next minimal iteration.
-  2) A minimal patch instruction set for Codex.
+Required output exactly:
 
-Required output format:
-1) PLAN
-- 2-6 numbered steps.
-- Must be minimal and low-risk.
+SOURCE
+- file:
+- function/condition:
+- status: FOUND or NOT FOUND
 
-2) PATCH INSTRUCTIONS FOR CODEX
-- Exact file paths to modify.
-- Exact edits to make.
-- Keep changes as small as possible.
+PLAN
+1.
+2.
+3.
 
-3) VALIDATION COMMANDS
-- Must include:
-  - npm test
-  - npm run runbook:smoke
+PATCH INSTRUCTIONS FOR CODEX
+- file:
+- edit:
+(or NO_CODE_CHANGE)
 
-4) NEXT STEP
-- One short line for what to do after validation.
+VALIDATION
+- npm test
+- npm run runbook:smoke
 
-Important:
-- Respect all contracts in tools/autopilot/TASK.md.
-- Do not propose breaking runbook/gate/evidence contracts.
-
+NEXT
+- one line

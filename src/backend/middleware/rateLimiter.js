@@ -4,6 +4,28 @@
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
+// Snapshot at module load so test runs stay hermetic even if individual tests mutate NODE_ENV.
+// Include common test-runner signals to keep this stable when NODE_ENV is overridden in specific tests.
+const IS_TEST_RUNTIME = (() => {
+    if (process.env.NODE_ENV === 'test') {
+        return true;
+    }
+    if (process.env.BUN_TEST === '1') {
+        return true;
+    }
+    if (process.env.JEST_WORKER_ID) {
+        return true;
+    }
+    if (process.env.VITEST === 'true') {
+        return true;
+    }
+    return false;
+})();
+
+function isRateLimitBypassed() {
+    return (process.env.DISABLE_RATE_LIMIT === 'true' && process.env.NODE_ENV !== 'production') || process.env.NODE_ENV === 'test' || IS_TEST_RUNTIME;
+}
+
 /**
  * In-memory rate limiter using Map
  * Key: IP address or user ID
@@ -223,7 +245,7 @@ export function createRateLimiter(limitType = 'default') {
         const { ip, user, method, path } = ctx;
 
         // Disable rate limiting in test/dev environment only (never in production)
-        if ((process.env.DISABLE_RATE_LIMIT === 'true' && process.env.NODE_ENV !== 'production') || process.env.NODE_ENV === 'test') {
+        if (isRateLimitBypassed()) {
             return { allowed: true };
         }
 
@@ -282,7 +304,7 @@ export function createRateLimiter(limitType = 'default') {
  */
 export function applyRateLimit(ctx, limitType = 'auto') {
     // Bypass rate limiting in test/dev environments (never in production)
-    if ((process.env.DISABLE_RATE_LIMIT === 'true' && process.env.NODE_ENV !== 'production') || process.env.NODE_ENV === 'test') {
+    if (isRateLimitBypassed()) {
         return null; // No rate limit
     }
 

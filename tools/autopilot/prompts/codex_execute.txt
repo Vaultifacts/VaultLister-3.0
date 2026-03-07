@@ -13,6 +13,12 @@ Execution rules:
 - Non-interactive output only.
 - Ask no questions.
 
+Guardrail:
+- If the plan does not include at least one concrete file path and exact edit, do not change code.
+- In that case, run ripgrep to locate:
+  - `temporarily blocked due to repeated violations`
+  and produce a concrete plan update in output.
+
 After patching:
 1) Run:
   - npm test
@@ -27,4 +33,3 @@ Output format:
 1) CHANGES
 2) VALIDATION
 3) NEXT
-

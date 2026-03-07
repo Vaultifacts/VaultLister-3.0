@@ -1,5 +1,13 @@
 # Round-Robin Autopilot
 
+## Recommended Mode
+
+Use Codex-only mode for stable unattended execution:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/autopilot/run-roundrobin.ps1 -Mode CodexOnly -MaxIterations 5 -IpBlockMax 3 -AutoCommit
+```
+
 ## Run
 
 ```powershell
@@ -20,4 +28,3 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/autopilot/run-roundrob
 - OR IP-block signature disappears from npm output
 - OR `runbook:smoke` fails
 - OR max iterations reached
-

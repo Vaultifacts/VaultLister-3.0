@@ -1,7 +1,41 @@
 # Round-Robin Autopilot Task
 
 ## Current Task
-Eliminate `"Your IP has been temporarily blocked due to repeated violations"` test failures by making tests hermetic in `NODE_ENV=test` only, without changing production behavior.
+Reduce bcrypt rounds in `provisionLocalUserToken` from 12 to 1 in test mode.
+
+When 264 test files run concurrently via `npm test`, all their `beforeAll` hooks call
+`provisionLocalUserToken` simultaneously. Each call does `await bcrypt.hash(password, 12)`
+which takes ~400ms of CPU per hash. With 264 concurrent hashes, the event loop is
+saturated at startup — this causes HTTP login calls and subsequent API requests to time
+out, producing 401s that cascade into hundreds of named test failures.
+
+Individual test files pass fine in isolation. The failures are purely a concurrency-at-
+startup problem caused by CPU saturation from 264 simultaneous bcrypt-12 hashes.
+
+Focus on failures matching:
+- test failures where status 401 is received but not expected (caused by invalid/expired token)
+
+Root cause: `provisionLocalUserToken` in `src/tests/helpers/auth.helper.js` always uses
+`bcrypt.hash(password, 12)` regardless of environment. In test mode, password correctness
+is irrelevant for local provisioning (the user is created in DB and a JWT is minted
+directly — the password is never verified by the server for these locally-provisioned tokens).
+
+Fix approach (test-only, minimal):
+- In `provisionLocalUserToken`, detect test mode and use 1 bcrypt round instead of 12:
+
+  ```js
+  const bcryptRounds = (process.env.NODE_ENV === 'test') ? 1 : 12;
+  const passwordHash = await bcrypt.hash(password, bcryptRounds);
+  ```
+
+- This reduces the CPU spike at test startup from ~400ms × 264 concurrent hashes
+  to ~1ms × 264, eliminating the saturation that causes cascading failures.
+- Do NOT modify any route handler or production code.
+- Do NOT change bcrypt rounds anywhere in `src/backend/` — only in the test helper.
+
+## Target Signature
+TargetSignatureRegex: Expected to contain.*401|401.*Expected to contain
+TargetThreshold: 0
 
 ## Scope Rules
 - Keep production behavior unchanged.
@@ -31,8 +65,6 @@ Eliminate `"Your IP has been temporarily blocked due to repeated violations"` te
 
 ## Stop Conditions
 - `npm test` exits `0`
-- OR the IP-block signature disappears from npm test output:
-  - `temporarily blocked due to repeated violations`
+- OR target signature count reaches threshold from task settings
 - OR `npm run runbook:smoke` fails
 - OR max iterations reached
-
