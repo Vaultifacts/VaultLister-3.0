@@ -53,7 +53,7 @@
     "release:finalize": "npm run runbook:ci:all && npm run gate:sync && npm run gate:drift-check && git diff --exit-code -- claude-docs/docs/project-control/COMPLETION_GATES.md claude-docs/docs/project-control/QUALITY_GATES.md docs/evidence/FINAL_COMPLETION_AUDIT.md"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.24.0",
+    "@anthropic-ai/sdk": "^0.78.0",
     "@notionhq/client": "^5.9.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^12.6.2",
