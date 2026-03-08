@@ -79,7 +79,7 @@ class RateLimiter {
      * Unauthenticated: keyed on IP address.
      */
     getKey(ip, userId = null) {
-        return userId ? `user:${userId}:${ip}` : `ip:${ip}`;
+        return userId ? `user:${userId}` : `ip:${ip}`;
     }
 
     /**
@@ -171,12 +171,22 @@ class RateLimiter {
             }
         }
 
-        // Safety cap: clear all if Maps grow too large (memory protection)
+        // Safety cap: LRU evict oldest 10% if Maps grow too large (prevents full-wipe security event)
         if (this.requests.size > MAX_MAP_SIZE) {
-            this.requests.clear();
+            const evictCount = Math.floor(this.requests.size * 0.1);
+            let i = 0;
+            for (const key of this.requests.keys()) {
+                if (i++ >= evictCount) break;
+                this.requests.delete(key);
+            }
         }
         if (this.blocklist.size > MAX_MAP_SIZE) {
-            this.blocklist.clear();
+            const evictCount = Math.floor(this.blocklist.size * 0.1);
+            let i = 0;
+            for (const key of this.blocklist.keys()) {
+                if (i++ >= evictCount) break;
+                this.blocklist.delete(key);
+            }
         }
     }
 
