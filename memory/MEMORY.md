@@ -47,12 +47,12 @@ Generated: 2026-03-02 from VaultLister 2.0 reference by claude-project-scaffolde
 
 ## Audit Fixes (2026-03-08) — branch: feature/audit-fixes-20260308
 63-question audit done. 7 items fixed in first pass. Commits:
-- 58eb410 — Q9/Q12: rateLimiter LRU eviction (no more clear-all on overflow); getKey fixed to `user:${userId}`; CSRF skip for /api/webhooks/incoming + /api/csp-report
+- 58eb410 — Q9/Q12: rateLimiter LRU eviction; getKey fixed to `user:${userId}`; CSRF skip for /api/webhooks/incoming + /api/csp-report
 - 0e8fd0e — Q3: WebSocket upgrade now requires valid auth token before accepting
-- 343567b — Q14/Q53/Q60/Q61: TRUST_PROXY=1 in docker-compose; nginx depends_on: service_healthy; daily backup-scheduler service added
-- 8e74344 — Q16/Q37/Q41: /api/csp-report handler registered; crypto import explicit in errorHandler.js
-Test result: 52/58 pass (was 43/58) — 9 more tests passing; 6 pre-existing CSRF-in-test-mode failures remain
-Q13 deferred: CLAUDE.md hard rule prohibits removing token/refreshToken from store.persist()/hydrate() — needs explicit user override
+- 343567b — Q14/Q53/Q60/Q61: TRUST_PROXY=1 in docker-compose; nginx service_healthy gate; daily backup-scheduler
+- 8e74344 — Q16/Q37/Q41: /api/csp-report handler; explicit crypto import in errorHandler.js
+- 18a11fd — Q13: tokens → sessionStorage only (never localStorage); hydrate() excludes tokens from localStorage reads
+Test result: 52/58 pass (was 43/58); 6 pre-existing CSRF-in-test-mode failures remain
 Full tracking: audit-table.md in Claude projects folder
 
 ## Infrastructure Additions (2026-03-07)
