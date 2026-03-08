@@ -620,9 +620,16 @@ const server = Bun.serve({
             });
         }
 
-        // WebSocket upgrade for /ws endpoint
+        // WebSocket upgrade for /ws endpoint — authenticate before accepting
         if (pathname === '/ws') {
-            const upgraded = server.upgrade(request, { data: {} });
+            const auth = await authenticateToken(request);
+            if (!auth.success) {
+                return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                    status: 401,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            const upgraded = server.upgrade(request, { data: { userId: auth.user.id, user: auth.user } });
             if (upgraded) return undefined;
             return new Response('WebSocket upgrade failed', { status: 400 });
         }
