@@ -23,6 +23,7 @@
     "test:e2e:ui": "bun run test:setup && NODE_ENV=test npx playwright test --ui",
     "test:e2e:headed": "bun run test:setup && NODE_ENV=test npx playwright test --headed",
     "test:all": "bun run test:setup && bun run test:api && bun run test:security && NODE_ENV=test npx playwright test",
+    "validate": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/ps/run-full-validation.ps1",
     "audit:ethics": "bun run scripts/ethics-audit.js",
     "audit:lighthouse": "bun run scripts/lighthouse-audit.js",
     "audit:all": "bun run audit:ethics && bun run audit:lighthouse",
