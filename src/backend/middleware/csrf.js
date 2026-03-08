@@ -160,7 +160,8 @@ export function validateCSRF(ctx) {
         '/api/auth/password-reset',
         '/api/auth/resend-verification',
         '/api/auth/demo-login',
-        '/api/webhooks/incoming'
+        '/api/webhooks/incoming',
+        '/api/csp-report'
     ];
     if (skipPaths.some(path => ctx.path.startsWith(path) || ctx.path === path.replace('/api', ''))) {
         return { valid: true };
@@ -241,7 +242,8 @@ export const csrfConfig = {
         '/api/auth/resend-verification',
         '/api/health',
         '/api/status',
-        '/api/webhooks/incoming'
+        '/api/webhooks/incoming',
+        '/api/csp-report'
     ]
 };
 

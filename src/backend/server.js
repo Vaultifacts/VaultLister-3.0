@@ -402,6 +402,19 @@ const apiRoutes = {
         // Simple status check for load balancers
         return { status: 200, data: { status: 'ok' } };
     },
+    '/api/csp-report': async (ctx) => {
+        // CSP violation report endpoint — referenced in Content-Security-Policy report-uri directive.
+        // Accepts POST from browsers when a CSP violation occurs. Must be public (no CSRF, no auth).
+        if (ctx.method !== 'POST') return { status: 405, data: { error: 'Method not allowed' } };
+        const report = ctx.body?.['csp-report'] || ctx.body || {};
+        logger.warn('[CSP] Violation report', {
+            documentUri: report['document-uri'],
+            violatedDirective: report['violated-directive'],
+            blockedUri: report['blocked-uri'],
+            originalPolicy: report['original-policy'],
+        });
+        return { status: 204, data: null };
+    },
     '/mock-oauth': mockOAuthRouter
 };
 
