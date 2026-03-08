@@ -1,5 +1,3 @@
-// GENERATED FILE - DO NOT EDIT DIRECTLY
-// Produced by scripts/build-dev-bundle.js from frontend source modules.
 // ──── src/frontend/core/utils.js ────
 'use strict';
 // Utility functions, error handlers, UI helpers
@@ -8108,34 +8106,55 @@ const store = {
     },
 
     persist() {
-        // When logged out, never re-write auth keys — any post-logout setState
-        // (e.g. router updating currentPage) must not resurrect vaultlister_state.
-        if (!this.state.token && !this.state.user) {
+        // When logged out (no user), clear all storage
+        if (!this.state.user) {
             localStorage.removeItem('vaultlister_state');
             sessionStorage.removeItem('vaultlister_state');
             return;
         }
-        const toPersist = {
+
+        // Tokens are stored in sessionStorage only (tab-scoped, cleared on browser close).
+        // They are NEVER written to localStorage — XSS attacks cannot read sessionStorage
+        // across tabs or browser restarts. "Remember Me" persistence is handled by the
+        // HttpOnly vl_refresh cookie expiry set at login, not by localStorage.
+        sessionStorage.setItem('vaultlister_state', JSON.stringify({
             user: this.state.user,
             token: this.state.token,
-            refreshToken: this.state.refreshToken
-        };
-        const storage = this.state.useSessionStorage ? sessionStorage : localStorage;
-        storage.setItem('vaultlister_state', JSON.stringify(toPersist));
+            refreshToken: this.state.refreshToken,
+            useSessionStorage: this.state.useSessionStorage
+        }));
+
+        // For "Remember Me" sessions (useSessionStorage=false), persist non-sensitive
+        // user identity to localStorage so the UI can show the user's name/avatar on
+        // browser restart while silent re-auth completes via the HttpOnly cookie.
+        if (!this.state.useSessionStorage) {
+            localStorage.setItem('vaultlister_state', JSON.stringify({
+                user: this.state.user,
+                useSessionStorage: false
+            }));
+        } else {
+            localStorage.removeItem('vaultlister_state');
+        }
     },
 
     hydrate() {
         try {
-            // Try sessionStorage first (non-remembered sessions), then localStorage
+            // Try sessionStorage first (current tab session with valid tokens)
             let saved = sessionStorage.getItem('vaultlister_state');
+            const fromSession = !!saved;
             if (saved) {
                 this.state.useSessionStorage = true;
             } else {
+                // Fallback: localStorage (browser restart — user identity only, no tokens)
                 saved = localStorage.getItem('vaultlister_state');
             }
             if (saved) {
                 const parsed = JSON.parse(saved);
-                const allowed = ['user', 'token', 'refreshToken', 'useSessionStorage'];
+                // When reading from localStorage (browser restart scenario), tokens are
+                // intentionally excluded — they are only trusted from sessionStorage.
+                const allowed = fromSession
+                    ? ['user', 'token', 'refreshToken', 'useSessionStorage']
+                    : ['user', 'useSessionStorage'];
                 for (const key of allowed) {
                     if (key in parsed) this.state[key] = parsed[key];
                 }
@@ -15131,7 +15150,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '19';
+    const v = '8c91987b';
     const files = [
         '/pages/pages-' + chunkName + '.js?v=' + v,
         '/handlers/handlers-' + chunkName + '.js?v=' + v
@@ -15667,6 +15686,7 @@ const components = {
             ]},
             { section: 'Business', items: [
                 { id: 'shops', label: 'My Shops', icon: 'shops' },
+                { id: 'platform-health', label: 'Platform Health', icon: 'activity' },
                 { id: 'transactions', label: 'Transactions', icon: 'dollar' },
                 { id: 'financials', label: 'Financials', icon: 'dollar' },
                 { id: 'analytics', label: 'Analytics', icon: 'analytics' },
@@ -15799,7 +15819,7 @@ const components = {
                     <div class="notifications-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button class="header-icon-btn" aria-label="Notifications">
                             ${this.icon('bell')}
-                            <span id="notification-badge" class="badge" style="display:${notificationCenter.unreadCount > 0 ? 'flex' : 'none'}">${notificationCenter.unreadCount || ''}</span>
+                            ${store.state.notifications.length > 0 ? `<span class="badge">${store.state.notifications.length}</span>` : ''}
                         </button>
                         <div class="dropdown-menu" style="min-width: 320px; max-width: 400px; right: 0;">
                             <div style="padding: 12px 16px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">
@@ -16172,6 +16192,7 @@ const components = {
             'calendar': { label: 'Calendar', section: 'Tools' },
             'size-charts': { label: 'Size Charts', section: 'Tools' },
             'shops': { label: 'My Shops', section: 'Business' },
+            'platform-health': { label: 'Platform Health', section: 'Business' },
             'transactions': { label: 'Transactions', section: 'Business' },
             'financials': { label: 'Financials', section: 'Business' },
             'analytics': { label: 'Analytics', section: 'Business' },
@@ -20774,6 +20795,9 @@ const auth = {
             if (key.startsWith('vaultlister_')) localStorage.removeItem(key);
         });
         sessionStorage.clear();
+        // Clear SW SWR cache so next user on shared device cannot see this user's
+        // templates or checklist data from the service worker cache.
+        navigator.serviceWorker?.controller?.postMessage({ type: 'CLEAR_USER_CACHE' });
         router.navigate('login');
         toast.info('Logged out successfully');
     },
@@ -21291,6 +21315,16 @@ const modals = {
                         <div class="form-group">
                             <label class="form-label">List Price *</label>
                             <input type="number" class="form-input" name="listPrice" step="0.01" min="0" required id="base-list-price" oninput="handlers.syncPlatformPrices(this.value)">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Purchase Date</label>
+                            <input type="date" class="form-input" name="purchaseDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Supplier</label>
+                            <input type="text" class="form-input" name="supplier" placeholder="e.g., Goodwill, Estate Sale">
                         </div>
                     </div>
 
@@ -24767,7 +24801,7 @@ const handlers = {
 
     socialLogin(provider) {
         const name = provider.charAt(0).toUpperCase() + provider.slice(1);
-        toast.info(`${name} sign-in coming soon!`);
+        toast.warning(`${name} sign-in requires OAuth credentials — set ${provider.toUpperCase()}_CLIENT_ID and ${provider.toUpperCase()}_CLIENT_SECRET in .env to enable.`);
     },
 
     handleDragOver: function(event) {
@@ -25185,12 +25219,20 @@ const handlers = {
         try {
             const data = await api.get('/automations');
             store.setState({ automations: data.rules });
-            // Also load run history for failure banner
-            try {
-                const histData = await api.get('/automations/history?limit=50');
-                store.setState({ automationHistoryRuns: histData.runs || [] });
-            } catch (histErr) {
-                // Non-critical - failure banner just won't show
+            // Load run history + stats + notif prefs in parallel (non-critical)
+            const [histResult, statsResult, notifResult] = await Promise.allSettled([
+                api.get('/automations/history?limit=50'),
+                api.get('/automations/stats'),
+                api.get('/automations/notification-prefs')
+            ]);
+            if (histResult.status === 'fulfilled') {
+                store.setState({ automationHistoryRuns: histResult.value.runs || [] });
+            }
+            if (statsResult.status === 'fulfilled') {
+                store.setState({ automationStats: statsResult.value.stats || {} });
+            }
+            if (notifResult.status === 'fulfilled' && notifResult.value.prefs) {
+                store.setState({ automationNotifPrefs: notifResult.value.prefs });
             }
             // Don't call router.handleRoute() - it creates an infinite loop
             // The router already handles rendering after calling this function
@@ -25501,6 +25543,10 @@ const handlers = {
         try {
             const saved = localStorage.getItem('vaultlister_automation_category_filter');
             if (saved) store.setState({ automationCategoryFilter: saved });
+            const savedPlatform = localStorage.getItem('vaultlister_automation_platform_filter');
+            if (savedPlatform) store.setState({ automationPlatformFilter: savedPlatform });
+            const savedNotifPrefs = localStorage.getItem('vaultlister_automation_notif_prefs');
+            if (savedNotifPrefs) try { store.setState({ automationNotifPrefs: JSON.parse(savedNotifPrefs) }); } catch (_) {}
             const savedSort = localStorage.getItem('vaultlister_automation_sort');
             if (savedSort) store.setState({ automationSortBy: savedSort });
         } catch (e) {}
@@ -26054,63 +26100,6 @@ const handlers = {
     scrollToSection(sectionId) {
         const el = document.getElementById(sectionId);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    },
-
-    toggleSidebarCollapse() {
-        const newState = !store.state.sidebarCollapsed;
-        store.setState({ sidebarCollapsed: newState });
-        const sidebar = document.querySelector('.sidebar');
-        if (sidebar) {
-            if (newState) {
-                sidebar.classList.add('sidebar-collapsed');
-            } else {
-                sidebar.classList.remove('sidebar-collapsed');
-            }
-            const collapseBtn = sidebar.querySelector('[data-testid="sidebar-collapse-btn"]');
-            if (collapseBtn) {
-                collapseBtn.title = newState ? 'Expand sidebar' : 'Collapse sidebar';
-                collapseBtn.setAttribute('aria-label', newState ? 'Expand sidebar' : 'Collapse sidebar');
-                collapseBtn.textContent = newState ? '→' : '←';
-            }
-        }
-    },
-
-    handleImportFile(file) {
-        if (!file) return;
-        modals.close();
-        const ext = file.name.split('.').pop().toLowerCase();
-        if (!['csv', 'json', 'tsv', 'xlsx', 'xls'].includes(ext)) {
-            toast.error('Unsupported file format. Use CSV, JSON, TSV, XLSX, or XLS.');
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                if (ext === 'json') {
-                    const data = JSON.parse(e.target.result);
-                    const items = Array.isArray(data) ? data : (data.inventory || data.items || [data]);
-                    store.setState({ importedData: items, importFileName: file.name });
-                    toast.success(`Loaded ${items.length} item(s) from ${file.name}`);
-                } else {
-                    const lines = e.target.result.split('\n').filter(l => l.trim());
-                    if (lines.length === 0) { toast.error('File is empty'); return; }
-                    const separator = ext === 'tsv' ? '\t' : ',';
-                    const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
-                    const items = lines.slice(1).map(line => {
-                        const values = line.split(separator).map(v => v.trim().replace(/^"|"$/g, ''));
-                        const obj = {};
-                        headers.forEach((h, i) => { obj[h] = values[i] || ''; });
-                        return obj;
-                    });
-                    store.setState({ importedData: items, importFileName: file.name });
-                    toast.success(`Parsed ${items.length} item(s) from ${file.name}`);
-                }
-                router.navigate('inventory');
-            } catch (err) {
-                toast.error('Failed to parse file: ' + err.message);
-            }
-        };
-        reader.readAsText(file);
     },
 };
 

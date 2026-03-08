@@ -5,10 +5,19 @@
  * Concatenates the 12 Phase 1 (eager) source files into a single
  * core-bundle.js for development. This avoids 12 HTTP requests in dev mode.
  *
+ * Also auto-syncs the ?v= cache-bust version across:
+ *   - src/frontend/core-bundle.js  (router.js `const v` replaced inline)
+ *   - src/frontend/index.html      (asset URL query params)
+ *   - public/sw.js                 (PRECACHE_URLS query params)
+ *
+ * Version is a short SHA-256 hash of all JS source files + main.css,
+ * so it only changes when actual source content changes.
+ *
  * Usage: bun scripts/build-dev-bundle.js
  */
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
+import { createHash } from 'crypto';
 
 const ROOT = resolve(import.meta.dir, '..');
 
@@ -28,12 +37,29 @@ const sourceFiles = [
     'src/frontend/init.js'
 ];
 
-console.log('Building core-bundle.js...');
+// ── Compute content hash ──────────────────────────────────────────────────────
+// Hash covers all JS source files + main.css so any change is reflected.
+const cssPath = join(ROOT, 'src/frontend/styles/main.css');
+const hashableFiles = [
+    ...sourceFiles.map(f => join(ROOT, f)),
+    ...(existsSync(cssPath) ? [cssPath] : [])
+];
+const hashInput = hashableFiles.map(f => readFileSync(f, 'utf-8')).join('');
+const bundleVersion = createHash('sha256').update(hashInput).digest('hex').slice(0, 8);
 
+console.log('Building core-bundle.js...');
+console.log(`  bundle version: ${bundleVersion}`);
+
+// ── Build bundle, injecting version into router.js const ──────────────────────
 const content = sourceFiles
     .map(f => {
         const full = join(ROOT, f);
-        return `// ──── ${f} ────\n` + readFileSync(full, 'utf-8');
+        let src = readFileSync(full, 'utf-8');
+        // Inject computed version into router.js without modifying the source file
+        if (f.endsWith('router.js')) {
+            src = src.replace(/\bconst v = '[^']*'/, `const v = '${bundleVersion}'`);
+        }
+        return `// ──── ${f} ────\n` + src;
     })
     .join('\n\n');
 
@@ -42,3 +68,25 @@ writeFileSync(outPath, content);
 
 const sizeKB = (Buffer.byteLength(content, 'utf-8') / 1024).toFixed(0);
 console.log(`  core-bundle.js written (${sizeKB} KB, ${sourceFiles.length} files)`);
+
+// ── Sync version into index.html ──────────────────────────────────────────────
+const indexPath = join(ROOT, 'src/frontend/index.html');
+if (existsSync(indexPath)) {
+    const original = readFileSync(indexPath, 'utf-8');
+    const updated = original.replace(/(\?v=)[a-f0-9]+/g, `$1${bundleVersion}`);
+    if (updated !== original) {
+        writeFileSync(indexPath, updated);
+        console.log(`  index.html ?v= updated to ${bundleVersion}`);
+    }
+}
+
+// ── Sync version into sw.js PRECACHE_URLS ─────────────────────────────────────
+const swPath = join(ROOT, 'public/sw.js');
+if (existsSync(swPath)) {
+    const original = readFileSync(swPath, 'utf-8');
+    const updated = original.replace(/(\?v=)[a-f0-9]+/g, `$1${bundleVersion}`);
+    if (updated !== original) {
+        writeFileSync(swPath, updated);
+        console.log(`  public/sw.js PRECACHE_URLS ?v= updated to ${bundleVersion}`);
+    }
+}
