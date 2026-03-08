@@ -77,7 +77,7 @@ import { watermarkRouter } from './routes/watermark.js';
 import { whatnotEnhancedRouter } from './routes/whatnotEnhanced.js';
 import { onboardingRouter } from './routes/onboarding.js';
 import { offlineSyncRouter } from './routes/offlineSync.js';
-import { startGDPRWorker } from './workers/gdprWorker.js';
+import { startGDPRWorker, getGDPRWorkerStatus } from './workers/gdprWorker.js';
 import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
 import { featureFlags } from './services/featureFlags.js';
@@ -91,10 +91,10 @@ import { applySecurityHeaders, securityHeadersConfig, buildCSPWithNonce } from '
 import { handleError } from './middleware/errorHandler.js';
 import { logRequestComplete } from './middleware/requestLogger.js';
 import { generateETag, etagMatches } from './middleware/cache.js';
-import { startTokenRefreshScheduler, stopTokenRefreshScheduler } from './services/tokenRefreshScheduler.js';
-import { startTaskWorker, stopTaskWorker } from './workers/taskWorker.js';
-import { startEmailPollingWorker, stopEmailPollingWorker } from './workers/emailPollingWorker.js';
-import { startPriceCheckWorker, stopPriceCheckWorker } from './workers/priceCheckWorker.js';
+import { startTokenRefreshScheduler, stopTokenRefreshScheduler, getRefreshSchedulerStatus } from './services/tokenRefreshScheduler.js';
+import { startTaskWorker, stopTaskWorker, getTaskWorkerStatus } from './workers/taskWorker.js';
+import { startEmailPollingWorker, stopEmailPollingWorker, getEmailPollingStatus } from './workers/emailPollingWorker.js';
+import { startPriceCheckWorker, stopPriceCheckWorker, getPriceCheckWorkerStatus } from './workers/priceCheckWorker.js';
 import { logger } from './shared/logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -401,6 +401,43 @@ const apiRoutes = {
     '/api/status': async () => {
         // Simple status check for load balancers
         return { status: 200, data: { status: 'ok' } };
+    },
+    '/api/workers/health': async () => {
+        // Background worker health — returns last-run timestamps and stale detection.
+        // Public (no auth), matching the /api/health pattern. Safe for external monitoring.
+        const now = Date.now();
+        const workerDefs = [
+            { key: 'taskWorker',            status: getTaskWorkerStatus(),          staleThresholdMs: 30_000 },
+            { key: 'gdprWorker',            status: getGDPRWorkerStatus(),          staleThresholdMs: 3 * 60 * 60 * 1000 },
+            { key: 'priceCheckWorker',      status: getPriceCheckWorkerStatus(),    staleThresholdMs: 90 * 60 * 1000 },
+            { key: 'emailPollingWorker',    status: getEmailPollingStatus(),        staleThresholdMs: 15 * 60 * 1000 },
+            { key: 'tokenRefreshScheduler', status: getRefreshSchedulerStatus(),    staleThresholdMs: 15 * 60 * 1000 },
+        ];
+
+        const workers = {};
+        let overallOk = true;
+
+        for (const { key, status, staleThresholdMs } of workerDefs) {
+            const lastRunMs = status.lastRun ? new Date(status.lastRun).getTime() : 0;
+            let workerStatus;
+            if (!status.running) {
+                workerStatus = 'stopped';
+                overallOk = false;
+            } else if (!lastRunMs) {
+                workerStatus = 'starting';
+            } else if (now - lastRunMs > staleThresholdMs) {
+                workerStatus = 'stale';
+                overallOk = false;
+            } else {
+                workerStatus = 'ok';
+            }
+            workers[key] = { status: workerStatus, lastRun: status.lastRun, intervalMs: status.intervalMs };
+        }
+
+        return {
+            status: overallOk ? 200 : 503,
+            data: { overall: overallOk ? 'ok' : 'degraded', workers, timestamp: new Date().toISOString() }
+        };
     },
     '/api/csp-report': async (ctx) => {
         // CSP violation report endpoint — referenced in Content-Security-Policy report-uri directive.

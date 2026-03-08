@@ -33,6 +33,7 @@ const TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000; // Refresh tokens expiring in 5 mi
 
 let pollingInterval = null;
 let isRunning = false;
+let lastRun = 0;
 
 /**
  * Start the email polling worker
@@ -76,6 +77,7 @@ async function pollEmailAccounts() {
     }
 
     isRunning = true;
+    lastRun = Date.now();
 
     try {
         // Find accounts due for sync (not syncing, enabled, with refresh token)
@@ -382,10 +384,9 @@ export function getEmailPollingStatus() {
     `);
 
     return {
-        isRunning: pollingInterval !== null,
+        running: pollingInterval !== null,
         intervalMs: POLL_INTERVAL_MS,
-        maxAccountsPerCycle: MAX_ACCOUNTS_PER_CYCLE,
-        maxFailures: MAX_CONSECUTIVE_FAILURES,
+        lastRun: lastRun ? new Date(lastRun).toISOString() : null,
         ...stats
     };
 }

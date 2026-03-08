@@ -12,6 +12,7 @@ const CHECK_DELAY_MS = 500; // Delay between checks to avoid rate limiting
 
 let pollInterval = null;
 let isRunning = false;
+let lastRun = 0;
 
 /**
  * Start the price check worker
@@ -58,6 +59,7 @@ async function runPriceChecks() {
         logger.info('[PriceCheckWorker] Check already in progress, skipping');
         return;
     }
+    lastRun = Date.now();
 
     isRunning = true;
     logger.info('[PriceCheckWorker] Starting price check cycle...');
@@ -288,9 +290,8 @@ export function getPriceCheckWorkerStatus() {
     return {
         running: pollInterval !== null,
         checking: isRunning,
-        interval_ms: POLL_INTERVAL_MS,
-        interval_minutes: POLL_INTERVAL_MS / 60000,
-        max_items_per_cycle: MAX_ITEMS_PER_CYCLE
+        intervalMs: POLL_INTERVAL_MS,
+        lastRun: lastRun ? new Date(lastRun).toISOString() : null
     };
 }
 

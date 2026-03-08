@@ -22,6 +22,7 @@ let lastDailySummaryCheck = 0;
 let workerInterval = null;
 let isProcessing = false;
 let activeTasks = 0;
+let lastQueuePoll = 0;
 
 /**
  * Start the task worker
@@ -55,6 +56,16 @@ export function stopTaskWorker() {
     }
 }
 
+export function getTaskWorkerStatus() {
+    return {
+        running: workerInterval !== null,
+        intervalMs: POLL_INTERVAL_MS,
+        lastRun: lastQueuePoll ? new Date(lastQueuePoll).toISOString() : null,
+        lastAutomationCheck: lastAutomationCheck ? new Date(lastAutomationCheck).toISOString() : null,
+        lastDailySummaryCheck: lastDailySummaryCheck ? new Date(lastDailySummaryCheck).toISOString() : null
+    };
+}
+
 /**
  * Process pending tasks from the queue
  */
@@ -64,6 +75,7 @@ async function processQueue() {
     }
 
     isProcessing = true;
+    lastQueuePoll = Date.now();
 
     try {
         // FIXED 2026-02-24: Check automation schedules periodically (Issue #3)

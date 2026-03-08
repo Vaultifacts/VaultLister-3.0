@@ -14,6 +14,7 @@ const FAILURE_RESET_HOURS = 24; // Reset failure count after this many hours of 
 
 let schedulerInterval = null;
 let isRunning = false;
+let lastRun = 0;
 
 /**
  * Start the token refresh scheduler
@@ -57,6 +58,7 @@ export async function refreshExpiringTokens() {
     }
 
     isRunning = true;
+    lastRun = Date.now();
 
     try {
         const expiryThreshold = new Date(Date.now() + TOKEN_EXPIRY_BUFFER_MS).toISOString();
@@ -654,10 +656,9 @@ export function getRefreshSchedulerStatus() {
     }
 
     return {
-        isRunning: schedulerInterval !== null,
+        running: schedulerInterval !== null,
         intervalMs: REFRESH_INTERVAL_MS,
-        bufferMs: TOKEN_EXPIRY_BUFFER_MS,
-        maxFailures: MAX_CONSECUTIVE_FAILURES,
+        lastRun: lastRun ? new Date(lastRun).toISOString() : null,
         ...stats
     };
 }

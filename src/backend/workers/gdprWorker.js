@@ -6,6 +6,7 @@ import emailService from '../services/email.js';
 import { logger } from '../shared/logger.js';
 
 let intervalId = null;
+let lastRun = 0;
 
 // Process pending deletions
 async function processAccountDeletions() {
@@ -193,6 +194,7 @@ export function startGDPRWorker() {
 
     // Run every hour
     intervalId = setInterval(async () => {
+        lastRun = Date.now();
         await processAccountDeletions().catch(e => logger.error('[GDPRWorker] processAccountDeletions failed', null, { detail: e.message }));
         await sendDeletionReminders().catch(e => logger.error('[GDPRWorker] sendDeletionReminders failed', null, { detail: e.message }));
         await cleanupExportRequests().catch(e => logger.error('[GDPRWorker] cleanupExportRequests failed', null, { detail: e.message }));
@@ -210,4 +212,12 @@ export function stopGDPRWorker() {
     }
 }
 
-export default { startGDPRWorker, stopGDPRWorker };
+export function getGDPRWorkerStatus() {
+    return {
+        running: intervalId !== null,
+        intervalMs: 60 * 60 * 1000,
+        lastRun: lastRun ? new Date(lastRun).toISOString() : null
+    };
+}
+
+export default { startGDPRWorker, stopGDPRWorker, getGDPRWorkerStatus };
