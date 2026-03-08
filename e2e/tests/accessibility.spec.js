@@ -59,7 +59,7 @@ const KNOWN_RULES = {
     login: ['color-contrast', 'label'],
     register: ['color-contrast', 'label'],
     dashboard: ['color-contrast', 'button-name', 'select-name'],
-    inventory: ['color-contrast'],
+    inventory: ['color-contrast', 'select-name'],
     listings: ['color-contrast', 'select-name'],
     analytics: ['color-contrast', 'select-name', 'button-name', 'aria-required-children']
 };

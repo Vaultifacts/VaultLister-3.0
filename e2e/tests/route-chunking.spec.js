@@ -15,7 +15,7 @@ test.describe('Route-Based Chunking', () => {
             () => document.querySelector('#app')?.innerHTML.length > 200,
             { timeout: 15000 }
         );
-        await expect(authedPage.locator('.page-title, h1, .main-content')).toBeVisible({ timeout: 10000 });
+        await expect(authedPage.locator('.page-title, h1, .main-content').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('loads sales-orders chunk on navigation @chunking', async ({ authedPage }) => {
@@ -24,7 +24,7 @@ test.describe('Route-Based Chunking', () => {
             () => document.querySelector('#app')?.innerHTML.length > 200,
             { timeout: 15000 }
         );
-        await expect(authedPage.locator('.page-title, h1, .main-content')).toBeVisible({ timeout: 10000 });
+        await expect(authedPage.locator('.page-title, h1, .main-content').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('loads tools-tasks chunk on navigation @chunking', async ({ authedPage }) => {
@@ -33,7 +33,7 @@ test.describe('Route-Based Chunking', () => {
             () => document.querySelector('#app')?.innerHTML.length > 200,
             { timeout: 15000 }
         );
-        await expect(authedPage.locator('.page-title, h1, .main-content')).toBeVisible({ timeout: 10000 });
+        await expect(authedPage.locator('.page-title, h1, .main-content').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('loads intelligence chunk on navigation @chunking', async ({ authedPage }) => {
@@ -42,7 +42,7 @@ test.describe('Route-Based Chunking', () => {
             () => document.querySelector('#app')?.innerHTML.length > 200,
             { timeout: 15000 }
         );
-        await expect(authedPage.locator('.page-title, h1, .main-content')).toBeVisible({ timeout: 10000 });
+        await expect(authedPage.locator('.page-title, h1, .main-content').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('loads settings-account chunk on navigation @chunking', async ({ authedPage }) => {
@@ -51,7 +51,7 @@ test.describe('Route-Based Chunking', () => {
             () => document.querySelector('#app')?.innerHTML.length > 200,
             { timeout: 15000 }
         );
-        await expect(authedPage.locator('.page-title, h1, .main-content')).toBeVisible({ timeout: 10000 });
+        await expect(authedPage.locator('.page-title, h1, .main-content').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('loads community-help chunk on navigation @chunking', async ({ authedPage }) => {
@@ -60,7 +60,7 @@ test.describe('Route-Based Chunking', () => {
             () => document.querySelector('#app')?.innerHTML.length > 200,
             { timeout: 15000 }
         );
-        await expect(authedPage.locator('.page-title, h1, .main-content')).toBeVisible({ timeout: 10000 });
+        await expect(authedPage.locator('.page-title, h1, .main-content').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('navigates between different chunk groups without error @chunking', async ({ authedPage }) => {

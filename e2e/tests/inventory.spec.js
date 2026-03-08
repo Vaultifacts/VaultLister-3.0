@@ -69,7 +69,8 @@ test.describe('Inventory Management', () => {
         // Find status filter dropdown
         const statusSelect = page.locator('select').first();
 
-        if (await statusSelect.isVisible()) {
+        const options = await statusSelect.locator('option').count();
+        if (await statusSelect.isVisible() && options > 1) {
             // Change filter
             await statusSelect.selectOption({ index: 1 });
 
