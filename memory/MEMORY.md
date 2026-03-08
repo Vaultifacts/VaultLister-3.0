@@ -56,11 +56,19 @@ Generated: 2026-03-02 from VaultLister 2.0 reference by claude-project-scaffolde
 - d5d5a99 — Q63: both submitCrosslist() now capture per-platform results; warning+error toasts on partial failure
 - 9034dbe — Q35: removed stale 051_add_offers_table.sql entry; corrected 080 filename to 080_add_offers_table.sql
 - 62968af — Q51: /api/workers/health endpoint; all 5 workers track lastRun; stale detection (3× missed cycles)
-Test result: 52/58 pass (6 pre-existing CSRF-in-test-mode failures remain)
+- 6a9cf3b — Q4: rateLimiter._cleanupInterval + stopRateLimiter(); csrfManager._cleanupInterval + stopCSRF(); both called in gracefulShutdown(); middleware-shutdown.test.js (6/6 pass)
+- e8dab56 — Q17: SW v4.2.0 CLEAR_USER_CACHE handler; auth.logout() posts to SW; SWR cache wiped on logout
+- 9a222b0 — Q22: name-based .test-baseline (KNOWN_FAIL entries); CI+pre-push now flag new failures by name not count; fixed 4 Q51 test regressions (isRunning→running, getKey key format)
 Full tracking: audit-table.md in Claude projects folder
 All originally-flagged high-priority audit items resolved.
 
-## E2E Fixes + App Defects (2026-03-08) — branch autopilot/roundrobin-20260305-1756
+## Unit Baseline Finalized (2026-03-08) — 5289/0 — commit 7df5afb on master
+- `getRefreshSchedulerStatus()` returns `isRunning`, `bufferMs`, `maxFailures` (aliases alongside existing fields)
+- `getPriceCheckWorkerStatus()` returns `interval_ms`, `interval_minutes`, `max_items_per_cycle` (aliases)
+- Tests must run via `run-bun-tests.ps1` (sets TEST_BASE_URL=http://localhost:3100, PORT=3100, NODE_ENV=test)
+- security.test.js BASE_URL defaults to port 3000; auth.helper.js to 3001 — TEST_BASE_URL must be set
+
+## E2E Fixes + App Defects (2026-03-08) — merged to master
 All 49 E2E failures fixed → 620/620 pass. Then 4 app-level defects patched:
 - `core-bundle.js` is the file actually served (via `index.html`), NOT `app.js` — critical architecture note
 - `const handlers = {` defined at core-bundle.js:24705, closed at :26077, `window.handlers` set at :26674
@@ -69,8 +77,8 @@ All 49 E2E failures fixed → 620/620 pass. Then 4 app-level defects patched:
 - WS badge: `#notification-badge` element never rendered → changed header bell to always render `<span id="notification-badge">`; `notificationCenter.updateBadge()` uses `getElementById`
 - Mobile overflow: `@media(max-width:768px)` guard added at end of main.css
 - Hardened: P2-1/P2-2/P2-4 (nav), P1-1 (import), P9-3/P10-3 (WS badge)
-- auth.test.js / security.test.js failures: pre-existing 429 rate-limit noise, NOT regressions
-- Commit: 0b26054 on master
+- auth.test.js / security.test.js: now 0 fail when TEST_BASE_URL/PORT env vars are set correctly
+- Commit: 0b26054 on master (app defects); 7df5afb (unit baseline cleanup)
 
 ## Infrastructure Additions (2026-03-07)
 All 6 gaps from /compare-project run implemented. New files:
@@ -84,4 +92,4 @@ Modified files:
 Commits: d003af4 (infra) → 1e7e2eb (SW v4.1.0) → 1b1c85d (Dockerfile fix) — all deployed
 Post-deploy: 7/7 checks pass; auth+security tests: 43/58 pass (15 pre-existing, not our changes)
 Dockerfile: groupadd/useradd (Debian); python3+make+g++ in builder for better-sqlite3
-Tests must run against local bun server (PORT=3001), NOT Docker (rate limiting enabled in prod)
+Tests must run against local bun server (PORT=3100 via start-test-bg.ps1), NOT Docker (rate limiting enabled in prod)
