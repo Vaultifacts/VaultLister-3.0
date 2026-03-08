@@ -1,7 +1,7 @@
-// VaultLister Service Worker v4.0.0
+// VaultLister Service Worker v4.2.0
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v4.1.0';
+const CACHE_VERSION = 'v4.2.0';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
@@ -46,6 +46,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
+    }
+    // On logout: wipe the user-specific SWR API cache so the next user cannot
+    // receive another user's templates or checklist data on shared devices.
+    if (event.data && event.data.type === 'CLEAR_USER_CACHE') {
+        event.waitUntil(caches.delete('vaultlister-swr-api'));
     }
 });
 
@@ -391,4 +396,4 @@ async function syncAllData() {
     await syncSales();
 }
 
-console.log('[SW] Service worker v4.1.0 loaded');
+console.log('[SW] Service worker v4.2.0 loaded');

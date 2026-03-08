@@ -133,6 +133,9 @@ const auth = {
             if (key.startsWith('vaultlister_')) localStorage.removeItem(key);
         });
         sessionStorage.clear();
+        // Clear SW SWR cache so next user on shared device cannot see this user's
+        // templates or checklist data from the service worker cache.
+        navigator.serviceWorker?.controller?.postMessage({ type: 'CLEAR_USER_CACHE' });
         router.navigate('login');
         toast.info('Logged out successfully');
     },
