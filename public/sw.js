@@ -1,7 +1,7 @@
 // VaultLister Service Worker v4.0.0
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v4.0.0';
+const CACHE_VERSION = 'v4.1.0';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
@@ -391,4 +391,4 @@ async function syncAllData() {
     await syncSales();
 }
 
-console.log('[SW] Service worker v4.0.0 loaded');
+console.log('[SW] Service worker v4.1.0 loaded');
