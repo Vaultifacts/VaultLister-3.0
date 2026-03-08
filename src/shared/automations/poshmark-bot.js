@@ -2,12 +2,27 @@
 // Handles sharing, following, and offer management
 
 import { chromium } from 'playwright';
+import fs from 'fs';
+import path from 'path';
+import { logger } from '../../backend/shared/logger.js';
+import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 
 const POSHMARK_URL = 'https://poshmark.com';
+const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
 
-// Random delay to mimic human behavior
+// Random delay for human-like typing and short navigation pauses only
+// Inter-action delays use jitteredDelay(RATE_LIMITS.poshmark.*) instead
 function randomDelay(min = 1000, max = 3000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function writeAuditLog(event, metadata = {}) {
+    try {
+        const entry = JSON.stringify({ ts: new Date().toISOString(), platform: 'poshmark', event, ...metadata });
+        fs.appendFileSync(AUDIT_LOG, entry + '\n');
+    } catch (e) {
+        logger.error('[PoshmarkBot] Failed to write audit log', e);
+    }
 }
 
 // Human-like typing
@@ -44,33 +59,48 @@ export class PoshmarkBot {
      * Initialize the browser
      */
     async init() {
-        console.log('[PoshmarkBot] Initializing browser...');
+        logger.info('[PoshmarkBot] Initializing browser...');
 
-        this.browser = await chromium.launch({
-            headless: this.options.headless,
-            slowMo: this.options.slowMo
-        });
+        try {
+            this.browser = await chromium.launch({
+                headless: this.options.headless,
+                slowMo: this.options.slowMo
+            });
 
-        const context = await this.browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 800 }
-        });
+            const context = await this.browser.newContext({
+                userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                viewport: { width: 1280, height: 800 }
+            });
 
-        this.page = await context.newPage();
+            this.page = await context.newPage();
 
-        // Block unnecessary resources for speed
-        await this.page.route('**/*.{png,jpg,jpeg,gif,webp}', route => route.abort());
-        await this.page.route('**/analytics/**', route => route.abort());
-        await this.page.route('**/tracking/**', route => route.abort());
+            // Block unnecessary resources for speed
+            await this.page.route('**/*.{png,jpg,jpeg,gif,webp}', route => route.abort());
+            await this.page.route('**/analytics/**', route => route.abort());
+            await this.page.route('**/tracking/**', route => route.abort());
 
-        console.log('[PoshmarkBot] Browser initialized');
+            logger.info('[PoshmarkBot] Browser initialized');
+        } catch (error) {
+            if (this.browser) {
+                await this.browser.close().catch(() => {});
+                this.browser = null;
+            }
+            throw error;
+        }
     }
 
     /**
-     * Login to Poshmark
+     * Login to Poshmark — reads credentials from process.env, never accepts them as arguments
      */
-    async login(username, password) {
-        console.log('[PoshmarkBot] Logging in...');
+    async login() {
+        const username = process.env.POSHMARK_USERNAME;
+        const password = process.env.POSHMARK_PASSWORD;
+
+        if (!username || !password) {
+            throw new Error('[PoshmarkBot] POSHMARK_USERNAME and POSHMARK_PASSWORD must be set in .env');
+        }
+
+        logger.info('[PoshmarkBot] Logging in...');
 
         try {
             await this.page.goto(`${POSHMARK_URL}/login`, { waitUntil: 'networkidle' });
@@ -96,14 +126,16 @@ export class PoshmarkBot {
             this.isLoggedIn = !!isLoggedIn;
 
             if (this.isLoggedIn) {
-                console.log('[PoshmarkBot] Login successful');
+                logger.info('[PoshmarkBot] Login successful');
+                writeAuditLog('login', { username, success: true });
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
 
             return this.isLoggedIn;
         } catch (error) {
-            console.error('[PoshmarkBot] Login error:', error.message);
+            logger.error('[PoshmarkBot] Login error', error);
+            writeAuditLog('login', { username, success: false, error: error.message });
             this.stats.errors++;
             throw error;
         }
@@ -113,16 +145,16 @@ export class PoshmarkBot {
      * Share an item
      */
     async shareItem(listingUrl) {
-        console.log('[PoshmarkBot] Sharing item:', listingUrl);
+        logger.info('[PoshmarkBot] Sharing item', { listingUrl });
 
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay());
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
 
             // Find and click share button
             const shareButton = await this.page.$('[data-test="social-action-bar-share"]');
             if (!shareButton) {
-                console.log('[PoshmarkBot] Share button not found');
+                logger.info('[PoshmarkBot] Share button not found');
                 return false;
             }
 
@@ -133,15 +165,16 @@ export class PoshmarkBot {
             const toFollowersOption = await this.page.$('[data-test="share-to-followers"]');
             if (toFollowersOption) {
                 await toFollowersOption.click();
-                await this.page.waitForTimeout(randomDelay());
+                await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
                 this.stats.shares++;
-                console.log('[PoshmarkBot] Item shared successfully');
+                writeAuditLog('share_item', { listingUrl });
+                logger.info('[PoshmarkBot] Item shared successfully');
                 return true;
             }
 
             return false;
         } catch (error) {
-            console.error('[PoshmarkBot] Share error:', error.message);
+            logger.error('[PoshmarkBot] Share error', error);
             this.stats.errors++;
             return false;
         }
@@ -151,17 +184,17 @@ export class PoshmarkBot {
      * Share entire closet
      */
     async shareCloset(username, options = {}) {
-        const { maxShares = 100, delayBetween = 3000 } = options;
+        const { maxShares = 100, delayBetween = RATE_LIMITS.poshmark.shareDelay } = options;
 
-        console.log(`[PoshmarkBot] Sharing closet for ${username}, max ${maxShares} items`);
+        logger.info(`[PoshmarkBot] Sharing closet for ${username}, max ${maxShares} items`);
 
         try {
             await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay());
+            await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             // Get all listing cards
             const listings = await this.page.$$('[data-test="tile"]');
-            console.log(`[PoshmarkBot] Found ${listings.length} listings`);
+            logger.info(`[PoshmarkBot] Found ${listings.length} listings`);
 
             let shared = 0;
 
@@ -179,20 +212,22 @@ export class PoshmarkBot {
                             await toFollowers.click();
                             shared++;
                             this.stats.shares++;
-                            console.log(`[PoshmarkBot] Shared item ${shared}/${maxShares}`);
+                            writeAuditLog('share_closet_item', { username, shared, maxShares });
+                            logger.info(`[PoshmarkBot] Shared item ${shared}/${maxShares}`);
                         }
 
-                        await this.page.waitForTimeout(delayBetween + randomDelay());
+                        await this.page.waitForTimeout(jitteredDelay(delayBetween));
                     }
                 } catch (e) {
-                    console.log('[PoshmarkBot] Error sharing item:', e.message);
+                    logger.info('[PoshmarkBot] Error sharing item', { error: e.message });
                 }
             }
 
-            console.log(`[PoshmarkBot] Closet share complete. Shared ${shared} items.`);
+            writeAuditLog('share_closet_complete', { username, shared, maxShares });
+            logger.info(`[PoshmarkBot] Closet share complete. Shared ${shared} items.`);
             return shared;
         } catch (error) {
-            console.error('[PoshmarkBot] Closet share error:', error.message);
+            logger.error('[PoshmarkBot] Closet share error', error);
             this.stats.errors++;
             throw error;
         }
@@ -202,11 +237,11 @@ export class PoshmarkBot {
      * Follow a user
      */
     async followUser(username) {
-        console.log('[PoshmarkBot] Following user:', username);
+        logger.info('[PoshmarkBot] Following user', { username });
 
         try {
             await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay());
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.followDelay));
 
             // Find follow button
             const followBtn = await this.page.$('[data-test="follow-button"]:not([data-test-value="following"])');
@@ -214,14 +249,15 @@ export class PoshmarkBot {
             if (followBtn) {
                 await followBtn.click();
                 this.stats.follows++;
-                console.log('[PoshmarkBot] Followed user successfully');
+                writeAuditLog('follow_user', { username });
+                logger.info('[PoshmarkBot] Followed user successfully');
                 return true;
             }
 
-            console.log('[PoshmarkBot] Already following or button not found');
+            logger.info('[PoshmarkBot] Already following or button not found');
             return false;
         } catch (error) {
-            console.error('[PoshmarkBot] Follow error:', error.message);
+            logger.error('[PoshmarkBot] Follow error', error);
             this.stats.errors++;
             return false;
         }
@@ -231,12 +267,12 @@ export class PoshmarkBot {
      * Follow back users who followed you
      */
     async followBackFollowers(maxFollows = 50) {
-        console.log(`[PoshmarkBot] Following back followers, max ${maxFollows}`);
+        logger.info(`[PoshmarkBot] Following back followers, max ${maxFollows}`);
 
         try {
             // Navigate to followers page
             await this.page.goto(`${POSHMARK_URL}/user/followers`, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay());
+            await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             let followed = 0;
 
@@ -250,15 +286,17 @@ export class PoshmarkBot {
                     await followBtn.click();
                     followed++;
                     this.stats.follows++;
-                    console.log(`[PoshmarkBot] Followed back ${followed}/${maxFollows}`);
-                    await this.page.waitForTimeout(randomDelay(2000, 4000));
+                    writeAuditLog('follow_back', { followed, maxFollows });
+                    logger.info(`[PoshmarkBot] Followed back ${followed}/${maxFollows}`);
+                    await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.followDelay));
                 }
             }
 
-            console.log(`[PoshmarkBot] Follow back complete. Followed ${followed} users.`);
+            writeAuditLog('follow_back_complete', { followed, maxFollows });
+            logger.info(`[PoshmarkBot] Follow back complete. Followed ${followed} users.`);
             return followed;
         } catch (error) {
-            console.error('[PoshmarkBot] Follow back error:', error.message);
+            logger.error('[PoshmarkBot] Follow back error', error);
             this.stats.errors++;
             throw error;
         }
@@ -268,11 +306,11 @@ export class PoshmarkBot {
      * Get pending offers
      */
     async getOffers() {
-        console.log('[PoshmarkBot] Getting offers...');
+        logger.info('[PoshmarkBot] Getting offers...');
 
         try {
             await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay());
+            await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             const offers = await this.page.$$eval('[data-test="offer-card"]', cards => {
                 return cards.map(card => ({
@@ -284,10 +322,10 @@ export class PoshmarkBot {
                 }));
             });
 
-            console.log(`[PoshmarkBot] Found ${offers.length} offers`);
+            logger.info(`[PoshmarkBot] Found ${offers.length} offers`);
             return offers;
         } catch (error) {
-            console.error('[PoshmarkBot] Get offers error:', error.message);
+            logger.error('[PoshmarkBot] Get offers error', error);
             return [];
         }
     }
@@ -296,11 +334,11 @@ export class PoshmarkBot {
      * Accept an offer
      */
     async acceptOffer(offerIndex) {
-        console.log('[PoshmarkBot] Accepting offer at index:', offerIndex);
+        logger.info('[PoshmarkBot] Accepting offer', { offerIndex });
 
         try {
             await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay());
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
 
@@ -315,7 +353,8 @@ export class PoshmarkBot {
                     if (confirmBtn) {
                         await confirmBtn.click();
                         this.stats.offers++;
-                        console.log('[PoshmarkBot] Offer accepted');
+                        writeAuditLog('accept_offer', { offerIndex });
+                        logger.info('[PoshmarkBot] Offer accepted');
                         return true;
                     }
                 }
@@ -323,7 +362,7 @@ export class PoshmarkBot {
 
             return false;
         } catch (error) {
-            console.error('[PoshmarkBot] Accept offer error:', error.message);
+            logger.error('[PoshmarkBot] Accept offer error', error);
             this.stats.errors++;
             return false;
         }
@@ -333,11 +372,11 @@ export class PoshmarkBot {
      * Counter an offer
      */
     async counterOffer(offerIndex, counterAmount) {
-        console.log('[PoshmarkBot] Countering offer at index:', offerIndex, 'with amount:', counterAmount);
+        logger.info('[PoshmarkBot] Countering offer', { offerIndex, counterAmount });
 
         try {
             await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay());
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
 
@@ -356,7 +395,8 @@ export class PoshmarkBot {
                     if (submitBtn) {
                         await submitBtn.click();
                         this.stats.offers++;
-                        console.log('[PoshmarkBot] Counter offer sent');
+                        writeAuditLog('counter_offer', { offerIndex, counterAmount });
+                        logger.info('[PoshmarkBot] Counter offer sent');
                         return true;
                     }
                 }
@@ -364,7 +404,7 @@ export class PoshmarkBot {
 
             return false;
         } catch (error) {
-            console.error('[PoshmarkBot] Counter offer error:', error.message);
+            logger.error('[PoshmarkBot] Counter offer error', error);
             this.stats.errors++;
             return false;
         }
@@ -374,11 +414,11 @@ export class PoshmarkBot {
      * Decline an offer
      */
     async declineOffer(offerIndex) {
-        console.log('[PoshmarkBot] Declining offer at index:', offerIndex);
+        logger.info('[PoshmarkBot] Declining offer', { offerIndex });
 
         try {
             await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay());
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
 
@@ -392,7 +432,8 @@ export class PoshmarkBot {
                     const confirmBtn = await this.page.$('[data-test="confirm-decline"]');
                     if (confirmBtn) {
                         await confirmBtn.click();
-                        console.log('[PoshmarkBot] Offer declined');
+                        writeAuditLog('decline_offer', { offerIndex });
+                        logger.info('[PoshmarkBot] Offer declined');
                         return true;
                     }
                 }
@@ -400,7 +441,7 @@ export class PoshmarkBot {
 
             return false;
         } catch (error) {
-            console.error('[PoshmarkBot] Decline offer error:', error.message);
+            logger.error('[PoshmarkBot] Decline offer error', error);
             this.stats.errors++;
             return false;
         }
@@ -413,18 +454,18 @@ export class PoshmarkBot {
      * @param {number} shippingDiscount - Shipping discount in dollars (0 = no discount, 4.99 = discounted shipping)
      */
     async sendOfferToLikers(listingUrl, discountPercent = 20, shippingDiscount = 0) {
-        console.log(`[PoshmarkBot] Sending OTL for ${listingUrl} — ${discountPercent}% off`);
+        logger.info(`[PoshmarkBot] Sending OTL for ${listingUrl} — ${discountPercent}% off`);
 
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay(2000, 3500));
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             // Find the "Offer/Price Drop" or "Send Offer to Likers" button
             const otlBtn = await this.page.$(
                 'button:has-text("Offer to Likers"), button:has-text("Price Drop"), [data-test="offer-to-likers"], [data-test*="price-drop"]'
             );
             if (!otlBtn) {
-                console.log('[PoshmarkBot] OTL button not found — listing may have no likers');
+                logger.info('[PoshmarkBot] OTL button not found — listing may have no likers');
                 return { sent: false, reason: 'no_otl_button' };
             }
 
@@ -467,15 +508,16 @@ export class PoshmarkBot {
             );
             if (submitBtn) {
                 await submitBtn.click();
-                await this.page.waitForTimeout(randomDelay(2000, 3500));
+                await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
                 this.stats.offers++;
-                console.log('[PoshmarkBot] OTL sent successfully');
+                writeAuditLog('send_otl', { listingUrl, discountPercent, shippingDiscount });
+                logger.info('[PoshmarkBot] OTL sent successfully');
                 return { sent: true };
             }
 
             return { sent: false, reason: 'submit_button_not_found' };
         } catch (error) {
-            console.error('[PoshmarkBot] OTL error:', error.message);
+            logger.error('[PoshmarkBot] OTL error', error);
             this.stats.errors++;
             return { sent: false, reason: error.message };
         }
@@ -491,10 +533,10 @@ export class PoshmarkBot {
             discountPercent = 20,
             shippingDiscount = 0,
             maxOffers = 50,
-            delayBetween = 5000
+            delayBetween = RATE_LIMITS.poshmark.offerDelay
         } = options;
 
-        console.log(`[PoshmarkBot] Sending OTLs for @${username} closet — up to ${maxOffers} listings`);
+        logger.info(`[PoshmarkBot] Sending OTLs for @${username} closet — up to ${maxOffers} listings`);
 
         try {
             await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'networkidle' });
@@ -506,7 +548,7 @@ export class PoshmarkBot {
             );
 
             const uniqueLinks = [...new Set(listingLinks)].slice(0, maxOffers);
-            console.log(`[PoshmarkBot] Found ${uniqueLinks.length} listings`);
+            logger.info(`[PoshmarkBot] Found ${uniqueLinks.length} listings`);
 
             let sent = 0;
             let skipped = 0;
@@ -518,13 +560,14 @@ export class PoshmarkBot {
                 } else {
                     skipped++;
                 }
-                await this.page.waitForTimeout(randomDelay(delayBetween * 0.8, delayBetween * 1.3));
+                await this.page.waitForTimeout(jitteredDelay(delayBetween));
             }
 
-            console.log(`[PoshmarkBot] OTL campaign done: ${sent} sent, ${skipped} skipped`);
+            writeAuditLog('send_otl_campaign_complete', { username, sent, skipped, total: uniqueLinks.length });
+            logger.info(`[PoshmarkBot] OTL campaign done: ${sent} sent, ${skipped} skipped`);
             return { sent, skipped, total: uniqueLinks.length };
         } catch (error) {
-            console.error('[PoshmarkBot] OTL campaign error:', error.message);
+            logger.error('[PoshmarkBot] OTL campaign error', error);
             this.stats.errors++;
             throw error;
         }
@@ -537,11 +580,11 @@ export class PoshmarkBot {
     async shareCommunity(options = {}) {
         const {
             maxShares = 50,
-            delayBetween = 3000,
+            delayBetween = RATE_LIMITS.poshmark.shareDelay,
             feedType = 'feed' // 'feed', 'brand', 'category'
         } = options;
 
-        console.log(`[PoshmarkBot] Community sharing from ${feedType}, max ${maxShares} items`);
+        logger.info(`[PoshmarkBot] Community sharing from ${feedType}, max ${maxShares} items`);
 
         try {
             await this.page.goto(`${POSHMARK_URL}/${feedType}`, { waitUntil: 'networkidle' });
@@ -577,21 +620,23 @@ export class PoshmarkBot {
                                 await toFollowers.click();
                                 shared++;
                                 this.stats.shares++;
-                                console.log(`[PoshmarkBot] Community shared ${shared}/${maxShares}`);
+                                writeAuditLog('community_share', { feedType, shared, maxShares });
+                                logger.info(`[PoshmarkBot] Community shared ${shared}/${maxShares}`);
                             }
 
-                            await this.page.waitForTimeout(delayBetween + randomDelay(500, 1500));
+                            await this.page.waitForTimeout(jitteredDelay(delayBetween));
                         }
                     } catch (e) {
-                        console.log('[PoshmarkBot] Community share item error:', e.message);
+                        logger.info('[PoshmarkBot] Community share item error', { error: e.message });
                     }
                 }
             }
 
-            console.log(`[PoshmarkBot] Community share complete. Shared ${shared} items.`);
+            writeAuditLog('community_share_complete', { feedType, shared, maxShares });
+            logger.info(`[PoshmarkBot] Community share complete. Shared ${shared} items.`);
             return { shared };
         } catch (error) {
-            console.error('[PoshmarkBot] Community share error:', error.message);
+            logger.error('[PoshmarkBot] Community share error', error);
             this.stats.errors++;
             throw error;
         }
@@ -608,13 +653,13 @@ export class PoshmarkBot {
      * Close the browser
      */
     async close() {
-        console.log('[PoshmarkBot] Closing browser...');
+        logger.info('[PoshmarkBot] Closing browser...');
         if (this.browser) {
             await this.browser.close();
             this.browser = null;
             this.page = null;
         }
-        console.log('[PoshmarkBot] Browser closed');
+        logger.info('[PoshmarkBot] Browser closed');
     }
 }
 
