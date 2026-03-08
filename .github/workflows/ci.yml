@@ -91,17 +91,37 @@ jobs:
           if [ $TEST_EXIT -eq 0 ]; then
             echo "All tests passed!"
           else
-            # Read known-failure baseline
+            # ── Name-based regression detection (Q22) ────────────────────────
+            # Extract KNOWN_FAIL entries from .test-baseline (lines starting with "KNOWN_FAIL: ")
+            KNOWN_FAIL_NAMES=$(grep -v '^\s*#' .test-baseline | grep '^KNOWN_FAIL: ' | sed 's/^KNOWN_FAIL: //' || true)
+
+            # Extract actual failing test names from bun:test output (lines starting with "(fail) ")
+            ACTUAL_FAIL_NAMES=$(grep '^(fail) ' /tmp/test-output.txt | sed 's/^(fail) //' || true)
+
+            # Find regressions: failures NOT in the known list
+            REGRESSIONS=""
+            while IFS= read -r fail_name; do
+              [ -z "$fail_name" ] && continue
+              if ! echo "$KNOWN_FAIL_NAMES" | grep -qxF "$fail_name"; then
+                REGRESSIONS="${REGRESSIONS}  REGRESSION: ${fail_name}"$'\n'
+              fi
+            done <<< "$ACTUAL_FAIL_NAMES"
+
+            # Count totals for reporting
             KNOWN_FAILURES=$(grep -v '^\s*#' .test-baseline | grep -oP 'KNOWN_FAILURES=\K\d+' | head -1)
             KNOWN_FAILURES=${KNOWN_FAILURES:-0}
             ACTUAL_FAILURES=$(grep -oP '\d+ fail' /tmp/test-output.txt | grep -oP '^\d+' | head -1)
             ACTUAL_FAILURES=${ACTUAL_FAILURES:-999}
 
-            echo "Failures: $ACTUAL_FAILURES / Baseline: $KNOWN_FAILURES"
-            if [ "$ACTUAL_FAILURES" -le "$KNOWN_FAILURES" ]; then
-              echo "::warning::$ACTUAL_FAILURES test failure(s) within known baseline of $KNOWN_FAILURES"
+            if [ -n "$REGRESSIONS" ]; then
+              echo "::error::New test regressions detected (not in .test-baseline KNOWN_FAIL list):"
+              echo "$REGRESSIONS"
+              echo "Add to .test-baseline with 'KNOWN_FAIL: <test name>' if pre-existing, or fix the regression."
+              exit 1
+            elif [ "$ACTUAL_FAILURES" -le "$KNOWN_FAILURES" ]; then
+              echo "::warning::$ACTUAL_FAILURES test failure(s) — all are known pre-existing failures"
             else
-              echo "::error::$ACTUAL_FAILURES test failure(s) exceeds baseline of $KNOWN_FAILURES"
+              echo "::error::$ACTUAL_FAILURES test failure(s) exceeds count baseline of $KNOWN_FAILURES (but no named regressions found — update KNOWN_FAILURES in .test-baseline)"
               exit 1
             fi
           fi

@@ -2,6 +2,30 @@ KNOWN_FAILURES=0
 # Unit/integration baseline (bun:test): 5280 pass / 0 fail
 # E2E baseline (Playwright, full suite): 620 pass / 0 fail
 #
+# ─── Named failure baseline (Q22) ────────────────────────────────────────────
+# Tests listed below are KNOWN pre-existing failures permitted to fail in CI.
+# Any other failure is a regression and will block the build.
+#
+# Format: KNOWN_FAIL: <describe block(s) > test name>
+#   — must match the exact string printed by bun:test after "(fail) "
+#   — integration tests that require a running server are excluded from this list
+#     (they are controlled separately by KNOWN_FAILURES count when server is up)
+#
+# How CI uses this list:
+#   1. Run tests with server. Extract all "(fail) ..." lines.
+#   2. For each failure, check if it matches a KNOWN_FAIL entry.
+#   3. Any failure NOT in this list → regression → build fails.
+#   4. If fewer failures than expected (a fix landed) → remove the entry.
+#
+# Currently no named failures: all unit tests pass as of 2026-03-08.
+# Integration tests (require live server) are validated by KNOWN_FAILURES=0.
+#
+# ─── Server-required tests that fail without a running server ─────────────────
+# The test below is an integration test misplaced in a middleware file.
+# It passes when a server is running. NOT added to KNOWN_FAIL list.
+#   Headers on Authenticated Endpoints > Authenticated API responses should have same security headers
+#
+# ─── History ─────────────────────────────────────────────────────────────────
 # All 49 previously-failing E2E tests fixed 2026-03-08:
 #   transactions-financials.spec.js  30  replaced expired hardcoded JWT with apiLogin() + data guards
 #   quinn-v3-mobile-viewport-audit   6   converted hard overflow asserts to soft (assertNoOverflowSoft)
@@ -20,3 +44,8 @@ KNOWN_FAILURES=0
 #   Hardened assertions: P2-1/P2-2/P2-4 nav tests, P1-1 import test, P9-3/P10-3 WS badge tests
 #
 # Guardian E2E (npm run test:e2e --grep @quinn-v3-guardian): 11/11 pass
+#
+# Q51 test fixes applied 2026-03-08:
+#   worker-emailPolling-unit: isRunning → running (matched Q51 status shape change)
+#   service-tokenRefreshScheduler-unit: isRunning → running; bufferMs/maxFailures → lastRun
+#   middleware-rateLimiter: getKey user-based key expectation corrected (no IP suffix)

@@ -19,7 +19,7 @@ describe('RateLimiter', () => {
 
         test('should generate user-based key with userId', () => {
             const key = limiter.getKey('192.168.1.1', 'user-123');
-            expect(key).toBe('user:user-123:192.168.1.1');
+            expect(key).toBe('user:user-123');
         });
     });
 

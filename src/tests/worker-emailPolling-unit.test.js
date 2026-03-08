@@ -77,18 +77,17 @@ describe('emailPollingWorker (unit)', () => {
         syncing_accounts: 0, error_accounts: 1
       });
       const status = getEmailPollingStatus();
-      expect(status).toHaveProperty('isRunning');
+      expect(status).toHaveProperty('running');
       expect(status).toHaveProperty('intervalMs');
-      expect(status).toHaveProperty('maxAccountsPerCycle');
-      expect(status).toHaveProperty('maxFailures');
+      expect(status).toHaveProperty('lastRun');
       expect(status.total_accounts).toBe(3);
       expect(status.enabled_accounts).toBe(2);
     });
 
-    test('isRunning false when stopped', () => {
+    test('running false when stopped', () => {
       stopEmailPollingWorker();
       mockQueryGet.mockReturnValue({ total_accounts: 0 });
-      expect(getEmailPollingStatus().isRunning).toBe(false);
+      expect(getEmailPollingStatus().running).toBe(false);
     });
 
     test('intervalMs defaults to 5 minutes', () => {

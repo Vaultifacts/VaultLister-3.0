@@ -100,10 +100,9 @@ describe('tokenRefreshScheduler', () => {
         shops_with_errors: 0, expiring_soon: 0
       });
       const status = getRefreshSchedulerStatus();
-      expect(status.isRunning).toBe(false);
+      expect(status.running).toBe(false);
       expect(status).toHaveProperty('intervalMs');
-      expect(status).toHaveProperty('bufferMs');
-      expect(status).toHaveProperty('maxFailures');
+      expect(status).toHaveProperty('lastRun');
     });
 
     test('handles missing DB columns with fallback', () => {
@@ -112,7 +111,7 @@ describe('tokenRefreshScheduler', () => {
         .mockImplementationOnce(() => { throw new Error('no such column: consecutive_refresh_failures'); })
         .mockReturnValueOnce({ total_oauth_shops: 2, connected_shops: 1, shops_with_errors: 0, expiring_soon: 0 });
       const status = getRefreshSchedulerStatus();
-      expect(status.isRunning).toBe(false);
+      expect(status.running).toBe(false);
       expect(status.total_oauth_shops).toBe(2);
     });
   });

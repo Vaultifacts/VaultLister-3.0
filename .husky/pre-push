@@ -33,37 +33,50 @@ if ! grep -v '^\s*//' src/backend/middleware/securityHeaders.js | grep -q "'unsa
     exit 1
 fi
 
-# Run unit tests (allow up to KNOWN_FAILURES pre-existing failures)
-# Read baseline from .test-baseline file (centralized, not hardcoded)
+# Run unit tests — name-based regression detection (Q22)
+# Compares failing test names against KNOWN_FAIL entries in .test-baseline.
+# Any failure whose name is NOT in the list is a regression and blocks the push.
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 BASELINE_FILE="${REPO_ROOT}/.test-baseline"
 if [ -f "$BASELINE_FILE" ]; then
     KNOWN_FAILURES=$(grep -v '^\s*#' "$BASELINE_FILE" | grep -oP 'KNOWN_FAILURES=\K\d+' 2>/dev/null | head -1)
+    KNOWN_FAIL_NAMES=$(grep -v '^\s*#' "$BASELINE_FILE" | grep '^KNOWN_FAIL: ' | sed 's/^KNOWN_FAIL: //' 2>/dev/null || true)
 else
     KNOWN_FAILURES=0
+    KNOWN_FAIL_NAMES=""
 fi
 # Validate KNOWN_FAILURES is numeric
 case "$KNOWN_FAILURES" in
     ''|*[!0-9]*) KNOWN_FAILURES=0 ;;
 esac
-echo "Running unit tests (known pre-existing failures: ${KNOWN_FAILURES})..."
+echo "Running unit tests (named baseline: $(echo "$KNOWN_FAIL_NAMES" | grep -c . || echo 0) known failures)..."
 PORT="${PORT:-3001}"
 if curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
     TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true /home/openclawuser/.bun/bin/bun test src/tests/ 2>&1) || true
     FAIL_COUNT=$(echo "$TEST_OUTPUT" | grep -oP '^\s*\K\d+(?=\s+fail)' | tail -1)
     FAIL_COUNT="${FAIL_COUNT:-0}"
-    # Validate FAIL_COUNT is numeric
     case "$FAIL_COUNT" in
         ''|*[!0-9]*) FAIL_COUNT=0 ;;
     esac
     echo "$TEST_OUTPUT" | tail -5
-    if [ "$FAIL_COUNT" -gt "$KNOWN_FAILURES" ]; then
+
+    # Name-based regression check: any failure NOT in the known list blocks the push
+    REGRESSIONS=""
+    while IFS= read -r fail_name; do
+        [ -z "$fail_name" ] && continue
+        if ! printf '%s\n' "$KNOWN_FAIL_NAMES" | grep -qxF "$fail_name"; then
+            REGRESSIONS="${REGRESSIONS}  ${fail_name}"$'\n'
+        fi
+    done < <(echo "$TEST_OUTPUT" | grep '^(fail) ' | sed 's/^(fail) //')
+
+    if [ -n "$REGRESSIONS" ]; then
         echo ""
-        echo "REGRESSION DETECTED: ${FAIL_COUNT} failures (baseline: ${KNOWN_FAILURES})"
-        echo "Push aborted. Fix the new test failures before pushing."
+        echo "REGRESSION DETECTED — failures not in .test-baseline KNOWN_FAIL list:"
+        echo "$REGRESSIONS"
+        echo "Push aborted. Fix the regression or add to KNOWN_FAIL list in .test-baseline."
         exit 1
     fi
-    echo "Test gate passed (${FAIL_COUNT}/${KNOWN_FAILURES} known failures)."
+    echo "Test gate passed (${FAIL_COUNT} failures — all are known pre-existing)."
 else
     echo "ERROR: Server not running on port ${PORT}. Cannot run tests."
     echo "Start the server with 'bun run dev:bg' then try the push again."
