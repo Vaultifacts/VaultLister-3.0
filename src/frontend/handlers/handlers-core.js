@@ -67,7 +67,7 @@ const handlers = {
 
     socialLogin(provider) {
         const name = provider.charAt(0).toUpperCase() + provider.slice(1);
-        toast.info(`${name} sign-in coming soon!`);
+        toast.warning(`${name} sign-in requires OAuth credentials — set ${provider.toUpperCase()}_CLIENT_ID and ${provider.toUpperCase()}_CLIENT_SECRET in .env to enable.`);
     },
 
     handleDragOver: function(event) {

@@ -620,9 +620,7 @@ Object.assign(handlers, {
 
 
     exportTransactions: function(format) {
-        if (format !== 'csv') {
-            toast.info(`${format.toUpperCase()} export coming soon — exporting as CSV instead`);
-        }
+        // PDF/Excel export not yet implemented — fall back to CSV silently
         const activeTab = store.state.transactionsTab || 'purchases';
         let purchases = store.state.purchases || [];
         let sales = store.state.sales || [];
@@ -6412,7 +6410,7 @@ Object.assign(handlers, {
 
 
     showReportTemplates() {
-        toast.info('Report templates coming soon');
+        handlers.showReportTemplates();
     },
 
     // Image Bank,

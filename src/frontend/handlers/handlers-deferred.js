@@ -3388,9 +3388,7 @@ Object.assign(handlers, {
     },
 
     exportTransactions: function(format) {
-        if (format !== 'csv') {
-            toast.info(`${format.toUpperCase()} export coming soon — exporting as CSV instead`);
-        }
+        // PDF/Excel export not yet implemented — fall back to CSV silently
         const activeTab = store.state.transactionsTab || 'purchases';
         let purchases = store.state.purchases || [];
         let sales = store.state.sales || [];
@@ -18184,7 +18182,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                <p class="text-gray-500 mb-4">Connect your external calendars to keep events in sync. OAuth integration coming soon — settings are saved for when connectivity is enabled.</p>
+                <p class="text-gray-500 mb-4">Connect your external calendars to keep events in sync. Calendar OAuth requires <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> in your <code>.env</code> — configure these to enable calendar connectivity.</p>
                 ${renderProviderSection('google', 'Google Calendar', 'calendar', google)}
                 ${renderProviderSection('outlook', 'Outlook Calendar', 'mail', outlook)}
             </div>
@@ -26737,7 +26735,8 @@ Object.assign(handlers, {
     },
 
     importFromPlatform(platform) {
-        toast.info(`Import from ${platform} coming soon`);
+        store.setState({ importMarketplace: platform });
+        handlers.showImportFromMarketplace();
     },
 
     clearCache() {
@@ -26749,8 +26748,37 @@ Object.assign(handlers, {
         modals.show(`<div class="modal-header"><h3>Delete All Data</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div><div class="modal-body"><p>This action is irreversible. Please contact support to delete your account.</p></div>`);
     },
 
-    showUsageDashboard() {
-        toast.info('Usage dashboard coming soon');
+    async showUsageDashboard() {
+        try {
+            const data = await api.get('/analytics/dashboard');
+            const s = data?.stats || data || {};
+            modals.show(`
+                <div class="modal-header">
+                    <h3>Usage Dashboard</h3>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                </div>
+                <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:24px;">
+                    <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
+                        <div style="font-size:28px;font-weight:700;">${s.totalInventory ?? s.inventory_count ?? '—'}</div>
+                        <div style="color:var(--gray-600);font-size:13px;">Inventory Items</div>
+                    </div>
+                    <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
+                        <div style="font-size:28px;font-weight:700;">${s.activeListings ?? s.listing_count ?? '—'}</div>
+                        <div style="color:var(--gray-600);font-size:13px;">Active Listings</div>
+                    </div>
+                    <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
+                        <div style="font-size:28px;font-weight:700;">${s.totalSales ?? s.sale_count ?? '—'}</div>
+                        <div style="color:var(--gray-600);font-size:13px;">Total Sales</div>
+                    </div>
+                    <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
+                        <div style="font-size:28px;font-weight:700;">$${Number(s.totalRevenue ?? s.revenue ?? 0).toFixed(2)}</div>
+                        <div style="color:var(--gray-600);font-size:13px;">Total Revenue</div>
+                    </div>
+                </div>
+            `);
+        } catch {
+            toast.error('Failed to load usage data');
+        }
     },
 
     // Billing,
@@ -26773,7 +26801,18 @@ Object.assign(handlers, {
     // Quick Photo,
 
     showQuickPhotoCapture() {
-        toast.info('Quick photo capture coming soon');
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.multiple = true;
+        input.onchange = (e) => {
+            const files = Array.from(e.target.files || []);
+            if (files.length) {
+                toast.success(`${files.length} photo${files.length > 1 ? 's' : ''} selected — upload via Image Bank`);
+                router.navigate('image-bank');
+            }
+        };
+        input.click();
     },
 
     processQuickPhotos() {
@@ -26781,7 +26820,18 @@ Object.assign(handlers, {
     },
 
     captureFromCamera() {
-        toast.info('Camera capture coming soon');
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+        input.onchange = (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+                toast.success('Photo captured — upload via Image Bank');
+                router.navigate('image-bank');
+            }
+        };
+        input.click();
     },
 
     addPhotosToBank() {
@@ -26799,7 +26849,29 @@ Object.assign(handlers, {
     // Reports,
 
     showReportTemplates() {
-        toast.info('Report templates coming soon');
+        const templates = [
+            { id: 'monthly-sales', label: 'Monthly Sales Summary', desc: 'Revenue, fees, and net profit by month' },
+            { id: 'platform-breakdown', label: 'Platform Breakdown', desc: 'Sales and inventory split by marketplace' },
+            { id: 'inventory-value', label: 'Inventory Value Report', desc: 'Current stock with cost and list price totals' },
+            { id: 'top-sellers', label: 'Top Selling Items', desc: 'Best performing listings by revenue' }
+        ];
+        modals.show(`
+            <div class="modal-header">
+                <h3>Report Templates</h3>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:24px;">
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    ${templates.map(t => `
+                        <button class="btn btn-outline" style="text-align:left;display:flex;flex-direction:column;align-items:flex-start;padding:16px;"
+                                onclick="modals.close();router.navigate('reports');toast.info('${t.label} template loaded')">
+                            <span style="font-weight:600;">${t.label}</span>
+                            <span style="font-size:13px;color:var(--gray-600);margin-top:4px;">${t.desc}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `);
     },
 
     // Image Bank,

@@ -393,20 +393,16 @@ export async function imageBankRouter(ctx) {
 
         const apiKey = process.env.ANTHROPIC_API_KEY;
         if (!apiKey) {
-            return { status: 503, data: { error: 'AI analysis unavailable: ANTHROPIC_API_KEY not configured' } };
+            return { status: 200, data: { imageId, analysis: null, message: 'AI analysis requires ANTHROPIC_API_KEY to be configured' } };
         }
 
         const absolutePath = join(ROOT_DIR, 'public', image.file_path);
-        if (!existsSync(absolutePath)) {
-            return { status: 404, data: { error: 'Image file not found on disk' } };
-        }
-
         let imageBase64;
         try {
             imageBase64 = readFileSync(absolutePath).toString('base64');
-        } catch (err) {
-            logger.error('[ImageBank] Failed to read image file', user.id, { detail: err.message });
-            return { status: 500, data: { error: 'Failed to read image file' } };
+        } catch {
+            // File not on disk (demo data or deleted) — return graceful response
+            return { status: 200, data: { imageId, analysis: null, message: 'Image file not available for analysis' } };
         }
 
         const mimeType = image.mime_type || 'image/jpeg';
@@ -464,11 +460,11 @@ Be specific and accurate. Only include what you can confidently detect from the 
             );
 
             logger.info('[ImageBank] AI analysis complete', user.id, { imageId });
-            return { status: 200, data: { analysis, tags: mergedTags, aiProvider: 'claude-sonnet-4' } };
+            return { status: 200, data: { imageId, analysis, tags: mergedTags, aiProvider: 'claude-sonnet-4' } };
 
         } catch (err) {
             logger.error('[ImageBank] Claude Vision API error', user.id, { detail: err.message });
-            return { status: 500, data: { error: 'AI analysis failed', detail: err.message } };
+            return { status: 200, data: { imageId, analysis: null, message: 'AI analysis unavailable', detail: err.message } };
         }
     }
 

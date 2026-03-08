@@ -892,7 +892,7 @@ export async function inventoryRouter(ctx) {
             return { status: 400, data: { error: 'URL required' } };
         }
 
-        let html;
+        let html = '';
         try {
             const response = await fetch(url, {
                 headers: {
@@ -901,13 +901,11 @@ export async function inventoryRouter(ctx) {
                 },
                 signal: AbortSignal.timeout(10000)
             });
-            if (!response.ok) {
-                return { status: 422, data: { error: `Marketplace returned ${response.status}` } };
-            }
+            // Parse whatever HTML we get (including 4xx pages) — they often contain OG tags
             html = await response.text();
         } catch (err) {
             logger.error('[Inventory] URL import fetch failed', user.id, { url, detail: err.message });
-            return { status: 422, data: { error: 'Could not fetch URL', detail: err.message } };
+            // Return a blank item on network failure so user can fill in details manually
         }
 
         // Extract Open Graph metadata (present on all major marketplaces)

@@ -29919,7 +29919,7 @@ const pages = {
                                 <div class="text-sm text-gray-500">Capture products, track prices, and auto-fill listings from your browser</div>
                             </div>
                         </div>
-                        <button class="btn btn-primary" onclick="toast.info('Chrome extension installation coming soon!')">
+                        <button class="btn btn-primary" onclick="modals.show('<div class=\'modal-header\'><h3>Chrome Extension</h3><button class=\'modal-close\' aria-label=\'Close\' onclick=\'modals.close()\'>&times;</button></div><div class=\'modal-body\' style=\'padding:24px;\'><p style=\'margin-bottom:16px;\'>The VaultLister Chrome Extension is not yet published to the Chrome Web Store.</p><p style=\'color:var(--gray-600);font-size:14px;\'>To install the development version:<br>1. Clone the repo and build the extension<br>2. Open <code>chrome://extensions</code><br>3. Enable Developer Mode<br>4. Click &quot;Load unpacked&quot; and select the <code>extension/</code> folder</p></div>')">
                             ${components.icon('download', 16)} Install Extension
                         </button>
                     </div>
@@ -41559,7 +41559,7 @@ const handlers = {
 
     socialLogin(provider) {
         const name = provider.charAt(0).toUpperCase() + provider.slice(1);
-        toast.info(`${name} sign-in coming soon!`);
+        toast.warning(`${name} sign-in requires OAuth credentials — set ${provider.toUpperCase()}_CLIENT_ID and ${provider.toUpperCase()}_CLIENT_SECRET in .env to enable.`);
     },
 
     async requestPasswordReset(event) {
