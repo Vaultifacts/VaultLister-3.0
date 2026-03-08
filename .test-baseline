@@ -1,1 +1,14 @@
 KNOWN_FAILURES=0
+# Unit/integration baseline (bun:test): 5280 pass / 0 fail
+# E2E baseline (Playwright, full suite): 571 pass / 49 fail
+#
+# E2E known failure breakdown (all pre-existing, not regressions):
+#   transactions-financials.spec.js  30  bare {request} fixture missing auth header
+#   quinn-v3-mobile-viewport-audit   6   mobile layout assertions
+#   route-chunking.spec.js           6   JS chunk filename mismatch
+#   monitoring-routes.spec.js        5   auth/status code expectations
+#   quinn-v3-navigation-audit        3   sidebar collapse DOM assertions
+#   quinn-v3-websocket-audit         2   push notification badge update
+#   accessibility/inventory/shops    3   individual pre-existing assertions
+#
+# Guardian E2E (npm run test:e2e --grep @quinn-v3-guardian): 11/11 pass
