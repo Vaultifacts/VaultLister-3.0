@@ -1,4 +1,5 @@
 // src/backend/server.js - VaultLister Backend Server - Bun.js with robust shutdown hooks and logging (beginner-friendly)
+import './env.js'; // Validate required env vars before anything else — exits with clear errors on misconfiguration
 import { readFileSync, existsSync, appendFileSync, writeFileSync, unlinkSync, mkdirSync } from 'fs';
 import { gzipSync } from 'zlib';
 import crypto from 'crypto';
@@ -89,6 +90,7 @@ import { applyCSRFProtection, addCSRFToken } from './middleware/csrf.js';
 import { applySecurityHeaders, securityHeadersConfig, buildCSPWithNonce } from './middleware/securityHeaders.js';
 import { handleError } from './middleware/errorHandler.js';
 import { logRequestComplete } from './middleware/requestLogger.js';
+import { generateETag, etagMatches } from './middleware/cache.js';
 import { startTokenRefreshScheduler, stopTokenRefreshScheduler } from './services/tokenRefreshScheduler.js';
 import { startTaskWorker, stopTaskWorker } from './workers/taskWorker.js';
 import { startEmailPollingWorker, stopEmailPollingWorker } from './workers/emailPollingWorker.js';
@@ -129,16 +131,6 @@ function log(message) {
 }
 // Ensure logs are flushed on exit
 process.on('exit', _flushLog);
-
-// Fail fast if required security env vars are missing
-const REQUIRED_SECURITY_ENV = process.env.NODE_ENV === 'production'
-    ? ['JWT_SECRET', 'OAUTH_ENCRYPTION_KEY']
-    : ['JWT_SECRET'];
-const missingEnv = REQUIRED_SECURITY_ENV.filter(k => !process.env[k]);
-if (missingEnv.length > 0) {
-    logger.error(`[FATAL] Missing required environment variables: ${missingEnv.join(', ')}`);
-    process.exit(1);
-}
 
 // Log startup early (test log function)
 log('Server starting...');
@@ -362,6 +354,47 @@ const apiRoutes = {
                 timestamp: new Date().toISOString(),
                 version: '1.0.0',
                 database: { status: dbStatus }
+            }
+        };
+    },
+    '/api/health/live': async () => {
+        // Liveness probe — answers: "is the process running?"
+        // Always returns 200 as long as the server is up. Used by load balancers
+        // and Docker HEALTHCHECK to distinguish "process crashed" from "dependency down".
+        return { status: 200, data: { status: 'ok' } };
+    },
+    '/api/health/ready': async () => {
+        // Readiness probe — answers: "is the server ready to handle traffic?"
+        // Returns 503 if any critical dependency is unavailable.
+        const checks = {};
+        let ready = true;
+
+        // Database check
+        try {
+            const { query } = await import('./db/database.js');
+            query.get('SELECT 1');
+            checks.database = 'ok';
+        } catch (e) {
+            checks.database = 'error';
+            ready = false;
+        }
+
+        // Redis check (optional dependency — degraded but not fatal if unavailable)
+        try {
+            const redis = (await import('./services/redis.js')).default;
+            const pingResult = await redis.ping?.();
+            checks.redis = (pingResult === 'PONG' || pingResult === true) ? 'ok' : 'degraded';
+        } catch (e) {
+            checks.redis = 'unavailable';
+            // Redis is optional (in-memory fallback exists) — not a readiness failure
+        }
+
+        return {
+            status: ready ? 200 : 503,
+            data: {
+                status: ready ? 'ok' : 'degraded',
+                checks,
+                timestamp: new Date().toISOString(),
             }
         };
     },
@@ -784,6 +817,13 @@ const server = Bun.serve({
 
         // API routes
         if (pathname.startsWith('/api/')) {
+            // Normalize versioned API paths: /api/v1/... → /api/...
+            // All existing routes gain a /api/v1/ alias automatically.
+            // New routes should be written against /api/ — versioning is additive.
+            const effectivePath = /^\/api\/v\d+\//.test(pathname)
+                ? pathname.replace(/^\/api\/v\d+\//, '/api/')
+                : pathname;
+
             // Get client IP — only trust proxy headers when TRUST_PROXY is enabled
             const trustProxy = process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true';
             const ip = (trustProxy && (request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip'))) ||
@@ -791,16 +831,16 @@ const server = Bun.serve({
 
             // Check authentication for protected routes
             let user = null;
-            const isProtected = protectedPrefixes.some(prefix => pathname.startsWith(prefix));
+            const isProtected = protectedPrefixes.some(prefix => effectivePath.startsWith(prefix));
 
             // Public endpoints that don't require auth
-            const isPublicWebhook = pathname.startsWith('/api/webhooks/incoming');
-            const isOAuthCallback = pathname.startsWith('/api/oauth/callback');
+            const isPublicWebhook = effectivePath.startsWith('/api/webhooks/incoming');
+            const isOAuthCallback = effectivePath.startsWith('/api/oauth/callback');
             const isPublicSecurity = [
                 '/api/security/verify-email',
                 '/api/security/forgot-password',
                 '/api/security/reset-password'
-            ].includes(pathname);
+            ].includes(effectivePath);
 
             if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity) {
                 const authResult = await authenticateToken(request);
@@ -837,13 +877,15 @@ const server = Bun.serve({
             // Create context with security middleware support
             const context = {
                 method,
-                path: pathname,
+                path: effectivePath,
                 body,
                 query,
                 user,
                 request,
                 ip,
-                headers: Object.fromEntries(request.headers.entries())
+                headers: Object.fromEntries(request.headers.entries()),
+                // Expose original versioned path in case a route needs it
+                requestedPath: pathname,
             };
 
             // Apply rate limiting
@@ -875,8 +917,8 @@ const server = Bun.serve({
             // Find matching router (sort by length to match most specific first)
             const sortedRoutes = Object.entries(apiRoutes).sort((a, b) => b[0].length - a[0].length);
             for (const [prefix, router] of sortedRoutes) {
-                if (pathname === prefix || pathname.startsWith(prefix + '/')) {
-                    const subPath = pathname.slice(prefix.length) || '/';
+                if (effectivePath === prefix || effectivePath.startsWith(prefix + '/')) {
+                    const subPath = effectivePath.slice(prefix.length) || '/';
                     context.path = subPath;
 
                     try {
@@ -901,7 +943,23 @@ const server = Bun.serve({
                             responseHeaders['Set-Cookie'] = result.cookies.join(', ');
                         }
 
-                        return new Response(JSON.stringify(result.data), {
+                        const responseBody = JSON.stringify(result.data);
+
+                        // Cache-Control — routes opt in by setting result.cacheControl
+                        if (result.cacheControl) {
+                            responseHeaders['Cache-Control'] = result.cacheControl;
+                        }
+
+                        // ETag + conditional GET (304 Not Modified) for all successful GET responses
+                        if (method === 'GET' && (result.status || 200) < 300) {
+                            const etag = generateETag(responseBody);
+                            responseHeaders['ETag'] = etag;
+                            if (etagMatches(request, etag)) {
+                                return new Response(null, { status: 304, headers: responseHeaders });
+                            }
+                        }
+
+                        return new Response(responseBody, {
                             status: result.status || 200,
                             headers: responseHeaders
                         });

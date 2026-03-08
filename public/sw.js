@@ -58,7 +58,61 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(request.url);
     if (url.protocol === 'chrome-extension:') return;
 
-    // API requests: network-first, no caching
+    // Stable GET-only API endpoints: stale-while-revalidate (SWR)
+    // These routes return the same data for all users and change infrequently.
+    // SWR serves the cached response instantly while fetching a fresh copy in the
+    // background — eliminating perceived latency on repeat visits without risking
+    // stale user-specific or real-time data.
+    // Max age: 60 s in cache; SWR window: 5 min; entries evicted after 10 min.
+    const SWR_API_ROUTES = [
+        '/api/health',
+        '/api/health/live',
+        '/api/health/ready',
+    ];
+    const SWR_API_PREFIXES = [
+        '/api/size-charts',
+        '/api/shipping-profiles',
+        '/api/templates',
+        '/api/checklist',
+    ];
+    const isSWRRoute = SWR_API_ROUTES.includes(url.pathname) ||
+        SWR_API_PREFIXES.some(p => url.pathname.startsWith(p));
+
+    if (url.pathname.startsWith('/api/') && isSWRRoute) {
+        const SWR_CACHE = 'vaultlister-swr-api';
+        const MAX_AGE_MS = 10 * 60 * 1000; // evict entries older than 10 minutes
+
+        event.respondWith((async () => {
+            const cache = await caches.open(SWR_CACHE);
+            const cached = await cache.match(request);
+
+            // Evict if too old (Cache-Control max-age isn't enforced by the Cache API)
+            if (cached) {
+                const dateHeader = cached.headers.get('date');
+                const age = dateHeader ? Date.now() - new Date(dateHeader).getTime() : Infinity;
+                if (age > MAX_AGE_MS) {
+                    await cache.delete(request);
+                }
+            }
+
+            const fresh = cached && (Date.now() - new Date(cached.headers.get('date') || 0).getTime()) <= MAX_AGE_MS;
+
+            // Background revalidation (always, even on cache hit)
+            const revalidate = fetch(request).then(response => {
+                if (response.ok) cache.put(request, response.clone());
+                return response;
+            }).catch(() => null);
+
+            // Return cached immediately if available; otherwise wait for network
+            return fresh ? cached : (revalidate || new Response(JSON.stringify({ error: 'Offline' }), {
+                status: 503,
+                headers: { 'Content-Type': 'application/json' },
+            }));
+        })());
+        return;
+    }
+
+    // All other API requests: network-first, no caching
     if (url.pathname.startsWith('/api/')) {
         event.respondWith(
             fetch(request).catch(() => {

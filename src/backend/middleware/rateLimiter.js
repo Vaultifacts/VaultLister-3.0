@@ -74,10 +74,12 @@ class RateLimiter {
 
     /**
      * Get rate limit key from request
-     * Uses IP address, or user ID if authenticated
+     * Authenticated: keyed on user ID only (IP-independent) — prevents shared IPs
+     * (offices, mobile NAT) from causing cross-user throttling.
+     * Unauthenticated: keyed on IP address.
      */
     getKey(ip, userId = null) {
-        return userId ? `user:${userId}:${ip}` : `ip:${ip}`;
+        return userId ? `user:${userId}` : `ip:${ip}`;
     }
 
     /**
@@ -250,7 +252,7 @@ export function createRateLimiter(limitType = 'default') {
         }
 
         // Skip rate limiting for certain paths
-        const skipPaths = ['/api/health', '/api/status'];
+        const skipPaths = ['/api/health', '/api/health/live', '/api/health/ready', '/api/status'];
         if (skipPaths.includes(path)) {
             return { allowed: true };
         }

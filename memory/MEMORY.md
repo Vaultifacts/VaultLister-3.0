@@ -44,3 +44,14 @@ Architect-Planner, Backend, Frontend-UI, Automations-AI, Security-Auth, Testing,
 
 ## Scaffold Date
 Generated: 2026-03-02 from VaultLister 2.0 reference by claude-project-scaffolder
+
+## Infrastructure Additions (2026-03-07)
+All 6 gaps from /compare-project run implemented. New files:
+- `src/backend/env.js` — Zod startup env validation (replaces manual JWT_SECRET check)
+- `src/backend/middleware/validate.js` — `validateBody(ctx.body, schema)` / `validateQuery(ctx.query, schema)` (zod@4.3.6)
+- `src/backend/middleware/cache.js` — `generateETag`, `etagMatches`, `cacheFor`, `cacheForUser`, `immutable`, `NO_CACHE`
+Modified files:
+- `src/backend/server.js` — env.js imported first; /api/health/live + /api/health/ready added; effectivePath normalization for /api/v1/ versioning; ETag/304 in response pipeline; cache.js import
+- `src/backend/middleware/rateLimiter.js` — getKey now `user:${userId}` (was `user:${userId}:${ip}`)
+- `public/sw.js` — SWR cache for stable GET API routes (health, size-charts, shipping-profiles, templates, checklist)
+Pending before commit: `bun test src/tests/auth.test.js src/tests/security.test.js`
