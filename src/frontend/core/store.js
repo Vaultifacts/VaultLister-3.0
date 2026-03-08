@@ -382,34 +382,55 @@ const store = {
     },
 
     persist() {
-        // When logged out, never re-write auth keys — any post-logout setState
-        // (e.g. router updating currentPage) must not resurrect vaultlister_state.
-        if (!this.state.token && !this.state.user) {
+        // When logged out (no user), clear all storage
+        if (!this.state.user) {
             localStorage.removeItem('vaultlister_state');
             sessionStorage.removeItem('vaultlister_state');
             return;
         }
-        const toPersist = {
+
+        // Tokens are stored in sessionStorage only (tab-scoped, cleared on browser close).
+        // They are NEVER written to localStorage — XSS attacks cannot read sessionStorage
+        // across tabs or browser restarts. "Remember Me" persistence is handled by the
+        // HttpOnly vl_refresh cookie expiry set at login, not by localStorage.
+        sessionStorage.setItem('vaultlister_state', JSON.stringify({
             user: this.state.user,
             token: this.state.token,
-            refreshToken: this.state.refreshToken
-        };
-        const storage = this.state.useSessionStorage ? sessionStorage : localStorage;
-        storage.setItem('vaultlister_state', JSON.stringify(toPersist));
+            refreshToken: this.state.refreshToken,
+            useSessionStorage: this.state.useSessionStorage
+        }));
+
+        // For "Remember Me" sessions (useSessionStorage=false), persist non-sensitive
+        // user identity to localStorage so the UI can show the user's name/avatar on
+        // browser restart while silent re-auth completes via the HttpOnly cookie.
+        if (!this.state.useSessionStorage) {
+            localStorage.setItem('vaultlister_state', JSON.stringify({
+                user: this.state.user,
+                useSessionStorage: false
+            }));
+        } else {
+            localStorage.removeItem('vaultlister_state');
+        }
     },
 
     hydrate() {
         try {
-            // Try sessionStorage first (non-remembered sessions), then localStorage
+            // Try sessionStorage first (current tab session with valid tokens)
             let saved = sessionStorage.getItem('vaultlister_state');
+            const fromSession = !!saved;
             if (saved) {
                 this.state.useSessionStorage = true;
             } else {
+                // Fallback: localStorage (browser restart — user identity only, no tokens)
                 saved = localStorage.getItem('vaultlister_state');
             }
             if (saved) {
                 const parsed = JSON.parse(saved);
-                const allowed = ['user', 'token', 'refreshToken', 'useSessionStorage'];
+                // When reading from localStorage (browser restart scenario), tokens are
+                // intentionally excluded — they are only trusted from sessionStorage.
+                const allowed = fromSession
+                    ? ['user', 'token', 'refreshToken', 'useSessionStorage']
+                    : ['user', 'useSessionStorage'];
                 for (const key of allowed) {
                     if (key in parsed) this.state[key] = parsed[key];
                 }
