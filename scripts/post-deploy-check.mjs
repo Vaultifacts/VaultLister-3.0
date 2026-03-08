@@ -94,12 +94,14 @@ async function checkETagPresent() {
 }
 
 async function check304NotModified() {
-    const first = await get('/api/health');
+    // Use /api/health/live — returns { status: 'ok' }, a stable body with no timestamp,
+    // so the ETag is identical across requests and 304 can trigger.
+    const first = await get('/api/health/live');
     if (first.status !== 200) throw new Error(`first GET returned ${first.status}`);
     const etag = first.headers.get('etag');
     if (!etag) throw new Error('no ETag on first GET — cannot test 304');
 
-    const second = await get('/api/health', { 'If-None-Match': etag });
+    const second = await get('/api/health/live', { 'If-None-Match': etag });
     if (second.status !== 304) throw new Error(`expected 304 with matching ETag, got ${second.status}`);
 }
 

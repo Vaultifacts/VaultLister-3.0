@@ -8,6 +8,9 @@ FROM oven/bun:1.3 AS builder
 
 WORKDIR /app
 
+# Install build tools needed by better-sqlite3 native addon
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
 # Copy package files
 COPY package.json bun.lock* ./
 
@@ -30,9 +33,9 @@ FROM oven/bun:1.3-slim AS production
 
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 vaultlister
+# Create non-root user for security (Debian-compatible commands for bun:slim base)
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs --no-create-home vaultlister
 
 # Copy built application
 COPY --from=builder --chown=vaultlister:nodejs /app/node_modules ./node_modules
