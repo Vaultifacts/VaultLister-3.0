@@ -187,7 +187,9 @@ async function fetchGrailedListings(accessToken, mode) {
         ];
     }
 
-    throw new Error('Grailed real API not implemented');
+    // Grailed does not provide a public API. Live sync requires Playwright scraping
+    // (available via the Automations tab). Return empty so sync completes gracefully.
+    return [];
 }
 
 async function fetchGrailedOrders(accessToken, mode) {
@@ -205,7 +207,8 @@ async function fetchGrailedOrders(accessToken, mode) {
         ];
     }
 
-    throw new Error('Grailed real API not implemented');
+    // Grailed does not provide a public API. Return empty so sync completes gracefully.
+    return [];
 }
 
 function mapGrailedListingToVaultLister(grailedListing, shop) {

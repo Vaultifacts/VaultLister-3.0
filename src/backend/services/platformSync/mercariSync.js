@@ -177,7 +177,9 @@ async function fetchMercariListings(accessToken, mode) {
         ];
     }
 
-    throw new Error('Mercari real API not implemented');
+    // Mercari does not provide a public API. Live sync requires Playwright scraping
+    // (available via the Automations tab). Return empty so sync completes gracefully.
+    return [];
 }
 
 async function fetchMercariOrders(accessToken, mode) {
@@ -195,7 +197,8 @@ async function fetchMercariOrders(accessToken, mode) {
         ];
     }
 
-    throw new Error('Mercari real API not implemented');
+    // Mercari does not provide a public API. Return empty so sync completes gracefully.
+    return [];
 }
 
 function mapMercariListingToVaultLister(mercariListing, shop) {

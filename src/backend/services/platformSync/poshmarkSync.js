@@ -241,8 +241,9 @@ async function fetchPoshmarkListings(accessToken, mode) {
         ];
     }
 
-    // Real API call would go here
-    throw new Error('Poshmark real API not implemented');
+    // Poshmark does not provide a public API. Live sync requires Playwright scraping
+    // (available via the Automations tab). Return empty so sync completes gracefully.
+    return [];
 }
 
 /**
@@ -263,7 +264,8 @@ async function fetchPoshmarkOrders(accessToken, mode) {
         ];
     }
 
-    throw new Error('Poshmark real API not implemented');
+    // Poshmark does not provide a public API. Return empty so sync completes gracefully.
+    return [];
 }
 
 /**

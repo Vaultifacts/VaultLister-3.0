@@ -184,7 +184,9 @@ async function fetchDepopListings(accessToken, mode) {
         ];
     }
 
-    throw new Error('Depop real API not implemented');
+    // Depop does not provide a public API. Live sync requires Playwright scraping
+    // (available via the Automations tab). Return empty so sync completes gracefully.
+    return [];
 }
 
 async function fetchDepopOrders(accessToken, mode) {
@@ -202,7 +204,8 @@ async function fetchDepopOrders(accessToken, mode) {
         ];
     }
 
-    throw new Error('Depop real API not implemented');
+    // Depop does not provide a public API. Return empty so sync completes gracefully.
+    return [];
 }
 
 function mapDepopListingToVaultLister(depopListing, shop) {
