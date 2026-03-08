@@ -45,6 +45,16 @@ Architect-Planner, Backend, Frontend-UI, Automations-AI, Security-Auth, Testing,
 ## Scaffold Date
 Generated: 2026-03-02 from VaultLister 2.0 reference by claude-project-scaffolder
 
+## Audit Fixes (2026-03-08) — branch: feature/audit-fixes-20260308
+63-question audit done. 7 items fixed in first pass. Commits:
+- 58eb410 — Q9/Q12: rateLimiter LRU eviction; getKey fixed to `user:${userId}`; CSRF skip for /api/webhooks/incoming + /api/csp-report
+- 0e8fd0e — Q3: WebSocket upgrade now requires valid auth token before accepting
+- 343567b — Q14/Q53/Q60/Q61: TRUST_PROXY=1 in docker-compose; nginx service_healthy gate; daily backup-scheduler
+- 8e74344 — Q16/Q37/Q41: /api/csp-report handler; explicit crypto import in errorHandler.js
+- 18a11fd — Q13: tokens → sessionStorage only (never localStorage); hydrate() excludes tokens from localStorage reads
+Test result: 52/58 pass (was 43/58); 6 pre-existing CSRF-in-test-mode failures remain
+Full tracking: audit-table.md in Claude projects folder
+
 ## Infrastructure Additions (2026-03-07)
 All 6 gaps from /compare-project run implemented. New files:
 - `src/backend/env.js` — Zod startup env validation (replaces manual JWT_SECRET check)

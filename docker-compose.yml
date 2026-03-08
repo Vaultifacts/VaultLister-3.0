@@ -33,6 +33,8 @@ services:
       # AI (optional)
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # Proxy trust (required for correct IP-based rate limiting behind Nginx)
+      - TRUST_PROXY=1
     volumes:
       - vaultlister-data:/app/data
       - vaultlister-logs:/app/logs
@@ -81,7 +83,34 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - vaultlister-logs:/var/log/nginx
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    networks:
+      - vaultlister-network
+    profiles:
+      - production
+
+  # ============================================
+  # Backup Scheduler (automated daily backups, production profile)
+  # Runs an immediate backup on start, then every 24 hours.
+  # ============================================
+  backup-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vaultlister-backup-scheduler
+    restart: unless-stopped
+    entrypoint: ["sh", "-c", "bun run scripts/backup.js --compress; while true; do sleep 86400; bun run scripts/backup.js --compress; done"]
+    environment:
+      - DATA_DIR=/app/data
+      - BACKUP_DIR=/app/backups
+      - ONEDRIVE_ENABLED=${ONEDRIVE_ENABLED:-false}
+    volumes:
+      - vaultlister-data:/app/data:ro
+      - vaultlister-backups:/app/backups
+    depends_on:
+      app:
+        condition: service_healthy
     networks:
       - vaultlister-network
     profiles:

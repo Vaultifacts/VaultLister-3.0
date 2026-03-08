@@ -151,6 +151,7 @@ export function validateCSRF(ctx) {
     }
 
     // Skip CSRF for certain paths (public auth endpoints only — profile/password need CSRF)
+    // Incoming webhooks from external services (Stripe, marketplace callbacks) never have CSRF tokens.
     const skipPaths = [
         '/api/auth/login',
         '/api/auth/register',
@@ -158,7 +159,9 @@ export function validateCSRF(ctx) {
         '/api/auth/logout',
         '/api/auth/password-reset',
         '/api/auth/resend-verification',
-        '/api/auth/demo-login'
+        '/api/auth/demo-login',
+        '/api/webhooks/incoming',
+        '/api/csp-report'
     ];
     if (skipPaths.some(path => ctx.path.startsWith(path) || ctx.path === path.replace('/api', ''))) {
         return { valid: true };
@@ -238,7 +241,9 @@ export const csrfConfig = {
         '/api/auth/password-reset',
         '/api/auth/resend-verification',
         '/api/health',
-        '/api/status'
+        '/api/status',
+        '/api/webhooks/incoming',
+        '/api/csp-report'
     ]
 };
 

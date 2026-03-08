@@ -1,6 +1,7 @@
 // Error Handling Middleware
 // Centralized error handling for consistent responses
 
+import crypto from 'crypto';
 import { ErrorCodes, logError, now } from '../shared/utils.js';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
