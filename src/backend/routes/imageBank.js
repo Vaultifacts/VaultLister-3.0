@@ -1,8 +1,15 @@
 // Image Bank Routes
 import { v4 as uuidv4 } from 'uuid';
+import { readFileSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import Anthropic from '@anthropic-ai/sdk';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { saveImage, deleteImage, getImageUrl, importFromInventory, validateImage } from '../services/imageStorage.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = join(__dirname, '..', '..', '..');
 import {
     uploadToCloudinary,
     removeBackground,
@@ -384,9 +391,85 @@ export async function imageBankRouter(ctx) {
             return { status: 404, data: { error: 'Image not found' } };
         }
 
-        // TECH-DEBT: Integrate with Claude Vision API (similar to existing AI routes)
-        // For now, return a placeholder
-        return { status: 200, data: { message: 'AI analysis coming soon', imageId } };
+        const apiKey = process.env.ANTHROPIC_API_KEY;
+        if (!apiKey) {
+            return { status: 503, data: { error: 'AI analysis unavailable: ANTHROPIC_API_KEY not configured' } };
+        }
+
+        const absolutePath = join(ROOT_DIR, 'public', image.file_path);
+        if (!existsSync(absolutePath)) {
+            return { status: 404, data: { error: 'Image file not found on disk' } };
+        }
+
+        let imageBase64;
+        try {
+            imageBase64 = readFileSync(absolutePath).toString('base64');
+        } catch (err) {
+            logger.error('[ImageBank] Failed to read image file', user.id, { detail: err.message });
+            return { status: 500, data: { error: 'Failed to read image file' } };
+        }
+
+        const mimeType = image.mime_type || 'image/jpeg';
+
+        const prompt = `You are analyzing a product photo for a reseller listing. Return a JSON object with this exact shape:
+{
+  "brand": "detected brand name or null",
+  "category": "clothing|shoes|accessories|electronics|collectibles|home|other",
+  "subcategory": "more specific type (e.g. jacket, sneakers, mug)",
+  "condition": "new|like_new|good|fair|poor",
+  "colors": ["primary color", "secondary color if any"],
+  "materials": ["material if detectable"],
+  "suggestedTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "suggestedTitle": "concise listing title (under 80 chars)",
+  "suggestedDescription": "2-3 sentence listing description highlighting key features",
+  "photoQuality": { "score": 1-10, "issues": ["issue if any"], "suggestions": ["improvement"] }
+}
+
+Be specific and accurate. Only include what you can confidently detect from the image.`;
+
+        try {
+            const anthropic = new Anthropic({ apiKey });
+            const response = await anthropic.messages.create({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 1000,
+                messages: [{
+                    role: 'user',
+                    content: [
+                        { type: 'image', source: { type: 'base64', media_type: mimeType, data: imageBase64 } },
+                        { type: 'text', text: prompt }
+                    ]
+                }]
+            });
+
+            const responseText = response.content[0].text;
+            let analysis;
+            try {
+                analysis = JSON.parse(responseText);
+            } catch {
+                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+            }
+
+            if (!analysis) {
+                return { status: 500, data: { error: 'AI returned unparseable response' } };
+            }
+
+            // Persist analysis and merge suggested tags into image tags
+            const existingTags = JSON.parse(image.tags || '[]');
+            const mergedTags = [...new Set([...existingTags, ...(analysis.suggestedTags || [])])];
+
+            query.run(
+                `UPDATE image_bank SET ai_analysis = ?, tags = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                [JSON.stringify(analysis), JSON.stringify(mergedTags), imageId]
+            );
+
+            logger.info('[ImageBank] AI analysis complete', user.id, { imageId });
+            return { status: 200, data: { analysis, tags: mergedTags, aiProvider: 'claude-sonnet-4' } };
+
+        } catch (err) {
+            logger.error('[ImageBank] Claude Vision API error', user.id, { detail: err.message });
+            return { status: 500, data: { error: 'AI analysis failed', detail: err.message } };
+        }
     }
 
     // POST /api/image-bank/folders - Create folder
