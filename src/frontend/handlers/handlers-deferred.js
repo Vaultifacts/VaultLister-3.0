@@ -6896,15 +6896,34 @@ Object.assign(handlers, {
         const submitBtn = form.querySelector('.btn-primary') || form.querySelector('button[type="submit"]');
         loadingState.setButton(submitBtn, true);
 
+        const showCrosslistResult = (result) => {
+            const created = result?.created?.length || 0;
+            const skipped = result?.skipped?.length || 0;
+            const errors = result?.errors || [];
+            if (errors.length > 0) {
+                const parts = [];
+                if (created > 0) parts.push(`${created} created`);
+                if (skipped > 0) parts.push(`${skipped} already listed`);
+                parts.push(`${errors.length} failed`);
+                toast.warning(parts.join(', '));
+                errors.slice(0, 3).forEach(e => toast.error(`${e.platform}: ${e.error}`));
+            } else {
+                const parts = [];
+                if (created > 0) parts.push(`${created} created`);
+                if (skipped > 0) parts.push(`${skipped} already listed`);
+                toast.success(parts.join(', ') || 'Cross-listing complete');
+            }
+        };
+
         try {
             await api.ensureCSRFToken();
-            await api.post('/listings/crosslist', {
+            const result = await api.post('/listings/crosslist', {
                 itemIds: ids,
                 platforms: selectedPlatforms,
                 priceAdjustment: priceAdjust
             });
 
-            toast.success(`${ids.length} item(s) cross-listed to ${selectedPlatforms.length} platform(s)`);
+            showCrosslistResult(result);
             loadingState.setButton(submitBtn, false);
             modals.close();
             await handlers.loadListings();
@@ -6916,13 +6935,13 @@ Object.assign(handlers, {
                 try {
                     loadingState.setButton(submitBtn, true);
                     await api.ensureCSRFToken(true); // Force refresh token
-                    await api.post('/listings/crosslist', {
+                    const result = await api.post('/listings/crosslist', {
                         itemIds: ids,
                         platforms: selectedPlatforms,
                         priceAdjustment: priceAdjust
                     });
 
-                    toast.success(`${ids.length} item(s) cross-listed to ${selectedPlatforms.length} platform(s)`);
+                    showCrosslistResult(result);
                     loadingState.setButton(submitBtn, false);
                     modals.close();
                     await handlers.loadListings();
