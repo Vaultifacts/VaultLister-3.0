@@ -7,6 +7,20 @@ import { calculateSustainability } from '../../shared/utils/sustainability.js';
 import { validateInventoryData, validatePrice } from '../../shared/utils/sanitize.js';
 import { logger } from '../shared/logger.js';
 
+function detectMarketplace(url) {
+    const host = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
+    if (host.includes('ebay.')) return 'ebay';
+    if (host.includes('poshmark.')) return 'poshmark';
+    if (host.includes('mercari.')) return 'mercari';
+    if (host.includes('depop.')) return 'depop';
+    if (host.includes('grailed.')) return 'grailed';
+    if (host.includes('etsy.')) return 'etsy';
+    if (host.includes('shopify.') || host.includes('myshopify.')) return 'shopify';
+    if (host.includes('facebook.') || host.includes('fb.com')) return 'facebook';
+    if (host.includes('whatnot.')) return 'whatnot';
+    return 'other';
+}
+
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
  */
@@ -878,26 +892,91 @@ export async function inventoryRouter(ctx) {
             return { status: 400, data: { error: 'URL required' } };
         }
 
-        // For now, return a mock response
-        // In production, this would scrape the marketplace listing
+        let html;
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (compatible; VaultLister/3.0)',
+                    'Accept': 'text/html,application/xhtml+xml'
+                },
+                signal: AbortSignal.timeout(10000)
+            });
+            if (!response.ok) {
+                return { status: 422, data: { error: `Marketplace returned ${response.status}` } };
+            }
+            html = await response.text();
+        } catch (err) {
+            logger.error('[Inventory] URL import fetch failed', user.id, { url, detail: err.message });
+            return { status: 422, data: { error: 'Could not fetch URL', detail: err.message } };
+        }
+
+        // Extract Open Graph metadata (present on all major marketplaces)
+        const og = (prop) => {
+            const m = html.match(new RegExp(`<meta[^>]+property=["']og:${prop}["'][^>]+content=["']([^"']+)["']`, 'i'))
+                      || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${prop}["']`, 'i'));
+            return m ? m[1].trim() : null;
+        };
+
+        // Extract JSON-LD Product schema if present
+        let jsonLd = null;
+        const jsonLdMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
+        if (jsonLdMatch) {
+            try {
+                const parsed = JSON.parse(jsonLdMatch[1]);
+                const candidates = Array.isArray(parsed) ? parsed : [parsed];
+                jsonLd = candidates.find(d => d['@type'] === 'Product') || null;
+            } catch { /* ignore malformed JSON-LD */ }
+        }
+
+        // Build item from best available data (JSON-LD preferred, og fallback)
+        const title = (jsonLd?.name || og('title') || '').replace(/\s*[-|].*$/, '').trim();
+        const description = jsonLd?.description || og('description') || '';
+        const image = jsonLd?.image?.[0] || jsonLd?.image || og('image') || null;
+        const images = image ? [image] : [];
+
+        // Price: JSON-LD offers > og:price:amount
+        let listPrice = 0;
+        const priceStr = jsonLd?.offers?.price
+            || jsonLd?.offers?.[0]?.price
+            || og('price:amount');
+        if (priceStr) {
+            listPrice = parseFloat(String(priceStr).replace(/[^0-9.]/g, '')) || 0;
+        }
+
+        // Brand
+        const brand = jsonLd?.brand?.name || jsonLd?.brand || og('brand') || '';
+
+        // Condition mapping from JSON-LD
+        const conditionMap = {
+            'NewCondition': 'new',
+            'UsedCondition': 'good',
+            'RefurbishedCondition': 'fair',
+            'DamagedCondition': 'poor'
+        };
+        const rawCondition = jsonLd?.offers?.itemCondition || jsonLd?.offers?.[0]?.itemCondition || '';
+        const conditionKey = rawCondition.replace(/.*\//, '');
+        const condition = conditionMap[conditionKey] || 'good';
+
+        const detectedMarketplace = marketplace || detectMarketplace(url);
+
+        const item = {
+            title: title || 'Imported Item',
+            description,
+            listPrice,
+            category: '',
+            brand,
+            size: '',
+            color: '',
+            condition,
+            images,
+            marketplace: detectedMarketplace,
+            sourceUrl: url
+        };
+
+        logger.info('[Inventory] URL import complete', user.id, { url, title: item.title });
         return {
             status: 200,
-            data: {
-                item: {
-                    title: 'Imported Item',
-                    description: 'Item imported from ' + marketplace,
-                    listPrice: 0,
-                    category: '',
-                    brand: '',
-                    size: '',
-                    color: '',
-                    condition: 'good',
-                    images: [],
-                    marketplace: marketplace,
-                    sourceUrl: url
-                },
-                message: 'Item data fetched successfully. Note: This is a placeholder implementation.'
-            }
+            data: { item, message: 'Item data fetched successfully.' }
         };
     }
 
