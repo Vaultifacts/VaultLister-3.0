@@ -37,7 +37,7 @@ class RateLimiter {
         this.blocklist = new Map();
 
         // Clean up old entries every 5 minutes
-        setInterval(() => this.cleanup(), 5 * 60 * 1000);
+        this._cleanupInterval = setInterval(() => this.cleanup(), 5 * 60 * 1000);
     }
 
     /**
@@ -205,6 +205,14 @@ class RateLimiter {
     }
 
     /**
+     * Stop the cleanup interval — call during graceful shutdown
+     */
+    stop() {
+        clearInterval(this._cleanupInterval);
+        this._cleanupInterval = null;
+    }
+
+    /**
      * Manually block an IP or user
      */
     block(key, durationMs = RateLimiter.config.blockDuration) {
@@ -339,6 +347,13 @@ export function applyRateLimit(ctx, limitType = 'auto') {
     }
 
     return null; // No rate limit error
+}
+
+/**
+ * Stop the rate limiter cleanup interval — call during graceful shutdown
+ */
+export function stopRateLimiter() {
+    rateLimiter.stop();
 }
 
 // Export rate limiter instance for admin operations

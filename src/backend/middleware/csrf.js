@@ -14,7 +14,7 @@ class CSRFManager {
         this.maxTokens = 10000; // Max tokens before eviction
 
         // Clean up expired tokens every 10 minutes
-        setInterval(() => this.cleanup(), 10 * 60 * 1000);
+        this._cleanupInterval = setInterval(() => this.cleanup(), 10 * 60 * 1000);
     }
 
     /**
@@ -76,6 +76,14 @@ class CSRFManager {
      */
     consumeToken(token) {
         this.tokens.delete(token);
+    }
+
+    /**
+     * Stop the cleanup interval — call during graceful shutdown
+     */
+    stop() {
+        clearInterval(this._cleanupInterval);
+        this._cleanupInterval = null;
     }
 
     /**
@@ -246,6 +254,13 @@ export const csrfConfig = {
         '/api/csp-report'
     ]
 };
+
+/**
+ * Stop the CSRF cleanup interval — call during graceful shutdown
+ */
+export function stopCSRF() {
+    csrfManager.stop();
+}
 
 // Export manager for admin operations
 export { csrfManager };
