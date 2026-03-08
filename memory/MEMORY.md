@@ -45,15 +45,32 @@ Architect-Planner, Backend, Frontend-UI, Automations-AI, Security-Auth, Testing,
 ## Scaffold Date
 Generated: 2026-03-02 from VaultLister 2.0 reference by claude-project-scaffolder
 
-## Audit Fixes (2026-03-08) — branch: feature/audit-fixes-20260308
-63-question audit done. 7 items fixed in first pass. Commits:
+## Audit Fixes (2026-03-08) — merged to master
+63-question audit done. 8 items fixed. Commits on master:
 - 58eb410 — Q9/Q12: rateLimiter LRU eviction; getKey fixed to `user:${userId}`; CSRF skip for /api/webhooks/incoming + /api/csp-report
 - 0e8fd0e — Q3: WebSocket upgrade now requires valid auth token before accepting
 - 343567b — Q14/Q53/Q60/Q61: TRUST_PROXY=1 in docker-compose; nginx service_healthy gate; daily backup-scheduler
 - 8e74344 — Q16/Q37/Q41: /api/csp-report handler; explicit crypto import in errorHandler.js
 - 18a11fd — Q13: tokens → sessionStorage only (never localStorage); hydrate() excludes tokens from localStorage reads
-Test result: 52/58 pass (was 43/58); 6 pre-existing CSRF-in-test-mode failures remain
+- d9680e7 — Q8: poshmark-bot.js — login() reads from process.env only; shared logger; jitteredDelay(RATE_LIMITS); writeAuditLog for all key actions; try/finally in init()
+- d5d5a99 — Q63: both submitCrosslist() now capture per-platform results; warning+error toasts on partial failure
+- 9034dbe — Q35: removed stale 051_add_offers_table.sql entry; corrected 080 filename to 080_add_offers_table.sql
+- 62968af — Q51: /api/workers/health endpoint; all 5 workers track lastRun; stale detection (3× missed cycles)
+Test result: 52/58 pass (6 pre-existing CSRF-in-test-mode failures remain)
 Full tracking: audit-table.md in Claude projects folder
+All originally-flagged high-priority audit items resolved.
+
+## E2E Fixes + App Defects (2026-03-08) — branch autopilot/roundrobin-20260305-1756
+All 49 E2E failures fixed → 620/620 pass. Then 4 app-level defects patched:
+- `core-bundle.js` is the file actually served (via `index.html`), NOT `app.js` — critical architecture note
+- `const handlers = {` defined at core-bundle.js:24705, closed at :26077, `window.handlers` set at :26674
+- Sidebar collapse: `toggleSidebarCollapse` was absent from core handlers (only in lazy chunks) → added to core-bundle.js
+- CSV import: `handleImportFile` same issue → added to core handlers
+- WS badge: `#notification-badge` element never rendered → changed header bell to always render `<span id="notification-badge">`; `notificationCenter.updateBadge()` uses `getElementById`
+- Mobile overflow: `@media(max-width:768px)` guard added at end of main.css
+- Hardened: P2-1/P2-2/P2-4 (nav), P1-1 (import), P9-3/P10-3 (WS badge)
+- auth.test.js / security.test.js failures: pre-existing 429 rate-limit noise, NOT regressions
+- Commit: 0b26054 on master
 
 ## Infrastructure Additions (2026-03-07)
 All 6 gaps from /compare-project run implemented. New files:
