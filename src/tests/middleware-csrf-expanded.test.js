@@ -1,6 +1,9 @@
 // CSRF Middleware — Pure Function & Lifecycle Unit Tests
-import { describe, expect, test } from 'bun:test';
-import { csrfConfig, csrfManager, addCSRFToken, validateCSRF, applyCSRFProtection } from '../backend/middleware/csrf.js';
+import { describe, expect, test, beforeEach } from 'bun:test';
+import { csrfConfig, csrfManager, addCSRFToken, validateCSRF, applyCSRFProtection, clearCSRFTokens } from '../backend/middleware/csrf.js';
+
+// Isolate the csrfManager singleton between tests so token state never bleeds
+beforeEach(() => { clearCSRFTokens(); });
 
 describe('csrfConfig', () => {
     test('has headerNames array with expected values', () => {

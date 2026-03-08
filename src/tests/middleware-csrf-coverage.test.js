@@ -43,7 +43,11 @@ const {
     validateCSRF,
     applyCSRFProtection,
     csrfConfig,
+    clearCSRFTokens,
 } = await import('../backend/middleware/csrf.js');
+
+// Isolate the csrfManager singleton between tests
+beforeEach(() => { clearCSRFTokens(); });
 
 // ── Environment manipulation helpers ────────────────────────────────────────
 

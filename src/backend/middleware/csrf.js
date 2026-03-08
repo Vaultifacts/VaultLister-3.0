@@ -87,6 +87,13 @@ class CSRFManager {
     }
 
     /**
+     * Clear all tokens — test isolation helper only, not for production use
+     */
+    clearTokens() {
+        this.tokens.clear();
+    }
+
+    /**
      * Clean up expired tokens
      */
     cleanup() {
@@ -260,6 +267,14 @@ export const csrfConfig = {
  */
 export function stopCSRF() {
     csrfManager.stop();
+}
+
+/**
+ * Clear all CSRF tokens — for test isolation only
+ * Call in beforeEach() in any test that manipulates csrfManager directly
+ */
+export function clearCSRFTokens() {
+    csrfManager.clearTokens();
 }
 
 // Export manager for admin operations
