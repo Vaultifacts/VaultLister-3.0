@@ -79,7 +79,7 @@ class RateLimiter {
      * Unauthenticated: keyed on IP address.
      */
     getKey(ip, userId = null) {
-        return userId ? `user:${userId}` : `ip:${ip}`;
+        return userId ? `user:${userId}:${ip}` : `ip:${ip}`;
     }
 
     /**

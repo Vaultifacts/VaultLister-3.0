@@ -115,7 +115,7 @@ async function handleDataExport(user) {
 
     return {
       status: 200,
-      body: exportData,
+      data: exportData,
       headers: {
         'Content-Type': 'application/json',
         'Content-Disposition': `attachment; filename="vaultlister-data-export-${userId}-${Date.now()}.json"`
@@ -138,7 +138,7 @@ async function getCookieConsent(user) {
       // Return default consent (only functional cookies)
       return {
         status: 200,
-        body: {
+        data: {
           analytics: false,
           marketing: false,
           functional: true,
@@ -149,7 +149,7 @@ async function getCookieConsent(user) {
 
     return {
       status: 200,
-      body: {
+      data: {
         analytics: Boolean(consent.analytics),
         marketing: Boolean(consent.marketing),
         functional: Boolean(consent.functional),
@@ -183,7 +183,7 @@ async function updateCookieConsent(user, body) {
 
     return {
       status: 200,
-      body: {
+      data: {
         success: true,
         analytics,
         marketing,
@@ -288,7 +288,7 @@ async function acceptTos(user, body) {
     if (existing) {
       return {
         status: 200,
-        body: {
+        data: {
           success: true,
           message: 'ToS already accepted',
           acceptanceId: existing.id
@@ -306,7 +306,7 @@ async function acceptTos(user, body) {
 
     return {
       status: 200,
-      body: {
+      data: {
         success: true,
         acceptanceId,
         tosVersionId,
@@ -329,7 +329,7 @@ async function getTosAcceptanceStatus(user) {
     if (!currentTos) {
       return {
         status: 200,
-        body: {
+        data: {
           hasAccepted: true,
           message: 'No ToS version available'
         }
@@ -344,7 +344,7 @@ async function getTosAcceptanceStatus(user) {
 
     return {
       status: 200,
-      body: {
+      data: {
         hasAccepted: acceptance !== null,
         currentTosId: currentTos.id,
         currentTosVersion: currentTos.version,
