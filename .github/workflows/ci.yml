@@ -19,6 +19,7 @@ env:
   NODE_ENV: test
   JWT_SECRET: ci-test-secret-do-not-use-in-production
   PORT: '3001'
+  TEST_BASE_URL: http://localhost:3001
 
 jobs:
   lint:
