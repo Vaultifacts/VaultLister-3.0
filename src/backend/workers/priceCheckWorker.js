@@ -291,6 +291,9 @@ export function getPriceCheckWorkerStatus() {
         running: pollInterval !== null,
         checking: isRunning,
         intervalMs: POLL_INTERVAL_MS,
+        interval_ms: POLL_INTERVAL_MS,
+        interval_minutes: POLL_INTERVAL_MS / 60000,
+        max_items_per_cycle: MAX_ITEMS_PER_CYCLE,
         lastRun: lastRun ? new Date(lastRun).toISOString() : null
     };
 }

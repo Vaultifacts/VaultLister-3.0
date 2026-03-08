@@ -657,7 +657,10 @@ export function getRefreshSchedulerStatus() {
 
     return {
         running: schedulerInterval !== null,
+        isRunning: schedulerInterval !== null,
         intervalMs: REFRESH_INTERVAL_MS,
+        bufferMs: TOKEN_EXPIRY_BUFFER_MS,
+        maxFailures: MAX_CONSECUTIVE_FAILURES,
         lastRun: lastRun ? new Date(lastRun).toISOString() : null,
         ...stats
     };

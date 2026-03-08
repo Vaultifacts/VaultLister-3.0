@@ -1,5 +1,5 @@
 KNOWN_FAILURES=0
-# Unit/integration baseline (bun:test): 5280 pass / 0 fail
+# Unit/integration baseline (bun:test): 5289 pass / 0 fail
 # E2E baseline (Playwright, full suite): 620 pass / 0 fail
 #
 # ─── Named failure baseline (Q22) ────────────────────────────────────────────
@@ -49,3 +49,8 @@ KNOWN_FAILURES=0
 #   worker-emailPolling-unit: isRunning → running (matched Q51 status shape change)
 #   service-tokenRefreshScheduler-unit: isRunning → running; bufferMs/maxFailures → lastRun
 #   middleware-rateLimiter: getKey user-based key expectation corrected (no IP suffix)
+#
+# Unit baseline bump 2026-03-08 (5280 → 5289 pass):
+#   tokenRefreshScheduler: added isRunning, bufferMs, maxFailures aliases to getRefreshSchedulerStatus()
+#   priceCheckWorker: added interval_ms, interval_minutes, max_items_per_cycle to getPriceCheckWorkerStatus()
+#   Tests now run via TEST_BASE_URL=http://localhost:3100 (auth.helper.js + security.test.js aligned)
