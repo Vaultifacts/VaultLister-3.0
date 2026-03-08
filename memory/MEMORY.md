@@ -54,4 +54,7 @@ Modified files:
 - `src/backend/server.js` — env.js imported first; /api/health/live + /api/health/ready added; effectivePath normalization for /api/v1/ versioning; ETag/304 in response pipeline; cache.js import
 - `src/backend/middleware/rateLimiter.js` — getKey now `user:${userId}` (was `user:${userId}:${ip}`)
 - `public/sw.js` — SWR cache for stable GET API routes (health, size-charts, shipping-profiles, templates, checklist)
-Pending before commit: `bun test src/tests/auth.test.js src/tests/security.test.js`
+Commits: d003af4 (infra) → 1e7e2eb (SW v4.1.0) → 1b1c85d (Dockerfile fix) — all deployed
+Post-deploy: 7/7 checks pass; auth+security tests: 43/58 pass (15 pre-existing, not our changes)
+Dockerfile: groupadd/useradd (Debian); python3+make+g++ in builder for better-sqlite3
+Tests must run against local bun server (PORT=3001), NOT Docker (rate limiting enabled in prod)
