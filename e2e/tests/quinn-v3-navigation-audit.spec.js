@@ -315,19 +315,11 @@ test.describe('Quinn v3 > Navigation > Phase 2: Collapse/Expand', () => {
     await collapseBtn.click();
     await page.waitForTimeout(300);
 
-    // Verify collapsed state — soft assert (known SPA re-render issue)
-    const hasCollapsedClass = await sidebar.evaluate(el => el.classList.contains('sidebar-collapsed'));
-    if (!hasCollapsedClass) {
-      console.warn('[DEFECT] Sidebar collapse class not applied after click (SPA re-render overwrites manual DOM)');
-      test.info().annotations.push({ type: 'known-issue', description: 'Sidebar collapse class not persisted' });
-    }
+    // Verify collapsed state
+    await expect(sidebar).toHaveClass(/sidebar-collapsed/);
 
-    // Button title should update (handler sets title directly)
-    const titleAfterCollapse = await collapseBtn.getAttribute('title');
-    if (titleAfterCollapse && !titleAfterCollapse.match(/Expand/i)) {
-      console.warn('[DEFECT] Collapse button title not updated to Expand');
-      test.info().annotations.push({ type: 'known-issue', description: 'Collapse button title mismatch' });
-    }
+    // Button title should update to Expand
+    await expect(collapseBtn).toHaveAttribute('title', 'Expand sidebar');
 
     // Screenshot after collapse
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-nav-P2-collapsed.png' });
@@ -345,24 +337,15 @@ test.describe('Quinn v3 > Navigation > Phase 2: Collapse/Expand', () => {
     await collapseBtn.click();
     await page.waitForTimeout(300);
 
-    // Check collapse state (soft — known SPA re-render issue)
-    const collapsedAfterClick = await page.locator('.sidebar').evaluate(el => el.classList.contains('sidebar-collapsed'));
-    if (!collapsedAfterClick) {
-      console.warn('[DEFECT] Sidebar collapse state not applied (known SPA re-render issue)');
-      test.info().annotations.push({ type: 'known-issue', description: 'Sidebar collapse not persisted across navigation' });
-      return; // Skip persistence check if collapse itself doesn't work
-    }
+    // Check collapse state
+    await expect(page.locator('.sidebar')).toHaveClass(/sidebar-collapsed/);
 
     // Navigate to inventory and verify persistence
     await page.evaluate(() => router.navigate('inventory'));
     await waitForSpaRender(page);
     await waitForSpaRender(page);
 
-    const collapsedAfterInventory = await page.locator('.sidebar').evaluate(el => el.classList.contains('sidebar-collapsed'));
-    if (!collapsedAfterInventory) {
-      console.warn('[DEFECT] Sidebar collapse state lost after navigation to inventory');
-      test.info().annotations.push({ type: 'known-issue', description: 'Sidebar collapse state lost on navigation' });
-    }
+    await expect(page.locator('.sidebar')).toHaveClass(/sidebar-collapsed/);
 
     // Re-expand for cleanup
     await page.locator('.sidebar-collapse-btn').click();
@@ -417,12 +400,8 @@ test.describe('Quinn v3 > Navigation > Phase 2: Collapse/Expand', () => {
     const hash = await page.evaluate(() => window.location.hash);
     expect(hash).toBe('#inventory');
 
-    // Sidebar collapse state after nav click — soft (known SPA re-render issue)
-    const stillCollapsed = await page.locator('.sidebar').evaluate(el => el.classList.contains('sidebar-collapsed'));
-    if (!stillCollapsed) {
-      console.warn('[DEFECT] Sidebar not collapsed after nav click');
-      test.info().annotations.push({ type: 'known-issue', description: 'Sidebar collapse lost after nav click' });
-    }
+    // Sidebar collapse state should persist after nav click
+    await expect(page.locator('.sidebar')).toHaveClass(/sidebar-collapsed/);
 
     // Verify the inventory nav item is now active
     const isActive = await page.evaluate(() => {

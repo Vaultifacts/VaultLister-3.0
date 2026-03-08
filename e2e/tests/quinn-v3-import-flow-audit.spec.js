@@ -159,11 +159,8 @@ test.describe('P1: CSV Upload Simulation', () => {
     // the modal closed (client-side processing)
     const modalClosed = !(await page.locator('.modal-overlay').isVisible().catch(() => false));
 
-    // At least one of these should be true (soft — file input handler may not be wired up yet)
-    if (!(apiReq !== null || modalClosed)) {
-      console.warn('[DEFECT] CSV file upload did not trigger API call or close modal');
-      test.info().annotations.push({ type: 'known-issue', description: 'Import file input onChange handler not connected' });
-    }
+    // At least one of these must be true: API called or modal closed
+    expect(apiReq !== null || modalClosed).toBe(true);
 
     // Screenshot
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-import-P1-1-after-upload.png', fullPage: true });

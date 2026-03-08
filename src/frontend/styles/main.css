@@ -67549,3 +67549,28 @@ kbd {
         display: none !important;
     }
 }
+
+/* ===================================================
+   Mobile overflow guard — prevent horizontal scrolling
+   =================================================== */
+@media (max-width: 768px) {
+    /* Raw tables without a .table-container wrapper */
+    table {
+        max-width: 100%;
+        overflow-x: auto;
+        display: block;
+    }
+
+    /* Stat cards and image assets must not exceed viewport */
+    .stat-card,
+    .image-asset,
+    .card {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Sidebar must not cause overflow when hidden off-screen */
+    .sidebar {
+        max-width: 85vw;
+    }
+}

@@ -15799,7 +15799,7 @@ const components = {
                     <div class="notifications-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button class="header-icon-btn" aria-label="Notifications">
                             ${this.icon('bell')}
-                            ${store.state.notifications.length > 0 ? `<span class="badge">${store.state.notifications.length}</span>` : ''}
+                            <span id="notification-badge" class="badge" style="display:${notificationCenter.unreadCount > 0 ? 'flex' : 'none'}">${notificationCenter.unreadCount || ''}</span>
                         </button>
                         <div class="dropdown-menu" style="min-width: 320px; max-width: 400px; right: 0;">
                             <div style="padding: 12px 16px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">
@@ -26054,6 +26054,63 @@ const handlers = {
     scrollToSection(sectionId) {
         const el = document.getElementById(sectionId);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
+
+    toggleSidebarCollapse() {
+        const newState = !store.state.sidebarCollapsed;
+        store.setState({ sidebarCollapsed: newState });
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            if (newState) {
+                sidebar.classList.add('sidebar-collapsed');
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+            }
+            const collapseBtn = sidebar.querySelector('[data-testid="sidebar-collapse-btn"]');
+            if (collapseBtn) {
+                collapseBtn.title = newState ? 'Expand sidebar' : 'Collapse sidebar';
+                collapseBtn.setAttribute('aria-label', newState ? 'Expand sidebar' : 'Collapse sidebar');
+                collapseBtn.textContent = newState ? '→' : '←';
+            }
+        }
+    },
+
+    handleImportFile(file) {
+        if (!file) return;
+        modals.close();
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['csv', 'json', 'tsv', 'xlsx', 'xls'].includes(ext)) {
+            toast.error('Unsupported file format. Use CSV, JSON, TSV, XLSX, or XLS.');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                if (ext === 'json') {
+                    const data = JSON.parse(e.target.result);
+                    const items = Array.isArray(data) ? data : (data.inventory || data.items || [data]);
+                    store.setState({ importedData: items, importFileName: file.name });
+                    toast.success(`Loaded ${items.length} item(s) from ${file.name}`);
+                } else {
+                    const lines = e.target.result.split('\n').filter(l => l.trim());
+                    if (lines.length === 0) { toast.error('File is empty'); return; }
+                    const separator = ext === 'tsv' ? '\t' : ',';
+                    const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
+                    const items = lines.slice(1).map(line => {
+                        const values = line.split(separator).map(v => v.trim().replace(/^"|"$/g, ''));
+                        const obj = {};
+                        headers.forEach((h, i) => { obj[h] = values[i] || ''; });
+                        return obj;
+                    });
+                    store.setState({ importedData: items, importFileName: file.name });
+                    toast.success(`Parsed ${items.length} item(s) from ${file.name}`);
+                }
+                router.navigate('inventory');
+            } catch (err) {
+                toast.error('Failed to parse file: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
     },
 };
 

@@ -12,4 +12,11 @@ KNOWN_FAILURES=0
 #   accessibility/inventory/shops    3   baselined select-name, conditional option check, conditional stats
 #   quinn-v3-import-flow-audit       1   converted CSV upload check to soft annotation
 #
+# App defect fixes applied 2026-03-08:
+#   core-bundle.js: added toggleSidebarCollapse() to core handlers (was only in deferred chunk)
+#   core-bundle.js: added handleImportFile() to core handlers (was only in deferred chunk)
+#   core-bundle.js: notification badge always rendered with id="notification-badge" for updateBadge()
+#   main.css: mobile overflow guard (@media max-width:768px) for table, .stat-card, .sidebar
+#   Hardened assertions: P2-1/P2-2/P2-4 nav tests, P1-1 import test, P9-3/P10-3 WS badge tests
+#
 # Guardian E2E (npm run test:e2e --grep @quinn-v3-guardian): 11/11 pass
