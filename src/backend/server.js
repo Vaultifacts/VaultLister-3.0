@@ -77,7 +77,7 @@ import { watermarkRouter } from './routes/watermark.js';
 import { whatnotEnhancedRouter } from './routes/whatnotEnhanced.js';
 import { onboardingRouter } from './routes/onboarding.js';
 import { offlineSyncRouter } from './routes/offlineSync.js';
-import { startGDPRWorker, getGDPRWorkerStatus } from './workers/gdprWorker.js';
+import { startGDPRWorker, stopGDPRWorker, getGDPRWorkerStatus } from './workers/gdprWorker.js';
 import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
 import { featureFlags } from './services/featureFlags.js';
@@ -1203,6 +1203,7 @@ async function gracefulShutdown(signal) {
     stopTaskWorker();
     stopEmailPollingWorker();
     stopPriceCheckWorker();
+    stopGDPRWorker();
     stopRateLimiter();
     stopCSRF();
     clearInterval(cleanupInterval);
