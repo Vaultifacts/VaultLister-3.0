@@ -144,6 +144,21 @@ Key patterns discovered for Poshmark's Vue.js SPA:
 - `POSHMARK_COUNTRY=ca` now in .env (required for Canadian account)
 - Test listing live: https://poshmark.ca/listing/Vintage-Levis-501-Jeans-32x30-69ae6ca4db3a6fed550412ac
 
+## C-3 Price Predictor — COMPLETE (2026-03-09) — commit a9ab1ed
+- `predictPrice()` now uses `historicalAvg` as PRIMARY base when 3+ sales exist (was 50/50 blend)
+- Returns `{ price, priceSource }` — callers must destructure (old numeric return broken)
+- `getPriceRange()` returns `{ low, suggested, high, priceSource }` — use this for API responses
+- `/api/ai/suggest-price` and `generate-listing` now return `priceRange` + `priceSource`
+- UI label: "Estimated market price" with range "$low – $high (suggested: $X)"
+- Test script: `scripts/test-price-predictor.py`
+
+## C-4 Vault Buddy — COMPLETE (2026-03-09) — commit a42dea6
+- Model: `claude-sonnet-4-6` (upgraded from haiku)
+- Welcome message: "Hi! 👋 I'm Vault Buddy, your AI assistant built into VaultLister."
+- `getUserStats()` returns: inventory total (active/sold), last-30d sales+profit, top 5 platforms with counts
+- Verified: source=claude, responses include real inventory numbers (232 items, 48 active, 8 sold)
+- Test script: `scripts/test-vault-buddy.py`
+
 ## C-2 Image Analyzer — COMPLETE (2026-03-09) — commit bfd8ad8
 - `analyzeImage()` in `src/shared/ai/image-analyzer.js` → `claude-haiku-4-5-20251001` Vision API
 - Handles URL and base64 data URI input; falls back to text helpers (detectBrand/detectCategory/extractColors)
