@@ -3181,6 +3181,27 @@ const pages = {
 
     // Email Verification page (shown after registration),
 
+    verifyEmail(success, message) {
+        const isLoading = success === null;
+        const icon = isLoading ? '&#8987;' : success ? '&#10003;' : '&#10007;';
+        const iconColor = isLoading ? 'var(--gray-400)' : success ? 'var(--success,#16a34a)' : 'var(--danger,#dc2626)';
+        const title = isLoading ? 'Verifying…' : success ? 'Email Verified!' : 'Verification Failed';
+        return `
+            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%)">
+                <div class="card" style="width: 400px; max-width: 90%">
+                    <div class="card-body text-center">
+                        <div class="email-verify-icon" style="color:${iconColor}">${icon}</div>
+                        <h1 class="text-2xl font-bold mb-2">${escapeHtml(title)}</h1>
+                        <p class="text-gray-600 mb-6">${escapeHtml(message || '')}</p>
+                        ${success ? `<button class="btn btn-primary w-full" onclick="router.navigate('login')">Sign In</button>` : `
+                        <button class="btn btn-secondary w-full mb-3" onclick="router.navigate('email-verification')">Resend Verification</button>
+                        <button class="btn btn-ghost w-full" onclick="router.navigate('login')">Back to Sign In</button>`}
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
     emailVerification() {
         const email = store.state.pendingVerificationEmail || 'your email';
         return `

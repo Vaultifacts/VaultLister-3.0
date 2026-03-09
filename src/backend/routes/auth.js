@@ -904,6 +904,45 @@ export async function authRouter(ctx) {
         return { status: 200, data: { message: 'If an account exists with that email, a password reset link has been sent.' } };
     }
 
+    // GET /api/auth/verify-email?token=... - Verify email address
+    if (method === 'GET' && path === '/verify-email') {
+        const token = ctx.query?.token;
+        if (!token) {
+            return { status: 400, data: { error: 'Verification token is required' } };
+        }
+
+        try {
+            const record = query.get(
+                `SELECT ev.user_id, ev.expires_at, ev.used_at, u.email, u.username, u.email_verified
+                 FROM email_verifications ev
+                 JOIN users u ON u.id = ev.user_id
+                 WHERE ev.token = ?`,
+                [token]
+            );
+
+            if (!record) {
+                return { status: 400, data: { error: 'Invalid or expired verification link.' } };
+            }
+            if (record.used_at) {
+                return { status: 400, data: { error: 'This verification link has already been used.' } };
+            }
+            if (new Date(record.expires_at) < new Date()) {
+                return { status: 400, data: { error: 'This verification link has expired. Please request a new one.' } };
+            }
+            if (record.email_verified) {
+                return { status: 200, data: { message: 'Your email is already verified. You can log in.' } };
+            }
+
+            query.run('UPDATE users SET email_verified = 1 WHERE id = ?', [record.user_id]);
+            query.run('UPDATE email_verifications SET used_at = datetime(\'now\') WHERE token = ?', [token]);
+
+            return { status: 200, data: { message: 'Email verified successfully! You can now log in.' } };
+        } catch (e) {
+            logger.error('[auth] Email verification error', null, { detail: e.message });
+            return { status: 500, data: { error: 'Verification failed. Please try again.' } };
+        }
+    }
+
     // POST /api/auth/resend-verification - Resend email verification
     if (method === 'POST' && path === '/resend-verification') {
         const { email } = body;

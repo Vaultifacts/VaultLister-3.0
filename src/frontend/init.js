@@ -94,6 +94,21 @@ async function initApp() {
     router.register('register', () => render(pages.register()));
     router.register('forgot-password', () => render(pages.forgotPassword()));
     router.register('email-verification', () => render(pages.emailVerification()));
+    router.register('verify-email', async () => {
+        const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+        const token = params.get('token');
+        if (!token) {
+            render(pages.verifyEmail(false, 'No verification token found in the link.'));
+            return;
+        }
+        render(pages.verifyEmail(null, 'Verifying your email\u2026'));
+        try {
+            const data = await api.get(`/auth/verify-email?token=${encodeURIComponent(token)}`);
+            render(pages.verifyEmail(true, data.message || 'Email verified successfully! You can now log in.'));
+        } catch (err) {
+            render(pages.verifyEmail(false, err.message || 'Verification failed. Please try again.'));
+        }
+    });
     router.register('dashboard', () => {
         renderApp(pages.dashboard());
         // Initialize resize handles and animations after DOM update

@@ -15164,7 +15164,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '4a59ec75';
+    const v = '86805efe';
     const files = [
         '/pages/pages-' + chunkName + '.js?v=' + v,
         '/handlers/handlers-' + chunkName + '.js?v=' + v
@@ -15237,7 +15237,7 @@ const router = {
     },
 
     async handleRoute(isInitialLoad = false) {
-        let path = window.location.hash.slice(1) || 'dashboard';
+        let path = (window.location.hash.slice(1) || 'dashboard').split('?')[0];
         const previousPage = store.state.currentPage;
 
         // Clear timers/intervals on navigation to prevent leaks
@@ -15282,7 +15282,7 @@ const router = {
         }
 
         // Auth guard: redirect unauthenticated users to login for protected routes
-        const publicRoutes = ['login', 'register', 'forgot-password', 'email-verification', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
+        const publicRoutes = ['login', 'register', 'forgot-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
         if (!publicRoutes.includes(path) && !auth.isAuthenticated()) {
             store.setState({ currentPage: 'login' });
             window.location.hash = '#login';
@@ -20649,6 +20649,27 @@ const pages = {
     },
 
     // Email Verification page (shown after registration),
+
+    verifyEmail(success, message) {
+        const isLoading = success === null;
+        const icon = isLoading ? '&#8987;' : success ? '&#10003;' : '&#10007;';
+        const iconColor = isLoading ? 'var(--gray-400)' : success ? 'var(--success,#16a34a)' : 'var(--danger,#dc2626)';
+        const title = isLoading ? 'Verifying…' : success ? 'Email Verified!' : 'Verification Failed';
+        return `
+            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%)">
+                <div class="card" style="width: 400px; max-width: 90%">
+                    <div class="card-body text-center">
+                        <div class="email-verify-icon" style="color:${iconColor}">${icon}</div>
+                        <h1 class="text-2xl font-bold mb-2">${escapeHtml(title)}</h1>
+                        <p class="text-gray-600 mb-6">${escapeHtml(message || '')}</p>
+                        ${success ? `<button class="btn btn-primary w-full" onclick="router.navigate('login')">Sign In</button>` : `
+                        <button class="btn btn-secondary w-full mb-3" onclick="router.navigate('email-verification')">Resend Verification</button>
+                        <button class="btn btn-ghost w-full" onclick="router.navigate('login')">Back to Sign In</button>`}
+                    </div>
+                </div>
+            </div>
+        `;
+    },
 
     emailVerification() {
         const email = store.state.pendingVerificationEmail || 'your email';
@@ -26240,6 +26261,21 @@ async function initApp() {
     router.register('register', () => render(pages.register()));
     router.register('forgot-password', () => render(pages.forgotPassword()));
     router.register('email-verification', () => render(pages.emailVerification()));
+    router.register('verify-email', async () => {
+        const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+        const token = params.get('token');
+        if (!token) {
+            render(pages.verifyEmail(false, 'No verification token found in the link.'));
+            return;
+        }
+        render(pages.verifyEmail(null, 'Verifying your email\u2026'));
+        try {
+            const data = await api.get(`/auth/verify-email?token=${encodeURIComponent(token)}`);
+            render(pages.verifyEmail(true, data.message || 'Email verified successfully! You can now log in.'));
+        } catch (err) {
+            render(pages.verifyEmail(false, err.message || 'Verification failed. Please try again.'));
+        }
+    });
     router.register('dashboard', () => {
         renderApp(pages.dashboard());
         // Initialize resize handles and animations after DOM update

@@ -162,7 +162,7 @@ const router = {
     },
 
     async handleRoute(isInitialLoad = false) {
-        let path = window.location.hash.slice(1) || 'dashboard';
+        let path = (window.location.hash.slice(1) || 'dashboard').split('?')[0];
         const previousPage = store.state.currentPage;
 
         // Clear timers/intervals on navigation to prevent leaks
@@ -207,7 +207,7 @@ const router = {
         }
 
         // Auth guard: redirect unauthenticated users to login for protected routes
-        const publicRoutes = ['login', 'register', 'forgot-password', 'email-verification', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
+        const publicRoutes = ['login', 'register', 'forgot-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
         if (!publicRoutes.includes(path) && !auth.isAuthenticated()) {
             store.setState({ currentPage: 'login' });
             window.location.hash = '#login';
