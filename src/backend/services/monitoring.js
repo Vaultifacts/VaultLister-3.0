@@ -1,6 +1,7 @@
 // Monitoring and Alerting Service
 // Error tracking, uptime monitoring, and performance alerts
 
+import v8 from 'v8';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
@@ -153,10 +154,16 @@ const monitoring = {
                 metrics.performance.memory = metrics.performance.memory.slice(-100);
             }
 
-            // Check memory threshold
-            const memoryRatio = memUsage.heapUsed / memUsage.heapTotal;
+            // Check memory threshold against heapSizeLimit (the true V8 max),
+            // not heapTotal (which starts tiny and grows dynamically, causing false positives)
+            const heapSizeLimit = v8.getHeapStatistics().heap_size_limit;
+            const memoryRatio = memUsage.heapUsed / heapSizeLimit;
             if (memoryRatio > THRESHOLDS.memoryUsage) {
-                this.alert('high_memory', { memoryRatio, heapUsed: memUsage.heapUsed });
+                this.alert('high_memory', {
+                    memoryRatio: memoryRatio.toFixed(3),
+                    heapUsedMB: Math.round(memUsage.heapUsed / 1024 / 1024),
+                    heapSizeLimitMB: Math.round(heapSizeLimit / 1024 / 1024)
+                });
             }
         }, 30000);
     },
