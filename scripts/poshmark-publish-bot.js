@@ -39,6 +39,44 @@ async function humanType(page, selector, text) {
     }
 }
 
+/**
+ * Convert a raw inventory size string to the closest Poshmark size label.
+ * @param {string|null} rawSize  e.g. "32x30", "L", "XL", "US M", "34", "28W 30L"
+ * @param {string[]} category    e.g. ["Men","Pants"] — first element is dept
+ * @returns {string}  label to search for in Poshmark's size dropdown
+ */
+function resolvePoshmarkSize(rawSize, category) {
+    if (!rawSize) return 'M';
+    const s = String(rawSize).trim();
+
+    // WxL jeans format: "32x30", "32X30", "32 x 30", "32W 30L"
+    const wxlMatch = s.match(/^(\d{2})\s*[xX×]\s*\d{2}$/) || s.match(/^(\d{2})[Ww]\s*\d{2}[Ll]$/);
+    if (wxlMatch) {
+        // Return numeric waist — matches Poshmark pants dropdown items like "28", "30", "32", "34"
+        return wxlMatch[1];
+    }
+
+    // Pure numeric (waist-only): "32", "34"
+    if (/^\d{2}$/.test(s)) return s;
+
+    // Normalize letter sizes → "US X" format
+    const clean = s.replace(/^US\s*/i, '').toUpperCase();
+    const letterMap = {
+        'XXS': 'US XXS', 'XS': 'US XS', 'S': 'US S', 'M': 'US M',
+        'L': 'US L', 'XL': 'US XL', 'XXL': 'US XXL', '2XL': 'US XXL',
+        'XXXL': 'US XXXL', '3XL': 'US XXXL', '4XL': 'US 4XL',
+        '0': 'US 0', '2': 'US 2', '4': 'US 4', '6': 'US 6',
+        '8': 'US 8', '10': 'US 10', '12': 'US 12', '14': 'US 14',
+    };
+    if (letterMap[clean]) return letterMap[clean];
+
+    // Already has "US " prefix
+    if (/^US\s/i.test(s)) return s;
+
+    // Return as-is and let bot matching handle it
+    return s;
+}
+
 async function main() {
     let input = '';
     for await (const chunk of process.stdin) input += chunk;
@@ -282,7 +320,8 @@ async function main() {
         // Step 3c: Size selection — use mouse.click at element coordinates for Vue reactivity
         // (page.evaluate el.click() doesn't trigger Vue; mouse.click does)
         await page.waitForTimeout(randomDelay(400, 600));
-        const sizeToSelect = size || 'L';
+        const sizeToSelect = resolvePoshmarkSize(size, catParts);
+        process.stderr.write(`[bot] Size mapping: "${size}" → "${sizeToSelect}" (category: ${catParts.join('>')})\n`);
 
         // Get size dropdown bounding box via evaluate, then click via page.mouse
         const sizeDropdownBox = await page.evaluate(() => {
