@@ -144,6 +144,12 @@ Key patterns discovered for Poshmark's Vue.js SPA:
 - `POSHMARK_COUNTRY=ca` now in .env (required for Canadian account)
 - Test listing live: https://poshmark.ca/listing/Vintage-Levis-501-Jeans-32x30-69ae6ca4db3a6fed550412ac
 
+## C-1 Listing Generator — COMPLETE (2026-03-09) — commit b8d303c
+- `generateListing()` in `src/shared/ai/listing-generator.js` calls `claude-haiku-4-5-20251001` with template fallback
+- Verified: Nike sneaker → source=claude, 56-char title, 20 tags, multi-para description in 7.5s
+- API flow: login → GET /api/csrf-token (user-scoped) → POST /api/ai/generate-listing
+- Test script: `scripts/test-generate-listing.py`
+
 ## B-4 Stub Platforms — COMPLETE (2026-03-09) — commit f0e8769
 - Mercari, Depop, Grailed, Facebook, Whatnot, Shopify marked Coming Soon in cross-lister UI
 - Platform buttons: `.coming-soon-btn` class — greyed out, `pointer-events: none`, tooltip "Coming soon — join the waitlist"
