@@ -827,7 +827,7 @@ function executeShare(rule, conditions, actions) {
     const minPrice = conditions.minPrice ?? 0;
     const isPartyShare = conditions.partyOnly || actions.shareToParty;
     const params = [rule.user_id];
-    let sql = `SELECT id, platform, title, price, shares FROM listings WHERE user_id = ? AND status = 'active'`;
+    let sql = `SELECT id, platform, title, price, shares, platform_url FROM listings WHERE user_id = ? AND status = 'active'`;
     if (rule.platform) { sql += ' AND platform = ?'; params.push(rule.platform); }
     if (minPrice > 0) { sql += ' AND price >= ?'; params.push(minPrice); }
     sql += ' ORDER BY last_shared_at ASC NULLS FIRST';
@@ -841,13 +841,16 @@ function executeShare(rule, conditions, actions) {
             const delayNote = actions.randomDelay ? ` (delay: ${(crypto.getRandomValues(new Uint32Array(1))[0] % 5) + 1}s)` : '';
             logAutomationAction(rule.user_id, rule.id, 'share', listing.platform, 'success', isPartyShare ? 'party_share' : 'share', listing.id,
                 `Shared "${listing.title}"${delayNote}`);
+            auditLog(listing.platform || rule.platform || 'poshmark', 'share_success', {
+                userId: rule.user_id, ruleId: rule.id,
+                listingId: listing.id, itemUrl: listing.platform_url || null, title: listing.title
+            });
             processed++; succeeded++;
         } catch (err) {
             logAutomationAction(rule.user_id, rule.id, 'share', listing.platform, 'failure', 'share', listing.id, err.message);
             processed++; failed++;
         }
     }
-    if (succeeded > 0) auditLog(rule.platform || 'poshmark', 'share_success', { userId: rule.user_id, ruleId: rule.id, shared: succeeded });
     return { message: `Share: ${succeeded}/${processed} listings shared${isPartyShare ? ' to party' : ''}`, itemsProcessed: processed, itemsSucceeded: succeeded, itemsFailed: failed };
 }
 

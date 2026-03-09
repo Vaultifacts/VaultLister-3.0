@@ -250,6 +250,20 @@ const loadingState = {
         });
     },
 
+    setButton(btn, loading) {
+        if (!btn) return;
+        if (loading) {
+            btn.disabled = true;
+            btn.dataset.originalText = btn.textContent;
+            btn.innerHTML = '<span class="loading-spinner"></span> Loading...';
+        } else {
+            btn.disabled = false;
+            if (btn.dataset.originalText) {
+                btn.textContent = btn.dataset.originalText;
+            }
+        }
+    },
+
     // Create inline loading spinner
     spinner(size = 16) {
         return `<span class="loading-spinner" style="width:${size}px;height:${size}px"></span>`;

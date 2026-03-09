@@ -9973,7 +9973,7 @@ Object.assign(handlers, {
             });
             modals.close();
             toast.success('Custom automation created');
-            await handlers.loadAutomationRules();
+            await handlers.loadAutomations();
             renderApp(pages.automations());
         } catch (err) {
             toast.error('Failed to create automation: ' + (err.message || 'Unknown error'));

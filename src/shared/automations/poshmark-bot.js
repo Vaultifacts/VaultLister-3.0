@@ -1,14 +1,22 @@
 // Poshmark Automation Bot using Playwright
 // Handles sharing, following, and offer management
 
-import { chromium } from 'playwright';
+import { chromium as chromiumExtra } from 'playwright-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+chromiumExtra.use(StealthPlugin());
+// Use stealth-patched chromium for all bot operations (bypasses reCAPTCHA v3 fingerprinting)
+const chromium = chromiumExtra;
 import fs from 'fs';
 import path from 'path';
 import { logger } from '../../backend/shared/logger.js';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 
-const POSHMARK_URL = 'https://poshmark.com';
+// Regional domain map — set POSHMARK_COUNTRY in .env (us, ca, au, in)
+const POSHMARK_DOMAINS = { us: 'https://poshmark.com', ca: 'https://poshmark.ca', au: 'https://poshmark.com.au', in: 'https://poshmark.in' };
+const POSHMARK_URL = POSHMARK_DOMAINS[process.env.POSHMARK_COUNTRY?.toLowerCase()] || POSHMARK_DOMAINS.us;
+
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
+const COOKIE_FILE = path.join(process.cwd(), 'data', 'poshmark-cookies.json');
 
 // Random delay for human-like typing and short navigation pauses only
 // Inter-action delays use jitteredDelay(RATE_LIMITS.poshmark.*) instead
@@ -64,7 +72,9 @@ export class PoshmarkBot {
         try {
             this.browser = await chromium.launch({
                 headless: this.options.headless,
-                slowMo: this.options.slowMo
+                slowMo: this.options.slowMo,
+                args: ['--no-sandbox', '--disable-blink-features=AutomationControlled'],
+                ignoreDefaultArgs: ['--enable-automation']
             });
 
             const context = await this.browser.newContext({
@@ -90,20 +100,45 @@ export class PoshmarkBot {
     }
 
     /**
-     * Login to Poshmark — reads credentials from process.env, never accepts them as arguments
+     * Login to Poshmark.
+     * Strategy:
+     *   1. If data/poshmark-cookies.json exists, load cookies and verify session — skip form login.
+     *   2. Otherwise fall back to form login with credentials from .env.
+     *   3. After successful form login, save cookies for next run.
      */
     async login() {
         const username = process.env.POSHMARK_USERNAME;
         const password = process.env.POSHMARK_PASSWORD;
 
+        logger.info('[PoshmarkBot] Logging in...');
+
+        // --- Strategy 1: cookie-based login ---
+        if (fs.existsSync(COOKIE_FILE)) {
+            try {
+                const cookies = JSON.parse(fs.readFileSync(COOKIE_FILE, 'utf8'));
+                await this.page.context().addCookies(cookies);
+                await this.page.goto(`${POSHMARK_URL}/feed`, { waitUntil: 'domcontentloaded' });
+                const isLoggedIn = await this.page.$('.user-image, .header__account-info-list, .dropdown__menu--user, [data-et="my_closet"]');
+                if (isLoggedIn) {
+                    this.isLoggedIn = true;
+                    logger.info('[PoshmarkBot] Cookie login successful');
+                    writeAuditLog('login', { username, method: 'cookie', success: true });
+                    return true;
+                }
+                logger.info('[PoshmarkBot] Cookies expired — falling back to form login');
+                fs.unlinkSync(COOKIE_FILE);
+            } catch (e) {
+                logger.info('[PoshmarkBot] Cookie load failed — falling back to form login', { error: e.message });
+            }
+        }
+
+        // --- Strategy 2: form login ---
         if (!username || !password) {
             throw new Error('[PoshmarkBot] POSHMARK_USERNAME and POSHMARK_PASSWORD must be set in .env');
         }
 
-        logger.info('[PoshmarkBot] Logging in...');
-
         try {
-            await this.page.goto(`${POSHMARK_URL}/login`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${POSHMARK_URL}/login`, { waitUntil: 'domcontentloaded' });
 
             // Wait for login form
             await this.page.waitForSelector('input[name="login_form[username_email]"]', { timeout: 10000 });
@@ -118,16 +153,24 @@ export class PoshmarkBot {
             // Submit form
             await this.page.click('button[type="submit"]');
 
-            // Wait for navigation
-            await this.page.waitForNavigation({ waitUntil: 'networkidle' });
+            // Poshmark is a SPA — wait for URL to leave /login rather than a full navigation event
+            await this.page.waitForFunction(
+                () => !window.location.pathname.startsWith('/login'),
+                { timeout: 15000 }
+            );
 
             // Check if logged in
-            const isLoggedIn = await this.page.$('.user-avatar, .dropdown__menu--user');
+            const isLoggedIn = await this.page.$('.user-image, .header__account-info-list, .dropdown__menu--user, [data-et="my_closet"]');
             this.isLoggedIn = !!isLoggedIn;
 
             if (this.isLoggedIn) {
-                logger.info('[PoshmarkBot] Login successful');
-                writeAuditLog('login', { username, success: true });
+                logger.info('[PoshmarkBot] Form login successful');
+                // Save cookies for next run
+                const cookies = await this.page.context().cookies();
+                fs.mkdirSync(path.dirname(COOKIE_FILE), { recursive: true });
+                fs.writeFileSync(COOKIE_FILE, JSON.stringify(cookies, null, 2));
+                logger.info('[PoshmarkBot] Session cookies saved');
+                writeAuditLog('login', { username, method: 'form', success: true });
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
@@ -135,7 +178,7 @@ export class PoshmarkBot {
             return this.isLoggedIn;
         } catch (error) {
             logger.error('[PoshmarkBot] Login error', error);
-            writeAuditLog('login', { username, success: false, error: error.message });
+            writeAuditLog('login', { username, method: 'form', success: false, error: error.message });
             this.stats.errors++;
             throw error;
         }
@@ -148,7 +191,7 @@ export class PoshmarkBot {
         logger.info('[PoshmarkBot] Sharing item', { listingUrl });
 
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
 
             // Find and click share button
@@ -189,7 +232,7 @@ export class PoshmarkBot {
         logger.info(`[PoshmarkBot] Sharing closet for ${username}, max ${maxShares} items`);
 
         try {
-            await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             // Get all listing cards
@@ -240,7 +283,7 @@ export class PoshmarkBot {
         logger.info('[PoshmarkBot] Following user', { username });
 
         try {
-            await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.followDelay));
 
             // Find follow button
@@ -271,7 +314,7 @@ export class PoshmarkBot {
 
         try {
             // Navigate to followers page
-            await this.page.goto(`${POSHMARK_URL}/user/followers`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${POSHMARK_URL}/user/followers`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             let followed = 0;
@@ -309,7 +352,7 @@ export class PoshmarkBot {
         logger.info('[PoshmarkBot] Getting offers...');
 
         try {
-            await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             const offers = await this.page.$$eval('[data-test="offer-card"]', cards => {
@@ -337,7 +380,7 @@ export class PoshmarkBot {
         logger.info('[PoshmarkBot] Accepting offer', { offerIndex });
 
         try {
-            await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
@@ -375,7 +418,7 @@ export class PoshmarkBot {
         logger.info('[PoshmarkBot] Countering offer', { offerIndex, counterAmount });
 
         try {
-            await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
@@ -417,7 +460,7 @@ export class PoshmarkBot {
         logger.info('[PoshmarkBot] Declining offer', { offerIndex });
 
         try {
-            await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
@@ -457,7 +500,7 @@ export class PoshmarkBot {
         logger.info(`[PoshmarkBot] Sending OTL for ${listingUrl} — ${discountPercent}% off`);
 
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             // Find the "Offer/Price Drop" or "Send Offer to Likers" button
@@ -539,7 +582,7 @@ export class PoshmarkBot {
         logger.info(`[PoshmarkBot] Sending OTLs for @${username} closet — up to ${maxOffers} listings`);
 
         try {
-            await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             const listingLinks = await this.page.$$eval(
@@ -587,7 +630,7 @@ export class PoshmarkBot {
         logger.info(`[PoshmarkBot] Community sharing from ${feedType}, max ${maxShares} items`);
 
         try {
-            await this.page.goto(`${POSHMARK_URL}/${feedType}`, { waitUntil: 'networkidle' });
+            await this.page.goto(`${POSHMARK_URL}/${feedType}`, { waitUntil: 'domcontentloaded' });
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             let shared = 0;
@@ -639,6 +682,235 @@ export class PoshmarkBot {
             logger.error('[PoshmarkBot] Community share error', error);
             this.stats.errors++;
             throw error;
+        }
+    }
+
+    /**
+     * Create a new listing on Poshmark via browser automation.
+     * @param {Object} listing - { title, description, price, originalPrice, images, categoryPath, conditionTag, brand, size }
+     * @returns {{ success: boolean, listingUrl: string|null, error: string|null }}
+     */
+    async createListing(listing) {
+        const {
+            title,
+            description = '',
+            price,
+            originalPrice,
+            images = [],
+            categoryPath = '',
+            conditionTag = 'good',
+            brand = '',
+            size = ''
+        } = listing;
+
+        logger.info('[PoshmarkBot] Creating listing', { title, price });
+        writeAuditLog('publish_attempt', { title, price });
+
+        // Use a fresh page so the image-blocking route on this.page doesn't affect the form
+        const listPage = await this.page.context().newPage();
+
+        try {
+            await listPage.goto(`${POSHMARK_URL}/create-listing`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await listPage.waitForTimeout(randomDelay(2000, 3000));
+
+            // CAPTCHA guard — must come before any form interaction
+            await this._checkCaptcha(listPage);
+
+            // 1. Photos
+            if (images.length > 0) {
+                await this._uploadPhotos(listPage, images);
+                await listPage.waitForTimeout(randomDelay(2000, 3500));
+            }
+
+            // 2. Title
+            const titleSel = 'input[data-test="listing-title"], input[placeholder*="title" i], input[name*="title" i]';
+            const titleInput = await listPage.waitForSelector(titleSel, { timeout: 15000 });
+            await titleInput.click({ clickCount: 3 });
+            await listPage.keyboard.type(title.slice(0, 80));
+            await listPage.waitForTimeout(randomDelay(500, 1000));
+
+            // 3. Description
+            if (description) {
+                const descEl = await listPage.$('textarea[data-test="listing-description"], textarea[placeholder*="description" i]');
+                if (descEl) {
+                    await descEl.click({ clickCount: 3 });
+                    await listPage.keyboard.type(description.slice(0, 500));
+                    await listPage.waitForTimeout(randomDelay(500, 1000));
+                }
+            }
+
+            // 4. Category
+            if (categoryPath) {
+                await this._selectCategory(listPage, categoryPath);
+                await listPage.waitForTimeout(randomDelay(800, 1200));
+            }
+
+            // 5. Size
+            if (size) {
+                await this._selectSize(listPage, size);
+                await listPage.waitForTimeout(randomDelay(500, 900));
+            }
+
+            // 6. Brand
+            if (brand) {
+                const brandEl = await listPage.$('input[data-test="brand"], input[placeholder*="brand" i]');
+                if (brandEl) {
+                    await brandEl.click({ clickCount: 3 });
+                    await listPage.keyboard.type(brand);
+                    await listPage.waitForTimeout(randomDelay(600, 1000));
+                    await listPage.keyboard.press('Escape'); // dismiss autocomplete
+                    await listPage.waitForTimeout(randomDelay(300, 500));
+                }
+            }
+
+            // 7. Original price
+            if (originalPrice > 0) {
+                const ogEl = await listPage.$('input[data-test="original-price"], input[placeholder*="original price" i]');
+                if (ogEl) {
+                    await ogEl.click({ clickCount: 3 });
+                    await listPage.keyboard.type(String(Math.round(originalPrice)));
+                    await listPage.waitForTimeout(randomDelay(400, 800));
+                }
+            }
+
+            // 8. Listing price
+            const priceEl = await listPage.$('input[data-test="listing-price"], input[placeholder*="listing price" i]');
+            if (priceEl) {
+                await priceEl.click({ clickCount: 3 });
+                await listPage.keyboard.type(String(price));
+                await listPage.waitForTimeout(randomDelay(400, 800));
+            }
+
+            // 9. Condition
+            await this._selectCondition(listPage, conditionTag);
+            await listPage.waitForTimeout(randomDelay(500, 900));
+
+            // 10. Submit
+            const submitBtn = await listPage.$(
+                'button:has-text("List It"), button:has-text("List it"), button[data-test="listing-submit"]'
+            );
+            if (!submitBtn) throw new Error('Submit button not found on create-listing form');
+
+            await submitBtn.click();
+
+            // Wait for redirect to the new listing page
+            await listPage.waitForFunction(
+                () => window.location.pathname.includes('/listing/'),
+                { timeout: 25000 }
+            );
+
+            const listingUrl = listPage.url();
+            writeAuditLog('publish_success', { title, price, listingUrl });
+            logger.info('[PoshmarkBot] Listing published', { listingUrl });
+            return { success: true, listingUrl };
+
+        } catch (error) {
+            writeAuditLog('publish_failure', { title, price, error: error.message });
+            logger.error('[PoshmarkBot] createListing error', { error: error.message });
+            this.stats.errors++;
+            return { success: false, listingUrl: null, error: error.message };
+        } finally {
+            await listPage.close().catch(() => {});
+        }
+    }
+
+    /** Throw if a CAPTCHA challenge is detected on the page. */
+    async _checkCaptcha(page) {
+        const captcha = await page.$('iframe[src*="recaptcha"], iframe[src*="captcha"], .g-recaptcha, #captcha');
+        if (captcha) {
+            writeAuditLog('captcha_detected', { url: page.url() });
+            throw new Error('CAPTCHA detected — manual intervention required');
+        }
+    }
+
+    /** Upload local or base64 images to the listing form. */
+    async _uploadPhotos(page, images) {
+        const tmpDir = path.join(process.cwd(), 'data', 'tmp');
+        const localFiles = [];
+
+        for (const img of images.slice(0, 8)) {
+            if (!img) continue;
+            if (img.startsWith('data:image/')) {
+                const m = img.match(/^data:image\/(\w+);base64,(.+)$/);
+                if (m) {
+                    try {
+                        fs.mkdirSync(tmpDir, { recursive: true });
+                        const tmpFile = path.join(tmpDir, `pm_img_${Date.now()}_${localFiles.length}.${m[1]}`);
+                        fs.writeFileSync(tmpFile, Buffer.from(m[2], 'base64'));
+                        localFiles.push(tmpFile);
+                    } catch (e) { logger.warn('[PoshmarkBot] base64 decode failed', { error: e.message }); }
+                }
+            } else {
+                // Relative paths resolved from cwd
+                const resolved = path.isAbsolute(img) ? img : path.join(process.cwd(), img);
+                if (fs.existsSync(resolved)) localFiles.push(resolved);
+            }
+        }
+
+        if (localFiles.length === 0) { logger.warn('[PoshmarkBot] No uploadable images found'); return; }
+
+        const fileInput = await page.$('input[type="file"][accept*="image"], input[type="file"]');
+        if (fileInput) {
+            await fileInput.setInputFiles(localFiles);
+        } else {
+            const uploadArea = await page.$('[data-test="photo-upload"], .photo-upload-area, [aria-label*="upload photo" i]');
+            if (uploadArea) {
+                const chooserPromise = page.waitForEvent('filechooser', { timeout: 8000 }).catch(() => null);
+                await uploadArea.click();
+                const chooser = await chooserPromise;
+                if (chooser) await chooser.setFiles(localFiles);
+            }
+        }
+        await page.waitForTimeout(randomDelay(1500, 3000));
+        logger.info(`[PoshmarkBot] Uploaded ${localFiles.length} photo(s)`);
+    }
+
+    /**
+     * Navigate the Poshmark category picker.
+     * categoryPath: "Women > Tops > Blouses" — each part clicks the next level.
+     */
+    async _selectCategory(page, categoryPath) {
+        const parts = categoryPath.split('>').map(s => s.trim()).filter(Boolean);
+        if (parts.length === 0) return;
+
+        const opener = await page.$('[data-test="category-btn"], button:has-text("Category"), [aria-label*="category" i]');
+        if (opener) { await opener.click(); await page.waitForTimeout(randomDelay(600, 1000)); }
+
+        for (const part of parts) {
+            const option = await page.$(`[data-test*="category"]:has-text("${part}"), li:has-text("${part}"), [role="option"]:has-text("${part}")`);
+            if (option) { await option.click(); await page.waitForTimeout(randomDelay(500, 900)); }
+            else logger.warn(`[PoshmarkBot] Category option not found: ${part}`);
+        }
+    }
+
+    /** Select size from dropdown or option list. */
+    async _selectSize(page, size) {
+        const el = await page.$('select[data-test*="size"], [data-test="size-btn"], button:has-text("Size"), [aria-label*="size" i]');
+        if (!el) return;
+        const tag = await el.evaluate(n => n.tagName.toLowerCase());
+        if (tag === 'select') {
+            await el.selectOption({ label: size }).catch(() => el.selectOption(size));
+        } else {
+            await el.click();
+            await page.waitForTimeout(randomDelay(400, 700));
+            const opt = await page.$(`[role="option"]:has-text("${size}"), li:has-text("${size}")`);
+            if (opt) await opt.click();
+        }
+    }
+
+    /** Select condition radio / button matching the VaultLister conditionTag. */
+    async _selectCondition(page, conditionTag) {
+        const map = { new_with_tags: 'NWT', nwt: 'NWT', new_without_tags: 'NWOT', nwot: 'NWOT', excellent: 'Excellent', like_new: 'Excellent', good: 'Good', fair: 'Fair', poor: 'Poor' };
+        const label = map[conditionTag?.toLowerCase()] || 'Good';
+        const el = await page.$(`[data-test="condition-${label.toLowerCase()}"], label:has-text("${label}"), [role="option"]:has-text("${label}"), input[value="${label}"]`);
+        if (el) { await el.click(); return; }
+        // Try opener-then-option pattern
+        const opener = await page.$('[data-test="condition-btn"], button:has-text("Condition")');
+        if (opener) {
+            await opener.click();
+            await page.waitForTimeout(randomDelay(400, 700));
+            const opt = await page.$(`[role="option"]:has-text("${label}"), li:has-text("${label}")`);
+            if (opt) await opt.click();
         }
     }
 

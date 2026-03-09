@@ -8360,6 +8360,20 @@ const loadingState = {
         return key ? this.activeLoaders.has(key) : this.activeLoaders.size > 0;
     },
 
+    setButton(btn, loading) {
+        if (!btn) return;
+        if (loading) {
+            btn.disabled = true;
+            btn.dataset.originalText = btn.textContent;
+            btn.innerHTML = '<span class="loading-spinner"></span> Loading...';
+        } else {
+            btn.disabled = false;
+            if (btn.dataset.originalText) {
+                btn.textContent = btn.dataset.originalText;
+            }
+        }
+    },
+
     updateUI(key, loading) {
         // Update button states
         const buttons = document.querySelectorAll(`[data-loading-key="${key}"]`);

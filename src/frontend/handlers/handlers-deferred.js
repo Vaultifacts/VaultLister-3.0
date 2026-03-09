@@ -27000,7 +27000,7 @@ Object.assign(handlers, {
             await api.post('/automations', { name, platform, category, description, schedule, type: 'custom', conditions: JSON.stringify(conditions), actions: JSON.stringify(actions), is_enabled: 1 });
             modals.close();
             toast.success('Custom automation created');
-            await handlers.loadAutomationRules();
+            await handlers.loadAutomations();
             renderApp(pages.automations());
         } catch (err) { toast.error('Failed to create automation: ' + (err.message || 'Unknown error')); }
     },
