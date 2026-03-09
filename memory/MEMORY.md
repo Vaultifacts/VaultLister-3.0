@@ -139,7 +139,8 @@ Key patterns discovered for Poshmark's Vue.js SPA:
 - Hard error if no real photos attached (no more placeholder fallback that triggers moderation)
 - Post-publish verification: bot navigates back to closet, confirms listing by title, returns real listing URL
 - Category default changed from 'Men>Jackets & Coats' → 'Men>Tops' (with warning log)
-- Size parsing issue: '32x30' → bot selects 'US XS' (needs waist/inseam → Poshmark size label mapping)
+- Size mapping FIXED (commit 2fd934d): `resolvePoshmarkSize(rawSize, catParts)` — "32x30" → "32" (numeric waist for pants), letter sizes → "US L" etc.
+- Test listing (stock photo) removed by Poshmark moderation — 404 confirmed. Delete script at `scripts/poshmark-delete-listing.mjs`.
 - `POSHMARK_COUNTRY=ca` now in .env (required for Canadian account)
 - Test listing live: https://poshmark.ca/listing/Vintage-Levis-501-Jeans-32x30-69ae6ca4db3a6fed550412ac
 
