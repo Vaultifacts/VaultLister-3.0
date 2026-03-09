@@ -206,7 +206,7 @@ async function run() {
             headers: { 'Authorization': 'Bearer ' + token }
         });
         const beforeData = await beforeRes.json();
-        const beforeCount = Array.isArray(beforeData.items) ? beforeData.items.length : (beforeData.count || 0);
+        const beforeCount = Array.isArray(beforeData.tracking) ? beforeData.tracking.length : (beforeData.items?.length || beforeData.count || 0);
 
         // Get CSRF token (required by dev server for state-changing requests)
         const csrfRes = await fetch(`${SERVER}/api/csrf-token`, {
@@ -236,12 +236,12 @@ async function run() {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             const afterData = await afterRes.json();
-            const afterCount = Array.isArray(afterData.items) ? afterData.items.length : (afterData.count || 0);
+            const afterCount = Array.isArray(afterData.tracking) ? afterData.tracking.length : (afterData.items?.length || afterData.count || 0);
 
             if (afterCount > beforeCount) {
                 pass('Step 5b — Price tracking API end-to-end', `count ${beforeCount} → ${afterCount}`);
                 // Clean up: delete the test item
-                const testItem = afterData.items?.find(i => i.title === 'Nike Air Force 1 (D-3 Test)' || i.productTitle === 'Nike Air Force 1 (D-3 Test)');
+                const testItem = afterData.tracking?.find(i => i.title === 'Nike Air Force 1 (D-3 Test)') || afterData.items?.find(i => i.title === 'Nike Air Force 1 (D-3 Test)');
                 if (testItem) {
                     const csrfRes2 = await fetch(`${SERVER}/api/csrf-token`, { headers: { 'Authorization': 'Bearer ' + token } });
                     const csrf2 = (await csrfRes2.json()).csrfToken || '';
