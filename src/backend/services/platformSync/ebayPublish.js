@@ -382,13 +382,31 @@ export async function publishListingToEbay(shop, listing, inventory) {
     }
 
     // Step 4: Publish the offer (goes live)
+    // Pre-check: fetch offer state to surface any eBay validation warnings
+    const offerCheck = await ebayRequest('GET', `/sell/inventory/v1/offer/${offerId}`, accessToken);
+    if (offerCheck.ok) {
+        const warnings = offerCheck.data?.warnings;
+        if (warnings?.length) logger.warn('[eBay Publish] Offer warnings', { warnings });
+        logger.info('[eBay Publish] Offer state', {
+            status: offerCheck.data?.status,
+            categoryId: offerCheck.data?.categoryId,
+            marketplaceId: offerCheck.data?.marketplaceId,
+            locationKey: offerCheck.data?.merchantLocationKey,
+            paymentPolicyId: offerCheck.data?.listingPolicies?.paymentPolicyId,
+            fulfillmentPolicyId: offerCheck.data?.listingPolicies?.fulfillmentPolicyId,
+            returnPolicyId: offerCheck.data?.listingPolicies?.returnPolicyId,
+        });
+    }
+
     logger.info('[eBay Publish] Publishing offer', { offerId });
     const publishResult = await ebayRequest(
         'POST',
         `/sell/inventory/v1/offer/${offerId}/publish`,
-        accessToken
+        accessToken,
+        { marketplaceId: 'EBAY_US' }
     );
     if (!publishResult.ok) {
+        logger.error('[eBay Publish] Full publish error response', { body: JSON.stringify(publishResult.data) });
         throw new Error(`eBay publish error (${publishResult.status}): ${JSON.stringify(publishResult.data)}`);
     }
 

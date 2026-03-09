@@ -1393,8 +1393,10 @@ export async function listingsRouter(ctx) {
         const publisher = publishers[listing.platform];
         if (!publisher) return { status: 400, data: { error: `Platform '${listing.platform}' does not support publish` } };
 
+        const shop = query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1', [user.id, listing.platform]) || null;
+
         try {
-            const result = await publisher(null, listing, inventory);
+            const result = await publisher(shop, listing, inventory);
             query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), id]

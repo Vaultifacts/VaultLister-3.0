@@ -582,7 +582,9 @@ function getOAuthConfig(platform, mode) {
     const config = configs[platform] || configs.poshmark;
 
     // In real (non-mock) mode, reject if credentials are missing
-    if (mode !== 'mock' && (!config.clientId || !config.clientSecret)) {
+    // PKCE platforms (Etsy) only need clientId — no clientSecret
+    const isPKCE = platform === 'etsy';
+    if (mode !== 'mock' && (!config.clientId || (!isPKCE && !config.clientSecret))) {
         const err = new Error(`${platform} OAuth not configured`);
         err.status = 503;
         throw err;
