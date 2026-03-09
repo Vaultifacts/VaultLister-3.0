@@ -344,7 +344,7 @@ const components = {
                     <div class="notifications-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button class="header-icon-btn" aria-label="Notifications">
                             ${this.icon('bell')}
-                            ${store.state.notifications.length > 0 ? `<span class="badge">${store.state.notifications.length}</span>` : ''}
+                            <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>
                         <div class="dropdown-menu" style="min-width: 320px; max-width: 400px; right: 0;">
                             <div style="padding: 12px 16px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">

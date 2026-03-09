@@ -195,7 +195,7 @@ test.describe('Quinn v3 > Listings Table > Phase 1: Hero Buttons', () => {
     await loginAndNavigate(page, 'listings');
 
     // --- Health button ---
-    const healthBtn = page.locator('button', { hasText: 'Health' }).first();
+    const healthBtn = page.locator('.listings-hero-actions button', { hasText: 'Health' }).first();
     await expect(healthBtn).toBeVisible();
     await expect(healthBtn).toHaveAttribute('title', 'Listing Health Score');
 
@@ -225,7 +225,7 @@ test.describe('Quinn v3 > Listings Table > Phase 1: Hero Buttons', () => {
     }
 
     // --- Fees button ---
-    const feesBtn = page.locator('button', { hasText: 'Fees' }).first();
+    const feesBtn = page.locator('.listings-hero-actions button', { hasText: 'Fees' }).first();
     await expect(feesBtn).toBeVisible();
     await expect(feesBtn).toHaveAttribute('title', 'Platform Fee Calculator');
 

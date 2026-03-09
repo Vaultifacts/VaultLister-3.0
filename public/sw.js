@@ -1,15 +1,15 @@
-// VaultLister Service Worker v4.2.0
+// VaultLister Service Worker v4.2.1
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v4.2.0';
+const CACHE_VERSION = 'v4.2.1';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
 // Phase 1 files to pre-cache (app shell)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=1ec40355',
-    '/styles/main.css?v=1ec40355',
+    '/core-bundle.js?v=86805efe',
+    '/styles/main.css?v=86805efe',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/favicon.svg',

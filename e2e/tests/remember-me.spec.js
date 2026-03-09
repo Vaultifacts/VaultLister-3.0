@@ -25,10 +25,11 @@ test.describe('Remember Me — Issue #2', () => {
             refreshToken: loginData.refreshToken
         });
 
-        // Create context with addInitScript to set localStorage BEFORE app JS runs
+        // Create context with addInitScript to set sessionStorage BEFORE app JS runs.
+        // hydrate() only trusts tokens from sessionStorage (not localStorage) per Q18 security fix.
         const context = await browser.newContext();
         await context.addInitScript((state) => {
-            localStorage.setItem('vaultlister_state', state);
+            sessionStorage.setItem('vaultlister_state', state);
         }, stateJson);
 
         const page = await context.newPage();
@@ -51,15 +52,15 @@ test.describe('Remember Me — Issue #2', () => {
         const isLoginPage = bodyText.includes('Sign in to your account');
         expect(isLoginPage).toBe(false);
 
-        // Verify localStorage still has tokens (not cleared)
-        const ls = await page.evaluate(() => localStorage.getItem('vaultlister_state'));
-        expect(ls).toBeTruthy();
-        const parsed = JSON.parse(ls);
+        // Verify sessionStorage still has tokens (Q18: tokens are stored in sessionStorage only)
+        const ss = await page.evaluate(() => sessionStorage.getItem('vaultlister_state'));
+        expect(ss).toBeTruthy();
+        const parsed = JSON.parse(ss);
         expect(parsed.token).toBeTruthy();
         expect(parsed.refreshToken).toBeTruthy();
 
         await page.screenshot({ path: 'e2e/screenshots/remember-me-success.png' });
-        console.log('Phase 4 PASS: Session restored from localStorage, tokens intact');
+        console.log('Phase 4 PASS: Session restored from sessionStorage, tokens intact');
         console.log(`  - Login page: ${isLoginPage}`);
         console.log('RESULT: Remember Me Issue #2 fix VERIFIED via browser');
 

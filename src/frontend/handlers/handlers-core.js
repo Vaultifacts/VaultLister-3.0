@@ -1367,4 +1367,21 @@ const handlers = {
         const el = document.getElementById(sectionId);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
+
+    toggleSidebarCollapse() {
+        const collapsed = !store.state.sidebarCollapsed;
+        store.setState({ sidebarCollapsed: collapsed });
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('sidebar-collapsed', collapsed);
+        }
+        const btn = document.querySelector('.sidebar-collapse-btn');
+        if (btn) {
+            const label = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+            btn.setAttribute('title', label);
+            btn.setAttribute('aria-label', label);
+            btn.textContent = collapsed ? '→' : '←';
+        }
+        try { localStorage.setItem('vaultlister_sidebar_collapsed', collapsed ? '1' : '0'); } catch(e) {}
+    },
 };

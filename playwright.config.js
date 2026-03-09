@@ -37,6 +37,7 @@ export default defineConfig({
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
+        serviceWorkers: 'block',
         launchOptions: {
             env: {
                 DISPLAY: process.env.DISPLAY || ':99'
