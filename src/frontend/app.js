@@ -22473,14 +22473,25 @@ const pages = {
                 </div>
             </div>`;
             })() : currentTab === 'predictions' ? (() => {
-                const forecastBars = Array.from({length: 30}, (_, i) => {
-                    const base = 50 + Math.sin(i/5) * 20;
-                    const trend = i * 1.5;
-                    const random = Math.random() * 20 - 10;
-                    const height = Math.max(20, base + trend + random);
-                    const isProjected = i > 14;
-                    return '<div style="width: 8px; height: ' + height + '%; background: ' + (isProjected ? 'var(--primary-200)' : 'var(--primary-500)') + '; border-radius: 2px;" title="Day ' + (i+1) + ': $' + Math.floor(height * 10) + '"></div>';
-                }).join('');
+                // Build forecast bars from real daily sales data (last 15 days) + linear projection (next 15)
+                const dailySales = (salesAnalytics.salesData || []).slice(-15);
+                const actualRevs = dailySales.map(d => d.revenue || 0);
+                const maxRev = Math.max(...actualRevs, 1);
+                // Linear trend from actual data
+                const n = actualRevs.length;
+                const slope = n > 1 ? (actualRevs[n-1] - actualRevs[0]) / (n - 1) : 0;
+                const lastVal = actualRevs[n - 1] || 0;
+                const forecastBars = [
+                    ...actualRevs.map((v, i) => {
+                        const height = Math.max(4, Math.round((v / maxRev) * 90));
+                        return '<div style="width: 8px; height: ' + height + '%; background: var(--primary-500); border-radius: 2px;" title="$' + v.toFixed(0) + '"></div>';
+                    }),
+                    ...Array.from({length: 15 - actualRevs.length < 0 ? 0 : 15}, (_, i) => {
+                        const projected = Math.max(0, lastVal + slope * (i + 1));
+                        const height = Math.max(4, Math.round((projected / maxRev) * 90));
+                        return '<div style="width: 8px; height: ' + height + '%; background: var(--primary-200); border-radius: 2px;" title="Projected: $' + projected.toFixed(0) + '"></div>';
+                    })
+                ].join('');
 
                 const bestTimes = [
                     { platform: 'Poshmark', time: 'Thu-Sun, 7-9 PM EST', score: 95 },
@@ -22499,13 +22510,16 @@ const pages = {
                     { name: 'Formal Wear', trend: '-12%', status: 'declining' }
                 ].map(c => '<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2"><span class="font-medium">' + c.name + '</span><div class="flex items-center gap-2"><span class="' + (c.trend.startsWith('+') ? 'text-success' : 'text-error') + ' font-bold">' + c.trend + '</span><span class="badge ' + (c.status === 'hot' ? 'badge-error' : c.status === 'rising' ? 'badge-success' : c.status === 'stable' ? 'badge-warning' : 'badge-gray') + '">' + c.status + '</span></div></div>').join('');
 
-                const priceSuggestions = (store.state.listings || []).slice(0, 5).map(l => {
-                    const currentPrice = l.listing_price || 0;
-                    const suggestedChange = Math.floor(Math.random() * 20 - 10);
-                    const suggestedPrice = Math.max(5, currentPrice * (1 + suggestedChange/100));
-                    const reason = suggestedChange > 0 ? 'High demand' : 'Slow moving';
-                    return '<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2"><div><div class="font-medium text-sm">' + escapeHtml((l.title || 'Untitled').substring(0, 30)) + '...</div><div class="text-xs text-gray-500">' + reason + '</div></div><div class="text-right"><div class="text-sm"><span class="text-gray-400">$' + currentPrice.toFixed(0) + '</span> → <span class="font-bold text-primary">$' + suggestedPrice.toFixed(0) + '</span></div><div class="text-xs ' + (suggestedChange > 0 ? 'text-success' : 'text-error') + '">' + (suggestedChange > 0 ? '+' : '') + suggestedChange + '%</div></div></div>';
-                }).join('') || '<div class="text-center text-gray-500 py-4">No listings to analyze</div>';
+                const priceSuggestionItems = store.state.priceSuggestions || [];
+                const priceSuggestions = priceSuggestionItems.length > 0
+                    ? priceSuggestionItems.slice(0, 5).map(s => {
+                        const current = s.list_price || s.current_price || 0;
+                        const suggested = s.suggested_price || 0;
+                        const diff = suggested - current;
+                        const pct = current > 0 ? Math.round((diff / current) * 100) : 0;
+                        return '<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2"><div><div class="font-medium text-sm">' + escapeHtml((s.title || 'Untitled').substring(0, 30)) + '...</div><div class="text-xs text-gray-500">' + escapeHtml(s.reason || '') + '</div></div><div class="text-right"><div class="text-sm"><span class="text-gray-400">$' + current.toFixed(0) + '</span> → <span class="font-bold text-primary">$' + suggested.toFixed(0) + '</span></div><div class="text-xs ' + (diff >= 0 ? 'text-success' : 'text-error') + '">' + (diff >= 0 ? '+' : '') + pct + '%</div></div></div>';
+                    }).join('')
+                    : '<div class="text-center text-gray-500 py-4 text-sm">Go to <strong>Inventory → Analytics tab → Price Suggestions → Load</strong> to see AI pricing recommendations.</div>';
 
                 return `
             <!-- Predictions Tab -->

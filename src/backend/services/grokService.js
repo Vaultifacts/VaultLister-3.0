@@ -196,10 +196,10 @@ function getUserStats(userId) {
              FROM sales WHERE user_id = ? AND created_at > datetime('now', '-30 days')`,
             [userId]
         );
-        const topPlatform = query.get(
+        const platformCounts = query.all(
             `SELECT platform, COUNT(*) as c FROM listings
-             WHERE user_id = ? AND deleted_at IS NULL
-             GROUP BY platform ORDER BY c DESC LIMIT 1`,
+             WHERE user_id = ? AND deleted_at IS NULL AND status != 'ended'
+             GROUP BY platform ORDER BY c DESC LIMIT 5`,
             [userId]
         );
         const lines = [];
@@ -207,7 +207,14 @@ function getUserStats(userId) {
             lines.push(`Inventory: ${inv.total} items total (${inv.active || 0} active, ${inv.sold || 0} sold)`);
         }
         if (sales?.count) lines.push(`Last 30 days: ${sales.count} sales, $${sales.profit} profit`);
-        if (topPlatform?.platform) lines.push(`Top platform: ${topPlatform.platform} (${topPlatform.c} listings)`);
+        if (platformCounts.length > 0) {
+            const topPlatform = platformCounts[0];
+            lines.push(`Top platform: ${topPlatform.platform} (${topPlatform.c} listings)`);
+            if (platformCounts.length > 1) {
+                const others = platformCounts.slice(1).map(p => `${p.platform}: ${p.c}`).join(', ');
+                lines.push(`Other platforms: ${others}`);
+            }
+        }
         return lines.length ? lines.join(' | ') : null;
     } catch {
         return null;
