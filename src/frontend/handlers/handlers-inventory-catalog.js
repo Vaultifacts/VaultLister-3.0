@@ -7765,10 +7765,10 @@ Object.assign(handlers, {
             </div>
 
             <div class="form-group">
-                <label class="form-label">Suggested Price</label>
+                <label class="form-label">Estimated market price</label>
                 <div class="flex items-center gap-4">
                     <input type="number" id="ai-result-price" class="form-input" value="${data.suggestedPrice || ''}" step="0.01" style="max-width: 150px;">
-                    <span class="text-sm text-gray-600">Based on AI analysis</span>
+                    ${data.priceRange ? `<span class="text-sm text-gray-600">$${data.priceRange.low} – $${data.priceRange.high} (suggested: $${data.priceRange.suggested})</span>` : '<span class="text-sm text-gray-600">Price estimate</span>'}
                 </div>
             </div>
 

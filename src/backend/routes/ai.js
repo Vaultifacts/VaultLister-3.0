@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { checkTierPermission } from '../middleware/auth.js';
 import { generateTitle, generateDescription, generateTags, analyzeImage, generateListing } from '../../shared/ai/listing-generator.js';
-import { predictPrice } from '../../shared/ai/price-predictor.js';
+import { predictPrice, getPriceRange } from '../../shared/ai/price-predictor.js';
 import { detectBrand, detectCategory } from '../../shared/ai/image-analyzer.js';
 import Anthropic from '@anthropic-ai/sdk';
 import { logger } from '../shared/logger.js';
@@ -209,7 +209,7 @@ Important:
             };
 
             const listing = await generateListing(context);
-            const suggestedPrice = predictPrice(context);
+            const priceRange = getPriceRange(context);
 
             return {
                 status: 200,
@@ -218,7 +218,9 @@ Important:
                     description: listing.description,
                     tags: listing.tags,
                     aiSource: listing.source,
-                    suggestedPrice,
+                    suggestedPrice: priceRange.suggested,
+                    priceRange: { low: priceRange.low, suggested: priceRange.suggested, high: priceRange.high },
+                    priceSource: priceRange.priceSource,
                     category: context.category,
                     brand: context.brand,
                     imageAnalysis
@@ -301,7 +303,7 @@ Important:
                 LIMIT 10
             `, [category, user.id]);
 
-            const suggestedPrice = predictPrice({
+            const priceRange = getPriceRange({
                 title, brand, category, condition, originalRetail,
                 historicalSales: comparables
             });
@@ -309,11 +311,9 @@ Important:
             return {
                 status: 200,
                 data: {
-                    suggestedPrice,
-                    priceRange: {
-                        low: Math.round(suggestedPrice * AI_CONFIG.priceRangeLow),
-                        high: Math.round(suggestedPrice * AI_CONFIG.priceRangeHigh)
-                    },
+                    suggestedPrice: priceRange.suggested,
+                    priceRange: { low: priceRange.low, suggested: priceRange.suggested, high: priceRange.high },
+                    priceSource: priceRange.priceSource,
                     comparables
                 }
             };
@@ -461,7 +461,8 @@ Important:
                     generated.tags = generateTags(context);
                 }
                 if (fields.includes('price')) {
-                    generated.suggestedPrice = predictPrice(context);
+                    const { price } = predictPrice(context);
+                    generated.suggestedPrice = price;
                 }
 
                 results.push({ id, generated });

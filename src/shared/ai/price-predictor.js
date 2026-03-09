@@ -103,12 +103,14 @@ export function predictPrice(context) {
     const basePrice = CATEGORY_PRICES[categoryKey] || CATEGORY_PRICES['Accessories'];
 
     let price = basePrice.avg;
+    let priceSource = 'category';
 
-    // Use historical sold prices as base when sufficient data exists
+    // Use historical sold prices as PRIMARY base when sufficient data exists
     if (historicalSales.length >= 3) {
         const historicalAvg = historicalSales.reduce((sum, s) => sum + (s.sale_price || 0), 0) / historicalSales.length;
         if (historicalAvg > 0) {
-            price = (historicalAvg + basePrice.avg) / 2;
+            price = historicalAvg;
+            priceSource = 'historical_sales';
         }
     }
 
@@ -146,20 +148,21 @@ export function predictPrice(context) {
     price = Math.max(price, basePrice.min);
     price = Math.min(price, basePrice.max * brandMultiplier);
 
-    return price;
+    return { price, priceSource };
 }
 
 /**
  * Get price range for an item
  */
 export function getPriceRange(context) {
-    const suggestedPrice = predictPrice(context);
+    const { price: suggestedPrice, priceSource } = predictPrice(context);
 
     return {
         low: Math.round(suggestedPrice * 0.75),
         suggested: suggestedPrice,
         high: Math.round(suggestedPrice * 1.25),
-        quickSale: Math.round(suggestedPrice * 0.6)
+        quickSale: Math.round(suggestedPrice * 0.6),
+        priceSource
     };
 }
 
