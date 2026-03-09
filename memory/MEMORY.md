@@ -144,6 +144,14 @@ Key patterns discovered for Poshmark's Vue.js SPA:
 - `POSHMARK_COUNTRY=ca` now in .env (required for Canadian account)
 - Test listing live: https://poshmark.ca/listing/Vintage-Levis-501-Jeans-32x30-69ae6ca4db3a6fed550412ac
 
+## B-4 Stub Platforms — COMPLETE (2026-03-09) — commit f0e8769
+- Mercari, Depop, Grailed, Facebook, Whatnot, Shopify marked Coming Soon in cross-lister UI
+- Platform buttons: `.coming-soon-btn` class — greyed out, `pointer-events: none`, tooltip "Coming soon — join the waitlist"
+- Basic cross-list modal: live=[poshmark,ebay,etsy]; coming-soon platforms have `disabled` checkbox + `.coming-soon-badge`
+- `updateCrosslistSelection()` no longer toggles coming-soon buttons
+- CSS in `main.css`: `.coming-soon-btn`, `.coming-soon-badge`
+- Live platforms: Poshmark, eBay, Etsy
+
 ## B-3 Etsy — BLOCKED (pending Etsy approval)
 - App created (keystring: 1sgc9xd1hwi3zt5k33pn9k7d), status "Pending Personal Approval"
 - oauth.js PKCE fix committed (4e13d1e): isPKCE=platform==='etsy' skips clientSecret check
