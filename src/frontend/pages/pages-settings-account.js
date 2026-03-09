@@ -2041,6 +2041,27 @@ Object.assign(pages, {
                                 </button>
                             </div>
                         </div>
+
+                        <hr style="margin: 28px 0; border: none; border-top: 1px solid var(--gray-200);">
+
+                        <h3 class="font-semibold mb-2">Two-Factor Authentication</h3>
+                        <p class="text-sm text-gray-500 mb-4">Add an extra layer of security to your account using an authenticator app (Google Authenticator, Authy, etc.).</p>
+                        <div id="mfa-section">
+                            ${store.state.user?.mfa_enabled
+                                ? `<div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                                    <span style="display:inline-flex; align-items:center; gap:6px; color:var(--success,#16a34a); font-weight:600; font-size:14px;">${components.icon('shield', 16)} 2FA Enabled</span>
+                                   </div>
+                                   <button class="btn btn-danger-outline" onclick="handlers.disableMFA()" style="font-size:13px;">
+                                       Disable Two-Factor Authentication
+                                   </button>`
+                                : `<div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                                    <span style="display:inline-flex; align-items:center; gap:6px; color:var(--gray-400); font-size:14px;">${components.icon('shield-off', 16)} 2FA Not Enabled</span>
+                                   </div>
+                                   <button class="btn btn-secondary" onclick="handlers.setupMFA()">
+                                       Enable Two-Factor Authentication
+                                   </button>`
+                            }
+                        </div>
                     </div>
                 </div>
 

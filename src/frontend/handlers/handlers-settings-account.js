@@ -4125,4 +4125,110 @@ Object.assign(handlers, {
 
     // Quick Photo,
 
+    setupMFA: async function() {
+        const section = document.getElementById('mfa-section');
+        if (!section) return;
+
+        section.innerHTML = `<p class="text-sm text-gray-500">Loading setup…</p>`;
+
+        try {
+            const data = await api.post('/security/mfa/setup', {});
+            if (data.error) { toast.error(data.error); return; }
+
+            section.innerHTML = `
+                <div style="max-width:420px;">
+                    <p class="text-sm mb-3">Scan this QR code with your authenticator app, then enter the 6-digit code to confirm.</p>
+                    <div style="text-align:center; margin-bottom:16px;">
+                        <img src="${escapeHtml(data.qrCode)}" alt="MFA QR Code" style="width:200px; height:200px; border:1px solid var(--gray-200); border-radius:8px;">
+                    </div>
+                    <p class="text-xs text-gray-500 mb-3">Can't scan? Enter this code manually in your app:</p>
+                    <code style="display:block; padding:8px 12px; background:var(--gray-100); border-radius:6px; font-size:13px; letter-spacing:2px; margin-bottom:20px; word-break:break-all;">${escapeHtml(data.secret)}</code>
+                    <div class="form-group mb-4">
+                        <label class="form-label">6-Digit Verification Code</label>
+                        <input type="text" id="mfa-setup-code" class="form-input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code" style="letter-spacing:4px; font-size:20px; width:160px;">
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-primary" onclick="handlers.verifyMFASetup('${escapeHtml(data.setupToken)}', '${escapeHtml(data.secret)}')">
+                            Verify & Enable
+                        </button>
+                        <button class="btn btn-secondary" onclick="handlers.cancelMFASetup()">Cancel</button>
+                    </div>
+                </div>`;
+        } catch (err) {
+            toast.error(err.message || 'Failed to start MFA setup');
+            handlers.cancelMFASetup();
+        }
+    },
+
+    verifyMFASetup: async function(setupToken, secret) {
+        const code = document.getElementById('mfa-setup-code')?.value?.trim();
+        if (!code || code.length !== 6) {
+            toast.error('Enter the 6-digit code from your authenticator app');
+            return;
+        }
+
+        try {
+            const data = await api.post('/security/mfa/verify-setup', { setupToken, code, secret });
+            if (data.error) { toast.error(data.error); return; }
+
+            // Update local user state
+            store.setState({ user: { ...store.state.user, mfa_enabled: 1 } });
+
+            const backupList = (data.backupCodes || []).map(c => `<li style="font-family:monospace; letter-spacing:1px;">${escapeHtml(c)}</li>`).join('');
+            const section = document.getElementById('mfa-section');
+            if (section) {
+                section.innerHTML = `
+                    <div style="max-width:420px;">
+                        <div style="display:flex; align-items:center; gap:8px; color:var(--success,#16a34a); font-weight:600; margin-bottom:16px;">
+                            ${components.icon('check-circle', 18)} Two-factor authentication is now enabled!
+                        </div>
+                        <p class="text-sm mb-2"><strong>Save your backup codes.</strong> You will not see them again. Each can be used once if you lose access to your authenticator app.</p>
+                        <ul style="list-style:none; padding:12px 16px; background:var(--gray-100); border-radius:8px; margin-bottom:16px;">${backupList}</ul>
+                        <button class="btn btn-danger-outline" onclick="handlers.disableMFA()" style="font-size:13px;">
+                            Disable Two-Factor Authentication
+                        </button>
+                    </div>`;
+            }
+            toast.success('Two-factor authentication enabled!');
+        } catch (err) {
+            toast.error(err.message || 'Verification failed — check your code and try again');
+        }
+    },
+
+    cancelMFASetup: function() {
+        const section = document.getElementById('mfa-section');
+        if (!section) return;
+        const enabled = store.state.user?.mfa_enabled;
+        section.innerHTML = enabled
+            ? `<div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                   <span style="display:inline-flex; align-items:center; gap:6px; color:var(--success,#16a34a); font-weight:600; font-size:14px;">${components.icon('shield', 16)} 2FA Enabled</span>
+               </div>
+               <button class="btn btn-danger-outline" onclick="handlers.disableMFA()" style="font-size:13px;">Disable Two-Factor Authentication</button>`
+            : `<div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                   <span style="display:inline-flex; align-items:center; gap:6px; color:var(--gray-400); font-size:14px;">${components.icon('shield-off', 16)} 2FA Not Enabled</span>
+               </div>
+               <button class="btn btn-secondary" onclick="handlers.setupMFA()">Enable Two-Factor Authentication</button>`;
+    },
+
+    disableMFA: async function() {
+        const password = await modals.prompt('Enter your current password to disable two-factor authentication.', {
+            title: 'Disable Two-Factor Authentication',
+            inputType: 'password',
+            placeholder: 'Current password',
+            submitText: 'Disable 2FA'
+        });
+        if (!password) return;
+
+        try {
+            const data = await api.post('/security/mfa/disable', { password });
+            if (data.error) { toast.error(data.error); return; }
+
+            store.setState({ user: { ...store.state.user, mfa_enabled: 0 } });
+            handlers.cancelMFASetup();
+            toast.success('Two-factor authentication disabled.');
+        } catch (err) {
+            toast.error(err.message || 'Failed to disable 2FA');
+        }
+    },
+
 });

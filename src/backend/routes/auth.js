@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { generateToken, generateRefreshToken, verifyToken } from '../middleware/auth.js';
 import mfaService from '../services/mfa.js';
+import emailService from '../services/email.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
 import websocketService from '../services/websocket.js';
 import { logger } from '../shared/logger.js';
@@ -276,6 +277,20 @@ export async function authRouter(ctx) {
                 INSERT INTO sessions (id, user_id, refresh_token, expires_at)
                 VALUES (?, ?, ?, datetime('now', '+7 days'))
             `, [uuidv4(), userId, refreshToken]);
+
+            // Send verification email (non-blocking — registration succeeds even if email fails)
+            if (!IS_TEST_RUNTIME) {
+                const verificationToken = crypto.randomBytes(32).toString('hex');
+                const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+                query.run(
+                    `INSERT OR REPLACE INTO email_verifications (user_id, token, expires_at, created_at)
+                     VALUES (?, ?, ?, datetime('now'))`,
+                    [userId, verificationToken, expiresAt]
+                );
+                emailService.sendVerificationEmail(user, verificationToken).catch(err =>
+                    logger.error('[Auth] Failed to send verification email', userId, { detail: err.message })
+                );
+            }
 
             return {
                 status: 201,
@@ -911,8 +926,7 @@ export async function authRouter(ctx) {
                     VALUES (?, ?, ?, datetime('now'))
                 `, [user.id, verificationToken, expiresAt]);
 
-                // In production, send email here. For demo, log it.
-                logger.info(`[auth] Verification email requested for ${maskEmail(email)} — token: ${verificationToken.slice(0, 8)}...`);
+                await emailService.sendVerificationEmail(user, verificationToken);
             }
         } catch (e) {
             logger.error('[auth] Resend verification error', null, { detail: e.message });
