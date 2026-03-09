@@ -6,6 +6,7 @@ import { query } from '../db/database.js';
 import { syncShop } from '../services/platformSync/index.js';
 import { createOAuthNotification, NotificationTypes } from '../services/notificationService.js';
 import { logger } from '../shared/logger.js';
+import { auditLog } from '../services/platformSync/platformAuditLog.js';
 
 // Configuration
 const POLL_INTERVAL_MS = 10 * 1000; // 10 seconds
@@ -350,6 +351,9 @@ async function executeTask(type, payload) {
         // FIXED 2026-02-24: Handle automation execution tasks (Issue #3)
         case 'run_automation':
             return await executeRunAutomationTask(payload);
+
+        case 'publish_listing':
+            return await executePoshmarkPublishTask(payload);
 
         default:
             throw new Error(`Unknown task type: ${type}`);
@@ -843,6 +847,7 @@ function executeShare(rule, conditions, actions) {
             processed++; failed++;
         }
     }
+    if (succeeded > 0) auditLog(rule.platform || 'poshmark', 'share_success', { userId: rule.user_id, ruleId: rule.id, shared: succeeded });
     return { message: `Share: ${succeeded}/${processed} listings shared${isPartyShare ? ' to party' : ''}`, itemsProcessed: processed, itemsSucceeded: succeeded, itemsFailed: failed };
 }
 
@@ -870,7 +875,7 @@ function executeOffer(rule, conditions, actions) {
                 logAutomationAction(rule.user_id, rule.id, 'offer', offer.platform, 'success', 'auto_decline', offer.offer_id,
                     `Declined $${offer.offer_amount.toFixed(2)} (${pct.toFixed(0)}% of $${offer.listing_price.toFixed(2)}) on "${offer.title}"`);
                 processed++; succeeded++;
-            } else if (actions.autoCounter && conditions.counterPercentage) {
+            } else if (actions.autoCounter && conditions.counterPercentage && (!conditions.minPercentage || pct >= conditions.minPercentage)) {
                 const counterAmount = Math.round(offer.listing_price * (conditions.counterPercentage / 100) * 100) / 100;
                 if (counterAmount > offer.offer_amount) {
                     query.run(`UPDATE offers SET status = 'countered', counter_amount = ?, auto_action = 'auto_counter', responded_at = datetime('now'), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [counterAmount, offer.offer_id]);
@@ -1246,6 +1251,66 @@ async function executeWhatnotBot(rule, conditions, actions) {
         logAutomationAction(rule.user_id, rule.id, rule.type, 'whatnot', 'failure', 'whatnot_error', null, err.message);
         logger.error('[TaskWorker] Whatnot bot failed:', err.message);
         return { message: `Whatnot: Failed — ${err.message}`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
+    }
+}
+
+// --- Poshmark listing publisher ---
+async function executePoshmarkPublishTask(payload) {
+    const { listingId, userId } = payload;
+    if (!listingId) throw new Error('Missing listingId in publish_listing payload');
+
+    const listing = query.get(
+        'SELECT l.*, i.images AS inv_images FROM listings l LEFT JOIN inventory i ON l.inventory_id = i.id WHERE l.id = ? AND l.user_id = ?',
+        [listingId, userId]
+    );
+    if (!listing) return { message: `Listing ${listingId} not found`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
+
+    const shop = query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1', [userId, 'poshmark']);
+    if (!shop) {
+        query.run('UPDATE listings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', ['publish_failed', listingId]);
+        return { message: 'No connected Poshmark shop found', itemsProcessed: 1, itemsSucceeded: 0, itemsFailed: 1 };
+    }
+
+    let platformData = {};
+    try { platformData = JSON.parse(listing.platform_specific_data || '{}'); } catch (_) {}
+
+    let images = [];
+    try { images = JSON.parse(listing.images || listing.inv_images || '[]'); } catch (_) {}
+
+    const { getPoshmarkBot } = await import('../../shared/automations/poshmark-bot.js');
+    const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
+
+    const bot = await getPoshmarkBot({ headless: true });
+    try {
+        await bot.login();
+
+        const result = await bot.createListing({
+            title: listing.title,
+            description: listing.description || '',
+            price: listing.price,
+            originalPrice: listing.original_price || listing.price,
+            images,
+            categoryPath: listing.category_path || platformData.category || '',
+            conditionTag: listing.condition_tag || platformData.condition || 'good',
+            brand: platformData.brand || '',
+            size: platformData.size || listing.size || ''
+        });
+
+        if (result.success) {
+            query.run(
+                'UPDATE listings SET status = ?, platform_url = ?, listed_at = datetime(\'now\'), updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                ['active', result.listingUrl, listingId]
+            );
+            auditLog('poshmark', 'publish_success', { listingId, listingUrl: result.listingUrl, userId });
+            logger.info('[TaskWorker] Poshmark listing published', { listingId, url: result.listingUrl });
+            return { message: `Published: ${result.listingUrl}`, itemsProcessed: 1, itemsSucceeded: 1, itemsFailed: 0 };
+        } else {
+            query.run('UPDATE listings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', ['publish_failed', listingId]);
+            auditLog('poshmark', 'publish_failure', { listingId, error: result.error, userId });
+            return { message: `Publish failed: ${result.error}`, itemsProcessed: 1, itemsSucceeded: 0, itemsFailed: 1 };
+        }
+    } finally {
+        await bot.close().catch(() => {});
     }
 }
 
