@@ -144,6 +144,13 @@ Key patterns discovered for Poshmark's Vue.js SPA:
 - `POSHMARK_COUNTRY=ca` now in .env (required for Canadian account)
 - Test listing live: https://poshmark.ca/listing/Vintage-Levis-501-Jeans-32x30-69ae6ca4db3a6fed550412ac
 
+## C-2 Image Analyzer — COMPLETE (2026-03-09) — commit bfd8ad8
+- `analyzeImage()` in `src/shared/ai/image-analyzer.js` → `claude-haiku-4-5-20251001` Vision API
+- Handles URL and base64 data URI input; falls back to text helpers (detectBrand/detectCategory/extractColors)
+- Duplicate removed from listing-generator.js; re-exported for backward compat
+- Test results: Nike image → brand=Nike, category=Footwear, colors=[white,gray], analyzed=true in ~4s vision
+- Test script: `scripts/test-image-analyzer.py`
+
 ## C-1 Listing Generator — COMPLETE (2026-03-09) — commit b8d303c
 - `generateListing()` in `src/shared/ai/listing-generator.js` calls `claude-haiku-4-5-20251001` with template fallback
 - Verified: Nike sneaker → source=claude, 56-char title, 20 tags, multi-para description in 7.5s
