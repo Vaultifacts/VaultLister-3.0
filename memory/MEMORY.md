@@ -159,6 +159,19 @@ Key patterns discovered for Poshmark's Vue.js SPA:
 - Verified: source=claude, responses include real inventory numbers (232 items, 48 active, 8 sold)
 - Test script: `scripts/test-vault-buddy.py`
 
+## C-5 Vault Buddy Platform Awareness — COMPLETE (2026-03-09) — commit (CRLF warnings only)
+- System prompt: lists LIVE (Poshmark, eBay, Etsy) vs COMING SOON (Mercari, Depop, Grailed, FB, Whatnot, Shopify)
+- `getUserStats()` now queries `shops` table → `Connected platforms: ebay (@user), poshmark, ...`
+- Vault Buddy correctly answers "What platforms am I selling on?" with real connected account data + usernames
+- Verified: source=claude, response includes eBay @testuser_vltest2026, Poshmark (19 listings), etc.
+
+## D-3 Chrome Extension — IN PROGRESS (2026-03-09)
+- Icons GENERATED: icon16/48/128.png now exist (were missing, would cause "Could not load icon" error)
+- Generator: `scripts/gen-extension-icons.py` (solid #6366f1 purple PNG, no external deps)
+- Backend extension routes verified: /api/extension/scraped, /price-track, /sync all 200 ✓
+- Manifest.json valid; logger.infoSync exists; service-worker.js importScripts pattern correct
+- **REQUIRES USER**: Must manually load via chrome://extensions → Enable Dev Mode → Load Unpacked → chrome-extension/
+
 ## C-2 Image Analyzer — COMPLETE (2026-03-09) — commit bfd8ad8
 - `analyzeImage()` in `src/shared/ai/image-analyzer.js` → `claude-haiku-4-5-20251001` Vision API
 - Handles URL and base64 data URI input; falls back to text helpers (detectBrand/detectCategory/extractColors)

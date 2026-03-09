@@ -15,9 +15,15 @@ You help users with:
 - Understanding analytics and sales performance
 - Using features: Image Bank, Templates, AI listing generation, barcode scanner
 
+Platform availability:
+- LIVE (fully supported): Poshmark, eBay, Etsy
+- COMING SOON (not yet available): Mercari, Depop, Grailed, Facebook Marketplace, Whatnot, Shopify
+- When a user asks about a coming-soon platform, acknowledge it's on the roadmap but not yet active
+
 Guidelines:
 - Be concise, friendly, and actionable
-- Reference the user's actual data when available (inventory count, recent sales, top platforms)
+- Reference the user's actual data when available (inventory count, recent sales, top platforms, connected accounts)
+- When asked "what platforms am I selling on?" — use the connected platforms from user context, not generic examples
 - Provide specific navigation hints (e.g., "Go to Inventory → Cross-List")
 - Keep responses under 200 words unless a detailed explanation is clearly needed
 - Never fabricate inventory data — only reference what's provided in the user context`;
@@ -202,17 +208,27 @@ function getUserStats(userId) {
              GROUP BY platform ORDER BY c DESC LIMIT 5`,
             [userId]
         );
+        const connectedShops = query.all(
+            `SELECT platform, platform_username FROM shops
+             WHERE user_id = ? AND is_connected = 1
+             ORDER BY platform`,
+            [userId]
+        );
         const lines = [];
         if (inv?.total) {
             lines.push(`Inventory: ${inv.total} items total (${inv.active || 0} active, ${inv.sold || 0} sold)`);
         }
         if (sales?.count) lines.push(`Last 30 days: ${sales.count} sales, $${sales.profit} profit`);
+        if (connectedShops.length > 0) {
+            const shopList = connectedShops.map(s => s.platform_username ? `${s.platform} (@${s.platform_username})` : s.platform).join(', ');
+            lines.push(`Connected platforms: ${shopList}`);
+        }
         if (platformCounts.length > 0) {
             const topPlatform = platformCounts[0];
-            lines.push(`Top platform: ${topPlatform.platform} (${topPlatform.c} listings)`);
+            lines.push(`Top platform by listings: ${topPlatform.platform} (${topPlatform.c} listings)`);
             if (platformCounts.length > 1) {
                 const others = platformCounts.slice(1).map(p => `${p.platform}: ${p.c}`).join(', ');
-                lines.push(`Other platforms: ${others}`);
+                lines.push(`Other active platforms: ${others}`);
             }
         }
         return lines.length ? lines.join(' | ') : null;
