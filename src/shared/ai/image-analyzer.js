@@ -1,6 +1,8 @@
 // Image Analyzer Utility
 // Analyzes product images to extract information
-// Uses pattern matching and heuristics (can be extended with TensorFlow.js)
+// Primary: Claude Haiku Vision API. Fallback: text-based pattern helpers.
+
+import Anthropic from '@anthropic-ai/sdk';
 
 // Common brand patterns (for text detection in images)
 const BRAND_PATTERNS = [
@@ -41,29 +43,70 @@ const CATEGORY_KEYWORDS = {
 };
 
 /**
- * Analyze an image and extract product information
- * @param {string} imageData - URL or base64 image data
+ * Analyze an image and extract product information.
+ * Calls Claude Haiku Vision API first; falls back to text-based helpers on failure.
+ * @param {string} imageData - URL or base64 data URI
  * @returns {Object} Analysis results
  */
 export async function analyzeImage(imageData) {
-    // In a real implementation, this would:
-    // 1. Load the image
-    // 2. Use TensorFlow.js for object detection
-    // 3. Use OCR for text/brand detection
-    // 4. Analyze colors from pixel data
+    if (process.env.ANTHROPIC_API_KEY && imageData) {
+        try {
+            const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    // For now, return a placeholder that can be enhanced later
+            let imageSource;
+            if (typeof imageData === 'string' && imageData.startsWith('data:')) {
+                const m = imageData.match(/^data:([^;]+);base64,(.+)$/);
+                if (m) imageSource = { type: 'base64', media_type: m[1], data: m[2] };
+            } else if (typeof imageData === 'string' && (imageData.startsWith('http://') || imageData.startsWith('https://'))) {
+                imageSource = { type: 'url', url: imageData };
+            }
+
+            if (imageSource) {
+                const response = await anthropic.messages.create({
+                    model: 'claude-haiku-4-5-20251001',
+                    max_tokens: 512,
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            { type: 'image', source: imageSource },
+                            { type: 'text', text: 'Analyze this product image for resale. Respond ONLY with valid JSON:\n{"brand":"brand name or null","category":"Tops/Bottoms/Dresses/Outerwear/Footwear/Bags/Accessories","condition":"new/like_new/good/fair/poor","colors":["primary","secondary"],"style":"casual/vintage/streetwear/etc or null","tags":["tag1","tag2","tag3"],"confidence":0.0}' }
+                        ]
+                    }]
+                });
+
+                const match = response.content[0].text.trim().match(/\{[\s\S]*\}/);
+                if (match) {
+                    const r = JSON.parse(match[0]);
+                    return {
+                        category: r.category || null,
+                        brand: r.brand || null,
+                        colors: Array.isArray(r.colors) ? r.colors : [],
+                        style: r.style || null,
+                        tags: Array.isArray(r.tags) ? r.tags : [],
+                        condition: r.condition || null,
+                        confidence: typeof r.confidence === 'number' ? r.confidence : 0.8,
+                        metadata: { analyzed: true, source: 'claude-haiku-vision' }
+                    };
+                }
+            }
+        } catch (_) {
+            // fall through to text-based helpers
+        }
+    }
+
+    // Text-based fallback: use filename/URL clues and pattern helpers
+    const textHints = typeof imageData === 'string' ? analyzeFilename(imageData) : {};
     return {
-        category: null,
-        brand: null,
-        colors: [],
+        category: textHints.category || null,
+        brand: textHints.brand || null,
+        colors: textHints.colors || [],
         style: null,
-        tags: [],
+        tags: generateTagsFromAnalysis(textHints),
         condition: null,
         confidence: 0,
         metadata: {
             analyzed: false,
-            reason: 'Full image analysis requires TensorFlow.js integration'
+            reason: process.env.ANTHROPIC_API_KEY ? 'Vision API call failed' : 'ANTHROPIC_API_KEY not configured'
         }
     };
 }

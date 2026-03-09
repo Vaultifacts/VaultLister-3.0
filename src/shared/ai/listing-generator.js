@@ -2,6 +2,7 @@
 // Generates titles, descriptions, and tags using templates and rules
 
 import Anthropic from '@anthropic-ai/sdk';
+import { analyzeImage } from './image-analyzer.js';
 
 // Brand-specific styling words
 const BRAND_STYLES = {
@@ -316,62 +317,8 @@ function getCategoryTags(category) {
     return tagMap[key] || ['fashion', 'style'];
 }
 
-/**
- * Analyze image using Claude Vision. Falls back to null stub if API unavailable.
- */
-export async function analyzeImage(imageData) {
-    if (process.env.ANTHROPIC_API_KEY && imageData) {
-        try {
-            const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-            let imageSource;
-            if (typeof imageData === 'string' && imageData.startsWith('data:')) {
-                const m = imageData.match(/^data:([^;]+);base64,(.+)$/);
-                if (m) imageSource = { type: 'base64', media_type: m[1], data: m[2] };
-            } else if (typeof imageData === 'string' && imageData.startsWith('http')) {
-                imageSource = { type: 'url', url: imageData };
-            }
-
-            if (imageSource) {
-                const response = await anthropic.messages.create({
-                    model: 'claude-haiku-4-5-20251001',
-                    max_tokens: 512,
-                    messages: [{
-                        role: 'user',
-                        content: [
-                            { type: 'image', source: imageSource },
-                            { type: 'text', text: 'Analyze this product image. Respond with ONLY valid JSON:\n{"brand":"brand or null","category":"Tops/Bottoms/Dresses/Outerwear/Footwear/Bags/Accessories","condition":"new/like_new/good/fair/poor","colors":["primary"],"style":"style or null","tags":["tag1","tag2"],"confidence":0.0}' }
-                        ]
-                    }]
-                });
-
-                const m = response.content[0].text.trim().match(/\{[\s\S]*\}/);
-                if (m) {
-                    const r = JSON.parse(m[0]);
-                    return {
-                        category: r.category || null,
-                        brand: r.brand || null,
-                        colors: r.colors || [],
-                        style: r.style || null,
-                        tags: r.tags || [],
-                        confidence: r.confidence || 0.8
-                    };
-                }
-            }
-        } catch (_) {
-            // fall through to stub
-        }
-    }
-
-    return {
-        category: null,
-        brand: null,
-        colors: [],
-        style: null,
-        tags: [],
-        confidence: 0
-    };
-}
+// analyzeImage is imported from image-analyzer.js and re-exported for backward compatibility
+export { analyzeImage };
 
 /**
  * Generate title, description, and tags via Claude Haiku in one API call.
