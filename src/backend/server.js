@@ -559,6 +559,10 @@ function parseParams(url, pattern) {
     return params;
 }
 
+// In-memory gzip cache — keyed by absolute filePath; populated once per file per process lifetime.
+// Eliminates the blocking gzipSync cost on every request for large static assets.
+const gzipCache = new Map();
+
 // Serve static files
 function serveStatic(pathname, request) {
     // Reject null bytes in path (potential bypass vector)
@@ -641,7 +645,10 @@ function serveStatic(pathname, request) {
         };
 
         if (supportsGzip) {
-            content = gzipSync(content, { level: 6 });
+            if (!gzipCache.has(filePath)) {
+                gzipCache.set(filePath, gzipSync(content, { level: 6 }));
+            }
+            content = gzipCache.get(filePath);
             responseHeaders['Content-Encoding'] = 'gzip';
             responseHeaders['Content-Length'] = String(content.length);
         }

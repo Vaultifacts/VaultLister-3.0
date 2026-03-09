@@ -20,6 +20,9 @@
 - `bun scripts/session-start.js` — read pending items before working
 - `bun scripts/session-end.js` — safety net at end of session
 
+## Behaviour Rules
+- **Never assume or guess** — always verify with a tool (Read, Grep, Bash) before stating something is true. This includes checklist status, file contents, env values, and test counts. Taking the user's word is fine, but stating facts without verification is not.
+
 ## Critical Rules
 - Never push to main directly — use feature branches
 - Never use `git add -A` — add specific files
@@ -59,6 +62,9 @@ Generated: 2026-03-02 from VaultLister 2.0 reference by claude-project-scaffolde
 - 6a9cf3b — Q4: rateLimiter._cleanupInterval + stopRateLimiter(); csrfManager._cleanupInterval + stopCSRF(); both called in gracefulShutdown(); middleware-shutdown.test.js (6/6 pass)
 - e8dab56 — Q17: SW v4.2.0 CLEAR_USER_CACHE handler; auth.logout() posts to SW; SWR cache wiped on logout
 - 9a222b0 — Q22: name-based .test-baseline (KNOWN_FAIL entries); CI+pre-push now flag new failures by name not count; fixed 4 Q51 test regressions (isRunning→running, getKey key format)
+- d5bdebd — Q4b: stopGDPRWorker() added to gracefulShutdown(); 3 shutdown tests added to middleware-shutdown.test.js (9/9 pass)
+- 42a9228 — Q29: build scripts compute SHA-256 content hash; auto-sync ?v= in index.html, sw.js PRECACHE_URLS, core-bundle.js router const; router.js source unchanged
+- 21326c3 — Q21: CSRFManager.clearTokens() + exported clearCSRFTokens(); beforeEach isolation in csrf-expanded + csrf-coverage tests (78/78 pass)
 Full tracking: audit-table.md in Claude projects folder
 All originally-flagged high-priority audit items resolved.
 
@@ -79,6 +85,27 @@ All 49 E2E failures fixed → 620/620 pass. Then 4 app-level defects patched:
 - Hardened: P2-1/P2-2/P2-4 (nav), P1-1 (import), P9-3/P10-3 (WS badge)
 - auth.test.js / security.test.js: now 0 fail when TEST_BASE_URL/PORT env vars are set correctly
 - Commit: 0b26054 on master (app defects); 7df5afb (unit baseline cleanup)
+
+## Auto-Offer Rule Live — commits dd5ffa3, e8229f7
+- Rule created: "Auto-Offer Rule (80% min, counter at 90%)" — type=offer, platform=poshmark, schedule=`*/5 * * * *`, conditions={minPercentage:80, counterPercentage:90}, actions={autoCounter:true}
+- `executeOffer()` in taskWorker.js now guards autoCounter with minPercentage threshold — offers below 80% are skipped, ≥80% are countered at 90% of asking price
+- End-to-end verified: test offer at 85% ($38.25) → auto-countered at 90% ($40.50) in <15s — automation_logs confirms `action_taken: auto_counter`
+- `POST /api/automations/:id/run` is the manual trigger; CSRF token must come from a prior GET response header, not /auth/csrf
+
+## Generic Publish Route Fixed (2026-03-08) — commit dd5ffa3
+`POST /api/listings/:id/publish` is now a multi-platform dispatcher — routes to the correct publisher (poshmark/ebay/etsy/mercari/depop/grailed/facebook/whatnot/shopify) based on `listing.platform`. Previously it was Poshmark-only and used a task-queue stub. Also: `generateListing()` added to listing-generator.js (Claude Haiku with template fallback), `analyzeImage()` now uses Claude Vision, `predictPrice()` accepts `historicalSales`, model IDs updated to claude-sonnet-4-6 / claude-haiku-4-5-20251001.
+
+## Poshmark Publish Bot — WORKING (2026-03-08) — commit 3a255bd
+`scripts/poshmark-publish-bot.js` — standalone ESM subprocess, spawned by `poshmarkPublish.js`.
+Key patterns discovered for Poshmark's Vue.js SPA:
+- **Category picker is hierarchical in ONE dropdown**: click dept (Men via `A.dropdown__link`) → wait 2.5-3.5s → click category (Jackets & Coats via `LI.dropdown__link`) — all via `page.evaluate` with `dispatchEvent(mouseenter/down/up) + click()`
+- **Size dropdown**: Playwright `isVisible()` returns false on Vue components even when element has height > 0. Fix: use `page.evaluate` to get `getBoundingClientRect()` coords then `page.mouse.click(x, y)`. Poshmark size labels are "US L", "US M" etc.
+- **Multi-step form**: "Next" button (step 1→2), then "List This Item" (step 2, publishes). Both found via `page.evaluate` + `page.mouse.click()` at coordinates.
+- **Price**: click `input[data-vv-name="listingPrice"]` → opens `.listing-price-suggestion-modal` → `humanType()` in modal → click `.listing-price-suggestion-modal button.btn--primary`
+- **Photo**: `setInputFiles()` triggers Cropper.js modal → dismiss via `.modal button[class*="primary"]` with text "Apply"
+- **Session**: 41 poshmark.ca cookies at `data/poshmark-cookies.json`, loaded at startup
+- **Success URL**: after "List This Item", navigates to `/closet/[username]` (not `/listing/...`)
+- **POSHMARK_COUNTRY=ca** env var required for Canadian account
 
 ## Infrastructure Additions (2026-03-07)
 All 6 gaps from /compare-project run implemented. New files:

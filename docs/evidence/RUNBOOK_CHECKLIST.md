@@ -1,6 +1,6 @@
 ﻿# Runbook Checklist (Auto)
 
-Generated: 2026-03-07T13:11:09.7509094-07:00
+Generated: 2026-03-08T20:55:23.4450252-06:00
 RepoRoot: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vaultlister-3
 
 ## PREREQ
@@ -28,12 +28,12 @@ RepoRoot: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vault
 
 ## Freshness
 
-* [x] gate evaluation is fresh (<= 48h)
-* [x] runbook state is fresh (<= 48h)
+* [ ] gate evaluation is fresh (<= 48h)
+* [ ] runbook state is fresh (<= 48h)
 
 ## Git Hygiene
 
-* [x] git status clean (allow .mcp.json only)
+* [ ] git status clean (allow .mcp.json only)
 
 ## Step: ENV_SANITY
 

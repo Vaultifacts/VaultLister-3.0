@@ -1,40 +1,26 @@
 # Round-Robin Autopilot Task
 
 ## Current Task
-Reduce bcrypt rounds in `provisionLocalUserToken` from 12 to 1 in test mode.
+Achieve `npm test` exit code 0 — full 5289-test suite green without any manual env setup.
 
-When 264 test files run concurrently via `npm test`, all their `beforeAll` hooks call
-`provisionLocalUserToken` simultaneously. Each call does `await bcrypt.hash(password, 12)`
-which takes ~400ms of CPU per hash. With 264 concurrent hashes, the event loop is
-saturated at startup — this causes HTTP login calls and subsequent API requests to time
-out, producing 401s that cascade into hundreds of named test failures.
+### Background
+`npm test` runs: `test:setup` (kills port 3100, starts test server) → `run-bun-tests.ps1`
+(sets NODE_ENV=test, TEST_BASE_URL=http://localhost:3100, PORT=3100) → `bun test`.
 
-Individual test files pass fine in isolation. The failures are purely a concurrency-at-
-startup problem caused by CPU saturation from 264 simultaneous bcrypt-12 hashes.
+Unit baseline with `run-bun-tests.ps1` alone: **5289 pass / 0 fail** (2026-03-08).
 
-Focus on failures matching:
-- test failures where status 401 is received but not expected (caused by invalid/expired token)
+### Previously Applied Fixes (do not re-apply)
+- `auth.helper.js:133` — bcrypt rounds = 1 in test mode (was 12) ✅
+- `tokenRefreshScheduler.js` — `getRefreshSchedulerStatus()` returns `isRunning`, `bufferMs`, `maxFailures` ✅
+- `priceCheckWorker.js` — `getPriceCheckWorkerStatus()` returns `interval_ms`, `interval_minutes`, `max_items_per_cycle` ✅
 
-Root cause: `provisionLocalUserToken` in `src/tests/helpers/auth.helper.js` always uses
-`bcrypt.hash(password, 12)` regardless of environment. In test mode, password correctness
-is irrelevant for local provisioning (the user is created in DB and a JWT is minted
-directly — the password is never verified by the server for these locally-provisioned tokens).
-
-Fix approach (test-only, minimal):
-- In `provisionLocalUserToken`, detect test mode and use 1 bcrypt round instead of 12:
-
-  ```js
-  const bcryptRounds = (process.env.NODE_ENV === 'test') ? 1 : 12;
-  const passwordHash = await bcrypt.hash(password, bcryptRounds);
-  ```
-
-- This reduces the CPU spike at test startup from ~400ms × 264 concurrent hashes
-  to ~1ms × 264, eliminating the saturation that causes cascading failures.
-- Do NOT modify any route handler or production code.
-- Do NOT change bcrypt rounds anywhere in `src/backend/` — only in the test helper.
+### Remaining failures (if any)
+Run `npm test` and look for failures that occur specifically when all 265 test files run
+concurrently (not in isolated runs). These would be server-not-ready races or resource
+contention issues.
 
 ## Target Signature
-TargetSignatureRegex: Expected to contain.*401|401.*Expected to contain
+TargetSignatureRegex: \d+ fail
 TargetThreshold: 0
 
 ## Scope Rules

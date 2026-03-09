@@ -489,3 +489,18 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_resource_type ON audit_logs(resource_type);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_resource_id ON audit_logs(resource_id);
+
+-- User preferences table for per-user key/value settings
+CREATE TABLE IF NOT EXISTS user_preferences (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    key TEXT NOT NULL,
+    settings TEXT NOT NULL DEFAULT '{}',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(user_id, key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_preferences_key ON user_preferences(key);

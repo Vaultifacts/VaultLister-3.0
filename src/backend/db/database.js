@@ -168,7 +168,8 @@ function runMigrations() {
             '091_inventory_categories.sql',
             '092_inventory_cost_tracking.sql',
             '093_automation_sort_order.sql',
-            '094_automation_rule_tags.sql'
+            '094_automation_rule_tags.sql',
+            '095_add_user_preferences.sql'
         ];
 
         for (const migrationFile of migrationFiles) {
