@@ -122,6 +122,33 @@ Key patterns discovered for Poshmark's Vue.js SPA:
 - **Success URL**: after "List This Item", navigates to `/closet/[username]` (not `/listing/...`)
 - **POSHMARK_COUNTRY=ca** env var required for Canadian account
 
+## B-1 Auto-Offer Rule — COMPLETE (2026-03-09)
+- Rule: "Auto-Offer Rule (80% min, counter at 90%)" — verified end-to-end via DB simulation
+- Offer C$38 (84%) on C$45 listing → auto-countered at C$40.50 in <5s — automation_logs confirmed
+- `executeOffer()` in taskWorker.js: DB-only logic (correct). Poshmark-side counter-sending (`bot.counterOffer()`) requires a real buyer offer; selectors unverified against live UI
+- Offer sync script: `scripts/poshmark-offer-sync.mjs` (run with `node`, not `bun`; pass `POSHMARK_COUNTRY=ca`)
+- Per-item share audit log entries: working (commit 9b0d0e6)
+
+## B-2 eBay — COMPLETE (2026-03-09)
+- Full OAuth → inventory_item → offer → publishOffer verified in sandbox
+- Test listing published (listingId: 110589145468), confirmed PUBLISHED, withdrawn via API
+- Fixes committed in 4e13d1e: marketplaceId body required for publishOffer; shop lookup in listings.js
+
+## Poshmark Publish — FIXED + VERIFIED (2026-03-09) — commit f528d45
+- Bot now uses `resolveImageFiles()` (imageUploadHelper.js) — same as Depop
+- Hard error if no real photos attached (no more placeholder fallback that triggers moderation)
+- Post-publish verification: bot navigates back to closet, confirms listing by title, returns real listing URL
+- Category default changed from 'Men>Jackets & Coats' → 'Men>Tops' (with warning log)
+- Size parsing issue: '32x30' → bot selects 'US XS' (needs waist/inseam → Poshmark size label mapping)
+- `POSHMARK_COUNTRY=ca` now in .env (required for Canadian account)
+- Test listing live: https://poshmark.ca/listing/Vintage-Levis-501-Jeans-32x30-69ae6ca4db3a6fed550412ac
+
+## B-3 Etsy — BLOCKED (pending Etsy approval)
+- App created (keystring: 1sgc9xd1hwi3zt5k33pn9k7d), status "Pending Personal Approval"
+- oauth.js PKCE fix committed (4e13d1e): isPKCE=platform==='etsy' skips clientSecret check
+- Authorize URL verified: returns code_challenge + S256 correctly
+- Once approved: add callback URL https://semianatomic-adelina-unspent.ngrok-free.dev/oauth-callback in Etsy developer portal
+
 ## eBay + Etsy Integration (2026-03-09) — commit 4e13d1e
 - **eBay end-to-end VERIFIED**: Full OAuth → inventory_item → offer → publishOffer flow working in sandbox
   - `publishOffer` requires `{ marketplaceId: 'EBAY_US' }` body — missing body causes error 25002
