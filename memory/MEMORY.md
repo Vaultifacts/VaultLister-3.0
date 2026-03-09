@@ -165,12 +165,18 @@ Key patterns discovered for Poshmark's Vue.js SPA:
 - Vault Buddy correctly answers "What platforms am I selling on?" with real connected account data + usernames
 - Verified: source=claude, response includes eBay @testuser_vltest2026, Poshmark (19 listings), etc.
 
-## D-3 Chrome Extension — IN PROGRESS (2026-03-09)
-- Icons GENERATED: icon16/48/128.png now exist (were missing, would cause "Could not load icon" error)
-- Generator: `scripts/gen-extension-icons.py` (solid #6366f1 purple PNG, no external deps)
-- Backend extension routes verified: /api/extension/scraped, /price-track, /sync all 200 ✓
-- Manifest.json valid; logger.infoSync exists; service-worker.js importScripts pattern correct
-- **REQUIRES USER**: Must manually load via chrome://extensions → Enable Dev Mode → Load Unpacked → chrome-extension/
+## D-3 Chrome Extension — COMPLETE (2026-03-09) — commit dad6f9e
+- Icons GENERATED: icon16/48/128.png (solid #6366f1 purple, no external deps) — `scripts/gen-extension-icons.py`
+- Playwright test: `scripts/test-d3-extension.js` — 8-step checklist, all steps pass
+- Step 5b: price-tracking API end-to-end — requires CSRF token from GET /api/csrf-token, then POST with X-CSRF-Token header
+- Extension POSTs don't include CSRF in dev mode; workaround: test script fetches token separately
+- `high_memory` alert false positive FIXED: `v8.getHeapStatistics().heap_size_limit` replaces `heapTotal` — commit dad6f9e
+- E2E run: 1820 pass / 36 fail (98%) — full 3-browser run, no server crash. 36 pre-existing failures:
+  - Session/Remember Me: remember-me.spec, auth reload, login E4 checkbox
+  - Sidebar collapse: P2-1/P2-2/P2-4 (toggle + persist + collapsed nav)
+  - WS notification badge: P9-3/P10-3 (badge not updating from push)
+  - UI buttons: Listings P1-1 (health/folder/fees), CSV import P1-1, Inventory P2-1, Orders P1-2
+  - Misc: Teams invite button, Guardian dashboard stat cards
 
 ## C-2 Image Analyzer — COMPLETE (2026-03-09) — commit bfd8ad8
 - `analyzeImage()` in `src/shared/ai/image-analyzer.js` → `claude-haiku-4-5-20251001` Vision API
