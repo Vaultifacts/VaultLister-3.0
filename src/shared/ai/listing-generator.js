@@ -1,5 +1,7 @@
-// AI Listing Generator - Local pattern-based generation
+// AI Listing Generator - Local pattern-based generation with Claude API fallback
 // Generates titles, descriptions, and tags using templates and rules
+
+import Anthropic from '@anthropic-ai/sdk';
 
 // Brand-specific styling words
 const BRAND_STYLES = {
@@ -315,11 +317,52 @@ function getCategoryTags(category) {
 }
 
 /**
- * Analyze image (placeholder - returns mock data)
+ * Analyze image using Claude Vision. Falls back to null stub if API unavailable.
  */
 export async function analyzeImage(imageData) {
-    // In a real implementation, this would use TensorFlow.js or an external API
-    // For now, return placeholder analysis
+    if (process.env.ANTHROPIC_API_KEY && imageData) {
+        try {
+            const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+            let imageSource;
+            if (typeof imageData === 'string' && imageData.startsWith('data:')) {
+                const m = imageData.match(/^data:([^;]+);base64,(.+)$/);
+                if (m) imageSource = { type: 'base64', media_type: m[1], data: m[2] };
+            } else if (typeof imageData === 'string' && imageData.startsWith('http')) {
+                imageSource = { type: 'url', url: imageData };
+            }
+
+            if (imageSource) {
+                const response = await anthropic.messages.create({
+                    model: 'claude-haiku-4-5-20251001',
+                    max_tokens: 512,
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            { type: 'image', source: imageSource },
+                            { type: 'text', text: 'Analyze this product image. Respond with ONLY valid JSON:\n{"brand":"brand or null","category":"Tops/Bottoms/Dresses/Outerwear/Footwear/Bags/Accessories","condition":"new/like_new/good/fair/poor","colors":["primary"],"style":"style or null","tags":["tag1","tag2"],"confidence":0.0}' }
+                        ]
+                    }]
+                });
+
+                const m = response.content[0].text.trim().match(/\{[\s\S]*\}/);
+                if (m) {
+                    const r = JSON.parse(m[0]);
+                    return {
+                        category: r.category || null,
+                        brand: r.brand || null,
+                        colors: r.colors || [],
+                        style: r.style || null,
+                        tags: r.tags || [],
+                        confidence: r.confidence || 0.8
+                    };
+                }
+            }
+        } catch (_) {
+            // fall through to stub
+        }
+    }
+
     return {
         category: null,
         brand: null,
@@ -327,5 +370,60 @@ export async function analyzeImage(imageData) {
         style: null,
         tags: [],
         confidence: 0
+    };
+}
+
+/**
+ * Generate title, description, and tags via Claude Haiku in one API call.
+ * Falls back to local template functions if API is unavailable or fails.
+ */
+export async function generateListing(context) {
+    const { brand, category, condition, color, size, originalPrice, notes, keywords = [] } = context;
+
+    if (process.env.ANTHROPIC_API_KEY) {
+        try {
+            const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+            const prompt = `You are an expert reseller. Generate a marketplace listing for this secondhand item.
+
+Brand: ${brand || 'Unknown'}
+Category: ${category || 'Clothing'}
+Condition: ${condition || 'good'}
+Color: ${color || 'N/A'}
+Size: ${size || 'N/A'}
+Original Price: ${originalPrice ? `$${originalPrice}` : 'N/A'}
+Notes: ${notes || (keywords.length ? keywords.join(', ') : 'None')}
+
+Respond with ONLY valid JSON in this exact format:
+{"title":"listing title max 80 chars SEO-optimized with brand and key attributes","description":"200-500 word persuasive description with condition, features, and item details. Include a DETAILS section with brand, size, color, condition. End with a friendly closing line.","tags":["tag1","tag2","up to 20 relevant search tags"]}`;
+
+            const response = await anthropic.messages.create({
+                model: 'claude-haiku-4-5-20251001',
+                max_tokens: 1024,
+                messages: [{ role: 'user', content: prompt }]
+            });
+
+            const m = response.content[0].text.trim().match(/\{[\s\S]*\}/);
+            if (m) {
+                const r = JSON.parse(m[0]);
+                if (r.title && r.description && Array.isArray(r.tags)) {
+                    return {
+                        title: r.title.slice(0, 80),
+                        description: r.description,
+                        tags: r.tags.slice(0, 20),
+                        source: 'claude'
+                    };
+                }
+            }
+        } catch (_) {
+            // fall through to templates
+        }
+    }
+
+    return {
+        title: generateTitle(context),
+        description: generateDescription(context),
+        tags: generateTags(context),
+        source: 'template'
     };
 }

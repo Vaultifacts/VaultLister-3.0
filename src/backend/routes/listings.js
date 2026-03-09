@@ -1363,7 +1363,45 @@ export async function listingsRouter(ctx) {
                 }
             };
         } catch (error) {
-            logger.error('[Listings] Poshmark publish error', user?.id, { detail: error.message });
+            logger.error('[Listings] Poshmark publish error: ' + error.message);
+            return { status: 500, data: { error: error.message } };
+        }
+    }
+
+    // POST /api/listings/:id/publish — publish a listing to its platform
+    if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish$/)) {
+        const id = path.split('/')[1];
+        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+        if (listing.status === 'active') return { status: 400, data: { error: 'Listing is already active' } };
+
+        const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+        if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+
+        const publishers = {
+            poshmark: publishListingToPoshmark,
+            ebay: publishListingToEbay,
+            etsy: publishListingToEtsy,
+            mercari: publishListingToMercari,
+            depop: publishListingToDepop,
+            grailed: publishListingToGrailed,
+            facebook: publishListingToFacebook,
+            whatnot: publishListingToWhatnot,
+            shopify: publishListingToShopify,
+        };
+
+        const publisher = publishers[listing.platform];
+        if (!publisher) return { status: 400, data: { error: `Platform '${listing.platform}' does not support publish` } };
+
+        try {
+            const result = await publisher(null, listing, inventory);
+            query.run(
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), id]
+            );
+            return { status: 200, data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl } };
+        } catch (error) {
+            logger.error('[Listings] Publish error', user?.id, { platform: listing.platform, detail: error.message });
             return { status: 500, data: { error: error.message } };
         }
     }

@@ -91,16 +91,26 @@ const SEASONAL_ADJUSTMENTS = {
 };
 
 /**
- * Predict a price for an item
+ * Predict a price for an item.
+ * If historicalSales (array of {sale_price}) has 3+ entries, uses their average as the base
+ * before applying brand/condition/seasonal multipliers.
  */
 export function predictPrice(context) {
-    const { title, brand, category, condition, originalRetail, size } = context;
+    const { title, brand, category, condition, originalRetail, size, historicalSales = [] } = context;
 
     // Get base price from category
     const categoryKey = findCategoryKey(category);
     const basePrice = CATEGORY_PRICES[categoryKey] || CATEGORY_PRICES['Accessories'];
 
     let price = basePrice.avg;
+
+    // Use historical sold prices as base when sufficient data exists
+    if (historicalSales.length >= 3) {
+        const historicalAvg = historicalSales.reduce((sum, s) => sum + (s.sale_price || 0), 0) / historicalSales.length;
+        if (historicalAvg > 0) {
+            price = (historicalAvg + basePrice.avg) / 2;
+        }
+    }
 
     // Apply brand multiplier
     const brandMultiplier = getBrandMultiplier(brand);

@@ -2,7 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { checkTierPermission } from '../middleware/auth.js';
-import { generateTitle, generateDescription, generateTags, analyzeImage } from '../../shared/ai/listing-generator.js';
+import { generateTitle, generateDescription, generateTags, analyzeImage, generateListing } from '../../shared/ai/listing-generator.js';
 import { predictPrice } from '../../shared/ai/price-predictor.js';
 import { detectBrand, detectCategory } from '../../shared/ai/image-analyzer.js';
 import Anthropic from '@anthropic-ai/sdk';
@@ -121,7 +121,7 @@ Important:
 - Return ONLY valid JSON, no other text`;
 
             const response = await anthropic.messages.create({
-                model: 'claude-sonnet-4-20250514',
+                model: 'claude-sonnet-4-6',
                 max_tokens: 2000,
                 messages: [{
                     role: 'user',
@@ -208,17 +208,16 @@ Important:
                 style: imageAnalysis.style
             };
 
-            const title = generateTitle(context);
-            const description = generateDescription(context);
-            const tags = generateTags(context);
+            const listing = await generateListing(context);
             const suggestedPrice = predictPrice(context);
 
             return {
                 status: 200,
                 data: {
-                    title,
-                    description,
-                    tags,
+                    title: listing.title,
+                    description: listing.description,
+                    tags: listing.tags,
+                    aiSource: listing.source,
                     suggestedPrice,
                     category: context.category,
                     brand: context.brand,
@@ -292,11 +291,7 @@ Important:
         try {
             const { title, brand, category, condition, originalRetail } = body;
 
-            const suggestedPrice = predictPrice({
-                title, brand, category, condition, originalRetail
-            });
-
-            // Get comparable sales from database
+            // Get comparable sales from database first so predictor can use them
             const comparables = query.all(`
                 SELECT s.sale_price, i.brand, i.category, i.condition
                 FROM sales s
@@ -305,6 +300,11 @@ Important:
                 ORDER BY s.created_at DESC
                 LIMIT 10
             `, [category, user.id]);
+
+            const suggestedPrice = predictPrice({
+                title, brand, category, condition, originalRetail,
+                historicalSales: comparables
+            });
 
             return {
                 status: 200,
@@ -617,7 +617,7 @@ Return ONLY valid JSON with this structure:
 }`;
 
             const response = await anthropic.messages.create({
-                model: 'claude-sonnet-4-20250514',
+                model: 'claude-sonnet-4-6',
                 max_tokens: 2000,
                 messages: [{ role: 'user', content: prompt }]
             });
@@ -936,7 +936,7 @@ Return ONLY valid JSON with this structure:
 Be specific about what could be improved for better sales conversion.`;
 
                 const response = await anthropic.messages.create({
-                    model: 'claude-sonnet-4-20250514',
+                    model: 'claude-sonnet-4-6',
                     max_tokens: 1500,
                     messages: [{
                         role: 'user',
