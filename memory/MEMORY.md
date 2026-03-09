@@ -86,6 +86,21 @@ All 49 E2E failures fixed → 620/620 pass. Then 4 app-level defects patched:
 - auth.test.js / security.test.js: now 0 fail when TEST_BASE_URL/PORT env vars are set correctly
 - Commit: 0b26054 on master (app defects); 7df5afb (unit baseline cleanup)
 
+## ngrok — ALWAYS run when needed
+User has authorized always starting ngrok. Reserved domain command:
+```
+ngrok http --domain=semianatomic-adelina-unspent.ngrok-free.app 3000
+```
+Auth token already in ngrok config. Check if running first: `curl -s http://localhost:4040/api/tunnels`
+
+## Server Restart (Windows) — ALWAYS use this
+User has explicitly authorized always running this to restart the server:
+```
+powershell -Command "Get-Process bun | Stop-Process -Force"
+bun run dev:bg
+```
+`bun run dev:stop` alone is unreliable — PID file goes stale and old process keeps running.
+
 ## Auto-Offer Rule Live — commits dd5ffa3, e8229f7
 - Rule created: "Auto-Offer Rule (80% min, counter at 90%)" — type=offer, platform=poshmark, schedule=`*/5 * * * *`, conditions={minPercentage:80, counterPercentage:90}, actions={autoCounter:true}
 - `executeOffer()` in taskWorker.js now guards autoCounter with minPercentage threshold — offers below 80% are skipped, ≥80% are countered at 90% of asking price
@@ -106,6 +121,18 @@ Key patterns discovered for Poshmark's Vue.js SPA:
 - **Session**: 41 poshmark.ca cookies at `data/poshmark-cookies.json`, loaded at startup
 - **Success URL**: after "List This Item", navigates to `/closet/[username]` (not `/listing/...`)
 - **POSHMARK_COUNTRY=ca** env var required for Canadian account
+
+## eBay + Etsy Integration (2026-03-09) — commit 4e13d1e
+- **eBay end-to-end VERIFIED**: Full OAuth → inventory_item → offer → publishOffer flow working in sandbox
+  - `publishOffer` requires `{ marketplaceId: 'EBAY_US' }` body — missing body causes error 25002
+  - `listings.js POST /api/listings/:id/publish`: must look up shop before calling publisher (null crash fix)
+  - Test listing published (listingId: 110589145468), confirmed PUBLISHED, then withdrawn via API
+- **Etsy OAuth**: App created (keystring `1sgc9xd1hwi3zt5k33pn9k7d`), status "Pending Personal Approval"
+  - Etsy uses PKCE (no client_secret) — `oauth.js` fixed: `isPKCE = platform === 'etsy'` skips clientSecret check
+  - Authorize URL verified: returns `code_challenge` + `code_challenge_method=S256` correctly
+  - BLOCKED: Etsy key pending manual approval by Etsy team — cannot complete OAuth until approved
+  - Once approved: add callback URL `https://semianatomic-adelina-unspent.ngrok-free.dev/oauth-callback` in Etsy developer portal
+- **Per-item audit log (B-1)**: Share entries now write per-item with `listingId`/`title` (commit 9b0d0e6)
 
 ## Infrastructure Additions (2026-03-07)
 All 6 gaps from /compare-project run implemented. New files:
