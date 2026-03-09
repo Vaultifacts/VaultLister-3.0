@@ -6467,12 +6467,6 @@ Object.assign(handlers, {
         const ebayBtn     = document.getElementById('publish-ebay-crosslist-btn');
         const etsyBtn     = document.getElementById('publish-etsy-crosslist-btn');
         const poshmarkBtn = document.getElementById('publish-poshmark-crosslist-btn');
-        const mercariBtn  = document.getElementById('publish-mercari-crosslist-btn');
-        const depopBtn    = document.getElementById('publish-depop-crosslist-btn');
-        const grailedBtn  = document.getElementById('publish-grailed-crosslist-btn');
-        const facebookBtn = document.getElementById('publish-facebook-crosslist-btn');
-        const whatnotBtn  = document.getElementById('publish-whatnot-crosslist-btn');
-        const shopifyBtn  = document.getElementById('publish-shopify-crosslist-btn');
         const allBtn      = document.getElementById('publish-all-crosslist-btn');
 
         if (selected.length > 0) {
@@ -6483,12 +6477,6 @@ Object.assign(handlers, {
             ebayBtn?.removeAttribute('disabled');
             etsyBtn?.removeAttribute('disabled');
             poshmarkBtn?.removeAttribute('disabled');
-            mercariBtn?.removeAttribute('disabled');
-            depopBtn?.removeAttribute('disabled');
-            grailedBtn?.removeAttribute('disabled');
-            facebookBtn?.removeAttribute('disabled');
-            whatnotBtn?.removeAttribute('disabled');
-            shopifyBtn?.removeAttribute('disabled');
             allBtn?.removeAttribute('disabled');
         } else {
             summary?.classList.add('hidden');
@@ -6497,12 +6485,6 @@ Object.assign(handlers, {
             ebayBtn?.setAttribute('disabled', 'true');
             etsyBtn?.setAttribute('disabled', 'true');
             poshmarkBtn?.setAttribute('disabled', 'true');
-            mercariBtn?.setAttribute('disabled', 'true');
-            depopBtn?.setAttribute('disabled', 'true');
-            grailedBtn?.setAttribute('disabled', 'true');
-            facebookBtn?.setAttribute('disabled', 'true');
-            whatnotBtn?.setAttribute('disabled', 'true');
-            shopifyBtn?.setAttribute('disabled', 'true');
             allBtn?.setAttribute('disabled', 'true');
         }
 

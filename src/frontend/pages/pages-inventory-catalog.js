@@ -1364,7 +1364,7 @@ Object.assign(pages, {
                             <button class="btn btn-success btn-lg w-full" onclick="handlers.publishSelectedToAll()" id="publish-all-crosslist-btn" disabled style="background: linear-gradient(135deg, var(--success-600), var(--primary-600)); border: none; font-size: 15px;">
                                 <div class="text-center">
                                     <div class="font-semibold">${components.icon('zap', 18)} Publish to ALL Platforms</div>
-                                    <div class="text-xs opacity-90">eBay · Etsy · Poshmark · Mercari · Depop · Grailed · Facebook · Whatnot · Shopify</div>
+                                    <div class="text-xs opacity-90">eBay · Etsy · Poshmark</div>
                                 </div>
                             </button>
                         </div>
@@ -1387,40 +1387,40 @@ Object.assign(pages, {
                                     <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToMercari()" id="publish-mercari-crosslist-btn" disabled>
+                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Mercari</div>
-                                    <div class="text-xs opacity-90">Auto</div>
+                                    <div class="font-semibold text-sm">Mercari</div>
+                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToDepop()" id="publish-depop-crosslist-btn" disabled>
+                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Depop</div>
-                                    <div class="text-xs opacity-90">Auto</div>
+                                    <div class="font-semibold text-sm">Depop</div>
+                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToGrailed()" id="publish-grailed-crosslist-btn" disabled>
+                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Grailed</div>
-                                    <div class="text-xs opacity-90">Auto</div>
+                                    <div class="font-semibold text-sm">Grailed</div>
+                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToFacebook()" id="publish-facebook-crosslist-btn" disabled>
+                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Facebook</div>
-                                    <div class="text-xs opacity-90">Auto</div>
+                                    <div class="font-semibold text-sm">Facebook</div>
+                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToWhatnot()" id="publish-whatnot-crosslist-btn" disabled>
+                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Whatnot</div>
-                                    <div class="text-xs opacity-90">Auto</div>
+                                    <div class="font-semibold text-sm">Whatnot</div>
+                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToShopify()" id="publish-shopify-crosslist-btn" disabled>
+                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Shopify</div>
-                                    <div class="text-xs opacity-90">API</div>
+                                    <div class="font-semibold text-sm">Shopify</div>
+                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
                         </div>
