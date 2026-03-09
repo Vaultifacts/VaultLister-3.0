@@ -11,6 +11,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { logger } from '../../shared/logger.js';
 import { auditLog } from './platformAuditLog.js';
+import { resolveImageFiles, cleanupTempImages } from './imageUploadHelper.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '../../../../');
@@ -40,13 +41,25 @@ export async function publishListingToPoshmark(shop, listing, inventory) {
     const brand       = inventory.brand || 'Other';
     const originalPrice = String(Math.max(price, parseFloat(inventory.cost_price || 0) || price * 1.5).toFixed(2));
 
-    logger.info('[Poshmark Publish] Spawning bot subprocess');
+    // Resolve photos — Poshmark requires real item photos; placeholder/thumbnail images get moderated
+    const { files: photoFiles, tempFiles } = await resolveImageFiles(inventory.images, 4);
+    if (photoFiles.length === 0) {
+        throw new Error('Cannot publish to Poshmark: no real item photos attached. Upload photos to this inventory item first.');
+    }
+
+    // Category — use inventory/listing category; bot defaults to Men>Tops if not set
+    const category = listing.category || inventory.category || null;
+
+    logger.info('[Poshmark Publish] Spawning bot subprocess', { photoCount: photoFiles.length, category });
 
     const payload = JSON.stringify({
         username, password, title, description, brand,
         price: price.toFixed(2),
         originalPrice,
-        listingId: listing.id
+        listingId: listing.id,
+        photoPath: photoFiles[0],   // primary photo; bot handles single-photo upload
+        category: category || undefined,
+        size: inventory.size || undefined
     });
 
     return new Promise((resolve, reject) => {
@@ -74,6 +87,7 @@ export async function publishListingToPoshmark(shop, listing, inventory) {
 
         child.on('close', (code) => {
             clearTimeout(timer);
+            cleanupTempImages(tempFiles);
             if (stderr) {
                 stderr.split('\n').filter(l => l.includes('ERROR')).forEach(l => logger.error(l));
             }
@@ -84,12 +98,13 @@ export async function publishListingToPoshmark(shop, listing, inventory) {
                 return reject(new Error('Bot produced invalid output: ' + stdout.slice(0, 200)));
             }
             if (result.success) {
-                // Extract a listingId from the URL
+                if (result.warning) logger.warn('[Poshmark Publish] ' + result.warning);
                 const urlMatch = result.listingUrl?.match(/\/listing\/[^/]*[-_]([a-f0-9]{24})(?:[/?]|$)/)
                               || result.listingUrl?.match(/\/listing\/([^/?]+)/);
                 resolve({
                     listingId: urlMatch ? urlMatch[1] : `pm-${Date.now()}`,
-                    listingUrl: result.listingUrl
+                    listingUrl: result.listingUrl,
+                    warning: result.warning
                 });
             } else {
                 reject(new Error(result.error || 'Poshmark publish failed'));

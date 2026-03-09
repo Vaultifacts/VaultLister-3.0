@@ -107,12 +107,12 @@ async function main() {
             await page.waitForTimeout(randomDelay(500, 1000));
         }
 
-        // Step 1b: Upload photo (required) — set file input directly
-        // Default to the first available thumbnail if no path provided
-        const defaultPhoto = join(ROOT_DIR, 'public', 'uploads', 'images', 'thumbnails',
-            '5507117d-6fab-4f0f-a847-87d66adbfe01', 'c519c4737f9c257354d9db742a741b00_thumb.png');
-        const resolvedPhoto = (photoPath && existsSync(photoPath)) ? photoPath
-                            : (existsSync(defaultPhoto) ? defaultPhoto : null);
+        // Step 1b: Upload photo (required) — must be a real item photo, not a placeholder
+        // Poshmark moderators remove listings with placeholder/stock images
+        const resolvedPhoto = (photoPath && existsSync(photoPath)) ? photoPath : null;
+        if (!resolvedPhoto) {
+            throw new Error('No valid photo found at: ' + (photoPath || '[none provided]') + '. A real item photo is required to publish to Poshmark.');
+        }
         if (resolvedPhoto) {
             const fileInput = page.locator('#img-file-input, input[name="img-file-input"]').first();
             await fileInput.setInputFiles(resolvedPhoto);
@@ -183,7 +183,8 @@ async function main() {
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.waitForTimeout(500);
 
-        const catParts = (category || 'Men>Jackets & Coats').split('>').map(s => s.trim());
+        if (!category) process.stderr.write('[bot] WARN: No category provided — defaulting to Men>Tops. Set inventory.category for accurate listing.\n');
+        const catParts = (category || 'Men>Tops').split('>').map(s => s.trim());
         process.stderr.write('[bot] Selecting category: ' + JSON.stringify(catParts) + '\n');
 
         // Poshmark category picker is HIERARCHICAL within ONE dropdown:
@@ -491,7 +492,6 @@ async function main() {
 
         if (finalUrl.includes('/create-listing')) {
             await page.screenshot({ path: join(ROOT_DIR, 'logs', 'poshmark-submit-debug.png') }).catch(() => {});
-            // Only capture VISIBLE error messages (offsetHeight > 0 means rendered/shown)
             const errors = await page.$$eval(
                 '[class*="error"], [class*="alert"]',
                 els => els.filter(e => e.offsetHeight > 0 && e.textContent.trim()).map(e => e.textContent.trim())
@@ -499,8 +499,46 @@ async function main() {
             throw new Error('Submission failed: ' + (errors.join('; ') || 'still on create-listing. Check logs/poshmark-submit-debug.png'));
         }
 
-        auditLog('publish_success', { listingId, listingUrl: finalUrl });
-        process.stdout.write(JSON.stringify({ success: true, listingUrl: finalUrl }) + '\n');
+        // Post-publish verification: navigate to closet and confirm the listing appears
+        // This catches silent failures where Poshmark redirects away but doesn't create the listing
+        process.stderr.write('[bot] Verifying listing appeared in closet...\n');
+        await page.waitForTimeout(randomDelay(3000, 5000));
+        await page.goto(finalUrl.includes('/closet/') ? finalUrl : BASE_URL + '/closet/' + (process.env.POSHMARK_USERNAME || 'me'),
+            { waitUntil: 'domcontentloaded', timeout: 20000 });
+        await page.waitForTimeout(randomDelay(2000, 3000));
+
+        // Look for the listing by title in the closet
+        const listingFound = await page.evaluate((searchTitle) => {
+            const titleNorm = searchTitle.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 20);
+            // Poshmark listing cards use various selectors depending on version
+            const cards = [...document.querySelectorAll(
+                '[data-et="listing_thumbnail"], .tile, [class*="listing-card"], [class*="card__title"], .tc--b'
+            )];
+            return cards.some(el => {
+                const t = (el.textContent || '').toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 20);
+                return t && titleNorm && t.includes(titleNorm.substring(0, 10));
+            });
+        }, title);
+
+        // Also get listing URL from the first card link if available
+        const listingUrl = await page.evaluate((searchTitle) => {
+            const titleNorm = searchTitle.toLowerCase().substring(0, 15);
+            const links = [...document.querySelectorAll('a[href*="/listing/"]')];
+            const match = links.find(a => a.textContent?.toLowerCase().includes(titleNorm.substring(0, 8)));
+            return match ? match.href : null;
+        }, title) || finalUrl;
+
+        if (!listingFound) {
+            await page.screenshot({ path: join(ROOT_DIR, 'logs', 'poshmark-verify-debug.png') }).catch(() => {});
+            process.stderr.write('[bot] WARN: Listing not found in closet after submit — may be pending moderation or silent failure. Check logs/poshmark-verify-debug.png\n');
+            // Still report the URL but flag the warning
+            auditLog('publish_unverified', { listingId, listingUrl, note: 'listing not visible in closet post-submit' });
+            process.stdout.write(JSON.stringify({ success: true, listingUrl, warning: 'Listing not visible in closet — may be pending moderation' }) + '\n');
+        } else {
+            process.stderr.write('[bot] Listing verified in closet: ' + listingUrl + '\n');
+            auditLog('publish_success', { listingId, listingUrl });
+            process.stdout.write(JSON.stringify({ success: true, listingUrl }) + '\n');
+        }
         process.exit(0);
 
     } catch (err) {
