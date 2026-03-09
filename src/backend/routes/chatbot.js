@@ -31,7 +31,7 @@ export async function chatbotRouter(ctx) {
 
             // Add system welcome message
             const welcomeMessageId = `msg_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
-            const welcomeMessage = `Hi! 👋 I'm your VaultLister assistant. I can help you with:
+            const welcomeMessage = `Hi! 👋 I'm Vault Buddy, your AI assistant built into VaultLister. I can help you with:
 
 • Inventory management & organization
 • Cross-listing to multiple platforms

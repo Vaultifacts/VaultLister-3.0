@@ -185,7 +185,10 @@ const CANNED_RESPONSES = {
 function getUserStats(userId) {
     try {
         const inv = query.get(
-            `SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND deleted_at IS NULL`,
+            `SELECT COUNT(*) as total,
+                    SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+                    SUM(CASE WHEN status = 'sold' THEN 1 ELSE 0 END) as sold
+             FROM inventory WHERE user_id = ? AND deleted_at IS NULL`,
             [userId]
         );
         const sales = query.get(
@@ -200,7 +203,9 @@ function getUserStats(userId) {
             [userId]
         );
         const lines = [];
-        if (inv?.count) lines.push(`Inventory: ${inv.count} items`);
+        if (inv?.total) {
+            lines.push(`Inventory: ${inv.total} items total (${inv.active || 0} active, ${inv.sold || 0} sold)`);
+        }
         if (sales?.count) lines.push(`Last 30 days: ${sales.count} sales, $${sales.profit} profit`);
         if (topPlatform?.platform) lines.push(`Top platform: ${topPlatform.platform} (${topPlatform.c} listings)`);
         return lines.length ? lines.join(' | ') : null;
@@ -228,7 +233,7 @@ async function getClaudeResponse(messages, userContext) {
 
     try {
         const response = await anthropic.messages.create({
-            model: 'claude-haiku-4-5-20251001',
+            model: 'claude-sonnet-4-6',
             max_tokens: 512,
             system: systemPrompt,
             messages: claudeMessages
