@@ -159,7 +159,7 @@ export async function teamsRouter(ctx) {
 
     // GET /api/teams/:id - Get team details
     const getTeamMatch = path.match(/^\/([a-f0-9-]+)$/i);
-    if (method === 'GET' && getTeamMatch && !path.includes('/')) {
+    if (method === 'GET' && getTeamMatch) {
         try {
             const teamId = getTeamMatch[1];
 
@@ -189,7 +189,7 @@ export async function teamsRouter(ctx) {
 
             // Get members
             const members = query.all(`
-                SELECT tm.*, u.email, u.name as user_name
+                SELECT tm.*, u.email, u.full_name as user_name
                 FROM team_members tm
                 LEFT JOIN users u ON tm.user_id = u.id
                 WHERE tm.team_id = ? AND tm.status = 'active'
@@ -291,7 +291,7 @@ export async function teamsRouter(ctx) {
 
     // DELETE /api/teams/:id - Delete team
     const deleteTeamMatch = path.match(/^\/([a-f0-9-]+)$/i);
-    if (method === 'DELETE' && deleteTeamMatch && !path.includes('/')) {
+    if (method === 'DELETE' && deleteTeamMatch && !path.slice(1).includes('/')) {
         try {
             const teamId = deleteTeamMatch[1];
 
@@ -679,7 +679,7 @@ export async function teamsRouter(ctx) {
             if (suspendedCheckActivity) return suspendedCheckActivity;
 
             const activities = query.all(`
-                SELECT tal.*, u.name as user_name, u.email as user_email
+                SELECT tal.*, u.full_name as user_name, u.email as user_email
                 FROM team_activity_log tal
                 LEFT JOIN users u ON tal.user_id = u.id
                 WHERE tal.team_id = ?
