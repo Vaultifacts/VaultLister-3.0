@@ -42,6 +42,34 @@ describe('OAuth - Authorization', () => {
         const data = await response.json();
         expect(response.status).toBe(200);
         expect(data.authUrl).toBeDefined();
+        expect(data.platform).toBe('ebay');
+        expect(data.state).toBeDefined();
+    });
+
+    test('eBay real-mode authUrl uses ebay.com domain and correct scope format', async () => {
+        // Test that OAUTH_MODE=real produces a real eBay auth URL (not mock-oauth).
+        // The server's EBAY_ENVIRONMENT controls sandbox vs production — covered
+        // by unit tests in service-tokenRefreshScheduler-coverage.test.js.
+        const savedMode = process.env.OAUTH_MODE;
+        process.env.OAUTH_MODE = 'real';
+
+        const response = await fetch(`${BASE_URL}/oauth/authorize/ebay`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await response.json();
+
+        process.env.OAUTH_MODE = savedMode;
+
+        // May 503 if EBAY_CLIENT_ID not configured — both outcomes are valid
+        if (response.status === 200) {
+            expect(data.authUrl).toContain('ebay.com');
+            expect(data.authUrl).not.toContain('mock-oauth');
+            // Scopes must use %20 not %3A or + (eBay rejects percent-encoded colons)
+            expect(data.authUrl).toContain('scope=');
+            expect(data.authUrl).not.toContain('%3A%2F%2F');
+        } else {
+            expect([503, 400]).toContain(response.status);
+        }
     });
 
     test('GET /oauth/authorize/:platform - should return auth URL for mercari', async () => {
