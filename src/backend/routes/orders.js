@@ -5,6 +5,7 @@ import { query } from '../db/database.js';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../shared/logger.js';
 import { parsePagination } from '../shared/helpers.js';
+import { syncEbayShop } from '../services/platformSync/ebaySync.js';
 
 const ALLOWED_ORDER_FIELDS = new Set(['priority', 'priority_note']);
 const ALLOWED_RETURN_FIELDS = new Set(['return_status', 'return_tracking']);
@@ -665,31 +666,34 @@ export async function ordersRouter(ctx) {
         const platform = path.split('/')[2];
 
         try {
-            // Simulate syncing with the specific platform
-            const mockNewOrders = secureRandomInt(5);
-
-            for (let i = 0; i < mockNewOrders; i++) {
-                const orderId = uuidv4();
-                query.run(`
-                    INSERT INTO orders (id, user_id, platform, order_number, buyer_username, item_title, sale_price, status, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
-                `, [
-                    orderId,
-                    user.id,
-                    platform,
-                    'ORD-' + Date.now() + '-' + i,
-                    'Buyer' + secureRandomInt(1000),
-                    platform.charAt(0).toUpperCase() + platform.slice(1) + ' Item ' + secureRandomInt(100),
-                    (secureRandomFloat() * 100 + 10).toFixed(2)
-                ]);
+            if (platform === 'ebay') {
+                const shop = query.get(
+                    "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = 1",
+                    [user.id]
+                );
+                if (!shop) {
+                    return { status: 400, data: { error: 'No connected eBay shop. Connect eBay in Settings → My Shops first.' } };
+                }
+                const result = await syncEbayShop(shop);
+                return {
+                    status: 200,
+                    data: {
+                        message: `eBay sync complete`,
+                        platform: 'ebay',
+                        newOrders: result.orders.created,
+                        listings: result.listings,
+                        orders: result.orders
+                    }
+                };
             }
 
+            // Other platforms: not yet integrated
             return {
                 status: 200,
                 data: {
-                    message: `Synced ${mockNewOrders} orders from ${platform}`,
-                    platform: platform,
-                    newOrders: mockNewOrders
+                    message: `${platform} order sync not yet integrated`,
+                    platform,
+                    newOrders: 0
                 }
             };
         } catch (error) {

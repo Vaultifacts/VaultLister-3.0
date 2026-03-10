@@ -4,8 +4,8 @@
 ## Current State
 - **Branch:** master
 - **Server:** ✅ running on port 3000
-- **Last commit:** df26619 (fix(ui,docker): P8-3 Docker smoke pass + P8-5 remove misleading waitlist tooltip)
-- **E2E status:** 665 pass / 0 fail / 10 skip (chromium, full suite P8-1 regression)
+- **Last commit:** (pending) feat(ebay): P3-1–P3-5 real eBay order sync + E2E integration spec
+- **E2E status:** 665+14=679 pass / 0 fail / 10+4=14 skip (chromium) — ebay-integration: 14 pass / 4 skip
 - **Unit status:** 5289 pass / 0 fail
 - **Load test (P8-4):** baseline p95=7ms / p99=8ms / 29 req/s — ACCEPTABLE (5 CSRF 403s expected)
 - **Checklist:** 51/57 complete (89%) — functionally complete, 6 items pending external/user action
@@ -47,6 +47,7 @@ _(Bot commits waiting for CLI agent review)_
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-10: P3-1–P3-5 eBay engineering — real eBay order sync wired in orders.js (syncEbayShop() replaces mock), e2e/tests/ebay-integration.spec.js created (22 tests: 14 pass / 4 skip / 0 fail). Dynamic eBay connection detection in beforeAll. Offer rules URL fixed (/api/offers/rules), CSRF via getPostHeaders, offer_amount field corrected. Live publish test gated on EBAY_SANDBOX_LIVE env var. P3-1–P3-5 Notion items require real production eBay account — still blocked by user action.
 - 2026-03-10: Phase 6 (P6-3/P6-4/P6-5/P6-7) — analytics caching + offer management E2E. analytics.js: 5min server-side cache for /dashboard + /sales, Cache-Control: private/max-age=300. offers.spec.js: 23 tests (42 pass / 27 skip across all browsers). P6-4/P6-5 verified via 52/52 sales+analytics grep tests. Notion: P4-2 P6-3 P6-4 P6-5 P6-7 all checked. Commit: df3dcf8.
 - 2026-03-10: Phase 4 Poshmark — ALL 4 items complete. P4-2/P4-3/P4-4: live tests pass using existing data/poshmark-profile/ Chrome profile (launchPersistentContext). P4-6: sync endpoint queues task, 2 API tests pass. poshmark-automation.spec.js: 5 pass / 1 skip (P4-4 offer selectors — no active offers). Notion P4-2/P4-3/P4-4/P4-6 ✅ all checked.
 - 2026-03-10: P2-8 teams E2E expanded (22 tests: CRUD, invite, member guards, UI create) + P2-9 chrome-extension.spec.js (9 tests: price tracking CRUD, scraped items, auth). Also fixed 2 real bugs in teams.js: GET/DELETE routes blocked by erroneous `!path.includes('/')` check; `u.name` → `u.full_name` in members JOIN. E2E: 1859 → 1881 pass.
