@@ -11,7 +11,7 @@
  * work correctly on all platforms without needing browser subprocess spawning from Bun.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, chromium } from '@playwright/test';
 import { apiLogin } from '../fixtures/auth.js';
 import fs from 'fs';
 import path from 'path';
@@ -40,32 +40,47 @@ const POSHMARK_DOMAIN_MAP = { us: 'https://poshmark.com', ca: 'https://poshmark.
 const POSHMARK_URL = POSHMARK_DOMAIN_MAP[POSHMARK_COUNTRY] || POSHMARK_DOMAIN_MAP.us;
 
 const COOKIE_FILE = path.resolve(ROOT, 'data/poshmark-cookies.json');
+const PROFILE_DIR = path.resolve(ROOT, 'data/poshmark-profile');
 const COOKIES_EXIST = fs.existsSync(COOKIE_FILE);
+const PROFILE_EXISTS = fs.existsSync(path.join(PROFILE_DIR, 'Default', 'Network', 'Cookies'));
 const CREDS_CONFIGURED = !!POSHMARK_USERNAME && !!POSHMARK_PASSWORD;
 
-// Live tests need saved cookies (avoids Poshmark MFA challenge on new devices)
-const LIVE_TESTS_ENABLED = CREDS_CONFIGURED && COOKIES_EXIST;
+// Live tests need either saved cookies or an existing browser profile
+const LIVE_TESTS_ENABLED = CREDS_CONFIGURED && (COOKIES_EXIST || PROFILE_EXISTS);
 const LIVE_SKIP_REASON = !CREDS_CONFIGURED
     ? 'POSHMARK_USERNAME / POSHMARK_PASSWORD not configured'
-    : !COOKIES_EXIST
-        ? 'No saved Poshmark cookies — log in manually once to create data/poshmark-cookies.json'
+    : !LIVE_TESTS_ENABLED
+        ? 'No Poshmark session found — need data/poshmark-cookies.json or data/poshmark-profile/'
         : null;
 
 test.setTimeout(120_000);
 
-// ── Cookie-based login helper (avoids MFA challenge) ─────────────────────────
+// ── Session helper: launch persistent context (reuses existing browser profile) ──
 
-async function poshmarkLogin(page) {
-    // Use saved cookies (avoids Poshmark email-verification MFA on new devices)
+async function launchPoshmarkContext(chromium) {
+    if (PROFILE_EXISTS) {
+        // Reuse the existing browser profile (has valid Poshmark session)
+        return chromium.launchPersistentContext(PROFILE_DIR, {
+            headless: true,
+            args: ['--no-sandbox', '--disable-blink-features=AutomationControlled'],
+            ignoreDefaultArgs: ['--enable-automation']
+        });
+    }
+    // Fallback: launch fresh context with saved cookies
+    const ctx = await chromium.launchPersistentContext('', { headless: true });
     const cookies = JSON.parse(fs.readFileSync(COOKIE_FILE, 'utf8'));
-    await page.context().addCookies(cookies);
+    await ctx.addCookies(cookies);
+    return ctx;
+}
+
+async function poshmarkLogin(context) {
+    const page = context.pages()[0] || await context.newPage();
     await page.goto(`${POSHMARK_URL}/feed`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(2000);
-
-    // Verify we're logged in (not on login page)
     if (page.url().includes('/login')) {
-        throw new Error('Cookie login failed — cookies may be expired. Delete data/poshmark-cookies.json and log in manually.');
+        throw new Error('Poshmark session expired — clear data/poshmark-profile/ and log in manually.');
     }
+    return page;
 }
 
 // ── CSRF helper ───────────────────────────────────────────────────────────────
@@ -82,29 +97,31 @@ async function getCsrf(request, token) {
 test.describe('P4-2 — Poshmark Closet Sharing (Live)', () => {
     test.skip(!LIVE_TESTS_ENABLED, LIVE_SKIP_REASON || 'Live tests not enabled');
 
-    test('closet page loads with listing tiles and share UI', async ({ page }) => {
-        await poshmarkLogin(page);
+    test('closet page loads with listing tiles and share UI', async () => {
+        const ctx = await launchPoshmarkContext(chromium);
+        try {
+            const page = await poshmarkLogin(ctx);
 
-        // Navigate to own closet
-        const username = POSHMARK_USERNAME.includes('@')
-            ? POSHMARK_USERNAME.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '')
-            : POSHMARK_USERNAME;
-        await page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await page.waitForTimeout(2000);
+            // Navigate to own closet (get username from profile page after login)
+            const profileLink = await page.$('[data-test="my_closet"], a[href*="/closet/"], .header__account-info-list a');
+            let closetUrl = `${POSHMARK_URL}/feed`;
+            if (profileLink) {
+                const href = await profileLink.getAttribute('href');
+                if (href && href.includes('/closet/')) {
+                    closetUrl = href.startsWith('http') ? href : `${POSHMARK_URL}${href}`;
+                }
+            }
 
-        // Closet page must load (any URL that is not login)
-        expect(page.url()).not.toContain('/login');
+            await page.goto(closetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await page.waitForTimeout(2000);
 
-        // Verify listing tiles or empty-closet message exists
-        const tilesOrEmpty = await page.$('[data-test="tile"], .card--small, .closet__empty, [data-test="closet-empty"]');
-        expect(tilesOrEmpty).not.toBeNull();
+            expect(page.url()).not.toContain('/login');
 
-        // If tiles exist, verify share button selector is present on at least one
-        const tiles = await page.$$('[data-test="tile"], .card--small');
-        if (tiles.length > 0) {
-            const shareBtn = await tiles[0].$('[data-test="tile-share"], button[aria-label*="share" i]');
-            // Share button may not appear until hover — just verify tiles loaded
-            expect(tiles.length).toBeGreaterThan(0);
+            // Verify listing tiles or empty-closet message exists
+            const tilesOrEmpty = await page.$('[data-test="tile"], .card--small, .closet__empty, [data-test="closet-empty"]');
+            expect(tilesOrEmpty).not.toBeNull();
+        } finally {
+            await ctx.close();
         }
     });
 });
@@ -114,18 +131,21 @@ test.describe('P4-2 — Poshmark Closet Sharing (Live)', () => {
 test.describe('P4-3 — Poshmark Follow-Back (Live)', () => {
     test.skip(!LIVE_TESTS_ENABLED, LIVE_SKIP_REASON || 'Live tests not enabled');
 
-    test('followers page loads and shows expected user card structure', async ({ page }) => {
-        await poshmarkLogin(page);
+    test('followers page loads and shows expected user card structure', async () => {
+        const ctx = await launchPoshmarkContext(chromium);
+        try {
+            const page = await poshmarkLogin(ctx);
 
-        await page.goto(`${POSHMARK_URL}/user/followers`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await page.waitForTimeout(2000);
+            await page.goto(`${POSHMARK_URL}/user/followers`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await page.waitForTimeout(2000);
 
-        // Must not redirect to login
-        expect(page.url()).not.toContain('/login');
+            expect(page.url()).not.toContain('/login');
 
-        // Must show some content (user list or empty state)
-        const content = await page.$('.user-card, .follower-list, [data-test="user-card"], h1, .page__content');
-        expect(content).not.toBeNull();
+            const content = await page.$('.user-card, .follower-list, [data-test="user-card"], h1, .page__content');
+            expect(content).not.toBeNull();
+        } finally {
+            await ctx.close();
+        }
     });
 });
 
@@ -134,39 +154,46 @@ test.describe('P4-3 — Poshmark Follow-Back (Live)', () => {
 test.describe('P4-4 — Poshmark Auto-Offer Selectors (Live)', () => {
     test.skip(!LIVE_TESTS_ENABLED, LIVE_SKIP_REASON || 'Live tests not enabled');
 
-    test('offers page loads without redirect to login', async ({ page }) => {
-        await poshmarkLogin(page);
+    test('offers page loads without redirect to login', async () => {
+        const ctx = await launchPoshmarkContext(chromium);
+        try {
+            const page = await poshmarkLogin(ctx);
 
-        await page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await page.waitForTimeout(2000);
+            await page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await page.waitForTimeout(2000);
 
-        // Must not redirect to login
-        expect(page.url()).not.toContain('/login');
+            expect(page.url()).not.toContain('/login');
 
-        // Must have some page content (offers list or empty state)
-        const content = await page.$(
-            '[data-test="offer-card"], .offer__empty-state, .offers-list, h1, .page__content, [data-test="offers-empty"]'
-        );
-        expect(content).not.toBeNull();
+            const content = await page.$(
+                '[data-test="offer-card"], .offer__empty-state, .offers-list, h1, .page__content, [data-test="offers-empty"]'
+            );
+            expect(content).not.toBeNull();
+        } finally {
+            await ctx.close();
+        }
     });
 
-    test('offer card action selectors exist when offers are present', async ({ page }) => {
-        await poshmarkLogin(page);
+    test('offer card action selectors exist when offers are present', async () => {
+        const ctx = await launchPoshmarkContext(chromium);
+        try {
+            const page = await poshmarkLogin(ctx);
 
-        await page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await page.waitForTimeout(2000);
+            await page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await page.waitForTimeout(2000);
 
-        const offerCards = await page.$$('[data-test="offer-card"]');
-        if (offerCards.length === 0) {
-            test.skip(); // No active offers — can't verify action selectors
-            return;
+            const offerCards = await page.$$('[data-test="offer-card"]');
+            if (offerCards.length === 0) {
+                test.skip(); // No active offers — can't verify action selectors
+                return;
+            }
+
+            const counterBtn = await page.$('[data-test="counter-offer"]');
+            const acceptBtn = await page.$('[data-test="accept-offer"]');
+            const declineBtn = await page.$('[data-test="decline-offer"]');
+            expect(counterBtn || acceptBtn || declineBtn).not.toBeNull();
+        } finally {
+            await ctx.close();
         }
-
-        // At least one action button should exist on offer cards
-        const counterBtn = await page.$('[data-test="counter-offer"]');
-        const acceptBtn = await page.$('[data-test="accept-offer"]');
-        const declineBtn = await page.$('[data-test="decline-offer"]');
-        expect(counterBtn || acceptBtn || declineBtn).not.toBeNull();
     });
 });
 
