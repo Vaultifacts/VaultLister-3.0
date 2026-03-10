@@ -1431,5 +1431,28 @@ export async function automationsRouter(ctx) {
         }
     }
 
+    // POST /api/automations/poshmark/sync - Queue a Poshmark inventory sync task
+    if (method === 'POST' && path === '/poshmark/sync') {
+        const poshmarkUsername = process.env.POSHMARK_USERNAME;
+        if (!poshmarkUsername) {
+            return { status: 400, data: { error: 'POSHMARK_USERNAME not configured in .env' } };
+        }
+        const maxItems = Math.min(parseInt(body?.maxItems) || 100, 500);
+
+        try {
+            const taskId = uuidv4();
+            query.run(
+                `INSERT INTO task_queue (id, type, payload, priority, max_attempts)
+                 VALUES (?, 'poshmark_inventory_sync', ?, 1, 3)`,
+                [taskId, JSON.stringify({ userId: user.id, username: poshmarkUsername, maxItems })]
+            );
+            logger.info('[Automations] Poshmark sync queued', user?.id, { taskId, maxItems });
+            return { status: 202, data: { taskId, status: 'queued', message: 'Inventory sync task queued' } };
+        } catch (error) {
+            logger.error('[Automations] Poshmark sync queue failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to queue sync task: ' + (error?.message || 'Unknown error') } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

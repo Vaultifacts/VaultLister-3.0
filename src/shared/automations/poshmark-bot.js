@@ -915,6 +915,38 @@ export class PoshmarkBot {
     }
 
     /**
+     * Scrape closet listings for inventory sync.
+     * Returns an array of { title, price, listingUrl, imageUrl } objects.
+     */
+    async getClosetListings(username, maxItems = 200) {
+        logger.info(`[PoshmarkBot] Fetching closet listings for @${username}, max ${maxItems}`);
+
+        try {
+            await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(randomDelay(2000, 3500));
+
+            const listings = await this.page.$$eval(
+                '[data-test="tile"], .card--small',
+                (cards, max) => cards.slice(0, max).map(card => ({
+                    title: card.querySelector('[data-test="tile-title"], .title__condition-size, .card__title')?.textContent?.trim() || '',
+                    price: card.querySelector('[data-test="tile-price"], .price, .listing-price')?.textContent?.trim() || '',
+                    listingUrl: card.querySelector('a[href*="/listing/"]')?.href || card.querySelector('a')?.href || '',
+                    imageUrl: card.querySelector('img')?.src || ''
+                })),
+                maxItems
+            );
+
+            writeAuditLog('get_closet_listings', { username, count: listings.length });
+            logger.info(`[PoshmarkBot] Found ${listings.length} closet listings`);
+            return listings;
+        } catch (error) {
+            logger.error('[PoshmarkBot] getClosetListings error', error);
+            this.stats.errors++;
+            throw error;
+        }
+    }
+
+    /**
      * Get stats
      */
     getStats() {

@@ -4,8 +4,8 @@
 ## Current State
 - **Branch:** master
 - **Server:** ✅ running on port 3000
-- **Last commit:** TBD (P2-8/P2-9 teams + chrome-extension E2E)
-- **E2E status:** 1881 pass / 0 fail (was 1859; +22 teams, +9 chrome-extension)
+- **Last commit:** (pending — Phase 4 P4-6 + poshmark-automation spec)
+- **E2E status:** 1881+6 pass / 0 fail (poshmark-automation: 2 pass + 4 skip; P4-2/3/4 skip until data/poshmark-cookies.json is created)
 - **Unit status:** 5289 pass / 0 fail
 - **As of:** 2026-03-10
 
@@ -33,6 +33,7 @@ _(Bot commits waiting for CLI agent review)_
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-10: Phase 4 Poshmark — P4-6 sync endpoint (POST /api/automations/poshmark/sync → queues task_queue entry, returns 202+taskId); PoshmarkBot.getClosetListings() method added; poshmark-automation.spec.js (6 tests: 2 pass P4-6, 4 skip P4-2/3/4 pending data/poshmark-cookies.json); P4-2/P4-3/P4-4 use cookie-based login (avoids Poshmark MFA); Notion P4-6 ✅ checked. P4-2/P4-3/P4-4 blocked on manual cookie setup.
 - 2026-03-10: P2-8 teams E2E expanded (22 tests: CRUD, invite, member guards, UI create) + P2-9 chrome-extension.spec.js (9 tests: price tracking CRUD, scraped items, auth). Also fixed 2 real bugs in teams.js: GET/DELETE routes blocked by erroneous `!path.includes('/')` check; `u.name` → `u.full_name` in members JOIN. E2E: 1859 → 1881 pass.
 - 2026-03-10: Unit test failures resolved — 5284/5 → 5289/0. Root cause: tests ran against dev server (port 3000, CSRF enabled) instead of test server (port 3100, NODE_ENV=test). Also fixed: demo-login leaking mfa_secret/mfa_backup_codes (null vs undefined); AI/chatbot tests added AbortController + 25s timeout to skip gracefully when Claude API is slow. Commit 1297a72.
 - 2026-03-10: E2E suite fixed — 33 failures → 0 failures (1859/1859 pass). Commits 6b5ec6a + 9107b2c. Fixed: CSP filter (9), Remember Me sessionStorage (3), RUM CSRF skip (3), CSV import handler (3), WebKit P0-1/E1/E5/WS-P1-2/modals-P1-6/comprehensive-audit timeout (6), teams + transactions (already committed).
