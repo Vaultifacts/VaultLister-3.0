@@ -22,6 +22,9 @@
 
 ## Behaviour Rules
 - **Never assume or guess** — always verify with a tool (Read, Grep, Bash) before stating something is true. This includes checklist status, file contents, env values, and test counts. Taking the user's word is fine, but stating facts without verification is not.
+- **Verify before creating tasks** — before marking any task as "remaining" in the Notion checklist, cross-check ALL available evidence: STATUS.md, MEMORY.md, git log, commit messages, audit-log.md, and codebase artifacts. If working code proves a feature exists (e.g. a live published listing proves bot credentials are configured), mark the prerequisite tasks as done. Never create open tasks for things already proven complete by evidence.
+- **Always run long operations in background** — test suite runs (`npx playwright test`, `bun test`), server starts, build scripts, and any operation taking >10s must use `run_in_background: true` on Bash or be launched as a background agent. Never block the main conversation waiting for them.
+- **Update Notion immediately on task completion** — the moment a task's tests pass, PATCH the Notion block to `checked=true` BEFORE making any commit or moving to the next task. Never commit code for a task while its Notion item is still unchecked. Order must be: tests pass → Notion checked → commit. Do not batch Notion updates to the end of a session or wait for the user to ask.
 
 ## Critical Rules
 - Never push to main directly — use feature branches
@@ -171,12 +174,17 @@ Key patterns discovered for Poshmark's Vue.js SPA:
 - Step 5b: price-tracking API end-to-end — requires CSRF token from GET /api/csrf-token, then POST with X-CSRF-Token header
 - Extension POSTs don't include CSRF in dev mode; workaround: test script fetches token separately
 - `high_memory` alert false positive FIXED: `v8.getHeapStatistics().heap_size_limit` replaces `heapTotal` — commit dad6f9e
-- E2E run: 1820 pass / 36 fail (98%) — full 3-browser run, no server crash. 36 pre-existing failures:
-  - Session/Remember Me: remember-me.spec, auth reload, login E4 checkbox
-  - Sidebar collapse: P2-1/P2-2/P2-4 (toggle + persist + collapsed nav)
-  - WS notification badge: P9-3/P10-3 (badge not updating from push)
-  - UI buttons: Listings P1-1 (health/folder/fees), CSV import P1-1, Inventory P2-1, Orders P1-2
-  - Misc: Teams invite button, Guardian dashboard stat cards
+- E2E run: 1826 pass / 33 fail, 1 flaky (98.2%) — updated 2026-03-09 after E-1 session
+- Fixes applied this session: sidebar collapse (P2-1/2/4), notification badge (P9-3/P10-3), P1-1 hero buttons
+- Remaining 33 failures (11 unique × cross-browser): monitoring-routes RUM, forgot-pw CSP (E6), CSV upload (P1-1), inventory CSP (E18), login Remember Me (E4), register CSP (E12), teams invite, transactions split/autocategorize (9/10), webkit-only: login edge cases, modal focus, WS P1-2
+
+## E-1 Email Verification + MFA Setup — COMPLETE (2026-03-09) — commits 478e3b4, 6ba36e8, 465f4b0
+- Email send wired in auth.js register route (IS_TEST_RUNTIME guard); resend-verification route updated
+- MFA setup UI: `/api/security/mfa/setup` → QR + secret rendered; `verifyMFASetup()` → backup codes; `disableMFA()` → password prompt (submitText not confirmText)
+- `#verify-email?token=...` SPA route: GET /api/auth/verify-email validates token, marks used_at; router strips `?` from hash path for route lookup; verifyEmail(success, message) page with 3 states
+- Source files are in src/frontend/core/router.js + src/frontend/init.js (NOT app.js — that's the old monolith)
+- Build: `bun scripts/build-dev-bundle.js` → core-bundle.js (12 source files); app.js is NOT in the bundle
+- Bundle cache: after rebuild+restart, force fresh index.html with `/?v=<newHash>#route`
 
 ## C-2 Image Analyzer — COMPLETE (2026-03-09) — commit bfd8ad8
 - `analyzeImage()` in `src/shared/ai/image-analyzer.js` → `claude-haiku-4-5-20251001` Vision API

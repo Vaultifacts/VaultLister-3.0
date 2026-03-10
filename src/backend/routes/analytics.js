@@ -3,6 +3,33 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { checkTierPermission } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
+import { cacheForUser } from '../middleware/cache.js';
+
+// ── In-memory analytics cache (TTL: 5 min per user per endpoint+params) ──────
+const ANALYTICS_CACHE_TTL_MS = 5 * 60 * 1000;
+const _analyticsCache = new Map();
+
+function _cacheKey(userId, path, params = {}) {
+    return `${userId}:${path}:${JSON.stringify(params)}`;
+}
+
+function _getCached(key) {
+    const entry = _analyticsCache.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiry) { _analyticsCache.delete(key); return null; }
+    return entry.data;
+}
+
+function _setCached(key, data) {
+    _analyticsCache.set(key, { data, expiry: Date.now() + ANALYTICS_CACHE_TTL_MS });
+}
+
+/** Invalidate all cached analytics for a user (call on sales/inventory writes) */
+export function invalidateAnalyticsCache(userId) {
+    for (const key of _analyticsCache.keys()) {
+        if (key.startsWith(`${userId}:`)) _analyticsCache.delete(key);
+    }
+}
 
 export async function analyticsRouter(ctx) {
     const { method, path, query: queryParams, user } = ctx;
@@ -18,9 +45,11 @@ export async function analyticsRouter(ctx) {
     // GET /api/analytics/dashboard - Get dashboard overview
     // GET /api/analytics/stats - Alias for dashboard
     if (method === 'GET' && (path === '/dashboard' || path === '/stats')) {
+        const { period = '30d' } = queryParams;
+        const _ck = _cacheKey(user.id, '/dashboard', { period });
+        const _cached = _getCached(_ck);
+        if (_cached) return { status: 200, data: _cached, cacheControl: cacheForUser(300) };
         try {
-            // Support period filtering for sales stats
-            const { period = '30d' } = queryParams;
 
             const PERIOD_FILTERS = {
                 '7d':  "AND created_at >= datetime('now', '-7 days')",
@@ -104,7 +133,8 @@ export async function analyticsRouter(ctx) {
                 }
             };
 
-            return { status: 200, data: { stats } };
+            _setCached(_ck, { stats });
+            return { status: 200, data: { stats }, cacheControl: cacheForUser(300) };
         } catch (error) {
             logger.error('[Analytics] Analytics stats error', user?.id, { detail: error.message });
             return { status: 500, data: { error: 'Failed to fetch analytics stats' } };
@@ -120,6 +150,10 @@ export async function analyticsRouter(ctx) {
         if (!ALLOWED_GROUPBY.includes(groupBy)) {
             return { status: 400, data: { error: 'Invalid groupBy value. Allowed: day, week, month' } };
         }
+
+        const _ck2 = _cacheKey(user.id, '/sales', { period, groupBy });
+        const _cached2 = _getCached(_ck2);
+        if (_cached2) return { status: 200, data: _cached2, cacheControl: cacheForUser(300) };
 
         try {
             const SALES_DATE_FILTERS = {
@@ -176,7 +210,8 @@ export async function analyticsRouter(ctx) {
                 LIMIT 10
             `, [user.id]);
 
-            return { status: 200, data: { salesData, byPlatform, topItems } };
+            _setCached(_ck2, { salesData, byPlatform, topItems });
+            return { status: 200, data: { salesData, byPlatform, topItems }, cacheControl: cacheForUser(300) };
         } catch (error) {
             logger.error('[Analytics] Analytics sales error', user?.id, { detail: error.message });
             return { status: 500, data: { error: 'Failed to fetch sales analytics' } };

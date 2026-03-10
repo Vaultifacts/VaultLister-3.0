@@ -4,7 +4,7 @@
 ## Current State
 - **Branch:** master
 - **Server:** ✅ running on port 3000
-- **Last commit:** (pending P4-2/3/4 live pass)
+- **Last commit:** 200fac1 (fix(e2e): P4-2/P4-3/P4-4 live tests pass via persistent Poshmark Chrome profile)
 - **E2E status:** 1881+6 pass / 0 fail (poshmark-automation.spec.js: 5 pass + 1 skip)
 - **Unit status:** 5289 pass / 0 fail
 - **As of:** 2026-03-10
