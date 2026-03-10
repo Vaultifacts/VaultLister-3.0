@@ -1387,37 +1387,37 @@ Object.assign(pages, {
                                     <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
+                            <button class="btn coming-soon-btn" disabled title="Coming soon">
                                 <div class="text-left">
                                     <div class="font-semibold text-sm">Mercari</div>
                                     <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
+                            <button class="btn coming-soon-btn" disabled title="Coming soon">
                                 <div class="text-left">
                                     <div class="font-semibold text-sm">Depop</div>
                                     <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
+                            <button class="btn coming-soon-btn" disabled title="Coming soon">
                                 <div class="text-left">
                                     <div class="font-semibold text-sm">Grailed</div>
                                     <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
+                            <button class="btn coming-soon-btn" disabled title="Coming soon">
                                 <div class="text-left">
                                     <div class="font-semibold text-sm">Facebook</div>
                                     <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
+                            <button class="btn coming-soon-btn" disabled title="Coming soon">
                                 <div class="text-left">
                                     <div class="font-semibold text-sm">Whatnot</div>
                                     <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon — join the waitlist">
+                            <button class="btn coming-soon-btn" disabled title="Coming soon">
                                 <div class="text-left">
                                     <div class="font-semibold text-sm">Shopify</div>
                                     <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
