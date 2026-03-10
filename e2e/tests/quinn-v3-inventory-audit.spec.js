@@ -956,8 +956,8 @@ test.describe('Quinn v3 > Inventory Page > Batch 5: Stats & Health', () => {
     const cspViolations = [];
     page.on('console', msg => {
       const text = msg.text();
-      if (text.includes('Content Security Policy') || text.includes('Refused to') ||
-          text.includes('blocked by')) {
+      if ((text.includes('Content Security Policy') || text.includes('Refused to') ||
+          text.includes('blocked by')) && !text.includes('blocked by Playwright')) {
         cspViolations.push(text);
       }
     });

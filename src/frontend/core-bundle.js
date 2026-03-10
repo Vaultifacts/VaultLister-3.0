@@ -15164,7 +15164,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '86805efe';
+    const v = '219adf0f';
     const files = [
         '/pages/pages-' + chunkName + '.js?v=' + v,
         '/handlers/handlers-' + chunkName + '.js?v=' + v
@@ -20481,7 +20481,7 @@ const pages = {
 
     login() {
         return `
-            <a href="#main-content" class="skip-nav">Skip to main content</a>
+            <a href="#main-content" class="skip-nav" tabindex="0">Skip to main content</a>
             <div id="main-content" class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%)">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
@@ -20639,7 +20639,7 @@ const pages = {
                             </div>
                             <button type="submit" class="btn btn-primary w-full mb-4">Send Reset Link</button>
                             <div class="text-center">
-                                <a href="#login" class="text-sm" style="color: var(--primary-600);">Back to Sign In</a>
+                                <a href="#login" class="text-sm" style="color: var(--primary-600);" tabindex="0">Back to Sign In</a>
                             </div>
                         </form>
                     </div>
@@ -26160,6 +26160,52 @@ const handlers = {
             btn.textContent = collapsed ? '→' : '←';
         }
         try { localStorage.setItem('vaultlister_sidebar_collapsed', collapsed ? '1' : '0'); } catch(e) {}
+    },
+
+    handleImportFile: function(file) {
+        if (!file) return;
+        modals.close();
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['csv', 'json', 'tsv'].includes(ext)) {
+            toast.error('Unsupported file format. Use CSV, JSON, or TSV.');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                if (ext === 'json') {
+                    const data = JSON.parse(e.target.result);
+                    const items = Array.isArray(data) ? data : (data.inventory || data.items || [data]);
+                    store.setState({ importedData: items, importFileName: file.name });
+                    toast.success('Loaded ' + items.length + ' item(s) from ' + file.name);
+                } else {
+                    const lines = e.target.result.split('\n').filter(function(l) { return l.trim(); });
+                    if (lines.length === 0) {
+                        toast.error('File is empty');
+                        return;
+                    }
+                    const separator = ext === 'tsv' ? '\t' : ',';
+                    const hdrs = lines[0].split(separator).map(function(h) { return h.trim().replace(/^"|"$/g, ''); });
+                    const items = lines.slice(1).map(function(line) {
+                        const values = line.split(separator).map(function(v) { return v.trim().replace(/^"|"$/g, ''); });
+                        const obj = {};
+                        hdrs.forEach(function(h, i) { obj[h] = values[i] || ''; });
+                        return obj;
+                    });
+                    store.setState({ importedData: items, importFileName: file.name });
+                    toast.success('Parsed ' + items.length + ' item(s) from ' + file.name);
+                }
+                router.navigate('inventory');
+            } catch (err) {
+                toast.error('Failed to parse file: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+    },
+
+    handleImportDrop: function(event) {
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (file) handlers.handleImportFile(file);
     },
 };
 

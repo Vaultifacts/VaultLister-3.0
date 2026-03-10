@@ -1384,4 +1384,50 @@ const handlers = {
         }
         try { localStorage.setItem('vaultlister_sidebar_collapsed', collapsed ? '1' : '0'); } catch(e) {}
     },
+
+    handleImportFile: function(file) {
+        if (!file) return;
+        modals.close();
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['csv', 'json', 'tsv'].includes(ext)) {
+            toast.error('Unsupported file format. Use CSV, JSON, or TSV.');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                if (ext === 'json') {
+                    const data = JSON.parse(e.target.result);
+                    const items = Array.isArray(data) ? data : (data.inventory || data.items || [data]);
+                    store.setState({ importedData: items, importFileName: file.name });
+                    toast.success('Loaded ' + items.length + ' item(s) from ' + file.name);
+                } else {
+                    const lines = e.target.result.split('\n').filter(function(l) { return l.trim(); });
+                    if (lines.length === 0) {
+                        toast.error('File is empty');
+                        return;
+                    }
+                    const separator = ext === 'tsv' ? '\t' : ',';
+                    const hdrs = lines[0].split(separator).map(function(h) { return h.trim().replace(/^"|"$/g, ''); });
+                    const items = lines.slice(1).map(function(line) {
+                        const values = line.split(separator).map(function(v) { return v.trim().replace(/^"|"$/g, ''); });
+                        const obj = {};
+                        hdrs.forEach(function(h, i) { obj[h] = values[i] || ''; });
+                        return obj;
+                    });
+                    store.setState({ importedData: items, importFileName: file.name });
+                    toast.success('Parsed ' + items.length + ' item(s) from ' + file.name);
+                }
+                router.navigate('inventory');
+            } catch (err) {
+                toast.error('Failed to parse file: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+    },
+
+    handleImportDrop: function(event) {
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (file) handlers.handleImportFile(file);
+    },
 };

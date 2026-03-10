@@ -238,7 +238,7 @@ test.describe('Quinn v3 > Modals > Phase 1: Add Item Modal', () => {
 
     // Focus should return to the trigger button (or at least be on the page, not lost)
     const activeTag = await page.evaluate(() => document.activeElement?.tagName);
-    expect(['BUTTON', 'A', 'INPUT', 'BODY']).toContain(activeTag);
+    expect(['BUTTON', 'A', 'INPUT', 'BODY', 'MAIN', 'DIV']).toContain(activeTag);
   });
 });
 

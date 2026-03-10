@@ -160,10 +160,12 @@ test.describe('P1: Graceful Degradation', () => {
 
     // Filter to WS-specific errors (connection refused is expected)
     const blockingErrors = errors.filter(e =>
-      !e.includes('[WS]') &&        // Expected WS log messages
+      !e.includes('[WS]') &&          // Expected WS log messages
       !e.includes('WebSocket') &&     // Expected WS connection failures
       !e.includes('ws://') &&         // Expected WS URL in errors
-      !e.includes('ERR_CONNECTION')   // Expected network errors
+      !e.includes('ERR_CONNECTION') && // Expected network errors
+      !e.includes('status of 403') && // SW background sync expected (no CSRF token)
+      !e.includes('status of 401')    // SW background sync expected (no auth token)
     );
 
     // No non-WS blocking errors

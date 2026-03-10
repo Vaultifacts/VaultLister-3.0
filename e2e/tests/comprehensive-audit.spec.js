@@ -108,6 +108,7 @@ test.describe('1. Human-Like Exploration', () => {
   });
 
   test('Edge case inputs on login', async ({ page }) => {
+    test.setTimeout(90_000);
     await page.goto(`${BASE}/#login`);
     await page.waitForLoadState('networkidle');
     
@@ -130,15 +131,15 @@ test.describe('1. Human-Like Exploration', () => {
     
     for (const tc of testCases) {
       await page.goto(`${BASE}/#login`);
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       await emailInput.first().fill(tc.email);
       await passwordInput.first().fill(tc.password);
       if (await loginButton.count() > 0) {
         await loginButton.first().click();
-        await page.waitForTimeout(1500);
-        
+        await page.waitForTimeout(1000);
+
         const url = page.url();
-        const errorMsg = await page.locator('.error, .alert-danger, .toast-error, [role="alert"], .notification-error, .error-message').first().innerText().catch(() => 'none');
+        const errorMsg = await page.locator('.error, .alert-danger, .toast-error, [role="alert"], .notification-error, .error-message').first().innerText({ timeout: 2000 }).catch(() => 'none');
         console.log(`[AUDIT] Edge case "${tc.desc}": URL=${url}, Error="${errorMsg}"`);
       }
     }

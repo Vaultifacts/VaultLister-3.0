@@ -59,7 +59,9 @@ test.describe('Quinn v3 > Login Page > Phase 0: Discovery', () => {
     const realErrors = errors.filter(e =>
       !e.text.includes('favicon') &&
       !e.text.includes('Content Security Policy') &&
-      !e.text.includes('Refused to')
+      !e.text.includes('Refused to') &&
+      !e.text.includes('status of 403') && // SW background sync expected on unauth pages
+      !e.text.includes('status of 401')    // SW background sync expected on unauth pages
     );
     console.log(`Console errors: ${errors.length} total, ${cspWarnings.length} CSP, ${realErrors.length} real`);
     for (const e of realErrors) console.log(`  REAL ERROR: ${e.text.substring(0, 200)}`);
@@ -555,14 +557,14 @@ test.describe('Quinn v3 > Login Page > Phase 1: Batch 2 (Elements 4-6)', () => {
       ls: localStorage.getItem('vaultlister_state'),
       ss: sessionStorage.getItem('vaultlister_state'),
     }));
-    // With Remember Me checked, should be in localStorage
-    const saved = storage.ls ? JSON.parse(storage.ls) : null;
+    // Q18 security fix: tokens are stored in sessionStorage only (not localStorage)
+    const saved = storage.ss ? JSON.parse(storage.ss) : null;
     console.log(`E4 STORAGE: ls=${!!storage.ls}, ss=${!!storage.ss}`);
     expect(saved).toBeTruthy();
     expect(saved.token).toBeTruthy();
     expect(saved.refreshToken).toBeTruthy();
 
-    console.log('E4 VERDICT: EXPLICIT_PASS — checkbox toggles via click/keyboard, Remember Me stores tokens in localStorage');
+    console.log('E4 VERDICT: EXPLICIT_PASS — checkbox toggles via click/keyboard, Remember Me stores tokens in sessionStorage (Q18 security fix)');
   });
 
   // -------------------------------------------------------

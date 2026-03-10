@@ -384,8 +384,8 @@ test.describe('Quinn v3 > Forgot Password > Batch 2: E4-E6', () => {
     const cspViolations = [];
     page.on('console', msg => {
       const text = msg.text();
-      if (text.includes('Content Security Policy') || text.includes('Refused to') ||
-          text.includes('blocked by')) {
+      if ((text.includes('Content Security Policy') || text.includes('Refused to') ||
+          text.includes('blocked by')) && !text.includes('blocked by Playwright')) {
         cspViolations.push(text);
       }
     });

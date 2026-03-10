@@ -3012,7 +3012,7 @@ const pages = {
 
     login() {
         return `
-            <a href="#main-content" class="skip-nav">Skip to main content</a>
+            <a href="#main-content" class="skip-nav" tabindex="0">Skip to main content</a>
             <div id="main-content" class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%)">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
@@ -3170,7 +3170,7 @@ const pages = {
                             </div>
                             <button type="submit" class="btn btn-primary w-full mb-4">Send Reset Link</button>
                             <div class="text-center">
-                                <a href="#login" class="text-sm" style="color: var(--primary-600);">Back to Sign In</a>
+                                <a href="#login" class="text-sm" style="color: var(--primary-600);" tabindex="0">Back to Sign In</a>
                             </div>
                         </form>
                     </div>
