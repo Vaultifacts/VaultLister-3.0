@@ -470,7 +470,7 @@ export async function authRouter(ctx) {
                 VALUES (?, ?, ?, ?, ?, datetime('now', '+7 days'))
             `, [uuidv4(), demoUser.id, refreshToken, 'Demo Auto-Login', ctx.ip || 'unknown']);
 
-            const { password_hash, ...safeUser } = demoUser;
+            const { password_hash, mfa_secret, mfa_backup_codes, ...safeUser } = demoUser;
             return {
                 status: 200,
                 data: { user: safeUser, token, refreshToken },
