@@ -8,13 +8,29 @@ const BASE_URL = `http://localhost:${process.env.PORT || 3000}`;
 
 let headers;
 
+let authToken;
+
 test.beforeAll(async ({ request }) => {
     const loginData = await apiLogin(request);
+    authToken = loginData.token;
     headers = {
         'Authorization': `Bearer ${loginData.token}`,
         'Content-Type': 'application/json'
     };
 });
+
+// Helper to get a fresh CSRF token for POST/PUT/DELETE requests
+async function getPostHeaders(request) {
+    const csrfResp = await request.get(`${BASE_URL}/api/financials/transactions?limit=1`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    const csrfToken = csrfResp.headers()['x-csrf-token'] || '';
+    return {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
+    };
+}
 
 // TRANSACTIONS FEATURES (12 items)
 test.describe('Transactions Features', () => {
@@ -168,12 +184,13 @@ test.describe('Transactions Features', () => {
         const txData = await txResponse.json();
         if (txData.transactions.length > 0) {
             const txId = txData.transactions[0].id;
+            const postHeaders = await getPostHeaders(request);
 
             // Try to split transaction
             const splitResponse = await request.post(
                 `${BASE_URL}/api/financials/transactions/${txId}/split`,
                 {
-                    headers,
+                    headers: postHeaders,
                     data: {
                         splits: [
                             { description: 'Part 1', amount: 100, category: 'Expense' },
@@ -190,9 +207,10 @@ test.describe('Transactions Features', () => {
 
     test('10. Transaction Auto-Categorization Rules', async ({ request }) => {
         // Test auto-categorize endpoint exists
+        const postHeaders = await getPostHeaders(request);
         const response = await request.post(
             `${BASE_URL}/api/financials/auto-categorize`,
-            { headers }
+            { headers: postHeaders }
         );
 
         // 200 if transactions categorized, 400 if no rules exist
