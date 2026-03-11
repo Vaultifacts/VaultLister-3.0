@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 // Poshmark Manual Login Helper
-// Opens a headed Chromium browser using the persistent profile so you can log in
-// manually (including SMS 2FA). The session is saved automatically for future bot runs.
+// Opens a headed Chromium browser, pre-fills your credentials from .env,
+// then waits for you to enter the SMS code. Session saves automatically.
 //
 // Usage: node scripts/poshmark-login.js
-// After running, log in to Poshmark in the browser window that opens, then close the window.
+// Step 1: A browser window opens — your email is already typed.
+// Step 2: Type your password and click Login.
+// Step 3: Enter the SMS code Poshmark texts you.
+// Step 4: Close the window once you see your feed/closet.
 
 import { chromium } from 'playwright';
 import { join, dirname } from 'path';
@@ -14,37 +17,62 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
 const PROFILE_DIR = join(ROOT_DIR, 'data', 'poshmark-profile');
 const BASE_URL = process.env.POSHMARK_COUNTRY === 'ca' ? 'https://poshmark.ca' : 'https://poshmark.com';
+const USERNAME = process.env.POSHMARK_USERNAME || '';
 
-console.log('[poshmark-login] Opening headed browser with persistent profile...');
-console.log('[poshmark-login] Profile dir:', PROFILE_DIR);
-console.log('[poshmark-login] Log in to Poshmark in the browser window, then close it.');
-console.log('[poshmark-login] SMS 2FA will work normally — complete it in the browser.\n');
+console.log('');
+console.log('=== Poshmark Login Helper ===');
+console.log('A browser window is opening. Steps:');
+console.log('  1. Your email/username is pre-filled');
+console.log('  2. Type your password and click Login');
+console.log('  3. Enter the SMS verification code Poshmark texts you');
+console.log('  4. Once you see your feed, close the browser window');
+console.log('  Session will be saved for future bot runs.');
+console.log('');
 
 const context = await chromium.launchPersistentContext(PROFILE_DIR, {
     headless: false,
     slowMo: 0,
-    args: ['--no-sandbox', '--disable-blink-features=AutomationControlled'],
+    args: ['--no-sandbox', '--start-maximized'],
     ignoreDefaultArgs: ['--enable-automation'],
-    viewport: { width: 1280, height: 900 }
+    viewport: null   // use full window size
 });
 
 const page = await context.newPage();
 await page.goto(BASE_URL + '/login', { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(2000);
 
-console.log('[poshmark-login] Waiting for you to log in... (close the browser window when done)');
-
-// Wait until navigated away from /login (successful login) or browser closes
-try {
-    await page.waitForFunction(
-        () => !window.location.pathname.startsWith('/login'),
-        { timeout: 300_000 }  // 5 min timeout
-    );
-    console.log('[poshmark-login] ✅ Login detected! Session saved to:', PROFILE_DIR);
-    console.log('[poshmark-login] Closing in 3 seconds...');
-    await page.waitForTimeout(3000);
-} catch {
-    console.log('[poshmark-login] Timed out or browser closed manually.');
+// Pre-fill email/username if credentials are set in .env
+if (USERNAME) {
+    const usernameSel = 'input[name="login_form[username_email]"], input[placeholder*="Username or Email" i], input[placeholder*="username" i]:not([type="hidden"])';
+    const inputEl = await page.$(usernameSel).catch(() => null);
+    if (inputEl) {
+        await inputEl.fill(USERNAME);
+        console.log('[poshmark-login] Pre-filled username:', USERNAME);
+        // Move focus to password field
+        const pwdEl = await page.$('input[type="password"]').catch(() => null);
+        if (pwdEl) await pwdEl.click();
+    }
 }
 
-await context.close();
-console.log('[poshmark-login] Done. You can now run the Poshmark publish bot.');
+console.log('[poshmark-login] Waiting for you to complete login (5 min timeout)...');
+
+// Wait until navigated away from /login (login complete)
+const success = await page.waitForFunction(
+    () => !window.location.pathname.startsWith('/login'),
+    { timeout: 300_000 }
+).then(() => true).catch(() => false);
+
+if (success) {
+    // Let the session cookies settle
+    await page.waitForTimeout(3000);
+    console.log('');
+    console.log('[poshmark-login] ✅ Login successful! Session saved to:');
+    console.log('   ' + PROFILE_DIR);
+    console.log('[poshmark-login] Closing browser in 3 seconds...');
+    await page.waitForTimeout(3000);
+} else {
+    console.log('[poshmark-login] Timed out waiting for login. Session may not be saved.');
+}
+
+await context.close().catch(() => {});
+console.log('[poshmark-login] Done. The Poshmark bot will now use this session.');
