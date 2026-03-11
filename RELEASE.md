@@ -35,7 +35,7 @@ These features are fully implemented, tested end-to-end, and verified working.
 
 ### Marketplace Automations (Poshmark)
 - Closet sharing bot (share all active listings on a schedule)
-- Auto-offer counter rule: offers ≥ 80% of asking price → auto-counter at 90%
+- Auto-offer rules: configurable accept thresholds (e.g., auto-accept offers ≥ 80% or ≥ 90% of asking price)
 - Follow-back automation
 - Per-action audit log at `data/automation-audit.log`
 - CAPTCHA detection stops the bot immediately
@@ -57,11 +57,11 @@ These features are fully implemented, tested end-to-end, and verified working.
 - 5-minute server-side cache (Cache-Control: private/max-age=300)
 - Inventory turnover and days-of-supply forecasts
 
-### AI Tools (powered by Claude)
+### AI Tools
 - **Listing Generator** — Claude Haiku generates title, description, tags from item details + image analysis (~7s)
 - **Image Analyzer** — Claude Vision identifies brand, category, colors from uploaded photos (~4s)
 - **Price Predictor** — suggests price from historical sales data; falls back to category averages
-- **Vault Buddy** — conversational assistant with real inventory context (Claude Sonnet 4.6)
+- **Vault Buddy** — conversational assistant with real inventory context (Grok API)
 
 ### Image Bank
 - Multi-image upload per item
@@ -130,7 +130,7 @@ These were listed in the original design spec but are not implemented and have n
 | Feature | Reason |
 |---------|--------|
 | **AR previews** | Hardware-dependent, requires native mobile app or WebXR. Out of scope for a web-first MVP. |
-| **Blockchain verification** | No clear user demand validated. High implementation cost. Deferred indefinitely. |
+| **Blockchain verification** | A local SHA-256 hash utility (`blockchain.js`) and `blockchain_hash` column exist in the schema as a stub, but no real on-chain integration is implemented. No user-facing feature. |
 | **Whatnot live auctions** | Requires Whatnot seller API access (waitlisted). No API available publicly yet. |
 
 ---
@@ -151,8 +151,8 @@ These were listed in the original design spec but are not implemented and have n
 
 | Suite | Count | Pass | Fail |
 |-------|-------|------|------|
-| Unit (bun:test) | 5,297 | 5,291 | 6 (flaky — verifyEmail token isolation) |
-| E2E Playwright (chromium) | 679 | 679 | 0 |
+| Unit (bun:test) | 5,297 | 5,293 | 4 (flaky — verifyEmail token isolation; passes in isolation) |
+| E2E Playwright (chromium + firefox + webkit) | 2,079 | 2,029 | 4 flaky (Firefox/WebKit, pass on retry) / 46 skip |
 | Security audit | 63 questions | 63 resolved | 0 |
 
 ---
