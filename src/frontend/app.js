@@ -8214,13 +8214,16 @@ const api = {
                 headers
             });
 
-            // Handle rate limiting with retry
+            // Handle rate limiting with retry — only auto-retry for short waits (< 30s)
             if (response.status === 429 && retryCount < this.maxRetries) {
                 const retryAfter = parseInt(response.headers.get('Retry-After') || '1', 10);
-                const delay = Math.max(retryAfter * 1000, this.retryDelay * (retryCount + 1));
-                toast.warning(`Rate limited. Retrying in ${Math.ceil(delay / 1000)}s...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-                return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
+                if (retryAfter < 30) {
+                    const delay = Math.max(retryAfter * 1000, this.retryDelay * (retryCount + 1));
+                    toast.warning(`Rate limited. Retrying in ${Math.ceil(delay / 1000)}s...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
+                }
+                // Long ban — fall through immediately to the error handler
             }
 
             // Handle server errors with retry (except for client errors)
@@ -37538,16 +37541,34 @@ const auth = {
             // Show specific message for rate limiting (429)
             if (error.status === 429) {
                 const retryAfter = error.data?.retryAfter || error.data?.retry_after;
-                const mins = retryAfter ? Math.ceil(retryAfter / 60) : null;
-                const msg = mins
-                    ? `Too many login attempts. Please wait ${mins} minute${mins !== 1 ? 's' : ''} before trying again.`
-                    : 'Too many login attempts. Please wait a moment before trying again.';
+                const isIpBan = error.data?.error?.includes('temporarily blocked') || (retryAfter && retryAfter > 60);
                 if (alertDiv) {
-                    alertDiv.innerHTML = `<strong>Rate limited.</strong> ${msg}`;
-                    alertDiv.className = 'login-alert alert-warning';
-                    alertDiv.style.display = 'block';
+                    if (isIpBan) {
+                        let secondsLeft = retryAfter || 900;
+                        const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+                        alertDiv.innerHTML = `<strong>Too many failed attempts.</strong> Login is temporarily locked for security. Try again in <span id="login-ban-countdown">${fmt(secondsLeft)}</span>.`;
+                        alertDiv.className = 'login-alert alert-danger';
+                        alertDiv.style.display = 'block';
+                        if (window._loginBanCountdown) clearInterval(window._loginBanCountdown);
+                        window._loginBanCountdown = setInterval(() => {
+                            secondsLeft--;
+                            const el = document.getElementById('login-ban-countdown');
+                            if (secondsLeft <= 0 || !el) {
+                                clearInterval(window._loginBanCountdown);
+                                if (alertDiv) alertDiv.style.display = 'none';
+                                return;
+                            }
+                            el.textContent = fmt(secondsLeft);
+                        }, 1000);
+                    } else {
+                        const mins = retryAfter ? Math.ceil(retryAfter / 60) : null;
+                        const msg = mins ? `Too many login attempts. Please wait ${mins} minute${mins !== 1 ? 's' : ''}.` : 'Too many login attempts. Please wait a moment.';
+                        alertDiv.innerHTML = `<strong>Rate limited.</strong> ${msg}`;
+                        alertDiv.className = 'login-alert alert-warning';
+                        alertDiv.style.display = 'block';
+                    }
                 }
-                toast.error(msg);
+                toast.error(isIpBan ? 'Login temporarily locked. See message on screen.' : 'Too many attempts. Please wait.');
                 return;
             }
 
