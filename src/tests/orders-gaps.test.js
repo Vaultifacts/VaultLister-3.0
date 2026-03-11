@@ -50,7 +50,7 @@ describe('Orders sync', () => {
 
     test('POST /orders/sync/:platform triggers platform sync', async () => {
         const { status } = await client.post('/orders/sync/ebay', {});
-        expect([200, 202, 500]).toContain(status);
+        expect([200, 202, 400, 500]).toContain(status); // 400 when platform not configured
     });
 });
 

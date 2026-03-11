@@ -3371,6 +3371,11 @@ body.dark-mode .toast-close:hover {
     border: none;
     color: var(--gray-500);
     cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-body {

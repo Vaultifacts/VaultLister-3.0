@@ -140,7 +140,7 @@ describe('Teams — Members & Invitations', () => {
         const { status, data } = await client.get(`/teams/${id}/activity`);
         expect([200, 403, 404, 500]).toContain(status);
         if (status === 200) {
-            expect(Array.isArray(data.activity || data)).toBe(true);
+            expect(Array.isArray(data.activities || data.activity || data)).toBe(true);
         }
     });
 });
