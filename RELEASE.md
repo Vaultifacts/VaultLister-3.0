@@ -61,7 +61,7 @@ These features are fully implemented, tested end-to-end, and verified working.
 - **Listing Generator** — Claude Haiku generates title, description, tags from item details + image analysis (~7s)
 - **Image Analyzer** — Claude Vision identifies brand, category, colors from uploaded photos (~4s)
 - **Price Predictor** — suggests price from historical sales data; falls back to category averages
-- **Vault Buddy** — conversational assistant with real inventory context (Grok API)
+- **Vault Buddy** — conversational assistant with real inventory context (Claude Sonnet 4.6 primary; Grok fallback when Claude API key unavailable)
 
 ### Image Bank
 - Multi-image upload per item

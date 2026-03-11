@@ -1,5 +1,5 @@
 // Chatbot Routes
-// Handles chatbot conversations using Grok API with mock mode fallback
+// Handles chatbot conversations using Claude (primary) → Grok (fallback) → Mock
 
 import crypto from 'crypto';
 import { query } from '../db/database.js';
