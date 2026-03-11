@@ -134,18 +134,23 @@ async function main() {
         // If redirected to login, fall back to form login
         if (currentUrl.includes('/login')) {
             process.stderr.write('[bot] Session invalid, attempting form login\n');
-            await humanType(page, 'input[name="login_form[username_email]"]', username);
+
+            // Resilient selectors — Poshmark has changed input name attrs over time
+            const usernameSel = 'input[name="login_form[username_email]"], input[placeholder*="Username or Email" i], input[placeholder*="username" i]:not([type="hidden"]), input[type="email"]';
+            const passwordSel = 'input[name="login_form[password]"], input[type="password"]';
+
+            await page.waitForSelector(usernameSel, { timeout: 10000 });
+            await humanType(page, usernameSel, username);
             await page.waitForTimeout(randomDelay(400, 800));
-            await humanType(page, 'input[name="login_form[password]"]', password);
+            await humanType(page, passwordSel, password);
             await page.waitForTimeout(randomDelay(400, 800));
             await page.click('button[type="submit"]');
-            await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
-            await page.waitForTimeout(randomDelay(1500, 2500));
+            await page.waitForTimeout(randomDelay(3000, 5000));
 
             const afterLogin = page.url();
             await page.screenshot({ path: join(ROOT_DIR, 'logs', 'poshmark-login-debug.png') }).catch(() => {});
             if (afterLogin.includes('/login') || afterLogin.includes('/auth')) {
-                throw new Error('Poshmark login failed. SMS 2FA may be required. Check logs/poshmark-login-debug.png');
+                throw new Error('Poshmark login failed — SMS 2FA or CAPTCHA may be blocking headless login. Run: node scripts/poshmark-login.js to authenticate manually, then retry.');
             }
             process.stderr.write('[bot] Form login succeeded\n');
             await page.goto(BASE_URL + '/create-listing', { waitUntil: 'domcontentloaded', timeout: 30000 });

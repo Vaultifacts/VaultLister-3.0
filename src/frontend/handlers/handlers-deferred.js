@@ -16441,7 +16441,16 @@ Object.assign(handlers, {
 
         try {
             await api.ensureCSRFToken();
-            await api.post('/shops', { platform, username: username.trim() });
+            try {
+                await api.post('/shops', { platform, username: username.trim() });
+            } catch (postErr) {
+                // Already connected — update instead
+                if (postErr.message && postErr.message.includes('already connected')) {
+                    await api.put(`/shops/${platform}`, { username: username.trim(), isConnected: true });
+                } else {
+                    throw postErr;
+                }
+            }
             toast.success(`${platform} connected successfully!`);
             modals.close();
             await handlers.loadShops();
@@ -16453,7 +16462,6 @@ Object.assign(handlers, {
             }
         } catch (error) {
             console.error('Shop connection error:', error);
-            // Provide more helpful error message
             if (error.message.includes('token') || error.message.includes('Token')) {
                 toast.error('Connection failed. Please try logging out and back in.');
             } else if (error.message.includes('network') || error.message.includes('fetch')) {
