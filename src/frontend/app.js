@@ -15621,7 +15621,7 @@ const components = {
         return `
             <header class="header">
                 <div class="header-left">
-                    <button class="menu-button" onclick="store.setState({ sidebarOpen: !store.state.sidebarOpen })" aria-label="Toggle sidebar menu">
+                    <button class="menu-button" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-backdrop')?.classList.toggle('active',_open);" aria-label="Toggle sidebar menu">
                         ${this.icon('menu')}
                     </button>
                     <div class="search-bar">
