@@ -1,2 +1,3 @@
 [test]
 root = "src/tests"
+preload = ["./src/tests/setup/env-guard.js"]
