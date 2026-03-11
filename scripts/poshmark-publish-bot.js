@@ -5,10 +5,11 @@
 // Output: JSON on stdout        { success, listingUrl } or { success: false, error }
 // Exit:   0 on success, 1 on error
 //
-// Uses poshmark.ca (Canadian Poshmark) and loads saved session cookies from
-// data/poshmark-cookies.json to bypass SMS 2FA. Falls back to form login if no valid cookies.
+// Uses the persistent Chromium profile at data/poshmark-profile/ (same as E2E tests)
+// to maintain authenticated sessions across runs without requiring re-login or SMS 2FA.
+// Falls back to cookie file if the profile directory does not exist.
 
-import { firefox } from 'playwright';
+import { chromium } from 'playwright';
 import { appendFileSync, existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -17,6 +18,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
 const LOG_PATH = join(ROOT_DIR, 'data', 'automation-audit.log');
 const COOKIES_PATH = join(ROOT_DIR, 'data', 'poshmark-cookies.json');
+const PROFILE_DIR = join(ROOT_DIR, 'data', 'poshmark-profile');
 
 const COUNTRY = process.env.POSHMARK_COUNTRY || 'com';
 const BASE_URL = COUNTRY === 'ca' ? 'https://poshmark.ca' : 'https://poshmark.com';
@@ -85,14 +87,27 @@ async function main() {
 
     auditLog('publish_attempt', { listingId });
 
-    const browser = await firefox.launch({ headless: true, slowMo: 30 });
-    try {
-        const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+    // Prefer persistent Chromium profile (shares session with E2E tests)
+    const useProfile = existsSync(PROFILE_DIR);
+    process.stderr.write('[bot] Session mode: ' + (useProfile ? 'persistent-profile (' + PROFILE_DIR + ')' : 'cookie-fallback') + '\n');
+
+    let browser = null;
+    let context;
+    if (useProfile) {
+        context = await chromium.launchPersistentContext(PROFILE_DIR, {
+            headless: true,
+            slowMo: 30,
+            args: ['--no-sandbox', '--disable-blink-features=AutomationControlled'],
+            ignoreDefaultArgs: ['--enable-automation'],
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             viewport: { width: 1280, height: 800 }
         });
-
-        // Load saved session cookies to bypass SMS 2FA
+    } else {
+        browser = await chromium.launch({ headless: true, slowMo: 30, args: ['--no-sandbox'] });
+        context = await browser.newContext({
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            viewport: { width: 1280, height: 800 }
+        });
         if (existsSync(COOKIES_PATH)) {
             try {
                 const cookies = JSON.parse(readFileSync(COOKIES_PATH, 'utf8'));
@@ -103,7 +118,9 @@ async function main() {
                 process.stderr.write('[bot] Warning: could not load cookies: ' + e.message + '\n');
             }
         }
+    }
 
+    try {
         const page = await context.newPage();
 
         // Step 1: Check if session is valid by going directly to create-listing
@@ -152,8 +169,9 @@ async function main() {
             throw new Error('No valid photo found at: ' + (photoPath || '[none provided]') + '. A real item photo is required to publish to Poshmark.');
         }
         if (resolvedPhoto) {
-            const fileInput = page.locator('#img-file-input, input[name="img-file-input"]').first();
-            await fileInput.setInputFiles(resolvedPhoto);
+            // Try input[type="file"] first (most reliable), then legacy #img-file-input
+            const fileInput = page.locator('input[type="file"][accept*="image"], input[type="file"], #img-file-input').first();
+            await fileInput.setInputFiles(resolvedPhoto, { timeout: 15000 });
             process.stderr.write('[bot] Uploaded photo: ' + resolvedPhoto + '\n');
             await page.waitForTimeout(randomDelay(2000, 3000));
             await page.screenshot({ path: join(ROOT_DIR, 'logs', 'poshmark-crop-modal.png') }).catch(() => {});
@@ -586,7 +604,8 @@ async function main() {
         process.stdout.write(JSON.stringify({ success: false, error: err.message }) + '\n');
         process.exit(1);
     } finally {
-        await browser.close().catch(() => {});
+        await context.close().catch(() => {});
+        if (browser) await browser.close().catch(() => {});
     }
 }
 
