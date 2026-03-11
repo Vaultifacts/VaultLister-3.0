@@ -39,7 +39,8 @@
       "Bash(wget * | sh)",
       "Bash(* --no-verify*)",
       "Bash(bun run db:drop*)",
-      "Bash(bun run db:reset)"
+      "Bash(bun run db:reset)",
+      "Bash(docker compose down -v*)"
     ]
   },
   "hooks": {
