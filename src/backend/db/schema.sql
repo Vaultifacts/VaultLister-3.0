@@ -348,6 +348,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     message TEXT,
     data TEXT DEFAULT '{}',
     is_read INTEGER DEFAULT 0,
+    read_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
