@@ -4,7 +4,7 @@
 ## Current State
 - **Branch:** master
 - **Server:** ✅ running on port 3000
-- **Last commit:** (pending) feat(ebay): P3-1–P3-5 real eBay order sync + E2E integration spec
+- **Last commit:** test(analytics): E-5 analytics dashboard verified end-to-end
 - **E2E status:** 665+14=679 pass / 0 fail / 10+4=14 skip (chromium) — ebay-integration: 14 pass / 4 skip
 - **Unit status:** 5289 pass / 0 fail
 - **Load test (P8-4):** baseline p95=7ms / p99=8ms / 29 req/s — ACCEPTABLE (5 CSRF 403s expected)
