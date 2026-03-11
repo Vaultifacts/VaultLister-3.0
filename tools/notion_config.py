@@ -12,10 +12,7 @@ load_dotenv()
 
 NOTION_SYNC_ENABLED = os.getenv("NOTION_SYNC_ENABLED", "true").lower() == "true"
 
-NOTION_INTEGRATION_TOKEN = os.getenv(
-    "NOTION_INTEGRATION_TOKEN",
-    "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",
-)
+NOTION_INTEGRATION_TOKEN = os.getenv("NOTION_INTEGRATION_TOKEN", "")
 
 MAIN_PAGE_ID = os.getenv(
     "NOTION_MAIN_PAGE_ID",
