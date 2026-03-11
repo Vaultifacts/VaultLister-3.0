@@ -713,6 +713,11 @@ export class PoshmarkBot {
             await listPage.goto(`${POSHMARK_URL}/create-listing`, { waitUntil: 'domcontentloaded', timeout: 30000 });
             await listPage.waitForTimeout(randomDelay(2000, 3000));
 
+            // Session guard — if redirected to login, session expired
+            if (listPage.url().includes('/login')) {
+                throw new Error('Poshmark session expired — re-authenticate via Settings → My Shops → Connect Poshmark');
+            }
+
             // CAPTCHA guard — must come before any form interaction
             await this._checkCaptcha(listPage);
 
