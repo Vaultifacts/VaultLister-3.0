@@ -67,6 +67,22 @@ async function initApp() {
     contextMenu.init();
     sessionMonitor.init();
     notificationCenter.init();
+    // Wire WebSocket offer + notification events to badge and toast
+    setTimeout(() => {
+        if (window.wsSubscribe) {
+            wsSubscribe.onOfferReceived((data) => {
+                const offer = data.offer || data;
+                const title = offer.listing_title || 'your listing';
+                const amt = offer.offer_amount != null ? '$' + Number(offer.offer_amount).toFixed(2) : '';
+                notificationCenter.add({ title: 'New offer received', message: `${amt} offer on ${title}`, type: 'offer', icon: 'offers' });
+                if (typeof toast !== 'undefined') toast.info(`New offer received: ${amt} on ${title}`);
+            });
+            wsSubscribe.onNotification((data) => {
+                const n = data.notification || data;
+                if (n && n.title) notificationCenter.add({ title: n.title, message: n.message || '', type: n.type || 'info', icon: 'bell' });
+            });
+        }
+    }, 2000);
     savedViews.init();
 
     // Add global UI elements

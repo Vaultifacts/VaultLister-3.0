@@ -2,6 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { websocketService } from '../services/websocket.js';
 
 const ALLOWED_RULE_FIELDS = new Set(['name', 'platform', 'conditions', 'actions', 'isEnabled']);
 
@@ -109,7 +110,28 @@ export async function offersRouter(ctx) {
             return { status: 400, data: { error: 'Offer has already been responded to' } };
         }
 
-        const offer = query.get('SELECT * FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
+        const offer = query.get(`
+            SELECT o.*, l.id as listing_id, l.price as listing_price
+            FROM offers o
+            LEFT JOIN listings l ON o.listing_id = l.id
+            WHERE o.id = ? AND o.user_id = ?
+        `, [id, user.id]);
+
+        // Best-effort sale creation — failure must not block the 200 response
+        try {
+            const saleId = uuidv4();
+            query.run(
+                `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, tax_amount, net_profit, status, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, 'confirmed', CURRENT_TIMESTAMP)`,
+                [saleId, user.id, offer.listing_id, offer.platform, offer.buyer_username, offer.offer_amount, offer.offer_amount]
+            );
+            query.run(
+                `UPDATE listings SET status = 'sold', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status != 'sold'`,
+                [offer.listing_id]
+            );
+        } catch (saleErr) {
+            logger.warn('Best-effort sale creation failed for offer ' + id + ': ' + saleErr.message);
+        }
 
         // Queue automation task to accept on platform
         const taskId = uuidv4();
@@ -117,6 +139,8 @@ export async function offersRouter(ctx) {
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
         `, [taskId, user.id, 'accept_offer', JSON.stringify({ offerId: id, platform: offer.platform }), 'pending']);
+
+        websocketService.notifyOfferAccepted(user.id, offer);
 
         return { status: 200, data: { message: 'Offer accepted', taskId } };
     }
@@ -152,6 +176,8 @@ export async function offersRouter(ctx) {
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
         `, [taskId, user.id, 'decline_offer', JSON.stringify({ offerId: id, platform: offer.platform }), 'pending']);
+
+        websocketService.notifyOfferDeclined(user.id, offer);
 
         return { status: 200, data: { message: 'Offer declined', taskId } };
     }
@@ -195,6 +221,8 @@ export async function offersRouter(ctx) {
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
         `, [taskId, user.id, 'counter_offer', JSON.stringify({ offerId: id, amount, platform: offer.platform }), 'pending']);
+
+        websocketService.notify(user.id, { type: 'offer.countered', offer });
 
         return { status: 200, data: { message: 'Counter offer sent', taskId } };
     }
