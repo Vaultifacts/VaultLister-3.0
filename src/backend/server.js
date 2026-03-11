@@ -381,9 +381,16 @@ const apiRoutes = {
 
         // Redis check (optional dependency — degraded but not fatal if unavailable)
         try {
-            const redis = (await import('./services/redis.js')).default;
-            const pingResult = await redis.ping?.();
-            checks.redis = (pingResult === 'PONG' || pingResult === true) ? 'ok' : 'degraded';
+            const redisClient = redisService.getClient();
+            if (redisClient) {
+                const pong = await Promise.race([
+                    redisClient.ping(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1000))
+                ]);
+                checks.redis = pong === 'PONG' ? 'ok' : 'degraded';
+            } else {
+                checks.redis = 'degraded';
+            }
         } catch (e) {
             checks.redis = 'unavailable';
             // Redis is optional (in-memory fallback exists) — not a readiness failure
