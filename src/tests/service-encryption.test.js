@@ -9,14 +9,16 @@ if (!process.env.OAUTH_ENCRYPTION_KEY) {
 import { encryptToken, decryptToken, generateStateToken, hashToken } from '../backend/utils/encryption.js';
 
 describe('Token Encryption', () => {
-    test('encryptToken should return iv:encrypted format', () => {
+    test('encryptToken should return gcm:iv:authTag:ciphertext format', () => {
         const encrypted = encryptToken('my-secret-token');
         expect(typeof encrypted).toBe('string');
-        expect(encrypted).toContain(':');
+        expect(encrypted.startsWith('gcm:')).toBe(true);
         const parts = encrypted.split(':');
-        expect(parts).toHaveLength(2);
-        expect(parts[0].length).toBeGreaterThan(0);  // IV
-        expect(parts[1].length).toBeGreaterThan(0);  // encrypted data
+        expect(parts).toHaveLength(4);
+        expect(parts[0]).toBe('gcm');     // prefix
+        expect(parts[1].length).toBeGreaterThan(0);  // IV
+        expect(parts[2].length).toBeGreaterThan(0);  // authTag
+        expect(parts[3].length).toBeGreaterThan(0);  // ciphertext
     });
 
     test('decryptToken should recover original token', () => {

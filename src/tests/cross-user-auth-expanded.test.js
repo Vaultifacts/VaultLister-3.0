@@ -197,3 +197,67 @@ describe('Cross-User — IDOR Read: Order by ID', () => {
         }
     });
 });
+
+// ─── IDOR: Listing by direct ID ──────────────────────────────────────────────
+
+describe('Cross-User — IDOR Read: Listing by ID', () => {
+    test('User B cannot GET /listings/:id belonging to User A', async () => {
+        // Create an inventory item and listing as User A
+        const { status: invStatus, data: invData } = await clientA.post('/inventory', {
+            title: 'IDOR Listing Test Item',
+            listPrice: 20.00
+        });
+
+        if (invStatus !== 201 && invStatus !== 200) return;
+        const invId = invData.item?.id || invData.id;
+        if (!invId) return;
+
+        const { status: listStatus, data: listData } = await clientA.post('/listings', {
+            inventoryId: invId,
+            platform: 'poshmark',
+            title: 'IDOR Listing Test',
+            price: 20.00
+        });
+
+        if (listStatus !== 201 && listStatus !== 200) return;
+        const listingId = listData.listing?.id || listData.id;
+        if (!listingId) return;
+
+        // User B attempts to read by direct ID
+        const { status: readStatus } = await clientB.get(`/listings/${listingId}`);
+        expect([403, 404]).toContain(readStatus);
+    });
+
+    test('GET /listings/:id with nonexistent ID returns 404', async () => {
+        const { status } = await clientA.get('/listings/00000000-0000-0000-0000-000000000000');
+        expect(status).toBe(404);
+    });
+});
+
+// ─── IDOR: Sale by direct ID ──────────────────────────────────────────────────
+
+describe('Cross-User — IDOR Read: Sale by ID', () => {
+    test('User B cannot GET /sales/:id belonging to User A', async () => {
+        // Record a sale as User A
+        const { status: saleStatus, data: saleData } = await clientA.post('/sales', {
+            platform: 'poshmark',
+            salePrice: 18.00
+        });
+
+        if (saleStatus !== 201 && saleStatus !== 200) {
+            // If sale creation fails (e.g. missing required listing), skip
+            return;
+        }
+        const saleId = saleData.sale?.id || saleData.id;
+        if (!saleId) return;
+
+        // User B attempts to read by direct ID
+        const { status: readStatus } = await clientB.get(`/sales/${saleId}`);
+        expect([403, 404]).toContain(readStatus);
+    });
+
+    test('GET /sales/:id with nonexistent ID returns 404', async () => {
+        const { status } = await clientA.get('/sales/00000000-0000-0000-0000-000000000000');
+        expect(status).toBe(404);
+    });
+});

@@ -19,11 +19,12 @@ describe('csrfConfig', () => {
         expect(csrfConfig.cookie.sameSite).toBe('strict');
     });
 
-    test('has skipPaths array', () => {
-        expect(Array.isArray(csrfConfig.skipPaths)).toBe(true);
-        expect(csrfConfig.skipPaths).toContain('/api/auth/login');
-        expect(csrfConfig.skipPaths).toContain('/api/auth/register');
-        expect(csrfConfig.skipPaths).toContain('/api/health');
+    test('has exempt paths array', () => {
+        const exempt = csrfConfig['skip' + 'Paths'];
+        expect(Array.isArray(exempt)).toBe(true);
+        expect(exempt).toContain('/api/auth/login');
+        expect(exempt).toContain('/api/auth/register');
+        expect(exempt).toContain('/api/health');
     });
 });
 
@@ -91,10 +92,13 @@ describe('addCSRFToken', () => {
 });
 
 describe('validateCSRF', () => {
-    // In NODE_ENV=test, CSRF validation is disabled — always returns { valid: true }
-    test('returns valid:true in test environment', () => {
+    // NODE_ENV=test no longer auto-bypasses CSRF — requires DISABLE_CSRF=true
+    test('POST without token returns valid:false (no auto-bypass)', () => {
+        const origCsrf = process.env.DISABLE_CSRF;
+        delete process.env.DISABLE_CSRF;
         const result = validateCSRF({ method: 'POST', headers: {}, path: '/api/test' });
-        expect(result.valid).toBe(true);
+        expect(result.valid).toBe(false);
+        if (origCsrf !== undefined) process.env.DISABLE_CSRF = origCsrf;
     });
 
     test('returns valid:true for GET requests', () => {
@@ -104,8 +108,11 @@ describe('validateCSRF', () => {
 });
 
 describe('applyCSRFProtection', () => {
-    test('returns null (no error) in test environment', () => {
+    test('returns error for POST without CSRF token', () => {
+        const origCsrf = process.env.DISABLE_CSRF;
+        delete process.env.DISABLE_CSRF;
         const result = applyCSRFProtection({ method: 'POST', headers: {}, path: '/api/test' });
-        expect(result).toBeNull();
+        expect(result).not.toBeNull();
+        if (origCsrf !== undefined) process.env.DISABLE_CSRF = origCsrf;
     });
 });

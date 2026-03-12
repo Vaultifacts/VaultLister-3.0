@@ -537,15 +537,18 @@ describe('validateCSRF — skip paths (production)', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('validateCSRF — test mode bypass', () => {
-    test('returns valid in NODE_ENV=test even for POST without token', () => {
+    test('NODE_ENV=test alone does NOT bypass CSRF (requires DISABLE_CSRF=true)', () => {
         const origEnv = process.env.NODE_ENV;
+        const origCsrf = process.env.DISABLE_CSRF;
         process.env.NODE_ENV = 'test';
+        delete process.env.DISABLE_CSRF;
         const result = validateCSRF({
             method: 'POST', headers: {}, path: '/api/inventory',
             user: null, ip: '1.2.3.4', body: {},
         });
-        expect(result.valid).toBe(true);
+        expect(result.valid).toBe(false);
         process.env.NODE_ENV = origEnv;
+        if (origCsrf !== undefined) process.env.DISABLE_CSRF = origCsrf;
     });
 
     test('DISABLE_CSRF=true in non-production mode bypasses check', () => {
