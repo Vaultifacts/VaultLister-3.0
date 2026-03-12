@@ -64,10 +64,10 @@ class VaultListerSocket {
                     this.attemptReconnect();
                 };
 
-                this.ws.onerror = (error) => {
-                    console.error('[WS] Error:', error);
+                this.ws.onerror = () => {
+                    console.warn('[WS] Connection error (will retry via onclose)');
                     this.connecting = false;
-                    reject(error);
+                    reject(new Error('WebSocket connection failed'));
                 };
             } catch (error) {
                 this.connecting = false;

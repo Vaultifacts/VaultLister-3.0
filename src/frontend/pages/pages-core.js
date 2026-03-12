@@ -2172,7 +2172,8 @@ const pages = {
                             </button>
                         </div>
                     </div>
-                    <select id="analytics-period" onchange="handlers.changeAnalyticsPeriod(this.value)" class="form-select" style="width: 150px;">
+                    <label for="analytics-period" class="sr-only">Analytics Period</label>
+                    <select id="analytics-period" name="analytics-period" onchange="handlers.changeAnalyticsPeriod(this.value)" class="form-select" style="width: 150px;">
                         <option value="7d" ${store.state.analyticsPeriod === '7d' ? 'selected' : ''}>Last 7 Days</option>
                         <option value="30d" ${store.state.analyticsPeriod === '30d' ? 'selected' : ''}>Last 30 Days</option>
                         <option value="90d" ${store.state.analyticsPeriod === '90d' ? 'selected' : ''}>Last 90 Days</option>

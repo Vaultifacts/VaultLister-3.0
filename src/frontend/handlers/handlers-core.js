@@ -871,6 +871,36 @@ const handlers = {
         }
     },
 
+    changeAnalyticsPeriod: async function(period) {
+        const picker = document.getElementById('custom-date-picker');
+        if (period === 'custom') {
+            if (picker) picker.classList.remove('hidden');
+            return;
+        }
+        if (picker) picker.classList.add('hidden');
+
+        store.setState({ analyticsPeriod: period });
+
+        const periodLabels = { '7d': 'last 7 days', '30d': 'last 30 days', '90d': 'last 90 days', '6m': 'last 6 months', '1y': 'last year' };
+        const label = periodLabels[period] || 'last 30 days';
+        const descEl = document.querySelector('.page-description');
+        if (descEl) descEl.textContent = 'Performance insights for ' + label;
+        const periodTextEl = document.querySelector('.period-text');
+        if (periodTextEl) periodTextEl.textContent = label.charAt(0).toUpperCase() + label.slice(1);
+        const dropdown = document.getElementById('analytics-period');
+        if (dropdown) dropdown.value = period;
+
+        await this.loadAnalytics();
+
+        if (store.state.currentPage === 'analytics') {
+            renderApp(pages.analytics());
+            requestAnimationFrame(() => {
+                const dd = document.getElementById('analytics-period');
+                if (dd) dd.value = period;
+            });
+        }
+    },
+
     // ========== Financials Handlers ==========,
 
     loadPurchases: async function() {
