@@ -38,10 +38,24 @@ const sourceFiles = [
 ];
 
 // ── Compute content hash ──────────────────────────────────────────────────────
-// Hash covers all JS source files + main.css so any change is reflected.
+// Hash covers all JS source files + lazy chunks + main.css so any change
+// (including to deferred pages/handlers) invalidates the chunk cache-bust version.
 const cssPath = join(ROOT, 'src/frontend/styles/main.css');
+const chunkFiles = [
+    'src/frontend/pages/pages-deferred.js',
+    'src/frontend/pages/pages-inventory-catalog.js',
+    'src/frontend/pages/pages-sales-orders.js',
+    'src/frontend/pages/pages-intelligence.js',
+    'src/frontend/pages/pages-settings-account.js',
+    'src/frontend/pages/pages-tools-tasks.js',
+    'src/frontend/pages/pages-community-help.js',
+    'src/frontend/handlers/handlers-deferred.js',
+    'src/frontend/handlers/handlers-inventory-catalog.js',
+    'src/frontend/services/websocketClient.js',
+];
 const hashableFiles = [
     ...sourceFiles.map(f => join(ROOT, f)),
+    ...chunkFiles.map(f => join(ROOT, f)).filter(f => existsSync(f)),
     ...(existsSync(cssPath) ? [cssPath] : [])
 ];
 const hashInput = hashableFiles.map(f => readFileSync(f, 'utf-8')).join('');
