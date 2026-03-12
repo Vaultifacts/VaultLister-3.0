@@ -885,8 +885,8 @@ Object.assign(pages, {
                 <div class="card-header">
                     <div class="flex gap-4 flex-wrap">
                         <div>
-                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Folder</label>
-                            <select class="form-select" style="width: 180px;" onchange="handlers.filterListings('folder', this.value)">
+                            <label for="listings-filter-folder" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Folder</label>
+                            <select id="listings-filter-folder" name="listings-filter-folder" class="form-select" style="width: 180px;" onchange="handlers.filterListings('folder', this.value)">
                                 <option value="all" ${folderFilter === 'all' ? 'selected' : ''}>All Folders</option>
                                 ${folders.map(folder => `
                                     <option value="${folder.id}" ${folderFilter === folder.id ? 'selected' : ''}>${escapeHtml(folder.name)}</option>
@@ -894,8 +894,8 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Status</label>
-                            <select class="form-select" style="width: 150px;" onchange="handlers.filterListings('status', this.value)">
+                            <label for="listings-filter-status" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Status</label>
+                            <select id="listings-filter-status" name="listings-filter-status" class="form-select" style="width: 150px;" onchange="handlers.filterListings('status', this.value)">
                                 <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Listings</option>
                                 <option value="active" ${statusFilter === 'active' ? 'selected' : ''}>Active</option>
                                 <option value="draft" ${statusFilter === 'draft' ? 'selected' : ''}>Draft</option>
@@ -904,8 +904,8 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div>
-                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
-                            <select class="form-select" style="width: 180px;" onchange="handlers.filterListings('platform', this.value)">
+                            <label for="listings-filter-platform" style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Platform</label>
+                            <select id="listings-filter-platform" name="listings-filter-platform" class="form-select" style="width: 180px;" onchange="handlers.filterListings('platform', this.value)">
                                 <option value="all" ${platformFilter === 'all' ? 'selected' : ''}>All Platforms</option>
                                 <option value="poshmark" ${platformFilter === 'poshmark' ? 'selected' : ''}>🅿️ Poshmark</option>
                                 <option value="ebay" ${platformFilter === 'ebay' ? 'selected' : ''}>Ⓔ eBay</option>
@@ -916,7 +916,7 @@ Object.assign(pages, {
                             </select>
                         </div>
                         <div style="margin-left: auto;">
-                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Columns</label>
+                            <div style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px;">Columns</div>
                             <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                 <button aria-haspopup="menu" class="btn btn-secondary btn-sm">
                                     ${components.icon('list', 14)} Customize
