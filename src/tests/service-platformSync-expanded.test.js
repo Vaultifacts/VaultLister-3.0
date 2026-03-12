@@ -89,32 +89,50 @@ function getUpdateCalls(table) {
 }
 
 // ============================================================
+// Parameter index reference (after schema fix):
+//
+// Listings INSERT params:
+//   [id:0, user_id:1, null:2(inventory_id), title:3, price:4,
+//    status:5, platform_listing_id:6, platform_specific_data:7,
+//    created_at:8, updated_at:9]
+//
+// Sales INSERT params:
+//   [id:0, user_id:1, null:2(listing_id), platform_order_id:3,
+//    buyer_username:4, sale_price:5, platform_fee:6, shipping_cost:7,
+//    net_profit:8, status:9, notes:10, created_at:11, updated_at:12]
+//
+// Listings UPDATE params:
+//   [title:0, price:1, status:2, platform_specific_data:3,
+//    updated_at:4, id:5]  (6 params)
+// ============================================================
+
+// ============================================================
 // eBay Sync — Expanded Tests
 // ============================================================
 
 describe('ebaySync — expanded', () => {
     beforeEach(resetMocks);
 
-    test('listing external_data includes sku, listingId, condition, and syncedAt', async () => {
+    test('listing platform_specific_data includes sku, listingId, condition, and syncedAt', async () => {
         const result = await syncEbayShop(makeShop('ebay'));
         const inserts = getInsertCalls('listings');
         expect(inserts.length).toBe(2);
 
-        const data1 = JSON.parse(inserts[0][1][9]);
+        const data1 = JSON.parse(inserts[0][1][7]);
         expect(data1.sku).toBe('MOCK-SKU-001');
         expect(data1.listingId).toBe('mock-listing-1');
         expect(data1.syncedAt).toBeDefined();
 
-        const data2 = JSON.parse(inserts[1][1][9]);
+        const data2 = JSON.parse(inserts[1][1][7]);
         expect(data2.sku).toBe('MOCK-SKU-002');
     });
 
-    test('order external_data includes orderId, lineItems, and fulfillmentStatus', async () => {
+    test('order notes includes orderId, lineItems, and fulfillmentStatus', async () => {
         await syncEbayShop(makeShop('ebay'));
         const inserts = getInsertCalls('sales');
         expect(inserts.length).toBe(1);
 
-        const data = JSON.parse(inserts[0][1][12]);
+        const data = JSON.parse(inserts[0][1][10]);
         expect(data.platform).toBe('ebay');
         expect(data.orderId).toBe('mock-order-1');
         expect(data.fulfillmentStatus).toBe('FULFILLED');
@@ -125,18 +143,9 @@ describe('ebaySync — expanded', () => {
         await syncEbayShop(makeShop('ebay'));
         const inserts = getInsertCalls('listings');
 
-        // price field is at index 5
-        expect(inserts[0][1][5]).toBe(29.99);
-        expect(inserts[1][1][5]).toBe(49.99);
-    });
-
-    test('listing quantity defaults to 1 for mock data', async () => {
-        await syncEbayShop(makeShop('ebay'));
-        const inserts = getInsertCalls('listings');
-
-        // quantity is at index 6
-        expect(inserts[0][1][6]).toBe(1);
-        expect(inserts[1][1][6]).toBe(3);
+        // price field is at index 4
+        expect(inserts[0][1][4]).toBe(29.99);
+        expect(inserts[1][1][4]).toBe(49.99);
     });
 
     test('sale buyer_username is extracted from nested buyer object', async () => {
@@ -152,7 +161,7 @@ describe('ebaySync — expanded', () => {
         const inserts = getInsertCalls('sales');
 
         const salePrice = inserts[0][1][5];    // sale_price
-        const fees = inserts[0][1][6];          // platform_fees
+        const fees = inserts[0][1][6];          // platform_fee
         const shipping = inserts[0][1][7];      // shipping_cost
         const netProfit = inserts[0][1][8];     // net_profit
 
@@ -208,34 +217,24 @@ describe('ebaySync — expanded', () => {
 describe('poshmarkSync — expanded', () => {
     beforeEach(resetMocks);
 
-    test('sold listing maps to quantity 0, available to quantity 1', async () => {
+    test('preserves brand and category in platform_specific_data', async () => {
         await syncPoshmarkShop(makeShop('poshmark'));
         const inserts = getInsertCalls('listings');
 
-        // Mock data: listing 1 & 2 = available, listing 3 = sold
-        expect(inserts[0][1][6]).toBe(1); // available = qty 1
-        expect(inserts[1][1][6]).toBe(1); // available = qty 1
-        expect(inserts[2][1][6]).toBe(0); // sold = qty 0
-    });
-
-    test('preserves brand and category in external data', async () => {
-        await syncPoshmarkShop(makeShop('poshmark'));
-        const inserts = getInsertCalls('listings');
-
-        const data1 = JSON.parse(inserts[0][1][9]);
+        const data1 = JSON.parse(inserts[0][1][7]);
         expect(data1.brand).toBe('Coach');
         expect(data1.category).toBe('Bags');
 
-        const data2 = JSON.parse(inserts[1][1][9]);
+        const data2 = JSON.parse(inserts[1][1][7]);
         expect(data2.brand).toBe('Lululemon');
         expect(data2.category).toBe('Activewear');
     });
 
-    test('preserves shares and likes counts in external data', async () => {
+    test('preserves shares and likes counts in platform_specific_data', async () => {
         await syncPoshmarkShop(makeShop('poshmark'));
         const inserts = getInsertCalls('listings');
 
-        const data1 = JSON.parse(inserts[0][1][9]);
+        const data1 = JSON.parse(inserts[0][1][7]);
         expect(data1.shares).toBe(45);
         expect(data1.likes).toBe(12);
     });
@@ -259,24 +258,24 @@ describe('poshmarkSync — expanded', () => {
         expect(shippingCost).toBe(7.97);
     });
 
-    test('order external data includes listingId reference', async () => {
+    test('order notes includes listingId reference', async () => {
         await syncPoshmarkShop(makeShop('poshmark'));
         const saleInserts = getInsertCalls('sales');
 
-        const extData = JSON.parse(saleInserts[0][1][12]);
+        const extData = JSON.parse(saleInserts[0][1][10]);
         expect(extData.listingId).toBe('posh-listing-003');
     });
 
-    test('update path modifies title, price, quantity, status, and external_data', async () => {
+    test('update path modifies title, price, status, and platform_specific_data', async () => {
         mockQueryGet.mockReturnValue({ id: 'existing-id' });
         await syncPoshmarkShop(makeShop('poshmark'));
 
         const updates = getUpdateCalls('listings');
         expect(updates.length).toBe(3);
 
-        // Each update should have 7 params: title, price, qty, status, external_data, updated_at, id
+        // Each update should have 6 params: title, price, status, platform_specific_data, updated_at, id
         for (const call of updates) {
-            expect(call[1].length).toBe(7);
+            expect(call[1].length).toBe(6);
         }
     });
 });
@@ -288,24 +287,24 @@ describe('poshmarkSync — expanded', () => {
 describe('mercariSync — expanded', () => {
     beforeEach(resetMocks);
 
-    test('condition and category are preserved in external data', async () => {
+    test('condition and category are preserved in platform_specific_data', async () => {
         await syncMercariShop(makeShop('mercari'));
         const inserts = getInsertCalls('listings');
 
-        const data1 = JSON.parse(inserts[0][1][9]);
+        const data1 = JSON.parse(inserts[0][1][7]);
         expect(data1.condition).toBe('Like New');
         expect(data1.category).toBe('Electronics');
 
-        const data2 = JSON.parse(inserts[1][1][9]);
+        const data2 = JSON.parse(inserts[1][1][7]);
         expect(data2.condition).toBe('Good');
         expect(data2.category).toBe('Accessories');
     });
 
-    test('views and likes are preserved in external data', async () => {
+    test('views and likes are preserved in platform_specific_data', async () => {
         await syncMercariShop(makeShop('mercari'));
         const inserts = getInsertCalls('listings');
 
-        const data1 = JSON.parse(inserts[0][1][9]);
+        const data1 = JSON.parse(inserts[0][1][7]);
         expect(data1.likes).toBe(23);
         expect(data1.views).toBe(156);
     });
@@ -314,8 +313,8 @@ describe('mercariSync — expanded', () => {
         await syncMercariShop(makeShop('mercari'));
         const inserts = getInsertCalls('listings');
 
-        expect(inserts[0][1][5]).toBe(245.00);
-        expect(inserts[1][1][5]).toBe(42.00);
+        expect(inserts[0][1][4]).toBe(245.00);
+        expect(inserts[1][1][4]).toBe(42.00);
     });
 
     test('order net profit = price - 10% fee - shipping', async () => {
@@ -349,7 +348,7 @@ describe('mercariSync — expanded', () => {
         const inserts = getInsertCalls('listings');
 
         for (const insert of inserts) {
-            expect(insert[1][7]).toBe('active');
+            expect(insert[1][5]).toBe('active');
         }
     });
 
@@ -381,17 +380,17 @@ describe('depopSync — expanded', () => {
         await syncDepopShop(makeShop('depop'));
         const inserts = getInsertCalls('listings');
 
-        // Depop mock data has "description" field, not "title"
-        expect(inserts[0][1][4]).toBe('Y2K Baby Tee Pink');
-        expect(inserts[1][1][4]).toBe('Low Rise Flare Jeans 90s');
-        expect(inserts[2][1][4]).toBe('Butterfly Crop Top');
+        // title is at index 3
+        expect(inserts[0][1][3]).toBe('Y2K Baby Tee Pink');
+        expect(inserts[1][1][3]).toBe('Low Rise Flare Jeans 90s');
+        expect(inserts[2][1][3]).toBe('Butterfly Crop Top');
     });
 
-    test('external data includes size, brand, and likes', async () => {
+    test('platform_specific_data includes size, brand, and likes', async () => {
         await syncDepopShop(makeShop('depop'));
         const inserts = getInsertCalls('listings');
 
-        const data1 = JSON.parse(inserts[0][1][9]);
+        const data1 = JSON.parse(inserts[0][1][7]);
         expect(data1.size).toBe('S');
         expect(data1.brand).toBe('Vintage');
         expect(data1.likes).toBe(67);
@@ -418,22 +417,22 @@ describe('depopSync — expanded', () => {
         expect(saleInserts[0][1][7]).toBe(4.50);
     });
 
-    test('external_listing_id matches depop listing id', async () => {
+    test('platform_listing_id matches depop listing id', async () => {
         await syncDepopShop(makeShop('depop'));
         const inserts = getInsertCalls('listings');
 
-        // external_listing_id is at index 8
-        expect(inserts[0][1][8]).toBe('depop-listing-001');
-        expect(inserts[1][1][8]).toBe('depop-listing-002');
-        expect(inserts[2][1][8]).toBe('depop-listing-003');
+        // platform_listing_id is at index 6
+        expect(inserts[0][1][6]).toBe('depop-listing-001');
+        expect(inserts[1][1][6]).toBe('depop-listing-002');
+        expect(inserts[2][1][6]).toBe('depop-listing-003');
     });
 
-    test('order external_order_id matches depop order id', async () => {
+    test('order platform_order_id matches depop order id', async () => {
         await syncDepopShop(makeShop('depop'));
         const saleInserts = getInsertCalls('sales');
 
-        // external_order_id is at index 11
-        expect(saleInserts[0][1][11]).toBe('depop-order-001');
+        // platform_order_id is at index 3
+        expect(saleInserts[0][1][3]).toBe('depop-order-001');
     });
 
     test('error in order processing does not prevent results from returning', async () => {
@@ -461,28 +460,28 @@ describe('depopSync — expanded', () => {
 describe('grailedSync — expanded', () => {
     beforeEach(resetMocks);
 
-    test('designer and condition are included in external data', async () => {
+    test('designer and condition are included in platform_specific_data', async () => {
         await syncGrailedShop(makeShop('grailed'));
         const inserts = getInsertCalls('listings');
 
-        const data1 = JSON.parse(inserts[0][1][9]);
+        const data1 = JSON.parse(inserts[0][1][7]);
         expect(data1.designer).toBe('Rick Owens');
         expect(data1.condition).toBe('Gently Used');
 
-        const data2 = JSON.parse(inserts[1][1][9]);
+        const data2 = JSON.parse(inserts[1][1][7]);
         expect(data2.designer).toBe('Raf Simons');
         expect(data2.condition).toBe('New with Tags');
 
-        const data3 = JSON.parse(inserts[2][1][9]);
+        const data3 = JSON.parse(inserts[2][1][7]);
         expect(data3.designer).toBe('Helmut Lang');
         expect(data3.condition).toBe('Good');
     });
 
-    test('followers count preserved in external data', async () => {
+    test('followers count preserved in platform_specific_data', async () => {
         await syncGrailedShop(makeShop('grailed'));
         const inserts = getInsertCalls('listings');
 
-        const data = JSON.parse(inserts[0][1][9]);
+        const data = JSON.parse(inserts[0][1][7]);
         expect(data.followers).toBe(156);
     });
 
@@ -490,9 +489,9 @@ describe('grailedSync — expanded', () => {
         await syncGrailedShop(makeShop('grailed'));
         const inserts = getInsertCalls('listings');
 
-        expect(inserts[0][1][5]).toBe(485.00);
-        expect(inserts[1][1][5]).toBe(890.00);
-        expect(inserts[2][1][5]).toBe(350.00);
+        expect(inserts[0][1][4]).toBe(485.00);
+        expect(inserts[1][1][4]).toBe(890.00);
+        expect(inserts[2][1][4]).toBe(350.00);
     });
 
     test('9% + $0.30 fee on $350 order = $31.80', async () => {
@@ -514,10 +513,10 @@ describe('grailedSync — expanded', () => {
         await syncGrailedShop(makeShop('grailed'));
         const inserts = getInsertCalls('listings');
 
-        // First two are for_sale, third is sold
-        expect(inserts[0][1][7]).toBe('active');
-        expect(inserts[1][1][7]).toBe('active');
-        expect(inserts[2][1][7]).toBe('sold');
+        // First two are for_sale, third is sold; status at index 5
+        expect(inserts[0][1][5]).toBe('active');
+        expect(inserts[1][1][5]).toBe('active');
+        expect(inserts[2][1][5]).toBe('sold');
     });
 
     test('order buyer_username from mock data', async () => {
@@ -531,16 +530,8 @@ describe('grailedSync — expanded', () => {
         await syncGrailedShop(makeShop('grailed'));
         const saleInserts = getInsertCalls('sales');
 
-        expect(saleInserts[0][1][10]).toBe('completed');
-    });
-
-    test('sold listing quantity is 0, for_sale quantity is 1', async () => {
-        await syncGrailedShop(makeShop('grailed'));
-        const inserts = getInsertCalls('listings');
-
-        expect(inserts[0][1][6]).toBe(1);  // for_sale
-        expect(inserts[1][1][6]).toBe(1);  // for_sale
-        expect(inserts[2][1][6]).toBe(0);  // sold
+        // status at index 9
+        expect(saleInserts[0][1][9]).toBe('completed');
     });
 });
 
@@ -555,20 +546,20 @@ describe('etsySync — expanded', () => {
         await syncEtsyShop(makeShop('etsy'));
         const inserts = getInsertCalls('listings');
 
-        // { amount: 2500, divisor: 100 } = $25.00
-        expect(inserts[0][1][5]).toBe(25.00);
+        // price at index 4: { amount: 2500, divisor: 100 } = $25.00
+        expect(inserts[0][1][4]).toBe(25.00);
         // { amount: 4500, divisor: 100 } = $45.00
-        expect(inserts[1][1][5]).toBe(45.00);
+        expect(inserts[1][1][4]).toBe(45.00);
     });
 
-    test('external data includes URL for each listing', async () => {
+    test('platform_specific_data includes URL for each listing', async () => {
         await syncEtsyShop(makeShop('etsy'));
         const inserts = getInsertCalls('listings');
 
-        const data1 = JSON.parse(inserts[0][1][9]);
+        const data1 = JSON.parse(inserts[0][1][7]);
         expect(data1.url).toBe('https://www.etsy.com/listing/mock');
 
-        const data2 = JSON.parse(inserts[1][1][9]);
+        const data2 = JSON.parse(inserts[1][1][7]);
         expect(data2.url).toBe('https://www.etsy.com/listing/mock2');
     });
 
@@ -588,17 +579,6 @@ describe('etsySync — expanded', () => {
         expect(saleInserts[0][1][6]).toBeCloseTo(expectedFees, 2);
     });
 
-    test('sale date is converted from unix timestamp to ISO string', async () => {
-        await syncEtsyShop(makeShop('etsy'));
-        const saleInserts = getInsertCalls('sales');
-
-        // sale_date is at index 9
-        const saleDate = saleInserts[0][1][9];
-        expect(() => new Date(saleDate)).not.toThrow();
-        // Should be a valid ISO date string
-        expect(new Date(saleDate).toISOString()).toBe(saleDate);
-    });
-
     test('order buyer_email used as buyer_username', async () => {
         await syncEtsyShop(makeShop('etsy'));
         const saleInserts = getInsertCalls('sales');
@@ -610,7 +590,8 @@ describe('etsySync — expanded', () => {
         await syncEtsyShop(makeShop('etsy'));
         const saleInserts = getInsertCalls('sales');
 
-        expect(saleInserts[0][1][10]).toBe('completed');
+        // status at index 9
+        expect(saleInserts[0][1][9]).toBe('completed');
     });
 
     test('active state maps to active status for listings', async () => {
@@ -618,17 +599,18 @@ describe('etsySync — expanded', () => {
         const inserts = getInsertCalls('listings');
 
         for (const ins of inserts) {
-            expect(ins[1][7]).toBe('active');
+            // status at index 5
+            expect(ins[1][5]).toBe('active');
         }
     });
 
-    test('listing external_listing_id is stringified', async () => {
+    test('listing platform_listing_id is stringified', async () => {
         await syncEtsyShop(makeShop('etsy'));
         const inserts = getInsertCalls('listings');
 
-        // external_listing_id at index 8 should be a string
+        // platform_listing_id at index 6 should be a string
         for (const ins of inserts) {
-            expect(typeof ins[1][8]).toBe('string');
+            expect(typeof ins[1][6]).toBe('string');
         }
     });
 
@@ -951,38 +933,38 @@ describe('cross-platform consistency', () => {
                 }
             });
 
-            test('all listings stored with correct shop_id', async () => {
-                await fn(makeShop(name));
-                const inserts = getInsertCalls('listings');
-                for (const ins of inserts) {
-                    // shop_id is at index 2
-                    expect(ins[1][2]).toBe(`shop-${name}-expanded`);
-                }
-            });
-
             test('all listings have null inventory_id (not linked yet)', async () => {
                 await fn(makeShop(name));
                 const inserts = getInsertCalls('listings');
                 for (const ins of inserts) {
-                    // inventory_id is at index 3
-                    expect(ins[1][3]).toBeNull();
+                    // inventory_id is at index 2
+                    expect(ins[1][2]).toBeNull();
                 }
             });
 
-            test('all sales stored with correct user_id and shop_id', async () => {
+            test('all sales stored with correct user_id', async () => {
                 await fn(makeShop(name));
                 const saleInserts = getInsertCalls('sales');
                 for (const ins of saleInserts) {
                     expect(ins[1][1]).toBe('user-expanded-1');
-                    expect(ins[1][2]).toBe(`shop-${name}-expanded`);
                 }
             });
 
-            test('external data JSON is parseable for all listings', async () => {
+            test('all sales have null listing_id (not linked yet)', async () => {
+                await fn(makeShop(name));
+                const saleInserts = getInsertCalls('sales');
+                for (const ins of saleInserts) {
+                    // listing_id is at index 2
+                    expect(ins[1][2]).toBeNull();
+                }
+            });
+
+            test('platform_specific_data JSON is parseable for all listings', async () => {
                 await fn(makeShop(name));
                 const inserts = getInsertCalls('listings');
                 for (const ins of inserts) {
-                    const parsed = JSON.parse(ins[1][9]);
+                    // platform_specific_data at index 7
+                    const parsed = JSON.parse(ins[1][7]);
                     expect(parsed.platform).toBe(name);
                     expect(typeof parsed.syncedAt).toBe('string');
                 }
@@ -1009,9 +991,9 @@ describe('cross-platform consistency', () => {
                 await fn(makeShop(name));
                 const inserts = getInsertCalls('listings');
                 for (const ins of inserts) {
-                    // created_at at index 10, updated_at at index 11
-                    expect(new Date(ins[1][10]).toISOString()).toBe(ins[1][10]);
-                    expect(new Date(ins[1][11]).toISOString()).toBe(ins[1][11]);
+                    // created_at at index 8, updated_at at index 9
+                    expect(new Date(ins[1][8]).toISOString()).toBe(ins[1][8]);
+                    expect(new Date(ins[1][9]).toISOString()).toBe(ins[1][9]);
                 }
             });
         });

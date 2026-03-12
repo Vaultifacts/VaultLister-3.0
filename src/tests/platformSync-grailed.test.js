@@ -84,7 +84,7 @@ describe('grailedSync', () => {
       c[0] && c[0].includes('INSERT INTO listings')
     );
     expect(insertCalls.length).toBe(3);
-    const externalData = JSON.parse(insertCalls[0][1][9]);
+    const externalData = JSON.parse(insertCalls[0][1][7]);
     expect(externalData.platform).toBe('grailed');
     expect(externalData.designer).toBeDefined();
   });

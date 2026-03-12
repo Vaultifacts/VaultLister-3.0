@@ -65,7 +65,8 @@ export async function publishListingToPoshmark(shop, listing, inventory) {
     return new Promise((resolve, reject) => {
         const child = spawn('node', [BOT_SCRIPT], {
             stdio: ['pipe', 'pipe', 'pipe'],
-            env: process.env
+            env: process.env,
+            shell: true
         });
 
         let stdout = '';

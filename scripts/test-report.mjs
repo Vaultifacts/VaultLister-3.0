@@ -20,7 +20,7 @@ import { execSync } from 'child_process';
 import { readFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
-const HOME = process.env.HOME || '/home/openclawuser';
+const HOME = process.env.HOME || process.env.USERPROFILE || '/home/openclawuser';
 const PROJECT = join(HOME, 'projects/vaultlister-test');
 const LOG_DIR = join(HOME, '.openclaw/logs');
 const HISTORY_FILE = join(LOG_DIR, 'test-history.jsonl');

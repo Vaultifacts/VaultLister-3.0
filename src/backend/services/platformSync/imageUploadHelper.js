@@ -112,8 +112,25 @@ export async function resolveImageFiles(rawImages, maxImages = 8) {
  * @param {string} url
  * @returns {string|null}
  */
+function isPrivateUrl(urlStr) {
+    try {
+        const parsed = new URL(urlStr);
+        const hostname = parsed.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0') return true;
+        if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.)/.test(hostname)) return true;
+        if (hostname.startsWith('fe80:') || hostname.startsWith('fc00:') || hostname.startsWith('fd00:')) return true;
+        if (hostname.endsWith('.local') || hostname.endsWith('.internal')) return true;
+        return false;
+    } catch { return true; }
+}
+
 async function downloadToTemp(url) {
     ensureTempDir();
+
+    if (isPrivateUrl(url)) {
+        logger.warn('[ImageUpload] Blocked private/internal URL', { url });
+        return null;
+    }
 
     const ext = url.split('.').pop().split('?')[0].toLowerCase();
     const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];

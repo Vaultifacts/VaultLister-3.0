@@ -396,4 +396,4 @@ async function syncAllData() {
     await syncSales();
 }
 
-console.log('[SW] Service worker v4.2.0 loaded');
+console.log(`[SW] Service worker ${CACHE_VERSION} loaded`);

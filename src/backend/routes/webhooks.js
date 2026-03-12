@@ -57,7 +57,7 @@ export async function webhooksRouter(ctx) {
 
             // Look up webhook configuration for this source (most recent if duplicates)
             const webhookConfig = query.get(`
-                SELECT secret FROM webhook_endpoints
+                SELECT secret, user_id FROM webhook_endpoints
                 WHERE name = ? AND is_enabled = 1
                 ORDER BY rowid DESC
                 LIMIT 1
@@ -91,9 +91,9 @@ export async function webhooksRouter(ctx) {
             const eventType = body.type || body.event_type || 'unknown';
 
             query.run(`
-                INSERT INTO webhook_events (id, source, event_type, payload, signature, status, created_at)
-                VALUES (?, ?, ?, ?, ?, 'pending', datetime('now'))
-            `, [eventId, source, eventType, JSON.stringify(body), signature]);
+                INSERT INTO webhook_events (id, user_id, source, event_type, payload, signature, status, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
+            `, [eventId, webhookConfig.user_id, source, eventType, JSON.stringify(body), signature]);
 
             // Queue for async processing
             try {

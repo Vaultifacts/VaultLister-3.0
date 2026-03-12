@@ -331,15 +331,17 @@ export async function generateListing(context) {
         try {
             const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-            const prompt = `You are an expert reseller. Generate a marketplace listing for this secondhand item.
+            const prompt = `You are an expert reseller. Generate a marketplace listing for the secondhand item described in the <item> block below.
 
-Brand: ${brand || 'Unknown'}
-Category: ${category || 'Clothing'}
-Condition: ${condition || 'good'}
-Color: ${color || 'N/A'}
-Size: ${size || 'N/A'}
-Original Price: ${originalPrice ? `$${originalPrice}` : 'N/A'}
-Notes: ${notes || (keywords.length ? keywords.join(', ') : 'None')}
+<item>
+Brand: ${(brand || 'Unknown').replace(/</g, '&lt;')}
+Category: ${(category || 'Clothing').replace(/</g, '&lt;')}
+Condition: ${(condition || 'good').replace(/</g, '&lt;')}
+Color: ${(color || 'N/A').replace(/</g, '&lt;')}
+Size: ${(size || 'N/A').replace(/</g, '&lt;')}
+Original Price: ${originalPrice ? `$${String(originalPrice).replace(/</g, '&lt;')}` : 'N/A'}
+Notes: ${(notes || (keywords.length ? keywords.join(', ') : 'None')).replace(/</g, '&lt;')}
+</item>
 
 Respond with ONLY valid JSON in this exact format:
 {"title":"listing title max 80 chars SEO-optimized with brand and key attributes","description":"200-500 word persuasive description with condition, features, and item details. Include a DETAILS section with brand, size, color, condition. End with a friendly closing line.","tags":["tag1","tag2","up to 20 relevant search tags"]}`;

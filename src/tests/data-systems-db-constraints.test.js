@@ -25,7 +25,40 @@ beforeAll(() => {
     try {
         if (typeof query.exec !== 'function') { isMocked = true; return; }
         const tables = query.all("SELECT name FROM sqlite_master WHERE type='table' AND name='users'");
-        if (!tables || tables.length === 0) { isMocked = true; }
+        if (!tables || tables.length === 0) { isMocked = true; return; }
+
+        // Apply migrations 096 + 097 if not yet applied (these fix bugs tested below).
+        // Applied inline so direct-DB tests pick up the fixes without a server restart.
+        const applied = query.all("SELECT name FROM migrations WHERE name IN ('096_add_listings_unique_constraint.sql', '097_fix_fts5_delete_trigger.sql')");
+        const appliedNames = new Set(applied.map(r => r.name));
+
+        if (!appliedNames.has('096_add_listings_unique_constraint.sql')) {
+            // Deduplicate existing rows before creating the unique index
+            query.exec(`DELETE FROM listings WHERE rowid NOT IN (
+                SELECT MAX(rowid) FROM listings WHERE inventory_id IS NOT NULL GROUP BY inventory_id, platform
+            ) AND inventory_id IN (
+                SELECT inventory_id FROM listings WHERE inventory_id IS NOT NULL GROUP BY inventory_id, platform HAVING COUNT(*) > 1
+            )`);
+            query.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_listings_inv_platform ON listings(inventory_id, platform)');
+            query.run("INSERT OR IGNORE INTO migrations (name) VALUES ('096_add_listings_unique_constraint.sql')");
+        }
+
+        if (!appliedNames.has('097_fix_fts5_delete_trigger.sql')) {
+            query.exec('DROP TRIGGER IF EXISTS inventory_ad');
+            query.exec(`CREATE TRIGGER IF NOT EXISTS inventory_ad AFTER DELETE ON inventory BEGIN
+                INSERT INTO inventory_fts(inventory_fts, rowid, id, title, description, brand, tags)
+                VALUES ('delete', old.rowid, old.id, old.title, old.description, old.brand, old.tags);
+            END`);
+            query.exec('DROP TRIGGER IF EXISTS inventory_au');
+            query.exec(`CREATE TRIGGER IF NOT EXISTS inventory_au AFTER UPDATE ON inventory BEGIN
+                INSERT INTO inventory_fts(inventory_fts, rowid, id, title, description, brand, tags)
+                VALUES ('delete', old.rowid, old.id, old.title, old.description, old.brand, old.tags);
+                INSERT INTO inventory_fts(id, title, description, brand, tags)
+                VALUES (new.id, new.title, new.description, new.brand, new.tags);
+            END`);
+            query.exec("INSERT INTO inventory_fts(inventory_fts) VALUES('rebuild')");
+            query.run("INSERT OR IGNORE INTO migrations (name) VALUES ('097_fix_fts5_delete_trigger.sql')");
+        }
     } catch { isMocked = true; }
 });
 
@@ -77,11 +110,8 @@ describe('DB Constraints — UNIQUE violations', () => {
         }).toThrow();
     });
 
-    // NOTE: The listings table was created before UNIQUE(inventory_id, platform) was added to
-    // schema.sql. Because CREATE TABLE IF NOT EXISTS skips if the table exists, this constraint
-    // is NOT enforced on the live DB. This is a known data integrity gap tracked in the
-    // Data Systems coverage matrix (missing constraint on listings table).
-    it('UNIQUE(inventory_id, platform) on listings — constraint is NOT enforced (schema gap)', () => {
+    // Migration 096 adds UNIQUE index on (inventory_id, platform) to the listings table.
+    it('UNIQUE(inventory_id, platform) on listings — duplicate throws', () => {
         const userId = makeUser();
         const invId = uuidv4();
         ids.inventory.push(invId);
@@ -89,11 +119,9 @@ describe('DB Constraints — UNIQUE violations', () => {
         const l1 = uuidv4(); const l2 = uuidv4();
         ids.listings.push(l1, l2);
         query.run('INSERT INTO listings (id, inventory_id, user_id, platform, title, price) VALUES (?, ?, ?, ?, ?, ?)', [l1, invId, userId, 'ebay', 'L1', 25.00]);
-        // This SHOULD throw but DOES NOT — the constraint is missing from the live table.
-        // Documented as a gap: duplicate platform listings for the same inventory item are allowed.
         expect(() => {
             query.run('INSERT INTO listings (id, inventory_id, user_id, platform, title, price) VALUES (?, ?, ?, ?, ?, ?)', [l2, invId, userId, 'ebay', 'L2', 25.00]);
-        }).not.toThrow(); // gap documented: constraint absent on listings table
+        }).toThrow();
     });
 
     it('UNIQUE(user_id, date, platform) on analytics_snapshots — duplicate throws', () => {
@@ -298,35 +326,27 @@ describe('FTS5 Sync — inventory triggers keep index in sync', () => {
         expect(ftsRow.title).toBe(newTitle);
     });
 
-    // NOTE: The FTS5 delete trigger (inventory_ad) does NOT include the 'rowid' column
-    // in the FTS5 delete command. Per SQLite FTS5 external content spec, 'rowid' must
-    // be explicitly provided for the delete to correctly remove the entry from the BTree.
-    // Without it, the FTS5 entry for the deleted row remains in the index, causing
-    // "fts5: missing row N from content table" errors when searchInventory is subsequently
-    // called. This is a known data integrity bug. The schema fix would be:
-    //   INSERT INTO inventory_fts(inventory_fts, rowid, id, ...) VALUES ('delete', old.rowid, old.id, ...);
-    //
-    // We verify the bug by checking that a MATCH search after deletion throws the
-    // "missing row from content table" error (the stale entry causes the error).
-    it('FTS5 delete trigger leaves stale entry — known schema bug (rowid missing from trigger)', () => {
+    // Migration 097 fixed the FTS5 delete trigger by adding 'rowid' to the delete command.
+    // Verify the fix: after deleting an inventory row, its FTS5 entry should be removed.
+    it('FTS5 delete trigger properly removes entry (fixed by migration 097)', () => {
         const userId = makeUser();
         const invId = uuidv4();
-        const uniqueTitle = `FTSDELBUG${Date.now()}`;
+        const uniqueTitle = `FTSDEL${Date.now()}`;
         query.run('INSERT INTO inventory (id, user_id, title, list_price) VALUES (?, ?, ?, ?)', [invId, userId, uniqueTitle, 10]);
 
-        // Capture rowid before deletion
+        // Verify indexed after insert
         const row = query.get('SELECT rowid FROM inventory WHERE id = ?', [invId]);
         expect(row).toBeTruthy();
+        const before = query.get('SELECT * FROM inventory_fts WHERE rowid = ?', [row.rowid]);
+        expect(before).toBeTruthy();
 
-        // Delete the inventory row — trigger fires but fails to remove FTS5 entry
+        // Delete the inventory row — trigger should remove FTS5 entry
         query.run('DELETE FROM inventory WHERE id = ?', [invId]);
 
-        // BUG: searching for the deleted item's unique title via MATCH should throw
-        // "missing row from content table" because the FTS5 entry is stale.
-        // Once the trigger is fixed (rowid added), this should NOT throw and should return [].
-        expect(() => {
-            query.all(`SELECT * FROM inventory_fts WHERE inventory_fts MATCH ?`, [uniqueTitle]);
-        }).toThrow(/missing row.*from content table|fts5/i);
+        // Searching for the deleted item's unique title via MATCH should NOT throw
+        // and should return empty results (no stale entry).
+        const results = query.all(`SELECT * FROM inventory_fts WHERE inventory_fts MATCH ?`, [uniqueTitle]);
+        expect(results.length).toBe(0);
     });
 
     // NOTE: A "FTS5 results are user-scoped" test is omitted here because calling

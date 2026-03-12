@@ -176,7 +176,7 @@ const websocketService = {
             }
 
             // Verify JWT token
-            const decoded = jwt.verify(token, JWT_SECRET);
+            const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
 
             ws.data.userId = decoded.userId || decoded.id;
             ws.data.authToken = token;
@@ -438,7 +438,7 @@ const websocketService = {
                 // Re-verify JWT every 5 minutes
                 if (ws.data.authToken && Date.now() - (ws.data.lastTokenCheck || 0) > 5 * 60 * 1000) {
                     try {
-                        jwt.verify(ws.data.authToken, JWT_SECRET);
+                        jwt.verify(ws.data.authToken, JWT_SECRET, { algorithms: ['HS256'] });
                         ws.data.lastTokenCheck = Date.now();
                     } catch (err) {
                         ws.close();

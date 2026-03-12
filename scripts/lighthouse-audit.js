@@ -3,7 +3,7 @@
 // Note: Requires Chrome/Chromium to be installed
 
 import { execSync } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 
 console.log('╔═══════════════════════════════════════════════════════════╗');
 console.log('║         VaultLister Lighthouse Audit                      ║');
@@ -22,7 +22,9 @@ function checkLighthouse() {
 // Check if server is running
 function checkServer(url) {
     try {
-        execSync(`curl -s -o /dev/null -w "%{http_code}" ${url}`, { stdio: 'pipe' });
+        // Use Node fetch instead of curl for cross-platform compat
+        const { execSync: ex } = require('child_process');
+        ex(`node -e "fetch('${url}').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"`, { stdio: 'pipe', timeout: 5000 });
         return true;
     } catch {
         return false;
@@ -40,7 +42,7 @@ function runAudit(url) {
 
         // Create output directory if it doesn't exist
         if (!existsSync(outputDir)) {
-            execSync(`mkdir -p ${outputDir}`);
+            mkdirSync(outputDir, { recursive: true });
         }
 
         // Run Lighthouse

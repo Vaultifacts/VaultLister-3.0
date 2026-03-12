@@ -140,7 +140,7 @@ async function syncViaRclone(backupPath) {
 
         const remote = process.env.VAULTLISTER_RCLONE_REMOTE || 'vaultlister-backup';
         const remotePath = process.env.VAULTLISTER_REMOTE_PATH || 'VaultLister/Backups';
-        const rclone = process.env.RCLONE_PATH || `${process.env.HOME}/.local/bin/rclone`;
+        const rclone = process.env.RCLONE_PATH || `${process.env.HOME || process.env.USERPROFILE}/.local/bin/rclone`;
 
         const filename = backupPath.split('/').pop();
         const parentDir = dirname(backupPath);

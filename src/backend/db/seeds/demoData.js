@@ -6,7 +6,7 @@ import { query } from '../database.js';
 
 // Demo user credentials
 const DEMO_USER_EMAIL = 'demo@vaultlister.com';
-const DEMO_USER_PASSWORD = 'DemoPassword123!';
+const DEMO_USER_PASSWORD = process.env.DEMO_PASSWORD || 'DemoPassword123!';
 const DEMO_USER_USERNAME = 'demo';
 
 // Simple sync password hash using Bun's built-in

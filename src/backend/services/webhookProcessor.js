@@ -228,7 +228,7 @@ async function handleListingUpdated(event, payload) {
                     price = COALESCE(?, price),
                     title = COALESCE(?, title),
                     updated_at = datetime('now')
-                WHERE external_listing_id = ? AND user_id = ?
+                WHERE platform_listing_id = ? AND user_id = ?
             `, [payload.price, payload.title, payload.listingId, event.user_id]);
         } catch (err) {
             logger.info('[WebhookProcessor] Could not update listing:', err.message);

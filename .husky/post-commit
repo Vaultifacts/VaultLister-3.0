@@ -14,7 +14,8 @@ if [ -f "$STATUS_FILE" ]; then
     CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
     LOG_ENTRY="- **${DATE_NOW} ${AGENT_ID}** (${COMMIT_HASH}): ${COMMIT_MSG} [${CHANGED_FILES}]"
     (
-        flock 200
+        # flock not available on Windows Git Bash — skip locking if unavailable
+        if command -v flock >/dev/null 2>&1; then flock 200; fi
         MARKER_LINE=$(grep -n "^<!-- Most recent first" "$STATUS_FILE" | head -1 | cut -d: -f1)
         if [ -n "$MARKER_LINE" ]; then
             { head -n "$MARKER_LINE" "$STATUS_FILE"; printf '%s\n' "$LOG_ENTRY"; tail -n "+$((MARKER_LINE + 1))" "$STATUS_FILE"; } > "${STATUS_FILE}.tmp" && mv "${STATUS_FILE}.tmp" "$STATUS_FILE"

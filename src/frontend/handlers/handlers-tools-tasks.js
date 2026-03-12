@@ -4391,7 +4391,7 @@ Object.assign(handlers, {
             const data = await api.get('/duplicates?status=pending');
             handlers.renderDuplicatesList(data.duplicates || []);
         } catch (error) {
-            listEl.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
+            listEl.innerHTML = `<p style="color: var(--error);">Error: ${escapeHtml(error.message)}</p>`;
         }
     },
 

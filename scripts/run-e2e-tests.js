@@ -11,7 +11,7 @@ console.log('╚═════════════════════�
 // Check if server is running
 function checkServer() {
     try {
-        const response = execSync('curl -s http://localhost:3000', { encoding: 'utf-8' });
+        execSync('node -e "fetch(\'http://localhost:3000\').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"', { stdio: 'pipe', timeout: 5000 });
         return true;
     } catch {
         return false;

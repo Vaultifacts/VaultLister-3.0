@@ -54,7 +54,8 @@ function createMockWs(overrides = {}) {
 }
 
 // Use a fixed JWT secret for tests
-const TEST_JWT_SECRET = 'test-secret-for-ws-real-jwt';
+// Must match the default in websocket.js (captured at import time, not from env)
+const TEST_JWT_SECRET = process.env.JWT_SECRET || 'dev-only-secret-not-for-production';
 
 // Stash original env
 const originalJwtSecret = process.env.JWT_SECRET;

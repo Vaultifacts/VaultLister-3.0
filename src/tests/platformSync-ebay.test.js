@@ -97,7 +97,7 @@ describe('ebaySync', () => {
       c[0] && c[0].includes('INSERT INTO sales')
     );
     expect(insertCalls.length).toBe(1);
-    const externalData = JSON.parse(insertCalls[0][1][12]);
+    const externalData = JSON.parse(insertCalls[0][1][10]);
     expect(externalData.platform).toBe('ebay');
   });
 });

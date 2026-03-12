@@ -72,24 +72,24 @@ async function syncDepopListings(shop, accessToken, mode) {
 
                 const existing = query.get(`
                     SELECT id FROM listings
-                    WHERE shop_id = ? AND external_listing_id = ?
-                `, [shop.id, depopListing.id]);
+                    WHERE user_id = ? AND platform = 'depop' AND platform_listing_id = ?
+                `, [shop.user_id, depopListing.id]);
 
                 if (existing) {
                     query.run(`
-                        UPDATE listings SET title = ?, price = ?, quantity = ?, status = ?,
-                            external_data = ?, updated_at = ?
+                        UPDATE listings SET title = ?, price = ?, status = ?,
+                            platform_specific_data = ?, updated_at = ?
                         WHERE id = ?
-                    `, [mapped.title, mapped.price, mapped.quantity, mapped.status,
+                    `, [mapped.title, mapped.price, mapped.status,
                         JSON.stringify(mapped.externalData), new Date().toISOString(), existing.id]);
                     result.updated++;
                 } else {
                     query.run(`
-                        INSERT INTO listings (id, user_id, shop_id, inventory_id, title, price,
-                            quantity, status, external_listing_id, external_data, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [uuidv4(), shop.user_id, shop.id, null, mapped.title, mapped.price,
-                        mapped.quantity, mapped.status, mapped.externalListingId,
+                        INSERT INTO listings (id, user_id, inventory_id, platform, title, price,
+                            status, platform_listing_id, platform_specific_data, created_at, updated_at)
+                        VALUES (?, ?, ?, 'depop', ?, ?, ?, ?, ?, ?, ?)
+                    `, [uuidv4(), shop.user_id, null, mapped.title, mapped.price,
+                        mapped.status, mapped.externalListingId,
                         JSON.stringify(mapped.externalData), new Date().toISOString(), new Date().toISOString()]);
                     result.created++;
                 }
@@ -117,19 +117,20 @@ async function syncDepopOrders(shop, accessToken, mode) {
                 const mapped = mapDepopOrderToSale(depopOrder, shop);
 
                 const existing = query.get(`
-                    SELECT id FROM sales WHERE shop_id = ? AND external_order_id = ?
-                `, [shop.id, depopOrder.id]);
+                    SELECT id FROM sales WHERE user_id = ? AND platform_order_id = ? AND platform = 'depop'
+                `, [shop.user_id, depopOrder.id]);
 
                 if (!existing) {
                     query.run(`
-                        INSERT INTO sales (id, user_id, shop_id, listing_id, buyer_username,
-                            sale_price, platform_fee, shipping_cost, net_profit, sale_date,
-                            status, external_order_id, external_data, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [uuidv4(), shop.user_id, shop.id, null, mapped.buyerUsername,
+                        INSERT INTO sales (id, user_id, listing_id, platform, platform_order_id, buyer_username,
+                            sale_price, platform_fee, shipping_cost, net_profit,
+                            status, notes, created_at, updated_at)
+                        VALUES (?, ?, ?, 'depop', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [uuidv4(), shop.user_id, null, mapped.externalOrderId, mapped.buyerUsername,
                         mapped.salePrice, mapped.platformFees, mapped.shippingCost,
-                        mapped.netProfit, mapped.saleDate, mapped.status, mapped.externalOrderId,
-                        JSON.stringify(mapped.externalData), new Date().toISOString(), new Date().toISOString()]);
+                        mapped.netProfit, mapped.status,
+                        mapped.externalData ? JSON.stringify(mapped.externalData) : null,
+                        new Date().toISOString(), new Date().toISOString()]);
                     result.created++;
                 }
                 result.synced++;

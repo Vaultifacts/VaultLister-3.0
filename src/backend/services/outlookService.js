@@ -69,7 +69,7 @@ export async function fetchRecentEmails(accessToken, options = {}) {
 
     if (senderFilters.length > 0) {
         const senderFilter = senderFilters
-            .map(s => `contains(from/emailAddress/address, '${s}')`)
+            .map(s => `contains(from/emailAddress/address, '${s.replace(/'/g, "''")}')`)
             .join(' or ');
         filterParts.push(`(${senderFilter})`);
     }

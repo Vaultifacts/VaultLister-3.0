@@ -57,7 +57,7 @@ fi
 
 # Check for .only or .skip in test files (prevents broken CI)
 echo "Checking for .only/.skip in tests..."
-ONLY_SKIP=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(test|spec)\.js$" | xargs grep -In "\.only\|\.skip" 2>/dev/null || true)
+ONLY_SKIP=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(test|spec)\.js$" | xargs grep -InE "\.(only|skip)\s*\(" 2>/dev/null || true)
 if [ -n "$ONLY_SKIP" ]; then
     echo "Error: Found .only or .skip in test files:"
     echo "$ONLY_SKIP"

@@ -3,9 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
-const ALLOWED_COHOST_FIELDS = new Set(['revenue_split', 'status', 'notes']);
-const ALLOWED_STAGING_FIELDS = new Set(['display_order', 'flash_price', 'bundle_group', 'notes']);
-
 export async function whatnotEnhancedRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
 
@@ -372,12 +369,12 @@ export async function whatnotEnhancedRouter(ctx) {
 
             // Get items with highest profit margins, older than 30 days, not already staged
             const suggested = query.all(
-                `SELECT i.id, i.title, i.sku, i.cost, i.price, i.quantity,
-                (i.price - i.cost - COALESCE(i.platform_fees, 0)) as profit_margin,
+                `SELECT i.id, i.title, i.sku, i.cost_price, i.list_price, i.quantity,
+                (i.list_price - i.cost_price) as profit_margin,
                 julianday('now') - julianday(i.created_at) as age_days
                 FROM inventory i
                 WHERE i.user_id = ?
-                AND i.status = 'available'
+                AND i.status = 'active'
                 AND i.quantity > 0
                 AND julianday('now') - julianday(i.created_at) > 30
                 AND i.id NOT IN (SELECT inventory_id FROM stream_staging WHERE event_id = ?)

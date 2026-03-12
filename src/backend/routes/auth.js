@@ -174,7 +174,7 @@ async function ensureTestDemoUser() {
     const demoEmail = 'demo@vaultlister.com';
     const demoUsername = 'demo';
     const demoFullName = 'Demo User';
-    const demoPassword = 'DemoPassword123!';
+    const demoPassword = process.env.DEMO_PASSWORD || 'DemoPassword123!';
 
     let existing = query.get(
         'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled FROM users WHERE email = ?',
@@ -339,7 +339,7 @@ export async function authRouter(ctx) {
             const normalizedEmail = email.toLowerCase();
             const isTestDemoLogin = isAuthLockoutBypassed()
                 && normalizedEmail === 'demo@vaultlister.com'
-                && password === 'DemoPassword123!';
+                && password === (process.env.DEMO_PASSWORD || 'DemoPassword123!');
 
             let user = query.get(
                 'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled FROM users WHERE email = ? AND is_active = 1',

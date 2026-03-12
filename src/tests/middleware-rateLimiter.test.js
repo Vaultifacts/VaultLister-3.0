@@ -51,13 +51,14 @@ describe('RateLimiter', () => {
 
         test('should block after repeated violations', () => {
             const key = 'violation-key';
+            const ip = '10.0.0.1'; // non-loopback IP required for blocking
             // Exceed auth limit 3 times to trigger block
             for (let round = 0; round < 3; round++) {
                 for (let i = 0; i < 12; i++) {
-                    limiter.check(key, 'auth');
+                    limiter.check(key, 'auth', ip);
                 }
             }
-            const result = limiter.check(key, 'auth');
+            const result = limiter.check(key, 'auth', ip);
             expect(result.blocked).toBe(true);
         });
     });

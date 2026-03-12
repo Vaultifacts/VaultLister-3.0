@@ -169,9 +169,11 @@ export async function smartCrop(publicId, width, height) {
 
     try {
         const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+        const w = Math.max(1, Math.min(Math.round(Number(width) || 800), 4096));
+        const h = Math.max(1, Math.min(Math.round(Number(height) || 800), 4096));
 
         // Generate transformation URL with smart cropping
-        const transformationUrl = `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,g_auto,w_${width},h_${height}/${publicId}`;
+        const transformationUrl = `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,g_auto,w_${w},h_${h}/${publicId}`;
 
         return {
             success: true,

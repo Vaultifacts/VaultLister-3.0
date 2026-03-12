@@ -104,7 +104,7 @@ function ctx(method, path, user = null, body = {}, query = {}) {
     return { method, path, user, body, query };
 }
 
-const enterpriseUser = { id: 'user-ent-1', email: 'ent@test.com', subscription_tier: 'enterprise' };
+const enterpriseUser = { id: 'user-ent-1', email: 'ent@test.com', subscription_tier: 'enterprise', is_admin: true };
 const freeUser = { id: 'user-free-1', email: 'free@test.com', subscription_tier: 'free' };
 const proUser = { id: 'user-pro-1', email: 'pro@test.com', subscription_tier: 'pro' };
 

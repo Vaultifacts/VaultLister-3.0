@@ -94,7 +94,8 @@ async function startServer(useWatch) {
   const child = spawn('bun', args, {
     detached: true,
     stdio: ['ignore', logFd, logFd],
-    cwd: ROOT_DIR
+    cwd: ROOT_DIR,
+    shell: true
   });
 
   child.unref();

@@ -65,7 +65,7 @@ async function sendEmail(to, subject, html, text) {
     if (transporter) {
         try {
             const result = await transporter.sendMail(mailOptions);
-            logger.info(`[Email] Sent to ${to}: ${subject}`);
+            logger.info(`[Email] Sent to ${to.replace(/(.{2}).*(@.*)/, '$1***$2')}: ${subject}`);
             return { success: true, messageId: result.messageId };
         } catch (error) {
             logger.error('[Email] Send failed', null, { detail: error.message });
@@ -74,7 +74,7 @@ async function sendEmail(to, subject, html, text) {
     }
 
     // Development mode - log email details via structured logger
-    logger.info('[Email] DEV MODE', null, { to, subject, body: (text || html).slice(0, 200) });
+    logger.info('[Email] DEV MODE', null, { to: to.replace(/(.{2}).*(@.*)/, '$1***$2'), subject, body: (text || html).slice(0, 200) });
 
     return { success: true, messageId: 'dev-' + Date.now() };
 }
@@ -144,7 +144,7 @@ export async function sendMFAEnabledEmail(user) {
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #059669;">Two-Factor Authentication Enabled</h2>
-            <p>Hi ${user.username || user.email},</p>
+            <p>Hi ${escapeHtml(user.username || user.email)},</p>
             <p>Two-factor authentication has been successfully enabled on your VaultLister account.</p>
             <p>From now on, you'll need to enter a code from your authenticator app when logging in.</p>
             <div style="background-color: #FEF3C7; padding: 16px; border-radius: 6px; margin: 20px 0;">
@@ -169,7 +169,7 @@ export async function sendMFADisabledEmail(user) {
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #DC2626;">Two-Factor Authentication Disabled</h2>
-            <p>Hi ${user.username || user.email},</p>
+            <p>Hi ${escapeHtml(user.username || user.email)},</p>
             <p>Two-factor authentication has been disabled on your VaultLister account.</p>
             <p>Your account is now less secure. We recommend re-enabling 2FA for better protection.</p>
             <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">

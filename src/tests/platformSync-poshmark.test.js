@@ -83,7 +83,7 @@ describe('poshmarkSync', () => {
     const insertCalls = mockQueryRun.mock.calls.filter(c =>
       c[0] && c[0].includes('INSERT INTO listings')
     );
-    const externalData = JSON.parse(insertCalls[0][1][9]);
+    const externalData = JSON.parse(insertCalls[0][1][7]);
     expect(externalData.platform).toBe('poshmark');
   });
 

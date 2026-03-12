@@ -30,6 +30,7 @@ try {
     # Start bun server directly (bypasses server-manager PID conflict with prod server)
     $env:NODE_ENV = "test"
     $env:DISABLE_RATE_LIMIT = "true"
+    $env:DISABLE_CSRF = "true"
     $env:PORT = "3100"
 
     $errFile = Join-Path $repoRoot "logs\test-server-err.log"

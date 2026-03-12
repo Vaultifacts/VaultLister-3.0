@@ -712,8 +712,8 @@ export function mapSaleToNotion(sale) {
     if (sale.platform) {
         props['Platform'] = { select: { name: sale.platform } };
     }
-    if (sale.platform_fees !== undefined) {
-        props['Platform Fees'] = { number: parseFloat(sale.platform_fees) || 0 };
+    if ((sale.platform_fee ?? sale.platform_fees) !== undefined) {
+        props['Platform Fees'] = { number: parseFloat(sale.platform_fee ?? sale.platform_fees) || 0 };
     }
     if (sale.shipping_cost !== undefined) {
         props['Shipping Cost'] = { number: parseFloat(sale.shipping_cost) || 0 };

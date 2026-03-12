@@ -90,8 +90,8 @@ async function syncEbayListings(shop, accessToken, mode) {
                 // Check if listing already exists
                 const existing = query.get(`
                     SELECT id FROM listings
-                    WHERE shop_id = ? AND external_listing_id = ?
-                `, [shop.id, ebayListing.sku || ebayListing.listingId]);
+                    WHERE user_id = ? AND platform = 'ebay' AND platform_listing_id = ?
+                `, [shop.user_id, ebayListing.sku || ebayListing.listingId]);
 
                 if (existing) {
                     // Update existing listing
@@ -99,15 +99,13 @@ async function syncEbayListings(shop, accessToken, mode) {
                         UPDATE listings SET
                             title = ?,
                             price = ?,
-                            quantity = ?,
                             status = ?,
-                            external_data = ?,
+                            platform_specific_data = ?,
                             updated_at = ?
                         WHERE id = ?
                     `, [
                         mapped.title,
                         mapped.price,
-                        mapped.quantity,
                         mapped.status,
                         JSON.stringify(mapped.externalData),
                         new Date().toISOString(),
@@ -119,18 +117,16 @@ async function syncEbayListings(shop, accessToken, mode) {
                     const listingId = uuidv4();
                     query.run(`
                         INSERT INTO listings (
-                            id, user_id, shop_id, inventory_id, title, price,
-                            quantity, status, external_listing_id, external_data,
+                            id, user_id, inventory_id, platform, title, price,
+                            status, platform_listing_id, platform_specific_data,
                             created_at, updated_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ) VALUES (?, ?, ?, 'ebay', ?, ?, ?, ?, ?, ?, ?)
                     `, [
                         listingId,
                         shop.user_id,
-                        shop.id,
                         null, // No linked inventory item yet
                         mapped.title,
                         mapped.price,
-                        mapped.quantity,
                         mapped.status,
                         mapped.externalListingId,
                         JSON.stringify(mapped.externalData),
@@ -173,33 +169,31 @@ async function syncEbayOrders(shop, accessToken, mode) {
                 // Check if sale already exists
                 const existing = query.get(`
                     SELECT id FROM sales
-                    WHERE shop_id = ? AND external_order_id = ?
-                `, [shop.id, ebayOrder.orderId]);
+                    WHERE user_id = ? AND platform_order_id = ? AND platform = 'ebay'
+                `, [shop.user_id, ebayOrder.orderId]);
 
                 if (!existing) {
                     // Create new sale
                     const saleId = uuidv4();
                     query.run(`
                         INSERT INTO sales (
-                            id, user_id, shop_id, listing_id, buyer_username,
-                            sale_price, platform_fees, shipping_cost, net_profit,
-                            sale_date, status, external_order_id, external_data,
+                            id, user_id, listing_id, platform, platform_order_id, buyer_username,
+                            sale_price, platform_fee, shipping_cost, net_profit,
+                            status, notes,
                             created_at, updated_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ) VALUES (?, ?, ?, 'ebay', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `, [
                         saleId,
                         shop.user_id,
-                        shop.id,
                         null, // Try to link listing later
+                        mapped.externalOrderId,
                         mapped.buyerUsername,
                         mapped.salePrice,
                         mapped.platformFees,
                         mapped.shippingCost,
                         mapped.netProfit,
-                        mapped.saleDate,
                         mapped.status,
-                        mapped.externalOrderId,
-                        JSON.stringify(mapped.externalData),
+                        mapped.externalData ? JSON.stringify(mapped.externalData) : null,
                         new Date().toISOString(),
                         new Date().toISOString()
                     ]);

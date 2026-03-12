@@ -157,7 +157,7 @@ async function main() {
     }
 
     // Write result to audit log if available
-    const auditDir = `${process.env.HOME}/.openclaw/logs`;
+    const auditDir = `${process.env.HOME || process.env.USERPROFILE}/.openclaw/logs`;
     try {
         const fs = await import('fs');
         const date = new Date().toISOString().split('T')[0];

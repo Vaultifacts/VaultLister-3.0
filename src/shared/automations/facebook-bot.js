@@ -2,8 +2,27 @@
 // Handles refreshing and relisting on Facebook Marketplace
 
 import { chromium } from 'playwright';
+import fs from 'fs';
+import path from 'path';
+import { RATE_LIMITS } from './rate-limits.js';
 
 const FB_URL = 'https://www.facebook.com';
+const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
+
+function writeAuditLog(event, metadata = {}) {
+    try {
+        const entry = JSON.stringify({ ts: new Date().toISOString(), platform: 'facebook', event, ...metadata });
+        fs.appendFileSync(AUDIT_LOG, entry + '\n');
+    } catch {}
+}
+
+async function checkForCaptcha(page) {
+    const captcha = await page.$('[class*="captcha" i], [id*="captcha" i], iframe[src*="recaptcha"], iframe[src*="hcaptcha"], [data-testid*="captcha"]');
+    if (captcha) {
+        writeAuditLog('captcha_detected');
+        throw new Error('CAPTCHA detected — stopping automation. Please solve manually.');
+    }
+}
 
 function randomDelay(min = 1000, max = 3000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -41,10 +60,15 @@ export class FacebookBot {
         console.log('[FacebookBot] Browser initialized');
     }
 
-    async login(email, password) {
+    async login() {
+        const email = process.env.FACEBOOK_EMAIL;
+        const password = process.env.FACEBOOK_PASSWORD;
+        if (!email || !password) throw new Error('FACEBOOK_EMAIL and FACEBOOK_PASSWORD must be set in .env');
         console.log('[FacebookBot] Logging in...');
+        writeAuditLog('login_attempt');
         try {
             await this.page.goto(`${FB_URL}/login`, { waitUntil: 'networkidle' });
+            await checkForCaptcha(this.page);
             await this.page.waitForSelector('#email, input[name="email"]', { timeout: 10000 });
 
             await humanType(this.page, '#email, input[name="email"]', email);
@@ -55,17 +79,20 @@ export class FacebookBot {
 
             await this.page.click('button[name="login"], button[type="submit"]');
             await this.page.waitForNavigation({ waitUntil: 'networkidle' });
+            await checkForCaptcha(this.page);
 
             const loggedIn = await this.page.$('[aria-label="Your profile"], [data-testid="royal_profile_link"]');
             this.isLoggedIn = !!loggedIn;
 
             if (this.isLoggedIn) {
+                writeAuditLog('login_success');
                 console.log('[FacebookBot] Login successful');
             } else {
                 throw new Error('Login failed - could not verify login status');
             }
             return this.isLoggedIn;
         } catch (error) {
+            writeAuditLog('login_error', { error: error.message });
             console.error('[FacebookBot] Login error:', error.message);
             this.stats.errors++;
             throw error;

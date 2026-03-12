@@ -98,9 +98,9 @@
 
 | # | Bug | Severity | Location | Status |
 |---|-----|----------|----------|--------|
-| 1 | FTS5 delete trigger missing `rowid` — stale entries persist in index | High | schema.sql trigger `inventory_ad` | Documented, test asserts buggy behavior |
-| 2 | `sales.js` FIFO query references non-existent `user_id` column on `inventory_cost_layers` | High | src/backend/routes/sales.js | Documented, not fixable without schema change |
-| 3 | Listings UNIQUE(inventory_id, platform) constraint absent from live DB | Medium | schema.sql vs live DB | Documented, test asserts current behavior |
+| 1 | FTS5 delete trigger missing `rowid` — stale entries persist in index | High | schema.sql trigger `inventory_ad` + `inventory_au` | **Fixed**: migration 097 drops/recreates triggers with `rowid`, rebuilds FTS5 index. Test now verifies MATCH returns empty after delete. |
+| 2 | `sales.js` FIFO query references non-existent `user_id` column on `inventory_cost_layers` | High | src/backend/routes/sales.js:145-149 | **Fixed**: removed `AND user_id = ?` clause and `user.id` param. User scoping enforced by inventory ownership check earlier in handler. Syntax verified. |
+| 3 | Listings UNIQUE(inventory_id, platform) constraint absent from live DB | Medium | schema.sql vs live DB | **Fixed**: migration 096 deduplicates existing rows then creates `idx_listings_inv_platform` unique index. Test now verifies duplicate throws. |
 
 ---
 
@@ -113,13 +113,11 @@
 
 ---
 
-## FTS5 Testing Caveats
+## FTS5 Testing — Post-Fix
 
-The live test DB has pre-existing FTS5 index corruption: rows deleted from `inventory` without the FTS5 delete trigger firing left stale rowid references in the FTS5 index (confirmed: rows 2316, 2332, 2346, 2347, 2366). Any test that calls `query.searchInventory()` risks triggering `fts5: missing row N from content table` errors when the MATCH scan encounters these stale entries.
+Migration 097 fixed the FTS5 delete and update triggers by adding `rowid` to the FTS5 delete command, and rebuilt the entire FTS5 index to clean up stale entries from prior corruption. The test `beforeAll` applies these migrations inline for direct-DB tests.
 
-**Mitigation used in tests:**
-- FTS5 insert/update verification uses direct `WHERE rowid = ?` lookups (bypasses MATCH scan)
-- FTS5 delete bug test uses targeted `MATCH ?` with a unique term to trigger the expected error
-- Brand column test queries FTS5 table by rowid, not by MATCH
-
-**Permanent fix:** Correct the delete trigger (add `rowid`), then run `INSERT INTO inventory_fts(inventory_fts) VALUES('rebuild')` to rebuild the entire FTS5 index.
+**Post-fix test approach:**
+- FTS5 insert/update verification uses direct `WHERE rowid = ?` lookups
+- FTS5 delete test verifies MATCH returns empty results (no stale entry, no error)
+- Brand column test queries FTS5 table by rowid

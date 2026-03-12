@@ -1606,8 +1606,8 @@ Object.assign(pages, {
                             <div style="display: flex; gap: 12px; padding: 12px; background: var(--gray-50); border-left: 3px solid var(--${alert.color}); border-radius: 4px;">
                                 <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--${alert.color}); margin-top: 6px; flex-shrink: 0;"></div>
                                 <div style="flex: 1;">
-                                    <div style="font-weight: 600; font-size: 13px;">${alert.title}</div>
-                                    <p style="font-size: 12px; color: var(--gray-500); margin: 2px 0 0;">${alert.description}</p>
+                                    <div style="font-weight: 600; font-size: 13px;">${escapeHtml(alert.title)}</div>
+                                    <p style="font-size: 12px; color: var(--gray-500); margin: 2px 0 0;">${escapeHtml(alert.description)}</p>
                                 </div>
                                 <span style="font-size: 11px; color: var(--gray-400); white-space: nowrap;">${alert.time}</span>
                             </div>

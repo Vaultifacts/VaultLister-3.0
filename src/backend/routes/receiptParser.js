@@ -405,10 +405,10 @@ export async function receiptParserRouter(ctx) {
 
                 query.run(`
                     INSERT INTO sales (
-                        id, user_id, platform, sale_price, fees, net_payout,
-                        buyer_username, order_id, tracking_number, status,
-                        sale_date, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                        id, user_id, platform, sale_price, platform_fee, net_profit,
+                        buyer_username, platform_order_id, tracking_number, status,
+                        created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                 `, [
                     saleId,
                     user.id,
@@ -419,8 +419,7 @@ export async function receiptParserRouter(ctx) {
                     parsedData.buyerInfo?.username || parsedData.buyerInfo?.name || null,
                     parsedData.orderNumber || null,
                     parsedData.trackingNumber || null,
-                    'shipped',
-                    parsedData.date || new Date().toISOString().split('T')[0]
+                    'shipped'
                 ]);
 
                 result = { type: 'sale', id: saleId };

@@ -25,9 +25,10 @@ beforeEach(() => db.reset());
 // ============================================================
 describe('hashBackupCode (indirect)', () => {
     test('backup code verification hashes the code with SHA-256', async () => {
-        // The hash for a known code — hashBackupCode strips dashes and hashes
-        // Code "ABCD-EF01" -> strip dash -> "ABCDEF01" -> sha256
-        const expectedHash = crypto.createHash('sha256').update('ABCDEF01').digest('hex');
+        // hashBackupCode strips dashes and uses HMAC-SHA256 with BACKUP_CODE_SECRET
+        // Code "ABCD-EF01" -> strip dash -> "ABCDEF01" -> hmac-sha256
+        const hmacKey = process.env.BACKUP_CODE_SECRET || 'dev-backup-code-secret';
+        const expectedHash = crypto.createHmac('sha256', hmacKey).update('ABCDEF01').digest('hex');
 
         db.query.get.mockReturnValue({
             id: 'bc-1',
@@ -573,18 +574,20 @@ describe('enhancedMFA.verifyPhone', () => {
     });
 
     test('throws if code does not match', async () => {
+        const storedHash = crypto.createHash('sha256').update('123456').digest('hex');
         db.query.get.mockReturnValue({
             pending_phone: '5551234567',
-            phone_verification_code: '123456',
+            phone_verification_code: storedHash,
             phone_verification_expires: new Date(Date.now() + 600000).toISOString(), // valid
         });
         await expect(enhancedMFA.verifyPhone('user-1', '999999')).rejects.toThrow('Invalid verification code');
     });
 
     test('succeeds with correct code and clears pending state', async () => {
+        const storedHash = crypto.createHash('sha256').update('654321').digest('hex');
         db.query.get.mockReturnValue({
             pending_phone: '5551234567',
-            phone_verification_code: '654321',
+            phone_verification_code: storedHash,
             phone_verification_expires: new Date(Date.now() + 600000).toISOString(),
         });
 

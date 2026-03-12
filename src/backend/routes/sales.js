@@ -144,9 +144,9 @@ export async function salesRouter(ctx) {
                     // Get cost layers in FIFO order (oldest first)
                     const layers = query.all(`
                         SELECT * FROM inventory_cost_layers
-                        WHERE inventory_id = ? AND user_id = ? AND quantity_remaining > 0
+                        WHERE inventory_id = ? AND quantity_remaining > 0
                         ORDER BY purchase_date ASC, created_at ASC
-                    `, [inventoryId, user.id]);
+                    `, [inventoryId]);
 
                     let remainingQty = quantity;
                     for (const layer of layers) {

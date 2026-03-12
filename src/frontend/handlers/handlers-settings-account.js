@@ -2587,7 +2587,7 @@ Object.assign(handlers, {
                     <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})">
                         <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                         <div class="global-search-item-content">
-                            <div class="global-search-item-title">${item.title}</div>
+                            <div class="global-search-item-title">${escapeHtml(item.title)}</div>
                             <div class="global-search-item-subtitle">${item.subtitle}</div>
                         </div>
                     </div>
@@ -2875,7 +2875,7 @@ Object.assign(handlers, {
                     ${teams.map(team => `
                         <div class="team-member-card" style="cursor: pointer;" onclick="handlers.viewTeam('${team.id}')">
                             <div class="team-member-avatar" style="background: var(--primary-100); color: var(--primary-600);">
-                                ${team.name.substring(0, 2).toUpperCase()}
+                                ${escapeHtml(team.name.substring(0, 2).toUpperCase())}
                             </div>
                             <div class="team-member-info">
                                 <div class="team-member-name">${escapeHtml(team.name)}</div>
@@ -2887,7 +2887,7 @@ Object.assign(handlers, {
                 </div>
             `;
         } catch (error) {
-            contentEl.innerHTML = `<p style="color: var(--error);">Error loading teams: ${error.message}</p>`;
+            contentEl.innerHTML = `<p style="color: var(--error);">Error loading teams: ${escapeHtml(error.message)}</p>`;
         }
     },
 
@@ -2919,7 +2919,7 @@ Object.assign(handlers, {
                     <div>
                         <h3 style="margin: 0;">${escapeHtml(team.name)}</h3>
                         <p style="color: var(--gray-500); font-size: 13px; margin-top: 4px;">
-                            ${team.description || 'No description'}
+                            ${escapeHtml(team.description || 'No description')}
                         </p>
                     </div>
                     ${team.permissions?.manage_team ? `
@@ -2959,7 +2959,7 @@ Object.assign(handlers, {
                 ` : ''}
             `;
         } catch (error) {
-            contentEl.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
+            contentEl.innerHTML = `<p style="color: var(--error);">Error: ${escapeHtml(error.message)}</p>`;
         }
     },
 
@@ -3733,7 +3733,7 @@ Object.assign(handlers, {
                         <strong>Effective Date:</strong> ${tos.effective_date ? new Date(tos.effective_date).toLocaleDateString() : 'N/A'}
                     </div>
                     <div style="line-height: 1.6; color: var(--text-secondary);">
-                        ${tos.content ? tos.content.substring(0, 2000) + '...' : 'Terms content loading...'}
+                        ${tos.content ? escapeHtml(tos.content.substring(0, 2000)) + '...' : 'Terms content loading...'}
                     </div>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid var(--gray-200); padding: 16px; display: flex; gap: 8px; justify-content: flex-end;">

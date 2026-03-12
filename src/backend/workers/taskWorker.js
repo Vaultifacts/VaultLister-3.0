@@ -318,7 +318,7 @@ async function checkDailySummaries() {
                 query.run('INSERT INTO user_preferences (id, user_id, key, settings) VALUES (?, ?, ?, ?)', [uuidv4(), row.user_id, sentKey, today]);
             }
 
-            logger.info(`[TaskWorker] Daily summary sent to ${row.email}`);
+            logger.info(`[TaskWorker] Daily summary sent to ${row.email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
         } catch (e) {
             logger.error(`[TaskWorker] Daily summary failed for user ${row.user_id}:`, e.message);
         }

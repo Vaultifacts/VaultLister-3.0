@@ -20,7 +20,7 @@ describe('csrfConfig', () => {
     });
 
     test('has exempt paths array', () => {
-        const exempt = csrfConfig['skip' + 'Paths'];
+        const exempt = csrfConfig.skipPaths;
         expect(Array.isArray(exempt)).toBe(true);
         expect(exempt).toContain('/api/auth/login');
         expect(exempt).toContain('/api/auth/register');

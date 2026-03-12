@@ -307,12 +307,13 @@ const monitoring = {
     // Get alerts
     getAlerts(hours = 24) {
         try {
+            const h = Math.max(1, Math.min(Number(hours) || 24, 8760));
             return query.all(`
                 SELECT * FROM alerts
-                WHERE created_at > datetime('now', '-${hours} hours')
+                WHERE created_at > datetime('now', '-' || ? || ' hours')
                 ORDER BY created_at DESC
                 LIMIT 100
-            `) || [];
+            `, [h]) || [];
         } catch (e) {
             return [];
         }

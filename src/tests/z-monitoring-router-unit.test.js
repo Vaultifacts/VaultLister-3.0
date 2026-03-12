@@ -104,7 +104,7 @@ function ctx(method, path, user = null, body = {}) {
     return { method, path, user, body };
 }
 
-const mockUser = { id: 'user-test-1', email: 'test@test.com', subscription_tier: 'enterprise' };
+const mockUser = { id: 'user-test-1', email: 'test@test.com', subscription_tier: 'enterprise', is_admin: true };
 const basicUser = { id: 'user-basic-1', email: 'basic@test.com', subscription_tier: 'free' };
 
 beforeEach(() => {

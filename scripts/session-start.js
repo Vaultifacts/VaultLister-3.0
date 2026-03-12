@@ -19,7 +19,8 @@ function runScript(scriptName) {
     const scriptPath = `${__dirname}/${scriptName}`;
     const proc = spawn('bun', [scriptPath], {
       stdio: 'inherit',
-      cwd: dirname(__dirname)
+      cwd: dirname(__dirname),
+      shell: true
     });
 
     proc.on('close', (code) => {

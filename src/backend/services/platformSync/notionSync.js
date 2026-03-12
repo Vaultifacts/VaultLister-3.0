@@ -303,10 +303,9 @@ async function syncSales(userId, settings, direction) {
         // PUSH: VaultLister -> Notion
         if (direction === 'push' || direction === 'bidirectional') {
             const localSales = query.all(
-                `SELECT s.*, i.title as item_title, sh.platform
+                `SELECT s.*, i.title as item_title
                  FROM sales s
                  LEFT JOIN inventory i ON s.inventory_id = i.id
-                 LEFT JOIN shops sh ON s.shop_id = sh.id
                  WHERE s.user_id = ?`,
                 [userId]
             );
@@ -686,9 +685,9 @@ async function createLocalSale(userId, notionData) {
 
     query.run(`
         INSERT INTO sales (
-            id, user_id, sale_price, platform_fees, shipping_cost,
-            net_profit, sale_date, buyer_username, status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            id, user_id, platform, sale_price, platform_fee, shipping_cost,
+            net_profit, buyer_username, status, created_at, updated_at
+        ) VALUES (?, ?, 'notion', ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
         id,
         userId,
@@ -696,9 +695,8 @@ async function createLocalSale(userId, notionData) {
         notionData.platform_fees || 0,
         notionData.shipping_cost || 0,
         notionData.net_profit || 0,
-        notionData.sale_date,
         notionData.buyer_username,
-        notionData.status || 'completed',
+        notionData.status || 'confirmed',
         now,
         now
     ]);
@@ -715,10 +713,9 @@ async function updateLocalSale(localId, notionData) {
     query.run(`
         UPDATE sales SET
             sale_price = COALESCE(?, sale_price),
-            platform_fees = COALESCE(?, platform_fees),
+            platform_fee = COALESCE(?, platform_fee),
             shipping_cost = COALESCE(?, shipping_cost),
             net_profit = COALESCE(?, net_profit),
-            sale_date = COALESCE(?, sale_date),
             buyer_username = COALESCE(?, buyer_username),
             status = COALESCE(?, status),
             updated_at = ?
@@ -728,7 +725,6 @@ async function updateLocalSale(localId, notionData) {
         notionData.platform_fees,
         notionData.shipping_cost,
         notionData.net_profit,
-        notionData.sale_date,
         notionData.buyer_username,
         notionData.status,
         now,

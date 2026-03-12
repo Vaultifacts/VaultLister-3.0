@@ -283,7 +283,7 @@ export async function relistingRouter(ctx) {
             const queued = [];
             for (const listingId of listing_ids) {
                 const listing = query.get(`
-                    SELECT l.*, i.title, i.brand, i.category, i.list_price, i.cost
+                    SELECT l.*, i.title, i.brand, i.category, i.list_price, i.cost_price
                     FROM listings l
                     JOIN inventory i ON l.inventory_id = i.id
                     WHERE l.id = ? AND l.user_id = ?
@@ -531,7 +531,7 @@ export async function relistingRouter(ctx) {
             const { listing_id, rule_id } = body;
 
             const listing = query.get(`
-                SELECT l.*, i.title, i.brand, i.category, i.list_price, i.cost
+                SELECT l.*, i.title, i.brand, i.category, i.list_price, i.cost_price
                 FROM listings l
                 JOIN inventory i ON l.inventory_id = i.id
                 WHERE l.id = ? AND l.user_id = ?
@@ -598,7 +598,7 @@ export async function relistingRouter(ctx) {
             // Find eligible stale listings
             const threshold = rule.stale_days || 30;
             let staleSQL = `
-                SELECT l.*, i.title, i.brand, i.category, i.list_price, i.cost, i.condition
+                SELECT l.*, i.title, i.brand, i.category, i.list_price, i.cost_price, i.condition
                 FROM listings l
                 JOIN inventory i ON l.inventory_id = i.id
                 WHERE l.user_id = ? AND l.status = 'active'

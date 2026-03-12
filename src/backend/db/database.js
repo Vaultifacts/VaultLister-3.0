@@ -169,7 +169,9 @@ function runMigrations() {
             '092_inventory_cost_tracking.sql',
             '093_automation_sort_order.sql',
             '094_automation_rule_tags.sql',
-            '095_add_user_preferences.sql'
+            '095_add_user_preferences.sql',
+            '096_add_listings_unique_constraint.sql',
+            '097_fix_fts5_delete_trigger.sql'
         ];
 
         for (const migrationFile of migrationFiles) {

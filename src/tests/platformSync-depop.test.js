@@ -100,7 +100,7 @@ describe('depopSync', () => {
     );
     expect(insertCalls.length).toBe(3);
     // External data is JSON stringified in params
-    const externalData = JSON.parse(insertCalls[0][1][9]);
+    const externalData = JSON.parse(insertCalls[0][1][7]);
     expect(externalData.platform).toBe('depop');
   });
 });
