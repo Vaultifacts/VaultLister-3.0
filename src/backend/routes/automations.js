@@ -50,7 +50,7 @@ export async function automationsRouter(ctx) {
             params.push(enabled === 'true' ? 1 : 0);
         }
 
-        sql += ' ORDER BY created_at DESC';
+        sql += ' ORDER BY created_at DESC LIMIT 500';
 
         const rules = query.all(sql, params);
 
@@ -190,7 +190,7 @@ export async function automationsRouter(ctx) {
     if (method === 'GET' && path === '/history/export') {
         try {
             const runs = query.all(
-                'SELECT * FROM automation_runs WHERE user_id = ? ORDER BY started_at DESC',
+                'SELECT * FROM automation_runs WHERE user_id = ? ORDER BY started_at DESC LIMIT 10000',
                 [user.id]
             );
 
@@ -265,10 +265,13 @@ export async function automationsRouter(ctx) {
             rule.actions = {};
         }
 
-        // Get recent logs for this rule
+        // Get recent logs for this rule (scoped to user's rule via JOIN)
         const logs = query.all(
-            'SELECT * FROM automation_logs WHERE rule_id = ? ORDER BY created_at DESC LIMIT 20',
-            [id]
+            `SELECT al.* FROM automation_logs al
+             JOIN automations a ON al.rule_id = a.id
+             WHERE al.rule_id = ? AND a.user_id = ?
+             ORDER BY al.created_at DESC LIMIT 20`,
+            [id, user.id]
         );
 
         return { status: 200, data: { rule, logs } };
@@ -947,6 +950,12 @@ export async function automationsRouter(ctx) {
         const id = uuidv4();
         const finalRule = { ...preset, ...customizations };
 
+        // Validate type from merged result (prevent override via customizations)
+        const validTypes = ['share_closet', 'follow_users', 'offer_to_likers', 'relist_stale', 'price_drop', 'community_share', 'cross_list'];
+        if (finalRule.type && !validTypes.includes(finalRule.type)) {
+            finalRule.type = preset.type; // Fall back to preset type
+        }
+
         query.run(`
             INSERT INTO automation_rules (
                 id, user_id, name, type, platform, schedule, conditions, actions, is_enabled
@@ -1403,8 +1412,20 @@ export async function automationsRouter(ctx) {
     if (method === 'POST' && path === '/templates/import-url') {
         const { url } = body;
         if (!url || typeof url !== 'string') return { status: 400, data: { error: 'url is required' } };
+        // SSRF protection: block internal/private network URLs
         try {
-            const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+            const parsedUrl = new URL(url);
+            const hostname = parsedUrl.hostname.toLowerCase();
+            if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0' ||
+                /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.)/.test(hostname) ||
+                hostname.startsWith('fe80:') || hostname.startsWith('fc00:') || hostname.startsWith('fd00:')) {
+                return { status: 400, data: { error: 'URL must be a public address' } };
+            }
+        } catch {
+            return { status: 400, data: { error: 'Invalid URL format' } };
+        }
+        try {
+            const response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(10000) });
             if (!response.ok) return { status: 400, data: { error: 'Failed to fetch URL: ' + response.status } };
             const json = await response.json();
 
@@ -1427,7 +1448,7 @@ export async function automationsRouter(ctx) {
             return { status: 201, data: { imported, count: imported.length } };
         } catch (error) {
             logger.error('[Automations] import from URL failed', user?.id, { detail: error?.message });
-            return { status: 500, data: { error: 'Failed to import from URL: ' + (error?.message || 'Unknown error') } };
+            return { status: 500, data: { error: 'Failed to import from URL' } };
         }
     }
 

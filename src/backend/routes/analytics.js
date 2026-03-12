@@ -20,7 +20,26 @@ function _getCached(key) {
     return entry.data;
 }
 
+const MAX_ANALYTICS_CACHE_SIZE = 5000;
+
 function _setCached(key, data) {
+    // Evict expired entries and enforce max size to prevent unbounded growth
+    if (_analyticsCache.size >= MAX_ANALYTICS_CACHE_SIZE) {
+        const now = Date.now();
+        for (const [k, v] of _analyticsCache) {
+            if (now > v.expiry) _analyticsCache.delete(k);
+        }
+        // If still too large, evict oldest entries
+        if (_analyticsCache.size >= MAX_ANALYTICS_CACHE_SIZE) {
+            const toDelete = _analyticsCache.size - MAX_ANALYTICS_CACHE_SIZE + 100;
+            let deleted = 0;
+            for (const k of _analyticsCache.keys()) {
+                if (deleted >= toDelete) break;
+                _analyticsCache.delete(k);
+                deleted++;
+            }
+        }
+    }
     _analyticsCache.set(key, { data, expiry: Date.now() + ANALYTICS_CACHE_TTL_MS });
 }
 
@@ -767,13 +786,13 @@ export async function analyticsRouter(ctx) {
         let data;
         switch (type) {
             case 'inventory':
-                data = query.all('SELECT * FROM inventory WHERE user_id = ? AND status != ?', [user.id, 'deleted']);
+                data = query.all('SELECT * FROM inventory WHERE user_id = ? AND status != ? LIMIT 10000', [user.id, 'deleted']);
                 break;
             case 'sales':
-                data = query.all('SELECT * FROM sales WHERE user_id = ?', [user.id]);
+                data = query.all('SELECT * FROM sales WHERE user_id = ? LIMIT 10000', [user.id]);
                 break;
             case 'listings':
-                data = query.all('SELECT * FROM listings WHERE user_id = ?', [user.id]);
+                data = query.all('SELECT * FROM listings WHERE user_id = ? LIMIT 10000', [user.id]);
                 break;
             default:
                 return { status: 400, data: { error: 'Invalid export type' } };
@@ -927,7 +946,7 @@ export async function analyticsRouter(ctx) {
 
     // POST /api/analytics/apply-price-suggestions - Batch update prices from suggestions
     if (method === 'POST' && path === '/apply-price-suggestions') {
-        const { items } = body;
+        const { items } = ctx.body;
         if (!Array.isArray(items) || items.length === 0) {
             return { status: 400, data: { error: 'items array required (each with id and suggested_price)' } };
         }
@@ -937,8 +956,8 @@ export async function analyticsRouter(ctx) {
                 if (!item.id || item.suggested_price == null) continue;
                 const existing = query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [item.id, user.id]);
                 if (!existing) continue;
-                query.run('UPDATE inventory SET list_price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                    [item.suggested_price, item.id]);
+                query.run('UPDATE inventory SET list_price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                    [item.suggested_price, item.id, user.id]);
 
                 // Log price change in price_history if table exists
                 try {

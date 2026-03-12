@@ -154,8 +154,8 @@ export function addCSRFToken(ctx) {
 export function validateCSRF(ctx) {
     const { method, headers, user, ip } = ctx;
 
-    // Disable CSRF in test/dev environment only (never in production)
-    if ((process.env.DISABLE_CSRF === 'true' && process.env.NODE_ENV !== 'production') || process.env.NODE_ENV === 'test') {
+    // Disable CSRF only when explicitly requested in non-production environments
+    if (process.env.DISABLE_CSRF === 'true' && process.env.NODE_ENV !== 'production') {
         return { valid: true };
     }
 

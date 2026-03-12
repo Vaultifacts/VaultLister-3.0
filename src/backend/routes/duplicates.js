@@ -337,6 +337,28 @@ export async function duplicatesRouter(ctx) {
         }
     }
 
+    // GET /api/duplicates/stats - Get duplicate statistics (must be before :id catch-all)
+    if (method === 'GET' && path === '/stats') {
+        const stats = query.get(`
+            SELECT
+                COUNT(*) as total,
+                SUM(CASE WHEN user_action = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN user_action = 'confirmed' THEN 1 ELSE 0 END) as confirmed,
+                SUM(CASE WHEN user_action = 'ignored' THEN 1 ELSE 0 END) as ignored,
+                SUM(CASE WHEN detection_type = 'sku_match' THEN 1 ELSE 0 END) as sku_matches,
+                SUM(CASE WHEN detection_type = 'hash_match' THEN 1 ELSE 0 END) as hash_matches,
+                SUM(CASE WHEN detection_type = 'title_brand_size' THEN 1 ELSE 0 END) as title_brand_size_matches,
+                SUM(CASE WHEN detection_type = 'exact_title' THEN 1 ELSE 0 END) as exact_title_matches
+            FROM duplicate_detections
+            WHERE user_id = ?
+        `, [user.id]);
+
+        return {
+            status: 200,
+            data: { stats }
+        };
+    }
+
     // DELETE /api/duplicates/:id - Delete duplicate record
     const deleteMatch = path.match(/^\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteMatch) {
@@ -360,28 +382,6 @@ export async function duplicatesRouter(ctx) {
         return {
             status: 200,
             data: { message: 'Duplicate detection deleted' }
-        };
-    }
-
-    // GET /api/duplicates/stats - Get duplicate statistics
-    if (method === 'GET' && path === '/stats') {
-        const stats = query.get(`
-            SELECT
-                COUNT(*) as total,
-                SUM(CASE WHEN user_action = 'pending' THEN 1 ELSE 0 END) as pending,
-                SUM(CASE WHEN user_action = 'confirmed' THEN 1 ELSE 0 END) as confirmed,
-                SUM(CASE WHEN user_action = 'ignored' THEN 1 ELSE 0 END) as ignored,
-                SUM(CASE WHEN detection_type = 'sku_match' THEN 1 ELSE 0 END) as sku_matches,
-                SUM(CASE WHEN detection_type = 'hash_match' THEN 1 ELSE 0 END) as hash_matches,
-                SUM(CASE WHEN detection_type = 'title_brand_size' THEN 1 ELSE 0 END) as title_brand_size_matches,
-                SUM(CASE WHEN detection_type = 'exact_title' THEN 1 ELSE 0 END) as exact_title_matches
-            FROM duplicate_detections
-            WHERE user_id = ?
-        `, [user.id]);
-
-        return {
-            status: 200,
-            data: { stats }
         };
     }
 

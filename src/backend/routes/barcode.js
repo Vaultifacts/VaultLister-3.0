@@ -87,6 +87,10 @@ export async function barcodeRouter(ctx) {
 
     // POST /api/barcode/save - Save a barcode lookup manually
     if (method === 'POST' && path === '/save') {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
+
         const { barcode, title, brand, category, description, image_url } = body;
 
         if (!barcode) {
@@ -134,14 +138,19 @@ export async function barcodeRouter(ctx) {
 
     // GET /api/barcode/recent - Get recently scanned barcodes
     if (method === 'GET' && path === '/recent') {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
+
         const { limit = 10 } = queryParams;
 
         const recent = query.all(`
             SELECT DISTINCT barcode, title, brand, category, image_url, created_at
             FROM barcode_lookups
+            WHERE created_by = ?
             ORDER BY created_at DESC
             LIMIT ?
-        `, [parseInt(limit)]);
+        `, [user.id, Math.min(parseInt(limit) || 10, 100)]);
 
         return {
             status: 200,

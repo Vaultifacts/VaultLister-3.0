@@ -303,7 +303,7 @@ const apiRoutes = {
 
         // GET /api/feature-flags/all - Admin: get all flags
         if (method === 'GET' && path === '/all') {
-            if (!user || user.subscription_tier !== 'enterprise') {
+            if (!user || !user.is_admin) {
                 return { status: 403, data: { error: 'Admin access required' } };
             }
             return { status: 200, data: { flags: featureFlags.getAllFlags() } };
@@ -334,7 +334,7 @@ const apiRoutes = {
 
         // Get user sessions (admin)
         if (method === 'GET' && path === '/sessions') {
-            if (user.subscription_tier !== 'enterprise') {
+            if (!user.is_admin) {
                 return { status: 403, data: { error: 'Admin access required' } };
             }
             const userId = query.userId;
@@ -543,19 +543,31 @@ const protectedPrefixes = [
     '/api/mfa',
     '/api/audit',
     '/api/feature-flags',
-    '/api/user-analytics'
+    '/api/user-analytics',
+    '/api/auth/password',
+    '/api/auth/sessions',
+    '/api/auth/me',
+    '/api/auth/profile'
 ];
 
 // Parse JSON body
+const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB
+
 async function parseBody(request) {
     try {
-        // Check content-length to prevent DoS via large payloads
+        // Check content-length header first (fast reject)
         const contentLength = parseInt(request.headers.get('content-length') || '0');
-        if (contentLength > 10 * 1024 * 1024) { // 10MB limit
+        if (contentLength > MAX_BODY_SIZE) {
             return { error: 'Request body too large' };
         }
 
         const text = await request.text();
+
+        // Also check actual body size (content-length can be spoofed)
+        if (text.length > MAX_BODY_SIZE) {
+            return { error: 'Request body too large' };
+        }
+
         return text ? JSON.parse(text) : {};
     } catch {
         return { error: 'Invalid JSON in request body' };
@@ -829,7 +841,7 @@ const server = Bun.serve({
                 if (window.opener) {
                     var errMsg = ${JSON.stringify(errorDescription || error || '')};
                     try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: false, error: errMsg } })); } catch(e) {}
-                    window.opener.postMessage({ type: 'oauthComplete', success: false, error: errMsg }, '*');
+                    window.opener.postMessage({ type: 'oauthComplete', success: false, error: errMsg }, window.location.origin);
                 }
                 setTimeout(() => window.close(), 2000);
                 return;
@@ -838,7 +850,7 @@ const server = Bun.serve({
             if (!code || !state) {
                 if (window.opener) {
                     try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: false, error: 'Missing authorization code or state' } })); } catch(e) {}
-                    window.opener.postMessage({ type: 'oauthComplete', success: false, error: 'Missing authorization code or state' }, '*');
+                    window.opener.postMessage({ type: 'oauthComplete', success: false, error: 'Missing authorization code or state' }, window.location.origin);
                 }
                 setTimeout(() => window.close(), 2000);
                 return;
@@ -868,7 +880,7 @@ const server = Bun.serve({
                     document.querySelector('.container').innerHTML = '<h2 class="success">✓ Connected Successfully!</h2><p>You can close this window.</p>';
                     if (window.opener) {
                         try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: true, platform: platform, username: result.username } })); } catch(e) {}
-                        window.opener.postMessage({ type: 'oauthComplete', success: true, platform: platform, username: result.username }, '*');
+                        window.opener.postMessage({ type: 'oauthComplete', success: true, platform: platform, username: result.username }, window.location.origin);
                     }
                 } else {
                     var c = document.querySelector('.container');
@@ -878,7 +890,7 @@ const server = Bun.serve({
                     if (window.opener) {
                         var errDetail = result.error || 'Connection failed';
                         try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: false, error: errDetail } })); } catch(e) {}
-                        window.opener.postMessage({ type: 'oauthComplete', success: false, error: errDetail }, '*');
+                        window.opener.postMessage({ type: 'oauthComplete', success: false, error: errDetail }, window.location.origin);
                     }
                 }
             } catch (err) {
@@ -888,7 +900,7 @@ const server = Bun.serve({
                 var p = document.createElement('p'); p.textContent = err.message; c.appendChild(p);
                 if (window.opener) {
                     try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: false, error: err.message } })); } catch(e) {}
-                    window.opener.postMessage({ type: 'oauthComplete', success: false, error: err.message }, '*');
+                    window.opener.postMessage({ type: 'oauthComplete', success: false, error: err.message }, window.location.origin);
                 }
             }
 
@@ -925,7 +937,9 @@ const server = Bun.serve({
 
             // Public endpoints that don't require auth
             const isPublicWebhook = effectivePath.startsWith('/api/webhooks/incoming');
-            const isOAuthCallback = effectivePath.startsWith('/api/oauth/callback');
+            const isOAuthCallback = effectivePath.startsWith('/api/oauth/callback') ||
+                effectivePath.match(/^\/api\/social-auth\/[^/]+\/callback/) ||
+                effectivePath.startsWith('/api/email/callback');
             const isPublicSecurity = [
                 '/api/security/verify-email',
                 '/api/security/forgot-password',
@@ -943,8 +957,9 @@ const server = Bun.serve({
                 user = authResult.user;
             }
 
-            // Parse body and query
-            const body = await parseBody(request);
+            // Parse body only for methods that have a body
+            const body = (method === 'GET' || method === 'HEAD' || method === 'OPTIONS')
+                ? {} : await parseBody(request);
 
             // Reject oversized requests
             if (body && body.error === 'Request body too large') {
@@ -1029,9 +1044,8 @@ const server = Bun.serve({
                         }
 
                         // Apply HttpOnly auth cookies when the route requests it
-                        if (result.cookies?.length) {
-                            responseHeaders['Set-Cookie'] = result.cookies.join(', ');
-                        }
+                        // Note: multiple Set-Cookie headers are set via Response init below
+
 
                         const responseBody = JSON.stringify(result.data);
 
@@ -1049,10 +1063,19 @@ const server = Bun.serve({
                             }
                         }
 
-                        return new Response(responseBody, {
+                        const response = new Response(responseBody, {
                             status: result.status || 200,
                             headers: responseHeaders
                         });
+
+                        // Set-Cookie must be separate headers (not comma-joined)
+                        if (result.cookies?.length) {
+                            for (const cookie of result.cookies) {
+                                response.headers.append('Set-Cookie', cookie);
+                            }
+                        }
+
+                        return response;
                     } catch (error) {
                         // Use structured error handler
                         const errorResult = handleError(error, context);
@@ -1107,8 +1130,7 @@ const server = Bun.serve({
             const content = injectNonce(readFileSync(indexPath, 'utf-8'));
             const htmlHeaders = {
                 'Content-Type': 'text/html',
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Clear-Site-Data': '"cache"',
+                'Cache-Control': 'no-cache, must-revalidate',
                 ...dynamicCorsHeaders,
                 ...spaSecHeaders
             };
@@ -1269,10 +1291,9 @@ process.on('uncaughtException', (err) => {
     process.exit(1);
 });
 
-// Unhandled rejection handling (for promises)
+// Unhandled rejection handling (for promises) — log but do not crash
 process.on('unhandledRejection', (reason, promise) => {
     logger.error('Unhandled rejection at:', promise, 'reason:', reason);
     log(`Unhandled rejection: ${reason}`);
     _flushLog();
-    process.exit(1);
 });

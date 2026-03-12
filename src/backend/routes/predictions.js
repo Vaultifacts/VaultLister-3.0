@@ -369,6 +369,7 @@ export async function predictionsRouter(ctx) {
                 FROM prediction_models
                 WHERE user_id = ?
                 ORDER BY is_active DESC, created_at DESC
+                LIMIT 200
             `, [user.id]);
 
             // Parse JSON parameters
@@ -577,6 +578,7 @@ export async function predictionsRouter(ctx) {
                 FROM prediction_scenarios
                 WHERE user_id = ?
                 ORDER BY created_at DESC
+                LIMIT 200
             `, [user.id]);
 
             // Parse JSON fields

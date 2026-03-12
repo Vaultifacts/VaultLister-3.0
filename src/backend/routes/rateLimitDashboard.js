@@ -104,7 +104,7 @@ export async function rateLimitDashboardRouter(ctx) {
     const { method, path, user } = ctx;
 
     // Require admin access
-    if (!user || user.subscription_tier !== 'enterprise') {
+    if (!user || !user.is_admin) {
         return { status: 403, data: { error: 'Admin access required' } };
     }
 
@@ -191,7 +191,8 @@ export async function rateLimitDashboardRouter(ctx) {
 
     // GET /api/rate-limits/history
     if (method === 'GET' && path === '/history') {
-        const { hours = 24 } = ctx.query;
+        const hoursRaw = parseInt(ctx.query?.hours) || 24;
+        const hours = Math.min(Math.max(hoursRaw, 1), 720);
 
         try {
             const history = query.all(`

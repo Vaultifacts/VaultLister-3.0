@@ -187,11 +187,28 @@ export async function tasksRouter(ctx) {
                 return { status: 400, data: { error: 'Tasks array required' } };
             }
 
+            if (taskList.length > 100) {
+                return { status: 400, data: { error: 'Maximum 100 tasks per batch' } };
+            }
+
+            const validTypes = [
+                'share_listing', 'share_closet', 'follow_user', 'unfollow_user',
+                'accept_offer', 'decline_offer', 'counter_offer',
+                'create_listing', 'update_listing', 'delete_listing',
+                'sync_shop', 'import_listings', 'export_data',
+                'run_automation', 'bulk_action',
+                'generate_ai_content', 'analyze_image'
+            ];
+
             const created = [];
             const errors = [];
 
             for (const taskData of taskList) {
                 try {
+                    if (!validTypes.includes(taskData.type)) {
+                        errors.push({ task: taskData, error: 'Invalid task type' });
+                        continue;
+                    }
                     const id = uuidv4();
                     query.run(`
                         INSERT INTO tasks (id, user_id, type, payload, priority, status)
@@ -218,6 +235,11 @@ export async function tasksRouter(ctx) {
     if (method === 'POST' && path === '/clear') {
         try {
             const { status: clearStatus = 'completed', olderThan } = body;
+
+            const validClearStatuses = ['completed', 'failed', 'cancelled'];
+            if (!validClearStatuses.includes(clearStatus)) {
+                return { status: 400, data: { error: 'Invalid status. Must be: completed, failed, or cancelled' } };
+            }
 
             let sql = 'DELETE FROM tasks WHERE user_id = ? AND status = ?';
             const params = [user.id, clearStatus];

@@ -2,6 +2,7 @@
 // Manages webhook endpoints and processes incoming webhooks
 
 import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { processWebhookEvent, verifySignature } from '../services/webhookProcessor.js';
 import { logger } from '../shared/logger.js';
@@ -181,8 +182,8 @@ export async function webhooksRouter(ctx) {
             endpointId = existingEndpoint.id;
             query.run(`
                 UPDATE webhook_endpoints SET url = ?, secret = ?, events = ?, updated_at = datetime('now')
-                WHERE id = ?
-            `, [url, secret, JSON.stringify(events), endpointId]);
+                WHERE id = ? AND user_id = ?
+            `, [url, secret, JSON.stringify(events), endpointId, user.id]);
         } else {
             endpointId = uuidv4();
             query.run(`
@@ -218,10 +219,12 @@ export async function webhooksRouter(ctx) {
             return { status: 404, data: { error: 'Endpoint not found' } };
         }
 
+        // Strip secret from response — never expose webhook secret via GET
+        const { secret: _secret, ...safeEndpoint } = endpoint;
         return {
             status: 200,
             data: {
-                ...endpoint,
+                ...safeEndpoint,
                 events: safeJsonParse(endpoint.events, [])
             }
         };
@@ -264,15 +267,16 @@ export async function webhooksRouter(ctx) {
                 events = COALESCE(?, events),
                 is_enabled = COALESCE(?, is_enabled),
                 updated_at = datetime('now')
-            WHERE id = ?
-        `, [name, url, events ? JSON.stringify(events) : null, is_enabled, endpointId]);
+            WHERE id = ? AND user_id = ?
+        `, [name, url, events ? JSON.stringify(events) : null, is_enabled, endpointId, user.id]);
 
         const updated = query.get('SELECT * FROM webhook_endpoints WHERE id = ?', [endpointId]);
+        const { secret: _secret, ...safeUpdated } = updated;
 
         return {
             status: 200,
             data: {
-                ...updated,
+                ...safeUpdated,
                 events: safeJsonParse(updated.events, [])
             }
         };
@@ -326,10 +330,11 @@ export async function webhooksRouter(ctx) {
         try {
             const response = await fetch(endpoint.url, {
                 method: 'POST',
+                redirect: 'manual', // Prevent SSRF via redirect
                 headers: {
                     'Content-Type': 'application/json',
                     'X-VaultLister-Event': 'test',
-                    'X-VaultLister-Signature': `test_${Date.now()}`
+                    'X-VaultLister-Signature': 'sha256=' + crypto.createHmac('sha256', endpoint.secret).update(JSON.stringify(testPayload)).digest('hex')
                 },
                 body: JSON.stringify(testPayload)
             });
@@ -342,8 +347,8 @@ export async function webhooksRouter(ctx) {
                     last_triggered_at = datetime('now'),
                     failure_count = CASE WHEN ? THEN 0 ELSE failure_count + 1 END,
                     updated_at = datetime('now')
-                WHERE id = ?
-            `, [success, endpointId]);
+                WHERE id = ? AND user_id = ?
+            `, [success, endpointId, user.id]);
 
             return {
                 status: 200,
@@ -360,8 +365,8 @@ export async function webhooksRouter(ctx) {
                 UPDATE webhook_endpoints SET
                     failure_count = failure_count + 1,
                     updated_at = datetime('now')
-                WHERE id = ?
-            `, [endpointId]);
+                WHERE id = ? AND user_id = ?
+            `, [endpointId, user.id]);
 
             return {
                 status: 200,
@@ -450,8 +455,8 @@ export async function webhooksRouter(ctx) {
         // Requeue for processing
         query.run(`
             UPDATE webhook_events SET status = 'pending', error_message = NULL, updated_at = datetime('now')
-            WHERE id = ?
-        `, [eventId]);
+            WHERE id = ? AND user_id = ?
+        `, [eventId, user.id]);
 
         await processWebhookEvent({ ...event, payload: event.payload });
 

@@ -36,7 +36,7 @@ export async function suppliersRouter(ctx) {
             sql += ' AND is_active = 1';
         }
 
-        sql += ' ORDER BY name ASC';
+        sql += ' ORDER BY name ASC LIMIT 500';
 
         try {
             const suppliers = query.all(sql, params);
@@ -114,11 +114,11 @@ export async function suppliersRouter(ctx) {
             return { status: 404, data: { error: 'Supplier not found' } };
         }
 
-        // Get item count
+        // Get item count (scoped to user)
         try {
             const itemCount = query.get(
-                'SELECT COUNT(*) as count FROM supplier_items WHERE supplier_id = ?',
-                [supplierId]
+                'SELECT COUNT(*) as count FROM supplier_items WHERE supplier_id = ? AND user_id = ?',
+                [supplierId, user.id]
             );
             supplier.item_count = itemCount?.count || 0;
         } catch (error) {
@@ -172,8 +172,8 @@ export async function suppliersRouter(ctx) {
                 rating = COALESCE(?, rating),
                 is_active = COALESCE(?, is_active),
                 updated_at = datetime('now')
-            WHERE id = ?
-        `, [name, type, website, contact_email, contact_phone, address, notes, rating, is_active, supplierId]);
+            WHERE id = ? AND user_id = ?
+        `, [name, type, website, contact_email, contact_phone, address, notes, rating, is_active, supplierId, user.id]);
 
         const updated = query.get('SELECT * FROM suppliers WHERE id = ?', [supplierId]);
         return { status: 200, data: updated };
@@ -332,8 +332,8 @@ export async function suppliersRouter(ctx) {
                 notes = COALESCE(?, notes),
                 last_checked_at = datetime('now'),
                 updated_at = datetime('now')
-            WHERE id = ?
-        `, [name, sku, url, current_price, target_price, alert_threshold, alert_enabled, notes, itemId]);
+            WHERE id = ? AND user_id = ?
+        `, [name, sku, url, current_price, target_price, alert_threshold, alert_enabled, notes, itemId, user.id]);
 
         const updated = query.get('SELECT * FROM supplier_items WHERE id = ?', [itemId]);
         return { status: 200, data: updated };

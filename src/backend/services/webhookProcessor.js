@@ -92,11 +92,13 @@ export async function processWebhookEvent(event) {
  * @param {Object} payload - Event payload
  */
 export async function dispatchToUserEndpoints(userId, eventType, payload) {
+    // Escape LIKE wildcards to prevent injection
+    const escapedEvent = eventType.replace(/[%_]/g, '\\$&');
     const endpoints = query.all(`
         SELECT * FROM webhook_endpoints
         WHERE user_id = ? AND is_enabled = 1
-        AND (events LIKE '%"' || ? || '"%' OR events = '[]')
-    `, [userId, eventType]);
+        AND (events LIKE '%"' || ? || '"%' ESCAPE '\\' OR events = '[]')
+    `, [userId, escapedEvent]);
 
     for (const endpoint of endpoints) {
         try {
@@ -104,6 +106,7 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
 
             const response = await fetch(endpoint.url, {
                 method: 'POST',
+                redirect: 'manual', // Prevent SSRF via public→private redirect
                 headers: {
                     'Content-Type': 'application/json',
                     'X-VaultLister-Signature': signature,

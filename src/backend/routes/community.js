@@ -63,7 +63,7 @@ export async function communityRouter(ctx) {
             );
 
             const post = query.get(
-                `SELECT p.*, u.email as author_email
+                `SELECT p.*, u.username as author_name
                  FROM community_posts p
                  JOIN users u ON p.user_id = u.id
                  WHERE p.id = ?`,
@@ -105,7 +105,7 @@ export async function communityRouter(ctx) {
             let sql = `
                 SELECT
                     p.*,
-                    u.email as author_email,
+                    u.username as author_name,
                     (SELECT COUNT(*) FROM community_replies WHERE post_id = p.id) as reply_count,
                     (SELECT COUNT(*) FROM community_reactions WHERE target_type = 'post' AND target_id = p.id AND reaction_type = 'upvote') as upvote_count
                 FROM community_posts p
@@ -169,17 +169,17 @@ export async function communityRouter(ctx) {
     }
 
     // GET /api/community/posts/:id - Get single post with replies
-    if (method === 'GET' && path.startsWith('/posts/') && path.split('/').length === 3) {
+    if (method === 'GET' && path.match(/^\/posts\/[a-f0-9-]+$/)) {
         const postId = path.split('/')[2];
 
         try {
-            // Get post
+            // Get post (hidden posts only visible to their author)
             const post = query.get(
-                `SELECT p.*, u.email as author_email
+                `SELECT p.*, u.username as author_name
                  FROM community_posts p
                  JOIN users u ON p.user_id = u.id
-                 WHERE p.id = ?`,
-                [postId]
+                 WHERE p.id = ? AND (p.is_hidden = 0 OR p.user_id = ?)`,
+                [postId, user?.id]
             );
 
             if (!post) {
@@ -203,11 +203,12 @@ export async function communityRouter(ctx) {
 
             // Get replies
             const replies = query.all(
-                `SELECT r.*, u.email as author_email
+                `SELECT r.*, u.username as author_name
                  FROM community_replies r
                  JOIN users u ON r.user_id = u.id
                  WHERE r.post_id = ?
-                 ORDER BY r.created_at ASC`,
+                 ORDER BY r.created_at ASC
+                 LIMIT 500`,
                 [postId]
             );
 
@@ -220,12 +221,12 @@ export async function communityRouter(ctx) {
                 [postId]
             );
 
-            // Check if user reacted
-            const userReaction = query.get(
+            // Check if user reacted (only if authenticated)
+            const userReaction = user ? query.get(
                 `SELECT reaction_type FROM community_reactions
                  WHERE target_type = 'post' AND target_id = ? AND user_id = ?`,
                 [postId, user.id]
-            );
+            ) : null;
 
             return {
                 status: 200,
@@ -246,7 +247,7 @@ export async function communityRouter(ctx) {
     }
 
     // POST /api/community/posts/:id/replies - Add reply to post
-    if (method === 'POST' && path.endsWith('/replies')) {
+    if (method === 'POST' && path.match(/^\/posts\/[^/]+\/replies$/)) {
         const postId = path.split('/')[2];
         const { content, parent_reply_id } = body;
 
@@ -280,7 +281,7 @@ export async function communityRouter(ctx) {
             );
 
             const reply = query.get(
-                `SELECT r.*, u.email as author_email
+                `SELECT r.*, u.username as author_name
                  FROM community_replies r
                  JOIN users u ON r.user_id = u.id
                  WHERE r.id = ?`,
@@ -301,7 +302,7 @@ export async function communityRouter(ctx) {
     }
 
     // POST /api/community/posts/:id/react - React to post
-    if (method === 'POST' && path.endsWith('/react')) {
+    if (method === 'POST' && path.match(/^\/posts\/[^/]+\/react$/)) {
         const postId = path.split('/')[2];
         const { reaction_type } = body;
 
@@ -385,7 +386,7 @@ export async function communityRouter(ctx) {
             const leaderboard = query.all(
                 `SELECT
                     s.user_id,
-                    u.email,
+                    u.username,
                     s.posts_count,
                     s.replies_count,
                     s.upvotes_received,
@@ -415,7 +416,7 @@ export async function communityRouter(ctx) {
     }
 
     // POST /api/community/posts/:id/flag - Report post
-    if (method === 'POST' && path.endsWith('/flag')) {
+    if (method === 'POST' && path.match(/^\/posts\/[^/]+\/flag$/)) {
         const postId = path.split('/')[2];
         const { reason } = body;
 
@@ -462,7 +463,7 @@ export async function communityRouter(ctx) {
     }
 
     // PATCH /api/community/replies/:id - Edit own reply
-    if (method === 'PATCH' && path.startsWith('/replies/') && path.split('/').length === 3) {
+    if (method === 'PATCH' && path.match(/^\/replies\/[a-f0-9-]+$/)) {
         const replyId = path.split('/')[2];
         const { content } = body;
 
@@ -502,7 +503,7 @@ export async function communityRouter(ctx) {
             );
 
             const updatedReply = query.get(
-                `SELECT r.*, u.email as author_email
+                `SELECT r.*, u.username as author_name
                  FROM community_replies r
                  JOIN users u ON r.user_id = u.id
                  WHERE r.id = ?`,
@@ -523,7 +524,7 @@ export async function communityRouter(ctx) {
     }
 
     // DELETE /api/community/posts/:id - Delete own post
-    if (method === 'DELETE' && path.startsWith('/posts/') && path.split('/').length === 3) {
+    if (method === 'DELETE' && path.match(/^\/posts\/[a-f0-9-]+$/)) {
         const postId = path.split('/')[2];
 
         try {

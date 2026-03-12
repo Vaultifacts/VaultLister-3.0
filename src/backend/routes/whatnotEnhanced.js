@@ -25,7 +25,7 @@ export async function whatnotEnhancedRouter(ctx) {
                 params.push(event_id);
             }
 
-            sql += ' ORDER BY wc.created_at DESC';
+            sql += ' ORDER BY wc.created_at DESC LIMIT 500';
 
             const cohosts = query.all(sql, params);
 
@@ -141,12 +141,13 @@ export async function whatnotEnhancedRouter(ctx) {
 
             values.push(cohostId);
 
+            values.push(user.id);
             query.run(
-                `UPDATE whatnot_cohosts SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                `UPDATE whatnot_cohosts SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
 
-            const updated = query.get('SELECT * FROM whatnot_cohosts WHERE id = ?', [cohostId]);
+            const updated = query.get('SELECT * FROM whatnot_cohosts WHERE id = ? AND user_id = ?', [cohostId, user.id]);
 
             return { status: 200, data: updated };
         } catch (error) {
@@ -196,7 +197,7 @@ export async function whatnotEnhancedRouter(ctx) {
                 params.push(event_id);
             }
 
-            sql += ' ORDER BY ws.display_order, ws.created_at';
+            sql += ' ORDER BY ws.display_order, ws.created_at LIMIT 500';
 
             const staged = query.all(sql, params);
 
@@ -312,12 +313,13 @@ export async function whatnotEnhancedRouter(ctx) {
 
             values.push(stagingId);
 
+            values.push(user.id);
             query.run(
-                `UPDATE stream_staging SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                `UPDATE stream_staging SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
 
-            const updated = query.get('SELECT * FROM stream_staging WHERE id = ?', [stagingId]);
+            const updated = query.get('SELECT * FROM stream_staging WHERE id = ? AND user_id = ?', [stagingId, user.id]);
 
             return { status: 200, data: updated };
         } catch (error) {

@@ -180,7 +180,7 @@ export async function salesEnhancementsRouter(ctx) {
                 params.push(parseInt(min_purchases));
             }
 
-            sql += ` ORDER BY total_spent DESC`;
+            sql += ` ORDER BY total_spent DESC LIMIT 500`;
 
             const buyers = await query.all(sql, params);
             return { status: 200, data: { buyers } };
@@ -338,8 +338,8 @@ export async function salesEnhancementsRouter(ctx) {
             await query.run(`
                 UPDATE buyer_profiles
                 SET is_blocked = ?, updated_at = datetime('now')
-                WHERE id = ?
-            `, [newStatus, buyerId]);
+                WHERE id = ? AND user_id = ?
+            `, [newStatus, buyerId, user.id]);
 
             return {
                 status: 200,
@@ -369,6 +369,7 @@ export async function salesEnhancementsRouter(ctx) {
                     OR is_blocked = 1
                 )
                 ORDER BY return_rate DESC
+                LIMIT 500
             `, [user.id]);
 
             return { status: 200, data: { flagged_buyers: flaggedBuyers } };
@@ -395,6 +396,7 @@ export async function salesEnhancementsRouter(ctx) {
                 WHERE user_id = ?
                 AND buyer_username IS NOT NULL
                 GROUP BY buyer_username, platform
+                LIMIT 5000
             `, [user.id]);
 
             let created = 0;

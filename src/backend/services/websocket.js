@@ -5,6 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 import { logger } from '../shared/logger.js';
 
+// Use same JWT secret resolution as auth.js
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-only-secret-not-for-production' : null);
+
 // Connection store
 const connections = new Map(); // userId -> Set of WebSocket connections
 const rooms = new Map(); // roomId -> Set of userIds
@@ -168,13 +171,12 @@ const websocketService = {
         const { token } = message;
 
         try {
-            // Fix 1: Remove hardcoded JWT fallback
-            if (!process.env.JWT_SECRET) {
+            if (!JWT_SECRET) {
                 throw new Error('JWT_SECRET not configured');
             }
 
             // Verify JWT token
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const decoded = jwt.verify(token, JWT_SECRET);
 
             ws.data.userId = decoded.userId || decoded.id;
             ws.data.authToken = token;
@@ -436,7 +438,7 @@ const websocketService = {
                 // Re-verify JWT every 5 minutes
                 if (ws.data.authToken && Date.now() - (ws.data.lastTokenCheck || 0) > 5 * 60 * 1000) {
                     try {
-                        jwt.verify(ws.data.authToken, process.env.JWT_SECRET);
+                        jwt.verify(ws.data.authToken, JWT_SECRET);
                         ws.data.lastTokenCheck = Date.now();
                     } catch (err) {
                         ws.close();

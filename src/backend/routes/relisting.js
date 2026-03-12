@@ -191,7 +191,7 @@ export async function relistingRouter(ctx) {
             updates.push('updated_at = CURRENT_TIMESTAMP');
             params.push(id);
 
-            query.run(`UPDATE relisting_rules SET ${updates.join(', ')} WHERE id = ?`, params);
+            query.run(`UPDATE relisting_rules SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, [...params, user.id]);
 
             return { status: 200, data: { message: 'Rule updated' } };
         } catch (error) {
@@ -400,22 +400,22 @@ export async function relistingRouter(ctx) {
                     // Update listing price if changed
                     const changes = [];
                     if (item.new_price && item.new_price !== item.original_price) {
-                        query.run('UPDATE inventory SET list_price = ? WHERE id = ?', [item.new_price, item.inventory_id]);
+                        query.run('UPDATE inventory SET list_price = ? WHERE id = ? AND user_id = ?', [item.new_price, item.inventory_id, user.id]);
                         changes.push({ field: 'price', from: item.original_price, to: item.new_price });
                     }
 
                     // Update listing refresh timestamp
                     query.run(`
                         UPDATE listings SET last_refreshed_at = datetime('now')
-                        WHERE id = ?
-                    `, [item.listing_id]);
+                        WHERE id = ? AND user_id = ?
+                    `, [item.listing_id, user.id]);
 
                     // Mark as completed
                     query.run(`
                         UPDATE relisting_queue
                         SET status = 'completed', processed_at = datetime('now'), changes_made = ?
-                        WHERE id = ?
-                    `, [JSON.stringify(changes), item.id]);
+                        WHERE id = ? AND user_id = ?
+                    `, [JSON.stringify(changes), item.id, user.id]);
 
                     // Track performance
                     const perfId = uuidv4();
@@ -432,8 +432,8 @@ export async function relistingRouter(ctx) {
                 } catch (error) {
                     query.run(`
                         UPDATE relisting_queue SET status = 'failed', error_message = ?
-                        WHERE id = ?
-                    `, [error.message, item.id]);
+                        WHERE id = ? AND user_id = ?
+                    `, [error.message, item.id, user.id]);
                     results.push({ id: item.id, status: 'failed', error: error.message });
                 }
             }
@@ -636,11 +636,11 @@ export async function relistingRouter(ctx) {
 
                 if (!dry_run && priceResult.price !== listing.list_price) {
                     // Apply the price change
-                    query.run('UPDATE listings SET price = ?, updated_at = datetime(\'now\'), last_refreshed_at = datetime(\'now\') WHERE id = ?',
-                        [priceResult.price, listing.id]);
+                    query.run('UPDATE listings SET price = ?, updated_at = datetime(\'now\'), last_refreshed_at = datetime(\'now\') WHERE id = ? AND user_id = ?',
+                        [priceResult.price, listing.id, user.id]);
                     // Update inventory price too
-                    query.run('UPDATE inventory SET list_price = ?, updated_at = datetime(\'now\') WHERE id = ?',
-                        [priceResult.price, listing.inventory_id]);
+                    query.run('UPDATE inventory SET list_price = ?, updated_at = datetime(\'now\') WHERE id = ? AND user_id = ?',
+                        [priceResult.price, listing.inventory_id, user.id]);
                     entry.status = 'applied';
                     applied++;
                 } else if (!dry_run) {

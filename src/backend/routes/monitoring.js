@@ -50,7 +50,7 @@ export async function monitoringRouter(ctx) {
         if (!user) {
             return { status: 401, data: { error: 'Authentication required' } };
         }
-        if (user.subscription_tier !== 'enterprise') {
+        if (!user.is_admin) {
             return { status: 403, data: { error: 'Admin access required' } };
         }
 
@@ -63,7 +63,7 @@ export async function monitoringRouter(ctx) {
         if (!user) {
             return { status: 401, data: { error: 'Authentication required' } };
         }
-        if (user.subscription_tier !== 'enterprise') {
+        if (!user.is_admin) {
             return { status: 403, data: { error: 'Admin access required' } };
         }
 
@@ -102,7 +102,7 @@ export async function monitoringRouter(ctx) {
         if (!user) {
             return { status: 401, data: { error: 'Authentication required' } };
         }
-        if (user.subscription_tier !== 'enterprise') {
+        if (!user.is_admin) {
             return { status: 403, data: { error: 'Admin access required' } };
         }
 
@@ -126,10 +126,13 @@ export async function monitoringRouter(ctx) {
         };
     }
 
-    // GET /api/alerts - Get recent alerts (authenticated)
+    // GET /api/alerts - Get recent alerts (admin only)
     if (method === 'GET' && path === '/alerts') {
         if (!user) {
             return { status: 401, data: { error: 'Authentication required' } };
+        }
+        if (!user.is_admin) {
+            return { status: 403, data: { error: 'Admin access required' } };
         }
 
         try {
@@ -159,10 +162,13 @@ export async function monitoringRouter(ctx) {
         }
     }
 
-    // POST /api/alerts/:id/acknowledge - Acknowledge an alert
+    // POST /api/alerts/:id/acknowledge - Acknowledge an alert (admin only)
     if (method === 'POST' && path.match(/^\/alerts\/[^/]+\/acknowledge$/)) {
         if (!user) {
             return { status: 401, data: { error: 'Authentication required' } };
+        }
+        if (!user.is_admin) {
+            return { status: 403, data: { error: 'Admin access required' } };
         }
 
         const alertId = path.split('/')[2];
@@ -183,10 +189,13 @@ export async function monitoringRouter(ctx) {
         }
     }
 
-    // GET /api/errors - Get recent errors (authenticated)
+    // GET /api/errors - Get recent errors (admin only)
     if (method === 'GET' && path === '/errors') {
         if (!user) {
             return { status: 401, data: { error: 'Authentication required' } };
+        }
+        if (!user.is_admin) {
+            return { status: 403, data: { error: 'Admin access required' } };
         }
 
         try {
@@ -272,7 +281,7 @@ export async function monitoringRouter(ctx) {
         if (!user) {
             return { status: 401, data: { error: 'Authentication required' } };
         }
-        if (user.subscription_tier !== 'enterprise') {
+        if (!user.is_admin) {
             return { status: 403, data: { error: 'Admin access required' } };
         }
 
@@ -289,19 +298,19 @@ export async function monitoringRouter(ctx) {
                     ROUND(MIN(metric_value), 2) as min_value,
                     ROUND(MAX(metric_value), 2) as max_value
                 FROM rum_metrics
-                WHERE timestamp > datetime('now', '-${hours} hours')
+                WHERE timestamp > datetime('now', ? || ' hours')
                 GROUP BY metric_name
                 ORDER BY metric_name
-            `);
+            `, [-hours]);
 
             // Get percentiles per metric
             const summary = {};
             for (const m of metrics) {
                 const values = query.all(`
                     SELECT metric_value FROM rum_metrics
-                    WHERE metric_name = ? AND timestamp > datetime('now', '-${hours} hours')
+                    WHERE metric_name = ? AND timestamp > datetime('now', ? || ' hours')
                     ORDER BY metric_value
-                `, [m.metric_name]).map(r => r.metric_value);
+                `, [m.metric_name, -hours]).map(r => r.metric_value);
 
                 const p50 = values[Math.floor(values.length * 0.50)] || 0;
                 const p75 = values[Math.floor(values.length * 0.75)] || 0;
@@ -322,8 +331,8 @@ export async function monitoringRouter(ctx) {
 
             const uniqueSessions = query.get(`
                 SELECT COUNT(DISTINCT session_id) as count FROM rum_metrics
-                WHERE timestamp > datetime('now', '-${hours} hours')
-            `);
+                WHERE timestamp > datetime('now', ? || ' hours')
+            `, [-hours]);
 
             return {
                 status: 200,

@@ -1,6 +1,7 @@
 // GDPR Deletion Worker
 // Processes pending account deletions after the 30-day grace period
 
+import crypto from 'crypto';
 import { query } from '../db/database.js';
 import emailService from '../services/email.js';
 import { logger } from '../shared/logger.js';
@@ -121,7 +122,7 @@ async function executeAccountDeletion(deletion) {
             INSERT INTO audit_logs (id, user_id, action, category, severity, details, created_at)
             VALUES (?, NULL, 'account_deleted', 'security', 'info', ?, datetime('now'))
         `, [
-            require('crypto').randomUUID(),
+            crypto.randomUUID(),
             JSON.stringify({ deletedUserId: userId, reason: deletion.reason })
         ]);
     } catch (e) {

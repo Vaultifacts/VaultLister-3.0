@@ -42,7 +42,7 @@ export async function marketIntelRouter(ctx) {
             params.push(platform);
         }
 
-        sql += ' ORDER BY listing_count DESC';
+        sql += ' ORDER BY listing_count DESC LIMIT 500';
 
         try {
             const competitors = query.all(sql, params);
@@ -144,6 +144,15 @@ export async function marketIntelRouter(ctx) {
         const competitorId = competitorListingsMatch[1];
         const sold = queryParams.sold === 'true';
 
+        // Verify ownership of competitor before listing their data
+        const ownerCheck = query.get(
+            'SELECT id FROM competitors WHERE id = ? AND user_id = ?',
+            [competitorId, user.id]
+        );
+        if (!ownerCheck) {
+            return { status: 404, data: { error: 'Competitor not found' } };
+        }
+
         try {
             let sql = `
                 SELECT * FROM competitor_listings
@@ -175,11 +184,20 @@ export async function marketIntelRouter(ctx) {
 
         const competitorId = refreshMatch[1];
 
+        // Verify ownership
+        const ownerCheck = query.get(
+            'SELECT id FROM competitors WHERE id = ? AND user_id = ?',
+            [competitorId, user.id]
+        );
+        if (!ownerCheck) {
+            return { status: 404, data: { error: 'Competitor not found' } };
+        }
+
         // Update last_checked_at
         query.run(`
             UPDATE competitors SET last_checked_at = datetime('now'), updated_at = datetime('now')
-            WHERE id = ?
-        `, [competitorId]);
+            WHERE id = ? AND user_id = ?
+        `, [competitorId, user.id]);
 
         // Generate new mock listings
         const listings = generateCompetitorListings(competitorId, 5);

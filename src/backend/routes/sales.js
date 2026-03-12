@@ -144,9 +144,9 @@ export async function salesRouter(ctx) {
                     // Get cost layers in FIFO order (oldest first)
                     const layers = query.all(`
                         SELECT * FROM inventory_cost_layers
-                        WHERE inventory_id = ? AND quantity_remaining > 0
+                        WHERE inventory_id = ? AND user_id = ? AND quantity_remaining > 0
                         ORDER BY purchase_date ASC, created_at ASC
-                    `, [inventoryId]);
+                    `, [inventoryId, user.id]);
 
                     let remainingQty = quantity;
                     for (const layer of layers) {
@@ -298,14 +298,14 @@ export async function salesRouter(ctx) {
         }
 
         if (updates.length > 0) {
-            values.push(id);
+            values.push(id, user.id);
             query.run(
-                `UPDATE sales SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                `UPDATE sales SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
         }
 
-        const sale = query.get('SELECT * FROM sales WHERE id = ?', [id]);
+        const sale = query.get('SELECT * FROM sales WHERE id = ? AND user_id = ?', [id, user.id]);
 
         return { status: 200, data: { sale } };
     }
@@ -321,12 +321,12 @@ export async function salesRouter(ctx) {
 
         // Restore inventory status if linked
         if (existing.inventory_id) {
-            query.run('UPDATE inventory SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', ['active', existing.inventory_id]);
+            query.run('UPDATE inventory SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', ['active', existing.inventory_id, user.id]);
         }
 
         // Restore listing status if linked
         if (existing.listing_id) {
-            query.run('UPDATE listings SET status = ?, sold_at = NULL WHERE id = ?', ['active', existing.listing_id]);
+            query.run('UPDATE listings SET status = ?, sold_at = NULL WHERE id = ? AND user_id = ?', ['active', existing.listing_id, user.id]);
         }
 
         const result = query.run('DELETE FROM sales WHERE id = ? AND user_id = ?', [id, user.id]);

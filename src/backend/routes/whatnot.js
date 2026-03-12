@@ -22,7 +22,7 @@ export async function whatnotRouter(ctx) {
             const params = [user.id];
             if (status) { sql += ' AND status = ?'; params.push(status); }
             if (upcoming === 'true') { sql += " AND start_time > datetime('now')"; }
-            sql += ' ORDER BY start_time DESC';
+            sql += ' ORDER BY start_time DESC LIMIT 500';
             const events = query.all(sql, params);
             return { status: 200, data: { events } };
         } catch (error) {
@@ -32,7 +32,7 @@ export async function whatnotRouter(ctx) {
     }
 
     // GET /api/whatnot/events/:id - Get single event with items
-    if (method === 'GET' && path.match(/^\/[^/]+$/) && !path.startsWith('/stats')) {
+    if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/) && !path.startsWith('/stats')) {
         const eventId = path.slice(1);
         try {
             const event = query.get('SELECT * FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
@@ -72,7 +72,7 @@ export async function whatnotRouter(ctx) {
     }
 
     // PUT /api/whatnot/events/:id - Update event
-    if (method === 'PUT' && path.match(/^\/[^/]+$/)) {
+    if (method === 'PUT' && path.match(/^\/[a-f0-9-]+$/)) {
         const eventId = path.slice(1);
         const existing = query.get('SELECT * FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
         if (!existing) return { status: 404, data: { error: 'Event not found' } };
@@ -90,15 +90,15 @@ export async function whatnotRouter(ctx) {
 
         if (updates.length > 0) {
             updates.push("updated_at = datetime('now')");
-            params.push(eventId);
-            query.run(`UPDATE whatnot_events SET ${updates.join(', ')} WHERE id = ?`, params);
+            params.push(eventId, user.id);
+            query.run(`UPDATE whatnot_events SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
         }
         const event = query.get('SELECT * FROM whatnot_events WHERE id = ?', [eventId]);
         return { status: 200, data: { event } };
     }
 
     // DELETE /api/whatnot/events/:id - Delete event
-    if (method === 'DELETE' && path.match(/^\/[^/]+$/)) {
+    if (method === 'DELETE' && path.match(/^\/[a-f0-9-]+$/)) {
         const eventId = path.slice(1);
         const event = query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
         if (!event) return { status: 404, data: { error: 'Event not found' } };
@@ -115,6 +115,8 @@ export async function whatnotRouter(ctx) {
     // POST /api/whatnot/events/:id/items - Add items to event
     if (method === 'POST' && path.match(/^\/[^/]+\/items$/)) {
         const eventId = path.split('/')[1];
+        const event = query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
+        if (!event) return { status: 404, data: { error: 'Event not found' } };
         const { inventory_id, starting_price, buy_now_price, min_price } = body;
         if (!inventory_id) return { status: 400, data: { error: 'Inventory ID required' } };
 

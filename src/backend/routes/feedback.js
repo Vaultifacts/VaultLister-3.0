@@ -64,10 +64,13 @@ export async function feedbackRouter(ctx) {
         }
     }
 
-    // GET /api/feedback/analytics - Feedback analytics
+    // GET /api/feedback/analytics - Feedback analytics (admin only)
     if (method === 'GET' && path === '/analytics') {
         if (!user) {
             return { status: 401, data: { error: 'Authentication required' } };
+        }
+        if (!user.is_admin) {
+            return { status: 403, data: { error: 'Admin access required' } };
         }
 
         try {
@@ -173,7 +176,7 @@ export async function feedbackRouter(ctx) {
                 params.push(type);
             }
 
-            sql += ` ORDER BY f.created_at DESC`;
+            sql += ` ORDER BY f.created_at DESC LIMIT 200`;
 
             const feedback = query.all(sql, params);
 
@@ -209,7 +212,7 @@ export async function feedbackRouter(ctx) {
 
         try {
             const feedback = query.all(
-                `SELECT * FROM feedback_submissions WHERE user_id = ? ORDER BY created_at DESC`,
+                `SELECT * FROM feedback_submissions WHERE user_id = ? ORDER BY created_at DESC LIMIT 200`,
                 [user.id]
             );
 
@@ -236,7 +239,8 @@ export async function feedbackRouter(ctx) {
                  FROM feedback_responses r
                  LEFT JOIN users u ON r.user_id = u.id
                  WHERE r.feedback_id = ?
-                 ORDER BY r.created_at ASC`,
+                 ORDER BY r.created_at ASC
+                 LIMIT 500`,
                 [feedbackId]
             );
 
@@ -584,7 +588,12 @@ export async function feedbackRouter(ctx) {
                 };
             }
 
-            query.run(`DELETE FROM feedback_submissions WHERE id = ? AND user_id = ?`, [feedbackId, user.id]);
+            // Admin can delete any feedback; regular users can only delete their own
+            if (user.is_admin) {
+                query.run(`DELETE FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+            } else {
+                query.run(`DELETE FROM feedback_submissions WHERE id = ? AND user_id = ?`, [feedbackId, user.id]);
+            }
 
             return {
                 status: 200,

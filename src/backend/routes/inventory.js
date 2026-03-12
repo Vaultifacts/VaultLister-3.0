@@ -559,9 +559,9 @@ export async function inventoryRouter(ctx) {
         }
 
         if (updates.length > 0) {
-            values.push(id);
+            values.push(id, user.id);
             query.run(
-                `UPDATE inventory SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                `UPDATE inventory SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
         }
@@ -698,7 +698,8 @@ export async function inventoryRouter(ctx) {
              AND status = 'deleted'
              AND deleted_at IS NOT NULL
              AND deleted_at >= ?
-             ORDER BY deleted_at DESC`,
+             ORDER BY deleted_at DESC
+             LIMIT 500`,
             [user.id, thirtyDaysAgo]
         );
 
@@ -728,11 +729,11 @@ export async function inventoryRouter(ctx) {
 
         // Restore item by setting status back to draft and clearing deleted_at
         query.run(
-            'UPDATE inventory SET status = ?, deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            ['draft', id]
+            'UPDATE inventory SET status = ?, deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+            ['draft', id, user.id]
         );
 
-        const item = query.get('SELECT * FROM inventory WHERE id = ?', [id]);
+        const item = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
         item.tags = safeJsonParse(item.tags, []);
         item.images = safeJsonParse(item.images, []);
         item.custom_fields = safeJsonParse(item.custom_fields, {});
@@ -1019,7 +1020,8 @@ export async function inventoryRouter(ctx) {
         if (sort_order !== undefined) { updates.push('sort_order = ?'); vals.push(sort_order); }
         if (updates.length > 0) {
             vals.push(catId);
-            query.run(`UPDATE inventory_categories SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, vals);
+            vals.push(user.id);
+            query.run(`UPDATE inventory_categories SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, vals);
             // If name changed, update inventory items
             if (name !== undefined && name.trim() !== cat.name) {
                 query.run('UPDATE inventory SET category = ? WHERE user_id = ? AND category = ?', [name.trim(), user.id, cat.name]);
@@ -1033,7 +1035,7 @@ export async function inventoryRouter(ctx) {
         const catId = path.split('/')[2];
         const cat = query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
         if (!cat) return { status: 404, data: { error: 'Category not found' } };
-        query.run('DELETE FROM inventory_categories WHERE id = ?', [catId]);
+        query.run('DELETE FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
         // Clear category on items (set to null)
         query.run('UPDATE inventory SET category = NULL WHERE user_id = ? AND category = ?', [user.id, cat.name]);
         return { status: 200, data: { message: 'Category deleted' } };
@@ -1078,8 +1080,8 @@ export async function inventoryRouter(ctx) {
             if (body[f] !== undefined) { updates.push(f + ' = ?'); vals.push(body[f]); }
         }
         if (updates.length > 0) {
-            vals.push(supId);
-            query.run(`UPDATE suppliers SET ${updates.join(', ')}, updated_at = datetime('now') WHERE id = ?`, vals);
+            vals.push(supId, user.id);
+            query.run(`UPDATE suppliers SET ${updates.join(', ')}, updated_at = datetime('now') WHERE id = ? AND user_id = ?`, vals);
         }
         return { status: 200, data: { message: 'Supplier updated' } };
     }
@@ -1099,6 +1101,7 @@ export async function inventoryRouter(ctx) {
             FROM inventory i
             WHERE i.user_id = ? AND i.supplier = ?
             ORDER BY i.created_at DESC
+            LIMIT 500
         `, [user.id, sup.name]);
 
         const totalItems = items.length;
@@ -1137,7 +1140,7 @@ export async function inventoryRouter(ctx) {
         const supId = path.split('/')[2];
         const sup = query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
         if (!sup) return { status: 404, data: { error: 'Supplier not found' } };
-        query.run('DELETE FROM suppliers WHERE id = ?', [supId]);
+        query.run('DELETE FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
         return { status: 200, data: { message: 'Supplier deleted' } };
     }
 

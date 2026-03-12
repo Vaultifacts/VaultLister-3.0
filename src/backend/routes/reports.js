@@ -133,12 +133,16 @@ function validateCustomQuery(sql, userId) {
     }
     params.push(userId);
   } else {
-    // Replace all literal user_id values with parameterized placeholders
-    const matches = trimmed.match(/user_id\s*=\s*['"]?\w+['"]?/gi);
-    sql = trimmed.replace(/user_id\s*=\s*['"]?\w+['"]?/gi, 'user_id = ?');
-    for (let i = 0; i < (matches ? matches.length : 0); i++) {
-      params.push(userId);
+    // User included user_id — strip their conditions and force our own scoping
+    // Remove any user-supplied user_id conditions to prevent bypass (e.g., OR 1=1)
+    sql = trimmed.replace(/user_id\s*=\s*['"]?\w+['"]?/gi, '1=1');
+    // Now inject our own user_id constraint
+    if (sql.toUpperCase().includes('WHERE')) {
+      sql = sql.replace(/WHERE/i, 'WHERE user_id = ? AND');
+    } else {
+      sql += ' WHERE user_id = ?';
     }
+    params.push(userId);
   }
 
   // Enforce a hard row limit
@@ -729,7 +733,8 @@ export async function reportsRouter(ctx) {
         `SELECT id, name, report_type, config, last_run_at, created_at, updated_at
          FROM saved_reports
          WHERE user_id = ?
-         ORDER BY updated_at DESC`,
+         ORDER BY updated_at DESC
+         LIMIT 200`,
         [user.id]
       );
       const reports = rows.map(parseReport);
@@ -958,9 +963,9 @@ export async function reportsRouter(ctx) {
     // POST /api/reports/query - Execute a restricted custom SELECT query (enterprise only)
     if (method === 'POST' && path === '/query') {
       // Restrict raw SQL execution to enterprise-tier users only
-      if (user.subscription_tier !== 'enterprise') {
-        logger.warn(`[Reports] Custom query attempt denied for non-enterprise user: ${user.id}`);
-        return { status: 403, data: { error: 'Custom SQL queries require an enterprise subscription' } };
+      if (!user.is_admin) {
+        logger.warn(`[Reports] Custom query attempt denied for non-admin user: ${user.id}`);
+        return { status: 403, data: { error: 'Admin access required for custom SQL queries' } };
       }
 
       const { sql } = body;

@@ -8,7 +8,7 @@ export async function templatesRouter(ctx) {
     // GET /api/templates - Get all templates for user
     if (method === 'GET' && (path === '' || path === '/')) {
         const templates = query.all(
-            'SELECT * FROM listing_templates WHERE user_id = ? ORDER BY is_favorite DESC, use_count DESC, created_at DESC',
+            'SELECT * FROM listing_templates WHERE user_id = ? ORDER BY is_favorite DESC, use_count DESC, created_at DESC LIMIT 500',
             [user.id]
         );
 
@@ -27,7 +27,7 @@ export async function templatesRouter(ctx) {
     }
 
     // GET /api/templates/:id - Get single template
-    if (method === 'GET' && path.startsWith('/') && path.length > 1) {
+    if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+$/) && !path.startsWith('/use')) {
         const templateId = path.substring(1);
         const template = query.get('SELECT * FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
 
@@ -104,7 +104,7 @@ export async function templatesRouter(ctx) {
     }
 
     // PUT /api/templates/:id - Update template
-    if (method === 'PUT' && path.startsWith('/')) {
+    if (method === 'PUT' && path.match(/^\/[a-zA-Z0-9_-]+$/)) {
         const templateId = path.substring(1);
 
         // Verify ownership
@@ -147,10 +147,10 @@ export async function templatesRouter(ctx) {
         updates.push('updated_at = ?');
         values.push(new Date().toISOString());
 
-        values.push(templateId);
+        values.push(templateId, user.id);
 
         query.run(
-            `UPDATE listing_templates SET ${updates.join(', ')} WHERE id = ?`,
+            `UPDATE listing_templates SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
             values
         );
 
@@ -169,7 +169,7 @@ export async function templatesRouter(ctx) {
     }
 
     // DELETE /api/templates/:id - Delete template
-    if (method === 'DELETE' && path.startsWith('/')) {
+    if (method === 'DELETE' && path.match(/^\/[a-zA-Z0-9_-]+$/)) {
         const templateId = path.substring(1);
 
         const result = query.run('DELETE FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
@@ -182,7 +182,7 @@ export async function templatesRouter(ctx) {
     }
 
     // POST /api/templates/:id/use - Increment use count when template is applied
-    if (method === 'POST' && path.endsWith('/use')) {
+    if (method === 'POST' && path.match(/^\/[a-zA-Z0-9_-]+\/use$/)) {
         const templateId = path.replace('/use', '').substring(1);
 
         query.run(

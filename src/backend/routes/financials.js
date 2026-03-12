@@ -262,14 +262,14 @@ export async function financialsRouter(ctx) {
             }
 
             if (updates.length > 0) {
-                values.push(id);
+                values.push(id, user.id);
                 query.run(
-                    `UPDATE purchases SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                    `UPDATE purchases SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                     values
                 );
             }
 
-            const purchase = query.get('SELECT * FROM purchases WHERE id = ?', [id]);
+            const purchase = query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
             return { status: 200, data: { purchase } };
         } catch (error) {
             logger.error('[Financials] Error updating purchase', user?.id, { detail: error.message });
@@ -485,14 +485,14 @@ export async function financialsRouter(ctx) {
             }
 
             if (updates.length > 0) {
-                values.push(id);
+                values.push(id, user.id);
                 query.run(
-                    `UPDATE accounts SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                    `UPDATE accounts SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                     values
                 );
             }
 
-            const account = query.get('SELECT * FROM accounts WHERE id = ?', [id]);
+            const account = query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
             return { status: 200, data: { account } };
         } catch (error) {
             logger.error('[Financials] Error updating account', user?.id, { detail: error.message });
@@ -783,6 +783,12 @@ export async function financialsRouter(ctx) {
                 return { status: 400, data: { error: 'Invalid quantity' } };
             }
 
+            // Verify inventory item belongs to user
+            const ownerCheck = query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+            if (!ownerCheck) {
+                return { status: 404, data: { error: 'Inventory item not found' } };
+            }
+
             // Get cost layers in FIFO order (oldest first)
             const layers = query.all(`
                 SELECT * FROM inventory_cost_layers
@@ -820,25 +826,25 @@ export async function financialsRouter(ctx) {
 
             // Update sale with item_cost if saleId provided
             if (saleId) {
-                query.run('UPDATE sales SET item_cost = ? WHERE id = ?', [totalCOGS, saleId]);
+                query.run('UPDATE sales SET item_cost = ? WHERE id = ? AND user_id = ?', [totalCOGS, saleId, user.id]);
 
                 // Recalculate net_profit
-                const sale = query.get('SELECT * FROM sales WHERE id = ?', [saleId]);
+                const sale = query.get('SELECT * FROM sales WHERE id = ? AND user_id = ?', [saleId, user.id]);
                 if (sale) {
                     const netProfit = (sale.sale_price || 0) -
                                       (sale.platform_fee || 0) -
                                       totalCOGS -
                                       (sale.seller_shipping_cost || sale.shipping_cost || 0) -
                                       (sale.tax_amount || 0);
-                    query.run('UPDATE sales SET net_profit = ? WHERE id = ?', [netProfit, saleId]);
+                    query.run('UPDATE sales SET net_profit = ? WHERE id = ? AND user_id = ?', [netProfit, saleId, user.id]);
                 }
             }
 
             // Update inventory quantity
             query.run(`
                 UPDATE inventory SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            `, [quantity, inventoryId]);
+                WHERE id = ? AND user_id = ?
+            `, [quantity, inventoryId, user.id]);
 
             return {
                 status: 200,
@@ -1093,7 +1099,7 @@ export async function financialsRouter(ctx) {
             }
 
             // Zero out original amount since children now hold it
-            query.run('UPDATE financial_transactions SET amount = 0 WHERE id = ?', [id]);
+            query.run('UPDATE financial_transactions SET amount = 0 WHERE id = ? AND user_id = ?', [id, user.id]);
 
             return { status: 200, data: { message: 'Transaction split successfully', parent: id, children: childTransactions } };
         } catch (error) {
@@ -1407,8 +1413,8 @@ export async function financialsRouter(ctx) {
             }
 
             if (updates.length > 0) {
-                values.push(id);
-                query.run(`UPDATE financial_transactions SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, values);
+                values.push(id, user.id);
+                query.run(`UPDATE financial_transactions SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, values);
 
                 // Write audit log entries
                 for (const change of changes) {
@@ -1419,7 +1425,7 @@ export async function financialsRouter(ctx) {
                 }
             }
 
-            const transaction = query.get('SELECT * FROM financial_transactions WHERE id = ?', [id]);
+            const transaction = query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [id, user.id]);
             return { status: 200, data: { transaction, changes: changes.length } };
         } catch (error) {
             logger.error('[Financials] Error updating transaction', user?.id, { detail: error.message });

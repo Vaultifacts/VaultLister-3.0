@@ -215,7 +215,8 @@ export async function helpRouter(ctx) {
 
     // GET /api/help/articles - List articles
     if (method === 'GET' && path === '/articles') {
-        const { category, search, limit = 20 } = queryParams;
+        const { category, search } = queryParams;
+        const limit = Math.min(parseInt(queryParams.limit) || 20, 100);
 
         try {
             let sql, params;
@@ -310,6 +311,10 @@ export async function helpRouter(ctx) {
 
     // POST /api/help/articles/:id/helpful - Vote on article
     if (method === 'POST' && path.match(/^\/articles\/[^\/]+\/helpful$/)) {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
+
         const articleId = path.split('/')[2];
         const { helpful } = body;
 
@@ -376,6 +381,9 @@ export async function helpRouter(ctx) {
 
     // POST /api/help/tickets - Create support ticket
     if (method === 'POST' && path === '/tickets') {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
         const { type, subject, description, screenshots, page_context, browser_info } = body;
 
         if (!type || !subject || !description) {
@@ -438,7 +446,7 @@ export async function helpRouter(ctx) {
                 params.push(status);
             }
 
-            sql += ` ORDER BY created_at DESC`;
+            sql += ` ORDER BY created_at DESC LIMIT 200`;
 
             const tickets = query.all(sql, params);
 
@@ -512,7 +520,7 @@ export async function helpRouter(ctx) {
     }
 
     // POST /api/help/tickets/:id/replies - Add reply to ticket
-    if (method === 'POST' && path.endsWith('/replies')) {
+    if (method === 'POST' && path.match(/^\/tickets\/[^/]+\/replies$/)) {
         const ticketId = path.split('/')[2];
         const { message } = body;
 
@@ -723,6 +731,10 @@ export async function helpRouter(ctx) {
 
     // POST /api/help/videos/:id/view - Increment video view count
     if (method === 'POST' && path.match(/^\/videos\/[^\/]+\/view$/)) {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
+
         const videoId = path.split('/')[2];
 
         try {

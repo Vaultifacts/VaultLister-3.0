@@ -30,9 +30,11 @@ function generateBackupCodes(count = 10) {
     return codes;
 }
 
-// Hash backup code for storage
+// Hash backup code for storage (salted with HMAC)
 function hashBackupCode(code) {
-    return crypto.createHash('sha256').update(code.replace('-', '')).digest('hex');
+    const normalized = code.replaceAll('-', '');
+    const hmacKey = process.env.BACKUP_CODE_SECRET || 'dev-backup-code-secret';
+    return crypto.createHmac('sha256', hmacKey).update(normalized).digest('hex');
 }
 
 // Enhanced MFA Service
@@ -269,7 +271,7 @@ const enhancedMFA = {
 
     // Verify backup code
     async verifyBackupCode(userId, code) {
-        const codeHash = hashBackupCode(code.replace('-', '').replace(' ', ''));
+        const codeHash = hashBackupCode(code.replaceAll('-', '').replaceAll(' ', ''));
 
         const backupCode = query.get(`
             SELECT * FROM backup_codes
@@ -332,6 +334,9 @@ const enhancedMFA = {
         const code = crypto.randomInt(100000, 999999).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+        // Hash the code before storing
+        const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+
         query.run(`
             UPDATE users SET
                 pending_phone = ?,
@@ -339,10 +344,12 @@ const enhancedMFA = {
                 phone_verification_expires = ?,
                 updated_at = datetime('now')
             WHERE id = ?
-        `, [cleanPhone, code, expiresAt.toISOString(), userId]);
+        `, [cleanPhone, hashedCode, expiresAt.toISOString(), userId]);
 
-        // In production, send SMS via Twilio/SNS
-        logger.info(`[EnhancedMFA] SMS verification code for ${cleanPhone}: ${code}`);
+        // In production, send via Twilio/SNS — never log codes in production
+        if (process.env.NODE_ENV !== 'production') {
+            logger.info(`[EnhancedMFA] SMS verification code for ${cleanPhone}: ${code}`);
+        }
 
         return {
             message: 'Verification code sent',
@@ -365,7 +372,8 @@ const enhancedMFA = {
             throw new Error('Verification code expired');
         }
 
-        if (user.phone_verification_code !== code) {
+        const hashedInput = crypto.createHash('sha256').update(code).digest('hex');
+        if (!crypto.timingSafeEqual(Buffer.from(user.phone_verification_code, 'hex'), Buffer.from(hashedInput, 'hex'))) {
             throw new Error('Invalid verification code');
         }
 
@@ -395,13 +403,18 @@ const enhancedMFA = {
         const code = crypto.randomInt(100000, 999999).toString();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
+        // Hash code before storing
+        const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+
         query.run(`
             INSERT INTO sms_codes (id, user_id, code, expires_at, created_at)
             VALUES (?, ?, ?, ?, datetime('now'))
-        `, [uuidv4(), userId, code, expiresAt.toISOString()]);
+        `, [uuidv4(), userId, hashedCode, expiresAt.toISOString()]);
 
-        // In production, send via Twilio/SNS
-        logger.info(`[EnhancedMFA] SMS code for user ${userId}: ${code}`);
+        // In production, send via Twilio/SNS — never log codes in production
+        if (process.env.NODE_ENV !== 'production') {
+            logger.info(`[EnhancedMFA] SMS code for user ${userId}: ${code}`);
+        }
 
         return {
             message: 'Code sent',
@@ -411,11 +424,13 @@ const enhancedMFA = {
 
     // Verify SMS code
     async verifySMSCode(userId, code) {
+        // Hash the input code to match stored hash
+        const hashedInput = crypto.createHash('sha256').update(code).digest('hex');
         const smsCode = query.get(`
             SELECT * FROM sms_codes
             WHERE user_id = ? AND code = ? AND used_at IS NULL
             ORDER BY created_at DESC LIMIT 1
-        `, [userId, code]);
+        `, [userId, hashedInput]);
 
         if (!smsCode) {
             return { success: false, message: 'Invalid code' };

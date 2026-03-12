@@ -92,7 +92,8 @@ export async function searchAnalyticsRouter(ctx) {
         `SELECT search_term, search_count, last_searched_at
          FROM search_analytics
          WHERE user_id = ? AND results_found = 0
-         ORDER BY search_count DESC`,
+         ORDER BY search_count DESC
+         LIMIT 200`,
         [userId]
       );
 

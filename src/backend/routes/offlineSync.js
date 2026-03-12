@@ -36,7 +36,7 @@ export async function offlineSyncRouter(ctx) {
                 params.push(queueStatus);
             }
 
-            sql += ' ORDER BY created_at ASC';
+            sql += ' ORDER BY created_at ASC LIMIT 1000';
 
             const queue = query.all(sql, params);
 

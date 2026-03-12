@@ -418,8 +418,8 @@ export async function socialAuthRouter(ctx) {
     }
 
     // DELETE /api/social-auth/:provider - Unlink provider
-    if (method === 'DELETE' && ctx.user) {
-        const provider = path.replace('/', '');
+    if (method === 'DELETE' && path.match(/^\/[a-zA-Z0-9_-]+$/) && ctx.user) {
+        const provider = path.substring(1);
 
         // Check if user has password or other OAuth accounts
         const user = query.get('SELECT password_hash FROM users WHERE id = ?', [ctx.user.id]);

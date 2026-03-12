@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { checkTierPermission } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
+import { encryptToken, decryptToken } from '../utils/encryption.js';
 
 export async function shopsRouter(ctx) {
     const { method, path, body, user } = ctx;
@@ -14,8 +15,8 @@ export async function shopsRouter(ctx) {
             const shops = query.all('SELECT * FROM shops WHERE user_id = ?', [user.id]);
 
             shops.forEach(shop => {
-                shop.settings = JSON.parse(shop.settings || '{}');
-                shop.stats = JSON.parse(shop.stats || '{}');
+                try { shop.settings = JSON.parse(shop.settings || '{}'); } catch { shop.settings = {}; }
+                try { shop.stats = JSON.parse(shop.stats || '{}'); } catch { shop.stats = {}; }
                 // Don't expose credentials
                 delete shop.credentials;
             });
@@ -94,7 +95,7 @@ export async function shopsRouter(ctx) {
                 VALUES (?, ?, ?, ?, ?, ?)
             `, [
                 id, user.id, platform, username,
-                credentials ? JSON.stringify(credentials) : null,
+                credentials ? encryptToken(JSON.stringify(credentials)) : null,
                 1
             ]);
 
@@ -134,7 +135,7 @@ export async function shopsRouter(ctx) {
 
             if (credentials !== undefined) {
                 updates.push('credentials = ?');
-                values.push(JSON.stringify(credentials));
+                values.push(encryptToken(JSON.stringify(credentials)));
             }
 
             if (settings !== undefined) {

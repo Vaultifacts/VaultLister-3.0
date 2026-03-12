@@ -90,6 +90,169 @@ export async function skuRulesRouter(ctx) {
         return { status: 200, data: { rules } };
     }
 
+    // GET /api/sku-rules/default - Get default rule (must be before :id catch-all)
+    if (method === 'GET' && path === '/default') {
+        const rule = query.get(
+            'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1',
+            [user.id]
+        );
+
+        if (!rule) {
+            return { status: 200, data: { rule: null } };
+        }
+
+        try {
+            rule.variables = JSON.parse(rule.variables || '[]');
+        } catch (error) {
+            logger.warn('[SkuRules] Failed to parse SKU rule variables');
+            rule.variables = [];
+        }
+
+        return { status: 200, data: { rule } };
+    }
+
+    // POST /api/sku-rules/preview - Preview pattern with sample data (must be before :id catch-all)
+    if (method === 'POST' && path === '/preview') {
+        const { pattern, itemData, ruleId } = body;
+
+        if (!pattern) {
+            return { status: 400, data: { error: 'Pattern is required' } };
+        }
+
+        let rule = null;
+        if (ruleId) {
+            rule = query.get(
+                'SELECT * FROM sku_rules WHERE id = ? AND user_id = ?',
+                [ruleId, user.id]
+            );
+        }
+
+        const sampleData = itemData || {
+            brand: 'Nike',
+            category: 'Tops',
+            color: 'Black',
+            size: 'M'
+        };
+
+        const generatedSku = generateSku(pattern, sampleData, rule || { counter_current: 0, counter_padding: 4 });
+
+        return {
+            status: 200,
+            data: {
+                pattern,
+                itemData: sampleData,
+                generatedSku
+            }
+        };
+    }
+
+    // POST /api/sku-rules/generate - Generate SKU for an item (must be before :id catch-all)
+    if (method === 'POST' && path === '/generate') {
+        const { itemData, ruleId } = body;
+
+        if (!itemData) {
+            return { status: 400, data: { error: 'Item data is required' } };
+        }
+
+        let rule;
+        if (ruleId) {
+            rule = query.get(
+                'SELECT * FROM sku_rules WHERE id = ? AND user_id = ?',
+                [ruleId, user.id]
+            );
+        } else {
+            rule = query.get(
+                'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1',
+                [user.id]
+            );
+        }
+
+        if (!rule) {
+            const sku = `VL-${Date.now()}`;
+            return { status: 200, data: { sku, ruleUsed: null } };
+        }
+
+        const generatedSku = generateSku(rule.pattern, itemData, rule);
+
+        query.run(
+            'UPDATE sku_rules SET counter_current = counter_current + 1 WHERE id = ?',
+            [rule.id]
+        );
+
+        return {
+            status: 200,
+            data: {
+                sku: generatedSku,
+                ruleUsed: {
+                    id: rule.id,
+                    name: rule.name,
+                    pattern: rule.pattern
+                }
+            }
+        };
+    }
+
+    // POST /api/sku-rules/batch-update - Batch update inventory SKUs (must be before :id catch-all)
+    if (method === 'POST' && path === '/batch-update') {
+        const { ruleId, updateAll, onlyEmpty } = body;
+
+        if (!ruleId) {
+            return { status: 400, data: { error: 'Rule ID is required' } };
+        }
+
+        const rule = query.get(
+            'SELECT * FROM sku_rules WHERE id = ? AND user_id = ?',
+            [ruleId, user.id]
+        );
+
+        if (!rule) {
+            return { status: 404, data: { error: 'Rule not found' } };
+        }
+
+        let items;
+        if (onlyEmpty) {
+            items = query.all(
+                "SELECT * FROM inventory WHERE user_id = ? AND (sku IS NULL OR sku = '')",
+                [user.id]
+            );
+        } else {
+            items = query.all(
+                'SELECT * FROM inventory WHERE user_id = ?',
+                [user.id]
+            );
+        }
+
+        let updated = 0;
+        let currentCounter = rule.counter_current;
+
+        for (const item of items) {
+            const tempRule = { ...rule, counter_current: currentCounter };
+            const newSku = generateSku(rule.pattern, item, tempRule);
+
+            query.run(
+                'UPDATE inventory SET sku = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                [newSku, item.id]
+            );
+
+            currentCounter++;
+            updated++;
+        }
+
+        query.run(
+            'UPDATE sku_rules SET counter_current = ? WHERE id = ?',
+            [currentCounter, ruleId]
+        );
+
+        return {
+            status: 200,
+            data: {
+                message: `Updated ${updated} item(s)`,
+                updated,
+                total: items.length
+            }
+        };
+    }
+
     // GET /api/sku-rules/:id - Get single rule
     if (method === 'GET' && path.startsWith('/') && !path.includes('/', 1)) {
         const ruleId = path.substring(1);
@@ -323,176 +486,6 @@ export async function skuRulesRouter(ctx) {
         query.run('UPDATE sku_rules SET is_default = 1 WHERE id = ?', [ruleId]);
 
         return { status: 200, data: { message: 'Default rule updated' } };
-    }
-
-    // POST /api/sku-rules/preview - Preview pattern with sample data
-    if (method === 'POST' && path === '/preview') {
-        const { pattern, itemData, ruleId } = body;
-
-        if (!pattern) {
-            return { status: 400, data: { error: 'Pattern is required' } };
-        }
-
-        // Get rule if ruleId provided
-        let rule = null;
-        if (ruleId) {
-            rule = query.get(
-                'SELECT * FROM sku_rules WHERE id = ? AND user_id = ?',
-                [ruleId, user.id]
-            );
-        }
-
-        // Use provided itemData or sample data
-        const sampleData = itemData || {
-            brand: 'Nike',
-            category: 'Tops',
-            color: 'Black',
-            size: 'M'
-        };
-
-        const generatedSku = generateSku(pattern, sampleData, rule || { counter_current: 0, counter_padding: 4 });
-
-        return {
-            status: 200,
-            data: {
-                pattern,
-                itemData: sampleData,
-                generatedSku
-            }
-        };
-    }
-
-    // POST /api/sku-rules/generate - Generate SKU for an item
-    if (method === 'POST' && path === '/generate') {
-        const { itemData, ruleId } = body;
-
-        if (!itemData) {
-            return { status: 400, data: { error: 'Item data is required' } };
-        }
-
-        // Get rule - either by ID or use default
-        let rule;
-        if (ruleId) {
-            rule = query.get(
-                'SELECT * FROM sku_rules WHERE id = ? AND user_id = ?',
-                [ruleId, user.id]
-            );
-        } else {
-            rule = query.get(
-                'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1',
-                [user.id]
-            );
-        }
-
-        if (!rule) {
-            // Fallback to simple timestamp-based SKU
-            const sku = `VL-${Date.now()}`;
-            return { status: 200, data: { sku, ruleUsed: null } };
-        }
-
-        const generatedSku = generateSku(rule.pattern, itemData, rule);
-
-        // Increment counter
-        query.run(
-            'UPDATE sku_rules SET counter_current = counter_current + 1 WHERE id = ?',
-            [rule.id]
-        );
-
-        return {
-            status: 200,
-            data: {
-                sku: generatedSku,
-                ruleUsed: {
-                    id: rule.id,
-                    name: rule.name,
-                    pattern: rule.pattern
-                }
-            }
-        };
-    }
-
-    // POST /api/sku-rules/batch-update - Batch update inventory SKUs
-    if (method === 'POST' && path === '/batch-update') {
-        const { ruleId, updateAll, onlyEmpty } = body;
-
-        if (!ruleId) {
-            return { status: 400, data: { error: 'Rule ID is required' } };
-        }
-
-        const rule = query.get(
-            'SELECT * FROM sku_rules WHERE id = ? AND user_id = ?',
-            [ruleId, user.id]
-        );
-
-        if (!rule) {
-            return { status: 404, data: { error: 'Rule not found' } };
-        }
-
-        // Get inventory items to update
-        let items;
-        if (onlyEmpty) {
-            items = query.all(
-                "SELECT * FROM inventory WHERE user_id = ? AND (sku IS NULL OR sku = '')",
-                [user.id]
-            );
-        } else {
-            items = query.all(
-                'SELECT * FROM inventory WHERE user_id = ?',
-                [user.id]
-            );
-        }
-
-        let updated = 0;
-        let currentCounter = rule.counter_current;
-
-        for (const item of items) {
-            const tempRule = { ...rule, counter_current: currentCounter };
-            const newSku = generateSku(rule.pattern, item, tempRule);
-
-            query.run(
-                'UPDATE inventory SET sku = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                [newSku, item.id]
-            );
-
-            currentCounter++;
-            updated++;
-        }
-
-        // Update rule counter
-        query.run(
-            'UPDATE sku_rules SET counter_current = ? WHERE id = ?',
-            [currentCounter, ruleId]
-        );
-
-        return {
-            status: 200,
-            data: {
-                message: `Updated ${updated} item(s)`,
-                updated,
-                total: items.length
-            }
-        };
-    }
-
-    // GET /api/sku-rules/default - Get default rule
-    if (method === 'GET' && path === '/default') {
-        const rule = query.get(
-            'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1',
-            [user.id]
-        );
-
-        if (!rule) {
-            return { status: 200, data: { rule: null } };
-        }
-
-        try {
-            rule.variables = JSON.parse(rule.variables || '[]');
-        } catch (error) {
-            logger.warn('[SkuRules] Failed to parse SKU rule variables');
-            rule.variables = [];
-        }
-
-        return { status: 200, data: { rule } };
     }
 
     return { status: 404, data: { error: 'Not found' } };

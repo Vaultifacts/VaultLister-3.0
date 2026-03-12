@@ -202,8 +202,8 @@ export async function emailOAuthRouter(ctx) {
                         consecutive_failures = 0,
                         last_error = NULL,
                         updated_at = ?
-                    WHERE id = ?
-                `, [encryptedAccessToken, encryptedRefreshToken, expiresAt, now, accountId]);
+                    WHERE id = ? AND user_id = ?
+                `, [encryptedAccessToken, encryptedRefreshToken, expiresAt, now, accountId, stateRecord.user_id]);
             } else {
                 // Create new account
                 query.run(`
@@ -235,12 +235,14 @@ export async function emailOAuthRouter(ctx) {
                     <html>
                     <head><title>Gmail Connected</title></head>
                     <body>
+                        <div id="oauth-data" data-provider="gmail" data-email="${emailAddress.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c])}"></div>
                         <script>
                             if (window.opener) {
+                                var d = document.getElementById('oauth-data');
                                 window.opener.postMessage({
                                     type: 'email-oauth-success',
-                                    provider: 'gmail',
-                                    email: '${emailAddress}'
+                                    provider: d.dataset.provider,
+                                    email: d.dataset.email
                                 }, window.location.origin);
                                 window.close();
                             } else {
@@ -295,6 +297,7 @@ export async function emailOAuthRouter(ctx) {
             FROM email_accounts
             WHERE user_id = ?
             ORDER BY created_at DESC
+            LIMIT 100
         `, [user.id]);
 
         // Parse filter_senders JSON
@@ -354,9 +357,10 @@ export async function emailOAuthRouter(ctx) {
             params.push(new Date().toISOString());
             params.push(accountId);
 
+            params.push(user.id);
             query.run(`
                 UPDATE email_accounts SET ${updates.join(', ')}
-                WHERE id = ?
+                WHERE id = ? AND user_id = ?
             `, params);
         }
 
@@ -419,8 +423,8 @@ export async function emailOAuthRouter(ctx) {
         // Update sync status
         query.run(`
             UPDATE email_accounts SET sync_status = 'syncing', updated_at = ?
-            WHERE id = ?
-        `, [new Date().toISOString(), accountId]);
+            WHERE id = ? AND user_id = ?
+        `, [new Date().toISOString(), accountId, user.id]);
 
         return {
             status: 202,
@@ -569,8 +573,8 @@ export async function emailOAuthRouter(ctx) {
                         consecutive_failures = 0,
                         last_error = NULL,
                         updated_at = ?
-                    WHERE id = ?
-                `, [encryptedAccessToken, encryptedRefreshToken, expiresAt, now, accountId]);
+                    WHERE id = ? AND user_id = ?
+                `, [encryptedAccessToken, encryptedRefreshToken, expiresAt, now, accountId, stateRecord.user_id]);
             } else {
                 // Create new account
                 query.run(`
@@ -602,12 +606,14 @@ export async function emailOAuthRouter(ctx) {
                     <html>
                     <head><title>Outlook Connected</title></head>
                     <body>
+                        <div id="oauth-data" data-provider="outlook" data-email="${emailAddress.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c])}"></div>
                         <script>
                             if (window.opener) {
+                                var d = document.getElementById('oauth-data');
                                 window.opener.postMessage({
                                     type: 'email-oauth-success',
-                                    provider: 'outlook',
-                                    email: '${emailAddress}'
+                                    provider: d.dataset.provider,
+                                    email: d.dataset.email
                                 }, window.location.origin);
                                 window.close();
                             } else {

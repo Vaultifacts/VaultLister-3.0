@@ -243,10 +243,12 @@ export async function watermarkRouter(ctx) {
             }
 
             // Use transaction to ensure atomicity
-            query.run('UPDATE watermark_presets SET is_default = 0 WHERE user_id = ?', [user.id]);
-            query.run('UPDATE watermark_presets SET is_default = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [presetId]);
+            query.transaction(() => {
+                query.run('UPDATE watermark_presets SET is_default = 0 WHERE user_id = ?', [user.id]);
+                query.run('UPDATE watermark_presets SET is_default = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [presetId, user.id]);
+            })();
 
-            const updated = query.get('SELECT * FROM watermark_presets WHERE id = ?', [presetId]);
+            const updated = query.get('SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?', [presetId, user.id]);
 
             return { status: 200, data: updated };
         } catch (error) {

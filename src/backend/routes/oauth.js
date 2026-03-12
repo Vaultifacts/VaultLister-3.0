@@ -13,6 +13,10 @@ export async function oauthRouter(ctx) {
 
     // GET /api/oauth/authorize/:platform - Initiate OAuth flow
     if (method === 'GET' && path.startsWith('/authorize/')) {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
+
         const platform = path.split('/')[2];
 
         if (!platform) {
@@ -579,7 +583,12 @@ function getOAuthConfig(platform, mode) {
         }
     };
 
-    const config = configs[platform] || configs.poshmark;
+    const config = configs[platform];
+    if (!config) {
+        const err = new Error(`Unsupported OAuth platform: ${platform}`);
+        err.status = 400;
+        throw err;
+    }
 
     // In real (non-mock) mode, reject if credentials are missing
     // PKCE platforms (Etsy) only need clientId — no clientSecret

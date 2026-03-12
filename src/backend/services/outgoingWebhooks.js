@@ -210,10 +210,12 @@ const outgoingWebhooks = {
         }
 
         // Get active webhooks for this event and user
+        // Escape LIKE wildcards in eventType to prevent injection
+        const escapedEvent = eventType.replace(/[%_]/g, '\\$&');
         const webhooks = query.all(`
             SELECT * FROM user_webhooks
-            WHERE user_id = ? AND is_active = 1 AND (events LIKE ? OR events = '*')
-        `, [userId, `%${eventType}%`]);
+            WHERE user_id = ? AND is_active = 1 AND (events LIKE ? ESCAPE '\\' OR events = '*')
+        `, [userId, `%${escapedEvent}%`]);
 
         if (!webhooks || webhooks.length === 0) return;
 
@@ -235,7 +237,7 @@ const outgoingWebhooks = {
                 webhookId: webhook.id,
                 endpoint: {
                     url: webhook.url,
-                    headers: webhook.headers ? JSON.parse(webhook.headers) : {}
+                    headers: (() => { try { return webhook.headers ? JSON.parse(webhook.headers) : {}; } catch { return {}; } })()
                 },
                 event: eventType,
                 payload,
@@ -288,9 +290,26 @@ export async function outgoingWebhooksRouter(ctx) {
             return { status: 400, data: { error: 'Name, URL, and events are required' } };
         }
 
-        // Validate URL
+        // Validate URL — block private/internal targets (SSRF protection)
         try {
-            new URL(url);
+            const parsed = new URL(url);
+            if (!['https:', 'http:'].includes(parsed.protocol)) {
+                return { status: 400, data: { error: 'Only HTTP(S) URLs are allowed' } };
+            }
+            const hostname = parsed.hostname.toLowerCase();
+            const blockedPatterns = [
+                'localhost', '127.0.0.1', '::1', '0.0.0.0',
+                '169.254.169.254', // cloud metadata
+                'metadata.google.internal',
+            ];
+            if (blockedPatterns.includes(hostname) ||
+                hostname.endsWith('.internal') ||
+                hostname.endsWith('.local') ||
+                /^10\./.test(hostname) ||
+                /^172\.(1[6-9]|2\d|3[01])\./.test(hostname) ||
+                /^192\.168\./.test(hostname)) {
+                return { status: 400, data: { error: 'Internal/private URLs are not allowed' } };
+            }
         } catch {
             return { status: 400, data: { error: 'Invalid URL' } };
         }

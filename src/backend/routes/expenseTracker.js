@@ -83,7 +83,9 @@ export async function expenseTrackerRouter(ctx) {
         const startMonth = (quarterNum - 1) * 3 + 1;
         const endMonth = startMonth + 2;
         const quarterStart = `${year}-${String(startMonth).padStart(2, '0')}-01`;
-        const quarterEnd = `${year}-${String(endMonth).padStart(2, '0')}-31`;
+        // Calculate last day of end month correctly (e.g., June=30, not 31)
+        const lastDay = new Date(parseInt(year), endMonth, 0).getDate();
+        const quarterEnd = `${year}-${String(endMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
         dateFilter = `AND date(ft.transaction_date) BETWEEN ? AND ?`;
         params.push(quarterStart, quarterEnd);

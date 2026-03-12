@@ -312,7 +312,7 @@ async function queueEmailReceipt(account, email, detection, accessToken) {
         } else if (attachment.attachmentId) {
             // Need to fetch attachment
             try {
-                const data = await getAttachment(accessToken, email.id, attachment.attachmentId);
+                const data = await getGmailAttachment(accessToken, email.id, attachment.attachmentId);
                 imageData = base64UrlToBase64(data);
             } catch (err) {
                 logger.error(`[EmailPolling] Failed to fetch attachment:`, err.message);

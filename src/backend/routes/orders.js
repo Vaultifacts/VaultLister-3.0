@@ -433,6 +433,14 @@ export async function ordersRouter(ctx) {
                 };
             }
 
+            // Validate status transition — only pending/processing orders can be shipped
+            if (!['pending', 'processing', 'confirmed'].includes(existing.status)) {
+                return {
+                    status: 400,
+                    data: { error: `Cannot ship order with status '${existing.status}'` }
+                };
+            }
+
             const now = new Date().toISOString();
 
             query.run(`
@@ -474,6 +482,14 @@ export async function ordersRouter(ctx) {
                 return {
                     status: 404,
                     data: { error: 'Order not found' }
+                };
+            }
+
+            // Validate status transition — only shipped orders can be delivered
+            if (existing.status !== 'shipped') {
+                return {
+                    status: 400,
+                    data: { error: `Cannot mark order as delivered with status '${existing.status}'` }
                 };
             }
 

@@ -28,6 +28,10 @@ export async function extensionRouter(ctx) {
 
     // POST /api/extension/scrape - Save scraped product (alias for /scraped)
     if (method === 'POST' && path === '/scrape') {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
+
         const { url, site, productData } = body;
 
         if (!productData) {
@@ -132,8 +136,8 @@ export async function extensionRouter(ctx) {
             );
 
             const tracking = query.get(
-                `SELECT * FROM price_tracking WHERE id = ?`,
-                [trackingId]
+                `SELECT * FROM price_tracking WHERE id = ? AND user_id = ?`,
+                [trackingId, user.id]
             );
 
             return {
@@ -163,7 +167,7 @@ export async function extensionRouter(ctx) {
             }
 
             sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-            params.push(parseInt(limit), parseInt(offset));
+            params.push(Math.min(parseInt(limit) || 50, 200), parseInt(offset) || 0);
 
             const items = query.all(sql, params);
 
@@ -208,8 +212,8 @@ export async function extensionRouter(ctx) {
             );
 
             const tracking = query.get(
-                `SELECT * FROM price_tracking WHERE id = ?`,
-                [trackingId]
+                `SELECT * FROM price_tracking WHERE id = ? AND user_id = ?`,
+                [trackingId, user.id]
             );
 
             // Map schema fields to expected response fields
@@ -432,14 +436,14 @@ export async function extensionRouter(ctx) {
             }
 
             sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-            params.push(parseInt(limit), parseInt(offset));
+            params.push(Math.min(parseInt(limit) || 50, 200), parseInt(offset) || 0);
 
             const items = query.all(sql, params);
 
             // Parse JSON fields
             items.forEach(item => {
                 if (item.images) {
-                    item.images = JSON.parse(item.images);
+                    try { item.images = JSON.parse(item.images); } catch { item.images = []; }
                 }
             });
 
@@ -520,8 +524,8 @@ export async function extensionRouter(ctx) {
             );
 
             const tracking = query.get(
-                `SELECT * FROM price_tracking WHERE id = ?`,
-                [trackingId]
+                `SELECT * FROM price_tracking WHERE id = ? AND user_id = ?`,
+                [trackingId, user.id]
             );
 
             return {
@@ -554,7 +558,7 @@ export async function extensionRouter(ctx) {
             }
 
             sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-            params.push(parseInt(limit), parseInt(offset));
+            params.push(Math.min(parseInt(limit) || 50, 200), parseInt(offset) || 0);
 
             const items = query.all(sql, params);
 
@@ -617,8 +621,8 @@ export async function extensionRouter(ctx) {
             );
 
             const tracking = query.get(
-                `SELECT * FROM price_tracking WHERE id = ?`,
-                [trackingId]
+                `SELECT * FROM price_tracking WHERE id = ? AND user_id = ?`,
+                [trackingId, user.id]
             );
 
             return {
@@ -716,7 +720,7 @@ export async function extensionRouter(ctx) {
             }
 
             sql += ` ORDER BY created_at DESC LIMIT ?`;
-            params.push(parseInt(limit));
+            params.push(Math.min(parseInt(limit) || 50, 200));
 
             const items = query.all(sql, params);
 
@@ -741,7 +745,7 @@ export async function extensionRouter(ctx) {
     }
 
     // POST /api/extension/sync/:id/process - Process sync item
-    if (method === 'POST' && path.endsWith('/process')) {
+    if (method === 'POST' && path.match(/^\/sync\/[a-f0-9-]+\/process$/)) {
         const syncId = path.split('/')[2];
 
         try {

@@ -88,7 +88,8 @@ What can I help you with today?`;
                      ORDER BY created_at DESC LIMIT 1) as last_message
                  FROM chat_conversations c
                  WHERE c.user_id = ?
-                 ORDER BY c.updated_at DESC`,
+                 ORDER BY c.updated_at DESC
+                 LIMIT 200`,
                 [user.id]
             );
 
@@ -106,7 +107,7 @@ What can I help you with today?`;
     }
 
     // GET /api/chatbot/conversations/:id - Get single conversation with messages
-    if (method === 'GET' && path.startsWith('/conversations/')) {
+    if (method === 'GET' && path.match(/^\/conversations\/[a-f0-9-]+$/)) {
         const conversationId = path.split('/')[2];
 
         try {
@@ -130,7 +131,8 @@ What can I help you with today?`;
                 `SELECT id, role, content, metadata, helpful_rating, created_at
                  FROM chat_messages
                  WHERE conversation_id = ?
-                 ORDER BY created_at ASC`,
+                 ORDER BY created_at ASC
+                 LIMIT 500`,
                 [conversationId]
             );
 
@@ -311,7 +313,7 @@ What can I help you with today?`;
     }
 
     // DELETE /api/chatbot/conversations/:id - Delete conversation
-    if (method === 'DELETE' && path.startsWith('/conversations/')) {
+    if (method === 'DELETE' && path.match(/^\/conversations\/[a-f0-9-]+$/)) {
         const conversationId = path.split('/')[2];
 
         try {

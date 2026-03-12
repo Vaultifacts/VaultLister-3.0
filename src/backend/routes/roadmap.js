@@ -34,7 +34,7 @@ export async function roadmapRouter(ctx) {
                 params.push(category);
             }
 
-            sql += ` ORDER BY votes DESC, created_at DESC`;
+            sql += ` ORDER BY votes DESC, created_at DESC LIMIT 200`;
 
             const features = query.all(sql, params);
 
@@ -63,7 +63,7 @@ export async function roadmapRouter(ctx) {
     }
 
     // GET /api/roadmap/:id - Get single roadmap feature
-    if (method === 'GET' && path.startsWith('/') && path.split('/').length === 2) {
+    if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
         const featureId = path.split('/')[1];
 
         try {
@@ -226,7 +226,7 @@ export async function roadmapRouter(ctx) {
   <channel>
     <title>VaultLister Changelog</title>
     <description>Latest updates and features from VaultLister</description>
-    <link>${ctx.origin || 'https://vaultlister.com'}/changelog</link>
+    <link>https://vaultlister.com/changelog</link>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     ${rssItems}
   </channel>

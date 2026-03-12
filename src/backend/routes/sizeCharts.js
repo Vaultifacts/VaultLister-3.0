@@ -62,7 +62,7 @@ export async function sizeChartsRouter(ctx) {
                 params.push(is_template === 'true' || is_template === '1' ? 1 : 0);
             }
 
-            sql += ` ORDER BY created_at DESC`;
+            sql += ` ORDER BY created_at DESC LIMIT 500`;
 
             const charts = query.all(sql, params);
 
@@ -379,7 +379,7 @@ export async function sizeChartsRouter(ctx) {
                 };
             }
 
-            sql += ` AND ${fromColumn} = ?`;
+            sql += ` AND ${fromColumn} = ? LIMIT 500`;
             params.push(size);
 
             const results = query.all(sql, params);
@@ -575,6 +575,7 @@ export async function sizeChartsRouter(ctx) {
                 params.push(garment_type);
             }
 
+            sql += ` LIMIT 500`;
             const guides = query.all(sql, params);
 
             if (guides.length === 0) {

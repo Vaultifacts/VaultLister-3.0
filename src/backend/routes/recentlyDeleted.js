@@ -194,6 +194,10 @@ export async function recentlyDeletedRouter(ctx) {
                 return { status: 400, data: { error: 'ids array is required' } };
             }
 
+            if (body.ids.length > 100) {
+                return { status: 400, data: { error: 'Maximum 100 items per batch' } };
+            }
+
             let restored = 0;
             let failed = 0;
             const errors = [];
@@ -286,6 +290,10 @@ export async function recentlyDeletedRouter(ctx) {
         if (method === 'DELETE' && path === '/bulk-delete') {
             if (!body?.ids || !Array.isArray(body.ids)) {
                 return { status: 400, data: { error: 'ids array is required' } };
+            }
+
+            if (body.ids.length > 100) {
+                return { status: 400, data: { error: 'Maximum 100 items per batch' } };
             }
 
             const placeholders = body.ids.map(() => '?').join(', ');

@@ -15,7 +15,8 @@ export async function competitorTrackingRouter(ctx) {
       const keywords = await query.all(
         `SELECT * FROM competitor_keywords
          WHERE user_id = ?
-         ORDER BY opportunity_score DESC, competitor_count DESC`,
+         ORDER BY opportunity_score DESC, competitor_count DESC
+         LIMIT 500`,
         [user.id]
       );
 

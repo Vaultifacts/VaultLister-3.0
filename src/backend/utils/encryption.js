@@ -13,7 +13,8 @@ if (!ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
 
 const EFFECTIVE_KEY = ENCRYPTION_KEY || 'dev-only-key-not-for-production!!';
 
-const ALGORITHM = 'aes-256-cbc';
+const ALGORITHM_GCM = 'aes-256-gcm';
+const ALGORITHM_CBC = 'aes-256-cbc'; // Legacy — decrypt only
 
 // Validate encryption key length
 if (EFFECTIVE_KEY.length < 32) {
@@ -25,31 +26,26 @@ if (EFFECTIVE_KEY.length < 32) {
     }
 }
 
+const KEY_BUFFER = Buffer.from(EFFECTIVE_KEY.slice(0, 32));
+
 /**
- * Encrypt a token using AES-256-CBC
+ * Encrypt a token using AES-256-GCM (authenticated encryption)
  * @param {string} token - The token to encrypt
- * @returns {string} Encrypted token in format: "iv:encryptedText"
+ * @returns {string} Encrypted token in format: "gcm:iv:authTag:ciphertext"
  */
 export function encryptToken(token) {
     if (!token) return null;
 
     try {
-        // Generate random initialization vector
-        const iv = crypto.randomBytes(16);
+        const iv = crypto.randomBytes(12); // 96-bit IV for GCM
+        const cipher = crypto.createCipheriv(ALGORITHM_GCM, KEY_BUFFER, iv);
 
-        // Create cipher with key (first 32 bytes) and IV
-        const cipher = crypto.createCipheriv(
-            ALGORITHM,
-            Buffer.from(EFFECTIVE_KEY.slice(0, 32)),
-            iv
-        );
-
-        // Encrypt the token
         let encrypted = cipher.update(token, 'utf8', 'hex');
         encrypted += cipher.final('hex');
+        const authTag = cipher.getAuthTag().toString('hex');
 
-        // Return IV:encrypted format for later decryption
-        return iv.toString('hex') + ':' + encrypted;
+        // Prefix with "gcm:" to distinguish from legacy CBC tokens
+        return 'gcm:' + iv.toString('hex') + ':' + authTag + ':' + encrypted;
     } catch (error) {
         logger.error('[Encryption] Token encryption error', error);
         throw new Error('Failed to encrypt token');
@@ -57,15 +53,34 @@ export function encryptToken(token) {
 }
 
 /**
- * Decrypt a token that was encrypted with encryptToken
- * @param {string} encrypted - The encrypted token in format: "iv:encryptedText"
+ * Decrypt a token — supports both GCM (new) and CBC (legacy) formats
+ * @param {string} encrypted - The encrypted token
  * @returns {string} Decrypted token
  */
 export function decryptToken(encrypted) {
     if (!encrypted) return null;
 
     try {
-        // Split IV and encrypted text
+        // New GCM format: "gcm:iv:authTag:ciphertext"
+        if (encrypted.startsWith('gcm:')) {
+            const parts = encrypted.slice(4).split(':');
+            if (parts.length !== 3) {
+                throw new Error('Invalid GCM encrypted token format');
+            }
+
+            const iv = Buffer.from(parts[0], 'hex');
+            const authTag = Buffer.from(parts[1], 'hex');
+            const ciphertext = parts[2];
+
+            const decipher = crypto.createDecipheriv(ALGORITHM_GCM, KEY_BUFFER, iv);
+            decipher.setAuthTag(authTag);
+
+            let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
+            decrypted += decipher.final('utf8');
+            return decrypted;
+        }
+
+        // Legacy CBC format: "iv:ciphertext"
         const parts = encrypted.split(':');
         if (parts.length !== 2) {
             throw new Error('Invalid encrypted token format');
@@ -74,17 +89,10 @@ export function decryptToken(encrypted) {
         const iv = Buffer.from(parts[0], 'hex');
         const encryptedText = parts[1];
 
-        // Create decipher with key and IV
-        const decipher = crypto.createDecipheriv(
-            ALGORITHM,
-            Buffer.from(EFFECTIVE_KEY.slice(0, 32)),
-            iv
-        );
+        const decipher = crypto.createDecipheriv(ALGORITHM_CBC, KEY_BUFFER, iv);
 
-        // Decrypt the token
         let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
-
         return decrypted;
     } catch (error) {
         logger.error('[Encryption] Token decryption error', error);

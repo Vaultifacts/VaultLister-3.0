@@ -30,12 +30,26 @@ async function exportUserData(userId) {
         data: {}
     };
 
+    // Columns to strip from exports (secrets, tokens, hashes)
+    const REDACTED_COLUMNS = new Set([
+        'password_hash', 'mfa_secret', 'mfa_backup_codes', 'oauth_token',
+        'oauth_refresh_token', 'oauth_token_expires_at', 'secret',
+        'phone_verification_code', 'token', 'code'
+    ]);
+
     const EXPORT_ROW_LIMIT = 10000;
     for (const { table, idColumn } of USER_DATA_TABLES) {
         try {
             const rows = query.all(`SELECT * FROM ${table} WHERE ${idColumn} = ? LIMIT ?`, [userId, EXPORT_ROW_LIMIT]);
             if (rows && rows.length > 0) {
-                data.data[table] = rows;
+                // Strip sensitive columns from exported data
+                data.data[table] = rows.map(row => {
+                    const cleaned = { ...row };
+                    for (const col of REDACTED_COLUMNS) {
+                        if (col in cleaned) delete cleaned[col];
+                    }
+                    return cleaned;
+                });
                 if (rows.length === EXPORT_ROW_LIMIT) {
                     data.data[`${table}__truncated`] = true;
                 }
@@ -324,7 +338,16 @@ export async function gdprRouter(ctx) {
     if (method === 'PUT' && path === '/consents') {
         const { consents } = body;
 
+        if (!consents || typeof consents !== 'object') {
+            return { status: 400, data: { error: 'consents object required' } };
+        }
+
+        const VALID_CONSENT_TYPES = new Set([
+            'marketing_emails', 'analytics', 'third_party_sharing', 'personalization'
+        ]);
+
         for (const [type, granted] of Object.entries(consents)) {
+            if (!VALID_CONSENT_TYPES.has(type)) continue;
             query.run(`
                 INSERT INTO user_consents (id, user_id, consent_type, granted, granted_at, updated_at)
                 VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))

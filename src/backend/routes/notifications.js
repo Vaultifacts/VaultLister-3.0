@@ -103,7 +103,7 @@ export async function notificationsRouter(ctx) {
     }
 
     // DELETE /api/notifications/:id - Delete a notification
-    if (method === 'DELETE' && path.match(/^\/[^/]+$/)) {
+    if (method === 'DELETE' && path.match(/^\/[a-f0-9-]+$/)) {
         try {
             const notificationId = path.split('/')[1];
 

@@ -78,20 +78,20 @@ async function handleDataExport(user) {
       transactions
     ] = await Promise.all([
       query.all('SELECT id, email, name, created_at FROM users WHERE id = ?', [userId]),
-      query.all('SELECT * FROM inventory WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM listings WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM orders WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM offers WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM sales WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM checklists WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM automations WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM calendar_events WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM analytics WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM image_bank WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM suppliers WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM user_settings WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM feedback WHERE user_id = ?', [userId]),
-      query.all('SELECT * FROM transactions WHERE user_id = ?', [userId])
+      query.all('SELECT * FROM inventory WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM listings WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM orders WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM offers WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM sales WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM checklists WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM automations WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM calendar_events WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM analytics WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM image_bank WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM suppliers WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM user_settings WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM feedback WHERE user_id = ? LIMIT 10000', [userId]),
+      query.all('SELECT * FROM transactions WHERE user_id = ? LIMIT 10000', [userId])
     ]);
 
     const exportData = {
@@ -255,7 +255,7 @@ async function getCurrentTos() {
 async function getTosHistory() {
   try {
     const history = await query.all(
-      'SELECT id, version, title, summary_of_changes, effective_date, created_at FROM tos_versions ORDER BY effective_date DESC, created_at DESC'
+      'SELECT id, version, title, summary_of_changes, effective_date, created_at FROM tos_versions ORDER BY effective_date DESC, created_at DESC LIMIT 100'
     );
 
     return { status: 200, data: history };

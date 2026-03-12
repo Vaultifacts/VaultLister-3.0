@@ -33,7 +33,7 @@ export async function offersRouter(ctx) {
         }
 
         sql += ' ORDER BY o.created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseInt(limit), parseInt(offset));
+        params.push(Math.min(parseInt(limit) || 50, 200), parseInt(offset) || 0);
 
         const offers = query.all(sql, params);
 
@@ -320,9 +320,9 @@ export async function offersRouter(ctx) {
         }
 
         if (updates.length > 0) {
-            values.push(id);
+            values.push(id, user.id);
             query.run(
-                `UPDATE automation_rules SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                `UPDATE automation_rules SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
         }

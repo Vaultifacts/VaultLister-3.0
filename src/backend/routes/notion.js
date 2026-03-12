@@ -42,8 +42,8 @@ export async function notionRouter(ctx) {
 
     // Route: GET /api/notion/databases/:id
     // Get database schema
-    if (method === 'GET' && path.startsWith('/databases/')) {
-        const databaseId = path.replace('/databases/', '');
+    if (method === 'GET' && path.match(/^\/databases\/[^/]+$/)) {
+        const databaseId = path.split('/')[2];
         return await handleGetDatabase(user, databaseId);
     }
 
@@ -124,22 +124,22 @@ export async function notionRouter(ctx) {
 
     // Route: GET /api/notion/pages/:id
     // Get a page
-    if (method === 'GET' && path.startsWith('/pages/')) {
-        const pageId = path.replace('/pages/', '');
+    if (method === 'GET' && path.match(/^\/pages\/[^/]+$/)) {
+        const pageId = path.split('/')[2];
         return await handleGetPage(user, pageId);
     }
 
     // Route: PUT /api/notion/pages/:id
     // Update a page
-    if (method === 'PUT' && path.startsWith('/pages/')) {
-        const pageId = path.replace('/pages/', '');
+    if (method === 'PUT' && path.match(/^\/pages\/[^/]+$/)) {
+        const pageId = path.split('/')[2];
         return await handleUpdatePage(user, pageId, body);
     }
 
     // Route: DELETE /api/notion/pages/:id
     // Archive a page
-    if (method === 'DELETE' && path.startsWith('/pages/')) {
-        const pageId = path.replace('/pages/', '');
+    if (method === 'DELETE' && path.match(/^\/pages\/[^/]+$/)) {
+        const pageId = path.split('/')[2];
         return await handleArchivePage(user, pageId);
     }
 

@@ -33,7 +33,11 @@ function buildTransformationString(transformations) {
         transforms.push('e_upscale');
     }
     if (transformations.cropWidth && transformations.cropHeight) {
-        transforms.push(`c_fill,g_auto,w_${transformations.cropWidth},h_${transformations.cropHeight}`);
+        const cw = parseInt(transformations.cropWidth);
+        const ch = parseInt(transformations.cropHeight);
+        if (cw > 0 && cw <= 10000 && ch > 0 && ch <= 10000) {
+            transforms.push(`c_fill,g_auto,w_${cw},h_${ch}`);
+        }
     }
 
     return transforms.join('/');
@@ -44,7 +48,7 @@ async function processJobItem(item, transformations, userId) {
     const startTime = Date.now();
 
     // Get image from database
-    const image = query.get('SELECT * FROM image_bank WHERE id = ?', [item.image_id]);
+    const image = query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [item.image_id, userId]);
     if (!image) {
         throw new Error('Image not found');
     }

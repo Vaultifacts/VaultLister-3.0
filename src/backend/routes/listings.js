@@ -158,9 +158,9 @@ export async function listingsRouter(ctx) {
         }
 
         if (updates.length > 0) {
-            values.push(folderId);
+            values.push(folderId, user.id);
             query.run(
-                `UPDATE listings_folders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                `UPDATE listings_folders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
         }
@@ -702,7 +702,7 @@ export async function listingsRouter(ctx) {
             params.push(platform);
         }
 
-        sql += ' ORDER BY COALESCE(l.last_relisted_at, l.listed_at, l.created_at) ASC';
+        sql += ' ORDER BY COALESCE(l.last_relisted_at, l.listed_at, l.created_at) ASC LIMIT 200';
 
         const staleListings = query.all(sql, params);
 
@@ -1089,7 +1089,7 @@ export async function listingsRouter(ctx) {
     // ============================================
 
     // POST /api/listings/:id/schedule-price-drop - Schedule a price drop
-    if (method === 'POST' && path.match(/^\/[^/]+\/schedule-price-drop$/)) {
+    if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/schedule-price-drop$/)) {
         const id = path.split('/')[1];
         const { drop_amount, new_price, scheduled_date, recurring, max_drops, floor_price } = body;
 
@@ -1145,7 +1145,7 @@ export async function listingsRouter(ctx) {
     // ============================================
 
     // GET /api/listings/:id/competitor-pricing - Get competitor pricing for a listing
-    if (method === 'GET' && path.match(/^\/[^/]+\/competitor-pricing$/)) {
+    if (method === 'GET' && path.match(/^\/[a-f0-9-]+\/competitor-pricing$/)) {
         const id = path.split('/')[1];
 
         const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
@@ -1199,7 +1199,7 @@ export async function listingsRouter(ctx) {
     // ============================================
 
     // GET /api/listings/:id/time-to-sell - Estimate time to sell based on historical data
-    if (method === 'GET' && path.match(/^\/[^/]+\/time-to-sell$/)) {
+    if (method === 'GET' && path.match(/^\/[a-f0-9-]+\/time-to-sell$/)) {
         const id = path.split('/')[1];
 
         const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
@@ -1277,8 +1277,8 @@ export async function listingsRouter(ctx) {
 
             // Update listing record with eBay listing ID and URL
             query.run(
-                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
 
             return {
@@ -1318,8 +1318,8 @@ export async function listingsRouter(ctx) {
             const result = await publishListingToEtsy(shop, listing, inventory);
 
             query.run(
-                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
 
             return {
@@ -1350,8 +1350,8 @@ export async function listingsRouter(ctx) {
             const result = await publishListingToPoshmark(null, listing, inventory);
 
             query.run(
-                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
 
             return {
@@ -1398,8 +1398,8 @@ export async function listingsRouter(ctx) {
         try {
             const result = await publisher(shop, listing, inventory);
             query.run(
-                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), id]
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), id, user.id]
             );
             return { status: 200, data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl } };
         } catch (error) {
@@ -1422,8 +1422,8 @@ export async function listingsRouter(ctx) {
             const result = await publishListingToMercari(null, listing, inventory);
 
             query.run(
-                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
 
             return {
@@ -1454,8 +1454,8 @@ export async function listingsRouter(ctx) {
             const result = await publishListingToDepop(null, listing, inventory);
 
             query.run(
-                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
 
             return {
@@ -1486,8 +1486,8 @@ export async function listingsRouter(ctx) {
             const result = await publishListingToGrailed(null, listing, inventory);
 
             query.run(
-                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
 
             return {
@@ -1518,8 +1518,8 @@ export async function listingsRouter(ctx) {
             const result = await publishListingToFacebook(null, listing, inventory);
 
             query.run(
-                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
 
             return {
@@ -1546,8 +1546,8 @@ export async function listingsRouter(ctx) {
             const result = await publishListingToWhatnot(null, listing, inventory);
 
             query.run(
-                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
 
             return {
@@ -1574,8 +1574,8 @@ export async function listingsRouter(ctx) {
             const result = await publishListingToShopify(null, listing, inventory);
 
             query.run(
-                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ?',
-                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId]
+                'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
+                [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
 
             return {

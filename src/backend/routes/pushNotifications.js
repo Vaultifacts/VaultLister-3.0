@@ -33,15 +33,21 @@ export async function pushNotificationsRouter(ctx) {
             );
 
             if (existing) {
-                // Update existing registration
+                // Only update if device belongs to current user (prevent takeover)
+                const ownedDevice = query.get(
+                    'SELECT id FROM push_devices WHERE token = ? AND user_id = ?',
+                    [token, user?.id]
+                );
+                if (!ownedDevice) {
+                    return { status: 409, data: { error: 'Device token already registered to another user' } };
+                }
                 query.run(`
                     UPDATE push_devices SET
-                        user_id = ?,
                         device_name = COALESCE(?, device_name),
                         updated_at = datetime('now'),
                         last_active_at = datetime('now')
-                    WHERE id = ?
-                `, [user?.id || null, deviceName, existing.id]);
+                    WHERE id = ? AND user_id = ?
+                `, [deviceName, existing.id, user?.id]);
 
                 return {
                     status: 200,
@@ -111,9 +117,9 @@ export async function pushNotificationsRouter(ctx) {
     }
 
     // DELETE /api/notifications/devices/:id - Remove a device
-    if (method === 'DELETE' && path.startsWith('/devices/')) {
+    if (method === 'DELETE' && path.match(/^\/devices\/[a-f0-9-]+$/)) {
         try {
-            const deviceId = path.split('/').pop();
+            const deviceId = path.split('/')[2];
 
             query.run(
                 'DELETE FROM push_devices WHERE id = ? AND user_id = ?',
@@ -200,8 +206,8 @@ export async function pushNotificationsRouter(ctx) {
     // POST /api/notifications/send - Send notification (enterprise only)
     if (method === 'POST' && path === '/send') {
         try {
-            if (user.subscription_tier !== 'enterprise') {
-                return { status: 403, data: { error: 'Enterprise subscription required' } };
+            if (!user.is_admin) {
+                return { status: 403, data: { error: 'Admin access required' } };
             }
 
             const { title, body: notificationBody, data, channel } = body;
@@ -258,8 +264,8 @@ export async function pushNotificationsRouter(ctx) {
     // POST /api/notifications/send-batch - Send to multiple users (enterprise only)
     if (method === 'POST' && path === '/send-batch') {
         try {
-            if (user.subscription_tier !== 'enterprise') {
-                return { status: 403, data: { error: 'Enterprise subscription required' } };
+            if (!user.is_admin) {
+                return { status: 403, data: { error: 'Admin access required' } };
             }
 
             const { userIds, title, body: notificationBody, data, channel } = body;
@@ -268,8 +274,14 @@ export async function pushNotificationsRouter(ctx) {
                 return { status: 400, data: { error: 'userIds array, title, and body are required' } };
             }
 
+            // Restrict to own user ID only — prevent cross-user notification injection
+            const allowedIds = userIds.filter(id => id === user.id);
+            if (allowedIds.length === 0) {
+                return { status: 403, data: { error: 'Can only send notifications to your own devices' } };
+            }
+
             let sent = 0;
-            for (const userId of userIds) {
+            for (const userId of allowedIds) {
                 const devices = query.all(
                     'SELECT * FROM push_devices WHERE user_id = ? LIMIT 20',
                     [userId]

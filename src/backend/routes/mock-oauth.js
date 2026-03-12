@@ -12,7 +12,7 @@ export async function mockOAuthRouter(ctx) {
     const platform = pathParts[1]; // /poshmark/authorize -> poshmark
 
     // GET /mock-oauth/:platform/authorize - Show mock login page
-    if (method === 'GET' && path.endsWith('/authorize')) {
+    if (method === 'GET' && path.match(/^\/[a-z]+\/authorize$/)) {
         const { client_id, redirect_uri, state, scope, response_type } = queryParams;
 
         if (!client_id || !redirect_uri || !state) {
@@ -222,12 +222,12 @@ export async function mockOAuthRouter(ctx) {
         function approve() {
             // Generate mock authorization code
             const code = 'mock_auth_code_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16) + '_' + Date.now();
-            const redirectUrl = '${redirect_uri}?code=' + encodeURIComponent(code) + '&state=${state}';
+            const redirectUrl = decodeURIComponent('${encodeURIComponent(redirect_uri)}') + '?code=' + encodeURIComponent(code) + '&state=' + encodeURIComponent(decodeURIComponent('${encodeURIComponent(state)}'));
             window.location.href = redirectUrl;
         }
 
         function deny() {
-            const redirectUrl = '${redirect_uri}?error=access_denied&state=${state}&error_description=' + encodeURIComponent('User denied authorization');
+            const redirectUrl = decodeURIComponent('${encodeURIComponent(redirect_uri)}') + '?error=access_denied&state=' + encodeURIComponent(decodeURIComponent('${encodeURIComponent(state)}')) + '&error_description=' + encodeURIComponent('User denied authorization');
             window.location.href = redirectUrl;
         }
     </script>
@@ -238,7 +238,7 @@ export async function mockOAuthRouter(ctx) {
     }
 
     // POST /mock-oauth/:platform/token - Exchange code for tokens
-    if (method === 'POST' && path.endsWith('/token')) {
+    if (method === 'POST' && path.match(/^\/[a-z]+\/token$/)) {
         // Mock always returns success with instant tokens
         return {
             status: 200,
@@ -253,7 +253,7 @@ export async function mockOAuthRouter(ctx) {
     }
 
     // GET /mock-oauth/:platform/user - Get user info
-    if (method === 'GET' && path.endsWith('/user')) {
+    if (method === 'GET' && path.match(/^\/[a-z]+\/user$/)) {
         const userId = crypto.randomUUID().split('-')[0];
 
         return {
@@ -271,7 +271,7 @@ export async function mockOAuthRouter(ctx) {
     }
 
     // POST /mock-oauth/:platform/revoke - Revoke token
-    if (method === 'POST' && path.endsWith('/revoke')) {
+    if (method === 'POST' && path.match(/^\/[a-z]+\/revoke$/)) {
         // Mock revocation always succeeds
         return {
             status: 200,
@@ -298,7 +298,7 @@ function getPlatformName(platform) {
         mercari: 'Mercari',
         grailed: 'Grailed'
     };
-    return names[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
+    return names[platform] || platform.replace(/[^a-zA-Z0-9 -]/g, '').charAt(0).toUpperCase() + platform.replace(/[^a-zA-Z0-9 -]/g, '').slice(1);
 }
 
 function getPlatformIcon(platform) {

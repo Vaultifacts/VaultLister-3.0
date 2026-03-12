@@ -96,7 +96,7 @@ export async function imageBankRouter(ctx) {
                     throw dbError;
                 }
 
-                uploadedImages.push({ id: imageId, url: savedImage.file_path });
+                uploadedImages.push({ id: imageId, url: `/api/image-bank/${imageId}/file` });
             }
 
             return { status: 200, data: { images: uploadedImages, count: uploadedImages.length } };
@@ -735,7 +735,14 @@ Be specific and accurate. Only include what you can confidently detect from the 
                     if (removeBg) transformations.push('e_background_removal');
                     if (doEnhance) transformations.push('e_improve', 'e_auto_contrast', 'e_auto_brightness');
                     if (doUpscale) transformations.push('e_upscale');
-                    if (cropWidth && cropHeight) transformations.push(`c_fill,g_auto,w_${cropWidth},h_${cropHeight}`);
+                    if (cropWidth && cropHeight) {
+                        const w = parseInt(cropWidth);
+                        const h = parseInt(cropHeight);
+                        if (!w || !h || w < 1 || h < 1 || w > 10000 || h > 10000) {
+                            return { status: 400, data: { error: 'Invalid crop dimensions (1-10000)' } };
+                        }
+                        transformations.push(`c_fill,g_auto,w_${w},h_${h}`);
+                    }
 
                     if (transformations.length === 0) {
                         result = { success: true, url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}`, publicId };
