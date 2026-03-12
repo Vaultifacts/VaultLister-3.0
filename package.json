@@ -10,6 +10,7 @@
     "dev:test-bg": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/ps/start-test-bg.ps1",
     "dev:stop": "bun scripts/server-manager.js stop",
     "dev:status": "bun scripts/server-manager.js status",
+    "test:unit": "bun run test:setup && bun test src/tests/",
     "test:setup": "bun run dev:stop && bun scripts/kill-port.js 3100 && bun run dev:test-bg",
     "start": "bun run src/backend/server.js",
     "build": "bun scripts/build-frontend.js",
