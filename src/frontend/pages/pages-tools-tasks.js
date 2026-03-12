@@ -721,7 +721,7 @@ Object.assign(pages, {
                     <div class="week-preview-days">
                         ${weekDays.map(day => `
                             <div class="week-preview-day ${day.isToday ? 'today' : ''} ${day.events.length > 0 ? 'has-events' : ''}"
-                                 onclick="handlers.selectCalendarDate('${day.toLocalDate(date)}')">
+                                 onclick="handlers.selectCalendarDate('${toLocalDate(day.date)}')">
                                 <div class="week-day-name">${dayNames[day.date.getDay()]}</div>
                                 <div class="week-day-number">${day.date.getDate()}</div>
                                 ${day.events.length > 0 ? `
@@ -792,7 +792,7 @@ Object.assign(pages, {
                                                     });
                                                     return `
                                                         <div class="calendar-week-cell ${day.isToday ? 'today' : ''}"
-                                                             onclick="handlers.addCalendarEvent('${day.toLocalDate(date)}')">
+                                                             onclick="handlers.addCalendarEvent('${toLocalDate(day.date)}')">
                                                             ${hourEvents.map(e => {
                                                                 const colors = getEventColor(e);
                                                                 return `

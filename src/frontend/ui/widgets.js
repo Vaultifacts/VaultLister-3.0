@@ -3734,7 +3734,7 @@ const runHistoryTimeline = {
             <div class="run-history-timeline">
                 ${runs.slice(0, 10).map(run => `
                     <div class="run-history-item ${run.status}">
-                        <div class="run-history-time">${new Date(run.timestamp).toLocaleString()}</div>
+                        <div class="run-history-time">${run.timestamp ? new Date(run.timestamp).toLocaleString() : 'Unknown time'}</div>
                         <div class="run-history-action">${escapeHtml(run.action)}</div>
                         <div class="run-history-result">${escapeHtml(run.result || '')}</div>
                     </div>

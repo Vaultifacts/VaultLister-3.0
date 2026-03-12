@@ -12433,7 +12433,7 @@ const runHistoryTimeline = {
             <div class="run-history-timeline">
                 ${runs.slice(0, 10).map(run => `
                     <div class="run-history-item ${run.status}">
-                        <div class="run-history-time">${new Date(run.timestamp).toLocaleString()}</div>
+                        <div class="run-history-time">${run.timestamp ? new Date(run.timestamp).toLocaleString() : 'Unknown time'}</div>
                         <div class="run-history-action">${escapeHtml(run.action)}</div>
                         <div class="run-history-result">${escapeHtml(run.result || '')}</div>
                     </div>
@@ -15164,7 +15164,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'e4805374';
+    const v = 'f26587b7';
     const files = [
         '/pages/pages-' + chunkName + '.js?v=' + v,
         '/handlers/handlers-' + chunkName + '.js?v=' + v
@@ -17904,7 +17904,7 @@ const pages = {
                                     </div>
                                     <div class="platform-perf-info">
                                         <span class="platform-perf-name">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                                        <span class="platform-perf-stats">${data.sales} sales</span>
+                                        <span class="platform-perf-stats">${data.sales} ${data.sales === 1 ? 'sale' : 'sales'}</span>
                                     </div>
                                     <div class="platform-perf-revenue">$${data.revenue.toLocaleString()}</div>
                                 </div>
@@ -18827,7 +18827,7 @@ const pages = {
                                 <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                                     <div class="flex items-center gap-3">
                                         <span class="font-medium">${p.label}</span>
-                                        <span class="text-sm text-gray-500">| ${p.count} sales</span>
+                                        <span class="text-sm text-gray-500">| ${p.count} ${p.count === 1 ? 'sale' : 'sales'}</span>
                                     </div>
                                     <span class="font-bold text-success">Total: $${(p.value || 0).toFixed(2)}</span>
                                 </div>
@@ -20363,7 +20363,7 @@ const pages = {
                                         <div class="flex-1">
                                             <div class="flex justify-between items-center mb-1">
                                                 <span class="text-sm font-medium">${item.platform.charAt(0).toUpperCase() + item.platform.slice(1)}</span>
-                                                <span class="text-sm font-medium">${item.count} sales</span>
+                                                <span class="text-sm font-medium">${item.count} ${item.count === 1 ? 'sale' : 'sales'}</span>
                                             </div>
                                             <div class="progress-bar" style="background: var(--gray-200); height: 8px; border-radius: 4px; overflow: hidden;">
                                                 <div style="width: ${(item.count / maxCount * 100).toFixed(1)}%; height: 100%; background: var(--primary-500);"></div>

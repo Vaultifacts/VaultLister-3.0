@@ -435,7 +435,7 @@ const pages = {
                                     </div>
                                     <div class="platform-perf-info">
                                         <span class="platform-perf-name">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                                        <span class="platform-perf-stats">${data.sales} sales</span>
+                                        <span class="platform-perf-stats">${data.sales} ${data.sales === 1 ? 'sale' : 'sales'}</span>
                                     </div>
                                     <div class="platform-perf-revenue">$${data.revenue.toLocaleString()}</div>
                                 </div>
@@ -1358,7 +1358,7 @@ const pages = {
                                 <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                                     <div class="flex items-center gap-3">
                                         <span class="font-medium">${p.label}</span>
-                                        <span class="text-sm text-gray-500">| ${p.count} sales</span>
+                                        <span class="text-sm text-gray-500">| ${p.count} ${p.count === 1 ? 'sale' : 'sales'}</span>
                                     </div>
                                     <span class="font-bold text-success">Total: $${(p.value || 0).toFixed(2)}</span>
                                 </div>
@@ -2894,7 +2894,7 @@ const pages = {
                                         <div class="flex-1">
                                             <div class="flex justify-between items-center mb-1">
                                                 <span class="text-sm font-medium">${item.platform.charAt(0).toUpperCase() + item.platform.slice(1)}</span>
-                                                <span class="text-sm font-medium">${item.count} sales</span>
+                                                <span class="text-sm font-medium">${item.count} ${item.count === 1 ? 'sale' : 'sales'}</span>
                                             </div>
                                             <div class="progress-bar" style="background: var(--gray-200); height: 8px; border-radius: 4px; overflow: hidden;">
                                                 <div style="width: ${(item.count / maxCount * 100).toFixed(1)}%; height: 100%; background: var(--primary-500);"></div>
