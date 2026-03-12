@@ -670,10 +670,14 @@ function serveStatic(pathname, request) {
         };
 
         if (supportsGzip) {
-            if (!gzipCache.has(filePath)) {
-                gzipCache.set(filePath, gzipSync(content, { level: 6 }));
+            if (IS_PROD) {
+                if (!gzipCache.has(filePath)) {
+                    gzipCache.set(filePath, gzipSync(content, { level: 6 }));
+                }
+                content = gzipCache.get(filePath);
+            } else {
+                content = gzipSync(content, { level: 6 });
             }
-            content = gzipCache.get(filePath);
             responseHeaders['Content-Encoding'] = 'gzip';
             responseHeaders['Content-Length'] = String(content.length);
         }
