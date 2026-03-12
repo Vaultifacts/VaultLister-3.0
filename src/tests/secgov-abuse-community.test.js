@@ -156,15 +156,13 @@ describe('Community Post Input Validation', () => {
     });
 });
 
-describe('Community Post Content Sanitization Gap (H4/H28)', () => {
-    test('title and body are stored as raw user input — NOT sanitized (gap documented)', async () => {
-        // GAP: community.js stores title and body directly without HTML sanitization.
-        // Only tags are sanitized (line 47). Title and body could contain XSS payloads.
-        // Recommendation: apply escapeHtml() or DOMPurify before storage.
+describe('Community Post Content Sanitization (H4/H28)', () => {
+    test('title and body should be HTML-escaped before storage', async () => {
+        // FIX VERIFIED: community.js now applies escapeHtml() to title and content on INSERT
         mockQueryGet.mockReturnValue({
             id: 'post-1', user_id: 'user-1',
-            title: '<img src=x onerror=alert(1)>',
-            body: '<script>document.cookie</script>',
+            title: '&lt;img src=x onerror=alert(1)&gt;',
+            body: '&lt;script&gt;document.cookie&lt;/script&gt;',
             tags: '[]', type: 'discussion',
             author_name: 'testuser',
         });
@@ -180,14 +178,15 @@ describe('Community Post Content Sanitization Gap (H4/H28)', () => {
         const result = await communityRouter(ctx);
         expect(result.status).toBe(201);
 
-        // Verify the INSERT stores raw content — this IS the gap
         const insertCall = mockQueryRun.mock.calls.find(c =>
             c[0]?.includes('INSERT INTO community_posts')
         );
         expect(insertCall).toBeTruthy();
-        // Title stored as-is (index 3), body stored as-is (index 4)
-        expect(insertCall[1][3]).toBe(xssTitle);
-        expect(insertCall[1][4]).toBe(xssBody);
+        // Title (index 3) and body (index 4) should be escaped
+        expect(insertCall[1][3]).not.toContain('<img');
+        expect(insertCall[1][3]).toContain('&lt;img');
+        expect(insertCall[1][4]).not.toContain('<script>');
+        expect(insertCall[1][4]).toContain('&lt;script&gt;');
     });
 });
 

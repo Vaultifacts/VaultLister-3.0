@@ -5,6 +5,15 @@ import crypto from 'crypto';
 import { query, escapeLike } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 /**
  * Community router
  */
@@ -56,8 +65,8 @@ export async function communityRouter(ctx) {
                     postId,
                     user.id,
                     type,
-                    title,
-                    content,
+                    escapeHtml(title),
+                    escapeHtml(content),
                     sanitizedTags ? JSON.stringify(sanitizedTags) : '[]'
                 ]
             );
@@ -277,7 +286,7 @@ export async function communityRouter(ctx) {
             query.run(
                 `INSERT INTO community_replies (id, post_id, user_id, parent_reply_id, body)
                  VALUES (?, ?, ?, ?, ?)`,
-                [replyId, postId, user.id, parent_reply_id || null, content]
+                [replyId, postId, user.id, parent_reply_id || null, escapeHtml(content)]
             );
 
             const reply = query.get(
@@ -499,7 +508,7 @@ export async function communityRouter(ctx) {
             // Update the reply
             query.run(
                 `UPDATE community_replies SET body = ?, updated_at = datetime('now') WHERE id = ?`,
-                [content.trim(), replyId]
+                [escapeHtml(content.trim()), replyId]
             );
 
             const updatedReply = query.get(

@@ -71,6 +71,7 @@ async function executeAccountDeletion(deletion) {
         { table: 'sms_codes', idColumn: 'user_id' },
         { table: 'user_consents', idColumn: 'user_id' },
         { table: 'data_export_requests', idColumn: 'user_id' },
+        { table: 'data_rectification_requests', idColumn: 'user_id' },
     ];
 
     // Anonymize sales data (keep for financial records)

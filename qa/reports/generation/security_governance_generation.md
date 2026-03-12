@@ -14,7 +14,7 @@
 | Existing test files extended | 0 |
 | New tests added (total) | 98 |
 | Tests passing | 98 / 98 |
-| Real bugs discovered | 0 |
+| Real bugs discovered & fixed | 3 |
 | Coverage categories improved | 7 of 7 |
 
 ---
@@ -61,10 +61,9 @@
 - cleanup preserves critical/security logs for 730 days (vs 90 standard)
 - generateComplianceReport returns structured report shape
 
-**Coverage added (Legal.js Export Gap — H5/H15):**
-- Documents that legal.js SELECT * does not redact sensitive columns
+**Coverage added (Legal.js Export Redaction — H5/H15):**
+- Verifies legal.js data export redacts oauth_token, password_hash, oauth_refresh_token, mfa_secret from SELECT * results
 - Verifies user table query is properly scoped (4 columns only)
-- Verifies other tables use SELECT * (gap confirmed)
 
 **Coverage added (Audit Log Router Admin Gating — H34/H35):**
 - Non-admin accesses /my-activity (allowed)
@@ -131,8 +130,8 @@
 **Coverage added (Export cleanup):**
 - Expires completed exports older than 7 days, sets export_data=NULL
 
-**Coverage added (Gap documentation — H24):**
-- data_rectification_requests NOT in worker's USER_DATA_TABLES (gap confirmed)
+**Coverage added (Rectification table fix — H24):**
+- data_rectification_requests IS in worker's USER_DATA_TABLES (fix verified)
 - account_deletion_requests preserved as audit trail (not deleted — correct behavior)
 
 **Test pattern:** Unit tests with mocked DB, logger, email. Worker started/stopped per test with async wait for fire-and-forget promises.
@@ -150,9 +149,9 @@
 - Rejects tags array over 10 items
 - Strips HTML from tags (verified <script> and <b> removed)
 
-**Coverage added (Content sanitization gap — H4/H28):**
-- Documents that title and body stored as raw user input (XSS payloads preserved)
-- Verifies INSERT stores unsanitized content at expected parameter indices
+**Coverage added (Content sanitization — H4/H28):**
+- Verifies title and body are HTML-escaped (escapeHtml) before INSERT storage
+- Verifies XSS payloads like `<script>` and `<img onerror>` are neutralized at storage time
 
 **Coverage added (Post flagging):**
 - Flagging a post with reason succeeds (201)
@@ -180,11 +179,13 @@
 
 ---
 
-## Bugs Discovered
+## Bugs Discovered & Fixed
 
-| # | Bug | Severity | Location | Status |
-|---|-----|----------|----------|--------|
-| — | No real product bugs discovered | — | — | — |
+| # | Bug | Severity | Location | Fix | Status |
+|---|-----|----------|----------|-----|--------|
+| 1 | legal.js data export leaks sensitive columns (DC-1/H5/H15) | High | legal.js:80-94 | Added REDACTED_COLUMNS + redactRow() mirroring gdpr.js | Fixed, test verified |
+| 2 | Community post title/body stored unsanitized (DC-2/H4/H28) | Medium | community.js:52-61 | Added escapeHtml() on title, content, and reply body at storage | Fixed, test verified |
+| 3 | data_rectification_requests missing from GDPR worker (DC-4/H24) | Medium | gdprWorker.js:54-74 | Added to USER_DATA_TABLES | Fixed, test verified |
 
 Two test failures during development, both caused by test setup issues:
 1. bcryptjs module is readonly — cannot reassign `.compare` directly. Fixed by testing with social-login user (no password_hash) instead.
@@ -207,7 +208,7 @@ Two test failures during development, both caused by test setup issues:
 | Offboarding | FTS5 cleanup on user deletion (H22) | Requires real SQLite FTS5 | Integration test |
 | Offboarding | Integration disconnect flow (H23) | Feature partially exists but no OAuth revocation | Design + implementation |
 | Moderation | Content moderation system (H26/H27) | Feature entirely missing — no report queue, ban, takedown | Design + implementation |
-| Moderation | Community content sanitization (H28) | Code fix needed — apply escapeHtml() on storage | Code fix + test |
+| Moderation | Community content sanitization (H28) | **FIXED** — escapeHtml() applied on title, content, and reply body at storage | Verified by test |
 | Moderation | Abuse rate limiting on posts (H30) | Rate limiter exists but not applied to community routes | Code fix + test |
 | Recovery | Admin account recovery (H31) | Feature missing — no admin-assisted MFA bypass/password reset | Design + implementation |
 | Recovery | Manual refund mechanism (H32) | Feature missing | Design + implementation |
@@ -225,10 +226,10 @@ Two test failures during development, both caused by test setup issues:
 
 | ID | Concern | Location | Impact |
 |----|---------|----------|--------|
-| DC-1 | legal.js data export uses SELECT * without redacting sensitive columns | legal.js:80-94 | PII leak via /privacy/data-export |
-| DC-2 | Community post title/body stored as raw user input | community.js:52-61 | XSS if rendered without escapeHtml() |
+| DC-1 | ~~legal.js data export uses SELECT * without redacting sensitive columns~~ | legal.js:80-94 | **RESOLVED** — redactRow() applied to all exports |
+| DC-2 | ~~Community post title/body stored as raw user input~~ | community.js:52-61 | **RESOLVED** — escapeHtml() applied at storage |
 | DC-3 | Inconsistent admin gating: monitoring.js uses is_admin only, auditLog.js accepts enterprise tier | monitoring.js vs auditLog.js | Enterprise users get partial admin access |
-| DC-4 | data_rectification_requests table not in GDPR worker deletion list | gdprWorker.js:54-74 | Rectification records survive account deletion |
+| DC-4 | ~~data_rectification_requests table not in GDPR worker deletion list~~ | gdprWorker.js:54-74 | **RESOLVED** — added to USER_DATA_TABLES |
 | DC-5 | Dev JWT fallback ('dev-only-not-for-production') has no staging protection | auth.js:17-20 | Forged tokens possible if deployed to staging |
 | DC-6 | Automation bot audit logging referenced in docs but not verified in code | CLAUDE.md vs sync services | Undocumented gap in audit trail |
 | DC-7 | Export data stored as unencrypted JSON blob for up to 7 days | data_export_requests.export_data | PII exposure window |

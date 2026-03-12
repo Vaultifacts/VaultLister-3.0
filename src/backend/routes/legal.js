@@ -2,6 +2,21 @@ import { query } from '../db/database.js';
 import { nanoid } from 'nanoid';
 import { logger } from '../shared/logger.js';
 
+// Columns to strip from data exports (mirrors gdpr.js REDACTED_COLUMNS)
+const REDACTED_COLUMNS = new Set([
+    'password_hash', 'mfa_secret', 'mfa_backup_codes', 'oauth_token',
+    'oauth_refresh_token', 'oauth_token_expires_at', 'secret',
+    'phone_verification_code', 'token', 'code'
+]);
+
+function redactRow(row) {
+    const cleaned = { ...row };
+    for (const col of REDACTED_COLUMNS) {
+        if (col in cleaned) delete cleaned[col];
+    }
+    return cleaned;
+}
+
 // Defense-in-depth: whitelist for table names in data audit
 const ALLOWED_AUDIT_TABLES = new Set([
     'inventory', 'listings', 'orders', 'offers', 'sales',
@@ -97,20 +112,20 @@ async function handleDataExport(user) {
     const exportData = {
       exportDate: new Date().toISOString(),
       user: userInfo[0] || {},
-      inventory: inventory || [],
-      listings: listings || [],
-      orders: orders || [],
-      offers: offers || [],
-      sales: sales || [],
-      checklists: checklists || [],
-      automations: automations || [],
-      calendar: calendar || [],
-      analytics: analytics || [],
-      images: images || [],
-      suppliers: suppliers || [],
-      settings: settings || [],
-      feedback: feedback || [],
-      transactions: transactions || []
+      inventory: (inventory || []).map(redactRow),
+      listings: (listings || []).map(redactRow),
+      orders: (orders || []).map(redactRow),
+      offers: (offers || []).map(redactRow),
+      sales: (sales || []).map(redactRow),
+      checklists: (checklists || []).map(redactRow),
+      automations: (automations || []).map(redactRow),
+      calendar: (calendar || []).map(redactRow),
+      analytics: (analytics || []).map(redactRow),
+      images: (images || []).map(redactRow),
+      suppliers: (suppliers || []).map(redactRow),
+      settings: (settings || []).map(redactRow),
+      feedback: (feedback || []).map(redactRow),
+      transactions: (transactions || []).map(redactRow)
     };
 
     return {

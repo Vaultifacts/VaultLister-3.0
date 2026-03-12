@@ -498,16 +498,21 @@ describe('Audit Log Service (H14)', () => {
     });
 });
 
-describe('Legal.js Data Export — Missing Redaction (H5/H15)', () => {
-    test('should document that legal.js data export uses SELECT * without redacting sensitive columns', async () => {
-        // GAP: legal.js handleDataExport does SELECT * from tables like inventory,
-        // listings, sales without stripping sensitive columns like gdpr.js does.
+describe('Legal.js Data Export — Redaction (H5/H15)', () => {
+    test('legal.js data export should redact sensitive columns from SELECT * results', async () => {
+        // FIX VERIFIED: legal.js now applies redactRow() to all SELECT * results
         mockQueryAll.mockImplementation((sql) => {
             if (sql.includes('FROM users WHERE id')) {
                 return [{ id: 'user-1', email: 'test@example.com', name: 'Test' }];
             }
+            if (sql.includes('FROM inventory')) {
+                return [{ id: 'inv-1', user_id: 'user-1', title: 'Item', oauth_token: 'secret-tok-123' }];
+            }
             if (sql.includes('FROM sales')) {
-                return [{ id: 'sale-1', user_id: 'user-1', amount: 100 }];
+                return [{ id: 'sale-1', user_id: 'user-1', amount: 100, password_hash: 'hash123' }];
+            }
+            if (sql.includes('FROM listings')) {
+                return [{ id: 'lst-1', user_id: 'user-1', oauth_refresh_token: 'refresh-tok', mfa_secret: 'totp' }];
             }
             return [];
         });
@@ -517,6 +522,15 @@ describe('Legal.js Data Export — Missing Redaction (H5/H15)', () => {
 
         expect(result.status).toBe(200);
         expect(result.data.exportDate).toBeTruthy();
+        // Verify sensitive columns are stripped from inventory
+        expect(result.data.inventory[0]).not.toHaveProperty('oauth_token');
+        expect(result.data.inventory[0].title).toBe('Item');
+        // Verify sensitive columns are stripped from sales
+        expect(result.data.sales[0]).not.toHaveProperty('password_hash');
+        expect(result.data.sales[0].amount).toBe(100);
+        // Verify sensitive columns are stripped from listings
+        expect(result.data.listings[0]).not.toHaveProperty('oauth_refresh_token');
+        expect(result.data.listings[0]).not.toHaveProperty('mfa_secret');
     });
 
     test('legal.js user query selects limited columns for user info', async () => {
@@ -530,12 +544,6 @@ describe('Legal.js Data Export — Missing Redaction (H5/H15)', () => {
             c[0]?.includes('FROM users') && c[0]?.includes('SELECT id, email, name, created_at')
         );
         expect(userQuery).toBeTruthy();
-
-        // BUT other tables use SELECT * — those are the gap
-        const inventoryQuery = mockQueryAll.mock.calls.find(c =>
-            c[0]?.includes('FROM inventory') && c[0]?.includes('SELECT *')
-        );
-        expect(inventoryQuery).toBeTruthy();
     });
 });
 

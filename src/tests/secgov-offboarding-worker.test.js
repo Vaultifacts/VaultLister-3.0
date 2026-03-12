@@ -320,10 +320,8 @@ describe('Export Data Cleanup', () => {
 });
 
 describe('Gap Documentation — Missing Tables (H24)', () => {
-    test('data_rectification_requests is NOT in GDPR worker USER_DATA_TABLES', () => {
-        // The GDPR worker deletes from 19 tables but data_rectification_requests
-        // is not in the list. This means rectification records survive account deletion.
-        // GAP: Add data_rectification_requests to USER_DATA_TABLES in gdprWorker.js
+    test('data_rectification_requests IS in GDPR worker USER_DATA_TABLES (H24 fix verified)', () => {
+        // FIX VERIFIED: data_rectification_requests added to USER_DATA_TABLES in gdprWorker.js
         const pastDate = new Date(Date.now() - 86400000).toISOString();
         mockQueryAll.mockImplementation((sql) => {
             if (sql.includes('account_deletion_requests') && sql.includes('pending')) {
@@ -341,13 +339,10 @@ describe('Gap Documentation — Missing Tables (H24)', () => {
 
         startGDPRWorker();
 
-        // Check if data_rectification_requests was deleted
         const rectificationDelete = mockQueryRun.mock.calls.find(c =>
             c[0]?.includes('DELETE FROM data_rectification_requests')
         );
-        // This SHOULD be truthy but currently is NOT — documenting the gap
-        // When the fix is applied, change this assertion to expect(rectificationDelete).toBeTruthy()
-        expect(rectificationDelete).toBeFalsy();
+        expect(rectificationDelete).toBeTruthy();
 
         stopGDPRWorker();
     });
