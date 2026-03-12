@@ -85,6 +85,13 @@ class VaultListerSocket {
             console.log('[WS] Authenticated');
         }
 
+        if (data.type === 'auth_failed') {
+            console.log('[WS] Auth failed — clearing token, stopping reconnect');
+            this.token = null;
+            this.cancelReconnect();
+            this.ws?.close();
+        }
+
         if (data.type === 'connected') {
             this.connectionId = data.connectionId;
         }

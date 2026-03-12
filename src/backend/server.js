@@ -702,16 +702,12 @@ const server = Bun.serve({
             });
         }
 
-        // WebSocket upgrade for /ws endpoint — authenticate before accepting
+        // WebSocket upgrade for /ws endpoint
+        // Auth happens via message after connect (browser WebSocket API cannot set
+        // custom headers during the upgrade, so pre-upgrade auth always fails).
+        // websocket.js handleAuth() validates the JWT sent in the first 'auth' message.
         if (pathname === '/ws') {
-            const auth = await authenticateToken(request);
-            if (!auth.success) {
-                return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-            const upgraded = server.upgrade(request, { data: { userId: auth.user.id, user: auth.user } });
+            const upgraded = server.upgrade(request, { data: { userId: null, user: null } });
             if (upgraded) return undefined;
             return new Response('WebSocket upgrade failed', { status: 400 });
         }
