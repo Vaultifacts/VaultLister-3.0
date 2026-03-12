@@ -28,8 +28,13 @@ const IS_TEST_RUNTIME = (() => {
     return false;
 })();
 
-function isAuthLockoutBypassed() {
-    return IS_TEST_RUNTIME || (process.env.DISABLE_RATE_LIMIT === 'true' && process.env.NODE_ENV !== 'production');
+function isAuthLockoutBypassed(ip = '') {
+    if (IS_TEST_RUNTIME) return true;
+    if (process.env.DISABLE_RATE_LIMIT === 'true' && process.env.NODE_ENV !== 'production') return true;
+    // Loopback IPs are always local dev/health traffic — never real abuse
+    if (!ip || ip === '::1' || ip === 'localhost' || ip === 'unknown' ||
+        ip.startsWith('127.') || ip.startsWith('::ffff:127.')) return true;
+    return false;
 }
 
 // SECURITY: Account lockout configuration
@@ -104,7 +109,7 @@ function maskEmail(email) {
 function checkLoginAttempts(email, ip) {
     // Skip lockout check in tests (or when explicitly disabled) to avoid
     // cross-suite login-attempt coupling that breaks auth-token setup.
-    if (isAuthLockoutBypassed()) {
+    if (isAuthLockoutBypassed(ip)) {
         return { locked: false, attempts: 0 };
     }
 

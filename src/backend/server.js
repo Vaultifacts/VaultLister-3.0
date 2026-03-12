@@ -105,6 +105,17 @@ const SHARED_DIR = join(ROOT_DIR, 'src', 'shared');
 const DIST_DIR = join(ROOT_DIR, 'dist');
 const IS_PROD = process.env.NODE_ENV === 'production';
 
+// Build hash — injected into sw.js at serve time so every deploy busts the SW cache.
+// Falls back to a startup timestamp so the cache always invalidates on server restart.
+const BUILD_HASH = (() => {
+    try {
+        return Bun.spawnSync(['git', 'rev-parse', '--short', 'HEAD'], { cwd: ROOT_DIR })
+            .stdout.toString().trim() || Date.now().toString(36);
+    } catch {
+        return Date.now().toString(36);
+    }
+})();
+
 // File extensions to gzip on the fly
 const GZIP_EXTS = new Set(['.js', '.css', '.json', '.html', '.svg']);
 const LOG_PATH = join(ROOT_DIR, 'logs', 'server.log');  // Log in root/logs
@@ -638,8 +649,15 @@ function serveStatic(pathname, request) {
         const supportsGzip = acceptEncoding.includes('gzip') && GZIP_EXTS.has(ext);
 
         let content = readFileSync(filePath);
-        // Service worker must never be cached — browser needs to check for updates
+        // Service worker must never be cached — browser needs to check for updates.
+        // Inject BUILD_HASH so the SW's internal cache name changes on every deploy,
+        // forcing the browser to install the new SW and discard stale cached assets.
         const isServiceWorker = filePath.endsWith('sw.js');
+        if (isServiceWorker) {
+            content = Buffer.from(
+                content.toString().replace(/CACHE_VERSION\s*=\s*'[^']*'/, `CACHE_VERSION = '${BUILD_HASH}'`)
+            );
+        }
         const cacheControl = isServiceWorker
             ? 'no-cache, no-store, must-revalidate'
             : IS_PROD ? 'public, max-age=31536000' : 'public, max-age=3600';
@@ -895,9 +913,10 @@ const server = Bun.serve({
                 ? pathname.replace(/^\/api\/v\d+\//, '/api/')
                 : pathname;
 
-            // Get client IP — only trust proxy headers when TRUST_PROXY is enabled
+            // Get client IP — proxy headers only when TRUST_PROXY is set, otherwise use socket IP
             const trustProxy = process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true';
             const ip = (trustProxy && (request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip'))) ||
+                       server.requestIP(request)?.address ||
                        'unknown';
 
             // Check authentication for protected routes

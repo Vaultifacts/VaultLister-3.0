@@ -17,36 +17,18 @@ async function initApp() {
     const skipAutoLogin = currentHash === 'login' || currentHash === 'register';
 
     if (!auth.isAuthenticated() && !skipAutoLogin) {
-        // FIXED 2026-02-24: Attempt token refresh before demo-login fallback (Issue #2)
+        // Attempt token refresh if we have a stored refresh token
         if (store.state.refreshToken) {
             try {
                 await api.refreshAccessToken();
             } catch (refreshErr) {
-                console.warn('Token refresh failed, falling back to demo-login:', refreshErr.message);
+                console.warn('Token refresh failed:', refreshErr.message);
             }
         }
 
-        // Only demo-login if still not authenticated after refresh attempt
+        // If still not authenticated, redirect to login
         if (!auth.isAuthenticated()) {
-        try {
-            // Add 3 second timeout to prevent hanging on server issues
-            // Uses server-side demo-login endpoint — no credentials in frontend code
-            const loginPromise = api.post('/auth/demo-login', {});
-
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Login timeout')), 3000)
-            );
-
-            const data = await Promise.race([loginPromise, timeoutPromise]);
-            store.setState({
-                user: data.user,
-                token: data.token,
-                refreshToken: data.refreshToken
-            });
-        } catch (error) {
-            console.error('Auto-login failed:', error);
-            // Continue anyway - user can login manually
-        }
+            router.navigate('login');
         }
     }
 

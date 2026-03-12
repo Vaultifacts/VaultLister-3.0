@@ -253,8 +253,12 @@ window.wsSubscribe = {
 
 // Auto-initialize when token is available
 document.addEventListener('DOMContentLoaded', () => {
-    // Check for stored token
-    const token = localStorage.getItem('token');
+    // Read token from the app's persisted state (sessionStorage first, then localStorage)
+    let token = null;
+    try {
+        const raw = sessionStorage.getItem('vaultlister_state') || localStorage.getItem('vaultlister_state');
+        if (raw) token = JSON.parse(raw).token || null;
+    } catch (_) {}
     if (token) {
         wsClient.connect(token).catch(err => {
             console.log('[WS] Initial connection failed:', err.message);

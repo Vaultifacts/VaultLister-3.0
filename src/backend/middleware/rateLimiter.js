@@ -26,6 +26,18 @@ function isRateLimitBypassed() {
     return (process.env.DISABLE_RATE_LIMIT === 'true' && process.env.NODE_ENV !== 'production') || process.env.NODE_ENV === 'test' || IS_TEST_RUNTIME;
 }
 
+// Loopback IPs should never receive a permanent IP ban — they are always local
+// dev traffic or health checks, never real abuse.
+function isLoopbackIp(ip) {
+    if (!ip) return true;
+    return ip === '127.0.0.1' ||
+        ip === '::1' ||
+        ip === 'localhost' ||
+        ip === 'unknown' ||
+        ip.startsWith('::ffff:127.') || // IPv4-mapped loopback (Windows)
+        ip.startsWith('127.');           // entire 127.x.x.x loopback range
+}
+
 /**
  * In-memory rate limiter using Map
  * Key: IP address or user ID
@@ -86,7 +98,7 @@ class RateLimiter {
      * Check if request is allowed
      * @returns { allowed: boolean, retryAfter: number }
      */
-    check(key, limitType = 'default') {
+    check(key, limitType = 'default', ip = '') {
         const now = Date.now();
         const config = RateLimiter.config[limitType];
 
@@ -122,8 +134,8 @@ class RateLimiter {
         if (entry.count > config.maxRequests) {
             entry.violations++;
 
-            // Block after repeated violations (3 strikes)
-            if (entry.violations >= 3) {
+            // Block after repeated violations (3 strikes) — never ban loopback IPs
+            if (entry.violations >= 3 && !isLoopbackIp(ip)) {
                 const blockedUntil = now + RateLimiter.config.blockDuration;
                 this.blocklist.set(key, blockedUntil);
 
@@ -294,7 +306,7 @@ export function createRateLimiter(limitType = 'default') {
         const key = rateLimiter.getKey(ip, user?.id);
 
         // Check rate limit
-        const result = rateLimiter.check(key, actualLimitType);
+        const result = rateLimiter.check(key, actualLimitType, ip);
 
         // Add rate limit headers to response
         ctx.rateLimitHeaders = {
