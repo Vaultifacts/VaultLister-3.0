@@ -1,16 +1,26 @@
 # Dependencies
 node_modules/
+__pycache__/
+
+# Crash dumps
+*.stackdump
 
 # Environment
 .env
 .env.*
 !.env.example
+CLAUDE.local.md
 
 # Database
 data/*.db
 data/*.db-shm
 data/*.db-wal
 data/automation-audit.log
+
+# Debug artifacts in data/
+data/*.png
+data/poshmark-profile/
+data/poshmark-cookies.json
 
 # Build output
 dist/
@@ -61,6 +71,16 @@ claude-docs/docs/project-control/STATE_SNAPSHOT.md
 # Playwright artifacts
 e2e/screenshots/
 e2e/test-results/
-playwright-report/
 .codex-*.txt
-data/poshmark-cookies.json
+
+# Stray output file
+null
+
+# npm lockfile (project uses bun)
+package-lock.json
+
+# Screenshot baselines (regenerated locally)
+screenshots/baselines/
+
+# Notion AI control system — runtime artifacts
+generated/
