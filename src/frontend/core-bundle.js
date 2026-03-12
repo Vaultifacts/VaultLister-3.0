@@ -20760,22 +20760,44 @@ const auth = {
                 token: data.token,
                 refreshToken: data.refreshToken
             });
+            // Connect WebSocket immediately after login (DOMContentLoaded already fired)
+            if (window.VaultListerSocket) {
+                window.VaultListerSocket.connect(data.token).catch(() => {});
+            }
             router.navigate('dashboard');
             toast.success('Welcome back!');
         } catch (error) {
             // Show specific message for rate limiting (429)
             if (error.status === 429) {
                 const retryAfter = error.data?.retryAfter || error.data?.retry_after;
-                const mins = retryAfter ? Math.ceil(retryAfter / 60) : null;
-                const msg = mins
-                    ? `Too many login attempts. Please wait ${mins} minute${mins !== 1 ? 's' : ''} before trying again.`
-                    : 'Too many login attempts. Please wait a moment before trying again.';
+                const isIpBan = error.data?.error?.includes('temporarily blocked') || (retryAfter && retryAfter > 60);
                 if (alertDiv) {
-                    alertDiv.innerHTML = `<strong>Rate limited.</strong> ${msg}`;
-                    alertDiv.className = 'login-alert alert-warning';
-                    alertDiv.style.display = 'block';
+                    if (isIpBan) {
+                        let secondsLeft = retryAfter || 900;
+                        const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+                        alertDiv.innerHTML = `<strong>Too many failed attempts.</strong> Login is temporarily locked for security. Try again in <span id="login-ban-countdown">${fmt(secondsLeft)}</span>.`;
+                        alertDiv.className = 'login-alert alert-danger';
+                        alertDiv.style.display = 'block';
+                        if (window._loginBanCountdown) clearInterval(window._loginBanCountdown);
+                        window._loginBanCountdown = setInterval(() => {
+                            secondsLeft--;
+                            const el = document.getElementById('login-ban-countdown');
+                            if (secondsLeft <= 0 || !el) {
+                                clearInterval(window._loginBanCountdown);
+                                if (alertDiv) alertDiv.style.display = 'none';
+                                return;
+                            }
+                            el.textContent = fmt(secondsLeft);
+                        }, 1000);
+                    } else {
+                        const mins = retryAfter ? Math.ceil(retryAfter / 60) : null;
+                        const msg = mins ? `Too many login attempts. Please wait ${mins} minute${mins !== 1 ? 's' : ''}.` : 'Too many login attempts. Please wait a moment.';
+                        alertDiv.innerHTML = `<strong>Rate limited.</strong> ${msg}`;
+                        alertDiv.className = 'login-alert alert-warning';
+                        alertDiv.style.display = 'block';
+                    }
                 }
-                toast.error(msg);
+                toast.error(isIpBan ? 'Login temporarily locked. See message on screen.' : 'Too many attempts. Please wait.');
                 return;
             }
 
@@ -20959,7 +20981,6 @@ const voiceCommands = {
         }
     }
 };
-
 // ──── src/frontend/ui/modals.js ────
 'use strict';
 // All modal dialogs

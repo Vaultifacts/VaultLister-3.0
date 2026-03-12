@@ -4,12 +4,12 @@
 ## Current State
 - **Branch:** master
 - **Server:** ✅ running on port 3000
-- **Last commit:** test(analytics): E-5 analytics dashboard verified end-to-end
-- **E2E status:** 665+14=679 pass / 0 fail / 10+4=14 skip (chromium) — ebay-integration: 14 pass / 4 skip
-- **Unit status:** 5289 pass / 0 fail
+- **Last commit:** fix(security,sw): prevent loopback IP bans + SW auto-versioning + remove auto-demo-login (commit dd38dae)
+- **E2E status:** 2029 pass / 0 fail / 4 flaky (Firefox/WebKit, pass on retry) / 46 skip — all 3 browsers (chromium/firefox/webkit)
+- **Unit status:** 5293 pass / 0 fail — verifyEmail 4 failures resolved (WAL checkpoint + resend-verification token isolation)
 - **Load test (P8-4):** baseline p95=7ms / p99=8ms / 29 req/s — ACCEPTABLE (5 CSRF 403s expected)
-- **Checklist:** 51/57 complete (89%) — functionally complete, 6 items pending external/user action
-- **As of:** 2026-03-10
+- **Checklist:** 51/57 complete (89%) + Phase F pre-deployment hardening complete (F-1 through F-7 ✅)
+- **As of:** 2026-03-11
 
 ## Completion Summary (P8-6 Final Sign-Off)
 All phases that can be done autonomously are complete. Remaining items require external approval or user action:
@@ -47,6 +47,9 @@ _(Bot commits waiting for CLI agent review)_
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-11: Global bug fixes (commit dd38dae) — loopback IP never banned in rateLimiter.js (fixes Docker dev ban), SW CACHE_VERSION auto-set from git hash (fixes stale cache), removed auto-demo-login from init.js (was hammering auth rate limit), fixed WS token key (vaultlister_state not 'token'), auth lockout bypassed for loopback IPs. verifyEmail 4 failures resolved (commit 3446a53, 7/7 pass). Login countdown alert for IP bans (commit 6f8f22b). Unit baseline now 5293/0.
+- 2026-03-11: Phase F Pre-Deployment Hardening — F-1 secrets audit (no hardcoded creds), F-2 bun audit (0 critical), F-3 full test suite (5293/4 unit, 2029 E2E across 3 browsers), F-4 Docker local build (all 4 containers healthy), F-5 SSL local test (self-signed cert generated), F-6 settings review (docker compose down -v added to deny list), F-7 RELEASE.md written (commit dd7efd9). All Notion items checked.
+- 2026-03-10: E-8 Bug Fixes — P0: read_at column (4e9aca3), P1: hamburger DOM (74ba1d5), P2-1: hook backgrounded, P2-2: modal-close 44px, P3-1/P3-2: test fixes. BUG_LOG.md created. All 4 E-8 Notion items ✅. Commit: 14be29e.
 - 2026-03-10: P3-1–P3-5 eBay engineering — real eBay order sync wired in orders.js (syncEbayShop() replaces mock), e2e/tests/ebay-integration.spec.js created (22 tests: 14 pass / 4 skip / 0 fail). Dynamic eBay connection detection in beforeAll. Offer rules URL fixed (/api/offers/rules), CSRF via getPostHeaders, offer_amount field corrected. Live publish test gated on EBAY_SANDBOX_LIVE env var. P3-1–P3-5 Notion items require real production eBay account — still blocked by user action.
 - 2026-03-10: Phase 6 (P6-3/P6-4/P6-5/P6-7) — analytics caching + offer management E2E. analytics.js: 5min server-side cache for /dashboard + /sales, Cache-Control: private/max-age=300. offers.spec.js: 23 tests (42 pass / 27 skip across all browsers). P6-4/P6-5 verified via 52/52 sales+analytics grep tests. Notion: P4-2 P6-3 P6-4 P6-5 P6-7 all checked. Commit: df3dcf8.
 - 2026-03-10: Phase 4 Poshmark — ALL 4 items complete. P4-2/P4-3/P4-4: live tests pass using existing data/poshmark-profile/ Chrome profile (launchPersistentContext). P4-6: sync endpoint queues task, 2 API tests pass. poshmark-automation.spec.js: 5 pass / 1 skip (P4-4 offer selectors — no active offers). Notion P4-2/P4-3/P4-4/P4-6 ✅ all checked.
