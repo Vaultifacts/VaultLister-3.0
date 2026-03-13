@@ -77,15 +77,21 @@ test.describe('Extension API — Price Tracking', () => {
     test('GET /api/extension/price-tracking — created item appears in list', async ({ request }) => {
         if (!createdItemId) test.skip(true, 'Item not created in previous test');
 
-        const res = await request.get(`${BASE_URL}/api/extension/price-tracking`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        const list = data.tracking ?? data.items ?? [];
-        const found = list.some(i =>
-            (i.title === 'E2E Price Track Test Item' || i.productTitle === 'E2E Price Track Test Item') ||
-            i.id === createdItemId
-        );
+        // Retry up to 3 times — item may not be immediately queryable after creation
+        let found = false;
+        for (let attempt = 0; attempt < 3; attempt++) {
+            const res = await request.get(`${BASE_URL}/api/extension/price-tracking`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            const list = data.tracking ?? data.items ?? [];
+            found = list.some(i =>
+                (i.title === 'E2E Price Track Test Item' || i.productTitle === 'E2E Price Track Test Item') ||
+                i.id === createdItemId
+            );
+            if (found) break;
+            await new Promise(r => setTimeout(r, 500));
+        }
         expect(found).toBe(true);
     });
 

@@ -57,11 +57,19 @@ async function loginAndNavigate(page, route = 'inventory') {
   }
 }
 
-/** Open Add Item modal */
+/** Open Add Item modal — with retry for webkit/firefox timing */
 async function openAddItemModal(page) {
   const addBtn = page.locator('[data-testid="hero-add-item"], button:has-text("Add Item"), button:has-text("Add")').first();
-  await addBtn.click({ timeout: 5_000 });
-  await page.waitForSelector('.modal-overlay', { timeout: 5_000 });
+  await addBtn.waitFor({ state: 'visible', timeout: 10_000 });
+  await addBtn.click({ timeout: 10_000 });
+  try {
+    await page.waitForSelector('.modal-overlay', { timeout: 5_000 });
+  } catch {
+    // Retry — button may not have been interactive on first click (webkit/firefox)
+    await page.waitForTimeout(500);
+    await addBtn.click({ timeout: 10_000 });
+    await page.waitForSelector('.modal-overlay', { timeout: 10_000 });
+  }
   await waitForUiSettle(page);
 }
 

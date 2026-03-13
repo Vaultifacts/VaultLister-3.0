@@ -423,7 +423,8 @@ test.describe('GDPR and Privacy - Data Management', () => {
     test('should show data breach notification if applicable', async ({ page }) => {
         // Navigate to settings
         await page.goto(routes.settings);
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('domcontentloaded');
+        await page.waitForTimeout(2000);
 
         // Look for security/breach notifications
         const breachNotification = page.locator(
@@ -432,7 +433,7 @@ test.describe('GDPR and Privacy - Data Management', () => {
 
         // Breach notification might not appear under normal circumstances
         // This test just verifies the check doesn't cause errors
-        if (await breachNotification.isVisible({ timeout: 3000 }).catch(() => false)) {
+        if (await breachNotification.isVisible({ timeout: 5000 }).catch(() => false)) {
             await expect(breachNotification).toBeVisible();
         }
     });

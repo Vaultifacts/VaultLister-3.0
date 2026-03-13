@@ -489,7 +489,8 @@ test.describe('Quinn v3 > Inventory Page > Batch 2: Search & Filter', () => {
     await searchInput.fill('test search');
     await expect(searchInput).toHaveValue('test search');
 
-    // Wait for debounce
+    // Wait for debounce (300-500ms typical) + re-render
+    await page.waitForTimeout(600);
     await waitForSpaRender(page);
 
     // Screenshot after search
@@ -497,6 +498,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 2: Search & Filter', () => {
 
     // Clear search
     await searchInput.fill('');
+    await page.waitForTimeout(600);
     await waitForSpaRender(page);
     await expect(searchInput).toHaveValue('');
 
