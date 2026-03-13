@@ -32,12 +32,12 @@ describe('User Analytics - Page View', () => {
             page: '/inventory',
             referrer: '/dashboard'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 
     test('POST /user-analytics/page-view without page returns 400', async () => {
         const { status } = await client.post('/user-analytics/page-view', {});
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 });
 
@@ -48,14 +48,14 @@ describe('User Analytics - Action', () => {
             target: 'add_item_button',
             page: '/inventory'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 
     test('POST /user-analytics/action without action field', async () => {
         const { status } = await client.post('/user-analytics/action', {
             target: 'some_button'
         });
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 });
 
@@ -63,7 +63,7 @@ describe('User Analytics - Sessions', () => {
     test('GET /user-analytics/sessions returns session data', async () => {
         const { status, data } = await client.get('/user-analytics/sessions');
         // Enterprise-only feature may return 403
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
     });
 });
 

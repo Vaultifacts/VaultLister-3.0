@@ -13,12 +13,12 @@ beforeAll(async () => {
 describe('SKU Rules — Get by ID & Default', () => {
     test('GET /sku-rules/:id for nonexistent returns 404', async () => {
         const { status } = await client.get('/sku-rules/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('GET /sku-rules/default returns default rule', async () => {
         const { status, data } = await client.get('/sku-rules/default');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200) {
             expect(data.pattern || data.rule).toBeDefined();
         }
@@ -43,15 +43,15 @@ describe('SKU Rules — Set Default', () => {
         const id = ruleId || 'nonexistent';
         const { status } = await client.post(`/sku-rules/${id}/set-default`, {});
         if (ruleId) {
-            expect([200, 500]).toContain(status);
+            expect(status).toBe(200);
         } else {
-            expect([404, 500]).toContain(status);
+            expect([404]).toContain(status);
         }
     });
 
     test('POST /sku-rules/:id/set-default for nonexistent returns 404', async () => {
         const { status } = await client.post('/sku-rules/nonexistent-id/set-default', {});
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -61,7 +61,7 @@ describe('SKU Rules — Preview & Batch', () => {
             pattern: '{CATEGORY}-{SEQ}',
             sample_data: { category: 'Shoes' }
         });
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
         if (status === 200 && data) {
             expect(typeof data).toBe('object');
         }
@@ -69,13 +69,13 @@ describe('SKU Rules — Preview & Batch', () => {
 
     test('POST /sku-rules/preview without pattern returns error', async () => {
         const { status } = await client.post('/sku-rules/preview', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /sku-rules/batch-update updates multiple rules', async () => {
         const { status } = await client.post('/sku-rules/batch-update', {
             updates: []
         });
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 });

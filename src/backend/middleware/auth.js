@@ -6,11 +6,16 @@ import { logger } from '../shared/logger.js';
 
 // SECURITY: Require JWT_SECRET from environment - fail if not set in production
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET_OLD = process.env.JWT_SECRET_OLD || null; // For key rotation window
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 if (!JWT_SECRET && IS_PRODUCTION) {
     logger.error('[Auth] FATAL: JWT_SECRET environment variable is required in production');
     process.exit(1);
+}
+
+if (JWT_SECRET_OLD) {
+    logger.info('[Auth] JWT_SECRET_OLD is set — dual-key verification enabled for rotation window');
 }
 
 // Use fallback only in development/test with warning
@@ -63,6 +68,18 @@ export function verifyToken(token) {
             audience: 'vaultlister-api'
         });
     } catch (error) {
+        // During key rotation: try the old secret before rejecting
+        if (JWT_SECRET_OLD) {
+            try {
+                return jwt.verify(token, JWT_SECRET_OLD, {
+                    algorithms: [JWT_ALGORITHM],
+                    issuer: 'vaultlister',
+                    audience: 'vaultlister-api'
+                });
+            } catch {
+                return null;
+            }
+        }
         return null;
     }
 }

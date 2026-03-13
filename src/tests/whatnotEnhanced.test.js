@@ -16,7 +16,7 @@ beforeAll(async () => {
 describe('GET /api/whatnot-enhanced/cohosts', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/whatnot-enhanced/cohosts`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns cohosts', async () => {
@@ -41,7 +41,7 @@ describe('POST /api/whatnot-enhanced/cohosts', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ event_id: 'nonexistent-event', cohost_name: 'TestUser' })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated with nonexistent event returns 201 or 404', async () => {
@@ -57,7 +57,7 @@ describe('POST /api/whatnot-enhanced/cohosts', () => {
 describe('GET /api/whatnot-enhanced/staging', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/whatnot-enhanced/staging`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns staging items', async () => {
@@ -86,7 +86,7 @@ describe('POST /api/whatnot-enhanced/staging/auto-suggest', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ event_id: 'nonexistent', limit: 10 })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated with nonexistent event returns 200 or 404', async () => {
@@ -102,7 +102,7 @@ describe('POST /api/whatnot-enhanced/staging/auto-suggest', () => {
 describe('GET /api/whatnot-enhanced/staging/bundles', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/whatnot-enhanced/staging/bundles?event_id=test`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns bundles', async () => {

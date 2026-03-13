@@ -29,14 +29,14 @@ describe('Legal - Auth Guard', () => {
 describe('Legal - Privacy Data Export', () => {
     test('GET /legal/privacy/data-export returns user data', async () => {
         const { status, data } = await client.get('/legal/privacy/data-export');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
 describe('Legal - Cookie Consent', () => {
     test('GET /legal/privacy/cookie-consent returns settings', async () => {
         const { status, data } = await client.get('/legal/privacy/cookie-consent');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('PUT /legal/privacy/cookie-consent updates settings', async () => {
@@ -45,7 +45,7 @@ describe('Legal - Cookie Consent', () => {
             marketing: false,
             functional: true
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('PUT /legal/privacy/cookie-consent all disabled', async () => {
@@ -54,35 +54,35 @@ describe('Legal - Cookie Consent', () => {
             marketing: false,
             functional: false
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
 describe('Legal - Data Audit', () => {
     test('GET /legal/privacy/data-audit returns record counts', async () => {
         const { status, data } = await client.get('/legal/privacy/data-audit');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
 describe('Legal - ToS Accept', () => {
     test('POST /legal/tos/accept without tosVersionId returns 400', async () => {
         const { status } = await client.post('/legal/tos/accept', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /legal/tos/accept with valid tosVersionId', async () => {
         const { status } = await client.post('/legal/tos/accept', {
             tosVersionId: 'tos-v1'
         });
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 
 describe('Legal - ToS Acceptance Status', () => {
     test('GET /legal/tos/acceptance-status returns status', async () => {
         const { status, data } = await client.get('/legal/tos/acceptance-status');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200 && data) {
             expect(typeof data).toBe('object');
         }

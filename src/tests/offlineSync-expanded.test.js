@@ -30,7 +30,7 @@ describe('Offline Sync - Queue CRUD', () => {
             entity_type: 'inventory',
             payload: { title: 'Test Item', price: 25.99 }
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
         if (data?.item?.id || data?.id) {
             queueItemId = data.item?.id || data.id;
         }
@@ -43,7 +43,7 @@ describe('Offline Sync - Queue CRUD', () => {
             entity_id: 'test-listing-1',
             payload: { price: 30.00 }
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 
     test('POST /offline-sync/queue with delete action', async () => {
@@ -52,45 +52,45 @@ describe('Offline Sync - Queue CRUD', () => {
             entity_type: 'order',
             entity_id: 'test-order-1'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 
     test('POST /offline-sync/queue without action returns 400', async () => {
         const { status } = await client.post('/offline-sync/queue', {
             entity_type: 'inventory'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /offline-sync/queue without entity_type returns 400', async () => {
         const { status } = await client.post('/offline-sync/queue', {
             action: 'create'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('DELETE /offline-sync/queue/:id removes item', async () => {
         if (!queueItemId) return;
         const { status } = await client.delete(`/offline-sync/queue/${queueItemId}`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('DELETE /offline-sync/queue/nonexistent returns 404', async () => {
         const { status } = await client.delete('/offline-sync/queue/nonexistent-id');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 
 describe('Offline Sync - Process Sync', () => {
     test('POST /offline-sync/sync processes pending items', async () => {
         const { status, data } = await client.post('/offline-sync/sync', {});
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
 describe('Offline Sync - Manifest', () => {
     test('POST /offline-sync/manifest returns PWA manifest data', async () => {
         const { status, data } = await client.post('/offline-sync/manifest', {});
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });

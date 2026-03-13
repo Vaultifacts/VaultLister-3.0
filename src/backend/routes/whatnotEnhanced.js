@@ -2,9 +2,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { requireFeature } from '../middleware/featureFlags.js';
 
 export async function whatnotEnhancedRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
+
+    // Feature flag gate (REM-17)
+    if (requireFeature('FEATURE_WHATNOT_INTEGRATION', ctx)) return ctx.res;
 
     // GET /api/whatnot-enhanced/cohosts - List co-hosts for user's events
     if (method === 'GET' && path === '/cohosts') {

@@ -119,9 +119,8 @@ describe('Feature flag config drift — FEATURE_* vars (H5/L3)', () => {
         expect(featureVars).toContain('FEATURE_ADVANCED_ANALYTICS');
     });
 
-    test('FEATURE_* config drift: no src/ code reads these env vars (documents known gap)', () => {
-        // This test documents that FEATURE_* vars are defined but not read.
-        // If code starts reading them, this test should be updated to validate the reads.
+    test('REM-17 FIX: FEATURE_* env vars are read by source code (no config drift)', () => {
+        // After REM-17: feature flags are wired into route files via featureFlags.js middleware.
         const srcFiles = [];
         function walkDir(dir) {
             try {
@@ -140,14 +139,12 @@ describe('Feature flag config drift — FEATURE_* vars (H5/L3)', () => {
         const featureReads = [];
         for (const file of srcFiles) {
             const content = readFileSync(file, 'utf-8');
-            if (/process\.env\.FEATURE_/m.test(content)) {
+            if (/FEATURE_/m.test(content)) {
                 featureReads.push(file);
             }
         }
-        // Document: if this array is empty, FEATURE_* vars are dead config (H5 gap)
-        // When code starts using them, update this test to expect non-empty
-        expect(Array.isArray(featureReads)).toBe(true);
-        // Gap documentation: featureReads.length tells us how many files read FEATURE_* vars
+        // After REM-17 fix: at least featureFlags.js + 3 route files reference FEATURE_* vars
+        expect(featureReads.length).toBeGreaterThanOrEqual(4);
     });
 });
 

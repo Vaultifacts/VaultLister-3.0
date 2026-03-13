@@ -29,19 +29,19 @@ describe('Billing - Prorate', () => {
             billing_cycle_start: '2025-01-01',
             billing_cycle_end: '2025-01-31'
         });
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 
     test('POST /billing/prorate without required fields returns 400', async () => {
         const { status } = await client.post('/billing/prorate', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 
 describe('Billing - Usage Refresh', () => {
     test('POST /billing/usage/refresh recalculates usage', async () => {
         const { status, data } = await client.post('/billing/usage/refresh', {});
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
@@ -50,19 +50,19 @@ describe('Billing - Change Plan', () => {
         const { status } = await client.post('/billing/change-plan', {
             planId: 'starter'
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('POST /billing/change-plan without planId returns 400', async () => {
         const { status } = await client.post('/billing/change-plan', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /billing/change-plan with invalid planId returns 400', async () => {
         const { status } = await client.post('/billing/change-plan', {
             planId: 'nonexistent-plan'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 
@@ -71,11 +71,11 @@ describe('Billing - Select Plan', () => {
         const { status } = await client.post('/billing/select-plan', {
             planId: 'pro'
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('POST /billing/select-plan without planId returns 400', async () => {
         const { status } = await client.post('/billing/select-plan', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });

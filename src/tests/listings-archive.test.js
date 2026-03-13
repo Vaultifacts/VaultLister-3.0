@@ -22,12 +22,12 @@ describe('Listings - Archive', () => {
     test('POST /listings/:id/archive archives a listing', async () => {
         if (!testListingId) return;
         const { status, data } = await client.post(`/listings/${testListingId}/archive`);
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) { expect(data.message).toContain('archived'); }
     });
     test('POST /listings/:id/archive on nonexistent returns 404', async () => {
         const { status } = await client.post('/listings/nonexistent-id-xyz/archive');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
     test('POST /listings/:id/archive requires auth', async () => {
         if (!testListingId) return;
@@ -42,7 +42,7 @@ describe('Listings - Unarchive', () => {
     test('POST /listings/:id/unarchive restores a listing', async () => {
         if (!testListingId) return;
         const { status, data } = await client.post(`/listings/${testListingId}/unarchive`);
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
         if (status === 200) { expect(data.message).toContain('unarchived'); }
     });
     test('POST /listings/:id/unarchive on non-archived returns 400', async () => {
@@ -53,10 +53,10 @@ describe('Listings - Unarchive', () => {
         const activeId = data?.listing?.id || data?.id;
         if (!activeId) return;
         const { status } = await client.post(`/listings/${activeId}/unarchive`);
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
     test('POST /listings/:id/unarchive on nonexistent returns 404', async () => {
         const { status } = await client.post('/listings/nonexistent-id-xyz/unarchive');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });

@@ -18,25 +18,25 @@ describe('Notion setup endpoints', () => {
             database_id: 'fake-notion-db-id'
         });
         // 400/500 expected — not connected to Notion
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 
     test('POST /notion/setup/sales responds', async () => {
         const { status } = await client.post('/notion/setup/sales', {
             database_id: 'fake-notion-db-id'
         });
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 
     test('POST /notion/setup/notes responds', async () => {
         const { status } = await client.post('/notion/setup/notes', {
             database_id: 'fake-notion-db-id'
         });
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 
     test('POST /notion/setup/inventory without database_id or parent_page_id', async () => {
         const { status } = await client.post('/notion/setup/inventory', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });

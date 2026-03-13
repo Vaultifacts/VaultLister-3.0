@@ -50,7 +50,7 @@ describe('Affiliate — Landing Pages', () => {
         const { status } = await client.put('/affiliate/landing-pages/nonexistent-999', {
             title: 'Should fail'
         });
-        expect([400, 401, 404, 500]).toContain(status);
+        expect([400, 401, 404]).toContain(status);
     });
 
     test('DELETE /affiliate/landing-pages/:id deletes page', async () => {
@@ -61,7 +61,7 @@ describe('Affiliate — Landing Pages', () => {
 
     test('DELETE /affiliate/landing-pages/nonexistent returns 404', async () => {
         const { status } = await client.delete('/affiliate/landing-pages/nonexistent-999');
-        expect([400, 401, 404, 500]).toContain(status);
+        expect([400, 401, 404]).toContain(status);
     });
 });
 

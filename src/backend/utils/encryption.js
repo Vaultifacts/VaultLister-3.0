@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { logger } from '../shared/logger.js';
 
 const ENCRYPTION_KEY = process.env.OAUTH_ENCRYPTION_KEY;
+const ENCRYPTION_KEY_OLD = process.env.OAUTH_ENCRYPTION_KEY_OLD || null; // For key rotation
 
 if (!ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
     logger.error('[Encryption] FATAL: OAUTH_ENCRYPTION_KEY is required in production');
@@ -27,6 +28,11 @@ if (EFFECTIVE_KEY.length < 32) {
 }
 
 const KEY_BUFFER = Buffer.from(EFFECTIVE_KEY.slice(0, 32));
+const OLD_KEY_BUFFER = ENCRYPTION_KEY_OLD ? Buffer.from(ENCRYPTION_KEY_OLD.slice(0, 32)) : null;
+
+if (OLD_KEY_BUFFER) {
+    logger.info('[Encryption] OAUTH_ENCRYPTION_KEY_OLD is set — dual-key decryption enabled for rotation window');
+}
 
 /**
  * Encrypt a token using AES-256-GCM (authenticated encryption)
@@ -61,43 +67,55 @@ export function decryptToken(encrypted) {
     if (!encrypted) return null;
 
     try {
-        // New GCM format: "gcm:iv:authTag:ciphertext"
-        if (encrypted.startsWith('gcm:')) {
-            const parts = encrypted.slice(4).split(':');
-            if (parts.length !== 3) {
-                throw new Error('Invalid GCM encrypted token format');
-            }
-
-            const iv = Buffer.from(parts[0], 'hex');
-            const authTag = Buffer.from(parts[1], 'hex');
-            const ciphertext = parts[2];
-
-            const decipher = crypto.createDecipheriv(ALGORITHM_GCM, KEY_BUFFER, iv);
-            decipher.setAuthTag(authTag);
-
-            let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
-            decrypted += decipher.final('utf8');
-            return decrypted;
-        }
-
-        // Legacy CBC format: "iv:ciphertext"
-        const parts = encrypted.split(':');
-        if (parts.length !== 2) {
-            throw new Error('Invalid encrypted token format');
-        }
-
-        const iv = Buffer.from(parts[0], 'hex');
-        const encryptedText = parts[1];
-
-        const decipher = crypto.createDecipheriv(ALGORITHM_CBC, KEY_BUFFER, iv);
-
-        let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-        decrypted += decipher.final('utf8');
-        return decrypted;
+        return _decryptWithKey(encrypted, KEY_BUFFER);
     } catch (error) {
+        // During key rotation: try the old key before failing
+        if (OLD_KEY_BUFFER) {
+            try {
+                return _decryptWithKey(encrypted, OLD_KEY_BUFFER);
+            } catch {
+                // Both keys failed
+            }
+        }
         logger.error('[Encryption] Token decryption error', error);
         throw new Error('Failed to decrypt token');
     }
+}
+
+function _decryptWithKey(encrypted, keyBuffer) {
+    // New GCM format: "gcm:iv:authTag:ciphertext"
+    if (encrypted.startsWith('gcm:')) {
+        const parts = encrypted.slice(4).split(':');
+        if (parts.length !== 3) {
+            throw new Error('Invalid GCM encrypted token format');
+        }
+
+        const iv = Buffer.from(parts[0], 'hex');
+        const authTag = Buffer.from(parts[1], 'hex');
+        const ciphertext = parts[2];
+
+        const decipher = crypto.createDecipheriv(ALGORITHM_GCM, keyBuffer, iv);
+        decipher.setAuthTag(authTag);
+
+        let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+        return decrypted;
+    }
+
+    // Legacy CBC format: "iv:ciphertext"
+    const parts = encrypted.split(':');
+    if (parts.length !== 2) {
+        throw new Error('Invalid encrypted token format');
+    }
+
+    const iv = Buffer.from(parts[0], 'hex');
+    const encryptedText = parts[1];
+
+    const decipher = crypto.createDecipheriv(ALGORITHM_CBC, keyBuffer, iv);
+
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
 }
 
 /**

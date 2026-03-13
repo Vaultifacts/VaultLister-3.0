@@ -4,6 +4,7 @@
 import v8 from 'v8';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
 
 // Configuration
 const SENTRY_DSN = process.env.SENTRY_DSN;
@@ -193,8 +194,9 @@ const monitoring = {
         // Send to Slack if configured
         if (SLACK_WEBHOOK) {
             try {
-                await fetch(SLACK_WEBHOOK, {
+                await fetchWithTimeout(SLACK_WEBHOOK, {
                     method: 'POST',
+                    timeoutMs: 10000,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         text: `🚨 *VaultLister Alert*: ${type}`,

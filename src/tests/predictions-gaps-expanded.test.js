@@ -17,7 +17,7 @@ describe('Predictions — List & Stats', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 
@@ -26,7 +26,7 @@ describe('Predictions — List & Stats', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 
@@ -35,7 +35,7 @@ describe('Predictions — List & Stats', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 
@@ -44,7 +44,7 @@ describe('Predictions — List & Stats', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 });
@@ -55,13 +55,13 @@ describe('Predictions — Demand', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 
     test('POST /predictions/demand/shoes generates category forecast', async () => {
         const { status } = await client.post('/predictions/demand/shoes');
-        expect([200, 201, 400, 404, 500]).toContain(status);
+        expect([200, 201, 400, 404]).toContain(status);
     });
 });
 
@@ -70,7 +70,7 @@ describe('Predictions — Batch', () => {
         const { status } = await client.post('/predictions/batch', {
             items: []
         });
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 });
 
@@ -82,7 +82,7 @@ describe('Predictions — Models CRUD', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 
@@ -96,7 +96,7 @@ describe('Predictions — Models CRUD', () => {
             modelId = data.id || data.model?.id;
             expect(data).toBeDefined();
         } else {
-            expect([400, 404, 500]).toContain(status);
+            expect([400, 404]).toContain(status);
         }
     });
 
@@ -105,13 +105,13 @@ describe('Predictions — Models CRUD', () => {
         const { status } = await client.put(`/predictions/models/${modelId}`, {
             name: 'Updated Test Model'
         });
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 
     test('DELETE /predictions/models/:id deletes model', async () => {
         if (!modelId) { console.warn('No model created'); return; }
         const { status } = await client.delete(`/predictions/models/${modelId}`);
-        expect([200, 204, 404, 500]).toContain(status);
+        expect([200, 204, 404]).toContain(status);
     });
 });
 
@@ -123,7 +123,7 @@ describe('Predictions — Scenarios CRUD', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 
@@ -137,7 +137,7 @@ describe('Predictions — Scenarios CRUD', () => {
             scenarioId = data.id || data.scenario?.id;
             expect(data).toBeDefined();
         } else {
-            expect([400, 404, 500]).toContain(status);
+            expect([400, 404]).toContain(status);
         }
     });
 
@@ -147,19 +147,19 @@ describe('Predictions — Scenarios CRUD', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 500]).toContain(status);
+            expect([404]).toContain(status);
         }
     });
 
     test('GET /predictions/scenarios/nonexistent returns 404', async () => {
         const { status } = await client.get('/predictions/scenarios/nonexistent-999');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('DELETE /predictions/scenarios/:id deletes scenario', async () => {
         if (!scenarioId) { console.warn('No scenario created'); return; }
         const { status } = await client.delete(`/predictions/scenarios/${scenarioId}`);
-        expect([200, 204, 404, 500]).toContain(status);
+        expect([200, 204, 404]).toContain(status);
     });
 });
 

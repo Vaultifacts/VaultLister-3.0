@@ -13,7 +13,7 @@ beforeAll(async () => {
 describe('Legal ToS endpoints', () => {
     test('GET /legal/tos/current returns latest ToS version', async () => {
         const { status, data } = await client.get('/legal/tos/current');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200 && data) {
             // Should have version info
             expect(data.version || data.id).toBeDefined();
@@ -22,7 +22,7 @@ describe('Legal ToS endpoints', () => {
 
     test('GET /legal/tos/history returns array of versions', async () => {
         const { status, data } = await client.get('/legal/tos/history');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(Array.isArray(data) || Array.isArray(data?.versions)).toBe(true);
         }

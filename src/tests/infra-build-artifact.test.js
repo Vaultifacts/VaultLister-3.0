@@ -114,19 +114,13 @@ describe('Bundle version hash in HTML and SW', () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe('CI lint ESM safety (H7/H10)', () => {
-    test('ci.yml lint step uses node --check (documents known ESM hang issue)', () => {
+    test('ci.yml lint step does NOT use node --check (REM-07 fix)', () => {
         const ciPath = join(ROOT, '.github/workflows/ci.yml');
         const content = readFileSync(ciPath, 'utf-8');
-        // Document: ci.yml still contains node --check which hangs on ESM files
-        // This test flags the issue — when fixed, update assertion
-        const hasNodeCheck = content.includes('node --check');
-        if (hasNodeCheck) {
-            // Gap H7/H10 still present — node --check in CI lint
-            expect(hasNodeCheck).toBe(true); // Documenting the issue
-        } else {
-            // Fixed — node --check removed from CI
-            expect(hasNodeCheck).toBe(false);
-        }
+        // node --check was replaced with bun build --no-bundle (REM-07)
+        // node --check hangs on ESM files with Bun-specific imports
+        expect(content).not.toMatch(/exec node --check/);
+        expect(content).toContain('bun build --no-bundle');
     });
 
     test('pre-commit hook does NOT execute node --check (regression guard)', () => {

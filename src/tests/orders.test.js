@@ -91,7 +91,7 @@ describe('Orders - Create', () => {
 
         const data = await response.json();
         // 201 = created, 500 = DB schema missing columns (priority/priority_note)
-        expect([200, 201, 500]).toContain(response.status);
+        expect([200, 201]).toContain(response.status);
         if (response.status === 500) {
             expect(data.error).toBeDefined();
         }

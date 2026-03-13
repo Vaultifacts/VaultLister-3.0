@@ -27,7 +27,7 @@ describe('Orders — Auth Guard', () => {
 describe('Orders — Shape Validation', () => {
     test('GET /orders returns proper shape', async () => {
         const { status, data } = await client.get('/orders');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(Array.isArray(data.orders || data)).toBe(true);
         }
@@ -35,7 +35,7 @@ describe('Orders — Shape Validation', () => {
 
     test('GET /orders with date filter', async () => {
         const { status } = await client.get('/orders?start_date=2024-01-01&end_date=2024-12-31');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
@@ -50,7 +50,7 @@ describe('Orders — Create & Lifecycle', () => {
             sale_price: 25.00,
             status: 'pending'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
         if (status === 200 || status === 201) {
             orderId = data.id || data.order?.id;
         }
@@ -63,9 +63,9 @@ describe('Orders — Create & Lifecycle', () => {
             carrier: 'USPS'
         });
         if (orderId) {
-            expect([200, 500]).toContain(status);
+            expect(status).toBe(200);
         } else {
-            expect([404, 500]).toContain(status);
+            expect([404]).toContain(status);
         }
     });
 
@@ -73,9 +73,9 @@ describe('Orders — Create & Lifecycle', () => {
         const id = orderId || 'nonexistent';
         const { status } = await client.post(`/orders/${id}/deliver`, {});
         if (orderId) {
-            expect([200, 500]).toContain(status);
+            expect(status).toBe(200);
         } else {
-            expect([404, 500]).toContain(status);
+            expect([404]).toContain(status);
         }
     });
 
@@ -85,9 +85,9 @@ describe('Orders — Create & Lifecycle', () => {
             priority: 'high'
         });
         if (orderId) {
-            expect([200, 500]).toContain(status);
+            expect(status).toBe(200);
         } else {
-            expect([404, 500]).toContain(status);
+            expect([404]).toContain(status);
         }
     });
 });
@@ -97,37 +97,37 @@ describe('Orders — Returns', () => {
         const { status } = await client.post('/orders/nonexistent-id/return', {
             reason: 'Defective item'
         });
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('PATCH /orders/:id/return for nonexistent returns error', async () => {
         const { status } = await client.patch('/orders/nonexistent-id/return', {
             status: 'approved'
         });
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
 describe('Orders — Sync & Shipments', () => {
     test('POST /orders/sync-all triggers platform sync', async () => {
         const { status } = await client.post('/orders/sync-all', {});
-        expect([200, 202, 500]).toContain(status);
+        expect([200, 202]).toContain(status);
     });
 
     test('POST /orders/sync/:platform syncs specific platform', async () => {
         const { status } = await client.post('/orders/sync/poshmark', {});
-        expect([200, 202, 500]).toContain(status);
+        expect([200, 202]).toContain(status);
     });
 
     test('GET /orders/:id/shipments for nonexistent returns error', async () => {
         const { status } = await client.get('/orders/nonexistent-id/shipments');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('POST /orders/:id/split for nonexistent returns error', async () => {
         const { status } = await client.post('/orders/nonexistent-id/split', {
             items: []
         });
-        expect([400, 404, 500]).toContain(status);
+        expect([400, 404]).toContain(status);
     });
 });

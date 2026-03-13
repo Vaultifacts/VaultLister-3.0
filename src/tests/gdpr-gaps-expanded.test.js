@@ -17,7 +17,7 @@ describe('GDPR — Data Export', () => {
         if (status === 200 || status === 201) {
             expect(data).toBeDefined();
         } else {
-            expect([400, 404, 403, 500]).toContain(status);
+            expect([400, 404, 403]).toContain(status);
         }
     });
 
@@ -39,13 +39,13 @@ describe('GDPR — Account Deletion', () => {
 
     test('POST /gdpr/cancel-deletion when no deletion pending', async () => {
         const { status } = await client.post('/gdpr/cancel-deletion');
-        expect([200, 400, 404, 409, 500]).toContain(status);
+        expect([200, 400, 404, 409]).toContain(status);
     });
 
     test('POST /gdpr/delete-account requires confirmation', async () => {
         const { status } = await client.post('/gdpr/delete-account', {});
         // Should reject without proper confirmation
-        expect([400, 401, 403, 404, 422, 500]).toContain(status);
+        expect([400, 401, 403, 404, 422]).toContain(status);
     });
 });
 
@@ -55,7 +55,7 @@ describe('GDPR — Consents', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 
@@ -65,7 +65,7 @@ describe('GDPR — Consents', () => {
             marketing: false,
             personalization: true
         });
-        expect([200, 201, 400, 404, 500]).toContain(status);
+        expect([200, 201, 400, 404]).toContain(status);
     });
 });
 
@@ -74,14 +74,14 @@ describe('GDPR — Rectification', () => {
         const { status } = await client.put('/gdpr/rectify', {
             corrections: { full_name: 'Corrected Name' }
         });
-        expect([200, 400, 403, 404, 500]).toContain(status);
+        expect([200, 400, 403, 404]).toContain(status);
     });
 
     test('PUT /gdpr/rectify with empty corrections', async () => {
         const { status } = await client.put('/gdpr/rectify', {
             corrections: {}
         });
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 });
 
@@ -95,6 +95,6 @@ describe('GDPR — Auth Guard', () => {
     test('POST /gdpr/export requires auth', async () => {
         const noAuth = new TestApiClient();
         const { status } = await noAuth.post('/gdpr/export');
-        expect([401, 403, 500]).toContain(status);
+        expect([401, 403]).toContain(status);
     });
 });

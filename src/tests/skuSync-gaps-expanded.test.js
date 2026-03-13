@@ -69,7 +69,7 @@ describe('SKU Sync — Link & Sync', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([400, 404, 500]).toContain(status);
+            expect([400, 404]).toContain(status);
         }
     });
 
@@ -81,7 +81,7 @@ describe('SKU Sync — Link & Sync', () => {
 
     test('DELETE /sku-sync/nonexistent returns 404', async () => {
         const { status } = await client.delete('/sku-sync/nonexistent-999');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 
@@ -91,7 +91,7 @@ describe('SKU Sync — Barcode Lookup', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 

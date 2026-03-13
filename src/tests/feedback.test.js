@@ -85,7 +85,7 @@ describe('Feedback - List & Get', () => {
 describe('Feedback - Trending & Similar', () => {
     test('GET /feedback/trending returns trending data', async () => {
         const { status, data } = await clientA.get('/feedback/trending');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toBeDefined();
         }
@@ -93,7 +93,7 @@ describe('Feedback - Trending & Similar', () => {
 
     test('GET /feedback/similar?q=test returns similar items', async () => {
         const { status, data } = await clientA.get('/feedback/similar?q=test');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toBeDefined();
         }
@@ -103,7 +103,7 @@ describe('Feedback - Trending & Similar', () => {
 describe('Feedback - User & Analytics', () => {
     test('GET /feedback/user returns user feedback', async () => {
         const { status, data } = await clientA.get('/feedback/user');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toBeDefined();
         }
@@ -111,7 +111,7 @@ describe('Feedback - User & Analytics', () => {
 
     test('GET /feedback/analytics returns analytics object', async () => {
         const { status, data } = await clientA.get('/feedback/analytics');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(typeof data).toBe('object');
         }
@@ -130,7 +130,7 @@ describe('Feedback - Responses Thread', () => {
         const { status } = await clientA.post(`/feedback/${testFeedbackId}/responses`, {
             message: 'Great suggestion!'
         });
-        expect([201, 200, 500]).toContain(status);
+        expect([201, 200]).toContain(status);
     });
 });
 
@@ -147,19 +147,19 @@ describe('Feedback - Voting', () => {
         const { status } = await clientA.post('/feedback/vote/nonexistent-id-xyz', {
             vote_type: 'up'
         });
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
 describe('Feedback - Delete', () => {
     test('DELETE /feedback/nonexistent returns 404', async () => {
         const { status } = await clientA.delete('/feedback/nonexistent-id-xyz');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('DELETE /feedback/:id deletes own feedback', async () => {
         if (!testFeedbackId) return;
         const { status } = await clientA.delete(`/feedback/${testFeedbackId}`);
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });

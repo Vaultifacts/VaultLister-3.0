@@ -15,6 +15,6 @@ describe('Feedback admin status update', () => {
         const { status } = await client.put('/feedback/nonexistent', {
             status: 'under_review'
         });
-        expect([404, 403, 500]).toContain(status);
+        expect([404, 403]).toContain(status);
     });
 });

@@ -16,12 +16,12 @@ describe('AI - Generate Title', () => {
         const { status, data } = await client.post('/ai/generate-title', {
             itemDetails: { name: 'Vintage Nike Windbreaker', brand: 'Nike', category: 'Jackets' }
         });
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
         if (status === 200) { expect(data.title || data.titles || data.suggestions).toBeDefined(); }
     });
     test('POST /ai/generate-title without details returns error', async () => {
         const { status } = await client.post('/ai/generate-title', {});
-        expect([400, 403, 500]).toContain(status);
+        expect([400, 403]).toContain(status);
     });
 });
 
@@ -30,7 +30,7 @@ describe('AI - Generate Description', () => {
         const { status, data } = await client.post('/ai/generate-description', {
             itemDetails: { name: 'Levis 501', brand: 'Levis', condition: 'Good' }
         });
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
         if (status === 200) { expect(data.description || data.content).toBeDefined(); }
     });
 });
@@ -40,7 +40,7 @@ describe('AI - Generate Tags', () => {
         const { status, data } = await client.post('/ai/generate-tags', {
             itemDetails: { name: 'Air Jordan 1', brand: 'Nike', category: 'Shoes' }
         });
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
         if (status === 200) { expect(data.tags || data.keywords || data).toBeDefined(); }
     });
 });
@@ -50,7 +50,7 @@ describe('AI - Suggest Price', () => {
         const { status, data } = await client.post('/ai/suggest-price', {
             itemDetails: { name: 'Patagonia Fleece', brand: 'Patagonia', condition: 'Excellent' }
         });
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
         if (status === 200) { expect(data.suggestedPrice || data.price || data.priceRange).toBeDefined(); }
     });
 });
@@ -58,11 +58,11 @@ describe('AI - Suggest Price', () => {
 describe('AI - Analyze Image', () => {
     test('POST /ai/analyze-image with base64', async () => {
         const { status } = await client.post('/ai/analyze-image', { image: IMG });
-        expect([200, 400, 403, 500]).toContain(status);
+        expect([200, 400, 403]).toContain(status);
     });
     test('POST /ai/analyze-listing-image with image', async () => {
         const { status } = await client.post('/ai/analyze-listing-image', { image: IMG });
-        expect([200, 400, 403, 500]).toContain(status);
+        expect([200, 400, 403]).toContain(status);
     });
 });
 
@@ -71,13 +71,13 @@ describe('AI - Generate & Optimize Listing', () => {
         const { status } = await client.post('/ai/generate-listing', {
             itemDetails: { name: 'Coach Bag', brand: 'Coach', category: 'Bags' }
         });
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
     });
     test('POST /ai/optimize-listing with existing listing', async () => {
         const { status } = await client.post('/ai/optimize-listing', {
             title: 'nice bag', description: 'good coach bag', platform: 'ebay'
         });
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
     });
 });
 
@@ -86,25 +86,25 @@ describe('AI - Bulk Generate', () => {
         const { status } = await client.post('/ai/bulk-generate', {
             items: [{ name: 'Item 1', brand: 'Nike' }, { name: 'Item 2', brand: 'Adidas' }]
         });
-        expect([200, 400, 403, 500]).toContain(status);
+        expect([200, 400, 403]).toContain(status);
     });
     test('POST /ai/bulk-generate without items returns error', async () => {
         const { status } = await client.post('/ai/bulk-generate', {});
-        expect([400, 403, 500]).toContain(status);
+        expect([400, 403]).toContain(status);
     });
 });
 
 describe('AI - Detect Duplicates', () => {
     test('POST /ai/detect-duplicates returns results', async () => {
         const { status } = await client.post('/ai/detect-duplicates', { listing_id: 'test' });
-        expect([200, 400, 403, 404, 500]).toContain(status);
+        expect([200, 400, 403, 404]).toContain(status);
     });
 });
 
 describe('AI - Sourcing Suggestions', () => {
     test('GET /ai/sourcing-suggestions returns suggestions', async () => {
         const { status } = await client.get('/ai/sourcing-suggestions');
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
     });
 });
 
@@ -113,13 +113,13 @@ describe('AI - Translate & Category', () => {
         const { status } = await client.post('/ai/translate', {
             text: 'Vintage leather jacket', targetLanguage: 'es'
         });
-        expect([200, 400, 403, 500]).toContain(status);
+        expect([200, 400, 403]).toContain(status);
     });
     test('POST /ai/category-mapping maps across platforms', async () => {
         const { status } = await client.post('/ai/category-mapping', {
             category: 'Jackets', sourcePlatform: 'ebay', targetPlatform: 'poshmark'
         });
-        expect([200, 400, 403, 500]).toContain(status);
+        expect([200, 400, 403]).toContain(status);
     });
 });
 
@@ -128,11 +128,11 @@ describe('AI - Hashtags & Enhancement', () => {
         const { status } = await client.post('/ai/generate-hashtags', {
             itemDetails: { name: 'Vintage Band Tee', brand: 'Hanes', category: 'T-Shirts' }
         });
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
     });
     test('POST /ai/image-enhancement returns suggestions', async () => {
         const { status } = await client.post('/ai/image-enhancement', { image: IMG });
-        expect([200, 400, 403, 500]).toContain(status);
+        expect([200, 400, 403]).toContain(status);
     });
 });
 
@@ -141,19 +141,19 @@ describe('AI - Profit & SEO & Categorize', () => {
         const { status } = await client.post('/ai/profit-prediction', {
             purchasePrice: 10, listingPrice: 35, platform: 'ebay', shippingCost: 8
         });
-        expect([200, 400, 403, 500]).toContain(status);
+        expect([200, 400, 403]).toContain(status);
     });
     test('POST /ai/seo-optimize returns optimization', async () => {
         const { status } = await client.post('/ai/seo-optimize', {
             title: 'nice shoes cheap', platform: 'ebay'
         });
-        expect([200, 400, 403, 500]).toContain(status);
+        expect([200, 400, 403]).toContain(status);
     });
     test('POST /ai/auto-categorize detects category', async () => {
         const { status } = await client.post('/ai/auto-categorize', {
             text: 'Nike Air Max 90 size 10 mens'
         });
-        expect([200, 400, 403, 500]).toContain(status);
+        expect([200, 400, 403]).toContain(status);
     });
 });
 

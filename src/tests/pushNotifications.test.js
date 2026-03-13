@@ -28,7 +28,7 @@ describe('pushNotifications routes', () => {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
         // Accept success or expected errors (404 if no data, 500 if dependency missing)
-        expect([200, 404, 500]).toContain(res.status);
+        expect([200, 404]).toContain(res.status);
         if (res.status === 200) { const d = await res.json(); expect(typeof d).toBe("object"); }
     });
 
@@ -37,7 +37,7 @@ describe('pushNotifications routes', () => {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
         // Accept success or expected errors (404 if no data, 500 if dependency missing)
-        expect([200, 404, 500]).toContain(res.status);
+        expect([200, 404]).toContain(res.status);
         if (res.status === 200) { const d = await res.json(); expect(typeof d).toBe("object"); }
     });
 });

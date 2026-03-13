@@ -5,6 +5,7 @@ import { query } from '../db/database.js';
 import { encryptToken, decryptToken } from '../utils/encryption.js';
 import { createOAuthNotification, NotificationTypes } from './notificationService.js';
 import logger from '../shared/logger.js';
+import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
 
 // Configuration
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -491,8 +492,9 @@ async function performTokenRefresh(platform, refreshToken, config, mode) {
         ).toString('base64');
     }
 
-    const response = await fetch(config.tokenUrl, {
+    const response = await fetchWithTimeout(config.tokenUrl, {
         method: 'POST',
+        timeoutMs: 15000,
         headers,
         body: new URLSearchParams({
             grant_type: 'refresh_token',

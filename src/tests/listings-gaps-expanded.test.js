@@ -50,17 +50,17 @@ describe('Listings — Price Features', () => {
             new_price: 19.99,
             scheduled_date: new Date(Date.now() + 86400000).toISOString()
         });
-        expect([404, 400, 500]).toContain(status);
+        expect([404, 400]).toContain(status);
     });
 
     test('GET /listings/nonexistent/competitor-pricing returns 404', async () => {
         const { status } = await client.get('/listings/nonexistent-id/competitor-pricing');
-        expect([404, 400, 500]).toContain(status);
+        expect([404, 400]).toContain(status);
     });
 
     test('GET /listings/nonexistent/time-to-sell returns 404', async () => {
         const { status } = await client.get('/listings/nonexistent-id/time-to-sell');
-        expect([404, 400, 500]).toContain(status);
+        expect([404, 400]).toContain(status);
     });
 });
 

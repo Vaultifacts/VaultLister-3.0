@@ -130,7 +130,7 @@ describe('Relisting - Stale Listings', () => {
         });
 
         // May return 200 or 500 if DB tables don't exist
-        expect([200, 500]).toContain(response.status);
+        expect([200]).toContain(response.status);
     });
 
     test('GET /relisting/stale?days=30 - should filter by days', async () => {
@@ -138,7 +138,7 @@ describe('Relisting - Stale Listings', () => {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
-        expect([200, 500]).toContain(response.status);
+        expect([200]).toContain(response.status);
     });
 });
 

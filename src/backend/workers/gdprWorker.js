@@ -5,6 +5,8 @@ import crypto from 'crypto';
 import { query } from '../db/database.js';
 import emailService from '../services/email.js';
 import { logger } from '../shared/logger.js';
+import { getOAuthConfig, revokeToken } from '../routes/oauth.js';
+import { decryptToken } from '../utils/encryption.js';
 
 let intervalId = null;
 let lastRun = 0;
@@ -73,6 +75,26 @@ async function executeAccountDeletion(deletion) {
         { table: 'data_export_requests', idColumn: 'user_id' },
         { table: 'data_rectification_requests', idColumn: 'user_id' },
     ];
+
+    // Revoke OAuth tokens at each platform before deleting (REM-13)
+    try {
+        const oauthAccounts = query.all(
+            'SELECT platform, access_token FROM oauth_accounts WHERE user_id = ?',
+            [userId]
+        );
+        for (const acct of oauthAccounts || []) {
+            try {
+                const config = getOAuthConfig(acct.platform);
+                const accessToken = decryptToken(acct.access_token);
+                await revokeToken(acct.platform, accessToken, config);
+            } catch (e) {
+                logger.warn(`[GDPR Worker] Failed to revoke ${acct.platform} token for ${userId}: ${e.message}`);
+                // Best-effort — continue with deletion even if revocation fails
+            }
+        }
+    } catch (e) {
+        logger.warn(`[GDPR Worker] OAuth revocation query failed for ${userId}: ${e.message}`);
+    }
 
     // Anonymize sales data (keep for financial records)
     query.run(`

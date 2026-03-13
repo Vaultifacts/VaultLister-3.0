@@ -16,7 +16,7 @@ beforeAll(async () => {
 describe('GET /api/offline-sync/queue', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/offline-sync/queue`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns queue', async () => {
@@ -41,7 +41,7 @@ describe('POST /api/offline-sync/queue', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'create', entity_type: 'inventory', entity_id: 'test-001', payload: { title: 'Test Item' } })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated with valid body enqueues item', async () => {
@@ -57,7 +57,7 @@ describe('POST /api/offline-sync/queue', () => {
 describe('POST /api/offline-sync/sync', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/offline-sync/sync`, { method: 'POST' });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated processes pending items', async () => {
@@ -65,14 +65,14 @@ describe('POST /api/offline-sync/sync', () => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 201, 400, 500]).toContain(res.status);
+        expect([200, 201, 400]).toContain(res.status);
     });
 });
 
 describe('GET /api/offline-sync/status', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/offline-sync/status`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns sync status', async () => {
@@ -86,7 +86,7 @@ describe('GET /api/offline-sync/status', () => {
 describe('POST /api/offline-sync/manifest', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/offline-sync/manifest`, { method: 'POST' });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns or generates manifest', async () => {
@@ -94,6 +94,6 @@ describe('POST /api/offline-sync/manifest', () => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 201, 400, 500]).toContain(res.status);
+        expect([200, 201, 400]).toContain(res.status);
     });
 });

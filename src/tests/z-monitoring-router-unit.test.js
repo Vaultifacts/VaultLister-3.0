@@ -258,7 +258,7 @@ describe('Monitoring Router - GET /alerts', () => {
         mockQueryAll.mockImplementation(() => { throw new Error('no such table: alerts'); });
         const result = await monitoringRouter(ctx('GET', '/alerts', mockUser));
         // Gracefully handles missing table
-        expect([200, 500]).toContain(result.status);
+        expect([200]).toContain(result.status);
     });
 });
 
@@ -302,7 +302,7 @@ describe('Monitoring Router - GET /errors', () => {
         if (!isMocked) return;
         mockQueryAll.mockImplementation(() => { throw new Error('no such table: error_logs'); });
         const result = await monitoringRouter(ctx('GET', '/errors', mockUser));
-        expect([200, 500]).toContain(result.status);
+        expect([200]).toContain(result.status);
     });
 });
 

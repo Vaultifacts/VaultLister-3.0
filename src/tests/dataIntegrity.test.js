@@ -60,7 +60,7 @@ describe('Data Integrity - Soft Delete + Restore', () => {
         // Delete then restore
         await clientA.delete(`/inventory/${itemId}`);
         const { status: restoreStatus } = await clientA.post(`/recently-deleted/${itemId}/restore`);
-        expect([200, 201, 404, 500]).toContain(restoreStatus);
+        expect([200, 201, 404]).toContain(restoreStatus);
 
         if (restoreStatus === 200 || restoreStatus === 201) {
             // Should be back in inventory
@@ -83,12 +83,12 @@ describe('Data Integrity - Soft Delete + Restore', () => {
 
         // Permanent delete
         const { status: permStatus } = await clientA.delete(`/recently-deleted/${itemId}`);
-        expect([200, 204, 404, 500]).toContain(permStatus);
+        expect([200, 204, 404]).toContain(permStatus);
     });
 
     test('restore nonexistent item returns 404', async () => {
         const { status } = await clientA.post('/recently-deleted/nonexistent-id/restore');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -269,7 +269,7 @@ describe('Data Integrity - GDPR Deletion Flow', () => {
     test('schedule deletion then check status then cancel', async () => {
         // Check initial status
         const { status: statusCheck, data: statusData } = await clientA.get('/gdpr/deletion-status');
-        expect([200, 500]).toContain(statusCheck);
+        expect([200]).toContain(statusCheck);
 
         if (statusCheck === 200) {
             expect(typeof statusData.scheduled).toBe('boolean');
@@ -277,12 +277,12 @@ describe('Data Integrity - GDPR Deletion Flow', () => {
 
         // Cancel should work whether scheduled or not
         const { status: cancelStatus } = await clientA.post('/gdpr/cancel-deletion');
-        expect([200, 400, 500]).toContain(cancelStatus);
+        expect([200, 400]).toContain(cancelStatus);
     });
 
     test('delete-account requires password', async () => {
         const { status } = await clientA.post('/gdpr/delete-account', { reason: 'testing' });
-        expect([400, 401, 500]).toContain(status);
+        expect([400, 401]).toContain(status);
     });
 
     test('unauthenticated GDPR requests return 401', async () => {

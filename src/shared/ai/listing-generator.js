@@ -3,6 +3,10 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { analyzeImage } from './image-analyzer.js';
+import { logger } from '../../backend/shared/logger.js';
+import { sanitizeForAI } from './sanitize-input.js';
+import { withTimeout } from '../../backend/shared/fetchWithTimeout.js';
+import { circuitBreaker } from '../../backend/shared/circuitBreaker.js';
 
 // Brand-specific styling words
 const BRAND_STYLES = {
@@ -331,26 +335,25 @@ export async function generateListing(context) {
         try {
             const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-            const prompt = `You are an expert reseller. Generate a marketplace listing for the secondhand item described in the <item> block below.
+            const safeBrand = sanitizeForAI(brand || 'Unknown', 100);
+            const safeCategory = sanitizeForAI(category || 'Clothing', 100);
+            const safeCondition = sanitizeForAI(condition || 'good', 50);
+            const safeColor = sanitizeForAI(color || 'N/A', 50);
+            const safeSize = sanitizeForAI(size || 'N/A', 20);
+            const safePrice = originalPrice ? `$${sanitizeForAI(String(originalPrice), 20)}` : 'N/A';
+            const safeNotes = sanitizeForAI(notes || (keywords.length ? keywords.join(', ') : 'None'), 500);
 
-<item>
-Brand: ${(brand || 'Unknown').replace(/</g, '&lt;')}
-Category: ${(category || 'Clothing').replace(/</g, '&lt;')}
-Condition: ${(condition || 'good').replace(/</g, '&lt;')}
-Color: ${(color || 'N/A').replace(/</g, '&lt;')}
-Size: ${(size || 'N/A').replace(/</g, '&lt;')}
-Original Price: ${originalPrice ? `$${String(originalPrice).replace(/</g, '&lt;')}` : 'N/A'}
-Notes: ${(notes || (keywords.length ? keywords.join(', ') : 'None')).replace(/</g, '&lt;')}
-</item>
+            const userContent = `Brand: ${safeBrand}\nCategory: ${safeCategory}\nCondition: ${safeCondition}\nColor: ${safeColor}\nSize: ${safeSize}\nOriginal Price: ${safePrice}\nNotes: ${safeNotes}`;
 
-Respond with ONLY valid JSON in this exact format:
-{"title":"listing title max 80 chars SEO-optimized with brand and key attributes","description":"200-500 word persuasive description with condition, features, and item details. Include a DETAILS section with brand, size, color, condition. End with a friendly closing line.","tags":["tag1","tag2","up to 20 relevant search tags"]}`;
-
-            const response = await anthropic.messages.create({
-                model: 'claude-haiku-4-5-20251001',
-                max_tokens: 1024,
-                messages: [{ role: 'user', content: prompt }]
-            });
+            const response = await circuitBreaker('anthropic-listing', () =>
+                withTimeout(anthropic.messages.create({
+                    model: 'claude-haiku-4-5-20251001',
+                    max_tokens: 1024,
+                    system: 'You are an expert reseller. Generate a marketplace listing for the secondhand item described by the user. Respond with ONLY valid JSON in this exact format: {"title":"listing title max 80 chars SEO-optimized with brand and key attributes","description":"200-500 word persuasive description with condition, features, and item details. Include a DETAILS section with brand, size, color, condition. End with a friendly closing line.","tags":["tag1","tag2","up to 20 relevant search tags"]}',
+                    messages: [{ role: 'user', content: userContent }]
+                }), 30000, 'Anthropic listing generation'),
+                { failureThreshold: 3, cooldownMs: 60000 }
+            );
 
             const m = response.content[0].text.trim().match(/\{[\s\S]*\}/);
             if (m) {
@@ -364,8 +367,12 @@ Respond with ONLY valid JSON in this exact format:
                     };
                 }
             }
-        } catch (_) {
-            // fall through to templates
+        } catch (err) {
+            logger.warn('AI listing generation failed, falling back to templates', {
+                error: err.message,
+                brand: brand || 'unknown',
+                category: category || 'unknown'
+            });
         }
     }
 

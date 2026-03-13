@@ -270,7 +270,7 @@ describe('Notion Router - Setup Create-New Branches', () => {
         const result = await notionRouter(ctx('POST', '/setup/inventory', mockUser, {
             parent_page_id: 'parent-page-123'
         }));
-        expect([200, 400, 500]).toContain(result.status);
+        expect([200, 400]).toContain(result.status);
         if (result.status === 200) {
             expect(result.data.success).toBe(true);
             expect(result.data.database_id).toBeDefined();
@@ -281,14 +281,14 @@ describe('Notion Router - Setup Create-New Branches', () => {
         const result = await notionRouter(ctx('POST', '/setup/sales', mockUser, {
             parent_page_id: 'parent-page-123'
         }));
-        expect([200, 400, 500]).toContain(result.status);
+        expect([200, 400]).toContain(result.status);
     });
 
     test('POST /setup/notes with parent_page_id creates new database', async () => {
         const result = await notionRouter(ctx('POST', '/setup/notes', mockUser, {
             parent_page_id: 'parent-page-123'
         }));
-        expect([200, 400, 500]).toContain(result.status);
+        expect([200, 400]).toContain(result.status);
     });
 
     test('POST /setup/inventory without any params returns 400', async () => {

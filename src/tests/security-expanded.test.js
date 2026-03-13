@@ -53,7 +53,7 @@ describe('Security Expanded - Send Verification', () => {
     test('POST /security/send-verification returns success or already-verified', async () => {
         const { status, data } = await client.post('/security/send-verification');
         // 200 = sent, 400 = already verified or rate limited, 500 = db issue
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
         if (status === 200) {
             expect(data.message).toContain('Verification');
         }
@@ -69,7 +69,7 @@ describe('Security Expanded - Send Verification', () => {
 describe('Security Expanded - Verify Email', () => {
     test('POST /security/verify-email without token returns 400', async () => {
         const { status, data } = await unauthClient.post('/security/verify-email', {});
-        expect([400, 429, 500]).toContain(status);
+        expect([400, 429]).toContain(status);
         if (status === 400) {
             expect(data.error).toBeDefined();
         }
@@ -79,7 +79,7 @@ describe('Security Expanded - Verify Email', () => {
         const { status, data } = await unauthClient.post('/security/verify-email', {
             token: 'invalid-token-that-does-not-exist'
         });
-        expect([400, 429, 500]).toContain(status);
+        expect([400, 429]).toContain(status);
         if (status === 400) {
             expect(data.error).toBeDefined();
         }
@@ -92,7 +92,7 @@ describe('Security Expanded - Verify Email', () => {
 describe('Security Expanded - Forgot Password', () => {
     test('POST /security/forgot-password without email returns 400', async () => {
         const { status, data } = await unauthClient.post('/security/forgot-password', {});
-        expect([400, 429, 500]).toContain(status);
+        expect([400, 429]).toContain(status);
         if (status === 400) {
             expect(data.error).toBeDefined();
         }
@@ -103,7 +103,7 @@ describe('Security Expanded - Forgot Password', () => {
             email: `nonexistent-${Date.now()}@example.com`
         });
         // Always returns 200 to prevent email enumeration, or 429 if rate limited
-        expect([200, 429, 500]).toContain(status);
+        expect([200, 429]).toContain(status);
         if (status === 200) {
             expect(data.message).toBeDefined();
         }
@@ -116,7 +116,7 @@ describe('Security Expanded - Forgot Password', () => {
 describe('Security Expanded - Reset Password', () => {
     test('POST /security/reset-password without token or password returns 400', async () => {
         const { status, data } = await unauthClient.post('/security/reset-password', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
         if (status === 400) {
             expect(data.error).toBeDefined();
         }
@@ -127,7 +127,7 @@ describe('Security Expanded - Reset Password', () => {
             token: 'fake-token',
             password: 'short'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
         if (status === 400) {
             expect(data.error).toBeDefined();
         }
@@ -138,7 +138,7 @@ describe('Security Expanded - Reset Password', () => {
             token: 'invalid-token-does-not-exist',
             password: 'StrongPassword123!@#'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
         if (status === 400) {
             expect(data.error).toBeDefined();
         }
@@ -151,7 +151,7 @@ describe('Security Expanded - Reset Password', () => {
 describe('Security Expanded - MFA Disable', () => {
     test('POST /security/mfa/disable without password returns 400', async () => {
         const { status, data } = await client.post('/security/mfa/disable', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
         if (status === 400) {
             expect(data.error).toBeDefined();
         }
@@ -162,7 +162,7 @@ describe('Security Expanded - MFA Disable', () => {
             password: userPassword
         });
         // Fresh user has no MFA enabled, so disable should fail
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
         if (status === 400) {
             expect(data.error).toBeDefined();
         }
@@ -175,7 +175,7 @@ describe('Security Expanded - MFA Disable', () => {
 describe('Security Expanded - MFA Regenerate Codes', () => {
     test('POST /security/mfa/regenerate-codes without password returns 400', async () => {
         const { status, data } = await client.post('/security/mfa/regenerate-codes', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
         if (status === 400) {
             expect(data.error).toBeDefined();
         }
@@ -186,7 +186,7 @@ describe('Security Expanded - MFA Regenerate Codes', () => {
             password: userPassword
         });
         // Fresh user has no MFA enabled
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
         if (status === 400) {
             expect(data.error).toBeDefined();
         }
@@ -199,7 +199,7 @@ describe('Security Expanded - MFA Regenerate Codes', () => {
 describe('Security Expanded - MFA Status', () => {
     test('GET /security/mfa/status returns shape for fresh user', async () => {
         const { status, data } = await client.get('/security/mfa/status');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(typeof data.mfaEnabled).toBe('boolean');
             expect(typeof data.backupCodesRemaining).toBe('number');
@@ -215,7 +215,7 @@ describe('Security Expanded - MFA Status', () => {
 describe('Security Expanded - Events', () => {
     test('GET /security/events returns shape with arrays', async () => {
         const { status, data } = await client.get('/security/events');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(Array.isArray(data.mfaEvents)).toBe(true);
             expect(Array.isArray(data.loginEvents)).toBe(true);

@@ -18,26 +18,26 @@ describe('Affiliate landing pages', () => {
             slug: `test-page-${Date.now()}`
         });
         // 401 possible in full suite due to cross-file mock contamination of auth
-        expect([200, 201, 400, 401, 500]).toContain(status);
+        expect([200, 201, 400, 401]).toContain(status);
     });
 
     test('PUT /affiliate/landing-pages/:id nonexistent', async () => {
         const { status } = await client.put('/affiliate/landing-pages/nonexistent', {
             title: 'Updated'
         });
-        expect([401, 404, 500]).toContain(status);
+        expect([401, 404]).toContain(status);
     });
 
     test('DELETE /affiliate/landing-pages/:id nonexistent', async () => {
         const { status } = await client.delete('/affiliate/landing-pages/nonexistent');
-        expect([401, 404, 500]).toContain(status);
+        expect([401, 404]).toContain(status);
     });
 });
 
 describe('Affiliate commissions', () => {
     test('GET /affiliate/commissions returns commission data', async () => {
         const { status, data } = await client.get('/affiliate/commissions');
-        expect([200, 401, 500]).toContain(status);
+        expect([200, 401]).toContain(status);
         if (status === 200) {
             expect(data).toBeDefined();
         }

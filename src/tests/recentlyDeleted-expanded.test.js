@@ -20,7 +20,7 @@ describe('Recently Deleted - Auth Guard', () => {
 describe('Recently Deleted - List', () => {
     test('GET /recently-deleted returns items with pagination', async () => {
         const { status, data } = await client.get('/recently-deleted/');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('items');
             expect(data).toHaveProperty('pagination');
@@ -30,7 +30,7 @@ describe('Recently Deleted - List', () => {
 
     test('GET /recently-deleted?type=inventory filters by type', async () => {
         const { status, data } = await client.get('/recently-deleted/?type=inventory');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('items');
             expect(Array.isArray(data.items)).toBe(true);
@@ -39,7 +39,7 @@ describe('Recently Deleted - List', () => {
 
     test('GET /recently-deleted?page=1&limit=5 paginates', async () => {
         const { status, data } = await client.get('/recently-deleted/?page=1&limit=5');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200 && data.pagination) {
             expect(data.pagination.limit).toBeLessThanOrEqual(5);
         }
@@ -49,7 +49,7 @@ describe('Recently Deleted - List', () => {
 describe('Recently Deleted - Stats', () => {
     test('GET /recently-deleted/stats returns deletion stats', async () => {
         const { status, data } = await client.get('/recently-deleted/stats');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(typeof data).toBe('object');
         }
@@ -59,31 +59,31 @@ describe('Recently Deleted - Stats', () => {
 describe('Recently Deleted - Restore', () => {
     test('POST /recently-deleted/:id/restore returns 404 for nonexistent', async () => {
         const { status } = await client.post('/recently-deleted/nonexistent-id/restore');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('POST /recently-deleted/bulk-restore requires item_ids', async () => {
         const { status } = await client.post('/recently-deleted/bulk-restore', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 
 describe('Recently Deleted - Permanent Delete', () => {
     test('DELETE /recently-deleted/:id returns 404 for nonexistent', async () => {
         const { status } = await client.delete('/recently-deleted/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('POST /recently-deleted/bulk-delete requires item_ids', async () => {
         const { status } = await client.post('/recently-deleted/bulk-delete', {});
-        expect([400, 404, 500]).toContain(status);
+        expect([400, 404]).toContain(status);
     });
 });
 
 describe('Recently Deleted - Cleanup', () => {
     test('POST /recently-deleted/cleanup triggers old item cleanup', async () => {
         const { status, data } = await client.post('/recently-deleted/cleanup');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toBeDefined();
         }

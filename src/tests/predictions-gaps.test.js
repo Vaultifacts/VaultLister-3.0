@@ -13,7 +13,7 @@ beforeAll(async () => {
 describe('Predictions scenarios detail', () => {
     test('GET /predictions/scenarios/:id for nonexistent scenario', async () => {
         const { status } = await client.get('/predictions/scenarios/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('GET /predictions/scenarios/:id after creating a scenario', async () => {
@@ -26,7 +26,7 @@ describe('Predictions scenarios detail', () => {
             const scenarioId = createRes.data?.id || createRes.data?.scenario?.id;
             if (scenarioId) {
                 const { status, data } = await client.get(`/predictions/scenarios/${scenarioId}`);
-                expect([200, 500]).toContain(status);
+                expect(status).toBe(200);
                 if (status === 200) {
                     expect(data.name || data.scenario?.name).toBeDefined();
                 }

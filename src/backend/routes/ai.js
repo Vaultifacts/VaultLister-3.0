@@ -7,6 +7,8 @@ import { predictPrice, getPriceRange } from '../../shared/ai/price-predictor.js'
 import { detectBrand, detectCategory } from '../../shared/ai/image-analyzer.js';
 import Anthropic from '@anthropic-ai/sdk';
 import { logger } from '../shared/logger.js';
+import { validateBase64Image } from '../services/imageStorage.js';
+import { requireFeature } from '../middleware/featureFlags.js';
 
 // Configurable AI thresholds — override via environment variables
 const AI_CONFIG = {
@@ -22,6 +24,9 @@ const AI_CONFIG = {
 export async function aiRouter(ctx) {
     const { method, path, body, user } = ctx;
 
+    // Feature flag gate (REM-17)
+    if (requireFeature('FEATURE_AI_LISTING', ctx)) return ctx.res;
+
     // Check AI permission
     const permission = checkTierPermission(user, 'aiFeatures');
     if (!permission.allowed) {
@@ -36,9 +41,10 @@ export async function aiRouter(ctx) {
             return { status: 400, data: { error: 'Image data required (base64)' } };
         }
 
-        // Validate base64 size (~10MB decoded = ~15MB base64)
-        if (imageBase64 && imageBase64.length > 15 * 1024 * 1024) {
-            return { status: 413, data: { error: 'Image too large for analysis. Maximum 10MB.' } };
+        // Validate MIME type, size, and magic bytes
+        const imgValidation = validateBase64Image(imageBase64, imageMimeType);
+        if (!imgValidation.valid) {
+            return { status: 400, data: { error: imgValidation.error } };
         }
 
         // Check if Anthropic API key is configured

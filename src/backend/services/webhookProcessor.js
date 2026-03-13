@@ -6,6 +6,8 @@ import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { createNotification } from './notificationService.js';
 import { logger } from '../shared/logger.js';
+import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
+import { circuitBreaker } from '../shared/circuitBreaker.js';
 
 // Supported event types and their handlers
 const EVENT_HANDLERS = {
@@ -104,20 +106,24 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
         try {
             const signature = generateSignature(payload, endpoint.secret);
 
-            const response = await fetch(endpoint.url, {
-                method: 'POST',
-                redirect: 'manual', // Prevent SSRF via public→private redirect
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-VaultLister-Signature': signature,
-                    'X-VaultLister-Event': eventType
-                },
-                body: JSON.stringify({
-                    event: eventType,
-                    timestamp: new Date().toISOString(),
-                    payload
-                })
-            });
+            const response = await circuitBreaker(`webhook-${endpoint.id}`, () =>
+                fetchWithTimeout(endpoint.url, {
+                    method: 'POST',
+                    redirect: 'manual', // Prevent SSRF via public→private redirect
+                    timeoutMs: 30000,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-VaultLister-Signature': signature,
+                        'X-VaultLister-Event': eventType
+                    },
+                    body: JSON.stringify({
+                        event: eventType,
+                        timestamp: new Date().toISOString(),
+                        payload
+                    })
+                }),
+                { failureThreshold: 5, cooldownMs: 30000 }
+            );
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);

@@ -56,7 +56,7 @@ describe('Offline Sync — Queue', () => {
 
     test('DELETE /offline-sync/queue/:id nonexistent returns 404', async () => {
         const { status } = await client.delete('/offline-sync/queue/nonexistent-999');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 
@@ -66,7 +66,7 @@ describe('Offline Sync — Process & Manifest', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 
@@ -75,7 +75,7 @@ describe('Offline Sync — Process & Manifest', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([400, 404, 403, 500]).toContain(status);
+            expect([400, 404, 403]).toContain(status);
         }
     });
 });

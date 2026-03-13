@@ -14,7 +14,7 @@ beforeAll(async () => {
 describe('Push Subscriptions - VAPID Key', () => {
     test('GET /push-subscriptions/vapid-public-key returns key string', async () => {
         const { status, data } = await client.get('/push-subscriptions/vapid-public-key');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data.publicKey || data.vapidPublicKey).toBeDefined();
         }
@@ -36,33 +36,33 @@ describe('Push Subscriptions - Subscribe', () => {
             endpoint: 'https://fcm.googleapis.com/fcm/send/test-endpoint',
             keys: { p256dh: 'test-p256dh-key', auth: 'test-auth-key' }
         });
-        expect([200, 201, 400, 500]).toContain(status);
+        expect([200, 201, 400]).toContain(status);
     });
 
     test('POST /push-subscriptions/subscribe without endpoint returns 400', async () => {
         const { status } = await client.post('/push-subscriptions/subscribe', {
             keys: { p256dh: 'test', auth: 'test' }
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /push-subscriptions/subscribe without keys returns 400', async () => {
         const { status } = await client.post('/push-subscriptions/subscribe', {
             endpoint: 'https://fcm.googleapis.com/fcm/send/test'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('DELETE /push-subscriptions/subscribe removes subscription', async () => {
         const { status } = await client.delete('/push-subscriptions/subscribe');
-        expect([200, 204, 400, 404, 500]).toContain(status);
+        expect([200, 204, 400, 404]).toContain(status);
     });
 });
 
 describe('Push Subscriptions - Status', () => {
     test('GET /push-subscriptions/status returns subscription info', async () => {
         const { status, data } = await client.get('/push-subscriptions/status');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('subscribed');
             expect(typeof data.subscribed).toBe('boolean');
@@ -73,7 +73,7 @@ describe('Push Subscriptions - Status', () => {
 describe('Push Subscriptions - Settings', () => {
     test('GET /push-subscriptions/settings returns preferences', async () => {
         const { status, data } = await client.get('/push-subscriptions/settings');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(typeof data).toBe('object');
         }
@@ -83,28 +83,28 @@ describe('Push Subscriptions - Settings', () => {
         const { status } = await client.put('/push-subscriptions/settings', {
             sales: true, shipping: true, offers: false
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
 describe('Push Subscriptions - Test & Send', () => {
     test('POST /push-subscriptions/test sends test notification', async () => {
         const { status } = await client.post('/push-subscriptions/test', {});
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 
     test('POST /push-subscriptions/send with message', async () => {
         const { status } = await client.post('/push-subscriptions/send', {
             title: 'Test', body: 'Test notification body'
         });
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 });
 
 describe('Push Subscriptions - Delete Specific', () => {
     test('DELETE /push-subscriptions/subscription/:id for nonexistent', async () => {
         const { status } = await client.delete('/push-subscriptions/subscription/nonexistent-id');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 

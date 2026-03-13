@@ -31,7 +31,7 @@ describe('Teams — Auth Guards', () => {
 describe('Teams — List & Permissions', () => {
     test('GET /teams returns list', async () => {
         const { status, data } = await client.get('/teams');
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
         if (status === 200) {
             expect(Array.isArray(data.teams || data)).toBe(true);
         }
@@ -39,7 +39,7 @@ describe('Teams — List & Permissions', () => {
 
     test('GET /teams/permissions returns role matrix', async () => {
         const { status, data } = await client.get('/teams/permissions');
-        expect([200, 403, 404, 500]).toContain(status);
+        expect([200, 403, 404]).toContain(status);
         if (status === 200) {
             expect(typeof data).toBe('object');
         }
@@ -54,7 +54,7 @@ describe('Teams — CRUD', () => {
             name: `Test Team ${Date.now()}`,
             description: 'Automated test team'
         });
-        expect([200, 201, 403, 500]).toContain(status);
+        expect([200, 201, 403]).toContain(status);
         if (status === 200 || status === 201) {
             createdTeamId = data.id || data.team?.id;
         }
@@ -62,14 +62,14 @@ describe('Teams — CRUD', () => {
 
     test('POST /teams without name returns error', async () => {
         const { status } = await client.post('/teams', {});
-        expect([400, 403, 500]).toContain(status);
+        expect([400, 403]).toContain(status);
     });
 
     test('GET /teams/:id returns team details or error', async () => {
         const id = createdTeamId || 'nonexistent';
         const { status } = await client.get(`/teams/${id}`);
         // Without a valid team, any status is acceptable
-        expect([200, 403, 404, 500]).toContain(status);
+        expect([200, 403, 404]).toContain(status);
     });
 
     test('PATCH /teams/:id updates team or errors', async () => {
@@ -77,13 +77,13 @@ describe('Teams — CRUD', () => {
         const { status } = await client.patch(`/teams/${id}`, {
             name: `Updated Team ${Date.now()}`
         });
-        expect([200, 403, 404, 500]).toContain(status);
+        expect([200, 403, 404]).toContain(status);
     });
 
     test('DELETE /teams/:id removes team or errors', async () => {
         const id = createdTeamId || 'nonexistent';
         const { status } = await client.delete(`/teams/${id}`);
-        expect([200, 204, 403, 404, 500]).toContain(status);
+        expect([200, 204, 403, 404]).toContain(status);
     });
 });
 
@@ -105,14 +105,14 @@ describe('Teams — Members & Invitations', () => {
             email: `invite-${Date.now()}@example.com`,
             role: 'member'
         });
-        expect([200, 201, 400, 403, 404, 500]).toContain(status);
+        expect([200, 201, 400, 403, 404]).toContain(status);
     });
 
     test('POST /teams/join with invalid token returns error', async () => {
         const { status } = await clientB.post('/teams/join', {
             token: 'invalid-invite-token'
         });
-        expect([400, 403, 404, 500]).toContain(status);
+        expect([400, 403, 404]).toContain(status);
     });
 
     test('PATCH /teams/:id/members/:memberId updates role', async () => {
@@ -120,25 +120,25 @@ describe('Teams — Members & Invitations', () => {
         const { status } = await client.patch(`/teams/${id}/members/nonexistent`, {
             role: 'admin'
         });
-        expect([200, 403, 404, 500]).toContain(status);
+        expect([200, 403, 404]).toContain(status);
     });
 
     test('DELETE /teams/:id/members/:memberId removes member', async () => {
         const id = teamId || 'nonexistent';
         const { status } = await client.delete(`/teams/${id}/members/nonexistent`);
-        expect([200, 403, 404, 500]).toContain(status);
+        expect([200, 403, 404]).toContain(status);
     });
 
     test('POST /teams/:id/leave leaves team', async () => {
         const id = teamId || 'nonexistent';
         const { status } = await client.post(`/teams/${id}/leave`, {});
-        expect([200, 400, 403, 404, 500]).toContain(status);
+        expect([200, 400, 403, 404]).toContain(status);
     });
 
     test('GET /teams/:id/activity returns activity log', async () => {
         const id = teamId || 'nonexistent';
         const { status, data } = await client.get(`/teams/${id}/activity`);
-        expect([200, 403, 404, 500]).toContain(status);
+        expect([200, 403, 404]).toContain(status);
         if (status === 200) {
             expect(Array.isArray(data.activities || data.activity || data)).toBe(true);
         }

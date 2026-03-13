@@ -3,6 +3,10 @@
 // Primary: Claude Haiku Vision API. Fallback: text-based pattern helpers.
 
 import Anthropic from '@anthropic-ai/sdk';
+import { logger } from '../../backend/shared/logger.js';
+import { sanitizeForAI } from './sanitize-input.js';
+import { withTimeout } from '../../backend/shared/fetchWithTimeout.js';
+import { circuitBreaker } from '../../backend/shared/circuitBreaker.js';
 
 // Common brand patterns (for text detection in images)
 const BRAND_PATTERNS = [
@@ -62,17 +66,21 @@ export async function analyzeImage(imageData) {
             }
 
             if (imageSource) {
-                const response = await anthropic.messages.create({
-                    model: 'claude-haiku-4-5-20251001',
-                    max_tokens: 512,
-                    messages: [{
-                        role: 'user',
-                        content: [
-                            { type: 'image', source: imageSource },
-                            { type: 'text', text: 'Analyze this product image for resale. Respond ONLY with valid JSON:\n{"brand":"brand name or null","category":"Tops/Bottoms/Dresses/Outerwear/Footwear/Bags/Accessories","condition":"new/like_new/good/fair/poor","colors":["primary","secondary"],"style":"casual/vintage/streetwear/etc or null","tags":["tag1","tag2","tag3"],"confidence":0.0}' }
-                        ]
-                    }]
-                });
+                const response = await circuitBreaker('anthropic-image', () =>
+                    withTimeout(anthropic.messages.create({
+                        model: 'claude-haiku-4-5-20251001',
+                        max_tokens: 512,
+                        system: 'Analyze product images for resale. Respond ONLY with valid JSON: {"brand":"brand name or null","category":"Tops/Bottoms/Dresses/Outerwear/Footwear/Bags/Accessories","condition":"new/like_new/good/fair/poor","colors":["primary","secondary"],"style":"casual/vintage/streetwear/etc or null","tags":["tag1","tag2","tag3"],"confidence":0.0}',
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                { type: 'image', source: imageSource },
+                                { type: 'text', text: 'Analyze this product image.' }
+                            ]
+                        }]
+                    }), 30000, 'Anthropic image analysis'),
+                    { failureThreshold: 3, cooldownMs: 60000 }
+                );
 
                 const match = response.content[0].text.trim().match(/\{[\s\S]*\}/);
                 if (match) {
@@ -89,8 +97,11 @@ export async function analyzeImage(imageData) {
                     };
                 }
             }
-        } catch (_) {
-            // fall through to text-based helpers
+        } catch (err) {
+            logger.warn('AI image analysis failed, falling back to text-based helpers', {
+                error: err.message,
+                hasImageData: !!imageData
+            });
         }
     }
 

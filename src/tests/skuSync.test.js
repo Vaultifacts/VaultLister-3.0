@@ -102,6 +102,6 @@ describe('GET /api/sku-sync/barcode/:barcode', () => {
         const res = await fetch(`${BASE}/api/sku-sync/barcode/123456789`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404, 500]).toContain(res.status);
+        expect([200, 404]).toContain(res.status);
     });
 });

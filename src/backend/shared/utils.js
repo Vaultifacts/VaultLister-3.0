@@ -62,11 +62,14 @@ export function daysFromNow(days) {
 
 /**
  * Format date for display
+ * @param {string} dateString
+ * @param {object} [options] - Intl.DateTimeFormat options
+ * @param {string} [locale='en-US'] - BCP 47 locale tag
  */
-export function formatDate(dateString, options = {}) {
+export function formatDate(dateString, options = {}, locale = 'en-US') {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(locale, {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -76,11 +79,14 @@ export function formatDate(dateString, options = {}) {
 
 /**
  * Format date and time for display
+ * @param {string} dateString
+ * @param {object} [options] - Intl.DateTimeFormat options
+ * @param {string} [locale='en-US'] - BCP 47 locale tag
  */
-export function formatDateTime(dateString, options = {}) {
+export function formatDateTime(dateString, options = {}, locale = 'en-US') {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString(locale, {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -94,10 +100,13 @@ export function formatDateTime(dateString, options = {}) {
 
 /**
  * Format price for display
+ * @param {number} amount
+ * @param {string} [currency='USD']
+ * @param {string} [locale='en-US'] - BCP 47 locale tag
  */
-export function formatPrice(amount, currency = 'USD') {
+export function formatPrice(amount, currency = 'USD', locale = 'en-US') {
     if (amount === null || amount === undefined) return '$0.00';
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: currency
     }).format(amount);

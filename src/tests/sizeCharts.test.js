@@ -23,7 +23,7 @@ describe('GET /api/size-charts', () => {
         const res = await fetch(`${BASE}/api/size-charts`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404, 500]).toContain(res.status);
+        expect([200, 404]).toContain(res.status);
     });
 });
 
@@ -43,7 +43,7 @@ describe('POST /api/size-charts', () => {
             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: 'Test Chart', category: 'tops', gender: 'unisex' })
         });
-        expect([200, 201, 400, 500]).toContain(res.status);
+        expect([200, 201, 400]).toContain(res.status);
     });
 });
 
@@ -86,6 +86,6 @@ describe('GET /api/size-charts/availability', () => {
         const res = await fetch(`${BASE}/api/size-charts/availability?category=tops`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404, 500]).toContain(res.status);
+        expect([200, 404]).toContain(res.status);
     });
 });

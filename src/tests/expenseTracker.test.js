@@ -84,6 +84,6 @@ describe('POST /api/expenses/categorize', () => {
             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({})
         });
-        expect([200, 201, 400, 500]).toContain(res.status);
+        expect([200, 201, 400]).toContain(res.status);
     });
 });

@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
 import { getOAuthConfig } from '../tokenRefreshScheduler.js';
+import { fetchWithTimeout } from '../../shared/fetchWithTimeout.js';
 
 /**
  * Sync all data from eBay for a shop
@@ -249,7 +250,7 @@ async function fetchEbayListings(accessToken, mode) {
         ? 'https://api.ebay.com'
         : 'https://api.sandbox.ebay.com';
 
-    const response = await fetch(`${apiBase}/sell/inventory/v1/inventory_item?limit=100`, {
+    const response = await fetchWithTimeout(`${apiBase}/sell/inventory/v1/inventory_item?limit=100`, {
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Accept': 'application/json',
@@ -297,7 +298,7 @@ async function fetchEbayOrders(accessToken, mode) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 90);
 
-    const response = await fetch(
+    const response = await fetchWithTimeout(
         `${apiBase}/sell/fulfillment/v1/order?filter=creationdate:[${startDate.toISOString()}]&limit=50`,
         {
             headers: {

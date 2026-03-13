@@ -21,14 +21,14 @@ describe('Duplicates — Auth Guard', () => {
 describe('Duplicates — Delete', () => {
     test('DELETE /duplicates/:id for nonexistent returns 404', async () => {
         const { status } = await client.delete('/duplicates/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
 describe('Duplicates — Shape Validation', () => {
     test('GET /duplicates returns proper shape', async () => {
         const { status, data } = await client.get('/duplicates');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(Array.isArray(data.duplicates || data)).toBe(true);
         }
@@ -36,7 +36,7 @@ describe('Duplicates — Shape Validation', () => {
 
     test('GET /duplicates/stats returns stats shape', async () => {
         const { status, data } = await client.get('/duplicates/stats');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(typeof data).toBe('object');
         }
@@ -45,6 +45,6 @@ describe('Duplicates — Shape Validation', () => {
     test('POST /duplicates/check without item_id', async () => {
         const { status } = await client.post('/duplicates/check', {});
         // Route may accept empty body and return results or error
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 });

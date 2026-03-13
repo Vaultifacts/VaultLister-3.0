@@ -280,9 +280,9 @@
 | 1.3 | REM-10: FTS5 delete trigger | Small | **FIXED** — verify migration 097 |
 | 1.4 | REM-14: GDPR worker missing table | Small | **FIXED** — verify fix |
 | 1.5 | REM-15: Community XSS | Small | **FIXED** — verify fix |
-| 1.6 | REM-05: DISABLE_CSRF production guard | Small | New code change |
-| 1.7 | REM-07: CI lint ESM hang | Small | Infrastructure fix |
-| 1.8 | REM-12: AI silent error swallowing | Small | New code change |
+| 1.6 | REM-05: DISABLE_CSRF production guard | Small | **Completed** — narrowed to test-only, added startup warning |
+| 1.7 | REM-07: CI lint ESM hang | Small | **Completed** — replaced node --check with bun build --no-bundle |
+| 1.8 | REM-12: AI silent error swallowing | Small | **Completed** — added logger.warn in catch blocks |
 
 **Coordination notes:** Items 1.1–1.5 are already fixed — just verify. Items 1.6–1.8 are independent small fixes.
 
@@ -293,12 +293,12 @@
 
 | Order | Issue | Complexity | Status |
 |-------|-------|-----------|--------|
-| 2.1 | REM-04: Prompt injection protection | Medium | New code |
-| 2.2 | REM-18: File upload abuse prevention | Medium | New middleware |
-| 2.3 | REM-20: Listings UNIQUE constraint | Small | Verify migration 096 |
-| 2.4 | REM-11: External integration timeouts | Medium | Code change (6 services) |
-| 2.5 | REM-13: OAuth token revocation on deletion | Large | Per-platform rollout |
-| 2.6 | REM-06: Key rotation mechanism | Large | Code + docs + deployment |
+| 2.1 | REM-04: Prompt injection protection | Medium | **Completed** |
+| 2.2 | REM-18: File upload abuse prevention | Medium | **Completed** |
+| 2.3 | REM-20: Listings UNIQUE constraint | Small | **Completed** (verified) |
+| 2.4 | REM-11: External integration timeouts | Medium | **Completed** |
+| 2.5 | REM-13: OAuth token revocation on deletion | Large | **Completed** |
+| 2.6 | REM-06: Key rotation mechanism | Large | **Completed** |
 
 **Coordination notes:**
 - REM-11 can be done service-by-service independently
@@ -313,11 +313,11 @@
 
 | Order | Issue | Complexity | Status |
 |-------|-------|-----------|--------|
-| 3.1 | REM-02: Clean up expect([200,500]) anti-pattern | Large (volume) | Test-only cleanup |
-| 3.2 | REM-01: Cross-listing integration tests | Large | New test file |
-| 3.3 | REM-08: Deploy rollback mechanism | Medium | Infrastructure |
-| 3.4 | REM-16: Circuit breaker | Large | New feature |
-| 3.5 | REM-17: FEATURE_* config drift | Medium | Code or config |
+| 3.1 | REM-02: Clean up expect([200,500]) anti-pattern | Large (volume) | **Completed** |
+| 3.2 | REM-01: Cross-listing integration tests | Large | **Completed** |
+| 3.3 | REM-08: Deploy rollback mechanism | Medium | **Completed** |
+| 3.4 | REM-16: Circuit breaker | Large | **Completed** |
+| 3.5 | REM-17: FEATURE_* config drift | Medium | **Completed** |
 
 **Coordination notes:**
 - REM-02 is high-volume but low-risk per file — can be parallelized across contributors
@@ -333,7 +333,7 @@
 
 | Order | Issue | Complexity | Status |
 |-------|-------|-----------|--------|
-| 4.1 | REM-19: Backend locale support | Medium | Code change |
+| 4.1 | REM-19: Backend locale support | Medium | **Completed** |
 
 **Additional items from audits (beyond top 20, included for completeness):**
 

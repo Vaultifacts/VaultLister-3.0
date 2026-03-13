@@ -432,7 +432,7 @@ describe('Shipping Labels - Print Batch', () => {
 
         const data = await response.json();
         // 200 if successful, 500 if label processing fails (test data)
-        expect([200, 500]).toContain(response.status);
+        expect([200]).toContain(response.status);
         if (response.status === 200) {
             expect(data.printed).toBeDefined();
         }

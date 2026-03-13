@@ -79,26 +79,26 @@ describe('Monitoring authenticated (unmounted router)', () => {
     // We therefore accept 401 alongside 200/404/500.
     test('GET /monitoring/health with auth returns 200, 401, or 404', async () => {
         const { status } = await client.get('/monitoring/health');
-        expect([200, 401, 404, 500]).toContain(status);
+        expect([200, 401, 404]).toContain(status);
     });
 
     test('GET /monitoring/metrics with auth returns 200, 401, or 404', async () => {
         const { status } = await client.get('/monitoring/metrics');
-        expect([200, 401, 404, 500]).toContain(status);
+        expect([200, 401, 404]).toContain(status);
     });
 
     test('GET /monitoring/errors with auth returns 200, 401, or 404', async () => {
         const { status } = await client.get('/monitoring/errors');
-        expect([200, 401, 404, 500]).toContain(status);
+        expect([200, 401, 404]).toContain(status);
     });
 
     test('GET /monitoring/alerts with auth returns 200, 401, or 404', async () => {
         const { status } = await client.get('/monitoring/alerts');
-        expect([200, 401, 404, 500]).toContain(status);
+        expect([200, 401, 404]).toContain(status);
     });
 
     test('GET /monitoring/health/detailed with auth returns 200, 401, or 404', async () => {
         const { status } = await client.get('/monitoring/health/detailed');
-        expect([200, 401, 404, 500]).toContain(status);
+        expect([200, 401, 404]).toContain(status);
     });
 });

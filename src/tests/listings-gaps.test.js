@@ -17,20 +17,20 @@ describe('Listings price drop scheduling', () => {
             target_price: 19.99,
             drop_date: new Date(Date.now() + 86400000).toISOString()
         });
-        expect([404, 400, 500]).toContain(status);
+        expect([404, 400]).toContain(status);
     });
 });
 
 describe('Listings competitor pricing', () => {
     test('GET /listings/:id/competitor-pricing nonexistent listing', async () => {
         const { status } = await client.get('/listings/nonexistent/competitor-pricing');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 
 describe('Listings time to sell', () => {
     test('GET /listings/:id/time-to-sell nonexistent listing', async () => {
         const { status } = await client.get('/listings/nonexistent/time-to-sell');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });

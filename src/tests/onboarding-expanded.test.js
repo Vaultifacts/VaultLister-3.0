@@ -29,7 +29,7 @@ describe('Onboarding - Auth Guard', () => {
 describe('Onboarding - Get Progress', () => {
     test('GET /onboarding/progress returns progress or default', async () => {
         const { status, data } = await client.get('/onboarding/progress');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('current_step');
             expect(data).toHaveProperty('completed_steps');
@@ -42,19 +42,19 @@ describe('Onboarding - Create/Reset Progress', () => {
         const { status, data } = await client.post('/onboarding/progress', {
             role: 'reseller'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 
     test('POST /onboarding/progress without role returns 400', async () => {
         const { status, data } = await client.post('/onboarding/progress', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /onboarding/progress with invalid role returns 400', async () => {
         const { status } = await client.post('/onboarding/progress', {
             role: 'invalid_role_xyz'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /onboarding/progress with bulk_seller role', async () => {
@@ -63,7 +63,7 @@ describe('Onboarding - Create/Reset Progress', () => {
         const { status } = await client2.post('/onboarding/progress', {
             role: 'bulk_seller'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 });
 
@@ -72,19 +72,19 @@ describe('Onboarding - Complete Step', () => {
         const { status } = await client.put('/onboarding/progress/step', {
             step_id: 'welcome'
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('PUT /onboarding/progress/step without step_id returns 400', async () => {
         const { status } = await client.put('/onboarding/progress/step', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 
 describe('Onboarding - Tours', () => {
     test('GET /onboarding/tours/reseller returns tour steps', async () => {
         const { status, data } = await client.get('/onboarding/tours/reseller');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200 && data) {
             // Response may wrap steps in different shapes
             const steps = data.steps || data.tour?.steps || (Array.isArray(data) ? data : null);
@@ -96,19 +96,19 @@ describe('Onboarding - Tours', () => {
 
     test('GET /onboarding/tours/bulk_seller returns different tour', async () => {
         const { status } = await client.get('/onboarding/tours/bulk_seller');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('GET /onboarding/tours/invalid returns 404', async () => {
         const { status } = await client.get('/onboarding/tours/nonexistent_role');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
 describe('Onboarding - Badges', () => {
     test('GET /onboarding/badges returns badge list', async () => {
         const { status, data } = await client.get('/onboarding/badges');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(Array.isArray(data) || data.badges !== undefined).toBe(true);
         }
@@ -116,13 +116,13 @@ describe('Onboarding - Badges', () => {
 
     test('POST /onboarding/badges/claim without badge_id returns 400', async () => {
         const { status } = await client.post('/onboarding/badges/claim', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /onboarding/badges/claim with valid badge_id', async () => {
         const { status } = await client.post('/onboarding/badges/claim', {
             badge_id: 'first_listing'
         });
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 });

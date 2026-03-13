@@ -16,7 +16,7 @@ beforeAll(async () => {
 describe('GET /api/qr-analytics/dashboard', () => {
     test('rejects unauthenticated request', async () => {
         const res = await fetch(`${BASE}/api/qr-analytics/dashboard`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('returns dashboard data when authenticated', async () => {
@@ -34,7 +34,7 @@ describe('POST /api/qr-analytics/track', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ qr_type: 'listing', reference_id: 'test-ref-001' })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('records scan event when authenticated with valid body', async () => {
@@ -43,14 +43,14 @@ describe('POST /api/qr-analytics/track', () => {
             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ qr_type: 'listing', reference_id: 'test-ref-001' })
         });
-        expect([200, 201, 400, 500]).toContain(res.status);
+        expect([200, 201, 400]).toContain(res.status);
     });
 });
 
 describe('GET /api/qr-analytics/warehouse-bins', () => {
     test('rejects unauthenticated request', async () => {
         const res = await fetch(`${BASE}/api/qr-analytics/warehouse-bins`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('returns warehouse bins list when authenticated', async () => {
@@ -68,7 +68,7 @@ describe('POST /api/qr-analytics/warehouse-bins', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ bin_code: 'BIN-TEST-001', label: 'Test Bin', zone: 'A' })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('creates warehouse bin when authenticated with valid body', async () => {
@@ -77,14 +77,14 @@ describe('POST /api/qr-analytics/warehouse-bins', () => {
             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ bin_code: 'BIN-TEST-001', label: 'Test Bin', zone: 'A' })
         });
-        expect([200, 201, 400, 500]).toContain(res.status);
+        expect([200, 201, 400]).toContain(res.status);
     });
 });
 
 describe('GET /api/qr-analytics/item/:id', () => {
     test('rejects unauthenticated request', async () => {
         const res = await fetch(`${BASE}/api/qr-analytics/item/00000000-0000-0000-0000-000000000001`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('returns item QR data when authenticated', async () => {

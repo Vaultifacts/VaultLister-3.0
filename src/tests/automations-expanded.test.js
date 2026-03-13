@@ -14,7 +14,7 @@ describe('Automations — History', () => {
     test('GET /automations/history returns run history', async () => {
         const { status, data } = await client.get('/automations/history');
         // May be tier-gated (403)
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
         if (status === 200 && data) {
             expect(typeof data).toBe('object');
         }
@@ -22,14 +22,14 @@ describe('Automations — History', () => {
 
     test('DELETE /automations/history clears history', async () => {
         const { status } = await client.delete('/automations/history');
-        expect([200, 204, 403, 500]).toContain(status);
+        expect([200, 204, 403]).toContain(status);
     });
 });
 
 describe('Automations — Stats', () => {
     test('GET /automations/stats returns statistics', async () => {
         const { status, data } = await client.get('/automations/stats');
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
         if (status === 200) {
             expect(typeof data).toBe('object');
         }
@@ -56,9 +56,9 @@ describe('Automations — Run & Toggle', () => {
         const id = ruleId || 'nonexistent';
         const { status } = await client.post(`/automations/${id}/run`, {});
         if (ruleId) {
-            expect([200, 202, 403, 500]).toContain(status);
+            expect([200, 202, 403]).toContain(status);
         } else {
-            expect([403, 404, 500]).toContain(status);
+            expect([403, 404]).toContain(status);
         }
     });
 
@@ -66,18 +66,18 @@ describe('Automations — Run & Toggle', () => {
         const id = ruleId || 'nonexistent';
         const { status, data } = await client.post(`/automations/${id}/toggle`, {});
         if (ruleId) {
-            expect([200, 403, 500]).toContain(status);
+            expect([200, 403]).toContain(status);
             if (status === 200) {
                 expect(typeof (data.enabled ?? data.rule?.enabled)).toBe('boolean');
             }
         } else {
-            expect([403, 404, 500]).toContain(status);
+            expect([403, 404]).toContain(status);
         }
     });
 
     test('POST /automations/:id/run for nonexistent returns error', async () => {
         const { status } = await client.post('/automations/nonexistent-id/run', {});
-        expect([403, 404, 500]).toContain(status);
+        expect([403, 404]).toContain(status);
     });
 });
 
@@ -89,7 +89,7 @@ describe('Automations — From Preset', () => {
                 presetId: 'nonexistent-preset',
                 platform: 'poshmark'
             });
-            expect([200, 201, 400, 403, 404, 500]).toContain(status);
+            expect([200, 201, 400, 403, 404]).toContain(status);
             return;
         }
 
@@ -98,17 +98,17 @@ describe('Automations — From Preset', () => {
             presetId: preset.id || preset.key,
             platform: 'poshmark'
         });
-        expect([200, 201, 400, 403, 500]).toContain(status);
+        expect([200, 201, 400, 403]).toContain(status);
     });
 
     test('POST /automations/from-preset without presetId returns error', async () => {
         const { status } = await client.post('/automations/from-preset', {});
-        expect([400, 403, 500]).toContain(status);
+        expect([400, 403]).toContain(status);
     });
 
     test('POST /automations/from-preset with invalid presetId returns 400', async () => {
         const { status } = await client.post('/automations/from-preset', { presetId: 'totally_invalid_id_xyz' });
-        expect([400, 403, 500]).toContain(status);
+        expect([400, 403]).toContain(status);
     });
 });
 
@@ -129,7 +129,7 @@ describe('Automations — Multi-Platform Presets', () => {
             const presetId = presetIds[0];
             const { status, data } = await client.post('/automations/from-preset', { presetId });
             // 200/201 = created, 400 = already exists (duplicate name), 403 = CSRF, 500 = DB
-            expect([200, 201, 400, 403, 500]).toContain(status);
+            expect([200, 201, 400, 403]).toContain(status);
             if (status === 200 || status === 201) {
                 expect(data).toBeTruthy();
             }
@@ -157,7 +157,7 @@ describe('Automations — Multi-Platform Presets', () => {
         for (const presetId of sample) {
             const { status } = await client.post('/automations/from-preset', { presetId });
             // Should NOT be 400 with "Unknown preset" — should be 200/201 or 400 with "already exists"
-            expect([200, 201, 400, 403, 500]).toContain(status);
+            expect([200, 201, 400, 403]).toContain(status);
         }
     });
 });
@@ -165,7 +165,7 @@ describe('Automations — Multi-Platform Presets', () => {
 describe('Automations — Schedule Settings', () => {
     test('GET /automations/schedule-settings returns settings', async () => {
         const { status, data } = await client.get('/automations/schedule-settings');
-        expect([200, 403, 404, 500]).toContain(status);
+        expect([200, 403, 404]).toContain(status);
     });
 
     test('POST /automations/schedule-settings saves settings', async () => {
@@ -176,7 +176,7 @@ describe('Automations — Schedule Settings', () => {
             daysOfWeek: [1, 2, 3, 4, 5],
             timezone: 'America/Edmonton'
         });
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
     });
 
     test('POST /automations/schedule-settings rejects invalid frequency', async () => {
@@ -185,6 +185,6 @@ describe('Automations — Schedule Settings', () => {
             startTime: '09:00',
             endTime: '21:00'
         });
-        expect([400, 403, 500]).toContain(status);
+        expect([400, 403]).toContain(status);
     });
 });

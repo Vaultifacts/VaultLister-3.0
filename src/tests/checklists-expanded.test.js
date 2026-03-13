@@ -25,7 +25,7 @@ beforeAll(async () => {
 describe('Checklists - Templates', () => {
     test('GET /checklists/templates returns available templates', async () => {
         const { status, data } = await client.get('/checklists/templates');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data.templates || data).toBeDefined();
         }
@@ -43,26 +43,26 @@ describe('Checklists - Create from Template', () => {
         const { status } = await client.post('/checklists/from-template', {
             template_id: templateIds[0]
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 
     test('POST /checklists/from-template requires template_id', async () => {
         const { status } = await client.post('/checklists/from-template', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /checklists/from-template rejects invalid template', async () => {
         const { status } = await client.post('/checklists/from-template', {
             template_id: 'nonexistent-template-xyz'
         });
-        expect([400, 404, 500]).toContain(status);
+        expect([400, 404]).toContain(status);
     });
 });
 
 describe('Checklists - Shares', () => {
     test('GET /checklists/shares returns share list', async () => {
         const { status, data } = await client.get('/checklists/shares');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             const shares = data.shares || (Array.isArray(data) ? data : null);
             expect(shares !== null || data !== null).toBe(true);
@@ -71,7 +71,7 @@ describe('Checklists - Shares', () => {
 
     test('POST /checklists/share requires shared_with', async () => {
         const { status } = await client.post('/checklists/share', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /checklists/share with valid data', async () => {
@@ -81,19 +81,19 @@ describe('Checklists - Shares', () => {
             shared_with: 'testuser@example.com',
             permission: 'view'
         });
-        expect([200, 201, 404, 500]).toContain(status);
+        expect([200, 201, 404]).toContain(status);
     });
 
     test('DELETE /checklists/shares/:id on nonexistent returns 404', async () => {
         const { status } = await client.delete('/checklists/shares/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
 describe('Checklists - Items CRUD', () => {
     test('GET /checklists/items returns all items', async () => {
         const { status, data } = await client.get('/checklists/items');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             const items = data.items || (Array.isArray(data) ? data : null);
             expect(items !== null || data !== null).toBe(true);
@@ -107,7 +107,7 @@ describe('Checklists - Items CRUD', () => {
             priority: 'high',
             notes: 'Test notes'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
         if (data?.item?.id || data?.id) {
             itemId = data.item?.id || data.id;
         }
@@ -115,7 +115,7 @@ describe('Checklists - Items CRUD', () => {
 
     test('POST /checklists/items requires title', async () => {
         const { status } = await client.post('/checklists/items', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('PATCH /checklists/items/:id updates item', async () => {
@@ -124,18 +124,18 @@ describe('Checklists - Items CRUD', () => {
             method: 'PATCH',
             body: JSON.stringify({ completed: true })
         });
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('DELETE /checklists/items/:id removes item', async () => {
         if (!itemId) return;
         const { status } = await client.delete(`/checklists/items/${itemId}`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('DELETE /checklists/items/nonexistent returns 404', async () => {
         const { status } = await client.delete('/checklists/items/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -143,7 +143,7 @@ describe('Checklists - Items by Checklist', () => {
     test('GET /checklists/:id/items returns items for checklist', async () => {
         if (!checklistId) return;
         const { status, data } = await client.get(`/checklists/${checklistId}/items`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200) {
             const items = data.items || (Array.isArray(data) ? data : null);
             expect(items !== null || data !== null).toBe(true);
@@ -152,7 +152,7 @@ describe('Checklists - Items by Checklist', () => {
 
     test('GET /checklists/nonexistent/items responds', async () => {
         const { status } = await client.get('/checklists/nonexistent-id/items');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 

@@ -23,7 +23,7 @@ describe('Community Expanded - Delete Post', () => {
 
     test('DELETE /community/posts/nonexistent returns 404', async () => {
         const { status, data } = await client.delete('/community/posts/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
         if (status === 404) {
             expect(data.error).toBeDefined();
         }
@@ -36,13 +36,13 @@ describe('Community Expanded - Delete Post', () => {
             title: 'Test Post to Delete',
             content: 'This post will be deleted'
         });
-        expect([200, 201, 500]).toContain(createStatus);
+        expect([200, 201]).toContain(createStatus);
 
         if (createStatus === 200 || createStatus === 201) {
             const postId = createData.id || createData.post?.id;
             if (postId) {
                 const { status } = await client.delete(`/community/posts/${postId}`);
-                expect([200, 500]).toContain(status);
+                expect(status).toBe(200);
             }
         }
     });
@@ -60,7 +60,7 @@ describe('Community Expanded - Delete Post', () => {
             if (postId) {
                 // Try to delete as userB — should return 404 (ownership check)
                 const { status } = await clientB.delete(`/community/posts/${postId}`);
-                expect([404, 500]).toContain(status);
+                expect([404]).toContain(status);
             }
         }
     });

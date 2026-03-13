@@ -13,7 +13,7 @@ beforeAll(async () => {
 describe('Social Auth - Providers List', () => {
     test('GET /social-auth/providers returns provider list', async () => {
         const { status, data } = await client.get('/social-auth/providers');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toBeDefined();
             const providers = data.providers || (Array.isArray(data) ? data : null);
@@ -23,7 +23,7 @@ describe('Social Auth - Providers List', () => {
 
     test('GET /social-auth/ also returns provider list', async () => {
         const { status, data } = await client.get('/social-auth/');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toBeDefined();
         }
@@ -63,25 +63,25 @@ describe('Social Auth - Auth Guard (OAuth Flows)', () => {
 describe('Social Auth - Google OAuth Flow (Authenticated)', () => {
     test('GET /social-auth/google returns redirect or auth URL', async () => {
         const { status } = await client.get('/social-auth/google');
-        // 302 redirect to Google, 200 with auth URL, 500/503 if not configured
-        expect([200, 302, 500, 503]).toContain(status);
+        // 302 redirect to Google, 200 with auth URL, 503 if not configured
+        expect([200, 302, 503]).toContain(status);
     });
 
     test('GET /social-auth/google/callback without code returns error or redirect', async () => {
         const { status } = await client.get('/social-auth/google/callback');
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 });
 
 describe('Social Auth - Apple OAuth Flow (Authenticated)', () => {
     test('POST /social-auth/apple/callback without code returns error or redirect', async () => {
         const { status } = await client.post('/social-auth/apple/callback', {});
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 
     test('POST /social-auth/apple/callback with error param', async () => {
         const { status } = await client.post('/social-auth/apple/callback', { error: 'access_denied' });
-        expect([200, 400, 500]).toContain(status);
+        expect([200, 400]).toContain(status);
     });
 });
 
@@ -95,12 +95,12 @@ describe('Social Auth - Unlink Provider', () => {
 
     test('DELETE /social-auth/google unlinks provider', async () => {
         const { status } = await client.delete('/social-auth/google');
-        // 200 if linked and unlinked, 400 if only auth method, 404 if not linked, 500 on error
-        expect([200, 400, 404, 500]).toContain(status);
+        // 200 if linked and unlinked, 400 if only auth method, 404 if not linked
+        expect([200, 400, 404]).toContain(status);
     });
 
     test('DELETE /social-auth/apple unlinks provider', async () => {
         const { status } = await client.delete('/social-auth/apple');
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 });

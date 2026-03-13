@@ -23,7 +23,7 @@ describe('Chatbot Expanded - Delete Conversation', () => {
 
     test('DELETE /chatbot/conversations/nonexistent returns 404', async () => {
         const { status, data } = await client.delete('/chatbot/conversations/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
         if (status === 404) {
             expect(data.error).toBeDefined();
         }
@@ -32,13 +32,13 @@ describe('Chatbot Expanded - Delete Conversation', () => {
     test('DELETE /chatbot/conversations/:id for own conversation returns 200', async () => {
         // Create a conversation first
         const { status: createStatus, data: createData } = await client.post('/chatbot/conversations', {});
-        expect([200, 201, 500]).toContain(createStatus);
+        expect([200, 201]).toContain(createStatus);
 
         if (createStatus === 200 || createStatus === 201) {
             const convId = createData.id || createData.conversation?.id || createData.conversationId;
             if (convId) {
                 const { status } = await client.delete(`/chatbot/conversations/${convId}`);
-                expect([200, 500]).toContain(status);
+                expect(status).toBe(200);
             }
         }
     });
@@ -52,7 +52,7 @@ describe('Chatbot Expanded - Delete Conversation', () => {
             if (convId) {
                 // Try to delete as userB — should return 404 (ownership check)
                 const { status } = await clientB.delete(`/chatbot/conversations/${convId}`);
-                expect([404, 500]).toContain(status);
+                expect([404]).toContain(status);
             }
         }
     });

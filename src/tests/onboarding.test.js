@@ -16,7 +16,7 @@ beforeAll(async () => {
 describe('GET /api/onboarding/progress', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/onboarding/progress`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns progress', async () => {
@@ -34,7 +34,7 @@ describe('POST /api/onboarding/progress', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: 'reseller' })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated starts or resets onboarding', async () => {
@@ -43,14 +43,14 @@ describe('POST /api/onboarding/progress', () => {
             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: 'reseller' })
         });
-        expect([200, 201, 400, 500]).toContain(res.status);
+        expect([200, 201, 400]).toContain(res.status);
     });
 });
 
 describe('GET /api/onboarding/badges', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/onboarding/badges`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns badges', async () => {
@@ -84,7 +84,7 @@ describe('POST /api/onboarding/badges/claim', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ badge_id: 'nonexistent-badge' })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('nonexistent badge returns 400 or 404', async () => {

@@ -29,7 +29,7 @@ describe('Expense Tracker - Auth Guard', () => {
 describe('Expense Tracker - Categories List', () => {
     test('GET /expenses/categories returns categories', async () => {
         const { status, data } = await client.get('/expenses/categories');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200 && data) {
             expect(data).toHaveProperty('categories');
             expect(Array.isArray(data.categories)).toBe(true);
@@ -44,7 +44,7 @@ describe('Expense Tracker - Create Category', () => {
             name: uniqueName,
             type: 'expense'
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200 && data) {
             expect(data.success).toBe(true);
         }
@@ -54,7 +54,7 @@ describe('Expense Tracker - Create Category', () => {
         const { status } = await client.post('/expenses/categories', {
             type: 'expense'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /expenses/categories with invalid type returns 400', async () => {
@@ -62,7 +62,7 @@ describe('Expense Tracker - Create Category', () => {
             name: 'InvalidType',
             type: 'invalid'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /expenses/categories with deduction type', async () => {
@@ -71,7 +71,7 @@ describe('Expense Tracker - Create Category', () => {
             name: uniqueName,
             type: 'deduction'
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('POST /expenses/categories with cogs type', async () => {
@@ -80,7 +80,7 @@ describe('Expense Tracker - Create Category', () => {
             name: uniqueName,
             type: 'cogs'
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('POST /expenses/categories with too-long name returns 400', async () => {
@@ -88,14 +88,14 @@ describe('Expense Tracker - Create Category', () => {
             name: 'A'.repeat(101),
             type: 'expense'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 
 describe('Expense Tracker - Tax Report', () => {
     test('GET /expenses/tax-report with year and quarter', async () => {
         const { status, data } = await client.get('/expenses/tax-report?year=2025&quarter=1');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200 && data) {
             expect(data).toHaveProperty('period');
             expect(data).toHaveProperty('total_deductible');
@@ -105,19 +105,19 @@ describe('Expense Tracker - Tax Report', () => {
 
     test('GET /expenses/tax-report with date range', async () => {
         const { status } = await client.get('/expenses/tax-report?startDate=2025-01-01&endDate=2025-03-31');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('GET /expenses/tax-report with invalid quarter returns 400', async () => {
         const { status } = await client.get('/expenses/tax-report?year=2025&quarter=5');
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 
 describe('Expense Tracker - Auto-Categorize', () => {
     test('POST /expenses/categorize auto-categorizes transactions', async () => {
         const { status, data } = await client.post('/expenses/categorize', {});
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200 && data) {
             expect(data.success).toBe(true);
             expect(typeof data.categorized).toBe('number');

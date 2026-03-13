@@ -74,20 +74,20 @@ describe('Enhanced MFA Expanded - SMS Verify Code', () => {
     // Note: 500 tolerated because sms_codes table may not exist in test DB
     test('POST /mfa/sms/verify without code returns 400 or 500', async () => {
         const { status, data } = await client.post('/mfa/sms/verify', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
         if (status === 400) expect(data.error || data.success === false).toBeTruthy();
     });
 
     test('POST /mfa/sms/verify with invalid code returns 400 or 500', async () => {
         const { status, data } = await client.post('/mfa/sms/verify', { code: 'INVALID' });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
         if (status === 400) expect(data.success).toBe(false);
     });
 
     test('POST /mfa/sms/verify with random numeric code returns 400 or 500', async () => {
         // No SMS code was sent, so any code should fail
         const { status, data } = await client.post('/mfa/sms/verify', { code: '999999' });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
         if (status === 400) expect(data.success).toBe(false);
     });
 });
@@ -135,7 +135,7 @@ describe('Enhanced MFA Expanded - WebAuthn Delete Key', () => {
         // Deleting a nonexistent key — the DELETE query runs but affects 0 rows
         // The route doesn't check affected rows, so it may return 200
         const { status } = await client.delete('/mfa/webauthn/keys/nonexistent-key');
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 
     test('DELETE /mfa/webauthn/keys/:id for registered key works', async () => {
@@ -153,7 +153,7 @@ describe('Enhanced MFA Expanded - WebAuthn Delete Key', () => {
             if (completeStatus === 200 && completeData.credentialId) {
                 const { status } = await freshClient.delete(`/mfa/webauthn/keys/${completeData.credentialId}`);
                 // May succeed (200) or fail if it's the last key without backup codes (400)
-                expect([200, 400, 500]).toContain(status);
+                expect([200, 400]).toContain(status);
             }
         }
     });

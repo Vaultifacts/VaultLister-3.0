@@ -61,7 +61,7 @@ describe('AI - Analyze Listing Image', () => {
             });
             clearTimeout(timeout);
             const data = await response.json();
-            expect([200, 403, 500, 503]).toContain(response.status);
+            expect([200, 403, 503]).toContain(response.status);
             if (response.status === 200) {
                 expect(data.analysis || data.title).toBeDefined();
             }
@@ -108,7 +108,7 @@ describe('AI - Generate Listing', () => {
             });
             clearTimeout(timeout);
             const data = await response.json();
-            expect([200, 403, 500]).toContain(response.status);
+            expect([200, 403]).toContain(response.status);
             if (response.status === 200) {
                 expect(data.title).toBeDefined();
                 expect(data.description).toBeDefined();
@@ -426,7 +426,7 @@ describe('AI - Translate', () => {
         });
 
         const data = await response.json();
-        expect([200, 403, 500]).toContain(response.status);
+        expect([200, 403]).toContain(response.status);
         if (response.status === 200) {
             expect(data.translatedTitle || data.note).toBeDefined();
             expect(data.targetLanguage).toBe('es');
@@ -551,7 +551,7 @@ describe('AI - Image Enhancement', () => {
             });
             clearTimeout(timeout);
             const data = await response.json();
-            expect([200, 403, 500]).toContain(response.status);
+            expect([200, 403]).toContain(response.status);
             if (response.status === 200) {
                 expect(data.generalSuggestions || data.aiAnalysis).toBeDefined();
             }

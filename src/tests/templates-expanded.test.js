@@ -14,7 +14,7 @@ beforeAll(async () => {
 describe('Templates - List', () => {
     test('GET /templates returns array', async () => {
         const { status, data } = await client.get('/templates');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             const templates = data.templates || data;
             expect(Array.isArray(templates)).toBe(true);
@@ -29,7 +29,7 @@ describe('Templates - Create', () => {
             title_pattern: '{brand} {category} - {condition}',
             description_pattern: 'Great {brand} {category} in {condition} condition.'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
         if (status === 200 || status === 201) {
             const tmpl = data.template || data;
             expect(tmpl).toHaveProperty('id');
@@ -39,7 +39,7 @@ describe('Templates - Create', () => {
 
     test('POST /templates without name returns 400', async () => {
         const { status } = await client.post('/templates', { title_pattern: '{brand}' });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 
@@ -47,13 +47,13 @@ describe('Templates - Get Single', () => {
     test('GET /templates/:id returns template', async () => {
         if (!createdTemplateId) return;
         const { status, data } = await client.get(`/templates/${createdTemplateId}`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200) { expect((data.template || data).id).toBe(createdTemplateId); }
     });
 
     test('GET /templates/:id for nonexistent returns 404', async () => {
         const { status } = await client.get('/templates/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -61,19 +61,19 @@ describe('Templates - Update', () => {
     test('PUT /templates/:id updates template', async () => {
         if (!createdTemplateId) return;
         const { status } = await client.put(`/templates/${createdTemplateId}`, { name: 'Updated' });
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('PUT /templates/:id for nonexistent returns 404', async () => {
         const { status } = await client.put('/templates/nonexistent-id', { name: 'X' });
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
 describe('Templates - Favorite', () => {
     test('PATCH /templates/:id/favorite for nonexistent', async () => {
         const { status } = await client.patch('/templates/nonexistent-id/favorite', {});
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 
@@ -82,20 +82,20 @@ describe('Templates - Apply', () => {
         const { status } = await client.post('/templates/nonexistent-id/apply', {
             listing_id: 'test', variables: {}
         });
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
 describe('Templates - Delete', () => {
     test('DELETE /templates/:id for nonexistent returns 404', async () => {
         const { status } = await client.delete('/templates/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('DELETE /templates/:id removes template', async () => {
         if (!createdTemplateId) return;
         const { status } = await client.delete(`/templates/${createdTemplateId}`);
-        expect([200, 204, 404, 500]).toContain(status);
+        expect([200, 204, 404]).toContain(status);
     });
 });
 

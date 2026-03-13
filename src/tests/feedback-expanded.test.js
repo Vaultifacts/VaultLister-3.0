@@ -68,14 +68,14 @@ describe('Feedback - List & Get', () => {
     test('GET /feedback/:id returns feedback details', async () => {
         if (!testFeedbackId) return;
         const { status, data } = await clientA.get(`/feedback/${testFeedbackId}`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 
 describe('Feedback - Trending & Analytics', () => {
     test('GET /feedback/trending returns top-voted feedback', async () => {
         const { status, data } = await clientA.get('/feedback/trending');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('feedback');
             expect(Array.isArray(data.feedback)).toBe(true);
@@ -84,19 +84,19 @@ describe('Feedback - Trending & Analytics', () => {
 
     test('GET /feedback/analytics returns feedback stats', async () => {
         const { status, data } = await clientA.get('/feedback/analytics');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('GET /feedback/similar?q=test returns similar items', async () => {
         const { status } = await clientA.get('/feedback/similar?q=test');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
 describe('Feedback - User Feedback', () => {
     test('GET /feedback/user returns current user feedback', async () => {
         const { status } = await clientA.get('/feedback/user');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
@@ -104,7 +104,7 @@ describe('Feedback - Responses Thread', () => {
     test('GET /feedback/:id/responses returns response thread', async () => {
         if (!testFeedbackId) return;
         const { status, data } = await clientA.get(`/feedback/${testFeedbackId}/responses`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('POST /feedback/:id/responses adds a response', async () => {
@@ -112,7 +112,7 @@ describe('Feedback - Responses Thread', () => {
         const { status } = await clientA.post(`/feedback/${testFeedbackId}/responses`, {
             content: 'This is a test response to the feedback.'
         });
-        expect([200, 201, 400, 404, 500]).toContain(status);
+        expect([200, 201, 400, 404]).toContain(status);
     });
 });
 
@@ -122,14 +122,14 @@ describe('Feedback - Voting', () => {
         const { status } = await clientA.post(`/feedback/vote/${testFeedbackId}`, {
             vote_type: 'up'
         });
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('POST /feedback/vote/nonexistent returns 404', async () => {
         const { status } = await clientA.post('/feedback/vote/nonexistent-id', {
             vote_type: 'up'
         });
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('User B can vote on User A feedback', async () => {
@@ -137,19 +137,19 @@ describe('Feedback - Voting', () => {
         const { status } = await clientB.post(`/feedback/vote/${testFeedbackId}`, {
             vote_type: 'up'
         });
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 
 describe('Feedback - Delete', () => {
     test('DELETE /feedback/nonexistent returns 404', async () => {
         const { status } = await clientA.delete('/feedback/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('DELETE /feedback/:id deletes own feedback', async () => {
         if (!testFeedbackId) return;
         const { status } = await clientA.delete(`/feedback/${testFeedbackId}`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });

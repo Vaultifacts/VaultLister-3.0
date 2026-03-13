@@ -14,7 +14,7 @@ beforeAll(async () => {
 describe('QR Analytics warehouse bin operations', () => {
     test('DELETE /qr-analytics/warehouse-bins/:id for nonexistent bin', async () => {
         const { status } = await client.delete('/qr-analytics/warehouse-bins/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('DELETE /qr-analytics/warehouse-bins/:id after creating a bin', async () => {
@@ -34,12 +34,12 @@ describe('QR Analytics warehouse bin operations', () => {
 
     test('GET /qr-analytics/warehouse-bins/:id/items for nonexistent bin', async () => {
         const { status } = await client.get('/qr-analytics/warehouse-bins/fake-bin-id/items');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('POST /qr-analytics/warehouse-bins/:id/print-label for nonexistent bin', async () => {
         const { status } = await client.post('/qr-analytics/warehouse-bins/fake-bin-id/print-label', {});
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('POST /qr-analytics/warehouse-bins/:id/print-label after creating a bin', async () => {
@@ -51,7 +51,7 @@ describe('QR Analytics warehouse bin operations', () => {
             const binId = createRes.data?.id || createRes.data?.bin?.id;
             if (binId) {
                 const { status, data } = await client.post(`/qr-analytics/warehouse-bins/${binId}/print-label`, {});
-                expect([200, 500]).toContain(status);
+                expect(status).toBe(200);
                 if (status === 200) {
                     expect(data).toBeDefined();
                 }

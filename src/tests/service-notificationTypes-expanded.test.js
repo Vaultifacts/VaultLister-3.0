@@ -114,11 +114,11 @@ describe('NotificationTypes — unit import', () => {
 describe('Notifications — mark single as read', () => {
     test('PUT /notifications/:id/read with nonexistent ID', async () => {
         const { status } = await client.put('/notifications/nonexistent-id-999/read');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('DELETE /notifications/:id with nonexistent ID', async () => {
         const { status } = await client.delete('/notifications/nonexistent-id-999');
-        expect([200, 204, 404, 500]).toContain(status);
+        expect([200, 204, 404]).toContain(status);
     });
 });

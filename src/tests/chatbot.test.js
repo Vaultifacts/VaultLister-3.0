@@ -81,7 +81,7 @@ describe('Chatbot - Messages', () => {
             });
             clearTimeout(timeout);
             const data = await response.json();
-            expect([200, 500]).toContain(response.status);
+            expect([200]).toContain(response.status);
             if (response.status === 200) {
                 expect(data.success).toBe(true);
                 expect(data.message).toBeDefined();
@@ -114,7 +114,7 @@ describe('Chatbot - Messages', () => {
             });
             clearTimeout(timeout);
             const data = await response.json();
-            expect([200, 500]).toContain(response.status);
+            expect([200]).toContain(response.status);
             if (response.status === 200) {
                 expect(data.success).toBe(true);
                 expect(data.message).toBeDefined();

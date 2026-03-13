@@ -376,7 +376,7 @@ describe('Token refresh — consecutive failure tracking', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('Known architecture gaps (documenting absence)', () => {
-    test('KNOWN GAP: dispatchToUserEndpoints calls fetch WITHOUT AbortSignal/timeout', async () => {
+    test('REM-11 FIX: dispatchToUserEndpoints calls fetchWithTimeout WITH AbortSignal', async () => {
         mockQueryAll.mockReturnValue([{ id: 'ep-1', url: 'https://example.com', secret: 's', name: 'N' }]);
         let fetchArgs = null;
         globalThis.fetch = mock((...args) => {
@@ -386,10 +386,10 @@ describe('Known architecture gaps (documenting absence)', () => {
 
         await dispatchToUserEndpoints('u1', 'listing.sold', { title: 'Item' });
 
-        // Verify no AbortSignal was passed
+        // Verify AbortSignal IS now passed (REM-11 fix)
         expect(fetchArgs).toBeDefined();
         const options = fetchArgs[1];
-        expect(options.signal).toBeUndefined();
+        expect(options.signal).toBeDefined();
     });
 
     test('KNOWN GAP: processWebhookEvent has no deduplication — same event processed twice', async () => {

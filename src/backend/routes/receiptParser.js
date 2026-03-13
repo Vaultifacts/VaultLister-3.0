@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import Anthropic from '@anthropic-ai/sdk';
 import { logger } from '../shared/logger.js';
+import { validateBase64Image } from '../services/imageStorage.js';
 
 // Per-user rate limiting for receipt uploads (5 per minute)
 const receiptUploadLimiter = new Map();
@@ -166,15 +167,10 @@ export async function receiptParserRouter(ctx) {
             return { status: 400, data: { error: 'Image data required (base64)' } };
         }
 
-        // Validate base64 size (~7.5MB decoded = ~10MB base64)
-        if (imageBase64.length > 10 * 1024 * 1024) {
-            return { status: 413, data: { error: 'Image too large. Maximum 7.5MB.' } };
-        }
-
-        // Validate mime type
-        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-        if (mimeType && !validTypes.includes(mimeType)) {
-            return { status: 400, data: { error: 'Invalid image type. Supported: JPEG, PNG, WebP, GIF' } };
+        // Validate MIME type, size, and magic bytes
+        const imgValidation = validateBase64Image(imageBase64, mimeType);
+        if (!imgValidation.valid) {
+            return { status: 400, data: { error: imgValidation.error } };
         }
 
         // Rate limit: 5 uploads per minute per user (checked after validation)

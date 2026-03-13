@@ -356,24 +356,42 @@ describe('ISO timestamp invariants (H14)', () => {
     });
 });
 
-describe('Backend formatDate/formatPrice hardcoded locale (H2 — documented)', () => {
-    test('formatDate always uses en-US format regardless of environment', () => {
+describe('REM-19 FIX: Backend formatDate/formatPrice accept locale parameter', () => {
+    test('formatDate defaults to en-US', () => {
         const result = formatDate('2026-06-15');
-        // en-US: "Jun 15, 2026"
         expect(result).toContain('Jun');
         expect(result).toContain('15');
         expect(result).toContain('2026');
     });
 
-    test('formatPrice always uses en-US USD format', () => {
+    test('formatDate accepts locale parameter', () => {
+        const result = formatDate('2026-06-15', {}, 'de-DE');
+        // German: "15. Juni 2026" or similar
+        expect(result).toContain('15');
+        expect(result).toContain('2026');
+    });
+
+    test('formatDateTime accepts locale parameter', () => {
+        const result = formatDateTime('2026-06-15T14:30:00Z', {}, 'fr-FR');
+        expect(result).toContain('15');
+        expect(result).toContain('2026');
+    });
+
+    test('formatPrice defaults to en-US USD', () => {
         const result = formatPrice(1234.56);
         expect(result).toContain('$');
         expect(result).toContain('1,234.56');
     });
 
-    test('formatPrice with EUR currency still uses en-US number format', () => {
-        const result = formatPrice(100, 'EUR');
-        // en-US locale formats EUR as "€100.00" (not European "100,00 €")
+    test('formatPrice accepts locale parameter', () => {
+        const result = formatPrice(1234.56, 'EUR', 'de-DE');
+        // German EUR: "1.234,56 €" or similar
+        expect(result).toContain('1');
+        expect(result).toContain('234');
+    });
+
+    test('formatPrice with EUR currency and en-US locale', () => {
+        const result = formatPrice(100, 'EUR', 'en-US');
         expect(result).toContain('100');
         expect(result).toMatch(/€|EUR/);
     });

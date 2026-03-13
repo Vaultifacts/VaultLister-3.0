@@ -21,7 +21,7 @@ describe('Size Charts - Auth Guard', () => {
 describe('Size Charts - List', () => {
     test('GET /size-charts returns charts array', async () => {
         const { status, data } = await client.get('/size-charts');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('charts');
             expect(Array.isArray(data.charts)).toBe(true);
@@ -30,12 +30,12 @@ describe('Size Charts - List', () => {
 
     test('GET /size-charts?category=Shoes filters by category', async () => {
         const { status } = await client.get('/size-charts?category=Shoes');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('GET /size-charts?gender=mens filters by gender', async () => {
         const { status } = await client.get('/size-charts?gender=mens');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
@@ -66,7 +66,7 @@ describe('Size Charts - Create', () => {
             measurements: [{ label: 'Chest', unit: 'cm' }],
             sizes: [{ label: 'S', chest: 91 }, { label: 'M', chest: 97 }]
         });
-        expect([201, 500]).toContain(status);
+        expect([201]).toContain(status);
         if (status === 201) {
             expect(data).toHaveProperty('chart');
             expect(data.chart).toHaveProperty('id');
@@ -80,7 +80,7 @@ describe('Size Charts - Get Single', () => {
     test('GET /size-charts/:id returns chart', async () => {
         if (!createdChartId) return;
         const { status, data } = await client.get(`/size-charts/${createdChartId}`);
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data.chart.id).toBe(createdChartId);
             expect(data.chart).toHaveProperty('measurements');
@@ -90,7 +90,7 @@ describe('Size Charts - Get Single', () => {
 
     test('GET /size-charts/:id returns 404 for nonexistent', async () => {
         const { status } = await client.get('/size-charts/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -101,7 +101,7 @@ describe('Size Charts - Update', () => {
             name: 'Nike Mens Tops Updated',
             notes: 'Updated chart'
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data.chart.name).toBe('Nike Mens Tops Updated');
         }
@@ -111,14 +111,14 @@ describe('Size Charts - Update', () => {
         const { status } = await client.put('/size-charts/nonexistent-id', {
             name: 'Updated'
         });
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
 describe('Size Charts - Delete', () => {
     test('DELETE /size-charts/:id returns 404 for nonexistent', async () => {
         const { status } = await client.delete('/size-charts/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -137,7 +137,7 @@ describe('Size Charts - International Conversions', () => {
 
     test('GET /size-charts/convert with valid params', async () => {
         const { status, data } = await client.get('/size-charts/convert?from=US&to=EU&size=M');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200) {
             expect(data).toHaveProperty('conversions');
             expect(Array.isArray(data.conversions)).toBe(true);
@@ -146,14 +146,14 @@ describe('Size Charts - International Conversions', () => {
 
     test('GET /size-charts/convert with brand filter', async () => {
         const { status } = await client.get('/size-charts/convert?from=US&to=UK&size=M&brand=Nike');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 
 describe('Size Charts - Brands', () => {
     test('GET /size-charts/brands returns brand list', async () => {
         const { status, data } = await client.get('/size-charts/brands');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('brands');
             expect(Array.isArray(data.brands)).toBe(true);
@@ -162,7 +162,7 @@ describe('Size Charts - Brands', () => {
 
     test('GET /size-charts/brands/:brand returns brand guide', async () => {
         const { status, data } = await client.get('/size-charts/brands/Nike');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200) {
             expect(data).toHaveProperty('brand', 'Nike');
             expect(data).toHaveProperty('guides');
@@ -171,12 +171,12 @@ describe('Size Charts - Brands', () => {
 
     test('GET /size-charts/brands/Unknown returns 404', async () => {
         const { status } = await client.get('/size-charts/brands/UnknownBrandXYZ');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('GET /size-charts/brands/:brand/:garment returns specific guide', async () => {
         const { status, data } = await client.get('/size-charts/brands/Nike/tops');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200) {
             expect(data.brand).toBe('Nike');
             expect(data.garment_type).toBe('tops');
@@ -198,7 +198,7 @@ describe('Size Charts - Recommendations', () => {
             brand: 'Nike',
             garment_type: 'tops'
         });
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200) {
             expect(data).toHaveProperty('recommendations');
             expect(data).toHaveProperty('best_match');
@@ -209,7 +209,7 @@ describe('Size Charts - Recommendations', () => {
 describe('Size Charts - Availability Heatmap', () => {
     test('GET /size-charts/availability returns availability data', async () => {
         const { status, data } = await client.get('/size-charts/availability');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('availability');
             expect(data).toHaveProperty('total_items');
@@ -218,7 +218,7 @@ describe('Size Charts - Availability Heatmap', () => {
 
     test('GET /size-charts/availability?category=Shoes filters', async () => {
         const { status } = await client.get('/size-charts/availability?category=Shoes');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
@@ -235,7 +235,7 @@ describe('Size Charts - Link Listings', () => {
         const { status, data } = await client.post(`/size-charts/${createdChartId}/link-listings`, {
             listing_ids: ['listing-1', 'listing-2']
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('linked_count');
         }
@@ -244,7 +244,7 @@ describe('Size Charts - Link Listings', () => {
     test('GET /size-charts/:id/linked-listings returns linked listings', async () => {
         if (!createdChartId) return;
         const { status, data } = await client.get(`/size-charts/${createdChartId}/linked-listings`);
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('listings');
         }
@@ -254,7 +254,7 @@ describe('Size Charts - Link Listings', () => {
         const { status } = await client.post('/size-charts/nonexistent/link-listings', {
             listing_ids: ['test']
         });
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -262,6 +262,6 @@ describe('Size Charts - Cleanup', () => {
     test('DELETE created chart', async () => {
         if (!createdChartId) return;
         const { status } = await client.delete(`/size-charts/${createdChartId}`);
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });

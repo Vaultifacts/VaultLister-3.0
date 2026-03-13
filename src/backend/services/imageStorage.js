@@ -64,6 +64,47 @@ export function validateImage(file) {
 }
 
 /**
+ * Validate base64-encoded image data: MIME allowlist, size limit, and magic bytes.
+ * Use this for API endpoints that receive images as base64 strings (AI routes, receipt parser).
+ *
+ * @param {string} base64Data - Base64-encoded image (with or without data URI prefix)
+ * @param {string} declaredMimeType - MIME type declared by the client
+ * @param {number} [maxBytes=10485760] - Max decoded size in bytes (default 10MB)
+ * @returns {{ valid: boolean, error?: string, buffer?: Buffer }}
+ */
+export function validateBase64Image(base64Data, declaredMimeType, maxBytes = 10 * 1024 * 1024) {
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+    if (!base64Data || typeof base64Data !== 'string') {
+        return { valid: false, error: 'No image data provided' };
+    }
+
+    if (declaredMimeType && !allowedMimeTypes.includes(declaredMimeType)) {
+        return { valid: false, error: 'Invalid file type. Only JPEG, PNG, and WebP are allowed.' };
+    }
+
+    // Strip data URI prefix if present
+    const raw = base64Data.replace(/^data:image\/\w+;base64,/, '');
+
+    let buffer;
+    try {
+        buffer = Buffer.from(raw, 'base64');
+    } catch {
+        return { valid: false, error: 'Invalid base64 encoding' };
+    }
+
+    if (buffer.length > maxBytes) {
+        return { valid: false, error: `Image too large. Maximum ${Math.round(maxBytes / 1024 / 1024)}MB.` };
+    }
+
+    if (!validateMagicBytes(buffer)) {
+        return { valid: false, error: 'Invalid image data: file content does not match any supported image format.' };
+    }
+
+    return { valid: true, buffer };
+}
+
+/**
  * Validate file magic bytes to ensure actual image content
  */
 function validateMagicBytes(buffer) {

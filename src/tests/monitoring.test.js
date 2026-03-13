@@ -37,7 +37,7 @@ describe('GET /api/monitoring/health/detailed', () => {
         const res = await fetch(`${BASE}/api/monitoring/health/detailed`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 401, 404, 500]).toContain(res.status);
+        expect([200, 401, 404]).toContain(res.status);
     });
 });
 

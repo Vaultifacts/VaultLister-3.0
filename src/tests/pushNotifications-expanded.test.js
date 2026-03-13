@@ -32,7 +32,7 @@ describe('Push Notifications - Register Device', () => {
             token: 'test-device-token-abc123',
             platform: 'web'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 
     test('POST /push-notifications/register-device with ios platform', async () => {
@@ -40,21 +40,21 @@ describe('Push Notifications - Register Device', () => {
             token: 'ios-device-token-xyz',
             platform: 'ios'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 
     test('POST /push-notifications/register-device without token returns 400', async () => {
         const { status } = await client.post('/push-notifications/register-device', {
             platform: 'web'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /push-notifications/register-device without platform returns 400', async () => {
         const { status } = await client.post('/push-notifications/register-device', {
             token: 'some-token'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 
@@ -63,31 +63,31 @@ describe('Push Notifications - Unregister Device', () => {
         const { status } = await client.post('/push-notifications/unregister-device', {
             token: 'test-device-token-abc123'
         });
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('POST /push-notifications/unregister-device without token returns 400', async () => {
         const { status } = await client.post('/push-notifications/unregister-device', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 
 describe('Push Notifications - Devices', () => {
     test('GET /push-notifications/devices returns list', async () => {
         const { status, data } = await client.get('/push-notifications/devices');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('DELETE /push-notifications/devices/nonexistent returns 404', async () => {
         const { status } = await client.delete('/push-notifications/devices/nonexistent-id');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 
 describe('Push Notifications - Preferences', () => {
     test('GET /push-notifications/preferences returns defaults', async () => {
         const { status, data } = await client.get('/push-notifications/preferences');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('PUT /push-notifications/preferences updates settings', async () => {
@@ -98,7 +98,7 @@ describe('Push Notifications - Preferences', () => {
             inventory_alerts: true,
             marketing: false
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('PUT /push-notifications/preferences with quiet hours', async () => {
@@ -107,7 +107,7 @@ describe('Push Notifications - Preferences', () => {
             quiet_hours_start: '22:00',
             quiet_hours_end: '08:00'
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
@@ -118,14 +118,14 @@ describe('Push Notifications - Send', () => {
             body: 'This is a test push notification'
         });
         // 200 if enterprise, 403 if not, 500 on error
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
     });
 
     test('POST /push-notifications/send without title returns 400', async () => {
         const { status } = await client.post('/push-notifications/send', {
             body: 'No title'
         });
-        expect([400, 403, 500]).toContain(status);
+        expect([400, 403]).toContain(status);
     });
 
     test('POST /push-notifications/send-batch with valid data', async () => {
@@ -134,7 +134,7 @@ describe('Push Notifications - Send', () => {
             title: 'Batch Test',
             body: 'Batch notification test'
         });
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
     });
 
     test('POST /push-notifications/send-batch without userIds returns 400', async () => {
@@ -142,6 +142,6 @@ describe('Push Notifications - Send', () => {
             title: 'Test',
             body: 'Test'
         });
-        expect([400, 403, 500]).toContain(status);
+        expect([400, 403]).toContain(status);
     });
 });

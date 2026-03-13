@@ -176,7 +176,7 @@ describe('Image Bank - Update Image', () => {
         });
 
         // Accept 200 (success) or 500 (database concurrency issue under heavy test load)
-        expect([200, 500]).toContain(response.status);
+        expect([200]).toContain(response.status);
         if (response.status === 200) {
             const data = await response.json();
             expect(data.message).toBe('Image updated successfully');
@@ -221,7 +221,7 @@ describe('Image Bank - Search', () => {
         });
 
         // FTS5 virtual table may be corrupt in test env (SQLITE_CORRUPT_VTAB)
-        expect([200, 500]).toContain(response.status);
+        expect([200]).toContain(response.status);
         if (response.status === 200) {
             const data = await response.json();
             expect(data.images).toBeDefined();

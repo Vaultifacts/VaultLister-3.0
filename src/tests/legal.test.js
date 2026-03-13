@@ -16,21 +16,21 @@ beforeAll(async () => {
 describe('GET /api/legal/privacy/data-export', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/legal/privacy/data-export`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns GDPR data export', async () => {
         const res = await fetch(`${BASE}/api/legal/privacy/data-export`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404, 500]).toContain(res.status);
+        expect([200, 404]).toContain(res.status);
     });
 });
 
 describe('GET /api/legal/privacy/cookie-consent', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/legal/privacy/cookie-consent`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns cookie consent settings', async () => {
@@ -48,7 +48,7 @@ describe('PUT /api/legal/privacy/cookie-consent', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ analytics: true, marketing: false, functional: true })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated updates cookie consent', async () => {
@@ -64,7 +64,7 @@ describe('PUT /api/legal/privacy/cookie-consent', () => {
 describe('GET /api/legal/privacy/data-audit', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/legal/privacy/data-audit`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns data audit log', async () => {
@@ -78,7 +78,7 @@ describe('GET /api/legal/privacy/data-audit', () => {
 describe('GET /api/legal/tos/current', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/legal/tos/current`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns current ToS or 404 if not set', async () => {
@@ -105,7 +105,7 @@ describe('POST /api/legal/tos/accept', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tosVersionId: 'nonexistent-id' })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('nonexistent tosVersionId returns 400 or 404', async () => {
@@ -121,7 +121,7 @@ describe('POST /api/legal/tos/accept', () => {
 describe('GET /api/legal/tos/acceptance-status', () => {
     test('unauthenticated returns 401/403/500', async () => {
         const res = await fetch(`${BASE}/api/legal/tos/acceptance-status`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('authenticated returns acceptance status', async () => {

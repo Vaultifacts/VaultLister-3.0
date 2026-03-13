@@ -50,7 +50,7 @@ describe('Platform Sync - Connect Shop', () => {
         const { status } = await client.post('/shops', {
             name: 'Test Shop'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /shops with valid platform data', async () => {
@@ -59,7 +59,7 @@ describe('Platform Sync - Connect Shop', () => {
             name: `TestShop-${Date.now()}`
         });
         // May succeed (200/201) or fail due to OAuth requirements
-        expect([200, 201, 400, 500]).toContain(status);
+        expect([200, 201, 400]).toContain(status);
     });
 });
 
@@ -113,7 +113,7 @@ describe('Platform Sync - Supported Platforms', () => {
 describe('Platform Sync - Disconnect', () => {
     test('DELETE /shops/:nonexistent returns 404', async () => {
         const { status } = await client.delete('/shops/nonexistent-shop-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 

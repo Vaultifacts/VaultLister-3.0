@@ -132,6 +132,11 @@ class CSRFManager {
 // Singleton instance
 const csrfManager = new CSRFManager();
 
+// Startup guard: warn if DISABLE_CSRF is set outside test mode
+if (process.env.DISABLE_CSRF === 'true' && process.env.NODE_ENV !== 'test') {
+    console.warn('[SECURITY] DISABLE_CSRF is set but NODE_ENV is not "test" — CSRF protection remains ENABLED. DISABLE_CSRF only takes effect when NODE_ENV=test.');
+}
+
 /**
  * CSRF middleware for generating tokens
  * Add CSRF token to responses that will need it
@@ -154,8 +159,8 @@ export function addCSRFToken(ctx) {
 export function validateCSRF(ctx) {
     const { method, headers, user, ip } = ctx;
 
-    // Disable CSRF only when explicitly requested in non-production environments
-    if (process.env.DISABLE_CSRF === 'true' && process.env.NODE_ENV !== 'production') {
+    // Disable CSRF only when explicitly requested in test environment
+    if (process.env.DISABLE_CSRF === 'true' && process.env.NODE_ENV === 'test') {
         return { valid: true };
     }
 

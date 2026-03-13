@@ -32,7 +32,7 @@ describe('Email Marketing - Unsubscribe', () => {
     test('GET /email-marketing/unsubscribe without params returns error', async () => {
         const { status } = await regularClient.get('/email-marketing/unsubscribe');
         // Missing userId/email/token params — service should return 400 or 500
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('GET /email-marketing/unsubscribe with invalid token returns error', async () => {
@@ -40,14 +40,14 @@ describe('Email Marketing - Unsubscribe', () => {
             '/email-marketing/unsubscribe?userId=fake-id&email=test@test.com&token=invalid-token-value'
         );
         // Invalid token — service should return 400 or 500
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('GET /email-marketing/unsubscribe with missing token param returns error', async () => {
         const { status } = await regularClient.get(
             '/email-marketing/unsubscribe?userId=test&email=test@test.com'
         );
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 

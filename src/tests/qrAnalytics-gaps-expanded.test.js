@@ -17,7 +17,7 @@ describe('QR Analytics — Dashboard & Tracking', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([404, 403, 500]).toContain(status);
+            expect([404, 403]).toContain(status);
         }
     });
 
@@ -83,7 +83,7 @@ describe('QR Analytics — Warehouse Bins', () => {
             const items = Array.isArray(data) ? data : (data.items || []);
             expect(Array.isArray(items)).toBe(true);
         } else {
-            expect([404, 500]).toContain(status);
+            expect([404]).toContain(status);
         }
     });
 
@@ -93,7 +93,7 @@ describe('QR Analytics — Warehouse Bins', () => {
         if (status === 200) {
             expect(data).toBeDefined();
         } else {
-            expect([400, 404, 500]).toContain(status);
+            expect([400, 404]).toContain(status);
         }
     });
 
@@ -105,12 +105,12 @@ describe('QR Analytics — Warehouse Bins', () => {
 
     test('DELETE /qr-analytics/warehouse-bins/nonexistent returns 404', async () => {
         const { status } = await client.delete('/qr-analytics/warehouse-bins/nonexistent-999');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('GET /qr-analytics/warehouse-bins/nonexistent/items returns error', async () => {
         const { status } = await client.get('/qr-analytics/warehouse-bins/nonexistent-999/items');
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 });
 

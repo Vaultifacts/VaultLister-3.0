@@ -23,6 +23,6 @@ describe('notion routes', () => {
         const res = await fetch(`${BASE_URL}/notion/status`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404, 500]).toContain(res.status);
+        expect([200, 404]).toContain(res.status);
     });
 });

@@ -5,6 +5,8 @@ import { Client } from '@notionhq/client';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { encryptToken, decryptToken } from '../utils/encryption.js';
+import { withTimeout } from '../shared/fetchWithTimeout.js';
+import { circuitBreaker } from '../shared/circuitBreaker.js';
 
 // Rate limiting: Notion allows 3 requests per second
 const RATE_LIMIT_DELAY = 350; // ms between requests
@@ -22,7 +24,8 @@ async function rateLimitedRequest(fn) {
     }
 
     lastRequestTime = Date.now();
-    return fn();
+    return circuitBreaker('notion', () => withTimeout(fn(), 30000, 'Notion API'),
+        { failureThreshold: 5, cooldownMs: 30000 });
 }
 
 /**

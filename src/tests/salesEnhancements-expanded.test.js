@@ -25,7 +25,7 @@ describe('Sales Enhancements - Auth Guard', () => {
 describe('Sales Enhancements - Tax Nexus', () => {
     test('GET /sales-tools/tax-nexus returns nexus data', async () => {
         const { status, data } = await client.get('/sales-tools/tax-nexus');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('nexus');
             expect(data).toHaveProperty('year');
@@ -35,7 +35,7 @@ describe('Sales Enhancements - Tax Nexus', () => {
 
     test('POST /sales-tools/tax-nexus/calculate recalculates nexus', async () => {
         const { status, data } = await client.post('/sales-tools/tax-nexus/calculate');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('message');
             expect(data).toHaveProperty('states_analyzed');
@@ -45,7 +45,7 @@ describe('Sales Enhancements - Tax Nexus', () => {
 
     test('GET /sales-tools/tax-nexus/alerts returns threshold alerts', async () => {
         const { status, data } = await client.get('/sales-tools/tax-nexus/alerts');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('alerts');
             expect(Array.isArray(data.alerts)).toBe(true);
@@ -54,7 +54,7 @@ describe('Sales Enhancements - Tax Nexus', () => {
 
     test('PUT /sales-tools/tax-nexus/CA/registered marks state registered', async () => {
         const { status, data } = await client.put('/sales-tools/tax-nexus/CA/registered');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data.message).toContain('CA');
         }
@@ -66,7 +66,7 @@ describe('Sales Enhancements - Buyer Profiles', () => {
 
     test('GET /sales-tools/buyers returns buyer list', async () => {
         const { status, data } = await client.get('/sales-tools/buyers');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('buyers');
             expect(Array.isArray(data.buyers)).toBe(true);
@@ -75,12 +75,12 @@ describe('Sales Enhancements - Buyer Profiles', () => {
 
     test('GET /sales-tools/buyers?platform=ebay filters by platform', async () => {
         const { status } = await client.get('/sales-tools/buyers?platform=ebay');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('GET /sales-tools/buyers?blocked=true filters blocked', async () => {
         const { status } = await client.get('/sales-tools/buyers?blocked=true');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('POST /sales-tools/buyers requires buyer_username and platform', async () => {
@@ -96,7 +96,7 @@ describe('Sales Enhancements - Buyer Profiles', () => {
             platform: 'ebay',
             notes: 'Test buyer profile'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
         if (data.id) {
             createdBuyerId = data.id;
         }
@@ -105,7 +105,7 @@ describe('Sales Enhancements - Buyer Profiles', () => {
     test('GET /sales-tools/buyers/:id returns buyer with history', async () => {
         if (!createdBuyerId) return;
         const { status, data } = await client.get(`/sales-tools/buyers/${createdBuyerId}`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200) {
             expect(data).toHaveProperty('buyer');
             expect(data).toHaveProperty('purchase_history');
@@ -114,7 +114,7 @@ describe('Sales Enhancements - Buyer Profiles', () => {
 
     test('GET /sales-tools/buyers/:id returns 404 for nonexistent', async () => {
         const { status } = await client.get('/sales-tools/buyers/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('PUT /sales-tools/buyers/:id requires at least one field', async () => {
@@ -130,13 +130,13 @@ describe('Sales Enhancements - Buyer Profiles', () => {
             communication_rating: 5,
             notes: 'Great buyer!'
         });
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('POST /sales-tools/buyers/:id/block toggles block', async () => {
         if (!createdBuyerId) return;
         const { status, data } = await client.post(`/sales-tools/buyers/${createdBuyerId}/block`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
         if (status === 200) {
             expect(data).toHaveProperty('is_blocked');
         }
@@ -144,14 +144,14 @@ describe('Sales Enhancements - Buyer Profiles', () => {
 
     test('POST /sales-tools/buyers/nonexistent/block returns 404', async () => {
         const { status } = await client.post('/sales-tools/buyers/nonexistent-id/block');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
 describe('Sales Enhancements - Flagged Buyers', () => {
     test('GET /sales-tools/buyers/flagged returns flagged list', async () => {
         const { status, data } = await client.get('/sales-tools/buyers/flagged');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('flagged_buyers');
             expect(Array.isArray(data.flagged_buyers)).toBe(true);
@@ -162,7 +162,7 @@ describe('Sales Enhancements - Flagged Buyers', () => {
 describe('Sales Enhancements - Buyer Sync', () => {
     test('POST /sales-tools/buyers/sync syncs buyer profiles from orders', async () => {
         const { status, data } = await client.post('/sales-tools/buyers/sync');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toHaveProperty('created');
             expect(data).toHaveProperty('updated');

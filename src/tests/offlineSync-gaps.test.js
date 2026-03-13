@@ -13,7 +13,7 @@ beforeAll(async () => {
 describe('Offline Sync status endpoint', () => {
     test('GET /offline-sync/status returns sync status', async () => {
         const { status, data } = await client.get('/offline-sync/status');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200 && data) {
             // Should have pending/failed counts
             expect(typeof (data.pending ?? data.pending_count)).not.toBe('undefined');

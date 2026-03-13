@@ -40,26 +40,26 @@ describe('Notion — Setup', () => {
         const { status } = await client.post('/notion/setup/inventory', {
             database_id: 'fake-db-id-123'
         });
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 
     test('POST /notion/setup/sales with fake database_id', async () => {
         const { status } = await client.post('/notion/setup/sales', {
             database_id: 'fake-db-id-456'
         });
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 
     test('POST /notion/setup/notes with fake database_id', async () => {
         const { status } = await client.post('/notion/setup/notes', {
             database_id: 'fake-db-id-789'
         });
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 
     test('POST /notion/setup/inventory without database_id', async () => {
         const { status } = await client.post('/notion/setup/inventory', {});
-        expect([400, 404, 500]).toContain(status);
+        expect([400, 404]).toContain(status);
     });
 });
 
@@ -112,7 +112,7 @@ describe('Notion — Sync', () => {
 
     test('POST /notion/sync triggers sync when not connected', async () => {
         const { status } = await client.post('/notion/sync');
-        expect([200, 400, 404, 500]).toContain(status);
+        expect([200, 400, 404]).toContain(status);
     });
 });
 
@@ -124,7 +124,7 @@ describe('Notion — Pages', () => {
             title: 'Test Page',
             content: 'Test content from expanded tests'
         });
-        expect([200, 201, 400, 404, 500]).toContain(status);
+        expect([200, 201, 400, 404]).toContain(status);
     });
 });
 

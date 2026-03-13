@@ -4,6 +4,7 @@
 
 import { decryptToken } from '../../utils/encryption.js';
 import { logger } from '../../shared/logger.js';
+import { fetchWithTimeout } from '../../shared/fetchWithTimeout.js';
 import { auditLog } from './platformAuditLog.js';
 
 const ETSY_API_BASE = 'https://openapi.etsy.com';
@@ -35,7 +36,7 @@ async function etsyRequest(method, path, token, body = null) {
     };
     if (body) opts.body = JSON.stringify(body);
 
-    const resp = await fetch(url, opts);
+    const resp = await fetchWithTimeout(url, { ...opts, timeoutMs: 30000 });
     const text = await resp.text();
     let data;
     try { data = JSON.parse(text); } catch { data = { raw: text }; }

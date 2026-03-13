@@ -4,6 +4,7 @@ import { query } from '../db/database.js';
 import { checkTierPermission } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
 import { cacheForUser } from '../middleware/cache.js';
+import { requireFeature } from '../middleware/featureFlags.js';
 
 // ── In-memory analytics cache (TTL: 5 min per user per endpoint+params) ──────
 const ANALYTICS_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -52,6 +53,9 @@ export function invalidateAnalyticsCache(userId) {
 
 export async function analyticsRouter(ctx) {
     const { method, path, query: queryParams, user } = ctx;
+
+    // Feature flag gate (REM-17)
+    if (requireFeature('FEATURE_ADVANCED_ANALYTICS', ctx)) return ctx.res;
 
     const analyticsLevel = checkTierPermission(user, 'analytics').level;
 

@@ -155,7 +155,7 @@ describe('Purchase total — floating-point precision', () => {
                 { description: 'Item-C', quantity: 1, unitCost: 0.10 }
             ]
         });
-        expect([201, 500]).toContain(status);
+        expect([201]).toContain(status);
         if (status === 201) {
             // 0.1 + 0.1 + 0.1 in IEEE 754 = 0.30000000000000004
             // The route stores raw float; we verify it is within 1 cent of $0.30
@@ -174,7 +174,7 @@ describe('Purchase total — floating-point precision', () => {
             shippingCost: 0,
             taxAmount: 0
         });
-        expect([201, 500]).toContain(status);
+        expect([201]).toContain(status);
         if (status === 201) {
             // (3 * 5.33) + (2 * 8.17) = 15.99 + 16.34 = 32.33
             expect(data.purchase.total_amount).toBeCloseTo(32.33, 2);
@@ -189,7 +189,7 @@ describe('Purchase total — floating-point precision', () => {
             shippingCost: 4.99,
             taxAmount: 1.60
         });
-        expect([201, 500]).toContain(status);
+        expect([201]).toContain(status);
         if (status === 201) {
             // 20 + 4.99 + 1.60 = 26.59
             expect(data.purchase.total_amount).toBeCloseTo(26.59, 2);

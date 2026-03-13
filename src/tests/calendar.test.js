@@ -106,7 +106,7 @@ describe('Calendar - Month View', () => {
 describe('Calendar - Sync Settings', () => {
     test('GET /calendar/sync-settings returns 200 with data', async () => {
         const { status, data } = await client.get('/calendar/sync-settings');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toBeDefined();
         }
@@ -118,7 +118,7 @@ describe('Calendar - Sync Settings', () => {
             direction: 'import',
             frequency: 'daily'
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 
     test('POST /calendar/sync-settings with invalid provider returns 400', async () => {
@@ -127,7 +127,7 @@ describe('Calendar - Sync Settings', () => {
             direction: 'import',
             frequency: 'daily'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /calendar/sync-settings with invalid frequency returns 400', async () => {
@@ -136,11 +136,11 @@ describe('Calendar - Sync Settings', () => {
             direction: 'import',
             frequency: 'invalid_freq'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('DELETE /calendar/sync-settings/nonexistent returns 404', async () => {
         const { status } = await client.delete('/calendar/sync-settings/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });

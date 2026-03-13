@@ -95,7 +95,7 @@ describe('POST /api/billing/usage/refresh', () => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 201, 400, 500]).toContain(res.status);
+        expect([200, 201, 400]).toContain(res.status);
     });
 });
 

@@ -16,7 +16,7 @@ beforeAll(async () => {
 describe('GET /api/watermark/presets', () => {
     test('rejects unauthenticated request', async () => {
         const res = await fetch(`${BASE}/api/watermark/presets`);
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('returns presets list when authenticated', async () => {
@@ -34,7 +34,7 @@ describe('POST /api/watermark/presets', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: 'Test Watermark', type: 'text', content: '© Test', position: 'bottom-right', opacity: 50, size: 20, rotation: 0, color: '#ffffff' })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('creates preset when authenticated with valid body', async () => {
@@ -43,7 +43,7 @@ describe('POST /api/watermark/presets', () => {
             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: 'Test Watermark', type: 'text', content: '© Test', position: 'bottom-right', opacity: 50, size: 20, rotation: 0, color: '#ffffff' })
         });
-        expect([200, 201, 400, 500]).toContain(res.status);
+        expect([200, 201, 400]).toContain(res.status);
     });
 
     test('rejects missing required fields', async () => {
@@ -63,7 +63,7 @@ describe('POST /api/watermark/apply-batch', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ preset_id: 'nonexistent-id', image_ids: [] })
         });
-        expect([401, 403, 500]).toContain(res.status);
+        expect([401, 403]).toContain(res.status);
     });
 
     test('processes batch apply when authenticated', async () => {

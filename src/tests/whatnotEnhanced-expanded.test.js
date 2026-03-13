@@ -33,7 +33,7 @@ describe('Whatnot Enhanced - Cohosts CRUD', () => {
             notes: 'Test cohost'
         });
         // 404 when event doesn't exist for user, 201 if created, 500 on DB error
-        expect([201, 404, 500]).toContain(status);
+        expect([201, 404]).toContain(status);
         if (data?.cohost?.id || data?.id) {
             cohostId = data.cohost?.id || data.id;
         }
@@ -43,7 +43,7 @@ describe('Whatnot Enhanced - Cohosts CRUD', () => {
         const { status } = await client.post('/whatnot-enhanced/cohosts', {
             cohost_name: 'NoEvent'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /whatnot-enhanced/cohosts without cohost_name returns 400', async () => {
@@ -51,7 +51,7 @@ describe('Whatnot Enhanced - Cohosts CRUD', () => {
             event_id: 'test-event-1'
         });
         // 400 if validation fires first, 404 if event check fires first
-        expect([400, 404, 500]).toContain(status);
+        expect([400, 404]).toContain(status);
     });
 
     test('POST /whatnot-enhanced/cohosts with invalid revenue_split', async () => {
@@ -61,7 +61,7 @@ describe('Whatnot Enhanced - Cohosts CRUD', () => {
             revenue_split: 150
         });
         // 400 for bad split, 404 if event check fires first
-        expect([400, 404, 500]).toContain(status);
+        expect([400, 404]).toContain(status);
     });
 
     test('PUT /whatnot-enhanced/cohosts/:id updates cohost', async () => {
@@ -70,25 +70,25 @@ describe('Whatnot Enhanced - Cohosts CRUD', () => {
             role: 'presenter',
             revenue_split: 30
         });
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('PUT /whatnot-enhanced/cohosts/nonexistent returns 404', async () => {
         const { status } = await client.put('/whatnot-enhanced/cohosts/nonexistent-id', {
             role: 'moderator'
         });
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('DELETE /whatnot-enhanced/cohosts/:id removes cohost', async () => {
         if (!cohostId) return;
         const { status } = await client.delete(`/whatnot-enhanced/cohosts/${cohostId}`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('DELETE /whatnot-enhanced/cohosts/nonexistent returns 404', async () => {
         const { status } = await client.delete('/whatnot-enhanced/cohosts/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -104,7 +104,7 @@ describe('Whatnot Enhanced - Staging CRUD', () => {
             notes: 'Flash sale item'
         });
         // 404 when event doesn't exist for user, 201 if created, 500 on DB error
-        expect([201, 404, 500]).toContain(status);
+        expect([201, 404]).toContain(status);
         if (data?.staged?.id || data?.id) {
             stagingId = data.staged?.id || data.id;
         }
@@ -114,7 +114,7 @@ describe('Whatnot Enhanced - Staging CRUD', () => {
         const { status } = await client.post('/whatnot-enhanced/staging', {
             inventory_id: 'item-1'
         });
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 
     test('POST /whatnot-enhanced/staging without inventory_id returns 400', async () => {
@@ -122,7 +122,7 @@ describe('Whatnot Enhanced - Staging CRUD', () => {
             event_id: 'event-1'
         });
         // 400 if validation first, 404 if event check first
-        expect([400, 404, 500]).toContain(status);
+        expect([400, 404]).toContain(status);
     });
 
     test('PUT /whatnot-enhanced/staging/:id updates staged item', async () => {
@@ -131,25 +131,25 @@ describe('Whatnot Enhanced - Staging CRUD', () => {
             display_order: 2,
             flash_price: 19.99
         });
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('PUT /whatnot-enhanced/staging/nonexistent returns 404', async () => {
         const { status } = await client.put('/whatnot-enhanced/staging/nonexistent-id', {
             display_order: 5
         });
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 
     test('DELETE /whatnot-enhanced/staging/:id removes staged item', async () => {
         if (!stagingId) return;
         const { status } = await client.delete(`/whatnot-enhanced/staging/${stagingId}`);
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('DELETE /whatnot-enhanced/staging/nonexistent returns 404', async () => {
         const { status } = await client.delete('/whatnot-enhanced/staging/nonexistent-id');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -160,23 +160,23 @@ describe('Whatnot Enhanced - Auto-Suggest', () => {
             limit: 5
         });
         // 404 when event doesn't exist for user
-        expect([200, 404, 500]).toContain(status);
+        expect([200, 404]).toContain(status);
     });
 
     test('POST /whatnot-enhanced/staging/auto-suggest without event_id returns 400', async () => {
         const { status } = await client.post('/whatnot-enhanced/staging/auto-suggest', {});
-        expect([400, 500]).toContain(status);
+        expect([400]).toContain(status);
     });
 });
 
 describe('Whatnot Enhanced - Bundles', () => {
     test('GET /whatnot-enhanced/staging/bundles returns bundle groups', async () => {
         const { status, data } = await client.get('/whatnot-enhanced/staging/bundles');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('GET /whatnot-enhanced/staging/bundles with event_id filter', async () => {
         const { status } = await client.get('/whatnot-enhanced/staging/bundles?event_id=test-event-1');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });

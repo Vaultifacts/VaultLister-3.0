@@ -52,7 +52,7 @@ describe('Roadmap - Get Single', () => {
 
     test('GET /roadmap/nonexistent returns 404', async () => {
         const { status } = await client.get('/roadmap/nonexistent-id-xyz');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -76,7 +76,7 @@ describe('Roadmap - Vote', () => {
 
     test('POST /roadmap/vote/nonexistent returns 404', async () => {
         const { status } = await client.post('/roadmap/vote/nonexistent-id-xyz');
-        expect([404, 500]).toContain(status);
+        expect([404]).toContain(status);
     });
 });
 
@@ -88,7 +88,7 @@ describe('Roadmap - Admin Create', () => {
             category: 'features',
             status: 'planned'
         });
-        expect([403, 500]).toContain(status);
+        expect([403]).toContain(status);
     });
 });
 

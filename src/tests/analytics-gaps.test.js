@@ -14,31 +14,31 @@ beforeAll(async () => {
 describe('Analytics performance', () => {
     test('GET /analytics/performance returns data or 403 for basic tier', async () => {
         const { status } = await client.get('/analytics/performance');
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
     });
 });
 
 describe('Analytics heatmap', () => {
     test('GET /analytics/heatmap returns heatmap data', async () => {
         const { status } = await client.get('/analytics/heatmap');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('GET /analytics/heatmap/listings returns listing heatmap', async () => {
         const { status } = await client.get('/analytics/heatmap/listings');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 
     test('GET /analytics/heatmap/geography returns geographic heatmap', async () => {
         const { status } = await client.get('/analytics/heatmap/geography');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
     });
 });
 
 describe('Analytics custom metrics', () => {
     test('GET /analytics/custom-metrics returns metrics list', async () => {
         const { status, data } = await client.get('/analytics/custom-metrics');
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403]).toContain(status);
         if (status === 200) {
             expect(data).toBeDefined();
         }
@@ -50,19 +50,19 @@ describe('Analytics custom metrics', () => {
             formula: 'revenue / items_sold',
             description: 'Average revenue per item'
         });
-        expect([200, 201, 400, 403, 500]).toContain(status);
+        expect([200, 201, 400, 403]).toContain(status);
     });
 
     test('DELETE /analytics/custom-metrics/:id nonexistent', async () => {
         const { status } = await client.delete('/analytics/custom-metrics/nonexistent');
-        expect([403, 404, 500]).toContain(status);
+        expect([403, 404]).toContain(status);
     });
 });
 
 describe('Analytics digest settings', () => {
     test('GET /analytics/digest-settings returns settings', async () => {
         const { status, data } = await client.get('/analytics/digest-settings');
-        expect([200, 500]).toContain(status);
+        expect(status).toBe(200);
         if (status === 200) {
             expect(data).toBeDefined();
         }
@@ -73,7 +73,7 @@ describe('Analytics digest settings', () => {
             frequency: 'weekly',
             enabled: true
         });
-        expect([200, 201, 500]).toContain(status);
+        expect([200, 201]).toContain(status);
     });
 });
 
@@ -83,6 +83,6 @@ describe('Analytics export', () => {
             format: 'csv',
             date_range: '30d'
         });
-        expect([200, 202, 400, 500]).toContain(status);
+        expect([200, 202, 400]).toContain(status);
     });
 });

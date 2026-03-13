@@ -8,6 +8,7 @@
 
 import { logger } from '../../shared/logger.js';
 import { auditLog } from './platformAuditLog.js';
+import { fetchWithTimeout } from '../../shared/fetchWithTimeout.js';
 
 const SHOPIFY_API_VERSION = '2024-01';
 
@@ -85,8 +86,9 @@ export async function publishListingToShopify(shop, listing, inventory) {
     const apiUrl = `https://${storeUrl}/admin/api/${SHOPIFY_API_VERSION}/products.json`;
     logger.info('[Shopify Publish] Creating product', { title, price, sku });
 
-    const response = await fetch(apiUrl, {
+    const response = await fetchWithTimeout(apiUrl, {
         method: 'POST',
+        timeoutMs: 30000,
         headers: {
             'Content-Type': 'application/json',
             'X-Shopify-Access-Token': accessToken,

@@ -102,7 +102,7 @@ describe('GDPR API — rectification', () => {
         const { status, data } = await client.put('/gdpr/rectify', {
             corrections: { full_name: 'Test User Corrected' }
         });
-        expect([200, 403, 404, 500]).toContain(status);
+        expect([200, 403, 404]).toContain(status);
     });
 
     test('PUT /gdpr/rectify requires auth', async () => {
