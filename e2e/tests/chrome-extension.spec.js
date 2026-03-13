@@ -28,6 +28,8 @@ test.setTimeout(60_000);
 // ── API-level extension tests (no browser extension required) ─────────────────
 
 test.describe('Extension API — Price Tracking', () => {
+    test.describe.configure({ mode: 'serial' });
+
     let token;
     let createdItemId;
 
@@ -62,7 +64,7 @@ test.describe('Extension API — Price Tracking', () => {
             headers: { Authorization: `Bearer ${token}`, 'X-CSRF-Token': csrf },
             data: {
                 productTitle: 'E2E Price Track Test Item',
-                url: 'https://www.amazon.com/dp/TEST123',
+                url: `https://www.amazon.com/dp/TEST${Date.now()}`,
                 currentPrice: 49.99,
                 site: 'amazon'
             }
@@ -70,29 +72,29 @@ test.describe('Extension API — Price Tracking', () => {
         expect([200, 201]).toContain(res.status());
 
         const data = await res.json();
-        // Persist ID for cleanup — handle various response shapes
-        createdItemId = data.id ?? data.item?.id ?? data.tracking?.id ?? data.priceTracking?.id ?? data.trackingId;
+        // Route returns { tracking: { id, ... } } — handle various response shapes
+        createdItemId = data.tracking?.id ?? data.id ?? data.item?.id ?? data.priceTracking?.id ?? data.trackingId;
+        // Fail fast with useful output if extraction failed
+        expect(createdItemId, `Expected item ID in response: ${JSON.stringify(data).slice(0, 200)}`).toBeTruthy();
     });
 
     test('GET /api/extension/price-tracking — created item appears in list', async ({ request }) => {
         if (!createdItemId) test.skip(true, 'Item not created in previous test');
 
-        // Retry up to 5 times — item may not be immediately queryable after creation
+        // Retry up to 8 times with increasing delay — SQLite WAL may delay visibility
         let found = false;
-        for (let attempt = 0; attempt < 5; attempt++) {
+        let lastList = [];
+        for (let attempt = 0; attempt < 8; attempt++) {
             const res = await request.get(`${BASE_URL}/api/extension/price-tracking`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
-            const list = data.tracking ?? data.items ?? [];
-            found = list.some(i =>
-                (i.title === 'E2E Price Track Test Item' || i.productTitle === 'E2E Price Track Test Item') ||
-                i.id === createdItemId
-            );
+            lastList = data.tracking ?? data.items ?? [];
+            found = lastList.some(i => i.id === createdItemId);
             if (found) break;
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 300 + attempt * 200));
         }
-        expect(found).toBe(true);
+        expect(found, `Item ${createdItemId} not in list of ${lastList.length} items`).toBe(true);
     });
 
     test('DELETE /api/extension/price-tracking/:id — removes item (200)', async ({ request }) => {
