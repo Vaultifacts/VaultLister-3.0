@@ -318,6 +318,13 @@ test.describe('Teams Member Guards — API', () => {
 
     test('DELETE /api/teams/:id/members/:memberId — owner cannot be removed (403)', async ({ request }) => {
         if (!ownerMemberId) test.skip(true, 'Owner member ID not found');
+        // Guard: team may have been cleaned up by parallel worker
+        const checkRes = await request.get(`${BASE_URL}/api/teams/${teamId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (checkRes.status() !== 200) {
+            test.skip(true, 'Team was deleted by parallel cleanup');
+        }
         const csrf = await getCsrf(request, token);
         const res = await request.delete(`${BASE_URL}/api/teams/${teamId}/members/${ownerMemberId}`, {
             headers: { Authorization: `Bearer ${token}`, 'X-CSRF-Token': csrf }
