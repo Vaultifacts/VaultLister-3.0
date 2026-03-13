@@ -227,6 +227,30 @@ export async function offersRouter(ctx) {
         return { status: 200, data: { message: 'Counter offer sent', taskId } };
     }
 
+    // POST /api/offers/seed - Seed a test offer (test-mode only)
+    if (method === 'POST' && path === '/seed') {
+        if (process.env.DISABLE_CSRF !== 'true' && process.env.NODE_ENV !== 'test') {
+            return { status: 404, data: { error: 'Route not found' } };
+        }
+
+        const { listing_id, platform, offer_amount, buyer_username } = body;
+        if (!listing_id || !platform || !offer_amount) {
+            return { status: 400, data: { error: 'listing_id, platform, and offer_amount are required' } };
+        }
+
+        const id = uuidv4();
+        const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        query.run(
+            `INSERT INTO offers (id, user_id, listing_id, platform, offer_amount, buyer_username, status, expires_at)
+             VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
+            [id, user.id, listing_id, platform, offer_amount, buyer_username || 'e2e_buyer', expires]
+        );
+
+        const offer = query.get('SELECT * FROM offers WHERE id = ?', [id]);
+        return { status: 201, data: { offer } };
+    }
+
     // GET /api/offers/rules - Get offer rules
     if (method === 'GET' && path === '/rules') {
         const rules = query.all(

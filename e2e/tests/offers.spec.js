@@ -162,6 +162,8 @@ test.describe('Offer Stats', () => {
 // ── Offer CRUD via seed endpoint (or graceful skip) ───────────────────────────
 
 test.describe('Offer Accept / Decline / Counter', () => {
+    test.describe.configure({ mode: 'serial' });
+
     let seededOfferId;
     let acceptOfferId;
     let declineOfferId;
@@ -333,6 +335,8 @@ test.describe('Offer Accept / Decline / Counter', () => {
 // ── Offer Rules CRUD ──────────────────────────────────────────────────────────
 
 test.describe('Offer Rules', () => {
+    test.describe.configure({ mode: 'serial' });
+
     let ruleId;
 
     test('GET /api/offers/rules — returns rules array', async ({ request }) => {
