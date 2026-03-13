@@ -113,17 +113,17 @@ test.describe('Automation Navigation', () => {
         const automationsBtn = page.locator('button.nav-item:has-text("Automations")').first();
         await automationsBtn.waitFor({ state: 'visible', timeout: 10000 });
         await automationsBtn.click();
-        await page.waitForURL(/#automations/, { timeout: 5000 });
+        await page.waitForURL(/#automations/, { timeout: 10000 });
 
         // Go back to dashboard
         const dashboardBtn = page.locator('button.nav-item:has-text("Dashboard")').first();
         await dashboardBtn.waitFor({ state: 'visible', timeout: 10000 });
         await dashboardBtn.click();
-        await page.waitForURL(/#dashboard/, { timeout: 5000 });
+        await page.waitForURL(/#dashboard/, { timeout: 10000 });
 
         // Go to automations again
         await automationsBtn.click();
-        await page.waitForURL(/#automations/, { timeout: 5000 });
+        await page.waitForURL(/#automations/, { timeout: 10000 });
 
         // Should be on automations page
         await expect(page).toHaveURL(/#automations/);

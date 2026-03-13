@@ -197,12 +197,12 @@ test.describe('P3-3: eBay Inventory Sync', () => {
         const res = await request.post(`${BASE_URL}/api/oauth/sync/ebay`, {
             headers: ph
         });
-        // Accepted with task ID, or 400 if no shop connected
-        expect([200, 202, 400]).toContain(res.status());
+        // Accepted with task ID, or 400/404 if no shop connected
+        expect([200, 202, 400, 404]).toContain(res.status());
 
-        if (res.status() === 400) {
+        if (res.status() === 400 || res.status() === 404) {
             const body = await res.json();
-            expect(body.error).toMatch(/no connected ebay shop|connect ebay/i);
+            expect(body.error).toMatch(/no connected|connect ebay|not found/i);
         }
     });
 

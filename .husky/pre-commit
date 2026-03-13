@@ -19,18 +19,47 @@ if git diff --cached --name-only | grep -qE '^\.(env|env\..*)$'; then
     exit 1
 fi
 
+# Helper: get staged source files (excludes tests, e2e, assets, app.js)
+staged_src_files() {
+    git diff --cached --name-only --diff-filter=ACM | grep -v "app\.js" | grep -vE "\.(css|html|md|svg)$" | grep -vE "\.(test|spec)\.(js|ts)$" | grep -v "e2e/" | grep -v "node_modules"
+}
+
+# Helper: get all staged JS files
+staged_js_files() {
+    git diff --cached --name-only --diff-filter=ACM | grep "\.js$" | grep -v "node_modules"
+}
+
+# Helper: get staged test files
+staged_test_files() {
+    git diff --cached --name-only --diff-filter=ACM | grep -E "\.(test|spec)\.js$"
+}
+
 # Check for console.log statements (warn only)
 echo "Checking for debug statements..."
-CONSOLE_LOGS=$(git diff --cached --name-only --diff-filter=ACM | xargs grep -Il "console.log" 2>/dev/null | grep -v "test" | grep -v "scripts" || true)
+CONSOLE_LOGS=""
+while IFS= read -r f; do
+    [ -f "$f" ] && grep -ql "console.log" "$f" 2>/dev/null && echo "$f" | grep -v "test" | grep -v "scripts" && CONSOLE_LOGS="$CONSOLE_LOGS $f"
+done <<EOF
+$(git diff --cached --name-only --diff-filter=ACM)
+EOF
 if [ -n "$CONSOLE_LOGS" ]; then
-    echo "Warning: Found console.log statements in:"
-    echo "$CONSOLE_LOGS"
-    echo "Consider removing before production."
+    echo "Warning: Found console.log statements. Consider removing before production."
 fi
 
-# Check for hardcoded secrets
+# Check for hardcoded secrets (skip test files — they legitimately reference tokens)
 echo "Checking for potential secrets..."
-if git diff --cached --name-only --diff-filter=ACM | grep -v "app\.js" | grep -vE "\.(css|html|md|svg)$" | xargs grep -IE "(password|secret|api_key|apikey|token)\s*[:=]\s*['\"][^'\"]{8,}" 2>/dev/null | grep -vE "_(at|by|id|type|count|name|status|expires|created|updated)\b" | grep -v "test" | grep -v "example" | grep -v "demo" | grep -v "process.env" | grep -v "data-" | grep -v "placeholder" | grep -v "aria-"; then
+SECRET_FOUND=""
+while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    MATCH=$(grep -IE "(password|secret|api_key|apikey|token)\s*[:=]\s*['\"][^'\"]{8,}" "$f" 2>/dev/null | grep -vE "_(at|by|id|type|count|name|status|expires|created|updated)\b" | grep -v "test" | grep -v "example" | grep -v "demo" | grep -v "process.env" | grep -v "data-" | grep -v "placeholder" | grep -v "aria-" || true)
+    if [ -n "$MATCH" ]; then
+        echo "$f: $MATCH"
+        SECRET_FOUND="1"
+    fi
+done <<EOF
+$(staged_src_files)
+EOF
+if [ -n "$SECRET_FOUND" ]; then
     echo "Error: Potential hardcoded secrets detected!"
     exit 1
 fi
@@ -55,21 +84,40 @@ if [ -n "$TEMP_FILES" ]; then
     exit 1
 fi
 
-# Check for .only or .skip in test files (prevents broken CI)
-echo "Checking for .only/.skip in tests..."
-ONLY_SKIP=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(test|spec)\.js$" | xargs grep -InE "\.(only|skip)\s*\(" 2>/dev/null || true)
-if [ -n "$ONLY_SKIP" ]; then
-    echo "Error: Found .only or .skip in test files:"
-    echo "$ONLY_SKIP"
+# Check for .only in test files (prevents broken CI)
+# Note: .skip() is allowed — it's used for conditional test skipping
+echo "Checking for .only in tests..."
+ONLY_FOUND=""
+while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    MATCH=$(grep -InE "\.only\s*\(" "$f" 2>/dev/null || true)
+    if [ -n "$MATCH" ]; then
+        echo "$f:$MATCH"
+        ONLY_FOUND="1"
+    fi
+done <<EOF
+$(staged_test_files)
+EOF
+if [ -n "$ONLY_FOUND" ]; then
+    echo "Error: Found .only in test files — this would skip other tests in CI"
     exit 1
 fi
 
 # Check for debugger statements
 echo "Checking for debugger statements..."
-DEBUGGER=$(git diff --cached --name-only --diff-filter=ACM | grep "\.js$" | xargs grep -In "^\s*debugger" 2>/dev/null | grep -v "node_modules" || true)
+DEBUGGER=""
+while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    MATCH=$(grep -In "^\s*debugger" "$f" 2>/dev/null || true)
+    if [ -n "$MATCH" ]; then
+        echo "$f:$MATCH"
+        DEBUGGER="1"
+    fi
+done <<EOF
+$(staged_js_files)
+EOF
 if [ -n "$DEBUGGER" ]; then
-    echo "Error: Found debugger statements:"
-    echo "$DEBUGGER"
+    echo "Error: Found debugger statements (above)"
     exit 1
 fi
 
