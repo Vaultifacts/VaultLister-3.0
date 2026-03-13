@@ -222,6 +222,17 @@ test.describe('Teams Invitations — API', () => {
     });
 
     test('POST /api/teams/:id/invite — sends invite with role member (201)', async ({ request }) => {
+        // Guard: team may have been cleaned up by parallel describe block
+        const checkRes = await request.get(`${BASE_URL}/api/teams/${teamId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (checkRes.status() !== 200) {
+            // Re-create the team
+            await cleanupOwnedTeams(request, token);
+            const { data: created } = await apiCreateTeam(request, token, `Invite Test Re ${Date.now()}`);
+            teamId = created.team.id;
+        }
+
         const csrf = await getCsrf(request, token);
         const res = await request.post(`${BASE_URL}/api/teams/${teamId}/invite`, {
             headers: { Authorization: `Bearer ${token}`, 'X-CSRF-Token': csrf },
