@@ -26,9 +26,12 @@ async function initApp() {
             }
         }
 
-        // If still not authenticated, redirect to login
+        // If still not authenticated, set hash to login so router.init()
+        // picks it up after routes are registered (calling router.navigate
+        // here would trigger handleRoute before routes exist, causing a
+        // routing loop in Firefox that exhausts the History API limit).
         if (!auth.isAuthenticated()) {
-            router.navigate('login');
+            window.location.hash = '#login';
         }
     }
 

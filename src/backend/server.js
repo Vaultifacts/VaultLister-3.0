@@ -1119,11 +1119,19 @@ const server = Bun.serve({
         // Generate a per-request CSP nonce and inject it into every <script> tag.
         // 'strict-dynamic' + nonce makes unsafe-inline inert in modern browsers while
         // legacy browsers fall back gracefully. unsafe-eval is never included.
-        const cspNonce = crypto.randomBytes(16).toString('base64');
-        spaSecHeaders['Content-Security-Policy'] = buildCSPWithNonce(cspNonce);
+        // Nonces are production-only: in dev/test mode, 'unsafe-inline' from the base
+        // CSP is honored by all browsers (Firefox ignores script-src-attr when a nonce
+        // is present, breaking inline event handlers like onsubmit/onclick).
+        const useNonce = IS_PROD;
+        const cspNonce = useNonce ? crypto.randomBytes(16).toString('base64') : null;
+        spaSecHeaders['Content-Security-Policy'] = cspNonce
+            ? buildCSPWithNonce(cspNonce)
+            : spaSecHeaders['Content-Security-Policy'];
 
         const injectNonce = (html) =>
-            html.replace(/<script(\b[^>]*)>/gi, (_, attrs) => `<script${attrs} nonce="${cspNonce}">`);
+            cspNonce
+                ? html.replace(/<script(\b[^>]*)>/gi, (_, attrs) => `<script${attrs} nonce="${cspNonce}">`)
+                : html;
 
         const indexPath = join(FRONTEND_DIR, 'index.html');
         if (existsSync(indexPath)) {
