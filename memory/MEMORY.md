@@ -225,6 +225,35 @@ Key patterns discovered for Poshmark's Vue.js SPA:
   - Once approved: add callback URL `https://semianatomic-adelina-unspent.ngrok-free.dev/oauth-callback` in Etsy developer portal
 - **Per-item audit log (B-1)**: Share entries now write per-item with `listingId`/`title` (commit 9b0d0e6)
 
+## QA Remediation Complete (2026-03-12) — commit e7508fd (151 files, +2515/−1014)
+20 REM items across 4 phases completed. Tracking commit: 6c6ea34.
+
+**Critical fixes (REM-01/08):**
+- Cross-listing integration tests with real DB (10 tests); FK CASCADE gap documented (schema declares it, live DB doesn't enforce)
+- Deploy rollback in deploy.yml — tags :rollback before pull, auto-restores on health check failure
+
+**Security fixes (REM-02–07):**
+- expect([200,500]) anti-pattern removed from 105 test files (544 occurrences)
+- Prompt injection protection (sanitizeForAI + system/user prompt separation)
+- File upload validation (validateBase64Image — MIME, size, magic bytes)
+- CSRF bypass narrowed to NODE_ENV=test only
+- OAuth token revocation on account deletion (gdprWorker.js)
+- Key rotation: dual-key JWT_SECRET + OAUTH_ENCRYPTION_KEY with scripts/rotate-encryption-key.js
+- CI lint: node --check → bun build --no-bundle (fixes ESM hang)
+
+**Reliability fixes (REM-11–16):**
+- Circuit breaker (circuitBreaker.js) wrapping Anthropic, Notion, webhook endpoints — 12 tests
+- External integration timeouts (fetchWithTimeout.js) on 10+ services
+- AI error logging (silent catch → logger.warn)
+- Feature flags middleware (featureFlags.js) — FEATURE_AI_LISTING, FEATURE_WHATNOT_INTEGRATION, FEATURE_ADVANCED_ANALYTICS wired to routes
+
+**Quality fixes (REM-18–20):**
+- Backend locale parameter on formatDate/formatDateTime/formatPrice (default en-US)
+- Listings UNIQUE(inventory_id, platform) constraint verified
+- File upload abuse prevention (MIME + magic bytes + size limits)
+
+**New files:** circuitBreaker.js, featureFlags.js, sanitize-input.js, fetchWithTimeout.js, rotate-encryption-key.js, service-circuitBreaker.test.js, ai-sanitize-input.test.js, service-upload-validation.test.js
+
 ## Infrastructure Additions (2026-03-07)
 All 6 gaps from /compare-project run implemented. New files:
 - `src/backend/env.js` — Zod startup env validation (replaces manual JWT_SECRET check)
