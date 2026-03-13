@@ -383,8 +383,9 @@ test.describe('Teams — Create via UI', () => {
         // Click the modal footer's primary submit button
         await page.locator('.modal-footer button.btn-primary').click();
 
-        // Wait briefly for modal to close (form submits asynchronously)
-        await page.waitForTimeout(3000);
+        // Wait for modal to close (form submits asynchronously)
+        await page.locator('#create-team-form, .modal-body form').waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+        await page.waitForTimeout(500);
 
         // Team should appear in API
         const listRes = await request.get(`${BASE_URL}/api/teams`, {

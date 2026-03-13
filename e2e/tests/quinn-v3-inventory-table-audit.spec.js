@@ -419,15 +419,18 @@ test.describe('Quinn v3 > Inventory Table > Phase 2: Search & Filter', () => {
     const filterBtn = page.locator('button', { hasText: 'Filters' }).first();
     await expect(filterBtn).toBeVisible();
 
+    // Small settle delay — filter handler may not be attached immediately after search clear
+    await page.waitForTimeout(500);
     await filterBtn.click();
     // Wait for filter menu to become visible after click
     const filterMenu = page.locator('#filter-menu');
-    await filterMenu.waitFor({ state: 'visible', timeout: 3000 }).catch(async () => {
+    await filterMenu.waitFor({ state: 'visible', timeout: 5000 }).catch(async () => {
       // Retry click if menu didn't open
+      await page.waitForTimeout(300);
       await filterBtn.click();
-      await waitForUiSettle(page);
+      await filterMenu.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
     });
-    const isFilterVisible = await filterMenu.evaluate(el => !el.classList.contains('hidden'));
+    const isFilterVisible = await filterMenu.isVisible() && await filterMenu.evaluate(el => !el.classList.contains('hidden')).catch(() => false);
     expect(isFilterVisible).toBe(true);
 
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-inv-P2-1-filter-open.png' });
