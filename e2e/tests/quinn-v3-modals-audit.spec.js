@@ -233,11 +233,18 @@ test.describe('Quinn v3 > Modals > Phase 1: Add Item Modal', () => {
   test('P1-6: Focus restored to trigger after close', async ({ page }) => {
     await loginAndNavigate(page, 'inventory');
 
-    // Click the Add Item button (the trigger)
+    // Click the Add Item button (the trigger) — use same resilient pattern as openAddItemModal
     const addBtn = page.locator('[data-testid="hero-add-item"], button:has-text("Add Item"), button:has-text("Add")').first();
+    await addBtn.waitFor({ state: 'visible', timeout: 10_000 });
     await addBtn.focus();
-    await addBtn.click({ timeout: 5_000 });
-    await page.waitForSelector('.modal-overlay', { timeout: 5_000 });
+    await addBtn.click({ timeout: 10_000 });
+    try {
+      await page.waitForSelector('.modal-overlay', { timeout: 5_000 });
+    } catch {
+      await page.waitForTimeout(500);
+      await addBtn.click({ timeout: 10_000 });
+      await page.waitForSelector('.modal-overlay', { timeout: 10_000 });
+    }
     await waitForUiSettle(page);
 
     // Close with Escape

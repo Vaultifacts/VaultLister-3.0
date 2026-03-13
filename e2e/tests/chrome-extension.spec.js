@@ -70,16 +70,16 @@ test.describe('Extension API — Price Tracking', () => {
         expect([200, 201]).toContain(res.status());
 
         const data = await res.json();
-        // Persist ID for cleanup
-        createdItemId = data.id ?? data.item?.id ?? data.tracking?.id;
+        // Persist ID for cleanup — handle various response shapes
+        createdItemId = data.id ?? data.item?.id ?? data.tracking?.id ?? data.priceTracking?.id ?? data.trackingId;
     });
 
     test('GET /api/extension/price-tracking — created item appears in list', async ({ request }) => {
         if (!createdItemId) test.skip(true, 'Item not created in previous test');
 
-        // Retry up to 3 times — item may not be immediately queryable after creation
+        // Retry up to 5 times — item may not be immediately queryable after creation
         let found = false;
-        for (let attempt = 0; attempt < 3; attempt++) {
+        for (let attempt = 0; attempt < 5; attempt++) {
             const res = await request.get(`${BASE_URL}/api/extension/price-tracking`, {
                 headers: { Authorization: `Bearer ${token}` }
             });

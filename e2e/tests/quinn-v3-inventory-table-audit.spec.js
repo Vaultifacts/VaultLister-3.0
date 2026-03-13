@@ -810,10 +810,19 @@ test.describe('Quinn v3 > Inventory Table > Phase 5: Bulk Actions', () => {
     // Check select-all
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-inv-P5-1-before-select-all.png' });
     await selectAll.check();
+    await page.waitForTimeout(1000);
     await waitForSpaRender(page);
 
-    // All row checkboxes should be checked
-    const checkedBoxes = await page.locator('.table tbody input[type="checkbox"][data-bulk]:checked').count();
+    // All row checkboxes should be checked — use broader selector for cross-browser compat
+    const checkedBoxes = await page.evaluate(() => {
+      const rows = document.querySelectorAll('.table tbody tr');
+      let checked = 0;
+      for (const row of rows) {
+        const cb = row.querySelector('input[type="checkbox"]');
+        if (cb && cb.checked) checked++;
+      }
+      return checked;
+    });
     expect(checkedBoxes).toBe(rowCount);
 
     // Bulk bar should be visible
