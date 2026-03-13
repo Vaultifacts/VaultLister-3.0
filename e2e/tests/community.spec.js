@@ -19,20 +19,18 @@ test.describe('Community Features', () => {
         await page.waitForURL(/#dashboard/, { timeout: 10000 });
     });
 
-    test('should navigate to community page', async ({ page }) => {
-        // Navigate to community via sidebar or direct URL
-        await page.goto(`http://localhost:${process.env.PORT || 3000}/#community`);
-        await page.waitForURL(/#community/, { timeout: 5000 });
+    test('should navigate to community page', async ({ page, baseURL }) => {
+        // Navigate to community via hash — use baseURL from Playwright config
+        await page.goto(`${baseURL}/#community`);
+        await page.waitForURL(/#community/, { timeout: 10000 });
 
         // Verify we're on the community page
         await expect(page).toHaveURL(/#community/);
 
-        // Wait for content to load
-        await page.waitForTimeout(1000);
-
-        // Page should display without errors
-        const pageTitle = page.locator('h1, .page-title').first();
-        await expect(pageTitle).toBeVisible({ timeout: 5000 });
+        // Wait for deferred chunk to load and render
+        const pageTitle = page.locator('h1.page-title, .page-header h1').first();
+        await expect(pageTitle).toBeVisible({ timeout: 15000 });
+        await expect(pageTitle).toContainText('Community');
     });
 
     test('should switch between community tabs', async ({ page }) => {

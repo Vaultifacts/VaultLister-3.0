@@ -75,10 +75,16 @@ async function launchPoshmarkContext(chromium) {
 
 async function poshmarkLogin(context) {
     const page = context.pages()[0] || await context.newPage();
-    await page.goto(`${POSHMARK_URL}/feed`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    try {
+        await page.goto(`${POSHMARK_URL}/feed`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    } catch {
+        test.skip(true, 'Poshmark unreachable — skipping live test');
+        return null;
+    }
     await page.waitForTimeout(2000);
     if (page.url().includes('/login')) {
-        throw new Error('Poshmark session expired — clear data/poshmark-profile/ and log in manually.');
+        test.skip(true, 'Poshmark session expired — need fresh login');
+        return null;
     }
     return page;
 }

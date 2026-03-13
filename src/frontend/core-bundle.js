@@ -15164,7 +15164,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f26587b7';
+    const v = 'b388c5c0';
     const files = [
         '/pages/pages-' + chunkName + '.js?v=' + v,
         '/handlers/handlers-' + chunkName + '.js?v=' + v
@@ -20848,6 +20848,10 @@ const auth = {
             await api.post('/auth/logout', { refreshToken: store.state.refreshToken });
         } catch (e) {}
 
+        // Disconnect WebSocket before clearing state
+        if (window.VaultListerSocket) {
+            window.VaultListerSocket.disconnect();
+        }
         store.setState({ user: null, token: null, refreshToken: null, useSessionStorage: false });
         Object.keys(localStorage).forEach(key => {
             if (key.startsWith('vaultlister_')) localStorage.removeItem(key);

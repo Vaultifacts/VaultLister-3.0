@@ -16,7 +16,9 @@ if (!process.env.PORT) {
         if (match) process.env.PORT = match[1];
     } catch {}
 }
-const APP_PORT = parseInt(process.env.PORT || '3001');
+const APP_PORT = parseInt(process.env.TEST_PORT || process.env.PORT || '3001');
+// Sync PORT so test files (auth.js, api-helpers.js, wait-utils.js) resolve to the same port
+process.env.PORT = String(APP_PORT);
 
 export default defineConfig({
     testDir: './e2e/tests',
@@ -26,7 +28,7 @@ export default defineConfig({
     fullyParallel: true,
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 1,
-    workers: process.env.CI ? 1 : 1, // Single worker: Bun server is single-threaded, parallel workers cause OOM
+    workers: process.env.PW_WORKERS ? parseInt(process.env.PW_WORKERS) : (process.env.CI ? 2 : 4),
     reporter: [
         ['html', { outputFolder: 'playwright-report', open: 'never' }],
         ['json', { outputFile: 'playwright-report/results.json' }],
@@ -59,12 +61,15 @@ export default defineConfig({
         }
     ],
     webServer: {
-        command: 'NODE_ENV=test bun run dev',
+        command: `bun src/backend/server.js`,
         url: `http://localhost:${APP_PORT}/api/health`,
-        reuseExistingServer: true, // test:setup always starts the server first
-        timeout: 30000,
+        reuseExistingServer: true,
+        timeout: 60000,
         env: {
             NODE_ENV: 'test',
+            PORT: String(APP_PORT),
+            DISABLE_RATE_LIMIT: 'true',
+            DISABLE_CSRF: 'true',
             DISPLAY: process.env.DISPLAY || ':99'
         }
     }

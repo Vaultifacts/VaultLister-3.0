@@ -62,7 +62,7 @@ Object.assign(pages, {
                                             ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                                         </div>
                                         <div class="leaderboard-user">
-                                            <div class="font-semibold">${escapeHtml(user.email.split('@')[0])}</div>
+                                            <div class="font-semibold">${escapeHtml(user.username || (user.email ? user.email.split('@')[0] : 'Anonymous'))}</div>
                                             <div class="text-xs text-gray-500">
                                                 ${user.posts_count} posts • ${user.replies_count} replies • ${user.upvotes_received} upvotes
                                             </div>
@@ -91,7 +91,7 @@ Object.assign(pages, {
                                 <div>
                                     <h3 class="post-title">${escapeHtml(post.title)}</h3>
                                     <div class="post-meta">
-                                        by ${escapeHtml(post.author_email.split('@')[0])} •
+                                        by ${escapeHtml(post.author || (post.author_email ? post.author_email.split('@')[0] : 'Anonymous'))} •
                                         ${new Date(post.created_at).toLocaleDateString()}
                                     </div>
                                 </div>
