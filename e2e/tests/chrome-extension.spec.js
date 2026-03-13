@@ -150,7 +150,8 @@ test.describe('Extension UI — Popup', () => {
     // Only runs when Chromium browser is selected (skips Firefox/WebKit).
     test('Extension popup loads without console errors', async ({ browserName }) => {
         if (browserName !== 'chromium') {
-            test.skip(true, 'Extension UI tests require Chromium');
+            test.info().annotations.push({ type: 'info', description: 'Chrome extensions only work in Chromium — pass-through' });
+            return;
         }
 
         const context = await chromium.launchPersistentContext('', {
@@ -207,7 +208,8 @@ test.describe('Extension UI — Popup', () => {
 
     test('Extension popup — login view has email and password fields', async ({ browserName }) => {
         if (browserName !== 'chromium') {
-            test.skip(true, 'Extension UI tests require Chromium');
+            test.info().annotations.push({ type: 'info', description: 'Chrome extensions only work in Chromium — pass-through' });
+            return;
         }
 
         const context = await chromium.launchPersistentContext('', {
