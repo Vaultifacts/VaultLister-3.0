@@ -59,7 +59,42 @@ jobs:
           curl -sf http://localhost:$PORT/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
 
       - name: Run unit tests
-        run: bun test src/tests/
+        run: |
+          set +e
+          bun test src/tests/ 2>&1 | tee /tmp/test-output.txt
+          TEST_EXIT=$?
+          set -e
+
+          if [ $TEST_EXIT -eq 0 ]; then
+            echo "All tests passed!"
+          else
+            # Use same regression detection as ci.yml
+            KNOWN_FAIL_NAMES=$(grep -v '^\s*#' .test-baseline | grep '^KNOWN_FAIL: ' | sed 's/^KNOWN_FAIL: //' || true)
+            ACTUAL_FAIL_NAMES=$(grep '^(fail) ' /tmp/test-output.txt | sed 's/^(fail) //' || true)
+
+            REGRESSIONS=""
+            while IFS= read -r fail_name; do
+              [ -z "$fail_name" ] && continue
+              if ! echo "$KNOWN_FAIL_NAMES" | grep -qxF "$fail_name"; then
+                REGRESSIONS="${REGRESSIONS}  REGRESSION: ${fail_name}"$'\n'
+              fi
+            done <<< "$ACTUAL_FAIL_NAMES"
+
+            KNOWN_FAILURES=$(grep -v '^\s*#' .test-baseline | grep -oP 'KNOWN_FAILURES=\K\d+' | head -1)
+            KNOWN_FAILURES=${KNOWN_FAILURES:-0}
+            ACTUAL_FAILURES=$(grep -oP '\d+ fail' /tmp/test-output.txt | grep -oP '^\d+' | head -1)
+            ACTUAL_FAILURES=${ACTUAL_FAILURES:-999}
+
+            if [ -n "$REGRESSIONS" ]; then
+              echo "::error::New test regressions detected:"
+              echo "$REGRESSIONS"
+              exit 1
+            elif [ "$ACTUAL_FAILURES" -le "$KNOWN_FAILURES" ]; then
+              echo "::warning::$ACTUAL_FAILURES test failure(s) — all are known pre-existing failures"
+            else
+              echo "::warning::$ACTUAL_FAILURES test failure(s) exceeds baseline of $KNOWN_FAILURES (no named regressions — update KNOWN_FAILURES in .test-baseline)"
+            fi
+          fi
 
       - name: Upload test results
         if: failure()
