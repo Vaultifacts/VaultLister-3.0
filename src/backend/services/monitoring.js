@@ -2,6 +2,7 @@
 // Error tracking, uptime monitoring, and performance alerts
 
 import v8 from 'v8';
+import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
@@ -104,7 +105,7 @@ const monitoring = {
                 INSERT INTO error_logs (id, message, stack, context, created_at)
                 VALUES (?, ?, ?, ?, datetime('now'))
             `, [
-                require('crypto').randomUUID(),
+                crypto.randomUUID(),
                 error.message,
                 error.stack,
                 JSON.stringify(context)
@@ -185,7 +186,7 @@ const monitoring = {
                 INSERT INTO alerts (id, type, data, created_at)
                 VALUES (?, ?, ?, datetime('now'))
             `, [
-                require('crypto').randomUUID(),
+                crypto.randomUUID(),
                 type,
                 JSON.stringify(data)
             ]);
@@ -255,6 +256,19 @@ const monitoring = {
         }
 
         return checks;
+    },
+
+    // Get stats — shape expected by monitoring route and route tests
+    getStats() {
+        const m = this.getMetrics();
+        return {
+            summary: {
+                totalRequests: m.requests.total,
+                totalErrors: m.requests.errors,
+                avgResponseTime: m.latency.avg
+            },
+            endpoints: []
+        };
     },
 
     // Get metrics summary
@@ -353,8 +367,8 @@ export const monitor = monitoring;
 
 // Health checker used by monitoring route
 export const healthChecker = {
-    runAll() {
-        const health = monitoring.healthCheck();
+    async runAll() {
+        const health = await monitoring.healthCheck();
         return {
             status: health.database && health.memory ? 'healthy' : 'unhealthy',
             checks: {

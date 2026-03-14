@@ -137,7 +137,7 @@ export async function monitoringRouter(ctx) {
 
         try {
             const alerts = query.all(`
-                SELECT id, alert_type, data, created_at, acknowledged, acknowledged_at, acknowledged_by
+                SELECT id, type AS alert_type, data, created_at, acknowledged, acknowledged_at, acknowledged_by
                 FROM alerts
                 WHERE created_at > datetime('now', '-7 days')
                 ORDER BY created_at DESC
