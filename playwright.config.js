@@ -26,6 +26,7 @@ export default defineConfig({
     globalSetup: './e2e/global-setup.js',
     globalTeardown: './e2e/global-teardown.js',
     fullyParallel: true,
+    updateSnapshots: 'missing',
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 1,
     workers: process.env.PW_WORKERS ? parseInt(process.env.PW_WORKERS) : (process.env.CI ? 2 : 4),
