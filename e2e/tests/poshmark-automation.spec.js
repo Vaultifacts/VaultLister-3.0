@@ -54,6 +54,8 @@ const LIVE_SKIP_REASON = !CREDS_CONFIGURED
         : null;
 
 test.setTimeout(120_000);
+// Poshmark tests must run serially — they share a persistent browser profile
+test.describe.configure({ mode: 'serial' });
 
 // ── Session helper: launch persistent context (reuses existing browser profile) ──
 

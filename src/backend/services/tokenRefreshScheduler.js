@@ -16,8 +16,10 @@ const PERMANENT_ERROR_PATTERNS = ['invalid_client', 'invalid_grant', 'unauthoriz
 const FAILURE_RESET_HOURS = 24; // Reset failure count after this many hours of no errors
 
 let schedulerInterval = null;
+let poshmarkKeepAliveInterval = null;
 let isRunning = false;
 let lastRun = 0;
+const POSHMARK_KEEPALIVE_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 /**
  * Start the token refresh scheduler
@@ -62,6 +64,29 @@ export function startTokenRefreshScheduler() {
     // Then run on interval
     schedulerInterval = setInterval(refreshExpiringTokens, REFRESH_INTERVAL_MS);
 
+    // Start Poshmark session keep-alive (every 6 hours)
+    try {
+        const { refreshPoshmarkSession } = await import('../../../scripts/poshmark-keepalive.js');
+        // Run after a 30s delay (let server fully start first)
+        setTimeout(async () => {
+            try {
+                await refreshPoshmarkSession();
+            } catch (e) {
+                logger.warn('[TokenRefresh] Poshmark keep-alive initial run failed:', e.message);
+            }
+        }, 30000);
+        poshmarkKeepAliveInterval = setInterval(async () => {
+            try {
+                await refreshPoshmarkSession();
+            } catch (e) {
+                logger.warn('[TokenRefresh] Poshmark keep-alive failed:', e.message);
+            }
+        }, POSHMARK_KEEPALIVE_MS);
+        logger.info('[TokenRefresh] Poshmark session keep-alive scheduled (every 6h)');
+    } catch (e) {
+        logger.info('[TokenRefresh] Poshmark keep-alive not available (playwright not installed or script missing)');
+    }
+
     logger.info('[TokenRefresh] Scheduler started');
 }
 
@@ -72,8 +97,12 @@ export function stopTokenRefreshScheduler() {
     if (schedulerInterval) {
         clearInterval(schedulerInterval);
         schedulerInterval = null;
-        logger.info('[TokenRefresh] Scheduler stopped');
     }
+    if (poshmarkKeepAliveInterval) {
+        clearInterval(poshmarkKeepAliveInterval);
+        poshmarkKeepAliveInterval = null;
+    }
+    logger.info('[TokenRefresh] Scheduler stopped');
 }
 
 /**

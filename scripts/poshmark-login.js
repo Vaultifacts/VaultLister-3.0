@@ -11,13 +11,25 @@
 
 import { chromium } from 'playwright';
 import { join, dirname } from 'path';
+import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
 const PROFILE_DIR = join(ROOT_DIR, 'data', 'poshmark-profile');
-const BASE_URL = process.env.POSHMARK_COUNTRY === 'ca' ? 'https://poshmark.ca' : 'https://poshmark.com';
-const USERNAME = process.env.POSHMARK_USERNAME || '';
+
+function readEnvVar(name) {
+    try {
+        const env = readFileSync(join(ROOT_DIR, '.env'), 'utf8');
+        const match = env.match(new RegExp(`^${name}=(.+)$`, 'm'));
+        return match ? match[1].trim() : '';
+    } catch { return ''; }
+}
+
+const COUNTRY = (process.env.POSHMARK_COUNTRY || readEnvVar('POSHMARK_COUNTRY') || 'us').toLowerCase();
+const DOMAIN_MAP = { us: 'https://poshmark.com', ca: 'https://poshmark.ca', au: 'https://poshmark.com.au' };
+const BASE_URL = DOMAIN_MAP[COUNTRY] || DOMAIN_MAP.us;
+const USERNAME = process.env.POSHMARK_USERNAME || readEnvVar('POSHMARK_USERNAME');
 
 console.log('');
 console.log('=== Poshmark Login Helper ===');
