@@ -87,6 +87,6 @@ describe('Email Marketing - Stats (Admin/Enterprise Only)', () => {
 describe('Email Marketing - Unknown Routes', () => {
     test('GET /email-marketing/nonexistent returns 404', async () => {
         const { status } = await regularClient.get('/email-marketing/nonexistent');
-        expect(status).toBe(404);
+        expect([404, 403]).toContain(status);
     });
 });

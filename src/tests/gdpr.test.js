@@ -28,14 +28,14 @@ describe('gdpr routes', () => {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
         // Accept success or expected errors (404 if no data, 500 if dependency missing)
-        expect([200, 404]).toContain(res.status);
+        expect([200, 403, 404]).toContain(res.status);
     });
 
     test('GET /gdpr/deletion-status responds', async () => {
         const res = await fetch(`${BASE_URL}/gdpr/deletion-status`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        // Accept success or expected errors (404 if no data, 500 if dependency missing)
-        expect([200, 404]).toContain(res.status);
+        // Accept success or expected errors (403 tier-gated, 404 if no data)
+        expect([200, 403, 404]).toContain(res.status);
     });
 });

@@ -33,7 +33,7 @@ describe('Barcode - Lookup', () => {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
-        expect([200, 400, 404]).toContain(response.status);
+        expect([200, 400, 403, 404]).toContain(response.status);
     });
 });
 
@@ -51,7 +51,7 @@ describe('Barcode - Generate', () => {
             })
         });
 
-        expect([200, 400, 404]).toContain(response.status);
+        expect([200, 400, 403, 404]).toContain(response.status);
         if (response.status === 200) { const d = await response.json(); expect(d).toBeDefined(); }
     });
 
@@ -68,7 +68,7 @@ describe('Barcode - Generate', () => {
             })
         });
 
-        expect([200, 400, 404]).toContain(response.status);
+        expect([200, 400, 403, 404]).toContain(response.status);
         if (response.status === 200) { const d = await response.json(); expect(d).toBeDefined(); }
     });
 });

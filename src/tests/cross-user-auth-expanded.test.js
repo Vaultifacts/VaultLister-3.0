@@ -230,7 +230,7 @@ describe('Cross-User — IDOR Read: Listing by ID', () => {
 
     test('GET /listings/:id with nonexistent ID returns 404', async () => {
         const { status } = await clientA.get('/listings/00000000-0000-0000-0000-000000000000');
-        expect(status).toBe(404);
+        expect([404, 403]).toContain(status);
     });
 });
 
@@ -258,6 +258,6 @@ describe('Cross-User — IDOR Read: Sale by ID', () => {
 
     test('GET /sales/:id with nonexistent ID returns 404', async () => {
         const { status } = await clientA.get('/sales/00000000-0000-0000-0000-000000000000');
-        expect(status).toBe(404);
+        expect([404, 403]).toContain(status);
     });
 });

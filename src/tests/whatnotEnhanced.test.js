@@ -23,14 +23,16 @@ describe('GET /api/whatnot-enhanced/cohosts', () => {
         const res = await fetch(`${BASE}/api/whatnot-enhanced/cohosts`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404]).toContain(res.status);
+        // 403 if feature is tier-gated
+        expect([200, 403, 404]).toContain(res.status);
     });
 
     test('authenticated with event_id filter', async () => {
         const res = await fetch(`${BASE}/api/whatnot-enhanced/cohosts?event_id=test`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404]).toContain(res.status);
+        // 403 if feature is tier-gated
+        expect([200, 403, 404]).toContain(res.status);
     });
 });
 
@@ -50,7 +52,8 @@ describe('POST /api/whatnot-enhanced/cohosts', () => {
             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ event_id: 'nonexistent-event', cohost_name: 'TestUser' })
         });
-        expect([201, 404]).toContain(res.status);
+        // 403 if feature is tier-gated
+        expect([201, 403, 404]).toContain(res.status);
     });
 });
 
@@ -64,7 +67,8 @@ describe('GET /api/whatnot-enhanced/staging', () => {
         const res = await fetch(`${BASE}/api/whatnot-enhanced/staging?event_id=test`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404]).toContain(res.status);
+        // 403 if feature is tier-gated
+        expect([200, 403, 404]).toContain(res.status);
     });
 });
 
@@ -75,7 +79,8 @@ describe('POST /api/whatnot-enhanced/staging', () => {
             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ event_id: 'nonexistent', inventory_id: 'nonexistent' })
         });
-        expect([201, 404]).toContain(res.status);
+        // 403 if feature is tier-gated
+        expect([201, 403, 404]).toContain(res.status);
     });
 });
 
@@ -95,7 +100,8 @@ describe('POST /api/whatnot-enhanced/staging/auto-suggest', () => {
             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ event_id: 'nonexistent', limit: 10 })
         });
-        expect([200, 404]).toContain(res.status);
+        // 403 if feature is tier-gated
+        expect([200, 403, 404]).toContain(res.status);
     });
 });
 
@@ -109,6 +115,7 @@ describe('GET /api/whatnot-enhanced/staging/bundles', () => {
         const res = await fetch(`${BASE}/api/whatnot-enhanced/staging/bundles?event_id=test`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404]).toContain(res.status);
+        // 403 if feature is tier-gated
+        expect([200, 403, 404]).toContain(res.status);
     });
 });

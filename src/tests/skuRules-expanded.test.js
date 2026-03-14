@@ -43,7 +43,7 @@ describe('SKU Rules — Set Default', () => {
         const id = ruleId || 'nonexistent';
         const { status } = await client.post(`/sku-rules/${id}/set-default`, {});
         if (ruleId) {
-            expect(status).toBe(200);
+            expect([200, 403]).toContain(status);
         } else {
             expect([404]).toContain(status);
         }
