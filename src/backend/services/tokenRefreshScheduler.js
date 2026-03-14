@@ -24,7 +24,7 @@ const POSHMARK_KEEPALIVE_MS = 6 * 60 * 60 * 1000; // 6 hours
 /**
  * Start the token refresh scheduler
  */
-export function startTokenRefreshScheduler() {
+export async function startTokenRefreshScheduler() {
     if (schedulerInterval) {
         logger.info('[TokenRefresh] Scheduler already running');
         return;
