@@ -11,6 +11,8 @@ import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const TOKEN_EXPIRY_BUFFER_MS = 30 * 60 * 1000; // Refresh tokens expiring within 30 minutes
 const MAX_CONSECUTIVE_FAILURES = 5; // Auto-disconnect after this many failures
+const MAX_TRANSIENT_FAILURES = 10; // Higher threshold for transient errors (timeouts, 500s)
+const PERMANENT_ERROR_PATTERNS = ['invalid_client', 'invalid_grant', 'unauthorized_client'];
 const FAILURE_RESET_HOURS = 24; // Reset failure count after this many hours of no errors
 
 let schedulerInterval = null;
@@ -28,6 +30,31 @@ export function startTokenRefreshScheduler() {
 
     logger.info('[TokenRefresh] Starting token refresh scheduler...');
     logger.info(`[TokenRefresh] Interval: ${REFRESH_INTERVAL_MS / 1000}s, Buffer: ${TOKEN_EXPIRY_BUFFER_MS / 60000}min`);
+
+    // Auto-reset shops that were disconnected due to refresh failures
+    // This allows retry on server restart (e.g. after .env credentials are updated)
+    try {
+        const resetResult = query.run(`
+            UPDATE shops SET
+                is_connected = 1,
+                consecutive_refresh_failures = 0,
+                token_refresh_error = NULL,
+                token_refresh_error_at = NULL,
+                updated_at = datetime('now')
+            WHERE is_connected = 0
+              AND consecutive_refresh_failures >= ?
+              AND oauth_refresh_token IS NOT NULL
+              AND connection_type = 'oauth'
+        `, [MAX_CONSECUTIVE_FAILURES]);
+
+        if (resetResult.changes > 0) {
+            logger.info(`[TokenRefresh] Auto-reset ${resetResult.changes} shop(s) disconnected by refresh failures — will retry`);
+        }
+    } catch (err) {
+        if (!err.message.includes('no such column')) {
+            logger.warn('[TokenRefresh] Failed to auto-reset shops:', err.message);
+        }
+    }
 
     // Run immediately on start
     refreshExpiringTokens();
@@ -437,9 +464,14 @@ export async function refreshShopToken(shop) {
             }
         }
 
+        // Determine if this is a permanent error (no point retrying) or transient
+        const errorMsg = error.message || '';
+        const isPermanent = PERMANENT_ERROR_PATTERNS.some(p => errorMsg.includes(p));
+        const maxForThisError = isPermanent ? 2 : MAX_TRANSIENT_FAILURES;
+
         // Auto-disconnect after too many failures
-        if (failures >= MAX_CONSECUTIVE_FAILURES) {
-            logger.info(`[TokenRefresh] Auto-disconnecting ${shop.platform} after ${failures} failures`);
+        if (failures >= maxForThisError) {
+            logger.info(`[TokenRefresh] Auto-disconnecting ${shop.platform} after ${failures} ${isPermanent ? 'permanent' : 'transient'} failures`);
 
             query.run(`
                 UPDATE shops SET

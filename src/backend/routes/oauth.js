@@ -271,6 +271,74 @@ export async function oauthRouter(ctx) {
         }
     }
 
+    // POST /api/oauth/reconnect/:platform - Reset failure state and retry token refresh
+    if (method === 'POST' && path.startsWith('/reconnect/')) {
+        const platform = path.split('/')[2];
+
+        const shop = query.get(`
+            SELECT * FROM shops
+            WHERE user_id = ? AND platform = ? AND connection_type = 'oauth'
+        `, [user.id, platform]);
+
+        if (!shop || !shop.oauth_refresh_token) {
+            return { status: 404, data: { error: 'No OAuth connection found or no refresh token — re-authorize via Settings → My Shops' } };
+        }
+
+        // Reset failure state
+        const now = new Date().toISOString();
+        try {
+            query.run(`
+                UPDATE shops SET
+                    is_connected = 1,
+                    consecutive_refresh_failures = 0,
+                    token_refresh_error = NULL,
+                    token_refresh_error_at = NULL,
+                    updated_at = ?
+                WHERE id = ?
+            `, [now, shop.id]);
+        } catch (err) {
+            if (err.message.includes('no such column')) {
+                query.run(`UPDATE shops SET is_connected = 1, updated_at = ? WHERE id = ?`, [now, shop.id]);
+            }
+        }
+
+        // Immediately attempt token refresh
+        try {
+            const refreshToken = decryptToken(shop.oauth_refresh_token);
+            const oauthMode = process.env.OAUTH_MODE || 'mock';
+            const config = getOAuthConfig(platform, oauthMode);
+            const tokenResponse = await refreshAccessToken(platform, refreshToken, config, oauthMode);
+
+            const encryptedAccessToken = encryptToken(tokenResponse.access_token);
+            const encryptedRefreshToken = tokenResponse.refresh_token
+                ? encryptToken(tokenResponse.refresh_token)
+                : shop.oauth_refresh_token;
+            const expiresAt = new Date(Date.now() + (tokenResponse.expires_in || 3600) * 1000);
+
+            query.run(`
+                UPDATE shops SET
+                    oauth_token = ?,
+                    oauth_refresh_token = ?,
+                    oauth_token_expires_at = ?,
+                    updated_at = ?
+                WHERE id = ?
+            `, [encryptedAccessToken, encryptedRefreshToken, expiresAt.toISOString(), now, shop.id]);
+
+            return {
+                status: 200,
+                data: { success: true, message: `${platform} reconnected successfully`, expiresAt: expiresAt.toISOString() }
+            };
+        } catch (error) {
+            // Refresh failed — mark disconnected again
+            query.run(`UPDATE shops SET is_connected = 0, updated_at = ? WHERE id = ?`, [now, shop.id]);
+            logger.error('[OAuth] Reconnect refresh failed', user?.id, { detail: error?.message });
+            return {
+                status: 400,
+                data: { error: `Token refresh failed: ${error.message}. Re-authorize via Settings → My Shops → Connect ${platform}.` }
+            };
+        }
+    }
+
     // DELETE /api/oauth/revoke/:platform - Revoke OAuth connection
     if (method === 'DELETE' && path.startsWith('/revoke/')) {
         const platform = path.split('/')[2];
