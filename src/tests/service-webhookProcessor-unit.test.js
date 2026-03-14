@@ -1,7 +1,13 @@
 import { describe, expect, test, mock, beforeEach, afterAll } from 'bun:test';
 import crypto from 'crypto';
 
-// ===== Mocks (ONLY database.js and logger.js) =====
+// ===== Mocks (database.js, logger.js, AND notificationService.js) =====
+// notificationService.js is mocked explicitly here to prevent contamination from
+// arch-reliability-failure-modes.test.js and arch-async-task-worker.test.js, which
+// both mock notificationService with a no-op stub. On Linux Bun 1.3.9, mock.module
+// is global — if their stub wins the race, createNotification never calls query.run,
+// breaking the tests that verify INSERT INTO notifications was called.
+// By re-declaring the mock here, this file owns the notificationService behavior.
 
 const mockQueryGet = mock();
 const mockQueryAll = mock(() => []);
@@ -26,8 +32,28 @@ mock.module('../backend/shared/logger.js', () => ({
   default: { info: mock(), error: mock(), warn: mock(), debug: mock() }
 }));
 
-// notificationService loads naturally — it imports the mocked database.js
-// webhookProcessor imports notificationService — all natural
+// notificationService stub — createNotification must call mockQueryRun with
+// INSERT INTO notifications so the test assertions (which check mockQueryRun.mock.calls)
+// remain valid even when this file runs alongside files that mock notificationService
+// with a different (no-op) stub.
+const { v4: _uuidv4Notif } = await import('uuid');
+mock.module('../backend/services/notificationService.js', () => ({
+  createNotification: (userId, { type, title, message, data = null }) => {
+    const id = _uuidv4Notif();
+    mockQueryRun(
+      'INSERT INTO notifications (id, user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, userId, type, title, message, data ? JSON.stringify(data) : null]
+    );
+    return { id, user_id: userId, type, title, message, data, is_read: false, created_at: new Date().toISOString() };
+  },
+  createOAuthNotification: mock(() => undefined),
+  NotificationTypes: {
+    TOKEN_REFRESH_FAILED: 'TOKEN_REFRESH_FAILED',
+    OAUTH_DISCONNECTED: 'OAUTH_DISCONNECTED',
+    SYNC_COMPLETED: 'SYNC_COMPLETED',
+  },
+  default: {}
+}));
 
 // ===== Import module under test =====
 

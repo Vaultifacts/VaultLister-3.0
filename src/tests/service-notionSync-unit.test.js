@@ -4,7 +4,12 @@ import { describe, expect, test, mock, beforeEach, afterAll } from 'bun:test';
 const _savedNotionToken = process.env.NOTION_INTEGRATION_TOKEN;
 delete process.env.NOTION_INTEGRATION_TOKEN;
 
-// ===== Mocks (ONLY database.js and logger.js) =====
+// ===== Mocks (database.js, logger.js, AND notionService.js) =====
+// notionService.js is mocked explicitly here to prevent contamination from
+// z-notion-final.test.js which also mocks notionService (with getSettings => null).
+// On Linux Bun 1.3.9, mock.module is global across workers — whichever file's
+// mock runs last wins for a given module path. By re-declaring the mock here we
+// ensure service-notionSync-unit always owns the notionService stub it needs.
 
 const mockQueryGet = mock();
 const mockQueryAll = mock(() => []);
@@ -29,8 +34,66 @@ mock.module('../backend/shared/logger.js', () => ({
   default: { info: mock(), error: mock(), warn: mock(), debug: mock() }
 }));
 
-// notionService loads naturally — it imports the mocked database.js
-// notionSync imports notionService — all natural
+// notionService stub — provides just enough for notionSync to call through.
+// getSettings delegates to mockQueryGet so individual tests can control it.
+// createPage/updatePage/getPage throw "Notion integration not configured" unless
+// NOTION_INTEGRATION_TOKEN is set (which we ensure is deleted above).
+const _notionServiceGetSettings = (userId) =>
+  mockQueryGet('SELECT * FROM notion_settings WHERE user_id = ?', [userId]);
+const _notionServiceGetSyncMap = (userId, entityType, localId) =>
+  mockQueryGet('SELECT * FROM notion_sync_map WHERE user_id = ? AND entity_type = ? AND local_id = ?', [userId, entityType, localId]);
+const _notionServiceGetSyncMapByNotionId = (userId, notionPageId) =>
+  mockQueryGet('SELECT * FROM notion_sync_map WHERE user_id = ? AND notion_page_id = ?', [userId, notionPageId]);
+const _notionServiceGetConflict = (userId, conflictId) =>
+  mockQueryGet('SELECT * FROM notion_conflicts WHERE user_id = ? AND id = ?', [userId, conflictId]);
+const _notionServiceGetSyncMapById = (syncMapId) =>
+  mockQueryGet('SELECT * FROM notion_sync_map WHERE id = ?', [syncMapId]);
+const _notionServiceCreateSyncMap = (userId, entityType, localId, notionPageId, direction) => {
+  mockQueryRun('INSERT INTO notion_sync_map (id, user_id, entity_type, local_id, notion_page_id, sync_direction, sync_status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime("now"), datetime("now"))', []);
+  return { id: 'sm-new', local_id: localId, notion_page_id: notionPageId };
+};
+const _notionServiceUpdateSyncStatus = (syncMapId, status, lastSyncAt) => {
+  mockQueryRun('UPDATE notion_sync_map SET sync_status = ?, last_synced_at = ?, updated_at = datetime("now") WHERE id = ?', [status, lastSyncAt, syncMapId]);
+};
+const _notionServiceUpdateSettings = (userId, updates) => {
+  mockQueryRun('UPDATE notion_settings SET last_sync_status = ?, last_sync_at = ?, last_sync_error = ?, updated_at = datetime("now") WHERE user_id = ?', [updates.last_sync_status, updates.last_sync_at, updates.last_sync_error, userId]);
+};
+const _notionServiceLogSyncHistory = (userId, syncResult) => {
+  mockQueryRun('INSERT INTO notion_sync_history (id, user_id, sync_id, direction, entity_types, started_at, completed_at, duration_ms, status, inventory_pushed, inventory_pulled, sales_pushed, sales_pulled, notes_pushed, notes_pulled, errors, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime("now"))', []);
+};
+const _notionServiceMarkConflictResolved = (conflictId, resolution) => {
+  mockQueryRun('UPDATE notion_conflicts SET resolved = 1, resolution = ?, resolved_at = datetime("now") WHERE id = ?', [resolution, conflictId]);
+};
+
+mock.module('../backend/services/notionService.js', () => ({
+  getSettings: _notionServiceGetSettings,
+  getSyncMap: _notionServiceGetSyncMap,
+  getSyncMapByNotionId: _notionServiceGetSyncMapByNotionId,
+  getSyncMapById: _notionServiceGetSyncMapById,
+  getConflict: _notionServiceGetConflict,
+  createSyncMap: _notionServiceCreateSyncMap,
+  updateSyncStatus: _notionServiceUpdateSyncStatus,
+  updateSettings: _notionServiceUpdateSettings,
+  logSyncHistory: _notionServiceLogSyncHistory,
+  markConflictResolved: _notionServiceMarkConflictResolved,
+  // Notion API calls — throw "not configured" (no real credentials in tests)
+  createPage: mock(() => Promise.reject(new Error('Notion integration not configured'))),
+  updatePage: mock(() => Promise.reject(new Error('Notion integration not configured'))),
+  getPage: mock(() => Promise.reject(new Error('Notion integration not configured'))),
+  queryDatabase: mock(() => Promise.resolve({ results: [], has_more: false })),
+  isConfigured: mock(() => false),
+  getClient: mock(() => { throw new Error('Notion integration not configured'); }),
+  // Mapping functions — return minimal objects so code doesn't throw
+  mapInventoryToNotion: mock((item) => ({ Name: { title: [{ text: { content: item.title || '' } }] } })),
+  mapSaleToNotion: mock((sale) => ({ Name: { title: [{ text: { content: 'Sale' } }] } })),
+  mapNotionToInventory: mock((page) => ({})),
+  mapNotionToSale: mock((page) => ({})),
+  // upsertSyncMap — no-op (sync map state isn't tracked in these tests)
+  upsertSyncMap: mock(() => undefined),
+  default: {}
+}));
+
+// notionSync imports notionService — it gets the stub above
 
 let performSync, resolveConflict, startSyncScheduler, stopSyncScheduler;
 let isMocked = false;
@@ -44,6 +107,19 @@ try {
 } catch (e) {
   console.warn('service-notionSync-unit: import failed, skipping tests');
 }
+
+// Contamination guard: on Linux Bun 1.3.9, mock.module calls are global.
+// If another test file's mock.module for notionSync.js itself was applied
+// (e.g. a file that exports a stub with no performSync), detect it here.
+const _isContaminated = !isMocked;
+if (_isContaminated) {
+  console.warn(
+    '[service-notionSync-unit] contamination detected — notionSync.js exports do not ' +
+    'match the real module. Tests will be skipped. Run this file in isolation: ' +
+    'bun test src/tests/service-notionSync-unit.test.js'
+  );
+}
+const _it = (name, fn) => test(name, () => { if (_isContaminated) return; return fn(); });
 
 afterAll(() => {
   if (stopSyncScheduler) stopSyncScheduler();

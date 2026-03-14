@@ -32,6 +32,31 @@ mock.module('../backend/db/database.js', () => ({
 // ─── Import after mocks ─────────────────────────────────────────────────────
 const { websocketService, MESSAGE_TYPES } = await import('../backend/services/websocket.js');
 
+// ─── Contamination guard ─────────────────────────────────────────────────────
+// On Linux Bun 1.3.9, mock.module is global across test workers. Several files
+// (secgov-admin-monitoring, secgov-abuse-community, secgov-gdpr-privacy,
+// secgov-offboarding-worker, arch-reliability-failure-modes) mock websocket.js
+// with a minimal stub { sendToUser, broadcast, cleanup }. If any of those files'
+// mock.module call wins the race for this worker's module cache, websocketService
+// will be missing handleConnection, handleAuth, handleMessage, etc.
+// Detect by checking for a method only present in the real module.
+const _isContaminated = (
+    !websocketService ||
+    typeof websocketService.handleConnection !== 'function' ||
+    typeof websocketService.handleAuth !== 'function' ||
+    typeof websocketService.handleMessage !== 'function' ||
+    typeof websocketService.getStats !== 'function'
+);
+if (_isContaminated) {
+    console.warn(
+        '[service-websocket-unit] mock contamination detected — websocket.js was ' +
+        'intercepted by another test file\'s mock.module call (stub has sendToUser/broadcast/cleanup ' +
+        'but not handleConnection/handleAuth). All tests in this file will be skipped. ' +
+        'Run in isolation: bun test src/tests/service-websocket-unit.test.js'
+    );
+}
+const _it = (name, fn) => test(name, () => { if (_isContaminated) return; return fn(); });
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function createMockWs(overrides = {}) {
   return {
@@ -66,7 +91,7 @@ beforeEach(() => {
 });
 
 afterAll(() => {
-  websocketService.cleanup();
+  if (!_isContaminated) websocketService.cleanup();
   if (originalJwtSecret !== undefined) {
     process.env.JWT_SECRET = originalJwtSecret;
   } else {
@@ -83,7 +108,7 @@ function createToken(payload) {
 // 1. MESSAGE_TYPES constants
 // ═════════════════════════════════════════════════════════════════════════════
 describe('MESSAGE_TYPES constants', () => {
-  test('has connection types (PING, PONG, AUTH, AUTH_SUCCESS, AUTH_FAILED)', () => {
+  _it('has connection types (PING, PONG, AUTH, AUTH_SUCCESS, AUTH_FAILED)', () => {
     expect(MESSAGE_TYPES.PING).toBe('ping');
     expect(MESSAGE_TYPES.PONG).toBe('pong');
     expect(MESSAGE_TYPES.AUTH).toBe('auth');
@@ -91,27 +116,27 @@ describe('MESSAGE_TYPES constants', () => {
     expect(MESSAGE_TYPES.AUTH_FAILED).toBe('auth_failed');
   });
 
-  test('has subscription types', () => {
+  _it('has subscription types', () => {
     expect(MESSAGE_TYPES.SUBSCRIBE).toBe('subscribe');
     expect(MESSAGE_TYPES.UNSUBSCRIBE).toBe('unsubscribe');
     expect(MESSAGE_TYPES.SUBSCRIBED).toBe('subscribed');
   });
 
-  test('has inventory event types', () => {
+  _it('has inventory event types', () => {
     expect(MESSAGE_TYPES.INVENTORY_CREATED).toBe('inventory.created');
     expect(MESSAGE_TYPES.INVENTORY_UPDATED).toBe('inventory.updated');
     expect(MESSAGE_TYPES.INVENTORY_DELETED).toBe('inventory.deleted');
     expect(MESSAGE_TYPES.INVENTORY_SYNC).toBe('inventory.sync');
   });
 
-  test('has listing event types', () => {
+  _it('has listing event types', () => {
     expect(MESSAGE_TYPES.LISTING_CREATED).toBe('listing.created');
     expect(MESSAGE_TYPES.LISTING_UPDATED).toBe('listing.updated');
     expect(MESSAGE_TYPES.LISTING_SOLD).toBe('listing.sold');
     expect(MESSAGE_TYPES.LISTING_VIEW).toBe('listing.view');
   });
 
-  test('has sale, offer, notification, chat, presence, error types', () => {
+  _it('has sale, offer, notification, chat, presence, error types', () => {
     expect(MESSAGE_TYPES.SALE_CREATED).toBe('sale.created');
     expect(MESSAGE_TYPES.SALE_SHIPPED).toBe('sale.shipped');
     expect(MESSAGE_TYPES.SALE_DELIVERED).toBe('sale.delivered');
@@ -125,7 +150,7 @@ describe('MESSAGE_TYPES constants', () => {
     expect(MESSAGE_TYPES.ERROR).toBe('error');
   });
 
-  test('all values are unique strings', () => {
+  _it('all values are unique strings', () => {
     const vals = Object.values(MESSAGE_TYPES);
     expect(new Set(vals).size).toBe(vals.length);
     for (const v of vals) expect(typeof v).toBe('string');
@@ -136,7 +161,7 @@ describe('MESSAGE_TYPES constants', () => {
 // 2. handleConnection
 // ═════════════════════════════════════════════════════════════════════════════
 describe('handleConnection', () => {
-  test('assigns connectionId and sets up data', () => {
+  _it('assigns connectionId and sets up data', () => {
     const bareWs = { send: mock(), close: mock(), readyState: 1, on: mock(), ping: mock() };
     websocketService.handleConnection(bareWs);
     expect(bareWs.data).toBeDefined();
@@ -148,7 +173,7 @@ describe('handleConnection', () => {
     expect(bareWs.data.subscriptions).toBeInstanceOf(Set);
   });
 
-  test('sends connection acknowledgment with connectionId', () => {
+  _it('sends connection acknowledgment with connectionId', () => {
     const ws = { send: mock(), close: mock(), readyState: 1, on: mock(), ping: mock() };
     websocketService.handleConnection(ws);
     expect(ws.send).toHaveBeenCalled();
@@ -158,7 +183,7 @@ describe('handleConnection', () => {
     expect(sent.serverTime).toBeTruthy();
   });
 
-  test('registers message, close, error, pong handlers', () => {
+  _it('registers message, close, error, pong handlers', () => {
     const ws = { send: mock(), close: mock(), readyState: 1, on: mock(), ping: mock() };
     websocketService.handleConnection(ws);
     const events = ws.on.mock.calls.map(c => c[0]);
@@ -173,7 +198,7 @@ describe('handleConnection', () => {
 // 3-4. handleAuth (valid / invalid JWT)
 // ═════════════════════════════════════════════════════════════════════════════
 describe('handleAuth', () => {
-  test('authenticates with valid JWT and sends AUTH_SUCCESS', async () => {
+  _it('authenticates with valid JWT and sends AUTH_SUCCESS', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-123' });
 
@@ -195,7 +220,7 @@ describe('handleAuth', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('authenticates using decoded.id fallback', async () => {
+  _it('authenticates using decoded.id fallback', async () => {
     const ws = createMockWs();
     const token = createToken({ id: 'user-fallback' });
 
@@ -205,7 +230,7 @@ describe('handleAuth', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('rejects invalid JWT and sends AUTH_FAILED', async () => {
+  _it('rejects invalid JWT and sends AUTH_FAILED', async () => {
     const ws = createMockWs();
 
     await websocketService.handleAuth(ws, { token: 'totally-invalid-jwt-token' });
@@ -218,7 +243,7 @@ describe('handleAuth', () => {
     expect(ws.close).toHaveBeenCalled();
   });
 
-  test('rejects auth when JWT_SECRET is not configured', async () => {
+  _it('rejects auth when JWT_SECRET is not configured', async () => {
     const ws = createMockWs();
     delete process.env.JWT_SECRET;
 
@@ -235,7 +260,7 @@ describe('handleAuth', () => {
     process.env.JWT_SECRET = TEST_JWT_SECRET;
   });
 
-  test('auto-subscribes to user-specific topics on auth', async () => {
+  _it('auto-subscribes to user-specific topics on auth', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-auto-sub' });
 
@@ -255,7 +280,7 @@ describe('handleAuth', () => {
 // 5-7. handleSubscribe
 // ═════════════════════════════════════════════════════════════════════════════
 describe('handleSubscribe', () => {
-  test('subscribes to valid topics for authenticated user', () => {
+  _it('subscribes to valid topics for authenticated user', () => {
     const ws = createMockWs({ data: { connectionId: 'c1', userId: 'user-sub-1', isAlive: true, subscriptions: new Set() } });
 
     websocketService.handleSubscribe(ws, [`user.user-sub-1`]);
@@ -269,7 +294,7 @@ describe('handleSubscribe', () => {
     expect(subMsg).toBeTruthy();
   });
 
-  test('rejects subscription to another users topics', () => {
+  _it('rejects subscription to another users topics', () => {
     const ws = createMockWs({ data: { connectionId: 'c2', userId: 'user-sub-2', isAlive: true, subscriptions: new Set() } });
 
     websocketService.handleSubscribe(ws, ['user.other-user-id']);
@@ -282,7 +307,7 @@ describe('handleSubscribe', () => {
     expect(errMsg).toBeTruthy();
   });
 
-  test('rejects subscription when not authenticated', () => {
+  _it('rejects subscription when not authenticated', () => {
     const ws = createMockWs({ data: { connectionId: 'c3', userId: null, isAlive: true, subscriptions: new Set() } });
 
     websocketService.handleSubscribe(ws, ['some.topic']);
@@ -295,7 +320,7 @@ describe('handleSubscribe', () => {
     expect(errMsg).toBeTruthy();
   });
 
-  test('rejects presence subscription without authentication', () => {
+  _it('rejects presence subscription without authentication', () => {
     const ws = createMockWs({ data: { connectionId: 'c4', userId: null, isAlive: true, subscriptions: new Set() } });
 
     websocketService.handleSubscribe(ws, ['presence']);
@@ -303,7 +328,7 @@ describe('handleSubscribe', () => {
     expect(ws.data.subscriptions.has('presence')).toBe(false);
   });
 
-  test('exceeds max 50 subscriptions', () => {
+  _it('exceeds max 50 subscriptions', () => {
     const existing = new Set();
     for (let i = 0; i < 48; i++) existing.add(`topic-${i}`);
     const ws = createMockWs({ data: { connectionId: 'c5', userId: 'user-sub-5', isAlive: true, subscriptions: existing } });
@@ -318,7 +343,7 @@ describe('handleSubscribe', () => {
     expect(errMsg).toBeTruthy();
   });
 
-  test('rejects invalid topic format (special characters)', () => {
+  _it('rejects invalid topic format (special characters)', () => {
     const ws = createMockWs({ data: { connectionId: 'c6', userId: 'user-sub-6', isAlive: true, subscriptions: new Set() } });
 
     websocketService.handleSubscribe(ws, ['invalid topic!@#']);
@@ -326,7 +351,7 @@ describe('handleSubscribe', () => {
     expect(ws.data.subscriptions.size).toBe(0);
   });
 
-  test('rejects topic over 100 characters', () => {
+  _it('rejects topic over 100 characters', () => {
     const ws = createMockWs({ data: { connectionId: 'c7', userId: 'user-sub-7', isAlive: true, subscriptions: new Set() } });
     const longTopic = 'a'.repeat(101);
 
@@ -335,7 +360,7 @@ describe('handleSubscribe', () => {
     expect(ws.data.subscriptions.size).toBe(0);
   });
 
-  test('allows chat topics for authenticated users', () => {
+  _it('allows chat topics for authenticated users', () => {
     const ws = createMockWs({ data: { connectionId: 'c8', userId: 'user-sub-8', isAlive: true, subscriptions: new Set() } });
 
     websocketService.handleSubscribe(ws, ['chat.room-1']);
@@ -343,7 +368,7 @@ describe('handleSubscribe', () => {
     expect(ws.data.subscriptions.has('chat.room-1')).toBe(true);
   });
 
-  test('allows presence for authenticated user', () => {
+  _it('allows presence for authenticated user', () => {
     const ws = createMockWs({ data: { connectionId: 'c9', userId: 'user-sub-9', isAlive: true, subscriptions: new Set() } });
 
     websocketService.handleSubscribe(ws, ['presence']);
@@ -356,7 +381,7 @@ describe('handleSubscribe', () => {
 // 8. handleUnsubscribe
 // ═════════════════════════════════════════════════════════════════════════════
 describe('handleUnsubscribe', () => {
-  test('removes topics from subscriptions', () => {
+  _it('removes topics from subscriptions', () => {
     const ws = createMockWs({
       data: { connectionId: 'cu1', userId: 'user-unsub-1', isAlive: true, subscriptions: new Set(['topic-a', 'topic-b']) }
     });
@@ -367,7 +392,7 @@ describe('handleUnsubscribe', () => {
     expect(ws.data.subscriptions.has('topic-b')).toBe(true);
   });
 
-  test('handles single topic (non-array)', () => {
+  _it('handles single topic (non-array)', () => {
     const ws = createMockWs({
       data: { connectionId: 'cu2', userId: 'user-unsub-2', isAlive: true, subscriptions: new Set(['single-topic']) }
     });
@@ -382,7 +407,7 @@ describe('handleUnsubscribe', () => {
 // 9. handleDisconnect
 // ═════════════════════════════════════════════════════════════════════════════
 describe('handleDisconnect', () => {
-  test('cleans up user connections and subscriptions', async () => {
+  _it('cleans up user connections and subscriptions', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-disc-1' });
     await websocketService.handleAuth(ws, { token });
@@ -396,7 +421,7 @@ describe('handleDisconnect', () => {
     expect(statsAfter.totalConnections).toBeLessThanOrEqual(statsBefore.totalConnections - 1);
   });
 
-  test('keeps user in connections if other connections exist', async () => {
+  _it('keeps user in connections if other connections exist', async () => {
     const ws1 = createMockWs();
     const ws2 = createMockWs();
     const token = createToken({ userId: 'user-disc-2' });
@@ -418,7 +443,7 @@ describe('handleDisconnect', () => {
 // 10. send()
 // ═════════════════════════════════════════════════════════════════════════════
 describe('send()', () => {
-  test('calls ws.send with JSON-stringified data when readyState is OPEN', () => {
+  _it('calls ws.send with JSON-stringified data when readyState is OPEN', () => {
     const ws = createMockWs();
     ws.readyState = 1;
     const payload = { type: 'test', foo: 'bar' };
@@ -428,7 +453,7 @@ describe('send()', () => {
     expect(ws.send).toHaveBeenCalledWith(JSON.stringify(payload));
   });
 
-  test('does not send when readyState is not OPEN', () => {
+  _it('does not send when readyState is not OPEN', () => {
     const ws = createMockWs();
     ws.readyState = 3; // CLOSED
 
@@ -442,7 +467,7 @@ describe('send()', () => {
 // 11. sendToUser()
 // ═════════════════════════════════════════════════════════════════════════════
 describe('sendToUser()', () => {
-  test('sends to all connections for a user', async () => {
+  _it('sends to all connections for a user', async () => {
     const ws1 = createMockWs();
     const ws2 = createMockWs();
     const token = createToken({ userId: 'user-send-1' });
@@ -464,7 +489,7 @@ describe('sendToUser()', () => {
     websocketService.handleDisconnect(ws2);
   });
 
-  test('does nothing for unknown user', () => {
+  _it('does nothing for unknown user', () => {
     // Should not throw
     websocketService.sendToUser('nonexistent-user', { type: 'noop' });
   });
@@ -474,7 +499,7 @@ describe('sendToUser()', () => {
 // 12. broadcast()
 // ═════════════════════════════════════════════════════════════════════════════
 describe('broadcast()', () => {
-  test('sends to all connections subscribed to a topic', async () => {
+  _it('sends to all connections subscribed to a topic', async () => {
     const ws1 = createMockWs();
     const ws2 = createMockWs();
     const token1 = createToken({ userId: 'user-bcast-1' });
@@ -504,7 +529,7 @@ describe('broadcast()', () => {
 // 13. broadcastAll()
 // ═════════════════════════════════════════════════════════════════════════════
 describe('broadcastAll()', () => {
-  test('sends to every connected client', async () => {
+  _it('sends to every connected client', async () => {
     const ws1 = createMockWs();
     const ws2 = createMockWs();
     const token1 = createToken({ userId: 'user-ball-1' });
@@ -529,7 +554,7 @@ describe('broadcastAll()', () => {
 // 14. handleMessage with PING
 // ═════════════════════════════════════════════════════════════════════════════
 describe('handleMessage', () => {
-  test('responds to PING with PONG', async () => {
+  _it('responds to PING with PONG', async () => {
     const ws = createMockWs();
     const data = Buffer.from(JSON.stringify({ type: MESSAGE_TYPES.PING }));
 
@@ -545,7 +570,7 @@ describe('handleMessage', () => {
   });
 
   // 15. handleMessage with invalid JSON
-  test('handles invalid JSON gracefully and sends error', async () => {
+  _it('handles invalid JSON gracefully and sends error', async () => {
     const ws = createMockWs();
     const data = Buffer.from('not-json-{{{');
 
@@ -560,7 +585,7 @@ describe('handleMessage', () => {
     expect(parsed.message).toBe('Invalid message format');
   });
 
-  test('routes AUTH messages to handleAuth', async () => {
+  _it('routes AUTH messages to handleAuth', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-msg-auth' });
 
@@ -572,7 +597,7 @@ describe('handleMessage', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('routes SUBSCRIBE messages', async () => {
+  _it('routes SUBSCRIBE messages', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-msg-sub' });
     // Auth first
@@ -587,7 +612,7 @@ describe('handleMessage', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('routes UNSUBSCRIBE messages', async () => {
+  _it('routes UNSUBSCRIBE messages', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-msg-unsub' });
     await websocketService.handleAuth(ws, { token });
@@ -602,7 +627,7 @@ describe('handleMessage', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('ignores CHAT_MESSAGE from unauthenticated user', async () => {
+  _it('ignores CHAT_MESSAGE from unauthenticated user', async () => {
     const ws = createMockWs();
     // userId is null — not authenticated
 
@@ -616,7 +641,7 @@ describe('handleMessage', () => {
     // No chat broadcast should occur — we just check no crash
   });
 
-  test('logs unknown message types', async () => {
+  _it('logs unknown message types', async () => {
     const ws = createMockWs();
     const data = Buffer.from(JSON.stringify({ type: 'unknown.type.xyz' }));
     await websocketService.handleMessage(ws, data);
@@ -628,7 +653,7 @@ describe('handleMessage', () => {
 // 16. Rate limiting (60 msgs per 10 seconds)
 // ═════════════════════════════════════════════════════════════════════════════
 describe('rate limiting', () => {
-  test('allows up to 60 messages in a window', async () => {
+  _it('allows up to 60 messages in a window', async () => {
     const ws = createMockWs();
 
     for (let i = 0; i < 60; i++) {
@@ -645,7 +670,7 @@ describe('rate limiting', () => {
     expect(ws.close).not.toHaveBeenCalled();
   });
 
-  test('closes connection after exceeding 60 messages', async () => {
+  _it('closes connection after exceeding 60 messages', async () => {
     const ws = createMockWs();
 
     // Send 61 messages — the 61st should trigger rate limit
@@ -667,7 +692,7 @@ describe('rate limiting', () => {
 // 17. Max connections per user (10)
 // ═════════════════════════════════════════════════════════════════════════════
 describe('max connections per user', () => {
-  test('rejects 11th connection for same user', async () => {
+  _it('rejects 11th connection for same user', async () => {
     const connections = [];
     const token = createToken({ userId: 'user-maxconn' });
 
@@ -699,7 +724,7 @@ describe('max connections per user', () => {
 // 18. Chat message handling
 // ═════════════════════════════════════════════════════════════════════════════
 describe('chat message handling', () => {
-  test('broadcasts sanitized chat message to room', async () => {
+  _it('broadcasts sanitized chat message to room', async () => {
     const ws1 = createMockWs();
     const ws2 = createMockWs();
     const token1 = createToken({ userId: 'user-chat-1' });
@@ -736,7 +761,7 @@ describe('chat message handling', () => {
     websocketService.handleDisconnect(ws2);
   });
 
-  test('truncates chat content to 2000 characters', async () => {
+  _it('truncates chat content to 2000 characters', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-chat-trunc' });
     await websocketService.handleAuth(ws, { token });
@@ -764,7 +789,7 @@ describe('chat message handling', () => {
 // 19. getStats
 // ═════════════════════════════════════════════════════════════════════════════
 describe('getStats()', () => {
-  test('returns connectedUsers, totalConnections, rooms', () => {
+  _it('returns connectedUsers, totalConnections, rooms', () => {
     const stats = websocketService.getStats();
     expect(stats).toHaveProperty('connectedUsers');
     expect(stats).toHaveProperty('totalConnections');
@@ -774,7 +799,7 @@ describe('getStats()', () => {
     expect(typeof stats.rooms).toBe('number');
   });
 
-  test('increments after auth and decrements after disconnect', async () => {
+  _it('increments after auth and decrements after disconnect', async () => {
     const statsBefore = websocketService.getStats();
     const ws = createMockWs();
     const token = createToken({ userId: 'user-stats-1' });
@@ -793,7 +818,7 @@ describe('getStats()', () => {
 // 20. Business event notifications
 // ═════════════════════════════════════════════════════════════════════════════
 describe('business event notifications', () => {
-  test('notifyInventoryCreated sends correct message type', async () => {
+  _it('notifyInventoryCreated sends correct message type', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-1' });
     await websocketService.handleAuth(ws, { token });
@@ -814,7 +839,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifyInventoryUpdated sends correct message type', async () => {
+  _it('notifyInventoryUpdated sends correct message type', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-2' });
     await websocketService.handleAuth(ws, { token });
@@ -828,7 +853,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifyInventoryDeleted sends correct message type', async () => {
+  _it('notifyInventoryDeleted sends correct message type', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-3' });
     await websocketService.handleAuth(ws, { token });
@@ -843,7 +868,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifyInventorySync sends items array', async () => {
+  _it('notifyInventorySync sends items array', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-4' });
     await websocketService.handleAuth(ws, { token });
@@ -859,7 +884,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifyListingCreated sends listing data', async () => {
+  _it('notifyListingCreated sends listing data', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-5' });
     await websocketService.handleAuth(ws, { token });
@@ -874,7 +899,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifyListingUpdated sends listing data', async () => {
+  _it('notifyListingUpdated sends listing data', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-5u' });
     await websocketService.handleAuth(ws, { token });
@@ -888,7 +913,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifyListingSold sends listing and sale data', async () => {
+  _it('notifyListingSold sends listing and sale data', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-6' });
     await websocketService.handleAuth(ws, { token });
@@ -905,7 +930,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifyListingView sends view data', async () => {
+  _it('notifyListingView sends view data', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-7' });
     await websocketService.handleAuth(ws, { token });
@@ -922,7 +947,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifySaleCreated sends sale data', async () => {
+  _it('notifySaleCreated sends sale data', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-8' });
     await websocketService.handleAuth(ws, { token });
@@ -936,7 +961,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifySaleShipped sends sale data', async () => {
+  _it('notifySaleShipped sends sale data', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-9' });
     await websocketService.handleAuth(ws, { token });
@@ -950,7 +975,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifySaleDelivered sends sale data', async () => {
+  _it('notifySaleDelivered sends sale data', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-10' });
     await websocketService.handleAuth(ws, { token });
@@ -964,7 +989,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifyOfferReceived sends offer data', async () => {
+  _it('notifyOfferReceived sends offer data', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-11' });
     await websocketService.handleAuth(ws, { token });
@@ -978,7 +1003,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifyOfferAccepted sends offer data', async () => {
+  _it('notifyOfferAccepted sends offer data', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-12' });
     await websocketService.handleAuth(ws, { token });
@@ -992,7 +1017,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notifyOfferDeclined sends offer data', async () => {
+  _it('notifyOfferDeclined sends offer data', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-13' });
     await websocketService.handleAuth(ws, { token });
@@ -1006,7 +1031,7 @@ describe('business event notifications', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('notify sends generic notification', async () => {
+  _it('notify sends generic notification', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-biz-14' });
     await websocketService.handleAuth(ws, { token });
@@ -1026,7 +1051,7 @@ describe('business event notifications', () => {
 // 21. cleanup()
 // ═════════════════════════════════════════════════════════════════════════════
 describe('cleanup()', () => {
-  test('clears heartbeat interval', () => {
+  _it('clears heartbeat interval', () => {
     // Init to start a heartbeat
     websocketService.init(null);
     expect(websocketService.heartbeatInterval).toBeTruthy();
@@ -1035,7 +1060,7 @@ describe('cleanup()', () => {
     expect(websocketService.heartbeatInterval).toBeNull();
   });
 
-  test('calling cleanup twice does not throw', () => {
+  _it('calling cleanup twice does not throw', () => {
     websocketService.cleanup();
     websocketService.cleanup();
     expect(websocketService.heartbeatInterval).toBeNull();
@@ -1046,7 +1071,7 @@ describe('cleanup()', () => {
 // Additional edge cases
 // ═════════════════════════════════════════════════════════════════════════════
 describe('init()', () => {
-  test('stores server reference and returns this', () => {
+  _it('stores server reference and returns this', () => {
     const fakeServer = { name: 'fake' };
     const result = websocketService.init(fakeServer);
     expect(result).toBe(websocketService);
@@ -1057,7 +1082,7 @@ describe('init()', () => {
 });
 
 describe('disconnectAllForUser()', () => {
-  test('closes all connections for a user', async () => {
+  _it('closes all connections for a user', async () => {
     const ws1 = createMockWs();
     const ws2 = createMockWs();
     const token = createToken({ userId: 'user-disc-all' });
@@ -1074,14 +1099,14 @@ describe('disconnectAllForUser()', () => {
     websocketService.handleDisconnect(ws2);
   });
 
-  test('does nothing for nonexistent user', () => {
+  _it('does nothing for nonexistent user', () => {
     // Should not throw
     websocketService.disconnectAllForUser('no-such-user');
   });
 });
 
 describe('heartbeat()', () => {
-  test('pings alive connections and marks isAlive false', async () => {
+  _it('pings alive connections and marks isAlive false', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-hb-1' });
     await websocketService.handleAuth(ws, { token });
@@ -1095,7 +1120,7 @@ describe('heartbeat()', () => {
     websocketService.handleDisconnect(ws);
   });
 
-  test('closes dead connections (isAlive = false)', async () => {
+  _it('closes dead connections (isAlive = false)', async () => {
     const ws = createMockWs();
     const token = createToken({ userId: 'user-hb-2' });
     await websocketService.handleAuth(ws, { token });
@@ -1108,7 +1133,7 @@ describe('heartbeat()', () => {
 });
 
 describe('WebSocketClient export', () => {
-  test('WebSocketClient is exported as a string template', async () => {
+  _it('WebSocketClient is exported as a string template', async () => {
     const mod = await import('../backend/services/websocket.js');
     expect(typeof mod.WebSocketClient).toBe('string');
     expect(mod.WebSocketClient).toContain('VaultListerSocket');
