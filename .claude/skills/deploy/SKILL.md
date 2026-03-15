@@ -40,12 +40,6 @@ trigger: /deploy
    curl -f http://localhost:3000/api/health || echo "Health check failed"
    ```
 
-6. **Notify**
-   ```
-   bash .claude/hooks/notify-openclaw.sh "milestone" "Deployed vaultlister-3 to production"
-   ```
-
 ## On Failure
 - Roll back: `docker-compose down && docker-compose up -d`
-- Notify: `bash .claude/hooks/notify-openclaw.sh "build_fail" "Deploy failed — [error]"`
 - Do NOT retry without investigating root cause

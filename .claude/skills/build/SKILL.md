@@ -35,12 +35,6 @@ trigger: /build
    - Confirm `dist/index.html` exists
    - Confirm all chunk files referenced in index.html exist
 
-6. **Notify**
-   ```
-   bash .claude/hooks/notify-openclaw.sh "build_pass" "Build complete — ready for deploy"
-   ```
-
 ## On Failure
 - Report the exact error verbatim
 - Do not retry the same failing command more than once
-- Notify: `bash .claude/hooks/notify-openclaw.sh "build_fail" "[error summary]"`

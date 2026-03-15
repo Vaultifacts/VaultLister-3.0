@@ -12,7 +12,7 @@
  *   node scripts/test-report.mjs --check-only     # just check last run
  *   node scripts/test-report.mjs --history        # show last 10 runs
  *
- * Output: writes to ~/.openclaw/logs/test-history.jsonl
+ * Output: writes to ./data/logs/test-history.jsonl
  * Alerts: calls ~/scripts/tg-notify.sh on regression
  */
 
@@ -20,11 +20,9 @@ import { execSync } from 'child_process';
 import { readFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
-const HOME = process.env.HOME || process.env.USERPROFILE || '/home/openclawuser';
-const PROJECT = join(HOME, 'projects/vaultlister-test');
-const LOG_DIR = join(HOME, '.openclaw/logs');
+const LOG_DIR = './data/logs';
 const HISTORY_FILE = join(LOG_DIR, 'test-history.jsonl');
-const BASELINE_FILE = join(PROJECT, '.test-baseline');
+const BASELINE_FILE = '.test-baseline';
 const TG_NOTIFY = join(HOME, 'scripts/tg-notify.sh');
 
 // Ensure log dir exists

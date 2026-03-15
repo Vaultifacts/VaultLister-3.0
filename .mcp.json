@@ -16,13 +16,6 @@
         "@modelcontextprotocol/server-filesystem",
         "."
       ]
-    },
-    "openclaw-memory": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@openclaw/mcp-memory"],
-      "env": {
-        "MEMORY_FILE": ".openclaw/memory/context.json"
-      }
     }
   }
 }

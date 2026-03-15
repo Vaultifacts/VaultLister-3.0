@@ -145,32 +145,24 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 - Only add comments where the logic is not self-evident
 - Minimal changes: fix what is asked, do not refactor surrounding code
 
-## OpenClaw Integration
-- Send status updates to OpenClaw via `.claude/hooks/notify-openclaw.sh`
-- Payload format: `{ "event": "[event_type]", "message": "[text]", "session_id": "$CLAUDE_SESSION_ID", "project": "vaultlister-3", "timestamp": "[ISO_8601]" }`
-- Event types: `session_start`, `session_end`, `commit`, `build_pass`, `build_fail`, `needs_input`, `milestone`
-- If OpenClaw is not configured, hooks no-op silently — the project builds normally without it
-- OpenClaw task memory: `.openclaw/memory/context.json` — read at session start to recover `current_task`
-
 ## Session Management
-- At session start: read `.openclaw/memory/context.json` for `current_task` (injected by `session-init.sh` hook)
-- At session end (or at milestones): run `/status` to update task memory and report to OpenClaw
+- At session start: read `memory/STATUS.md` for pending tasks
+- At session end (or at milestones): run `/status` to update STATUS.md
 - Use subagents (Explore, debugger) to protect main context for long sessions
-- For cross-session task continuity: rely on `current_task` from OpenClaw memory + audit-log.md
+- For cross-session task continuity: rely on memory/STATUS.md + audit-log.md
 
-## Agent Handoff Protocol (CLI ↔ Bot Coordination)
+## Agent Handoff Protocol
 
 ### On Session Start
 1. Read `memory/STATUS.md` — check "Pending Review", "In Progress", "Messages", and "Last Completed Work"
-2. Review every entry in "Pending Review" — run `git show <hash> --stat` and `git show <hash>` to inspect Bot commits
-3. Check "Messages" for notes left by the other agent — act on them, then clear
+2. Review every entry in "Pending Review" — run `git show <hash> --stat` and `git show <hash>` to inspect commits
+3. Check "Messages" for notes left by previous sessions — act on them, then clear
 4. Run `git log --oneline -5` — see what was committed since your last session
 5. If no user instruction, check "Next Tasks" and claim the highest-priority unclaimed task
 
 ### During Work
 1. Update `memory/STATUS.md` → "In Progress" with what you're doing and which files you're editing
 2. Commit frequently with descriptive messages (Conventional Commits format)
-3. For urgent blockers: `bash ~/scripts/tg-notify.sh "BLOCKED: ..."`
 
 ### On Session End
 1. Move entry from "In Progress" to "Last Completed Work" in `memory/STATUS.md`
@@ -195,8 +187,6 @@ These items require manual action before the first Claude Code session.
 - [ ] Set `ANTHROPIC_API_KEY` in `.env` for AI listing generation and Vault Buddy
 - [ ] Configure marketplace API credentials in `.env` (eBay OAuth, Etsy API, Poshmark, Mercari)
 - [ ] Install Playwright browsers: `bunx playwright install`
-- [ ] Configure OpenClaw: fill in `.openclaw/config.json` channel.id and webhooks fields (`[CONFIGURE]` placeholders)
-- [ ] Set `OPENCLAW_WEBHOOK_OUTBOUND` in `.env` (used by notify-openclaw.sh hook)
 - [ ] Set `GITHUB_TOKEN` in `.env` (used by .mcp.json GitHub MCP server)
 - [ ] Implement hook stubs in `.claude/hooks/` — each stub has behavior spec in comments
 - [ ] Review `.claude/settings.json` deny rules — tighten or relax as needed

@@ -55,7 +55,6 @@ vaultlister-3/
 ├── memory/                  # Project memory (MEMORY.md, STATUS.md)
 ├── docs/                    # Developer documentation
 ├── .claude/                 # Claude Code configuration
-├── .openclaw/               # OpenClaw integration
 ├── docker-compose.yml       # Web + Redis + Nginx stack
 ├── Dockerfile               # Multi-stage Bun 1.3 image
 └── .env.example             # Required environment variables
@@ -98,7 +97,6 @@ vaultlister-3/
 | `ANTHROPIC_API_KEY` | Yes | Claude AI features (listing gen, Vault Buddy) |
 | `DB_PATH` | Yes | SQLite database file path |
 | `DATA_DIR` | Yes | Data directory for DB + audit log |
-| `OPENCLAW_WEBHOOK_OUTBOUND` | Optional | OpenClaw notifications |
 | `GITHUB_TOKEN` | Optional | GitHub MCP server |
 | `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` | Optional | eBay OAuth cross-listing |
 | `ETSY_API_KEY` | Optional | Etsy cross-listing |

@@ -119,7 +119,6 @@ These platforms have UI placeholders and route stubs but no working publish impl
 | **Shopify** | UI stub only | Greyed-out in cross-lister. No publish bot. |
 | **eBay order sync** | Route exists, returns 400 without live creds | `POST /orders/sync/ebay` requires production eBay credentials. Sandbox-verified. |
 | **Poshmark auto-offer (buyer-side)** | Counter logic works in DB; live counter not yet verified against Poshmark UI | `bot.counterOffer()` selectors need a real incoming buyer offer to validate. |
-| **OpenClaw bot integration** | Config file present (`.openclaw/config.json`) | Requires Telegram/Discord channel ID to activate. |
 
 ---
 
