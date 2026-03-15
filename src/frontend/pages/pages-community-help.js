@@ -304,7 +304,7 @@ Object.assign(pages, {
                         <p style="margin-bottom: 1rem;">VaultLister integrates with third-party services including:</p>
                         <ul style="margin-bottom: 1rem; padding-left: 1.5rem;">
                             <li>Marketplace APIs (Poshmark, eBay, Mercari, Depop, Grailed, Facebook)</li>
-                            <li>Cloudinary for image processing</li>
+                            <li>Cloudinary for advanced image processing (optional, requires configuration)</li>
                             <li>AI services for listing generation</li>
                         </ul>
                         <p style="margin-bottom: 1rem;">Each of these services has its own privacy policy that governs how they handle your data.</p>
@@ -414,7 +414,7 @@ Object.assign(pages, {
                             <line x1="12" y1="17" x2="12" y2="21"></line>
                         </svg>
                     </div>
-                    <div class="stat-value" data-count="6">6</div>
+                    <div class="stat-value" data-count="9">9</div>
                     <div class="stat-label">Platforms Supported</div>
                 </div>
                 <div class="about-stat-card">
