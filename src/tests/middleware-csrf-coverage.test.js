@@ -320,10 +320,11 @@ describe('addCSRFToken — edge cases', () => {
         expect(csrfManager.validateToken(token, '10.0.0.2')).toBe(true);
     });
 
-    test('uses user.id over ip when available', () => {
+    test('always uses ip for session ID even when user is present', () => {
         const ctx = { user: { id: 'uid-99' }, ip: '10.0.0.3' };
         const token = addCSRFToken(ctx);
-        expect(csrfManager.validateToken(token, 'uid-99')).toBe(true);
+        // After CSRF fix (df02d35): IP-only to avoid mismatch on auth routes
+        expect(csrfManager.validateToken(token, '10.0.0.3')).toBe(true);
     });
 });
 
@@ -475,8 +476,8 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result.error).toBe('Invalid or expired CSRF token');
     });
 
-    test('uses user.id as sessionId when user is present', () => {
-        const token = csrfManager.generateToken('user-77');
+    test('uses ip as sessionId even when user is present', () => {
+        const token = csrfManager.generateToken('1.2.3.4');
         const result = validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': token },
             path: '/api/inventory', user: { id: 'user-77' }, ip: '1.2.3.4', body: {},

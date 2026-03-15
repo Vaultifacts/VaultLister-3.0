@@ -84,10 +84,11 @@ describe('addCSRFToken', () => {
         expect(ctx.csrfToken).toBe(token);
     });
 
-    test('uses user.id as session ID when available', () => {
+    test('always uses ip for session ID even when user is present', () => {
         const ctx = { user: { id: 'user-123' }, ip: '127.0.0.1' };
         const token = addCSRFToken(ctx);
-        expect(csrfManager.validateToken(token, 'user-123')).toBe(true);
+        // After CSRF fix (df02d35): IP-only to avoid mismatch on auth routes
+        expect(csrfManager.validateToken(token, '127.0.0.1')).toBe(true);
     });
 });
 
