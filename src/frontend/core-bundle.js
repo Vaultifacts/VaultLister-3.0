@@ -15083,6 +15083,9 @@ const pricePositionChart = {
 
 // Map route paths to chunk names for on-demand loading
 const pageChunkMap = {
+    // dashboard
+    'dashboard': 'deferred',
+
     // inventory-catalog
     'inventory': 'inventory-catalog',
     'listings': 'inventory-catalog',
@@ -15093,6 +15096,7 @@ const pageChunkMap = {
     'smart-relisting': 'inventory-catalog',
     'inventory-import': 'inventory-catalog',
     'recently-deleted': 'inventory-catalog',
+    'platform-health': 'inventory-catalog',
 
     // sales-orders
     'sales': 'sales-orders',
@@ -15164,7 +15168,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f4b56ef5';
+    const v = 'e5c138aa';
     const files = [
         '/pages/pages-' + chunkName + '.js?v=' + v,
         '/handlers/handlers-' + chunkName + '.js?v=' + v
@@ -17864,10 +17868,10 @@ const pages = {
                         ${components.icon('download', 14)} Export
                     </button>
                     <div class="dropdown-menu dashboard-export-menu">
-                        <button class="dropdown-item" onclick="handlers.exportDashboard('print'); this.closest('.dashboard-export-menu').classList.remove('show')" aria-label="Print or save as PDF">
+                        <button class="dropdown-item" onclick="handlers.exportDashboard('print'); this.closest('.dashboard-export-menu').classList.remove('show')">
                             ${components.icon('printer', 14)} Print / Save as PDF
                         </button>
-                        <button class="dropdown-item" onclick="handlers.exportDashboard('screenshot'); this.closest('.dashboard-export-menu').classList.remove('show')" aria-label="Copy screenshot">
+                        <button class="dropdown-item" onclick="handlers.exportDashboard('screenshot'); this.closest('.dashboard-export-menu').classList.remove('show')">
                             ${components.icon('image', 14)} Copy Screenshot
                         </button>
                     </div>
@@ -19621,22 +19625,22 @@ const pages = {
                             ${components.icon('more-horizontal', 16)} More
                         </button>
                         <div class="dropdown-menu" style="right: 0; min-width: 160px;">
-                            <button class="dropdown-item" onclick="handlers.showCustomMetricBuilder()" aria-label="Custom KPIs">
+                            <button class="dropdown-item" onclick="handlers.showCustomMetricBuilder()">
                                 ${components.icon('sliders', 16)} Custom KPIs
                             </button>
-                            <button class="dropdown-item" onclick="handlers.showAnalyticsDigestSettings()" aria-label="Schedule Digest">
+                            <button class="dropdown-item" onclick="handlers.showAnalyticsDigestSettings()">
                                 ${components.icon('mail', 16)} Schedule Digest
                             </button>
-                            <button class="dropdown-item" onclick="handlers.showExpenseTracker()" aria-label="Expenses">
+                            <button class="dropdown-item" onclick="handlers.showExpenseTracker()">
                                 ${components.icon('credit-card', 16)} Expenses
                             </button>
-                            <button class="dropdown-item" onclick="handlers.showGoalSettings()" aria-label="Goals">
+                            <button class="dropdown-item" onclick="handlers.showGoalSettings()">
                                 ${components.icon('target', 16)} Goals
                             </button>
-                            <button class="dropdown-item" onclick="handlers.refreshAnalytics()" aria-label="Refresh analytics">
+                            <button class="dropdown-item" onclick="handlers.refreshAnalytics()">
                                 ${components.icon('refresh-cw', 16)} Refresh
                             </button>
-                            <button class="dropdown-item" onclick="handlers.exportAnalyticsCSV()" aria-label="Export CSV">
+                            <button class="dropdown-item" onclick="handlers.exportAnalyticsCSV()">
                                 ${components.icon('download', 16)} Export CSV
                             </button>
                         </div>
@@ -26259,6 +26263,10 @@ const handlers = {
     handleImportDrop: function(event) {
         const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
         if (file) handlers.handleImportFile(file);
+    },
+
+    customizeDashboard: function() {
+        router.navigate('dashboard');
     },
 };
 

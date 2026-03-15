@@ -8,6 +8,9 @@
 
 // Map route paths to chunk names for on-demand loading
 const pageChunkMap = {
+    // dashboard
+    'dashboard': 'deferred',
+
     // inventory-catalog
     'inventory': 'inventory-catalog',
     'listings': 'inventory-catalog',
@@ -18,6 +21,7 @@ const pageChunkMap = {
     'smart-relisting': 'inventory-catalog',
     'inventory-import': 'inventory-catalog',
     'recently-deleted': 'inventory-catalog',
+    'platform-health': 'inventory-catalog',
 
     // sales-orders
     'sales': 'sales-orders',

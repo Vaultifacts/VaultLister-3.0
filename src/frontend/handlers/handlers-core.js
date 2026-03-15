@@ -1460,4 +1460,8 @@ const handlers = {
         const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
         if (file) handlers.handleImportFile(file);
     },
+
+    customizeDashboard: function() {
+        router.navigate('dashboard');
+    },
 };
