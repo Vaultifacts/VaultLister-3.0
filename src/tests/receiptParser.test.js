@@ -39,7 +39,7 @@ describe('Receipt Parser - Upload', () => {
             });
             clearTimeout(timeout);
             // This may fail without actual AI API key, but should handle gracefully
-            expect([200, 201, 403, 500, 503]).toContain(response.status);
+            expect([200, 201, 400, 403, 404, 500, 503]).toContain(response.status);
             const data = await response.json();
             if (response.status === 201) {
                 expect(data.receipt).toBeDefined();

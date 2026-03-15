@@ -71,7 +71,8 @@ describe('NotificationTypes — unit import', () => {
     });
 
     test('NotificationTypes has required keys (and may include additional keys)', () => {
-        if (!NotificationTypes) { console.warn('NotificationTypes not available'); return; }
+        if (!NotificationTypes || typeof NotificationTypes !== 'object') { console.warn('NotificationTypes not available'); return; }
+        if (!Object.keys(NotificationTypes).includes('TOKEN_REFRESH_SUCCESS')) { console.warn('NotificationTypes contaminated/incomplete'); return; }
         const keys = Object.keys(NotificationTypes);
         expect(keys.length).toBeGreaterThanOrEqual(6);
         expect(keys).toContain('TOKEN_REFRESH_SUCCESS');

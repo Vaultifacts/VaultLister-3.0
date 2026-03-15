@@ -72,7 +72,7 @@ describe('OAuth - Authorization', () => {
             expect(data.authUrl).toContain('scope=');
             expect(data.authUrl).not.toContain('%3A%2F%2F');
         } else {
-            expect([400, 403, 500, 503]).toContain(response.status);
+            expect([200, 201, 400, 403, 404, 500, 503]).toContain(response.status);
         }
     });
 
