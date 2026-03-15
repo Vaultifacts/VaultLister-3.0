@@ -15,7 +15,8 @@
       "mcp__claude-in-chrome__read_console_messages",
       "mcp__claude-in-chrome__gif_creator",
       "mcp__claude_ai_Gmail__gmail_search_messages",
-      "mcp__claude_ai_Gmail__gmail_read_message"
+      "mcp__claude_ai_Gmail__gmail_read_message",
+      "mcp__claude_ai_Notion__notion-create-pages"
     ]
   }
 }
