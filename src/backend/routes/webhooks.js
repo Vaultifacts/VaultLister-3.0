@@ -45,6 +45,83 @@ export async function webhooksRouter(ctx) {
         return null;
     };
 
+    // ===== PUBLIC: eBay Marketplace Account Deletion =====
+    // Required by eBay Developer Program compliance for production keysets.
+    // Spec: https://developer.ebay.com/marketplace-account-deletion
+
+    // GET /webhooks/ebay/account-deletion — challenge verification
+    if (method === 'GET' && path === '/ebay/account-deletion') {
+        const challengeCode = queryParams?.challenge_code;
+        if (!challengeCode) {
+            return { status: 400, data: { error: 'Missing challenge_code' } };
+        }
+
+        const verificationToken = process.env.EBAY_DELETION_VERIFICATION_TOKEN;
+        const endpoint = process.env.EBAY_DELETION_ENDPOINT;
+
+        if (!verificationToken || !endpoint) {
+            logger.error('[Webhooks/eBay] EBAY_DELETION_VERIFICATION_TOKEN or EBAY_DELETION_ENDPOINT not set in .env');
+            return { status: 500, data: { error: 'Webhook not configured' } };
+        }
+
+        // eBay spec: SHA-256(challengeCode + verificationToken + endpoint)
+        const hash = crypto.createHash('sha256')
+            .update(challengeCode + verificationToken + endpoint)
+            .digest('hex');
+
+        logger.info('[Webhooks/eBay] Challenge verification successful');
+        return { status: 200, data: { challengeResponse: hash } };
+    }
+
+    // POST /webhooks/ebay/account-deletion — deletion notification
+    if (method === 'POST' && path === '/ebay/account-deletion') {
+        try {
+            // Log raw event for compliance audit trail
+            const payload = body || {};
+            const ebayUserId = payload.data?.userId || payload.userId || null;
+            const username = payload.data?.username || payload.username || null;
+
+            logger.info('[Webhooks/eBay] Account deletion notification received', null, {
+                ebayUserId,
+                username,
+                notificationId: payload.notificationId || null
+            });
+
+            // Store in webhook_events for audit — use a sentinel user_id for eBay system events
+            const EBAY_SYSTEM_USER = '00000000-0000-0000-0000-000000000000';
+            try {
+                query.run(`
+                    INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at)
+                    VALUES (?, ?, 'ebay', 'marketplace.account.deletion', ?, 'processed', datetime('now'))
+                `, [uuidv4(), EBAY_SYSTEM_USER, JSON.stringify(payload)]);
+            } catch (dbErr) {
+                // Don't fail the response — eBay requires 200 even if we have internal issues
+                logger.error('[Webhooks/eBay] Failed to store deletion event', null, { detail: dbErr.message });
+            }
+
+            // If an eBay user is linked to a VaultLister account, revoke their OAuth token
+            if (ebayUserId) {
+                try {
+                    query.run(`
+                        UPDATE oauth_tokens
+                        SET access_token = NULL, refresh_token = NULL, revoked_at = datetime('now')
+                        WHERE platform = 'ebay' AND platform_user_id = ?
+                    `, [String(ebayUserId)]);
+                } catch (revokeErr) {
+                    logger.warn('[Webhooks/eBay] Could not revoke OAuth token for deleted user', null, { ebayUserId });
+                }
+            }
+
+            // eBay requires an empty 200 response
+            return { status: 200, data: {} };
+
+        } catch (error) {
+            logger.error('[Webhooks/eBay] Error processing deletion notification', null, { detail: error.message });
+            // Still return 200 — eBay will retry on non-200; we don't want infinite retries for parse errors
+            return { status: 200, data: {} };
+        }
+    }
+
     // ===== PUBLIC: Incoming webhook handler =====
     // POST /webhooks/incoming/:source
     const incomingMatch = path.match(/^\/incoming\/([^/]+)$/);

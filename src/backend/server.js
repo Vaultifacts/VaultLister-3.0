@@ -936,7 +936,8 @@ const server = Bun.serve({
             const isProtected = protectedPrefixes.some(prefix => effectivePath.startsWith(prefix));
 
             // Public endpoints that don't require auth
-            const isPublicWebhook = effectivePath.startsWith('/api/webhooks/incoming');
+            const isPublicWebhook = effectivePath.startsWith('/api/webhooks/incoming') ||
+                effectivePath.startsWith('/api/webhooks/ebay/account-deletion');
             const isOAuthCallback = effectivePath.startsWith('/api/oauth/callback') ||
                 effectivePath.match(/^\/api\/social-auth\/[^/]+\/callback/) ||
                 effectivePath.startsWith('/api/email/callback');
