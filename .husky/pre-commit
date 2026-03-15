@@ -122,16 +122,20 @@ if [ -n "$DEBUGGER" ]; then
 fi
 
 # Check for large files (>5MB)
+# Note: uses a temp file + for loop instead of pipe to avoid wc -c deadlock on Windows Git Bash
 echo "Checking for large files..."
 LARGE_FILE_LIST=$(mktemp 2>/dev/null || echo "/tmp/pre-commit-large-$$")
-git diff --cached --name-only --diff-filter=ACM | while IFS= read -r f; do
+STAGED_FILES_TMP=$(mktemp 2>/dev/null || echo "/tmp/pre-commit-staged-$$")
+git diff --cached --name-only --diff-filter=ACM > "$STAGED_FILES_TMP"
+while IFS= read -r f; do
     if [ -f "$f" ]; then
-        size=$(wc -c < "$f" 2>/dev/null || echo 0)
+        size=$(stat -c%s "$f" 2>/dev/null || stat -f%z "$f" 2>/dev/null || echo 0)
         if [ "$size" -gt 5242880 ]; then
             echo "  $f ($((size/1048576))MB)" >> "$LARGE_FILE_LIST"
         fi
     fi
-done
+done < "$STAGED_FILES_TMP"
+rm -f "$STAGED_FILES_TMP"
 if [ -s "$LARGE_FILE_LIST" ]; then
     echo "Error: Files over 5MB detected:"
     cat "$LARGE_FILE_LIST"

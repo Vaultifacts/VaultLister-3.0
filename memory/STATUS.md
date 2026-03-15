@@ -4,13 +4,13 @@
 ## Current State
 - **Branch:** master
 - **Server:** not running (dev session)
-- **Last commit:** e7508fd — QA remediation: all 20 REM items completed (REM-01 through REM-19)
-- **E2E status:** 2029 pass / 0 fail / 4 flaky (Firefox/WebKit, pass on retry) / 46 skip — all 3 browsers (chromium/firefox/webkit)
+- **Last commit:** 473ccba — activate Depop, Facebook, Whatnot, Shopify platform integrations
+- **E2E status:** 2054 pass / 0 fail / 0 flaky / 25 skip (env-gated: Poshmark/eBay credentials) — all 3 browsers (chromium/firefox/webkit), --retries=0
 - **Unit status:** 2050 pass / 0 code-level fail (5 connection-refused integration tests) — zero actual code failures
 - **QA Remediation:** All 20 items complete across 4 phases (Critical → Security → Reliability → Quality). See qa/reports/final/remediation_status.md for full evidence.
 - **Load test (P8-4):** baseline p95=7ms / p99=8ms / 29 req/s — ACCEPTABLE (5 CSRF 403s expected)
 - **Checklist:** 51/57 complete (89%) + Phase F pre-deployment hardening complete (F-1 through F-7 ✅)
-- **As of:** 2026-03-12
+- **As of:** 2026-03-15
 
 ## Completion Summary (P8-6 Final Sign-Off)
 All phases that can be done autonomously are complete. Remaining items require external approval or user action:
@@ -31,7 +31,7 @@ _(claim tasks here during work — format: `- AGENT: Description [files: file1, 
 _(Bot commits waiting for CLI agent review)_
 
 ## Next Tasks
-- [ ] H: `bunx playwright install` — install Playwright browsers (needed for marketplace automations)
+- [x] H: `bunx playwright install` — Playwright 1.58.2 browsers installed (2026-03-14)
 - [x] H: Fix 33 E2E failures — all resolved (commits 6b5ec6a + 9107b2c)
 - [x] H: Fix 14 baseline test failures — resolved (TEST_BASE_URL port mismatch)
 - [ ] M: Configure OpenClaw (`.openclaw/config.json` — fill `[CONFIGURE]` placeholders)
@@ -39,7 +39,8 @@ _(Bot commits waiting for CLI agent review)_
 - [ ] M: Configure marketplace API credentials (eBay, Etsy, Poshmark, Mercari) in `.env`
 - [ ] M: Set up CI/CD pipeline (GitHub Actions)
 - [ ] M: Complete Etsy OAuth — unblocked once Etsy approves app key (`1sgc9xd1hwi3zt5k33pn9k7d`)
-- [ ] M: Implement 6 stub platforms (Mercari, Depop, Grailed, Facebook, Whatnot, Shopify)
+- [x] M: Activate 4 platforms (Depop, Facebook, Whatnot, Shopify) — commit 473ccba (2026-03-15)
+- [ ] M: Implement 2 remaining stub platforms (Mercari, Grailed)
 - [x] M: Investigate 15 pre-existing auth+security test failures — resolved (commit 1297a72): PORT mismatch + demo-login mfa_secret leak + AI/chatbot AbortController
 - [ ] M: Verify Poshmark `bot.counterOffer()` against live marketplace UI
 - [ ] L: Review and tighten `.claude/settings.json` deny rules
@@ -48,6 +49,7 @@ _(Bot commits waiting for CLI agent review)_
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-15: Activated 4 platform integrations (commit 473ccba). Depop/Facebook/Whatnot cross-lister buttons activated (backend was already fully wired). Created facebookSync.js, whatnotSync.js, shopifySync.js. Registered in platformSync/index.js. Fixed pre-commit hook wc -c pipe deadlock on Windows Git Bash. Browser UI verification: 20/20 P0+P1 pages PASS. CSRF session ID mismatch bug fixed (commit df02d35). Notion V1.0 Launch Readiness Checklist updated with all verification results.
 - 2026-03-12: QA Remediation Complete (commit e7508fd, 151 files, 2515 insertions, 1014 deletions). All 20 REM items done: REM-01 (cross-listing integration tests with real DB), REM-02–07 (security: file upload validation, prompt injection, external timeouts, CSRF bypass narrowed, OAuth revocation, key rotation docs), REM-08 (deploy rollback in staging+production), REM-09–15 (reliability: expect([200,500]) cleanup, circuit breaker, idempotency headers, transaction wrapping, dead-letter queue), REM-16 (circuit breaker utility for Anthropic/Notion/webhooks), REM-17 (FEATURE_* flags wired via featureFlags.js middleware), REM-18 (test data isolation), REM-19 (backend locale parameter support). New files: circuitBreaker.js, featureFlags.js, service-circuitBreaker.test.js, integration-crosslisting.test.js (rewritten). Modified: deploy.yml (rollback), utils.js (locale), 6 AI/service files (circuit breaker), 3 route files (feature flags), multiple test files (cleanup + regression guards).
 - 2026-03-12: Full Project Review Round 4 — exhaustive manual review (agents hit rate limits). Fixed: 3 Windows HOME fallbacks (backup-automation.js, smoke-test.mjs, test-report.mjs — added USERPROFILE fallback), 1 missing shell:true (poshmarkPublish.js spawn). Verified: all JWT verify calls have algorithm pinning (4 locations), all platformSync INSERT columns match schema.sql, all test parameter indices correct, all bot credentials from .env, no unescaped innerHTML in frontend source. Unit: 2050 pass / 0 code-level fail. Lint: OK.
 - 2026-03-12: Full Project Review Round 3 — verification pass. Found and fixed 1 issue: platformSync-ebay.test.js parameter index [12]→[10] (same class as Round 2's 4 fixes). Added 7 missing env vars to .env.example (GMAIL_CLIENT_ID/SECRET, DISABLE_CSRF, DISABLE_RATE_LIMIT, SLACK_WEBHOOK, RCLONE_PATH, VAULTLISTER_RCLONE_REMOTE, VAULTLISTER_REMOTE_PATH). All 16 security hardening items manually verified in-place. Unit: 2050 pass / 0 code-level fail. platformSync: 60/60 pass. Lint: OK.
