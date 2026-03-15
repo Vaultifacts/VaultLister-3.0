@@ -4,13 +4,14 @@
 ## Current State
 - **Branch:** master
 - **Server:** test server on localhost:3100 (NODE_ENV=test, DISABLE_CSRF=true)
-- **Last commit:** c82d5b3 — commit 4 dirty tracked files (cache hash bump + hook cleanup)
+- **Last commit:** ca99d8a — fix P1 bugs (P&L $0 report + offers Unknown/Anonymous)
 - **E2E status:** 69/69 offer tests pass (was 27 skipped); overall 2054+ pass — all 3 browsers
 - **Unit status:** 4267 pass / 223 fail / 4490 total (Windows, PORT=3100, server running) — failures are external-service-dependent (Anthropic API key, SMTP, Notion) plus 6 async-leak errors between test files
 - **QA Remediation:** All 20 items complete across 4 phases
 - **Load test:** baseline p95=7ms / p99=8ms / 29 req/s
 - **Platforms:** 9 registered; 2 credentialed (Poshmark, eBay) — 7 others need `.env` creds (Mercari, Depop, Grailed, Facebook, Whatnot, Shopify, Etsy-blocked on app approval)
 - **As of:** 2026-03-15
+- **Walkthrough bugs fixed:** P0: dashboard buttons (00c15f1), platform-health chunk (00c15f1), customizeDashboard (00c15f1); P1: P&L $0→$5264 (ca99d8a), offers Anonymous→buyer_username (ca99d8a)
 
 ## Completion Summary
 All autonomous work is complete. Remaining items require external action:
@@ -40,6 +41,7 @@ _(none)_
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-15: Session (walkthrough bug fixes) — Full 26-page browser walkthrough (32 findings in Notion). Fixed 3 P0s: dashboard chunk not loading deferred handlers (00c15f1), missing customizeDashboard() (00c15f1), platform-health chunk missing from pageChunkMap (00c15f1). Fixed 2 P1s: P&L report $0 → real sales data fallback (ca99d8a), offers showing Anonymous/Unknown instead of buyer_username/listing_title (ca99d8a).
 - 2026-03-15: Session (cont.) — Audit + doc cleanup. Committed 4 dirty tracked files (c82d5b3): cache hash bump 54bb6aec→5d4c42bd in sw.js+index.html, OpenClaw guard removed from pre-commit, settings.local.json Notion tool added. Updated STATUS.md with accurate unit test count (4490 total / 4267 pass / 223 fail) and corrected platform credential status. Tightened settings.json deny rules + added @quinn-v3-guardian tags to offer E2E (commit 9bb69a4).
 - 2026-03-15: Session — 10 commits pushed. CSRF session ID mismatch fixed (IP-only, commit df02d35). All 9 platform cross-lister buttons activated (commits 473ccba, b95c4a2). Pre-commit hook wc -c pipe deadlock fixed (commit 365cb9c). API docs updated for verify-email, MFA, password reset (commit 9a114fc). Staging deploy pipeline created (deploy-staging.yml, docker-compose.staging.yml, nginx.staging.conf — commit 01aa253). Design docs created (architecture, data-model, api-overview, platform-integrations — commit d38886c). OpenClaw integration fully removed (commit dc73ac9). CSRF test regressions fixed (commit 610bccc). Browser UI verification: 20/20 P0+P1 pages PASS. Notion V1.0 Launch Readiness Checklist fully updated. 3 sync services created (facebookSync.js, whatnotSync.js, shopifySync.js).
 - 2026-03-14: P3-03 Staging deployment pipeline configured. Created .github/workflows/deploy-staging.yml, docker-compose.staging.yml, nginx/nginx.staging.conf.
