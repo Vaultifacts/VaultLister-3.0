@@ -142,8 +142,10 @@ if (process.env.DISABLE_CSRF === 'true' && process.env.NODE_ENV !== 'test') {
  * Add CSRF token to responses that will need it
  */
 export function addCSRFToken(ctx) {
-    // Generate token for this session/user
-    const sessionId = ctx.user?.id || ctx.ip;
+    // Use IP as session ID for consistency — some routes (e.g. /api/auth/*)
+    // handle auth internally and don't populate ctx.user in the server context,
+    // causing a session ID mismatch (user.id at generate vs IP at validate).
+    const sessionId = ctx.ip;
     const token = csrfManager.generateToken(sessionId);
 
     // Add to response headers
@@ -201,8 +203,8 @@ export function validateCSRF(ctx) {
         };
     }
 
-    // Validate token
-    const sessionId = user?.id || ip;
+    // Validate token — use IP only (matches addCSRFToken generation)
+    const sessionId = ip;
     const isValid = csrfManager.validateToken(token, sessionId);
 
     if (!isValid) {
