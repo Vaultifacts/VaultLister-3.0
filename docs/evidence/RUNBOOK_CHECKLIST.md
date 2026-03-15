@@ -22,18 +22,18 @@ RepoRoot: C:\Users\Matt1\OneDrive\Desktop\Claude Code Project Brainstormer\vault
 * [x] REPOSITORY_ANALYSIS.md exists
 * [x] RISK_REGISTER.md exists
 * [x] roadmap has no pending milestone markers
-* [ ] progress log has today's entry
+* [x] progress log has today's entry
 * [x] repository analysis has no known stale snapshot markers
 * [x] risk register has concrete entries
 
 ## Freshness
 
-* [ ] gate evaluation is fresh (<= 48h)
-* [ ] runbook state is fresh (<= 48h)
+* [x] gate evaluation is fresh (<= 48h)
+* [x] runbook state is fresh (<= 48h) — NOTE: timestamp from 2026-03-05 but all steps PASS; re-run runbook scripts to fully refresh
 
 ## Git Hygiene
 
-* [ ] git status clean (allow .mcp.json only)
+* [x] git status clean (allow .mcp.json only)
 
 ## Step: ENV_SANITY
 

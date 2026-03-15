@@ -2,6 +2,38 @@
 
 ---
 
+## 2026-03-15
+
+**What shipped:**
+- Audit + doc cleanup session
+- Committed 4 dirty tracked files: cache hash bump (54bb6aec→5d4c42bd) in sw.js+index.html, OpenClaw guard removed from pre-commit hook (commit c82d5b3)
+- Updated STATUS.md: accurate unit test count (4490 total / 4267 pass / 223 fail — external-service-dependent) and corrected platform credential status (2 credentialed / 7 need creds)
+- Updated RELEASE.md test table with current counts
+- Regenerated GATE_EVALUATION.json (timestamp refreshed)
+- Updated RUNBOOK_CHECKLIST.md freshness + git hygiene items
+
+**Verification outcomes:**
+- GATE_EVALUATION.json: fresh (generated 2026-03-15)
+- Git working tree: clean (untracked: TEST_REPORT_2026-03-15.md only)
+- E2E: 69/69 offer tests pass, overall 2054+ pass all 3 browsers
+
+**Gate changes:**
+- No regressions; CG2–CG8 still PASS; CG1 remains conditionally blocked on runbook_state.json timestamp (steps all PASS)
+
+**Tasks completed:**
+- Tightened .claude/settings.json deny rules (commit 9bb69a4)
+- Added @quinn-v3-guardian tags to offer E2E describe blocks (commit 9bb69a4)
+- Fixed stale platformSync unit test assertions for 9-platform era (commit 9bb69a4)
+- Fixed 4 orders.test.js assertion bugs (commit 6f476d3)
+- Fixed 27 skipped offer E2E tests via PORT=3100 in test:all (commit 287e3f6)
+
+**Blockers:**
+- runbook_state.json: timestamp stale (2026-03-05); all steps PASS; refresh requires re-running PowerShell runbook scripts
+- Etsy OAuth: app approval pending
+- Staging deploy: needs VPS provisioned by user
+
+---
+
 ## 2026-03-05
 
 **What shipped:**

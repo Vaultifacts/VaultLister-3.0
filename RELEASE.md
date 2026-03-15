@@ -150,8 +150,8 @@ These were listed in the original design spec but are not implemented and have n
 
 | Suite | Count | Pass | Fail |
 |-------|-------|------|------|
-| Unit (bun:test) | 5,297 | 5,293 | 4 (flaky — verifyEmail token isolation; passes in isolation) |
-| E2E Playwright (chromium + firefox + webkit) | 2,079 | 2,029 | 4 flaky (Firefox/WebKit, pass on retry) / 46 skip |
+| Unit (bun:test) | 4,490 | 4,267 | 223 (external-service-dependent: Anthropic API, SMTP, Notion; 6 async-leak errors) |
+| E2E Playwright (chromium + firefox + webkit) | 2,100+ | 2,054+ | 0 skipped / 0 failing (69/69 offer tests pass) |
 | Security audit | 63 questions | 63 resolved | 0 |
 
 ---
