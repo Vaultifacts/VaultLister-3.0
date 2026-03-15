@@ -87,6 +87,10 @@ export function seedDemoData() {
         const existingEvents = query.get('SELECT COUNT(*) as count FROM calendar_events WHERE user_id = ?', [userId]);
         if (!existingEvents?.count) seedCalendarEvents(userId);
 
+        // Seed teams for demo user
+        const existingTeams = query.get('SELECT COUNT(*) as count FROM team_members WHERE user_id = ?', [userId]);
+        if (!existingTeams?.count) seedTeams(userId);
+
         console.log('✓ Demo data seeded successfully');
     } catch (error) {
         console.error('Demo data seed error:', error.message);
@@ -962,6 +966,39 @@ function seedCalendarEvents(userId) {
         }
     }
     console.log(`  ✓ Seeded ${events.length} calendar events`);
+}
+
+function seedTeams(userId) {
+    const teamId = uuidv4();
+    try {
+        query.run(
+            `INSERT OR IGNORE INTO teams (id, name, description, owner_user_id, subscription_tier, max_members, is_active, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, 1, datetime('now', '-45 days'), datetime('now', '-45 days'))`,
+            [teamId, 'Vault Crew', 'Main reselling team — cross-listing, pricing, and automation coordination.', userId, 'pro', 5]
+        );
+        query.run(
+            `INSERT OR IGNORE INTO team_members (id, team_id, user_id, role, invited_by, invited_at, accepted_at, status, permissions)
+             VALUES (?, ?, ?, ?, ?, datetime('now', '-45 days'), datetime('now', '-45 days'), ?, ?)`,
+            [uuidv4(), teamId, userId, 'owner', userId, 'active', JSON.stringify({ manage_listings: true, manage_inventory: true, view_analytics: true, manage_automations: true })]
+        );
+
+        // Add a second team
+        const team2Id = uuidv4();
+        query.run(
+            `INSERT OR IGNORE INTO teams (id, name, description, owner_user_id, subscription_tier, max_members, is_active, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, 1, datetime('now', '-12 days'), datetime('now', '-12 days'))`,
+            [team2Id, 'eBay Specialists', 'Dedicated eBay listing and shipping team.', userId, 'pro', 3]
+        );
+        query.run(
+            `INSERT OR IGNORE INTO team_members (id, team_id, user_id, role, invited_by, invited_at, accepted_at, status, permissions)
+             VALUES (?, ?, ?, ?, ?, datetime('now', '-12 days'), datetime('now', '-12 days'), ?, ?)`,
+            [uuidv4(), team2Id, userId, 'owner', userId, 'active', JSON.stringify({ manage_listings: true, manage_inventory: true, view_analytics: true, manage_automations: false })]
+        );
+
+        console.log('  ✓ Seeded 2 teams for demo user');
+    } catch (e) {
+        console.error('Team seed error:', e.message);
+    }
 }
 
 function seedRoadmapFeatures() {
