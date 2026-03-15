@@ -59,7 +59,8 @@ describe('OAuth - Authorization', () => {
         const response = await fetch(`${BASE_URL}/oauth/authorize/ebay`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        const data = await response.json();
+        let data = {};
+        try { data = await response.json(); } catch { /* non-JSON body */ }
 
         process.env.OAUTH_MODE = savedMode;
 

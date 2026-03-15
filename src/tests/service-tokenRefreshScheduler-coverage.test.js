@@ -479,15 +479,15 @@ describe('refreshShopToken — coverage', () => {
     const shop = makeShop({
       platform: 'ebay',
       user_id: 'user-disconnect',
-      consecutive_refresh_failures: 4, // Next failure = 5 = MAX
+      consecutive_refresh_failures: 4, // Next failure = 5 >= MAX_PERMANENT (2) with permanent error
     });
     process.env.OAUTH_MODE = 'real';
 
-    // Make the fetch fail so error is caught inside the try block
+    // Make the fetch fail with a permanent error so isPermanent=true, threshold=2, failures(5)>=2
     globalThis.fetch = mock(() => Promise.resolve({
       ok: false,
-      status: 500,
-      text: () => Promise.resolve('Server error'),
+      status: 401,
+      text: () => Promise.resolve('invalid_grant: token expired'),
     }));
 
     try {

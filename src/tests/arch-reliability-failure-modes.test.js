@@ -330,9 +330,10 @@ describe('Token refresh — consecutive failure tracking', () => {
     });
 
     test('should auto-disconnect shop after 5 consecutive failures', async () => {
+        // Network errors are transient — threshold is MAX_TRANSIENT_FAILURES=10
         globalThis.fetch = mock(() => Promise.reject(new Error('Network error')));
         try {
-            await refreshShopToken(makeShop(4)); // 4 + 1 = 5 >= MAX
+            await refreshShopToken(makeShop(9)); // 9 + 1 = 10 >= MAX_TRANSIENT_FAILURES
         } catch (_) { /* expected */ }
 
         const disconnectCalls = mockQueryRun.mock.calls.filter(c =>
@@ -342,9 +343,10 @@ describe('Token refresh — consecutive failure tracking', () => {
     });
 
     test('should create OAUTH_DISCONNECTED notification on auto-disconnect', async () => {
+        // Network errors are transient — threshold is MAX_TRANSIENT_FAILURES=10
         globalThis.fetch = mock(() => Promise.reject(new Error('Network error')));
         try {
-            await refreshShopToken(makeShop(4));
+            await refreshShopToken(makeShop(9)); // 9 + 1 = 10 >= MAX_TRANSIENT_FAILURES
         } catch (_) { /* expected */ }
 
         // Should have two calls: TOKEN_REFRESH_FAILED and OAUTH_DISCONNECTED

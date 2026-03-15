@@ -1,9 +1,25 @@
 // Notification Service — NotificationTypes Constant Unit Tests
-import { describe, expect, test } from 'bun:test';
-import { NotificationTypes } from '../backend/services/notificationService.js';
+import { describe, expect, test, beforeAll } from 'bun:test';
+
+// Use dynamic import to avoid mock contamination from db/logger mocks in other test files.
+// Static import hoisting would load the module before this file runs, potentially
+// picking up a contaminated database.js mock from service-tokenRefreshScheduler-coverage.
+let NotificationTypes;
+
+beforeAll(async () => {
+    try {
+        const mod = await import('../backend/services/notificationService.js');
+        NotificationTypes = mod.NotificationTypes;
+    } catch (e) {
+        // Log but don't fail setup — tests will fail with clear messages below
+        console.warn('NotificationTypes import failed:', e.message);
+        NotificationTypes = null;
+    }
+});
 
 describe('NotificationTypes', () => {
     test('has required keys (and may include additional keys)', () => {
+        if (!NotificationTypes) throw new Error('NotificationTypes not loaded — import failed');
         const keys = Object.keys(NotificationTypes);
         expect(keys).toContain('TOKEN_REFRESH_SUCCESS');
         expect(keys).toContain('TOKEN_REFRESH_FAILED');
@@ -15,6 +31,7 @@ describe('NotificationTypes', () => {
     });
 
     test('all values are non-empty strings', () => {
+        if (!NotificationTypes) throw new Error('NotificationTypes not loaded — import failed');
         for (const [key, value] of Object.entries(NotificationTypes)) {
             expect(typeof value).toBe('string');
             expect(value.length).toBeGreaterThan(0);
@@ -22,6 +39,7 @@ describe('NotificationTypes', () => {
     });
 
     test('values match expected snake_case format', () => {
+        if (!NotificationTypes) throw new Error('NotificationTypes not loaded — import failed');
         expect(NotificationTypes.TOKEN_REFRESH_SUCCESS).toBe('token_refresh_success');
         expect(NotificationTypes.TOKEN_REFRESH_FAILED).toBe('token_refresh_failed');
         expect(NotificationTypes.OAUTH_DISCONNECTED).toBe('oauth_disconnected');

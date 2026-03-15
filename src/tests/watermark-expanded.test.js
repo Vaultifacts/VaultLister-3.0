@@ -12,12 +12,12 @@ beforeAll(async () => {
 
 describe('Watermark - Auth Guard', () => {
     test('GET /watermark/presets without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/watermark/presets`);
+        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/watermark/presets`);
         expect(res.status).toBe(401);
     });
 
     test('POST /watermark/presets without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/watermark/presets`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/watermark/presets`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: 'test', type: 'text', content: 'hello' })

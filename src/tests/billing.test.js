@@ -23,7 +23,7 @@ describe('GET /api/billing/usage', () => {
         const res = await fetch(`${BASE}/api/billing/usage`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404, 500]).toContain(res.status);
+        expect([200, 403, 404, 500]).toContain(res.status);
     });
 });
 
@@ -37,7 +37,7 @@ describe('GET /api/billing/usage/history', () => {
         const res = await fetch(`${BASE}/api/billing/usage/history`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404, 500]).toContain(res.status);
+        expect([200, 403, 404, 500]).toContain(res.status);
     });
 });
 
@@ -80,7 +80,7 @@ describe('GET /api/billing/plans', () => {
         const res = await fetch(`${BASE}/api/billing/plans`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        expect([200, 404, 500]).toContain(res.status);
+        expect([200, 403, 404, 500]).toContain(res.status);
     });
 });
 

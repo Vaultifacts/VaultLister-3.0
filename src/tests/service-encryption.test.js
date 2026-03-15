@@ -1,12 +1,22 @@
 // Unit tests for encryption utilities
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test, beforeAll } from 'bun:test';
 
-// Set encryption key before importing (required)
+// Set encryption key in process.env BEFORE dynamic-importing the module.
+// Static import hoisting would load the module before this assignment runs,
+// so we use a lazy import inside beforeAll to guarantee the key is present.
 if (!process.env.OAUTH_ENCRYPTION_KEY) {
     process.env.OAUTH_ENCRYPTION_KEY = 'test-encryption-key-for-unit-tests-32chars!';
 }
 
-import { encryptToken, decryptToken, generateStateToken, hashToken } from '../backend/utils/encryption.js';
+let encryptToken, decryptToken, generateStateToken, hashToken;
+
+beforeAll(async () => {
+    const mod = await import('../backend/utils/encryption.js');
+    encryptToken = mod.encryptToken;
+    decryptToken = mod.decryptToken;
+    generateStateToken = mod.generateStateToken;
+    hashToken = mod.hashToken;
+});
 
 describe('Token Encryption', () => {
     test('encryptToken should return gcm:iv:authTag:ciphertext format', () => {
