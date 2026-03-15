@@ -231,7 +231,7 @@ Object.assign(pages, {
                 <div style="flex: 1;">
                     <div style="font-weight: 700; font-size: 15px; color: var(--gray-800);">Best Offer: $${(pendingOffers.find(o => o.id === bestOfferId)?.amount || 0).toFixed(2)}</div>
                     <div style="font-size: 13px; color: var(--gray-600);">
-                        ${escapeHtml(pendingOffers.find(o => o.id === bestOfferId)?.buyer_name || 'Anonymous')} •
+                        ${escapeHtml(pendingOffers.find(o => o.id === bestOfferId)?.buyer_name || pendingOffers.find(o => o.id === bestOfferId)?.buyer_username || 'Anonymous')} •
                         ${Math.round(bestOfferPercent)}% of listed price •
                         Deal Quality: <span style="color: ${bestOfferPercent >= 90 ? 'var(--success)' : bestOfferPercent >= 75 ? 'var(--warning-600)' : 'var(--error)'}; font-weight: 600;">${bestOfferPercent >= 90 ? 'Excellent' : bestOfferPercent >= 75 ? 'Good' : 'Fair'}</span>
                     </div>
@@ -364,8 +364,8 @@ Object.assign(pages, {
                                         const listing = store.state.listings.find(l => l.id === offer.listing_id);
                                         return `
                                             <tr>
-                                                <td>${escapeHtml(listing?.title || 'Unknown')}</td>
-                                                <td>${escapeHtml(offer.buyer_name || 'Anonymous')}</td>
+                                                <td>${escapeHtml(listing?.title || offer.listing_title || 'Unknown')}</td>
+                                                <td>${escapeHtml(offer.buyer_name || offer.buyer_username || 'Anonymous')}</td>
                                                 <td>$${offer.amount.toFixed(2)}</td>
                                                 <td><span class="badge badge-${offer.status === 'accepted' ? 'success' : offer.status === 'countered' ? 'primary' : 'error'}">${offer.status}</span></td>
                                                 <td class="text-sm text-gray-500">${new Date(offer.created_at).toLocaleDateString()}</td>

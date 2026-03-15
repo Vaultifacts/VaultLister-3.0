@@ -729,8 +729,35 @@ export async function financialsRouter(ctx) {
             const expenseAccounts = getTotalByTypes(['Expense']);
             const otherExpenseAccounts = getTotalByTypes(['Other Expense']);
 
-            const totalIncome = sumTotals(incomeAccounts) + sumTotals(otherIncomeAccounts);
-            const totalCOGS = sumTotals(cogsAccounts);
+            let totalIncome = sumTotals(incomeAccounts) + sumTotals(otherIncomeAccounts);
+            let totalCOGS = sumTotals(cogsAccounts);
+
+            // Fall back to sales table when no double-entry data exists for this user
+            if (totalIncome === 0 && totalCOGS === 0) {
+                const salesDateFilter = start && end ? 'AND created_at BETWEEN ? AND ?' : '';
+                const salesQueryParams = start && end ? [user.id, start, end] : [user.id];
+                const salesTotals = query.get(
+                    `SELECT COALESCE(SUM(sale_price), 0) as revenue,
+                            COALESCE(SUM(COALESCE(item_cost, 0)), 0) as cogs,
+                            COALESCE(SUM(COALESCE(platform_fee, 0)), 0) as fees,
+                            COALESCE(SUM(COALESCE(shipping_cost, 0)), 0) as shipping
+                     FROM sales WHERE user_id = ? ${salesDateFilter}`,
+                    salesQueryParams
+                );
+                if (salesTotals && salesTotals.revenue > 0) {
+                    incomeAccounts.push({ id: 'sales', account_name: 'Sales Revenue', account_type: 'Income', total: salesTotals.revenue });
+                    totalIncome = salesTotals.revenue;
+                    if (salesTotals.cogs > 0) {
+                        cogsAccounts.push({ id: 'cogs', account_name: 'Cost of Goods Sold', account_type: 'COGS', total: salesTotals.cogs });
+                        totalCOGS = salesTotals.cogs;
+                    }
+                    const totalFees = (salesTotals.fees || 0) + (salesTotals.shipping || 0);
+                    if (totalFees > 0) {
+                        expenseAccounts.push({ id: 'fees', account_name: 'Platform Fees & Shipping', account_type: 'Expense', total: totalFees });
+                    }
+                }
+            }
+
             const grossProfit = totalIncome - totalCOGS;
             const totalExpenses = sumTotals(expenseAccounts) + sumTotals(otherExpenseAccounts);
             const netIncome = grossProfit - totalExpenses;
