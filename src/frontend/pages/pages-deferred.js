@@ -1609,12 +1609,12 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${failedCount > 0 ? `
+            ${failedRuns > 0 ? `
             <!-- Failed Automations Alert Banner -->
             <div class="automation-failure-banner mb-4" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--error-50, #fef2f2); border: 1px solid var(--error-200, #fecaca); border-radius: var(--radius-md); color: var(--error-700, #b91c1c);">
                 ${components.icon('alert-triangle', 20)}
                 <div style="flex: 1;">
-                    <span class="font-medium">${failedCount} automation${failedCount > 1 ? 's' : ''} failed recently</span>
+                    <span class="font-medium">${failedRuns} automation${failedRuns > 1 ? 's' : ''} failed recently</span>
                     <span style="margin-left: 8px; font-size: 13px; opacity: 0.8;">Check run history for details</span>
                 </div>
                 <button class="btn btn-sm btn-error" onclick="handlers.showAutomationHistory()">

@@ -80,6 +80,9 @@ export function seedDemoData() {
         query.run('DELETE FROM sales WHERE user_id = ?', [userId]);
         seedSales(userId, listingIds);
 
+        // Seed roadmap features (global, not user-specific)
+        seedRoadmapFeatures();
+
         console.log('✓ Demo data seeded successfully');
     } catch (error) {
         console.error('Demo data seed error:', error.message);
@@ -915,4 +918,37 @@ function seedSales(userId, listingIds) {
     }
 
     console.log(`  ✓ Seeded ${sales.length} sales`);
+}
+
+function seedRoadmapFeatures() {
+    const existing = query.get('SELECT COUNT(*) as count FROM roadmap_features');
+    if (existing?.count > 0) return;
+
+    const features = [
+        { id: uuidv4(), title: 'Bulk Cross-Listing', description: 'Select multiple inventory items and push to all 9 platforms in one click with smart field mapping.', status: 'in_progress', category: 'Cross-Listing', eta: 'Q2 2026', votes: 142 },
+        { id: uuidv4(), title: 'AI Price Predictor V2', description: 'Real-time price recommendations using sold comps, demand trends, and seasonal data from all connected platforms.', status: 'in_progress', category: 'AI Features', eta: 'Q2 2026', votes: 118 },
+        { id: uuidv4(), title: 'Mobile App (iOS & Android)', description: 'Native app for listing on the go — scan barcodes, snap photos, and publish directly from your phone.', status: 'planned', category: 'Platform', eta: 'Q3 2026', votes: 203 },
+        { id: uuidv4(), title: 'Automatic Relisting', description: 'Detect stale listings (no views in N days) and automatically delist, refresh, and relist with updated pricing.', status: 'planned', category: 'Automations', eta: 'Q3 2026', votes: 97 },
+        { id: uuidv4(), title: 'Shopify Storefront Sync', description: 'Two-way inventory sync between VaultLister and your Shopify store — quantities, prices, and images stay in sync.', status: 'planned', category: 'Integrations', eta: 'Q4 2026', votes: 85 },
+        { id: uuidv4(), title: 'CSV Bulk Import', description: 'Import existing inventory from any spreadsheet with smart column mapping and duplicate detection.', status: 'planned', category: 'Inventory', eta: 'Q3 2026', votes: 76 },
+        { id: uuidv4(), title: 'Advanced Analytics Dashboard', description: 'Cohort analysis, sell-through rates, platform ROI comparison, and custom date ranges.', status: 'planned', category: 'Analytics', eta: 'Q4 2026', votes: 64 },
+        { id: uuidv4(), title: 'Team Roles & Permissions', description: 'Grant listing agents, virtual assistants, or partners scoped access — view-only, lister, or manager roles.', status: 'planned', category: 'Teams', eta: 'Q4 2026', votes: 52 },
+        { id: uuidv4(), title: 'Chrome Extension V2', description: 'One-click listing capture from any marketplace product page — auto-fill title, description, and price.', status: 'completed', category: 'Integrations', eta: 'Q1 2026', votes: 189 },
+        { id: uuidv4(), title: 'Poshmark Closet Automation', description: 'Scheduled closet sharing, follow-back, and auto-offer rules that run 24/7 without manual effort.', status: 'completed', category: 'Automations', eta: 'Q1 2026', votes: 167 },
+        { id: uuidv4(), title: 'AI Listing Generator', description: 'Generate platform-optimized titles, descriptions, and tags from a photo using Claude AI.', status: 'completed', category: 'AI Features', eta: 'Q1 2026', votes: 155 }
+    ];
+
+    for (const f of features) {
+        try {
+            query.run(
+                `INSERT OR IGNORE INTO roadmap_features (id, title, description, status, category, eta, votes, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+                [f.id, f.title, f.description, f.status, f.category, f.eta, f.votes]
+            );
+        } catch (e) {
+            console.error('Roadmap feature insert error:', e.message);
+        }
+    }
+
+    console.log(`  ✓ Seeded ${features.length} roadmap features`);
 }

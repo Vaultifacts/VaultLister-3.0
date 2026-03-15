@@ -354,29 +354,29 @@ Object.assign(pages, {
                                     <div class="shop-quick-stats mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
                                             <div style="font-size: 16px; font-weight: 600;">${Math.floor(Math.random() * 50) + 5}</div>
-                                            <div style="font-size: 10px; color: var(--gray-500);">Listed</div>
+                                            <div style="font-size: 10px; color: var(--gray-700);">Listed</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
                                             <div style="font-size: 16px; font-weight: 600;">${fees.salesCount || Math.floor(Math.random() * 20)}</div>
-                                            <div style="font-size: 10px; color: var(--gray-500);">Sales</div>
+                                            <div style="font-size: 10px; color: var(--gray-700);">Sales</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--success-50); border-radius: 6px;">
                                             <div style="font-size: 16px; font-weight: 600; color: var(--success);">$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : Math.floor(Math.random() * 500) + 100}</div>
-                                            <div style="font-size: 10px; color: var(--gray-500);">Revenue</div>
+                                            <div style="font-size: 10px; color: var(--gray-700);">Revenue</div>
                                         </div>
                                     </div>
                                     <!-- Platform Fee Tracking -->
                                     <div class="shop-fee-tracking mb-3" style="padding: 10px; background: linear-gradient(135deg, var(--error-50) 0%, var(--gray-50) 100%); border-radius: 8px; border: 1px solid var(--error-100);">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                                             <span style="font-size: 11px; font-weight: 600; color: var(--gray-600);">Platform Fees</span>
-                                            <span style="font-size: 10px; color: var(--gray-500);">${(fees.feeRate * 100).toFixed(0)}% rate</span>
+                                            <span style="font-size: 10px; color: var(--gray-700);">${(fees.feeRate * 100).toFixed(0)}% rate</span>
                                         </div>
                                         <div style="display: flex; justify-content: space-between; align-items: baseline;">
                                             <div>
                                                 <span style="font-size: 18px; font-weight: 700; color: var(--error);">-$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : (Math.random() * 50 + 10).toFixed(2)}</span>
                                             </div>
                                             <div style="text-align: right;">
-                                                <div style="font-size: 10px; color: var(--gray-500);">Net:</div>
+                                                <div style="font-size: 10px; color: var(--gray-700);">Net:</div>
                                                 <div style="font-size: 13px; font-weight: 600; color: var(--success);">$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : (Math.random() * 400 + 80).toFixed(2)}</div>
                                             </div>
                                         </div>
