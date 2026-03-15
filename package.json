@@ -23,7 +23,7 @@
     "test:e2e": "bun run test:setup && NODE_ENV=test PORT=3100 npx playwright test",
     "test:e2e:ui": "bun run test:setup && NODE_ENV=test PORT=3100 npx playwright test --ui",
     "test:e2e:headed": "bun run test:setup && NODE_ENV=test PORT=3100 npx playwright test --headed",
-    "test:all": "bun run test:setup && bun run test:api && bun run test:security && NODE_ENV=test npx playwright test",
+    "test:all": "bun run test:setup && bun run test:api && bun run test:security && NODE_ENV=test PORT=3100 npx playwright test",
     "validate": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/ps/run-full-validation.ps1",
     "fix:e2e": "powershell -NoProfile -ExecutionPolicy Bypass -File ./tools/autopilot/fix-e2e-failures.ps1",
     "fix:e2e:dry": "powershell -NoProfile -ExecutionPolicy Bypass -File ./tools/autopilot/fix-e2e-failures.ps1 -DryRun",

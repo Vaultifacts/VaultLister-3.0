@@ -182,7 +182,12 @@ test.describe('Offer Accept / Decline / Counter', () => {
             const body3 = await seed3.json();
             declineOfferId = body3.offer?.id;
         } else {
-            // No seed endpoint — fall back to any existing pending offers
+            // Seed endpoint unavailable — log status for diagnosis then fall back
+            const seedStatus = seed1.status();
+            let seedBody = '';
+            try { seedBody = JSON.stringify(await seed1.json()); } catch { seedBody = await seed1.text(); }
+            console.warn(`[offers.spec] Seed endpoint returned ${seedStatus}: ${seedBody}. Falling back to existing pending offers.`);
+
             const listRes = await request.get(`${BASE_URL}/api/offers?status=pending&limit=3`, {
                 headers
             });
@@ -190,6 +195,9 @@ test.describe('Offer Accept / Decline / Counter', () => {
             if (data.offers.length >= 1) seededOfferId = data.offers[0].id;
             if (data.offers.length >= 2) acceptOfferId = data.offers[1].id;
             if (data.offers.length >= 3) declineOfferId = data.offers[2].id;
+            if (!seededOfferId) {
+                console.warn('[offers.spec] No pending offers found — offer action tests will be skipped. Run test:setup to configure the test server correctly.');
+            }
         }
     });
 
