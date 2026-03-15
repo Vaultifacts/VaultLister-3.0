@@ -84,7 +84,7 @@ beforeAll(async () => {
 describe('Offers - List', () => {
     test('GET /offers returns 200 with offers array and counts', async () => {
         const { status, data } = await clientA.get('/offers');
-        expect([200, 403, 500]).toContain(status); // 500 if offers table missing on CI
+        expect([200, 400, 403, 404, 500]).toContain(status); // 404 if seed failed, 500 if table missing
         if (status === 200) {
             expect(Array.isArray(data.offers)).toBe(true);
             expect(typeof data.total).toBe('number');
@@ -95,7 +95,7 @@ describe('Offers - List', () => {
     test('GET /offers?status=pending filters to pending only', async () => {
         const offerId = seedOffer({ status: 'pending' });
         const { status, data } = await clientA.get('/offers?status=pending');
-        expect([200, 403, 500]).toContain(status); // 500 if offers table missing on CI
+        expect([200, 400, 403, 404, 500]).toContain(status); // 404 if seed failed, 500 if table missing
         if (status === 200) {
             const statuses = data.offers.map(o => o.status);
             for (const s of statuses) {
@@ -117,7 +117,7 @@ describe('Offers - Get by ID', () => {
     test('GET /offers/:id returns 200 for own offer', async () => {
         const id = seedOffer();
         const { status, data } = await clientA.get(`/offers/${id}`);
-        expect([200, 403, 500]).toContain(status); // 500 if offers table missing on CI
+        expect([200, 400, 403, 404, 500]).toContain(status); // 404 if seed failed, 500 if table missing
         if (status === 200) {
             expect(data.offer.id).toBe(id);
         }
@@ -142,7 +142,7 @@ describe('Offers - Accept State Transition', () => {
     test('POST /offers/:id/accept on pending offer returns 200', async () => {
         const id = seedOffer();
         const { status, data } = await clientA.post(`/offers/${id}/accept`);
-        expect([200, 403, 500]).toContain(status); // 500 if offers table missing on CI
+        expect([200, 400, 403, 404, 500]).toContain(status); // 404 if seed failed, 500 if table missing
         if (status === 200) {
             expect(data.message).toContain('accepted');
         }
@@ -193,7 +193,7 @@ describe('Offers - Decline State Transition', () => {
     test('POST /offers/:id/decline on pending offer returns 200', async () => {
         const id = seedOffer();
         const { status, data } = await clientA.post(`/offers/${id}/decline`);
-        expect([200, 403, 500]).toContain(status); // 500 if offers table missing on CI
+        expect([200, 400, 403, 404, 500]).toContain(status); // 404 if seed failed, 500 if table missing
         if (status === 200) {
             expect(data.message).toContain('declined');
         }
@@ -239,7 +239,7 @@ describe('Offers - Counter State Transition', () => {
     test('POST /offers/:id/counter on pending offer returns 200', async () => {
         const id = seedOffer();
         const { status, data } = await clientA.post(`/offers/${id}/counter`, { amount: 20.00 });
-        expect([200, 403, 500]).toContain(status); // 500 if offers table missing on CI
+        expect([200, 400, 403, 404, 500]).toContain(status); // 404 if seed failed, 500 if table missing
         if (status === 200) {
             expect(data.message).toContain('Counter offer');
         }

@@ -24,7 +24,7 @@ describe('Chatbot Expanded - Delete Conversation', () => {
     test('DELETE /chatbot/conversations/nonexistent returns 404', async () => {
         const { status, data } = await client.delete('/chatbot/conversations/nonexistent-id');
         // 404 on missing, 403 if tier-gated on CI
-        expect([404, 403]).toContain(status);
+        expect([404, 403, 404]).toContain(status);
         if (status === 404) {
             expect(data.error).toBeDefined();
         }
@@ -40,7 +40,7 @@ describe('Chatbot Expanded - Delete Conversation', () => {
             if (convId) {
                 const { status } = await client.delete(`/chatbot/conversations/${convId}`);
                 // 200 on success, 403 if tier-gated, 404 if not found, 500 if table missing on CI
-                expect([200, 403, 404, 500]).toContain(status);
+                expect([200, 403, 404, 500, 404]).toContain(status);
             }
         }
     });
@@ -55,7 +55,7 @@ describe('Chatbot Expanded - Delete Conversation', () => {
                 // Try to delete as userB — should return 404 (ownership check)
                 const { status } = await clientB.delete(`/chatbot/conversations/${convId}`);
                 // 404 on IDOR, 403 if tier-gated on CI
-                expect([404, 403]).toContain(status);
+                expect([404, 403, 404]).toContain(status);
             }
         }
     });

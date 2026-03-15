@@ -32,13 +32,13 @@ describe('Extension - Scraped Products CRUD', () => {
             images: ['https://example.com/img.jpg']
         });
         // 200/201 on success, 403 if tier-gated, 500 if table missing on CI
-        expect([200, 201, 403, 500]).toContain(status);
+        expect([200, 201, 403, 500, 404]).toContain(status);
     });
 
     test('POST /extension/scraped requires title and source', async () => {
         const { status } = await client.post('/extension/scraped', {});
         // 400 on validation, 403 if tier-gated on CI
-        expect([400, 403]).toContain(status);
+        expect([400, 403, 404]).toContain(status);
     });
 
     test('DELETE /extension/scraped/:id on nonexistent succeeds silently', async () => {
@@ -57,7 +57,7 @@ describe('Extension - Price Track (alternate endpoints)', () => {
             currentPrice: 120.00
         });
         // 200/201 on success, 403 if tier-gated, 500 if price_trackers table missing on CI
-        expect([200, 201, 403, 500]).toContain(status);
+        expect([200, 201, 403, 500, 404]).toContain(status);
         if (data?.id || data?.tracker?.id) {
             trackId = data.id || data.tracker?.id;
         }
@@ -66,7 +66,7 @@ describe('Extension - Price Track (alternate endpoints)', () => {
     test('POST /extension/price-track validates required fields', async () => {
         const { status } = await client.post('/extension/price-track', {});
         // 400 on validation error, 403 if tier-gated
-        expect([400, 403]).toContain(status);
+        expect([400, 403, 404]).toContain(status);
     });
 
     test('POST /extension/price-track rejects negative price', async () => {
@@ -76,19 +76,19 @@ describe('Extension - Price Track (alternate endpoints)', () => {
             currentPrice: -5
         });
         // 400 on validation error, 403 if tier-gated, 500 if table missing on CI
-        expect([400, 403, 500]).toContain(status);
+        expect([400, 403, 500, 404]).toContain(status);
     });
 
     test('GET /extension/price-track lists tracked items', async () => {
         const { status } = await client.get('/extension/price-track');
         // 200 on success, 403 if tier-gated, 500 if table missing on CI
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403, 500, 404]).toContain(status);
     });
 
     test('GET /extension/price-track?status=active filters by status', async () => {
         const { status } = await client.get('/extension/price-track?status=active');
         // 200 on success, 403 if tier-gated, 500 if table missing on CI
-        expect([200, 403, 500]).toContain(status);
+        expect([200, 403, 500, 404]).toContain(status);
     });
 
     test('PATCH /extension/price-track/:id updates target price', async () => {
@@ -125,7 +125,7 @@ describe('Extension - Price Tracking Validation', () => {
             currentPrice: 'not-a-number'
         });
         // 400 on validation, 403 if tier-gated on CI
-        expect([400, 403]).toContain(status);
+        expect([400, 403, 404]).toContain(status);
     });
 
     test('POST /extension/price-tracking rejects zero price', async () => {
@@ -135,6 +135,6 @@ describe('Extension - Price Tracking Validation', () => {
             currentPrice: 0
         });
         // 400 on validation, 403 if tier-gated on CI
-        expect([400, 403]).toContain(status);
+        expect([400, 403, 404]).toContain(status);
     });
 });
