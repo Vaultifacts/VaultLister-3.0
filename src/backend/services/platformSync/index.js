@@ -7,6 +7,9 @@ import { syncMercariShop } from './mercariSync.js';
 import { syncDepopShop } from './depopSync.js';
 import { syncGrailedShop } from './grailedSync.js';
 import { syncEtsyShop } from './etsySync.js';
+import { syncFacebookShop } from './facebookSync.js';
+import { syncWhatnotShop } from './whatnotSync.js';
+import { syncShopifyShop } from './shopifySync.js';
 import { query } from '../../db/database.js';
 
 /**
@@ -53,7 +56,9 @@ function getSyncHandler(platform) {
         depop: syncDepopShop,
         grailed: syncGrailedShop,
         etsy: syncEtsyShop,
-        // facebook: syncFacebookShop,
+        facebook: syncFacebookShop,
+        whatnot: syncWhatnotShop,
+        shopify: syncShopifyShop,
     };
 
     return handlers[platform.toLowerCase()] || null;
@@ -65,7 +70,7 @@ function getSyncHandler(platform) {
  * @returns {boolean} Whether sync is supported
  */
 export function isSyncSupported(platform) {
-    const supportedPlatforms = ['ebay', 'poshmark', 'mercari', 'depop', 'grailed', 'etsy'];
+    const supportedPlatforms = ['ebay', 'poshmark', 'mercari', 'depop', 'grailed', 'etsy', 'facebook', 'whatnot', 'shopify'];
     return supportedPlatforms.includes(platform.toLowerCase());
 }
 
@@ -158,10 +163,21 @@ export function getSupportedPlatforms() {
         },
         {
             platform: 'facebook',
-            syncSupported: false,
-            capabilities: [],
-            oauthSupported: true,
-            note: 'Sync coming soon'
+            syncSupported: true,
+            capabilities: ['listings', 'orders'],
+            oauthSupported: true
+        },
+        {
+            platform: 'whatnot',
+            syncSupported: true,
+            capabilities: ['listings', 'orders'],
+            oauthSupported: true
+        },
+        {
+            platform: 'shopify',
+            syncSupported: true,
+            capabilities: ['listings', 'orders'],
+            oauthSupported: true
         }
     ];
 }

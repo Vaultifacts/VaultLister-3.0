@@ -1395,10 +1395,10 @@ Object.assign(pages, {
                                     <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon">
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToDepop()" id="publish-depop-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">Depop</div>
-                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Depop</div>
+                                    <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
                             <button class="btn coming-soon-btn" disabled title="Coming soon">
@@ -1407,22 +1407,22 @@ Object.assign(pages, {
                                     <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon">
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToFacebook()" id="publish-facebook-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">Facebook</div>
-                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Facebook</div>
+                                    <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon">
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToWhatnot()" id="publish-whatnot-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">Whatnot</div>
-                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Whatnot</div>
+                                    <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon">
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToShopify()" id="publish-shopify-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">Shopify</div>
-                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Shopify</div>
+                                    <div class="text-xs opacity-90">API</div>
                                 </div>
                             </button>
                         </div>
