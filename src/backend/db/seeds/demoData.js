@@ -83,6 +83,10 @@ export function seedDemoData() {
         // Seed roadmap features (global, not user-specific)
         seedRoadmapFeatures();
 
+        // Seed calendar events for demo user
+        const existingEvents = query.get('SELECT COUNT(*) as count FROM calendar_events WHERE user_id = ?', [userId]);
+        if (!existingEvents?.count) seedCalendarEvents(userId);
+
         console.log('✓ Demo data seeded successfully');
     } catch (error) {
         console.error('Demo data seed error:', error.message);
@@ -918,6 +922,46 @@ function seedSales(userId, listingIds) {
     }
 
     console.log(`  ✓ Seeded ${sales.length} sales`);
+}
+
+function seedCalendarEvents(userId) {
+    const now = new Date();
+    const day = (offset) => {
+        const d = new Date(now);
+        d.setDate(d.getDate() + offset);
+        return d.toISOString().split('T')[0];
+    };
+
+    const events = [
+        { title: "Ship: Vintage Levi's 501 Jeans", description: 'Sold on Poshmark — ship by today', type: 'order', color: '#3b82f6', date: day(0), time: '10:00' },
+        { title: 'Ship: Nike Air Max 90 Sneakers', description: 'Sold on eBay — ship by today', type: 'order', color: '#3b82f6', date: day(0), time: '14:00' },
+        { title: 'Poshmark Closet Share', description: 'Scheduled daily closet sharing automation', type: 'automation', color: '#8b5cf6', date: day(1), time: '09:00' },
+        { title: 'Ship: Coach Leather Crossbody', description: 'Sold on Depop — ship by tomorrow', type: 'order', color: '#3b82f6', date: day(1), time: '12:00' },
+        { title: 'eBay Listing Refresh', description: 'Refresh stale listings for better placement', type: 'automation', color: '#8b5cf6', date: day(2), time: '08:00' },
+        { title: 'Ship: Patagonia Fleece Jacket', description: 'Sold on Mercari — ship within 3 days', type: 'order', color: '#3b82f6', date: day(2), time: '11:00' },
+        { title: 'Price Drop Campaign', description: 'Drop prices 10% on items listed 30+ days', type: 'reminder', color: '#f59e0b', date: day(3), time: '10:00' },
+        { title: 'Weekly Inventory Review', description: 'Review sell-through rates and restock decisions', type: 'reminder', color: '#10b981', date: day(5), time: '09:00' },
+        { title: 'Send Offers to Likers', description: 'Automated offer blast to all watchers', type: 'automation', color: '#8b5cf6', date: day(5), time: '19:00' },
+        { title: 'Ship: Ray-Ban Wayfarer Sunglasses', description: 'Sold on eBay — ship by this week', type: 'order', color: '#3b82f6', date: day(6), time: '10:00' },
+        { title: 'Monthly P&L Review', description: 'Review profit & loss report for the month', type: 'reminder', color: '#10b981', date: day(7), time: '09:00' },
+        { title: 'New Listing Batch', description: 'Photo and list 10 items from sourcing haul', type: 'reminder', color: '#f59e0b', date: day(8), time: '14:00' },
+        { title: 'Ship: Lululemon Align Leggings', description: 'Sold on Poshmark', type: 'order', color: '#3b82f6', date: day(9), time: '11:00' },
+        { title: 'eBay Promoted Listings Review', description: 'Check promoted listing performance and adjust bids', type: 'reminder', color: '#10b981', date: day(10), time: '10:00' },
+        { title: 'Closet Audit', description: 'Review items with no views in 60+ days for price drops', type: 'reminder', color: '#ef4444', date: day(12), time: '09:00' },
+    ];
+
+    for (const e of events) {
+        try {
+            query.run(
+                `INSERT OR IGNORE INTO calendar_events (id, user_id, title, description, date, time, type, color, all_day, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'), datetime('now'))`,
+                [uuidv4(), userId, e.title, e.description, e.date, e.time, e.type, e.color]
+            );
+        } catch (err) {
+            console.error('Calendar event insert error:', err.message);
+        }
+    }
+    console.log(`  ✓ Seeded ${events.length} calendar events`);
 }
 
 function seedRoadmapFeatures() {

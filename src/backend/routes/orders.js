@@ -642,6 +642,16 @@ export async function ordersRouter(ctx) {
                 newOrders += mockNewOrders;
 
                 // Create mock orders for demonstration
+                const mockItemTitles = [
+                    "Vintage Levi's 501 Jeans", "Nike Air Max 90 Sneakers", "Coach Leather Crossbody",
+                    "Patagonia Fleece Jacket", "Ray-Ban Wayfarer Sunglasses", "Lululemon Align Leggings",
+                    "The North Face Puffer Vest", "Vans Old Skool Shoes", "Free People Floral Dress",
+                    "Carhartt WIP Work Jacket", "Adidas Ultraboost Running Shoes", "Anthropologie Sweater"
+                ];
+                const mockBuyers = [
+                    'vintage_finds', 'style_maven', 'thrift_queen', 'sneaker_head', 'bargain_betty',
+                    'trendy_teen', 'savvy_shopper', 'fashion_forward', 'deals_hunter', 'closet_lover'
+                ];
                 for (let i = 0; i < mockNewOrders; i++) {
                     const orderId = uuidv4();
                     query.run(`
@@ -652,8 +662,8 @@ export async function ordersRouter(ctx) {
                         user.id,
                         platform,
                         'ORD-' + Date.now() + '-' + i,
-                        'Buyer' + secureRandomInt(1000),
-                        'Synced Item ' + secureRandomInt(100),
+                        mockBuyers[secureRandomInt(mockBuyers.length)],
+                        mockItemTitles[secureRandomInt(mockItemTitles.length)],
                         (secureRandomFloat() * 100 + 10).toFixed(2)
                     ]);
                 }
