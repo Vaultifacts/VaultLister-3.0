@@ -1389,10 +1389,10 @@ Object.assign(pages, {
                                     <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon">
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToMercari()" id="publish-mercari-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">Mercari</div>
-                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Mercari</div>
+                                    <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
                             <button class="btn btn-warning" onclick="handlers.publishSelectedToDepop()" id="publish-depop-crosslist-btn" disabled>
@@ -1401,10 +1401,10 @@ Object.assign(pages, {
                                     <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
-                            <button class="btn coming-soon-btn" disabled title="Coming soon">
+                            <button class="btn btn-warning" onclick="handlers.publishSelectedToGrailed()" id="publish-grailed-crosslist-btn" disabled>
                                 <div class="text-left">
-                                    <div class="font-semibold text-sm">Grailed</div>
-                                    <div class="text-xs"><span class="coming-soon-badge">Coming Soon</span></div>
+                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Grailed</div>
+                                    <div class="text-xs opacity-90">Auto</div>
                                 </div>
                             </button>
                             <button class="btn btn-warning" onclick="handlers.publishSelectedToFacebook()" id="publish-facebook-crosslist-btn" disabled>

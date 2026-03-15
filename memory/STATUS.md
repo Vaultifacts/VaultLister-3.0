@@ -40,7 +40,7 @@ _(Bot commits waiting for CLI agent review)_
 - [ ] M: Set up CI/CD pipeline (GitHub Actions)
 - [ ] M: Complete Etsy OAuth — unblocked once Etsy approves app key (`1sgc9xd1hwi3zt5k33pn9k7d`)
 - [x] M: Activate 4 platforms (Depop, Facebook, Whatnot, Shopify) — commit 473ccba (2026-03-15)
-- [ ] M: Implement 2 remaining stub platforms (Mercari, Grailed)
+- [x] M: Activate Mercari + Grailed platforms (2026-03-15)
 - [x] M: Investigate 15 pre-existing auth+security test failures — resolved (commit 1297a72): PORT mismatch + demo-login mfa_secret leak + AI/chatbot AbortController
 - [ ] M: Verify Poshmark `bot.counterOffer()` against live marketplace UI
 - [ ] L: Review and tighten `.claude/settings.json` deny rules
