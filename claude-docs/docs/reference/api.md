@@ -1,5 +1,5 @@
 # API Reference
-> Last reviewed: 2026-02-16
+> Last reviewed: 2026-03-15
 
 ## Route Pattern
 ## Route Pattern
@@ -26,10 +26,70 @@ export async function routerName(ctx) {
 | POST | `/logout` | Invalidate session |
 | POST | `/refresh` | Refresh JWT token |
 | GET | `/me` | Get current user info |
+| POST | `/password-reset` | Request password reset email |
+| GET | `/verify-email?token=` | Verify email address via token |
+| POST | `/resend-verification` | Resend email verification link |
+| POST | `/demo-login` | Login with demo credentials |
 
 **Auth Headers:**
 - `Authorization: Bearer <jwt_token>`
 - `X-CSRF-Token: <csrf_token>` (required for POST/PUT/PATCH/DELETE)
+
+### Email Verification
+
+**`GET /api/auth/verify-email?token=<token>`**
+
+Verifies a user's email address using a token from the verification email.
+
+| Status | Response |
+|--------|----------|
+| 200 | `{ message: "Email verified successfully!" }` |
+| 400 | `{ error: "Invalid or expired verification link." }` |
+| 400 | `{ error: "This verification link has already been used." }` |
+
+**`POST /api/auth/resend-verification`**
+
+Resends the verification email. Always returns 200 to prevent email enumeration.
+
+| Field | Type | Required |
+|-------|------|----------|
+| `email` | string | Yes |
+
+---
+
+## Security Routes (`/api/security`)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/send-verification` | Send email verification (authenticated) |
+| POST | `/verify-email` | Verify email with token |
+| POST | `/forgot-password` | Request password reset |
+| POST | `/reset-password` | Reset password with token |
+| POST | `/mfa/setup` | Initialize MFA setup (returns QR code) |
+| POST | `/mfa/verify-setup` | Verify TOTP code and enable MFA |
+| POST | `/mfa/disable` | Disable MFA |
+| POST | `/mfa/verify` | Verify MFA code during login |
+| POST | `/change-password` | Change password (authenticated) |
+
+### MFA Setup Flow
+
+1. **`POST /api/security/mfa/setup`** (requires auth)
+   - Returns: `{ qrCode, secret, setupToken }`
+   - User scans QR code with authenticator app
+
+2. **`POST /api/security/mfa/verify-setup`** (requires auth)
+   - Body: `{ setupToken, code, secret }`
+   - Returns: `{ message, backupCodes, warning }`
+   - `backupCodes` are one-time use recovery codes — shown only once
+
+3. **`POST /api/security/mfa/verify`** (during login)
+   - Body: `{ code, mfaToken }` (mfaToken from login response when MFA required)
+   - Returns: JWT tokens on success
+
+### Password Reset Flow
+
+1. **`POST /api/security/forgot-password`** — `{ email }` → sends reset email
+2. **`POST /api/security/reset-password`** — `{ token, password }` → resets password, invalidates all sessions
 
 ---
 
