@@ -15164,7 +15164,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'b388c5c0';
+    const v = 'f4b56ef5';
     const files = [
         '/pages/pages-' + chunkName + '.js?v=' + v,
         '/handlers/handlers-' + chunkName + '.js?v=' + v
@@ -15861,10 +15861,10 @@ const components = {
                     <div class="user-menu dropdown" onclick="this.classList.toggle('open')">
                         <div class="user-avatar">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu">
-                            <button class="dropdown-item" onclick="router.navigate('account')">
+                            <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
                                 ${this.icon('user', 16)} Account
                             </button>
-                            <button class="dropdown-item" onclick="router.navigate('settings')">
+                            <button class="dropdown-item" onclick="router.navigate('settings')" aria-label="Settings">
                                 ${this.icon('settings', 16)} Settings
                             </button>
                             <div class="dropdown-divider"></div>
@@ -17864,10 +17864,10 @@ const pages = {
                         ${components.icon('download', 14)} Export
                     </button>
                     <div class="dropdown-menu dashboard-export-menu">
-                        <button class="dropdown-item" onclick="handlers.exportDashboard('print'); this.closest('.dashboard-export-menu').classList.remove('show')">
+                        <button class="dropdown-item" onclick="handlers.exportDashboard('print'); this.closest('.dashboard-export-menu').classList.remove('show')" aria-label="Print or save as PDF">
                             ${components.icon('printer', 14)} Print / Save as PDF
                         </button>
-                        <button class="dropdown-item" onclick="handlers.exportDashboard('screenshot'); this.closest('.dashboard-export-menu').classList.remove('show')">
+                        <button class="dropdown-item" onclick="handlers.exportDashboard('screenshot'); this.closest('.dashboard-export-menu').classList.remove('show')" aria-label="Copy screenshot">
                             ${components.icon('image', 14)} Copy Screenshot
                         </button>
                     </div>
@@ -19621,22 +19621,22 @@ const pages = {
                             ${components.icon('more-horizontal', 16)} More
                         </button>
                         <div class="dropdown-menu" style="right: 0; min-width: 160px;">
-                            <button class="dropdown-item" onclick="handlers.showCustomMetricBuilder()">
+                            <button class="dropdown-item" onclick="handlers.showCustomMetricBuilder()" aria-label="Custom KPIs">
                                 ${components.icon('sliders', 16)} Custom KPIs
                             </button>
-                            <button class="dropdown-item" onclick="handlers.showAnalyticsDigestSettings()">
+                            <button class="dropdown-item" onclick="handlers.showAnalyticsDigestSettings()" aria-label="Schedule Digest">
                                 ${components.icon('mail', 16)} Schedule Digest
                             </button>
-                            <button class="dropdown-item" onclick="handlers.showExpenseTracker()">
+                            <button class="dropdown-item" onclick="handlers.showExpenseTracker()" aria-label="Expenses">
                                 ${components.icon('credit-card', 16)} Expenses
                             </button>
-                            <button class="dropdown-item" onclick="handlers.showGoalSettings()">
+                            <button class="dropdown-item" onclick="handlers.showGoalSettings()" aria-label="Goals">
                                 ${components.icon('target', 16)} Goals
                             </button>
-                            <button class="dropdown-item" onclick="handlers.refreshAnalytics()">
+                            <button class="dropdown-item" onclick="handlers.refreshAnalytics()" aria-label="Refresh analytics">
                                 ${components.icon('refresh-cw', 16)} Refresh
                             </button>
-                            <button class="dropdown-item" onclick="handlers.exportAnalyticsCSV()">
+                            <button class="dropdown-item" onclick="handlers.exportAnalyticsCSV()" aria-label="Export CSV">
                                 ${components.icon('download', 16)} Export CSV
                             </button>
                         </div>
@@ -20848,10 +20848,6 @@ const auth = {
             await api.post('/auth/logout', { refreshToken: store.state.refreshToken });
         } catch (e) {}
 
-        // Disconnect WebSocket before clearing state
-        if (window.VaultListerSocket) {
-            window.VaultListerSocket.disconnect();
-        }
         store.setState({ user: null, token: null, refreshToken: null, useSessionStorage: false });
         Object.keys(localStorage).forEach(key => {
             if (key.startsWith('vaultlister_')) localStorage.removeItem(key);

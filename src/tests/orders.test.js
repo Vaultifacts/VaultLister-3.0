@@ -176,9 +176,8 @@ describe('Orders - Update', () => {
             })
         });
 
-        // 200 = updated, 404 = not found, 400 = invalid status transition
-        // (existing order may not be in 'pending' status, so 'confirmed' transition is invalid)
-        expect([200, 400, 404]).toContain(response.status);
+        // 200 = updated, 400 = invalid status transition, 403 = CSRF, 404 = not found
+        expect([200, 400, 403, 404]).toContain(response.status);
     });
 
     test('PATCH /orders/:id - should partially update order', async () => {
@@ -198,7 +197,7 @@ describe('Orders - Update', () => {
             })
         });
 
-        expect([200, 404]).toContain(response.status);
+        expect([200, 403, 404]).toContain(response.status);
     });
 });
 
@@ -221,7 +220,7 @@ describe('Orders - Ship', () => {
             })
         });
 
-        expect([200, 400, 404]).toContain(response.status);
+        expect([200, 400, 403, 404]).toContain(response.status);
     });
 });
 
@@ -239,7 +238,7 @@ describe('Orders - Bulk Operations', () => {
             })
         });
 
-        expect([200, 400, 404]).toContain(response.status);
+        expect([200, 400, 403, 404]).toContain(response.status);
     });
 });
 

@@ -372,10 +372,10 @@ const components = {
                     <div class="user-menu dropdown" onclick="this.classList.toggle('open')">
                         <div class="user-avatar">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu">
-                            <button class="dropdown-item" onclick="router.navigate('account')">
+                            <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
                                 ${this.icon('user', 16)} Account
                             </button>
-                            <button class="dropdown-item" onclick="router.navigate('settings')">
+                            <button class="dropdown-item" onclick="router.navigate('settings')" aria-label="Settings">
                                 ${this.icon('settings', 16)} Settings
                             </button>
                             <div class="dropdown-divider"></div>
