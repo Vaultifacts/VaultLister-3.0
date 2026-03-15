@@ -15168,7 +15168,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'd419d931';
+    const v = '429754f2';
     const files = [
         '/pages/pages-' + chunkName + '.js?v=' + v,
         '/handlers/handlers-' + chunkName + '.js?v=' + v

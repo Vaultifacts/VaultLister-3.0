@@ -710,11 +710,13 @@ Object.assign(pages, {
         const hasUnsavedChanges = store.state.settingsChanged || false;
         const activeTab = store.state.settingsTab || 'profile';
         const user = store.state.user || {};
+        const isMac = navigator.platform ? navigator.platform.toUpperCase().includes('MAC') : false;
+        const modKey = isMac ? '⌘' : 'Ctrl';
         const keyboardShortcuts = [
-            { keys: ['⌘', 'K'], action: 'Quick search' },
-            { keys: ['⌘', 'N'], action: 'New listing' },
-            { keys: ['⌘', 'S'], action: 'Save changes' },
-            { keys: ['⌘', '/'], action: 'Show shortcuts' },
+            { keys: [modKey, 'K'], action: 'Quick search' },
+            { keys: [modKey, 'N'], action: 'New listing' },
+            { keys: [modKey, 'S'], action: 'Save changes' },
+            { keys: [modKey, '/'], action: 'Show shortcuts' },
             { keys: ['Esc'], action: 'Close modal' }
         ];
 
@@ -738,7 +740,7 @@ Object.assign(pages, {
                             <div class="settings-profile-info">
                                 <h3>${escapeHtml(user.full_name || user.username || 'User')}</h3>
                                 <p>@${escapeHtml(user.username || 'username')}</p>
-                                <span class="badge badge-success">Pro Member</span>
+                                ${user.subscription_tier && user.subscription_tier !== 'free' ? `<span class="badge badge-success">${user.subscription_tier.charAt(0).toUpperCase() + user.subscription_tier.slice(1)} Member</span>` : ''}
                             </div>
                             <button class="btn btn-secondary" onclick="router.navigate('account')">
                                 ${components.icon('user', 16)} View Account
