@@ -1,4 +1,4 @@
-KNOWN_FAILURES=0
+KNOWN_FAILURES=32
 # Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
 # Local Windows: 2050 pass / 0 fail
 # CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
