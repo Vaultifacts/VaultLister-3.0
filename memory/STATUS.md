@@ -3,9 +3,9 @@
 
 ## Current State
 - **Branch:** master
-- **Server:** running on localhost:3000
-- **Last commit:** 610bccc — fix CSRF tests to match IP-only session ID behavior
-- **E2E status:** 2054 pass / 0 fail / 0 flaky / 25 skip (env-gated: Poshmark/eBay credentials) — all 3 browsers
+- **Server:** test server on localhost:3100 (NODE_ENV=test, DISABLE_CSRF=true)
+- **Last commit:** 287e3f6 — fix PORT=3100 in test:all + offer E2E diagnostic logging
+- **E2E status:** 69/69 offer tests pass (was 27 skipped); overall 2054+ pass — all 3 browsers
 - **Unit status:** 5659 pass / 118 fail (all 118 are server-dependent integration tests) — zero code-level failures
 - **QA Remediation:** All 20 items complete across 4 phases
 - **Load test:** baseline p95=7ms / p99=8ms / 29 req/s
@@ -35,7 +35,8 @@ _(none)_
 - [ ] M: Verify Poshmark `bot.counterOffer()` against live marketplace — needs real offer
 - [ ] L: Review and tighten `.claude/settings.json` deny rules
 - [x] L: Sales/Analytics test verification — 197/201 pass (98%) — 2026-03-15
-- [ ] L: Fix 4 orders.test.js assertion bugs (lines 181, 201, 224, 242 — expect 403 not in array)
+- [x] L: Fix 4 orders.test.js assertion bugs — done (commit 6f476d3)
+- [x] L: Fix 27 skipped offer E2E tests — done, 69/69 pass (commit 287e3f6)
 
 ## Last Completed Work
 <!-- Most recent first -->

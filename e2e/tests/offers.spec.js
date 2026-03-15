@@ -109,7 +109,7 @@ test.beforeAll(async ({ request }) => {
 
 // ── GET /api/offers ───────────────────────────────────────────────────────────
 
-test.describe('Offer List', () => {
+test.describe('@quinn-v3-guardian Offer List', () => {
     test('GET /api/offers returns offers array with total and pending count', async ({ request }) => {
         const res = await request.get(`${BASE_URL}/api/offers`, { headers });
         expect(res.status()).toBe(200);
@@ -146,7 +146,7 @@ test.describe('Offer List', () => {
 
 // ── GET /api/offers/stats ─────────────────────────────────────────────────────
 
-test.describe('Offer Stats', () => {
+test.describe('@quinn-v3-guardian Offer Stats', () => {
     test('GET /api/offers/stats returns numeric counters', async ({ request }) => {
         const res = await request.get(`${BASE_URL}/api/offers/stats`, { headers });
         expect(res.status()).toBe(200);
@@ -161,7 +161,7 @@ test.describe('Offer Stats', () => {
 
 // ── Offer CRUD via seed endpoint (or graceful skip) ───────────────────────────
 
-test.describe('Offer Accept / Decline / Counter', () => {
+test.describe('@quinn-v3-guardian Offer Accept / Decline / Counter', () => {
     test.describe.configure({ mode: 'serial' });
 
     let seededOfferId;
@@ -342,7 +342,7 @@ test.describe('Offer Accept / Decline / Counter', () => {
 
 // ── Offer Rules CRUD ──────────────────────────────────────────────────────────
 
-test.describe('Offer Rules', () => {
+test.describe('@quinn-v3-guardian Offer Rules', () => {
     test.describe.configure({ mode: 'serial' });
 
     let ruleId;

@@ -36,8 +36,16 @@ describe('isSyncSupported', () => {
         expect(isSyncSupported('Etsy')).toBe(true);
     });
 
-    test('returns false for facebook (not yet supported)', () => {
-        expect(isSyncSupported('facebook')).toBe(false);
+    test('returns true for facebook', () => {
+        expect(isSyncSupported('facebook')).toBe(true);
+    });
+
+    test('returns true for whatnot', () => {
+        expect(isSyncSupported('whatnot')).toBe(true);
+    });
+
+    test('returns true for shopify', () => {
+        expect(isSyncSupported('shopify')).toBe(true);
     });
 });
 
@@ -47,8 +55,8 @@ describe('getSupportedPlatforms', () => {
         expect(Array.isArray(platforms)).toBe(true);
     });
 
-    test('returns 7 platforms', () => {
-        expect(getSupportedPlatforms().length).toBe(7);
+    test('returns 9 platforms', () => {
+        expect(getSupportedPlatforms().length).toBe(9);
     });
 
     test('each platform has required shape', () => {
@@ -60,16 +68,15 @@ describe('getSupportedPlatforms', () => {
         }
     });
 
-    test('6 platforms have syncSupported=true', () => {
+    test('9 platforms have syncSupported=true', () => {
         const supported = getSupportedPlatforms().filter(p => p.syncSupported);
-        expect(supported.length).toBe(6);
+        expect(supported.length).toBe(9);
     });
 
-    test('facebook has syncSupported=false with note', () => {
+    test('facebook has syncSupported=true', () => {
         const fb = getSupportedPlatforms().find(p => p.platform === 'facebook');
-        expect(fb.syncSupported).toBe(false);
-        expect(fb.capabilities).toEqual([]);
-        expect(fb.note).toContain('coming soon');
+        expect(fb.syncSupported).toBe(true);
+        expect(fb.capabilities).toContain('listings');
     });
 
     test('supported platforms have listings and orders capabilities', () => {

@@ -95,9 +95,7 @@ describe('isSyncSupported — coverage', () => {
   });
 
   test('returns false for unsupported platforms', () => {
-    expect(isSyncSupported('facebook')).toBe(false);
     expect(isSyncSupported('amazon')).toBe(false);
-    expect(isSyncSupported('shopify')).toBe(false);
     expect(isSyncSupported('walmart')).toBe(false);
     expect(isSyncSupported('')).toBe(false);
   });
@@ -108,10 +106,10 @@ describe('isSyncSupported — coverage', () => {
 // ============================================================
 
 describe('getSupportedPlatforms — coverage', () => {
-  test('returns array of 7 platforms', () => {
+  test('returns array of 9 platforms', () => {
     const platforms = getSupportedPlatforms();
     expect(Array.isArray(platforms)).toBe(true);
-    expect(platforms.length).toBe(7);
+    expect(platforms.length).toBe(9);
   });
 
   test('all entries have required shape', () => {
@@ -123,20 +121,17 @@ describe('getSupportedPlatforms — coverage', () => {
     }
   });
 
-  test('6 platforms have syncSupported=true, 1 (facebook) has false', () => {
+  test('all 9 platforms have syncSupported=true', () => {
     const platforms = getSupportedPlatforms();
     const supported = platforms.filter(p => p.syncSupported);
-    const unsupported = platforms.filter(p => !p.syncSupported);
-    expect(supported.length).toBe(6);
-    expect(unsupported.length).toBe(1);
-    expect(unsupported[0].platform).toBe('facebook');
+    expect(supported.length).toBe(9);
   });
 
-  test('facebook entry has note field', () => {
+  test('facebook entry has listings+orders capabilities', () => {
     const fb = getSupportedPlatforms().find(p => p.platform === 'facebook');
     expect(fb).toBeDefined();
-    expect(fb.note).toContain('coming soon');
-    expect(fb.capabilities).toEqual([]);
+    expect(fb.syncSupported).toBe(true);
+    expect(fb.capabilities).toContain('listings');
     expect(fb.oauthSupported).toBe(true);
   });
 
@@ -201,7 +196,7 @@ describe('syncShop — coverage', () => {
       .rejects.toThrow('No OAuth token available');
   });
 
-  test('throws for unsupported platform (e.g. facebook)', async () => {
+  test('routes to Facebook sync handler and returns results', async () => {
     mockQueryGet.mockReturnValue({
       id: 'shop-fb',
       user_id: 'user-1',
@@ -211,8 +206,9 @@ describe('syncShop — coverage', () => {
       oauth_token: encryptToken('fb-token'),
     });
 
-    await expect(syncShop('shop-fb', 'user-1'))
-      .rejects.toThrow('Sync not implemented for platform: facebook');
+    const result = await syncShop('shop-fb', 'user-1');
+    expect(result).toBeDefined();
+    expect(result.listings).toBeDefined();
   });
 
   test('routes to eBay sync handler and returns results', async () => {
@@ -419,7 +415,7 @@ describe('getSyncStatus — coverage', () => {
     expect(status.pendingTask.startedAt).toBe('2025-06-01T10:01:00Z');
   });
 
-  test('reports isSyncSupported=false for facebook', () => {
+  test('reports isSyncSupported=true for facebook', () => {
     let callCount = 0;
     mockQueryGet.mockImplementation(() => {
       callCount++;
@@ -437,7 +433,7 @@ describe('getSyncStatus — coverage', () => {
     });
 
     const status = getSyncStatus('shop-fb', 'user-1');
-    expect(status.isSyncSupported).toBe(false);
+    expect(status.isSyncSupported).toBe(true);
   });
 
   test('reports sync error when present', () => {
