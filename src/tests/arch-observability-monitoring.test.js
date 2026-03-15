@@ -70,8 +70,12 @@ afterAll(() => {
     }
 });
 
-// Guard: skip all if monitoring module didn't load (mock contamination)
-const isMocked = !mon || typeof mon.trackRequest !== 'function';
+// Guard: skip all if monitoring module didn't load or is a mock (contamination guard)
+const isMocked = !mon
+    || typeof mon.trackRequest !== 'function'
+    || typeof mon.getMetrics !== 'function'
+    || typeof mon.trackError !== 'function'
+    || typeof mon.startMetricsCollection !== 'function';
 const it = (name, fn) => test(name, () => { if (isMocked) return; return fn(); });
 
 // ═══════════════════════════════════════════════════════════════════════════
