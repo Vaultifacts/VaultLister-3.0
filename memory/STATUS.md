@@ -4,7 +4,7 @@
 ## Current State
 - **Branch:** master
 - **Server:** test server on localhost:3100 (NODE_ENV=test, DISABLE_CSRF=true)
-- **Last commit:** d6d7950 — fix automation banner, color contrast a11y, roadmap seed data
+- **Last commit:** 2f95701 — fix 12-chars debug, best-seller Unknown, image bank thumbnails
 - **E2E status:** 69/69 offer tests pass (was 27 skipped); overall 2054+ pass — all 3 browsers
 - **Unit status:** 4267 pass / 223 fail / 4490 total (Windows, PORT=3100, server running) — failures are external-service-dependent (Anthropic API key, SMTP, Notion) plus 6 async-leak errors between test files
 - **QA Remediation:** All 20 items complete across 4 phases
