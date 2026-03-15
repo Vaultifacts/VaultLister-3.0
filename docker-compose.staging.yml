@@ -1,0 +1,114 @@
+# VaultLister Docker Compose — Staging Environment
+# Port: 3001 (host) → 3000 (container)
+# Volume prefix: vaultlister-staging-*
+# Deploy with:
+#   docker compose -f docker-compose.staging.yml up -d
+# Requires GitHub secrets: STAGING_HOST, STAGING_USER, STAGING_SSH_KEY
+# Requires server .env at /opt/vaultlister-staging/.env
+
+services:
+  # ============================================
+  # VaultLister Application (staging)
+  # ============================================
+  app:
+    image: ghcr.io/${GITHUB_REPOSITORY:-vaultifacts/vaultlister-3.0}:staging
+    container_name: vaultlister-staging-app
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=staging
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+      - DATA_DIR=/app/data
+      - LOG_DIR=/app/logs
+      - TRUST_PROXY=1
+      # OAuth (optional)
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - APPLE_CLIENT_ID=${APPLE_CLIENT_ID:-}
+      # Email (optional)
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - EMAIL_FROM=${EMAIL_FROM:-noreply@staging.vaultlister.com}
+      # AI (optional)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    volumes:
+      - vaultlister-staging-data:/app/data
+      - vaultlister-staging-logs:/app/logs
+      - vaultlister-staging-backups:/app/backups
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/api/health',{signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - vaultlister-staging-network
+
+  # ============================================
+  # Redis (staging — isolated from production)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: vaultlister-staging-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-changeme}
+    volumes:
+      - vaultlister-staging-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-changeme}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vaultlister-staging-network
+
+  # ============================================
+  # Nginx reverse proxy (staging)
+  # Listens on 8080/8443 to avoid collision with
+  # any production Nginx on the same host.
+  # Proxies to app:3000 internally.
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: vaultlister-staging-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - vaultlister-staging-logs:/var/log/nginx
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - vaultlister-staging-network
+
+# ============================================
+# Volumes (staging — isolated from production)
+# ============================================
+volumes:
+  vaultlister-staging-data:
+    driver: local
+  vaultlister-staging-logs:
+    driver: local
+  vaultlister-staging-backups:
+    driver: local
+  vaultlister-staging-redis:
+    driver: local
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  vaultlister-staging-network:
+    driver: bridge

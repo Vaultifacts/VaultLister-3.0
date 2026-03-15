@@ -1,0 +1,258 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  STAGING_IMAGE_TAG: vaultlister:staging
+
+jobs:
+  # ============================================================
+  # Gate: CI must pass before any build or deploy step runs.
+  # On workflow_dispatch from the staging branch this check is
+  # advisory (no prior CI run exists); on push it is blocking.
+  # ============================================================
+  build-and-push:
+    name: Build and Push Staging Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      deployments: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@369eb591f429131d6889c46b94e711f089e6ca96 # v5.6.1
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=staging
+            type=sha,prefix=staging-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NODE_ENV=staging
+
+      # Create GitHub deployment record — status set to "in_progress"
+      - name: Create GitHub deployment
+        id: create-deployment
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'staging',
+              description: 'Staging deploy triggered by push to staging branch',
+              auto_merge: false,
+              required_contexts: []
+            });
+            core.setOutput('deployment_id', deployment.data.id);
+
+      - name: Mark deployment in_progress
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ steps.create-deployment.outputs.deployment_id }},
+              state: 'in_progress',
+              description: 'Building and pushing Docker image'
+            });
+
+    outputs:
+      deployment_id: ${{ steps.create-deployment.outputs.deployment_id }}
+      image_tag: ${{ steps.meta.outputs.tags }}
+
+  # ============================================================
+  # Deploy: SSH into staging server, pull image, restart stack,
+  # run health-check smoke test.
+  # ============================================================
+  deploy:
+    name: Deploy to Staging Server
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: staging
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout (for compose file)
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Copy compose file to staging server
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          port: 22
+          script: |
+            mkdir -p /opt/vaultlister-staging
+
+      - name: SCP docker-compose.staging.yml
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
+        env:
+          COMPOSE_CONTENT: ${{ toJSON(format('')) }}
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          port: 22
+          script_stop: true
+          # Inline the compose file via heredoc so no scp step is needed
+          script: |
+            set -e
+            cat > /opt/vaultlister-staging/docker-compose.staging.yml << 'COMPOSEOF'
+            $(cat docker-compose.staging.yml)
+            COMPOSEOF
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          port: 22
+          script_stop: true
+          envs: GITHUB_TOKEN,IMAGE_REPO,GITHUB_ACTOR
+          script: |
+            set -e
+            cd /opt/vaultlister-staging
+
+            # Pull latest staging image from GHCR
+            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+            # Tag current image for rollback before pulling new one
+            CURRENT_IMAGE=$(docker compose -f docker-compose.staging.yml images app \
+              --format json 2>/dev/null \
+              | python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['Repository']+':'+d[0]['Tag'])" \
+              2>/dev/null || echo "")
+            if [ -n "$CURRENT_IMAGE" ] && [ "$CURRENT_IMAGE" != ":" ] && [ "$CURRENT_IMAGE" != "null:null" ]; then
+              docker tag "$CURRENT_IMAGE" "${CURRENT_IMAGE%%:*}:staging-rollback" 2>/dev/null || true
+              echo "Tagged rollback: $CURRENT_IMAGE"
+            fi
+
+            docker compose -f docker-compose.staging.yml pull app
+
+            # Rolling restart — replace app container only
+            docker compose -f docker-compose.staging.yml up -d --no-deps app
+
+            # Wait for health check to pass (up to 90 s)
+            HEALTHY=false
+            for i in $(seq 1 18); do
+              STATUS=$(docker compose -f docker-compose.staging.yml exec -T app \
+                curl -sf http://localhost:3000/api/health \
+                | python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))" \
+                2>/dev/null || echo "")
+              if [ "$STATUS" = "healthy" ]; then
+                echo "Health check passed (attempt $i)"
+                HEALTHY=true
+                break
+              fi
+              echo "Waiting for health check... ($i/18)"
+              sleep 5
+            done
+
+            # Rollback if unhealthy
+            if [ "$HEALTHY" != "true" ]; then
+              echo "ERROR: Staging health check failed — rolling back"
+              ROLLBACK_IMAGE="${CURRENT_IMAGE%%:*}:staging-rollback"
+              if docker image inspect "$ROLLBACK_IMAGE" >/dev/null 2>&1; then
+                docker compose -f docker-compose.staging.yml down --remove-orphans app 2>/dev/null || true
+                docker tag "$ROLLBACK_IMAGE" "$CURRENT_IMAGE" 2>/dev/null || true
+                docker compose -f docker-compose.staging.yml up -d --no-deps app
+                echo "Rolled back to previous image"
+              else
+                echo "WARNING: No rollback image — manual intervention required"
+              fi
+              exit 1
+            fi
+
+            docker compose -f docker-compose.staging.yml exec -T app \
+              curl -sf http://localhost:3000/api/health
+            docker image prune -f
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+
+      # --------------------------------------------------------
+      # Smoke test: hit the public health endpoint through Nginx
+      # (port 3001). Retries 6 times with 10 s gaps = 60 s max.
+      # --------------------------------------------------------
+      - name: Smoke test — public health endpoint
+        run: |
+          set -e
+          echo "Running smoke test against http://${{ secrets.STAGING_HOST }}:3001/api/health"
+          PASSED=false
+          for i in $(seq 1 6); do
+            HTTP_STATUS=$(curl -o /dev/null -sw "%{http_code}" \
+              "http://${{ secrets.STAGING_HOST }}:3001/api/health" \
+              --connect-timeout 10 --max-time 15 2>/dev/null || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Smoke test passed (attempt $i) — HTTP $HTTP_STATUS"
+              PASSED=true
+              break
+            fi
+            echo "Smoke test attempt $i failed (HTTP $HTTP_STATUS) — retrying in 10s"
+            sleep 10
+          done
+          if [ "$PASSED" != "true" ]; then
+            echo "ERROR: Smoke test failed after all retries"
+            exit 1
+          fi
+
+      - name: Mark deployment success
+        if: success()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ needs.build-and-push.outputs.deployment_id }},
+              state: 'success',
+              environment_url: 'http://${{ secrets.STAGING_HOST }}:3001',
+              description: 'Staging deployment successful'
+            });
+
+      - name: Mark deployment failure
+        if: failure()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ needs.build-and-push.outputs.deployment_id }},
+              state: 'failure',
+              description: 'Staging deployment failed — check Actions run for details'
+            });

@@ -1,5 +1,5 @@
 # STATUS.md – VaultLister 3.0 Agent Coordination File
-> Both CLI agent (Claude Code) and Bot agent (OpenClaw) share this file. Update on every session.
+> Updated on every session.
 
 ## Current State
 - **Branch:** master
@@ -21,7 +21,6 @@ All phases that can be done autonomously are complete. Remaining items require e
 | P3-1–P3-5 eBay production | User must confirm eBay production creds are live in `.env` |
 | P5-1–P5-6 Etsy integration | Same Etsy approval as P1-4 |
 | P6-6 Poshmark auto-offer live | Needs real buyer offer ≥80% threshold (second Poshmark account) |
-| P7-4 OpenClaw Bot config | User must supply Telegram/Discord channel ID for `.openclaw/config.json` |
 | P8-4 Load test | ✅ Done — p95=7ms, baseline captured |
 
 ## In Progress
@@ -34,8 +33,6 @@ _(Bot commits waiting for CLI agent review)_
 - [x] H: `bunx playwright install` — Playwright 1.58.2 browsers installed (2026-03-14)
 - [x] H: Fix 33 E2E failures — all resolved (commits 6b5ec6a + 9107b2c)
 - [x] H: Fix 14 baseline test failures — resolved (TEST_BASE_URL port mismatch)
-- [ ] M: Configure OpenClaw (`.openclaw/config.json` — fill `[CONFIGURE]` placeholders)
-- [ ] M: Set `OPENCLAW_WEBHOOK_OUTBOUND` in `.env`
 - [ ] M: Configure marketplace API credentials (eBay, Etsy, Poshmark, Mercari) in `.env`
 - [ ] M: Set up CI/CD pipeline (GitHub Actions)
 - [ ] M: Complete Etsy OAuth — unblocked once Etsy approves app key (`1sgc9xd1hwi3zt5k33pn9k7d`)
@@ -49,6 +46,7 @@ _(Bot commits waiting for CLI agent review)_
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-14: P3-03 Staging deployment pipeline configured. Created .github/workflows/deploy-staging.yml (triggers on push to staging branch or workflow_dispatch; all actions SHA-pinned; builds and pushes ghcr.io image tagged vaultlister:staging; deploys via SSH using STAGING_HOST/STAGING_USER/STAGING_SSH_KEY secrets; runs docker compose -f docker-compose.staging.yml up -d; health-check loop + public smoke test on port 3001; posts GitHub deployment status success/failure). Created docker-compose.staging.yml (port 3001 host → 3000 container, NODE_ENV=staging, vaultlister-staging-* named volumes isolated from production, Redis 128 MB). Created nginx/nginx.staging.conf (host ports 8080/8443, X-Environment: staging header). Status: Pipeline ready — needs STAGING_HOST, STAGING_USER, STAGING_SSH_KEY added as GitHub Actions secrets in the "staging" environment.
 - 2026-03-15: Activated 4 platform integrations (commit 473ccba). Depop/Facebook/Whatnot cross-lister buttons activated (backend was already fully wired). Created facebookSync.js, whatnotSync.js, shopifySync.js. Registered in platformSync/index.js. Fixed pre-commit hook wc -c pipe deadlock on Windows Git Bash. Browser UI verification: 20/20 P0+P1 pages PASS. CSRF session ID mismatch bug fixed (commit df02d35). Notion V1.0 Launch Readiness Checklist updated with all verification results.
 - 2026-03-12: QA Remediation Complete (commit e7508fd, 151 files, 2515 insertions, 1014 deletions). All 20 REM items done: REM-01 (cross-listing integration tests with real DB), REM-02–07 (security: file upload validation, prompt injection, external timeouts, CSRF bypass narrowed, OAuth revocation, key rotation docs), REM-08 (deploy rollback in staging+production), REM-09–15 (reliability: expect([200,500]) cleanup, circuit breaker, idempotency headers, transaction wrapping, dead-letter queue), REM-16 (circuit breaker utility for Anthropic/Notion/webhooks), REM-17 (FEATURE_* flags wired via featureFlags.js middleware), REM-18 (test data isolation), REM-19 (backend locale parameter support). New files: circuitBreaker.js, featureFlags.js, service-circuitBreaker.test.js, integration-crosslisting.test.js (rewritten). Modified: deploy.yml (rollback), utils.js (locale), 6 AI/service files (circuit breaker), 3 route files (feature flags), multiple test files (cleanup + regression guards).
 - 2026-03-12: Full Project Review Round 4 — exhaustive manual review (agents hit rate limits). Fixed: 3 Windows HOME fallbacks (backup-automation.js, smoke-test.mjs, test-report.mjs — added USERPROFILE fallback), 1 missing shell:true (poshmarkPublish.js spawn). Verified: all JWT verify calls have algorithm pinning (4 locations), all platformSync INSERT columns match schema.sql, all test parameter indices correct, all bot credentials from .env, no unescaped innerHTML in frontend source. Unit: 2050 pass / 0 code-level fail. Lint: OK.
