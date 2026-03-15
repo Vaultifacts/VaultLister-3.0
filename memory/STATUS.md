@@ -4,14 +4,14 @@
 ## Current State
 - **Branch:** master
 - **Server:** test server on localhost:3100 (NODE_ENV=test, DISABLE_CSRF=true)
-- **Last commit:** 94278ee — calendar events seed, orders mock titles fixed
+- **Last commit:** 7e67c2e — seed demo teams (Vault Crew, eBay Specialists)
 - **E2E status:** 69/69 offer tests pass (was 27 skipped); overall 2054+ pass — all 3 browsers
 - **Unit status:** 4267 pass / 223 fail / 4490 total (Windows, PORT=3100, server running) — failures are external-service-dependent (Anthropic API key, SMTP, Notion) plus 6 async-leak errors between test files
 - **QA Remediation:** All 20 items complete across 4 phases
 - **Load test:** baseline p95=7ms / p99=8ms / 29 req/s
 - **Platforms:** 9 registered; 2 credentialed (Poshmark, eBay) — 7 others need `.env` creds (Mercari, Depop, Grailed, Facebook, Whatnot, Shopify, Etsy-blocked on app approval)
 - **As of:** 2026-03-15
-- **Walkthrough bugs fixed:** P0: dashboard buttons (00c15f1), platform-health chunk (00c15f1), customizeDashboard (00c15f1); P1: P&L $0→$5264 (ca99d8a), offers Anonymous→buyer_username (ca99d8a), Pro Member badge (9a1963a), Mac shortcuts (9a1963a); P2: login gradient (dffd9d3), About Us 9 platforms (dffd9d3), Cloudinary optional (dffd9d3)
+- **Walkthrough bugs fixed:** P0: dashboard buttons (00c15f1), platform-health chunk (00c15f1), customizeDashboard (00c15f1); P1: P&L $0→$5264 (ca99d8a), offers Anonymous→buyer_username (ca99d8a), Pro Member badge (9a1963a), Mac shortcuts (9a1963a); P2: login gradient (dffd9d3), About Us 9 platforms (dffd9d3), Cloudinary optional (dffd9d3); demo data quality: 12-chars debug removed, best-seller fixed, image bank thumbnails, calendar events, orders mock titles, teams seeded (7e67c2e)
 
 ## Completion Summary
 All autonomous work is complete. Remaining items require external action:
@@ -41,6 +41,8 @@ _(none)_
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-15: Session (demo data quality + push) — Fixed Teams page showing "Updated Team [timestamp]" test artifacts: seeded "Vault Crew" + "eBay Specialists" teams for demo user (7e67c2e). Pushed 15 commits to remote (9bb69a4..7e67c2e). CI running.
+- 2026-03-15: Session (walkthrough bug fixes cont. 3) — Removed "12 chars" debug text from My Listings cards (2f95701), fixed best-seller "Unknown" via listings+inventory maps (2f95701), fixed image bank thumbnail fallback onerror (2f95701), fixed calendar event names "Ship: Synced Item N" → realistic titles in orders.js mock sync (94278ee), seeded 15 calendar events for demo user (94278ee). E2E suite passed (exit 0).
 - 2026-03-15: Session (walkthrough bug fixes cont. 2) — Fixed automation "23 failed" banner (use apiStats.failedRuns not local history count), fixed WCAG AA color contrast violations (.password-req-item + settings 10px labels: gray-500→gray-600/700), seeded 11 roadmap features (3 completed, 2 in-progress, 6 planned) (d6d7950).
 - 2026-03-15: Session (walkthrough bug fixes cont.) — Fixed P1: Pro Member badge conditional on subscription_tier (9a1963a), keyboard shortcuts Mac→Ctrl on Windows (9a1963a). Fixed P2: login gradient min-height:100vh on all 5 auth wrappers (dffd9d3), About Us "6 platforms"→"9" (dffd9d3), Privacy Policy Cloudinary marked optional (dffd9d3). Notion walkthrough page updated with all fix statuses.
 - 2026-03-15: Session (walkthrough bug fixes) — Full 26-page browser walkthrough (32 findings in Notion). Fixed 3 P0s: dashboard chunk not loading deferred handlers (00c15f1), missing customizeDashboard() (00c15f1), platform-health chunk missing from pageChunkMap (00c15f1). Fixed 2 P1s: P&L report $0 → real sales data fallback (ca99d8a), offers showing Anonymous/Unknown instead of buyer_username/listing_title (ca99d8a).
