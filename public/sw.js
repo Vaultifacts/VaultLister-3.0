@@ -8,8 +8,8 @@ const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 // Phase 1 files to pre-cache (app shell)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=522a2d58',
-    '/styles/main.css?v=522a2d58',
+    '/core-bundle.js?v=7e952676',
+    '/styles/main.css?v=7e952676',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/favicon.svg',

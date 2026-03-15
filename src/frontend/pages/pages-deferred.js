@@ -8355,8 +8355,8 @@ Object.assign(pages, {
                         <div class="recent-uploads-label">Recent Uploads</div>
                         <div class="recent-uploads-preview">
                             ${recentUploads.map(img => `
-                                <div class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')">
-                                    <img src="${escapeHtml(img.file_path)}" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy">
+                                <div class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
+                                    <img src="${escapeHtml(img.file_path)}" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
                                 </div>
                             `).join('')}
                             ${totalImages > 5 ? `
@@ -8532,10 +8532,11 @@ Object.assign(pages, {
                                                aria-label="Select image ${image.id}"
                                                onchange="handlers.toggleImageSelection('${image.id}')">
                                     </div>
-                                    <div class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')">
+                                    <div class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
                                         <img src="${escapeHtml(image.file_path)}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
-                                             loading="lazy">
+                                             loading="lazy"
+                                             onerror="this.style.display='none'">
                                     </div>
                                     <div class="image-card-info">
                                         <div class="image-card-title">${escapeHtml(image.title || image.original_filename)}</div>

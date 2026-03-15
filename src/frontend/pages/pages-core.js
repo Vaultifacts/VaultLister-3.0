@@ -1393,9 +1393,13 @@ const pages = {
             : 0;
 
         // Best sellers by platform
+        const listingsMap = Object.fromEntries((store.state.listings || []).map(l => [l.id, l]));
+        const inventoryMap = Object.fromEntries((inventory || []).map(i => [i.id, i]));
         const salesByItem = {};
         sales.forEach(s => {
-            const key = s.listing_title || s.inventory_title || 'Unknown';
+            const listing = listingsMap[s.listing_id];
+            const invItem = listing ? inventoryMap[listing.inventory_id] : null;
+            const key = listing?.title || invItem?.title || s.listing_title || s.inventory_title || (s.platform ? s.platform.charAt(0).toUpperCase() + s.platform.slice(1) + ' Sale' : 'Sale');
             if (!salesByItem[key]) {
                 salesByItem[key] = { title: key, count: 0, revenue: 0, platform: s.platform };
             }
