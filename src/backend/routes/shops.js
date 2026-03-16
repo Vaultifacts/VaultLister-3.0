@@ -4,6 +4,7 @@ import { query } from '../db/database.js';
 import { checkTierPermission } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
 import { encryptToken, decryptToken } from '../utils/encryption.js';
+import { cacheForUser } from '../middleware/cache.js';
 
 export async function shopsRouter(ctx) {
     const { method, path, body, user } = ctx;
@@ -21,7 +22,7 @@ export async function shopsRouter(ctx) {
                 delete shop.credentials;
             });
 
-            return { status: 200, data: { shops } };
+            return { status: 200, data: { shops }, cacheControl: cacheForUser(60) };
         } catch (error) {
             logger.error('[Shops] Error listing connected shops', user?.id, { detail: error.message });
             return { status: 500, data: { error: 'Internal server error' } };

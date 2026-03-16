@@ -256,3 +256,19 @@ jobs:
               state: 'failure',
               description: 'Staging deployment failed — check Actions run for details'
             });
+
+      - name: Write deploy summary
+        if: always()
+        run: |
+          STATUS=${{ job.status }}
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "## Deploy Result" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ${STATUS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${SHORT_SHA}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Timestamp | ${TIMESTAMP} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Run | [View run](${RUN_URL}) |" >> $GITHUB_STEP_SUMMARY

@@ -124,6 +124,35 @@ try {
 // Cleanup
 try { unlinkSync(tmpFile); } catch {}
 
+// ── PurgeCSS ─────────────────────────────────────────────────────────────────
+const cssOutputPath = join(DIST, 'main.css');
+if (existsSync(cssPath)) {
+    console.log('Purging unused CSS...');
+    try {
+        const { PurgeCSS } = await import('purgecss');
+        const originalSize = readFileSync(cssPath, 'utf-8').length;
+        // Copy source CSS to dist first so PurgeCSS can write to it
+        writeFileSync(cssOutputPath, readFileSync(cssPath, 'utf-8'));
+        const purged = await new PurgeCSS().purge({
+            content: [
+                join(ROOT, 'src/frontend/**/*.js'),
+                join(ROOT, 'src/frontend/**/*.html'),
+                join(ROOT, 'public/**/*.html'),
+            ],
+            css: [cssOutputPath],
+        });
+        if (purged[0]) {
+            writeFileSync(cssOutputPath, purged[0].css);
+            console.log(`CSS purged: ${originalSize} → ${purged[0].css.length} bytes (dist/main.css)`);
+        }
+    } catch (e) {
+        console.warn('PurgeCSS step skipped (purgecss not installed):', e.message);
+        // Fall back to copying the original CSS unpurged
+        writeFileSync(cssOutputPath, readFileSync(cssPath, 'utf-8'));
+        console.log('CSS copied to dist/main.css (unpurged)');
+    }
+}
+
 // Report
 if (existsSync(join(DIST, 'app.js'))) {
     const size = statSync(join(DIST, 'app.js')).size;

@@ -616,6 +616,16 @@ function serveStatic(pathname, request) {
         }
     }
 
+    // In production, prefer dist/main.css (purged by build step) for the main stylesheet
+    if (IS_PROD && !filePath && pathname === '/styles/main.css') {
+        const distCss = join(DIST_DIR, 'main.css');
+        const resolvedDist = path.resolve(distCss);
+        if (resolvedDist.startsWith(resolvedDistDir) && existsSync(distCss)) {
+            filePath = distCss;
+            isValidPath = true;
+        }
+    }
+
     if (!filePath) {
         // Try public directory first
         filePath = join(PUBLIC_DIR, pathname);

@@ -17,6 +17,9 @@ COPY package.json bun.lock* ./
 # Install all dependencies (devDeps needed for build)
 RUN bun install --frozen-lockfile
 
+# Install purgecss for build-time CSS purging
+RUN bun add -d purgecss
+
 # Copy source code
 COPY . .
 

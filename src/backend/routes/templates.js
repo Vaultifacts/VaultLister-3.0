@@ -1,6 +1,7 @@
 // Listing Templates Routes
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
+import { cacheForUser } from '../middleware/cache.js';
 
 export async function templatesRouter(ctx) {
     const { method, path, user } = ctx;
@@ -23,7 +24,7 @@ export async function templatesRouter(ctx) {
             }
         });
 
-        return { status: 200, data: templates };
+        return { status: 200, data: templates, cacheControl: cacheForUser(300) };
     }
 
     // GET /api/templates/:id - Get single template

@@ -5,6 +5,7 @@ import { query } from '../db/database.js';
 import { nanoid } from 'nanoid';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
 import { logger } from '../shared/logger.js';
+import { cacheFor, cacheForUser } from '../middleware/cache.js';
 
 /**
  * Roadmap router
@@ -51,7 +52,8 @@ export async function roadmapRouter(ctx) {
 
             return {
                 status: 200,
-                data: { features }
+                data: { features },
+                cacheControl: user ? cacheForUser(600) : cacheFor(600),
             };
         } catch (error) {
             logger.error('[Roadmap] Error fetching roadmap features', user?.id, { detail: error?.message });

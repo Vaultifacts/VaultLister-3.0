@@ -4,6 +4,7 @@
 import crypto from 'crypto';
 import { query, escapeLike } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { cacheFor } from '../middleware/cache.js';
 
 const ALLOWED_TICKET_FIELDS = new Set(['status', 'priority']);
 // TECH-DEBT: Migrate error responses to AppError classes (errorHandler.js)
@@ -37,7 +38,8 @@ export async function helpRouter(ctx) {
 
             return {
                 status: 200,
-                data: { videos }
+                data: { videos },
+                cacheControl: cacheFor(3600),
             };
         } catch (error) {
             logger.error('[Help] error fetching videos', user?.id, { detail: error?.message || 'Unknown error' });
@@ -103,7 +105,8 @@ export async function helpRouter(ctx) {
 
             return {
                 status: 200,
-                data: { faqs }
+                data: { faqs },
+                cacheControl: !search ? cacheFor(3600) : undefined,
             };
         } catch (error) {
             logger.error('[Help] error fetching FAQs', user?.id, { detail: error?.message || 'Unknown error' });
@@ -264,7 +267,8 @@ export async function helpRouter(ctx) {
 
             return {
                 status: 200,
-                data: { articles }
+                data: { articles },
+                cacheControl: !search ? cacheFor(3600) : undefined,
             };
         } catch (error) {
             logger.error('[Help] error fetching articles', user?.id, { detail: error?.message || 'Unknown error' });
