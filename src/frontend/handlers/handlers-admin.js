@@ -78,5 +78,43 @@ Object.assign(handlers, {
             console.error('[Admin] Failed to acknowledge alert:', err);
             toast.error('Failed to acknowledge alert.');
         }
+    },
+
+    async loadFeatureFlags() {
+        const user = store.state.user;
+        if (!user || !user.is_admin) return;
+
+        store.setState({ featureFlagsLoading: true });
+        renderApp(pages.adminFeatureFlags());
+
+        try {
+            const res = await api.request('GET', '/api/feature-flags/all');
+            store.setState({ featureFlags: res?.data?.flags || {}, featureFlagsLoading: false });
+        } catch (err) {
+            console.error('[Admin] Failed to load feature flags:', err);
+            store.setState({ featureFlagsLoading: false });
+            toast.error('Failed to load feature flags.');
+        }
+
+        renderApp(pages.adminFeatureFlags());
+    },
+
+    async toggleFeatureFlag(flagName, enabled) {
+        if (!flagName) return;
+        try {
+            await api.request('PUT', `/api/feature-flags/${encodeURIComponent(flagName)}`, { enabled });
+            const flags = store.state.featureFlags || {};
+            store.setState({
+                featureFlags: {
+                    ...flags,
+                    [flagName]: { ...(flags[flagName] || {}), enabled }
+                }
+            });
+            toast.success(`${flagName} ${enabled ? 'enabled' : 'disabled'}.`);
+        } catch (err) {
+            console.error('[Admin] Failed to toggle feature flag:', err);
+            toast.error('Failed to update feature flag.');
+            renderApp(pages.adminFeatureFlags());
+        }
     }
 });

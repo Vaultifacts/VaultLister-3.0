@@ -54,7 +54,8 @@
     "runbook:ci:all": "powershell -NoProfile -ExecutionPolicy Bypass -File ./runbook/all.ps1 -CI",
     "gate:sync": "node scripts/gate-sync.mjs",
     "gate:drift-check": "node scripts/gate-drift-check.mjs",
-    "release:finalize": "npm run runbook:ci:all && npm run gate:sync && npm run gate:drift-check && git diff --exit-code -- claude-docs/docs/project-control/COMPLETION_GATES.md claude-docs/docs/project-control/QUALITY_GATES.md docs/evidence/FINAL_COMPLETION_AUDIT.md"
+    "release:finalize": "npm run runbook:ci:all && npm run gate:sync && npm run gate:drift-check && git diff --exit-code -- claude-docs/docs/project-control/COMPLETION_GATES.md claude-docs/docs/project-control/QUALITY_GATES.md docs/evidence/FINAL_COMPLETION_AUDIT.md",
+    "audit": "bun pm scan || true"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",

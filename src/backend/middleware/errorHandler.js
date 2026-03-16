@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { ErrorCodes, logError, now } from '../shared/utils.js';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { sanitizeBody } from './requestLogger.js';
 
 /**
  * Custom application error class
@@ -151,6 +152,23 @@ export function handleError(error, ctx = {}) {
 
     // Log error
     logError(error.message, error, context);
+
+    // For 500-level errors, log the sanitized request body to aid debugging
+    if (statusCode >= 500 && ctx.body && typeof ctx.body === 'object') {
+        try {
+            const sanitized = sanitizeBody(ctx.body);
+            const serialized = JSON.stringify(sanitized);
+            const truncated = serialized.length > 1024
+                ? serialized.substring(0, 1024) + '...[truncated]'
+                : serialized;
+            logger.error('[ErrorHandler] Request body at time of 500', null, {
+                requestId: ctx.requestId,
+                body: truncated
+            });
+        } catch {
+            // Silently skip body logging if serialization fails
+        }
+    }
 
     // Log to database for non-operational errors
     if (!error.isOperational || statusCode >= 500) {

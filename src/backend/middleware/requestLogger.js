@@ -61,7 +61,7 @@ function anonymizeIP(ip) {
 /**
  * Sanitize request body for logging (remove sensitive data)
  */
-function sanitizeBody(body) {
+export function sanitizeBody(body) {
     if (!body || typeof body !== 'object') return body;
 
     const sensitiveFields = [

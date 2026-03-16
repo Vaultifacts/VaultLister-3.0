@@ -29,6 +29,12 @@ dist/
 logs/
 *.log
 
+# SSH keys / certificates
+*.key
+*.pem
+*.p12
+*.pfx
+
 # OS
 .DS_Store
 Thumbs.db

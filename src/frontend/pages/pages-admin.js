@@ -2,6 +2,121 @@
 // Route-group chunk: admin (pages)
 
 Object.assign(pages, {
+    adminFeatureFlags() {
+        const user = store.state.user;
+        if (!user || !user.is_admin) {
+            return `
+                <div class="page-header">
+                    <h1 class="page-title">Feature Flags</h1>
+                </div>
+                <div class="card">
+                    <div class="card-body text-center" style="padding: 48px;">
+                        <h2 style="margin-bottom: 8px;">Access Denied</h2>
+                        <p style="color: var(--text-secondary);">Admin access is required.</p>
+                        <button class="btn btn-primary mt-4" onclick="router.navigate('dashboard')">Back to Dashboard</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        const flags = store.state.featureFlags || null;
+        const isLoading = store.state.featureFlagsLoading;
+
+        const categoryLabel = (name) => {
+            const prefix = name.split('.')[0];
+            const labels = { ui: 'UI', automation: 'Automation', ai: 'AI', integration: 'Integration', beta: 'Beta', perf: 'Performance' };
+            return labels[prefix] || prefix;
+        };
+
+        const categoryColor = (name) => {
+            const prefix = name.split('.')[0];
+            const colors = { ui: 'badge-info', automation: 'badge-warning', ai: 'badge-success', integration: 'badge-primary', beta: 'badge-danger', perf: 'badge-secondary' };
+            return colors[prefix] || 'badge-secondary';
+        };
+
+        return `
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Feature Flags</h1>
+                    <p class="page-description">Enable or disable features without a deployment. Changes persist to the database.</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" onclick="handlers.loadFeatureFlags()" aria-label="Refresh feature flags" ${isLoading ? 'disabled' : ''}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <polyline points="1 4 1 10 7 10"/>
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                        </svg>
+                        ${isLoading ? 'Loading...' : 'Refresh'}
+                    </button>
+                </div>
+            </div>
+
+            ${isLoading && !flags ? `
+                <div style="display:flex;align-items:center;gap:12px;padding:24px 0;color:var(--text-secondary);">
+                    <div class="loading-spinner"></div>
+                    <span>Loading flags...</span>
+                </div>
+            ` : ''}
+
+            ${!flags && !isLoading ? `
+                <div class="card">
+                    <div class="card-body text-center" style="padding: 48px; color: var(--text-secondary);">
+                        No feature flag data. <button class="btn btn-primary btn-sm" onclick="handlers.loadFeatureFlags()">Load Flags</button>
+                    </div>
+                </div>
+            ` : ''}
+
+            ${flags ? (() => {
+                const entries = Object.entries(flags);
+                if (entries.length === 0) {
+                    return `<div class="card"><div class="card-body" style="padding:32px;text-align:center;color:var(--text-secondary);">No flags defined.</div></div>`;
+                }
+                return `
+                    <div class="card">
+                        <div class="card-body" style="padding: 0;">
+                            <table class="table" aria-label="Feature flags">
+                                <thead>
+                                    <tr>
+                                        <th>Flag</th>
+                                        <th>Category</th>
+                                        <th style="text-align:right;">Rollout</th>
+                                        <th style="text-align:center;">Enabled</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${entries.map(([name, config]) => {
+                                        const enabled = config?.enabled ?? false;
+                                        const rollout = config?.rolloutPercentage ?? 100;
+                                        const safeId = escapeHtml(name).replace(/\./g, '-');
+                                        return `
+                                            <tr>
+                                                <td>
+                                                    <code style="font-size:13px;color:var(--primary-600);">${escapeHtml(name)}</code>
+                                                    ${config?.description ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${escapeHtml(config.description)}</div>` : ''}
+                                                </td>
+                                                <td><span class="badge ${categoryColor(name)}" style="font-size:11px;">${escapeHtml(categoryLabel(name))}</span></td>
+                                                <td style="text-align:right;font-variant-numeric:tabular-nums;">${rollout}%</td>
+                                                <td style="text-align:center;">
+                                                    <label class="toggle-switch" aria-label="Toggle ${escapeHtml(name)}">
+                                                        <input type="checkbox" id="ff-${safeId}"
+                                                            ${enabled ? 'checked' : ''}
+                                                            onchange="handlers.toggleFeatureFlag('${escapeHtml(name)}', this.checked)"
+                                                        >
+                                                        <span class="toggle-slider"></span>
+                                                    </label>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            })() : ''}
+        `;
+    },
+
     adminMetrics() {
         const user = store.state.user;
         if (!user || !user.is_admin) {

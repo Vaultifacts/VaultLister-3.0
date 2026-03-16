@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VaultLister API rate limits reference">
+    <title>Rate Limits — VaultLister</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --brand: #6366f1;
+            --brand-dark: #4f46e5;
+            --brand-light: #eef2ff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --surface: #ffffff;
+            --bg: #f9fafb;
+            --danger: #dc2626;
+            --danger-bg: #fee2e2;
+            --warning: #d97706;
+            --warning-bg: #fef9c3;
+            --success: #15803d;
+            --success-bg: #dcfce7;
+            --info-bg: #eff6ff;
+            --info-text: #1d4ed8;
+            --code-bg: #f3f4f6;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-primary: #f9fafb;
+                --text-secondary: #d1d5db;
+                --text-muted: #6b7280;
+                --border: #374151;
+                --surface: #1f2937;
+                --bg: #111827;
+                --brand-light: #1e1b4b;
+                --danger-bg: #450a0a;
+                --warning-bg: #451a03;
+                --success-bg: #052e16;
+                --info-bg: #172554;
+                --info-text: #93c5fd;
+                --code-bg: #374151;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        header h1 { font-size: 1.5rem; font-weight: 700; }
+        header p { opacity: 0.75; font-size: 0.875rem; margin-top: 0.25rem; }
+
+        header nav { margin-left: auto; display: flex; gap: 1rem; align-items: center; }
+        header nav a { color: #a5b4fc; text-decoration: none; font-size: 0.875rem; }
+        header nav a:hover { text-decoration: underline; }
+
+        main {
+            max-width: 900px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem 4rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 2.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h2:first-child { margin-top: 0; }
+
+        p { margin-bottom: 1rem; color: var(--text-secondary); }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: var(--bg);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        code {
+            background: var(--code-bg);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'SFMono-Regular', Consolas, monospace;
+            font-size: 13px;
+        }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            font-family: 'SFMono-Regular', Consolas, monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-bottom: 1.25rem;
+            line-height: 1.7;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .badge-danger  { background: var(--danger-bg);  color: var(--danger); }
+        .badge-warning { background: var(--warning-bg); color: var(--warning); }
+        .badge-success { background: var(--success-bg); color: var(--success); }
+
+        .callout {
+            border-left: 4px solid var(--brand);
+            background: var(--brand-light);
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .callout.warning {
+            border-color: var(--warning);
+            background: var(--warning-bg);
+        }
+
+        ul { padding-left: 1.5rem; margin-bottom: 1rem; color: var(--text-secondary); }
+        ul li { margin-bottom: 0.35rem; }
+
+        .limit-value {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>Rate Limits</h1>
+        <p>API request limits and retry guidance for VaultLister integrations</p>
+    </div>
+    <nav>
+        <a href="/api-docs.html">API Docs</a>
+        <a href="/">Back to App</a>
+    </nav>
+</header>
+
+<main>
+
+    <h2>Overview</h2>
+    <p>
+        All API endpoints are rate-limited to protect service stability. Limits are applied per authenticated user
+        (or per IP address for unauthenticated requests). Limits reset on a rolling window basis.
+    </p>
+
+    <div class="callout">
+        When a rate limit is exceeded the server responds with HTTP <strong>429 Too Many Requests</strong>.
+        Check the <code>Retry-After</code> header for the number of seconds to wait before retrying.
+    </div>
+
+    <h2>Limits by Endpoint Category</h2>
+
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Applies To</th>
+                    <th>Limit</th>
+                    <th>Window</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Default</strong></td>
+                    <td>All authenticated API endpoints not listed below</td>
+                    <td><span class="limit-value">100</span> requests</td>
+                    <td>1 minute</td>
+                </tr>
+                <tr>
+                    <td><strong>Auth endpoints</strong></td>
+                    <td>
+                        <code>/api/auth/login</code>, <code>/api/auth/register</code>,
+                        <code>/api/auth/refresh</code>, <code>/api/mfa/*</code>
+                    </td>
+                    <td><span class="limit-value badge badge-danger">10</span> requests</td>
+                    <td>15 minutes</td>
+                </tr>
+                <tr>
+                    <td><strong>Mutation endpoints</strong></td>
+                    <td>
+                        POST / PUT / PATCH / DELETE on resource endpoints
+                        (<code>/api/inventory</code>, <code>/api/listings</code>, <code>/api/offers</code>, etc.)
+                    </td>
+                    <td><span class="limit-value badge badge-warning">30</span> requests</td>
+                    <td>1 minute</td>
+                </tr>
+                <tr>
+                    <td><strong>Expensive operations</strong></td>
+                    <td>
+                        <code>/api/ai/*</code>, <code>/api/reports/*</code>,
+                        <code>/api/inventory/import</code>, <code>/api/batch-photo/*</code>
+                    </td>
+                    <td><span class="limit-value badge badge-danger">10</span> requests</td>
+                    <td>1 minute</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Rate Limit Headers</h2>
+    <p>Every API response includes the following headers so clients can track their current usage.</p>
+
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Header</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>X-RateLimit-Limit</code></td>
+                    <td>Maximum requests allowed in the current window for this endpoint category</td>
+                    <td><code>100</code></td>
+                </tr>
+                <tr>
+                    <td><code>X-RateLimit-Remaining</code></td>
+                    <td>Requests remaining in the current window</td>
+                    <td><code>73</code></td>
+                </tr>
+                <tr>
+                    <td><code>X-RateLimit-Reset</code></td>
+                    <td>Unix timestamp (seconds) at which the window resets</td>
+                    <td><code>1741900800</code></td>
+                </tr>
+                <tr>
+                    <td><code>Retry-After</code></td>
+                    <td>Seconds to wait before retrying. Present only on 429 responses.</td>
+                    <td><code>47</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Handling 429 Responses</h2>
+    <p>When your client receives a <code>429</code> response:</p>
+
+    <ul>
+        <li>Read the <code>Retry-After</code> header — it tells you exactly how long to wait.</li>
+        <li>Do not immediately retry — this will only extend your blocked window.</li>
+        <li>Implement exponential backoff for automated clients.</li>
+        <li>Log the event; repeated 429s suggest the integration needs throttling.</li>
+    </ul>
+
+    <p>Example 429 response body:</p>
+
+<pre>{
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded. Try again in 47 seconds.",
+  "retryAfter": 47
+}</pre>
+
+    <p>Example retry logic (JavaScript):</p>
+
+<pre>async function apiRequest(method, path, body, retries = 3) {
+    const res = await fetch('/api' + path, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined
+    });
+
+    if (res.status === 429 && retries > 0) {
+        const wait = parseInt(res.headers.get('Retry-After') || '60', 10) * 1000;
+        await new Promise(resolve => setTimeout(resolve, wait));
+        return apiRequest(method, path, body, retries - 1);
+    }
+
+    return res.json();
+}</pre>
+
+    <div class="callout warning">
+        Automated bots and marketplace automations (Playwright) are subject to the same limits.
+        Respect the platform-specific delays documented in your automation configuration.
+    </div>
+
+    <h2>Unauthenticated Requests</h2>
+    <p>
+        Requests made without a valid <code>Authorization</code> JWT header are rate-limited by IP address.
+        Only public endpoints (health check, status, OAuth callbacks) are accessible without authentication.
+        All other endpoints return <code>401 Unauthorized</code>.
+    </p>
+
+</main>
+
+</body>
+</html>
