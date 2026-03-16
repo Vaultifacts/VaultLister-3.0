@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VaultLister Privacy Policy">
+    <meta name="theme-color" content="#6366f1">
+    <title>Privacy Policy — VaultLister</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --indigo-500: #6366f1;
+            --indigo-600: #4f46e5;
+            --purple-600: #7c3aed;
+            --gray-50:  #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            color: var(--gray-700);
+            background: var(--white);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Nav */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            height: 64px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--gray-900);
+            font-weight: 700;
+            font-size: 1.125rem;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: var(--indigo-500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nav-back {
+            font-size: 0.875rem;
+            color: var(--indigo-600);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .nav-back:hover { text-decoration: underline; }
+
+        /* Page layout */
+        .page-wrap {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 3.5rem 2rem 5rem;
+        }
+
+        .page-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .page-label {
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: var(--indigo-600);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--gray-900);
+            margin-bottom: 0.75rem;
+        }
+
+        .page-meta {
+            font-size: 0.875rem;
+            color: var(--gray-400);
+        }
+
+        /* Content */
+        .content h2 {
+            font-size: 1.1875rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            letter-spacing: -0.015em;
+            margin: 2.5rem 0 0.75rem;
+        }
+
+        .content h2:first-child { margin-top: 0; }
+
+        .content p {
+            margin-bottom: 1rem;
+            font-size: 0.9375rem;
+            color: var(--gray-600);
+        }
+
+        .content ul {
+            margin: 0.5rem 0 1rem 1.5rem;
+            font-size: 0.9375rem;
+            color: var(--gray-600);
+        }
+
+        .content ul li { margin-bottom: 0.375rem; }
+
+        .content a {
+            color: var(--indigo-600);
+            text-decoration: none;
+        }
+
+        .content a:hover { text-decoration: underline; }
+
+        .callout {
+            background: var(--gray-50);
+            border-left: 3px solid var(--indigo-500);
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            color: var(--gray-600);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 0.625rem 0.875rem;
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .data-table td {
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--gray-200);
+            color: var(--gray-600);
+            vertical-align: top;
+        }
+
+        .data-table tr:nth-child(even) td { background: var(--gray-50); }
+
+        /* Footer */
+        .footer {
+            padding: 2rem;
+            border-top: 1px solid var(--gray-100);
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray-400);
+        }
+
+        .footer a {
+            color: var(--gray-400);
+            text-decoration: none;
+        }
+
+        .footer a:hover { color: var(--gray-600); }
+
+        @media (max-width: 600px) {
+            .nav { padding: 0 1rem; }
+            .page-wrap { padding: 2.5rem 1rem 4rem; }
+            .page-header h1 { font-size: 1.625rem; }
+            .data-table { font-size: 0.825rem; }
+            .data-table th, .data-table td { padding: 0.5rem 0.625rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a class="nav-logo" href="/">
+        <div class="nav-logo-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 64 64" fill="none">
+                <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
+            </svg>
+        </div>
+        VaultLister
+    </a>
+    <a class="nav-back" href="/">&larr; Back to Home</a>
+</nav>
+
+<main class="page-wrap">
+    <header class="page-header">
+        <p class="page-label">Legal</p>
+        <h1>Privacy Policy</h1>
+        <p class="page-meta">Last updated: March 2026 &nbsp;&middot;&nbsp; Effective immediately upon account creation</p>
+    </header>
+
+    <div class="content">
+
+        <div class="callout">
+            VaultLister is a self-hosted, local-first platform. Your data is stored on your own server or device. We do not sell your data, use advertising trackers, or share your information with third parties except as described in this policy.
+        </div>
+
+        <h2>1. Introduction</h2>
+        <p>This Privacy Policy describes how VaultLister ("we", "us", "our") collects, uses, and protects information when you use the VaultLister platform and related services (collectively, the "Service"). By using the Service, you agree to the practices described in this policy.</p>
+        <p>If you have questions about this policy or your data, please contact us at <a href="mailto:privacy@vaultlister.com">privacy@vaultlister.com</a>.</p>
+
+        <h2>2. What Data We Collect</h2>
+        <p>We collect only the information necessary to operate the Service.</p>
+
+        <table class="data-table" aria-label="Data collection summary">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>What is collected</th>
+                    <th>Why</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Account information</td>
+                    <td>Email address, username, hashed password, optional profile details</td>
+                    <td>Authentication and account management</td>
+                </tr>
+                <tr>
+                    <td>Marketplace credentials</td>
+                    <td>OAuth tokens for connected marketplaces (Poshmark, eBay, Mercari, Etsy, Shopify, etc.)</td>
+                    <td>Listing, syncing, and automation operations</td>
+                </tr>
+                <tr>
+                    <td>Inventory and listing data</td>
+                    <td>Item details, descriptions, prices, photos, tags, sale records</td>
+                    <td>Core platform functionality</td>
+                </tr>
+                <tr>
+                    <td>Usage data</td>
+                    <td>Feature interactions, session events, automation logs</td>
+                    <td>Analytics, debugging, and automation audit trail</td>
+                </tr>
+                <tr>
+                    <td>Images</td>
+                    <td>Photos you upload to the Image Bank</td>
+                    <td>Listing management and AI image analysis</td>
+                </tr>
+                <tr>
+                    <td>Session and security data</td>
+                    <td>IP address, session identifiers, CSRF tokens, login timestamps</td>
+                    <td>Security, fraud prevention, and session management</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>We do not collect advertising data, sell user profiles, or use third-party tracking pixels or analytics services.</p>
+
+        <h2>3. How We Use Your Data</h2>
+        <p>Your data is used exclusively to operate and improve the Service:</p>
+        <ul>
+            <li>Authenticating your identity and maintaining your session</li>
+            <li>Storing and displaying your inventory, listings, and sales records</li>
+            <li>Connecting to third-party marketplaces on your behalf using OAuth tokens</li>
+            <li>Running automations you configure (sharing, offer rules, follow-back)</li>
+            <li>Generating AI-powered listing suggestions when you request them</li>
+            <li>Calculating analytics, profit margins, and performance reports</li>
+            <li>Detecting and preventing unauthorized access or abuse</li>
+            <li>Sending transactional notifications (e.g. sale alerts, sync errors)</li>
+        </ul>
+        <p>We do not use your data to train AI models. Content submitted to AI features is processed in real time and is not stored for model training purposes beyond what Anthropic's own data policies govern (see Section 6).</p>
+
+        <h2>4. Data Storage and Security</h2>
+        <p>VaultLister is a self-hosted application. Your data is stored in a SQLite database on your own server or device. We take the following security measures to protect your data:</p>
+        <ul>
+            <li>Passwords are hashed using bcrypt with a minimum cost factor of 12 — plaintext passwords are never stored</li>
+            <li>Marketplace OAuth tokens are encrypted at rest using AES-256-CBC before being written to the database</li>
+            <li>All authenticated API requests require a short-lived JWT access token (15-minute expiry) and a secure refresh token (7-day expiry)</li>
+            <li>Multi-factor authentication (TOTP) is available and encouraged for all accounts</li>
+            <li>All mutating requests (POST, PUT, PATCH, DELETE) require a CSRF token to prevent cross-site request forgery</li>
+            <li>Automation actions are logged to a local audit log file for accountability</li>
+        </ul>
+        <p>Because VaultLister is self-hosted, the security of the underlying server or device is your responsibility. We recommend keeping your server software up to date and restricting network access appropriately.</p>
+
+        <h2>5. Marketplace API Integrations</h2>
+        <p>To enable cross-listing and automation features, VaultLister connects to third-party marketplace platforms using OAuth 2.0. When you authorize a marketplace connection:</p>
+        <ul>
+            <li>We receive and store an OAuth access token and refresh token for that marketplace</li>
+            <li>These tokens are encrypted before storage and are used only to perform the operations you explicitly request</li>
+            <li>We do not share your marketplace credentials or tokens with any other party</li>
+            <li>You can revoke access to any connected marketplace at any time from your account settings or directly through the marketplace's own OAuth management page</li>
+        </ul>
+        <p>Each marketplace platform has its own privacy policy governing how it handles data you submit through its API. We encourage you to review those policies for the platforms you connect.</p>
+
+        <h2>6. Third-Party Services</h2>
+        <p>VaultLister integrates with the following third-party services under specific conditions:</p>
+
+        <table class="data-table" aria-label="Third-party service summary">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>When used</th>
+                    <th>Data shared</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Anthropic Claude API</td>
+                    <td>Only when you use AI listing generation or the Vault Buddy chat assistant</td>
+                    <td>Item descriptions, images, and chat messages you submit to AI features. Governed by <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener noreferrer">Anthropic's Privacy Policy</a>.</td>
+                </tr>
+                <tr>
+                    <td>Marketplace platforms</td>
+                    <td>When you authorize a marketplace connection and perform listing or automation operations</td>
+                    <td>Listing data, credentials via OAuth. Each platform's own privacy policy applies.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>No advertising networks, analytics services (e.g. Google Analytics), or data brokers are used by VaultLister.</p>
+
+        <h2>7. Cookies and Local Storage</h2>
+        <p>VaultLister uses browser localStorage to:</p>
+        <ul>
+            <li>Maintain your authentication session (JWT access and refresh tokens)</li>
+            <li>Remember your preference for UI settings and dark mode</li>
+            <li>Store your cookie consent choice</li>
+        </ul>
+        <p>We do not use advertising cookies, third-party tracking cookies, or persistent analytics cookies. The only cookies set are those strictly necessary to operate the Service.</p>
+
+        <h2>8. Data Retention and Deletion</h2>
+        <p>Because VaultLister is self-hosted, you have direct control over your data at all times. Within the application:</p>
+        <ul>
+            <li>You can delete individual InventoryItems, Listings, Sales, or Images from within the application at any time</li>
+            <li>You can delete your account from your account settings; this will remove all associated records from the database</li>
+            <li>Automation audit logs are stored locally on your server and can be cleared manually</li>
+        </ul>
+        <p>If you are using a managed or cloud-hosted instance of VaultLister, account deletion requests will be processed within 30 days. To request deletion, contact us at <a href="mailto:privacy@vaultlister.com">privacy@vaultlister.com</a>.</p>
+
+        <h2>9. Your Rights</h2>
+        <p>Depending on your jurisdiction, you may have the following rights with respect to your personal data:</p>
+        <ul>
+            <li><strong>Access:</strong> Request a copy of the personal data we hold about you</li>
+            <li><strong>Correction:</strong> Request correction of inaccurate or incomplete data</li>
+            <li><strong>Deletion:</strong> Request deletion of your account and associated data</li>
+            <li><strong>Portability:</strong> Request an export of your data in a machine-readable format</li>
+            <li><strong>Restriction:</strong> Request that we limit processing of your data in certain circumstances</li>
+            <li><strong>Objection:</strong> Object to processing where our legal basis is legitimate interest</li>
+        </ul>
+        <p>To exercise any of these rights, contact us at <a href="mailto:privacy@vaultlister.com">privacy@vaultlister.com</a>. We will respond within 30 days.</p>
+        <p>If you are located in the European Economic Area, you also have the right to lodge a complaint with your local supervisory authority.</p>
+
+        <h2>10. Children's Privacy</h2>
+        <p>The Service is not directed to or intended for use by persons under the age of 18. We do not knowingly collect personal data from minors. If you believe a minor has provided us with personal data, please contact us immediately and we will delete it.</p>
+
+        <h2>11. Changes to This Policy</h2>
+        <p>We may update this Privacy Policy from time to time. If we make material changes, we will notify you via the Service or by email. The "Last updated" date at the top of this page reflects when the policy was most recently revised. Continued use of the Service after changes take effect constitutes your acceptance of the updated policy.</p>
+
+        <h2>12. Contact Information</h2>
+        <p>For privacy questions, data requests, or concerns, please contact us at:</p>
+        <p>
+            VaultLister<br>
+            Email: <a href="mailto:privacy@vaultlister.com">privacy@vaultlister.com</a><br>
+            <!-- Replace with your actual mailing address -->
+        </p>
+
+    </div>
+</main>
+
+<footer class="footer">
+    <p>&copy; 2026 VaultLister &mdash;
+        <a href="/terms.html">Terms</a> &middot;
+        <a href="/privacy.html">Privacy</a> &middot;
+        <a href="/">Home</a>
+    </p>
+</footer>
+
+</body>
+</html>

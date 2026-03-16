@@ -1735,3 +1735,111 @@ document.addEventListener('keydown', function(e) {
         if (document.visibilityState === 'hidden') rumFlush();
     });
 })();
+
+// ============================================
+// PWA Install Prompt
+// ============================================
+(function() {
+    var DISMISS_KEY = 'vaultlister_pwa_dismiss_until';
+    var DELAY_MS = 30000; // 30 seconds
+    var SNOOZE_DAYS = 7;
+
+    var deferredPrompt = null;
+    var bannerEl = null;
+
+    function isDismissed() {
+        var until = localStorage.getItem(DISMISS_KEY);
+        return until && Date.now() < parseInt(until, 10);
+    }
+
+    function createBanner() {
+        var el = document.createElement('div');
+        el.id = 'pwa-install-banner';
+        el.setAttribute('role', 'banner');
+        el.setAttribute('aria-label', 'Install VaultLister app');
+        el.style.cssText = [
+            'position:fixed',
+            'bottom:1.25rem',
+            'left:50%',
+            'transform:translateX(-50%) translateY(120%)',
+            'z-index:9999',
+            'display:flex',
+            'align-items:center',
+            'gap:0.75rem',
+            'background:#1f2937',
+            'color:#f9fafb',
+            'padding:0.75rem 1rem',
+            'border-radius:0.75rem',
+            'box-shadow:0 4px 24px rgba(0,0,0,0.35)',
+            'font-family:Inter,system-ui,sans-serif',
+            'font-size:0.9rem',
+            'max-width:calc(100vw - 2rem)',
+            'width:max-content',
+            'transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+            'will-change:transform'
+        ].join(';');
+
+        var icon = '<svg width="28" height="28" viewBox="0 0 64 64" fill="none" aria-hidden="true" style="flex-shrink:0"><rect width="64" height="64" rx="14" fill="#6366f1"/><path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/></svg>';
+        var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:#9ca3af;font-size:0.8125rem">Add to home screen for quick access</span></span>';
+
+        var btnInstall = document.createElement('button');
+        btnInstall.textContent = 'Install';
+        btnInstall.style.cssText = 'background:#6366f1;color:#fff;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnInstall.addEventListener('click', function() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function() {
+                deferredPrompt = null;
+                hideBanner();
+            });
+        });
+
+        var btnDismiss = document.createElement('button');
+        btnDismiss.textContent = 'Dismiss';
+        btnDismiss.setAttribute('aria-label', 'Dismiss install prompt for 7 days');
+        btnDismiss.style.cssText = 'background:transparent;color:#9ca3af;border:none;padding:0.4rem 0.5rem;border-radius:0.5rem;font-size:0.8125rem;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnDismiss.addEventListener('click', function() {
+            localStorage.setItem(DISMISS_KEY, String(Date.now() + SNOOZE_DAYS * 86400000));
+            hideBanner();
+        });
+
+        el.innerHTML = icon + text;
+        el.appendChild(btnInstall);
+        el.appendChild(btnDismiss);
+        return el;
+    }
+
+    function showBanner() {
+        if (!deferredPrompt || isDismissed()) return;
+        if (!bannerEl) {
+            bannerEl = createBanner();
+            document.body.appendChild(bannerEl);
+        }
+        // Trigger reflow then slide up
+        void bannerEl.offsetWidth;
+        bannerEl.style.transform = 'translateX(-50%) translateY(0)';
+    }
+
+    function hideBanner() {
+        if (!bannerEl) return;
+        bannerEl.style.transform = 'translateX(-50%) translateY(120%)';
+        setTimeout(function() {
+            if (bannerEl && bannerEl.parentNode) bannerEl.parentNode.removeChild(bannerEl);
+            bannerEl = null;
+        }, 350);
+    }
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (!isDismissed()) {
+            setTimeout(showBanner, DELAY_MS);
+        }
+    });
+
+    // Clean up if the user installs via browser UI directly
+    window.addEventListener('appinstalled', function() {
+        deferredPrompt = null;
+        hideBanner();
+    });
+})();

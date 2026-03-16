@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VaultLister version history and release notes">
+    <title>Changelog — VaultLister</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --brand: #6366f1;
+            --brand-dark: #4f46e5;
+            --brand-light: #eef2ff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --surface: #ffffff;
+            --bg: #f9fafb;
+            --badge-new-bg: #dcfce7;
+            --badge-new-text: #15803d;
+            --badge-fix-bg: #fef9c3;
+            --badge-fix-text: #a16207;
+            --badge-security-bg: #fee2e2;
+            --badge-security-text: #b91c1c;
+            --badge-ai-bg: #f3e8ff;
+            --badge-ai-text: #7e22ce;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-primary: #f9fafb;
+                --text-secondary: #d1d5db;
+                --text-muted: #6b7280;
+                --border: #374151;
+                --surface: #1f2937;
+                --bg: #111827;
+                --brand-light: #1e1b4b;
+                --badge-new-bg: #14532d;
+                --badge-new-text: #86efac;
+                --badge-fix-bg: #422006;
+                --badge-fix-text: #fde68a;
+                --badge-security-bg: #450a0a;
+                --badge-security-text: #fca5a5;
+                --badge-ai-bg: #3b0764;
+                --badge-ai-text: #d8b4fe;
+            }
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .site-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-inner {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-mark {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+        }
+
+        .logo-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .header-sep {
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            font-weight: 300;
+        }
+
+        .header-page {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .header-right {
+            margin-left: auto;
+        }
+
+        .btn-app {
+            background: var(--brand);
+            color: #fff;
+            text-decoration: none;
+            padding: 0.4rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: background 0.15s;
+        }
+
+        .btn-app:hover { background: var(--brand-dark); }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, var(--brand) 0%, #8b5cf6 100%);
+            color: #fff;
+            padding: 3.5rem 1.5rem 3rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.625rem;
+        }
+
+        .hero p {
+            font-size: 1.0625rem;
+            opacity: 0.85;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* Main layout */
+        .main {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 5rem;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: var(--border);
+            border-radius: 1px;
+        }
+
+        /* Release entry */
+        .release {
+            display: grid;
+            grid-template-columns: 16px 1fr;
+            gap: 0 1.5rem;
+            padding-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .release:last-child { padding-bottom: 0; }
+
+        /* Dot on timeline */
+        .release-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2.5px solid var(--border);
+            margin-top: 5px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+            transition: border-color 0.2s;
+        }
+
+        .release--latest .release-dot {
+            background: var(--brand);
+            border-color: var(--brand);
+            box-shadow: 0 0 0 4px var(--brand-light);
+        }
+
+        /* Release card */
+        .release-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.875rem;
+            padding: 1.5rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .release-card:hover {
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
+        }
+
+        .release-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .release-version {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .release--latest .release-version {
+            color: var(--brand);
+        }
+
+        .badge-latest {
+            background: var(--brand);
+            color: #fff;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            padding: 0.125rem 0.5rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            align-self: center;
+        }
+
+        .release-date {
+            margin-left: auto;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            align-self: center;
+            white-space: nowrap;
+        }
+
+        .release-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.875rem;
+        }
+
+        /* Change list */
+        .change-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .change-item {
+            display: flex;
+            align-items: baseline;
+            gap: 0.625rem;
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+
+        .change-item::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            flex-shrink: 0;
+            margin-top: 7px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            padding: 0.1rem 0.45rem;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            flex-shrink: 0;
+            align-self: center;
+        }
+
+        .badge-new    { background: var(--badge-new-bg);      color: var(--badge-new-text); }
+        .badge-fix    { background: var(--badge-fix-bg);      color: var(--badge-fix-text); }
+        .badge-security { background: var(--badge-security-bg); color: var(--badge-security-text); }
+        .badge-ai     { background: var(--badge-ai-bg);       color: var(--badge-ai-text); }
+
+        /* Footer */
+        .site-footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .site-footer a {
+            color: var(--brand);
+            text-decoration: none;
+        }
+
+        .site-footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 600px) {
+            .timeline::before { left: 6px; }
+            .release { grid-template-columns: 14px 1fr; gap: 0 1rem; }
+            .release-dot { width: 14px; height: 14px; }
+            .release-card { padding: 1.125rem; }
+            .hero { padding: 2.5rem 1rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <a class="logo-mark" href="/">
+            <svg class="logo-icon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                <rect width="64" height="64" rx="16" fill="#6366f1"/>
+                <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
+            </svg>
+            <span class="logo-name">VaultLister</span>
+        </a>
+        <span class="header-sep">/</span>
+        <span class="header-page">Changelog</span>
+        <div class="header-right">
+            <a class="btn-app" href="/">Open App</a>
+        </div>
+    </div>
+</header>
+
+<div class="hero">
+    <h1>Changelog</h1>
+    <p>Every release, every improvement. VaultLister ships fast — here's what's new.</p>
+</div>
+
+<main class="main">
+    <div class="timeline" role="feed" aria-label="Release history">
+
+        <!-- v1.6.0 -->
+        <article class="release release--latest" aria-label="Version 1.6.0">
+            <div class="release-dot" aria-hidden="true"></div>
+            <div class="release-card">
+                <div class="release-header">
+                    <span class="release-version">v1.6.0</span>
+                    <span class="badge-latest">Latest</span>
+                    <span class="release-date">March 2026</span>
+                </div>
+                <div class="release-title">Landing page, admin dashboard, bundle splitting &amp; SSL</div>
+                <ul class="change-list">
+                    <li class="change-item"><span class="badge badge-new">New</span>Public landing page with feature highlights and pricing tiers</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Admin dashboard with system health, active sessions, and audit log viewer</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Changelog page (you are here)</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Route-group chunk splitting — core bundle down 40%, lazy loads per page</li>
+                    <li class="change-item"><span class="badge badge-security">Security</span>SSL/TLS configured with Let's Encrypt + Nginx; HSTS enabled</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Custom domain routing with www redirect and HTTPS enforcement</li>
+                </ul>
+            </div>
+        </article>
+
+        <!-- v1.5.0 -->
+        <article class="release" aria-label="Version 1.5.0">
+            <div class="release-dot" aria-hidden="true"></div>
+            <div class="release-card">
+                <div class="release-header">
+                    <span class="release-version">v1.5.0</span>
+                    <span class="release-date">March 2026</span>
+                </div>
+                <div class="release-title">eBay OAuth production, staging deploy &amp; QA walkthrough</div>
+                <ul class="change-list">
+                    <li class="change-item"><span class="badge badge-new">New</span>eBay OAuth 2.0 promoted to production credentials with full token refresh flow</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Staging environment on dedicated server with environment-parity config</li>
+                    <li class="change-item"><span class="badge badge-fix">Fix</span>QA walkthrough pass — 14 UI/UX issues resolved from structured test session</li>
+                    <li class="change-item"><span class="badge badge-fix">Fix</span>OAuth popup callback race condition eliminated with storage event debounce</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Automated smoke test run on every staging deploy via GitHub Actions</li>
+                </ul>
+            </div>
+        </article>
+
+        <!-- v1.4.0 -->
+        <article class="release" aria-label="Version 1.4.0">
+            <div class="release-dot" aria-hidden="true"></div>
+            <div class="release-card">
+                <div class="release-header">
+                    <span class="release-version">v1.4.0</span>
+                    <span class="release-date">March 2026</span>
+                </div>
+                <div class="release-title">Security hardening, monitoring &amp; backup system</div>
+                <ul class="change-list">
+                    <li class="change-item"><span class="badge badge-security">Security</span>OWASP hardening pass — tightened CSP, removed unused response headers</li>
+                    <li class="change-item"><span class="badge badge-security">Security</span>Rate limiting applied to all auth and public-facing endpoints</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Prometheus + Grafana monitoring stack deployed; latency and error-rate dashboards</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Automated daily SQLite backups to <code>/app/backups</code> with 7-day retention</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Backup restore script at <code>/opt/vaultlister-staging/restore.sh</code></li>
+                    <li class="change-item"><span class="badge badge-fix">Fix</span>Health check endpoint now returns DB read latency for faster triage</li>
+                </ul>
+            </div>
+        </article>
+
+        <!-- v1.3.0 -->
+        <article class="release" aria-label="Version 1.3.0">
+            <div class="release-dot" aria-hidden="true"></div>
+            <div class="release-card">
+                <div class="release-header">
+                    <span class="release-version">v1.3.0</span>
+                    <span class="release-date">March 2026</span>
+                </div>
+                <div class="release-title">9 marketplace integrations &amp; Playwright automations</div>
+                <ul class="change-list">
+                    <li class="change-item"><span class="badge badge-new">New</span>Cross-lister supports 9 platforms: Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook Marketplace, Whatnot</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Playwright automation bots: closet sharing, follow-back, and offer rules</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Automation audit log — every bot action recorded to <code>data/automation-audit.log</code></li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Platform rate-limit config with per-platform minimum action delays</li>
+                    <li class="change-item"><span class="badge badge-security">Security</span>OAuth tokens encrypted with AES-256-CBC before SQLite storage</li>
+                </ul>
+            </div>
+        </article>
+
+        <!-- v1.2.0 -->
+        <article class="release" aria-label="Version 1.2.0">
+            <div class="release-dot" aria-hidden="true"></div>
+            <div class="release-card">
+                <div class="release-header">
+                    <span class="release-version">v1.2.0</span>
+                    <span class="release-date">March 2026</span>
+                </div>
+                <div class="release-title">AI features &amp; Chrome extension</div>
+                <ul class="change-list">
+                    <li class="change-item"><span class="badge badge-ai">AI</span>AI listing generation via Claude — title, description, tags, and price suggestion from photos</li>
+                    <li class="change-item"><span class="badge badge-ai">AI</span>Vault Buddy chat assistant for reseller Q&amp;A and workflow guidance</li>
+                    <li class="change-item"><span class="badge badge-ai">AI</span>Image analysis with automatic tagging and condition detection</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Chrome extension (Chromium) for one-click listing capture from marketplace pages</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>AR preview feature for item visualization</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Blockchain verification for high-value item provenance</li>
+                </ul>
+            </div>
+        </article>
+
+        <!-- v1.1.0 -->
+        <article class="release" aria-label="Version 1.1.0">
+            <div class="release-dot" aria-hidden="true"></div>
+            <div class="release-card">
+                <div class="release-header">
+                    <span class="release-version">v1.1.0</span>
+                    <span class="release-date">March 2026</span>
+                </div>
+                <div class="release-title">E2E test suite &amp; Docker setup</div>
+                <ul class="change-list">
+                    <li class="change-item"><span class="badge badge-new">New</span>Playwright E2E test suite covering all primary user workflows</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Bun:test unit test suite with auth, security, and route coverage</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Docker multi-stage build with non-root user and health check at <code>/api/health</code></li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Docker Compose stack: web + redis + Nginx reverse proxy</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>GitHub Actions CI with blocking test gate before any deploy</li>
+                    <li class="change-item"><span class="badge badge-fix">Fix</span>Pre-commit hooks enforcing test runs and conventional commit format</li>
+                </ul>
+            </div>
+        </article>
+
+        <!-- v1.0.0 -->
+        <article class="release" aria-label="Version 1.0.0">
+            <div class="release-dot" aria-hidden="true"></div>
+            <div class="release-card">
+                <div class="release-header">
+                    <span class="release-version">v1.0.0</span>
+                    <span class="release-date">March 2026</span>
+                </div>
+                <div class="release-title">Initial release</div>
+                <ul class="change-list">
+                    <li class="change-item"><span class="badge badge-new">New</span>Inventory management with FTS5 full-text search across all fields</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Sales tracking and analytics dashboard with revenue breakdowns</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Offer management with accept/counter/decline flows</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Image bank with batch upload and per-item photo management</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>JWT auth with 15-min access tokens, 7-day refresh, and TOTP MFA</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>SQLite WAL mode — offline-capable with no external database dependency</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>WebSocket real-time updates for listings and offer state changes</li>
+                </ul>
+            </div>
+        </article>
+
+    </div>
+</main>
+
+<footer class="site-footer">
+    <p>
+        &copy; 2026 VaultLister &mdash;
+        <a href="/">Open App</a> &middot;
+        <a href="/landing.html">About</a> &middot;
+        Built with Bun.js + SQLite
+    </p>
+</footer>
+
+</body>
+</html>
