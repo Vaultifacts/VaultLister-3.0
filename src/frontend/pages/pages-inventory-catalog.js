@@ -542,10 +542,10 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="tabs mb-6" role="tablist">
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                    <button class="tab active" role="tab" aria-selected="true" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
+                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('listings')">Listings</button>
+                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('archived')">Archived</button>
+                    <button class="tab active" role="tab" aria-selected="true" tabindex="0" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
+                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 ${pages.templates()}
             `;
@@ -583,10 +583,10 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="tabs mb-6" role="tablist">
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                    <button class="tab active" role="tab" aria-selected="true" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
+                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('listings')">Listings</button>
+                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('archived')">Archived</button>
+                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
+                    <button class="tab active" role="tab" aria-selected="true" tabindex="0" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 ${pages.recentlyDeleted()}
             `;
@@ -603,10 +603,10 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="tabs mb-6" role="tablist">
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                    <button class="tab active" role="tab" aria-selected="true" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
+                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('listings')">Listings</button>
+                    <button class="tab active" role="tab" aria-selected="true" tabindex="0" onclick="handlers.switchListingsTab('archived')">Archived</button>
+                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
+                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 <div class="card">
                     ${archivedListings.length > 0 ? `
@@ -886,10 +886,10 @@ Object.assign(pages, {
             </div>
 
             <div class="tabs mb-6" role="tablist">
-                <button class="tab ${currentListingsTab === 'listings' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'listings' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                <button class="tab ${currentListingsTab === 'archived' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'archived' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                <button class="tab ${currentListingsTab === 'templates' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'templates' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                <button class="tab ${currentListingsTab === 'recently-deleted' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'recently-deleted' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
+                <button class="tab ${currentListingsTab === 'listings' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'listings' ? 'true' : 'false'}" tabindex="${currentListingsTab === 'listings' ? '0' : '-1'}" onclick="handlers.switchListingsTab('listings')">Listings</button>
+                <button class="tab ${currentListingsTab === 'archived' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'archived' ? 'true' : 'false'}" tabindex="${currentListingsTab === 'archived' ? '0' : '-1'}" onclick="handlers.switchListingsTab('archived')">Archived</button>
+                <button class="tab ${currentListingsTab === 'templates' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'templates' ? 'true' : 'false'}" tabindex="${currentListingsTab === 'templates' ? '0' : '-1'}" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
+                <button class="tab ${currentListingsTab === 'recently-deleted' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'recently-deleted' ? 'true' : 'false'}" tabindex="${currentListingsTab === 'recently-deleted' ? '0' : '-1'}" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
             </div>
 
             <div class="card">
@@ -2401,19 +2401,19 @@ Object.assign(pages, {
             </div>
 
             <div class="tabs mb-6" role="tablist">
-                <button class="tab ${activeTab === 'rules' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'rules' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'rules' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'rules' ? 'true' : 'false'}" tabindex="${activeTab === 'rules' ? '0' : '-1'}"
                         onclick="store.setState({relistingTab:'rules'}); renderApp(pages.smartRelisting());">
                     Rules
                 </button>
-                <button class="tab ${activeTab === 'stale' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'stale' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'stale' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'stale' ? 'true' : 'false'}" tabindex="${activeTab === 'stale' ? '0' : '-1'}"
                         onclick="store.setState({relistingTab:'stale'}); renderApp(pages.smartRelisting());">
                     Stale Listings
                 </button>
-                <button class="tab ${activeTab === 'queue' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'queue' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'queue' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'queue' ? 'true' : 'false'}" tabindex="${activeTab === 'queue' ? '0' : '-1'}"
                         onclick="store.setState({relistingTab:'queue'}); renderApp(pages.smartRelisting());">
                     Queue
                 </button>
-                <button class="tab ${activeTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'performance' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'performance' ? 'true' : 'false'}" tabindex="${activeTab === 'performance' ? '0' : '-1'}"
                         onclick="store.setState({relistingTab:'performance'}); renderApp(pages.smartRelisting());">
                     Performance
                 </button>
@@ -2645,15 +2645,15 @@ Object.assign(pages, {
             </div>
 
             <div class="tabs mb-6" role="tablist">
-                <button class="tab ${activeTab === 'upload' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'upload' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'upload' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'upload' ? 'true' : 'false'}" tabindex="${activeTab === 'upload' ? '0' : '-1'}"
                         onclick="store.setState({importTab:'upload'}); renderApp(pages.inventoryImport());">
                     Upload
                 </button>
-                <button class="tab ${activeTab === 'jobs' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'jobs' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'jobs' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'jobs' ? 'true' : 'false'}" tabindex="${activeTab === 'jobs' ? '0' : '-1'}"
                         onclick="store.setState({importTab:'jobs'}); renderApp(pages.inventoryImport());">
                     Import History
                 </button>
-                <button class="tab ${activeTab === 'mappings' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'mappings' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'mappings' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'mappings' ? 'true' : 'false'}" tabindex="${activeTab === 'mappings' ? '0' : '-1'}"
                         onclick="store.setState({importTab:'mappings'}); renderApp(pages.inventoryImport());">
                     Saved Mappings
                 </button>

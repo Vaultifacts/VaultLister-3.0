@@ -1690,16 +1690,16 @@ const pages = {
 
                 <!-- Reports Sub-tabs -->
                 <div class="tabs mb-4" role="tablist" style="padding: 1rem 1rem 0 1rem;">
-                    <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'errors' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsReportsSubTab('errors')">
+                    <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'errors' ? 'true' : 'false'}" tabindex="${subTab === 'errors' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('errors')">
                         <i class="fas fa-exclamation-circle"></i> Errors
                     </button>
-                    <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'supplier' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsReportsSubTab('supplier')">
+                    <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'supplier' ? 'true' : 'false'}" tabindex="${subTab === 'supplier' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('supplier')">
                         <i class="fas fa-chart-line"></i> Supplier Monitoring
                     </button>
-                    <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'turnover' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsReportsSubTab('turnover')">
+                    <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'turnover' ? 'true' : 'false'}" tabindex="${subTab === 'turnover' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('turnover')">
                         <i class="fas fa-sync-alt"></i> Inventory Turnover
                     </button>
-                    <button class="tab ${subTab === 'custom' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'custom' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsReportsSubTab('custom')">
+                    <button class="tab ${subTab === 'custom' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'custom' ? 'true' : 'false'}" tabindex="${subTab === 'custom' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('custom')">
                         <i class="fas fa-file-csv"></i> Custom Reports
                     </button>
                 </div>
@@ -2386,15 +2386,15 @@ const pages = {
 
             <!-- Analytics Tabs -->
             <div class="tabs mb-6" role="tablist">
-                ${!hiddenTabs.includes('live') ? `<button class="tab ${currentTab === 'live' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'live' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('live')">${components.icon('activity', 14)} Live</button>` : ''}
-                ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
-                ${!hiddenTabs.includes('performance') ? `<button class="tab ${currentTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'performance' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('performance')">Performance</button>` : ''}
-                ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
-                ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
-                ${!hiddenTabs.includes('reports') ? `<button class="tab ${currentTab === 'reports' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'reports' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('reports')">Reports</button>` : ''}
-                ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
-                ${!hiddenTabs.includes('profitability-analysis') ? `<button class="tab ${currentTab === 'profitability' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'profitability' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('profitability')">Profitability Analysis</button>` : ''}
-                ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
+                ${!hiddenTabs.includes('live') ? `<button class="tab ${currentTab === 'live' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'live' ? 'true' : 'false'}" tabindex="${currentTab === 'live' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('live')">${components.icon('activity', 14)} Live</button>` : ''}
+                ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
+                ${!hiddenTabs.includes('performance') ? `<button class="tab ${currentTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'performance' ? 'true' : 'false'}" tabindex="${currentTab === 'performance' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('performance')">Performance</button>` : ''}
+                ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" tabindex="${currentTab === 'heatmaps' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
+                ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" tabindex="${currentTab === 'predictions' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
+                ${!hiddenTabs.includes('reports') ? `<button class="tab ${currentTab === 'reports' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'reports' ? 'true' : 'false'}" tabindex="${currentTab === 'reports' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('reports')">Reports</button>` : ''}
+                ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
+                ${!hiddenTabs.includes('profitability-analysis') ? `<button class="tab ${currentTab === 'profitability' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'profitability' ? 'true' : 'false'}" tabindex="${currentTab === 'profitability' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('profitability')">Profitability Analysis</button>` : ''}
+                ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
                 <button class="btn btn-ghost btn-sm ml-auto" onclick="handlers.showAnalyticsCustomization()" title="Customize Analytics">
                     ${components.icon('settings', 16)}
                 </button>
@@ -3055,7 +3055,7 @@ const pages = {
                             <div class="form-group">
                                 <label for="login-email" class="form-label">Email</label>
                                 <input id="login-email" type="email" class="form-input" name="email" required
-                                       aria-label="Email address" aria-describedby="login-email-error"
+                                       autocomplete="email" aria-label="Email address" aria-describedby="login-email-error"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-email-error" role="alert">Please enter a valid email address</span>
                             </div>
@@ -3114,12 +3114,12 @@ const pages = {
                             <div class="form-group">
                                 <label for="reg-email" class="form-label">Email</label>
                                 <input id="reg-email" type="email" class="form-input" name="email" required
-                                       aria-label="Email address" placeholder="you@example.com">
+                                       autocomplete="email" aria-label="Email address" placeholder="you@example.com">
                             </div>
                             <div class="form-group">
                                 <label for="reg-username" class="form-label">Username</label>
                                 <input id="reg-username" type="text" class="form-input" name="username" required
-                                       aria-label="Username" placeholder="Choose a username" minlength="3">
+                                       autocomplete="username" aria-label="Username" placeholder="Choose a username" minlength="3">
                             </div>
                             <div class="form-group">
                                 <label for="reg-password" class="form-label">Password</label>
@@ -3201,7 +3201,7 @@ const pages = {
                         <form id="forgot-password-form" onsubmit="handlers.requestPasswordReset(event)">
                             <div class="form-group">
                                 <label for="forgot-email" class="form-label">Email Address</label>
-                                <input id="forgot-email" type="email" class="form-input" name="email" required placeholder="you@example.com" aria-label="Email address" data-testid="forgot-email">
+                                <input id="forgot-email" type="email" class="form-input" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address" data-testid="forgot-email">
                             </div>
                             <button type="submit" class="btn btn-primary w-full mb-4">Send Reset Link</button>
                             <div class="text-center">

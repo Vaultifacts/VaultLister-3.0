@@ -826,9 +826,14 @@ const server = Bun.serve({
         }
 
         // WebSocket upgrade for /ws endpoint
-        // Auth happens via message after connect (browser WebSocket API cannot set
-        // custom headers during the upgrade, so pre-upgrade auth always fails).
-        // websocket.js handleAuth() validates the JWT sent in the first 'auth' message.
+        // Auth is intentionally deferred to the first message, not the upgrade request.
+        // The browser WebSocket API (RFC 6455) does not allow setting custom request
+        // headers (e.g. Authorization: Bearer <token>) on the HTTP/1.1 upgrade handshake —
+        // only the browser's built-in headers (Origin, Sec-WebSocket-Key, etc.) are sent.
+        // Attempting to validate a JWT at upgrade time would therefore always fail for
+        // browser clients. Instead, userId is initialised to null here and populated once
+        // the client sends a JSON { type: 'auth', token: '<jwt>' } message over the
+        // established socket. websocket.js handleAuth() performs that validation.
         if (pathname === '/ws') {
             const upgraded = server.upgrade(request, { data: { userId: null, user: null } });
             if (upgraded) return undefined;
