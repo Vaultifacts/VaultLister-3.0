@@ -939,6 +939,7 @@ const server = Bun.serve({
             const isPublicWebhook = effectivePath.startsWith('/api/webhooks/incoming') ||
                 effectivePath.startsWith('/api/webhooks/ebay/account-deletion');
             const isOAuthCallback = effectivePath.startsWith('/api/oauth/callback') ||
+                /^\/api\/oauth\/[^/]+\/callback$/.test(effectivePath) ||
                 effectivePath.match(/^\/api\/social-auth\/[^/]+\/callback/) ||
                 effectivePath.startsWith('/api/email/callback');
             const isPublicSecurity = [
