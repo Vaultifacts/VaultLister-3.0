@@ -1111,6 +1111,8 @@ const server = Bun.serve({
                 request,
                 ip,
                 headers: Object.fromEntries(request.headers.entries()),
+                // Capture nginx $request_id (or any upstream correlation ID) for error log tracing
+                requestId: request.headers.get('x-request-id') || undefined,
                 // Expose original versioned path in case a route needs it
                 requestedPath: pathname,
             };

@@ -160,6 +160,34 @@ curl -s http://localhost:3000/api/health | jq .
 
 ---
 
+## Local Validation (Docker Compose)
+
+Use this to validate the deployment locally before pushing to staging.
+
+**Prerequisites:** Docker Desktop running, Docker daemon reachable, `Dockerfile` and `docker-compose.yml` present at the repo root.
+
+```powershell
+docker compose down
+docker compose up -d --build
+docker compose ps
+docker inspect --format='{{.State.Health.Status}}' vaultlister-app
+curl.exe -s http://localhost:3000/api/health
+```
+
+**Expected results:**
+- `docker compose up -d --build` exits 0
+- `vaultlister-app` and `vaultlister-redis` are `Up`
+- `vaultlister-app` health status becomes `healthy`
+- `/api/health` returns JSON with `"status":"healthy"`
+
+**Validation evidence files** (generated during QA):
+- `docs/evidence/DEPLOYMENT_VALIDATION.md`
+- `docs/evidence/PHASE-04_DOCKER_PS.txt`
+- `docs/evidence/PHASE-04_DOCKER_HEALTH_STATUS.txt`
+- `docs/evidence/PHASE-04_DOCKER_HEALTH_RESPONSE.json`
+
+---
+
 ## Common Issues and Fixes
 
 | Symptom | Likely Cause | Fix |

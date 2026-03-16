@@ -437,11 +437,20 @@ jobs:
 
       - name: Check response time threshold
         run: |
-          if grep -q "p95" /tmp/load-test-output.txt; then
-            echo "Load test results:"
-            cat /tmp/load-test-output.txt
+          echo "Load test results:"
+          cat /tmp/load-test-output.txt
+
+          P95=$(grep -oP 'p95:\s+\K\d+' /tmp/load-test-output.txt | head -1)
+          if [ -n "$P95" ]; then
+            P95_THRESHOLD=50
+            echo "p95 latency: ${P95}ms (threshold: ${P95_THRESHOLD}ms)"
+            if [ "$P95" -gt "$P95_THRESHOLD" ]; then
+              echo "::error::p95 latency ${P95}ms exceeds ${P95_THRESHOLD}ms threshold"
+              exit 1
+            fi
+            echo "p95 latency within threshold"
           else
-            echo "Performance baseline check completed (no p95 data available)"
+            echo "::warning::No p95 data found in load test output — skipping threshold check"
           fi
 
   build:
