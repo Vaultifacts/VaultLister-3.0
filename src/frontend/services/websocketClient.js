@@ -17,6 +17,10 @@ class VaultListerSocket {
         this.reconnectTimerId = null;
         this.connecting = false;
         this._explicitDisconnect = false;
+        // Heartbeat — reset every time a server ping arrives.
+        // If 60s pass without a ping the server is considered gone and we reconnect.
+        this._pingTimeoutId = null;
+        this._pingTimeoutMs = 60000;
     }
 
     // Initialize WebSocket connection
@@ -45,6 +49,9 @@ class VaultListerSocket {
                     this.connecting = false;
                     this._explicitDisconnect = false;
 
+                    // Start ping watchdog — server sends a ping every 30s.
+                    this._resetPingTimeout();
+
                     // Authenticate immediately
                     if (this.token) {
                         this.send({ type: 'auth', token: this.token });
@@ -66,6 +73,7 @@ class VaultListerSocket {
                     console.log('[WS] Disconnected:', event.code, event.reason);
                     this.authenticated = false;
                     this.connecting = false;
+                    this._clearPingTimeout();
                     if (!this._explicitDisconnect) {
                         this.attemptReconnect();
                     }
@@ -83,8 +91,37 @@ class VaultListerSocket {
         });
     }
 
+    // Reset the 60s ping watchdog. Called each time a server ping arrives.
+    _resetPingTimeout() {
+        if (this._pingTimeoutId !== null) {
+            clearTimeout(this._pingTimeoutId);
+        }
+        this._pingTimeoutId = setTimeout(() => {
+            this._pingTimeoutId = null;
+            if (!this._explicitDisconnect) {
+                console.warn('[WS] No ping received in 60s — reconnecting');
+                this.ws?.close();
+            }
+        }, this._pingTimeoutMs);
+    }
+
+    // Clear the ping watchdog (on explicit disconnect or connection close).
+    _clearPingTimeout() {
+        if (this._pingTimeoutId !== null) {
+            clearTimeout(this._pingTimeoutId);
+            this._pingTimeoutId = null;
+        }
+    }
+
     // Handle incoming messages
     handleMessage(data) {
+        // Respond to server pings with a pong and reset the watchdog.
+        if (data.type === 'ping') {
+            this.send({ type: 'pong', timestamp: data.timestamp || Date.now() });
+            this._resetPingTimeout();
+            return;
+        }
+
         // Handle auth response
         if (data.type === 'auth_success') {
             this.authenticated = true;
@@ -220,6 +257,7 @@ class VaultListerSocket {
     disconnect() {
         this._explicitDisconnect = true;
         this.cancelReconnect();
+        this._clearPingTimeout();
         this.connecting = false;
         if (this.ws) {
             this.ws.close();

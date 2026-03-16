@@ -29,6 +29,8 @@ db.exec('PRAGMA cache_size = 10000');
 db.exec('PRAGMA temp_store = MEMORY');
 db.exec('PRAGMA foreign_keys = ON');
 db.exec('PRAGMA busy_timeout = 5000'); // Wait up to 5 seconds for database locks
+db.exec('PRAGMA mmap_size = 30000000'); // 30 MB memory-mapped I/O
+db.exec('PRAGMA analysis_limit = 1000');
 
 // Initialize schema if needed
 export function initializeDatabase() {
@@ -171,7 +173,8 @@ function runMigrations() {
             '094_automation_rule_tags.sql',
             '095_add_user_preferences.sql',
             '096_add_listings_unique_constraint.sql',
-            '097_fix_fts5_delete_trigger.sql'
+            '097_fix_fts5_delete_trigger.sql',
+            '098_add_is_admin.sql'
         ];
 
         for (const migrationFile of migrationFiles) {

@@ -1189,6 +1189,10 @@ const server = Bun.serve({
         close(ws) {
             websocketService.handleDisconnect(ws);
         },
+
+        pong(ws) {
+            websocketService.handlePong(ws);
+        },
     },
 
     error(error) {
@@ -1198,9 +1202,14 @@ const server = Bun.serve({
     }
 });
 
-// Wire websocketService to the running server (skip .init() which starts
-// an incompatible heartbeat timer — Bun's idleTimeout handles dead connections)
+// Wire websocketService to the running server and start the heartbeat timer.
+// We set server directly instead of calling .init() to avoid double-registering
+// the heartbeat interval if the module is somehow re-evaluated.
 websocketService.server = server;
+websocketService.heartbeatInterval = setInterval(
+    () => websocketService.heartbeat(),
+    30000
+);
 
 // Generate development HTML if index.html doesn't exist
 function generateDevHTML() {
@@ -1253,12 +1262,12 @@ startGDPRWorker();
 monitoring.init();
 log('Background services started (including GDPR worker and monitoring)');
 
-// Start cleanup scheduler (run immediately and then every 30 minutes)
-cleanupExpiredData();
+// Start cleanup scheduler (delayed startup call + daily interval)
+setTimeout(() => cleanupExpiredData(), 30 * 1000); // 30-second delay on startup
 const cleanupInterval = setInterval(() => {
     cleanupExpiredData();
-}, 30 * 60 * 1000); // 30 minutes
-log('Database cleanup scheduler started (runs every 30 minutes)');
+}, 24 * 60 * 60 * 1000); // 24 hours
+log('Database cleanup scheduler started (runs daily, first run in 30s)');
 
 // Graceful shutdown helper
 async function gracefulShutdown(signal) {

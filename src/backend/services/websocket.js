@@ -422,31 +422,41 @@ const websocketService = {
         }
     },
 
-    // Heartbeat to keep connections alive
+    // Mark a connection alive on pong receipt (called from server.js websocket.pong handler)
+    handlePong(ws) {
+        ws.data.isAlive = true;
+        ws.data.pingPending = false;
+        ws.data.lastPongTime = Date.now();
+    },
+
+    // Heartbeat to keep connections alive — runs every 30s.
+    // Closes connections that have not responded to the previous ping within 10s.
     heartbeat() {
+        const now = Date.now();
         for (const [userId, userConnections] of connections) {
             for (const ws of [...userConnections]) {
-                if (!ws.data.isAlive) {
+                // If a ping was sent and no pong received within 10s, close the connection.
+                if (ws.data.pingPending && now - ws.data.pingPendingSince > 10000) {
+                    logger.info(`[WebSocket] Closing stale connection: ${ws.data.connectionId}`);
                     ws.close();
-                    // Belt-and-suspenders: manually evict in case the 'close' event
-                    // doesn't fire (seen in some Bun.js versions). handleDisconnect
-                    // is idempotent so calling it twice is safe.
                     this.handleDisconnect(ws);
                     continue;
                 }
 
                 // Re-verify JWT every 5 minutes
-                if (ws.data.authToken && Date.now() - (ws.data.lastTokenCheck || 0) > 5 * 60 * 1000) {
+                if (ws.data.authToken && now - (ws.data.lastTokenCheck || 0) > 5 * 60 * 1000) {
                     try {
                         jwt.verify(ws.data.authToken, JWT_SECRET, { algorithms: ['HS256'] });
-                        ws.data.lastTokenCheck = Date.now();
+                        ws.data.lastTokenCheck = now;
                     } catch (err) {
                         ws.close();
                         continue;
                     }
                 }
 
-                ws.data.isAlive = false;
+                // Send ping and record the time so we can enforce the 10s deadline next tick.
+                ws.data.pingPending = true;
+                ws.data.pingPendingSince = now;
                 ws.ping();
             }
         }
