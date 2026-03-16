@@ -132,6 +132,16 @@
     <!-- Chat Widget Container -->
     <div id="chat-widget-container"></div>
 
+    <!-- OAuth popup callback — reload when the callback page signals via localStorage -->
+    <script>
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'oauth_complete') {
+                localStorage.removeItem('oauth_complete');
+                location.reload();
+            }
+        });
+    </script>
+
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {

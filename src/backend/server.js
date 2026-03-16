@@ -878,9 +878,8 @@ const server = Bun.serve({
 
                 if (result.success) {
                     document.querySelector('.container').innerHTML = '<h2 class="success">✓ Connected Successfully!</h2><p>This window will close automatically.</p>';
-                    if (window.opener) {
-                        try { window.opener.location.reload(); } catch(e) {}
-                    }
+                    // Signal the main window via localStorage (works even when window.opener is null after cross-origin navigation)
+                    try { localStorage.setItem('oauth_complete', Date.now().toString()); } catch(e) {}
                 } else {
                     var c = document.querySelector('.container');
                     c.textContent = '';
