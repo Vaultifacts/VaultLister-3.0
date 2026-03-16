@@ -178,6 +178,7 @@ Object.assign(pages, {
         const cpuPct = system.cpu != null ? Math.round(system.cpu) : null;
         const memUsed = system.memoryUsed != null ? system.memoryUsed : null;
         const memTotal = system.memoryTotal != null ? system.memoryTotal : null;
+        const memRss = system.memoryRss != null ? system.memoryRss : null;
         const memPct = (memUsed != null && memTotal && memTotal > 0) ? Math.round((memUsed / memTotal) * 100) : null;
         const uptimeSeconds = system.uptime != null ? system.uptime : null;
 
@@ -259,7 +260,7 @@ Object.assign(pages, {
                                 ${memPct != null ? memPct + '%' : '--'}
                             </div>
                             <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
-                                ${memUsed != null ? formatBytes(memUsed) : '--'} / ${memTotal != null ? formatBytes(memTotal) : '--'}
+                                ${memUsed != null ? formatBytes(memUsed) : '--'} used / ${memRss != null ? formatBytes(memRss) : '--'} RSS
                             </div>
                             ${memPct != null ? `
                                 <div style="margin-top: 8px; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;" role="progressbar" aria-valuenow="${memPct}" aria-valuemin="0" aria-valuemax="100" aria-label="Memory usage">

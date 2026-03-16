@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VaultLister Reseller Glossary — definitions for common reselling, marketplace, and inventory management terms.">
+    <meta name="theme-color" content="#6366f1">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Reseller Glossary — VaultLister">
+    <meta property="og:description" content="Plain-English definitions for cross-listing, STR, COGS, comps, and every other term resellers use daily.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vaultlister.com/glossary">
+    <meta property="og:image" content="https://vaultlister.com/assets/og-image.svg">
+    <title>Reseller Glossary — VaultLister</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --indigo-500: #6366f1;
+            --indigo-600: #4f46e5;
+            --purple-600: #7c3aed;
+            --gray-50:  #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            color: var(--gray-700);
+            background: var(--white);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Nav */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            height: 64px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--gray-900);
+            font-weight: 700;
+            font-size: 1.125rem;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: var(--indigo-500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nav-back {
+            font-size: 0.875rem;
+            color: var(--indigo-600);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .nav-back:hover { text-decoration: underline; }
+
+        /* Page layout */
+        .page-wrap {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 3.5rem 2rem 5rem;
+        }
+
+        .page-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .page-label {
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: var(--indigo-600);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--gray-900);
+            margin-bottom: 0.75rem;
+        }
+
+        .page-meta {
+            font-size: 0.875rem;
+            color: var(--gray-400);
+        }
+
+        /* Alpha index */
+        .alpha-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .alpha-nav a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 0.5rem;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--indigo-600);
+            background: var(--gray-50);
+            text-decoration: none;
+            border: 1px solid var(--gray-200);
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .alpha-nav a:hover,
+        .alpha-nav a:focus {
+            background: var(--indigo-500);
+            color: var(--white);
+            border-color: var(--indigo-500);
+            outline: none;
+        }
+
+        .alpha-nav a:focus-visible {
+            outline: 2px solid var(--indigo-500);
+            outline-offset: 2px;
+        }
+
+        /* Glossary section (one per letter group) */
+        .glossary-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .glossary-letter {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--indigo-600);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 1rem;
+            padding-bottom: 0.375rem;
+            border-bottom: 2px solid var(--indigo-500);
+            display: inline-block;
+        }
+
+        /* Definition list */
+        .glossary-list {
+            display: grid;
+            gap: 0;
+        }
+
+        .glossary-item {
+            padding: 1.125rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .glossary-item:last-child {
+            border-bottom: none;
+        }
+
+        .term {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            letter-spacing: -0.01em;
+            margin-bottom: 0.25rem;
+        }
+
+        .term abbr {
+            font-style: normal;
+            text-decoration: none;
+            border: none;
+        }
+
+        .term-badge {
+            display: inline-block;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            padding: 0.125rem 0.5rem;
+            border-radius: 99px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .badge-platform {
+            background: #ede9fe;
+            color: var(--purple-600);
+        }
+
+        .badge-metric {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-acronym {
+            background: var(--gray-100);
+            color: var(--gray-600);
+        }
+
+        .definition {
+            font-size: 0.9375rem;
+            color: var(--gray-600);
+            line-height: 1.65;
+        }
+
+        .definition strong {
+            color: var(--gray-700);
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 2rem;
+            border-top: 1px solid var(--gray-100);
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray-400);
+        }
+
+        .footer a {
+            color: var(--gray-400);
+            text-decoration: none;
+        }
+
+        .footer a:hover { color: var(--gray-600); }
+
+        @media (max-width: 600px) {
+            .nav { padding: 0 1rem; }
+            .page-wrap { padding: 2.5rem 1rem 4rem; }
+            .page-header h1 { font-size: 1.625rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav" aria-label="Site navigation">
+    <a class="nav-logo" href="/">
+        <div class="nav-logo-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
+            </svg>
+        </div>
+        VaultLister
+    </a>
+    <a class="nav-back" href="/">&larr; Back to Home</a>
+</nav>
+
+<main class="page-wrap">
+    <header class="page-header">
+        <p class="page-label">Reference</p>
+        <h1>Reseller Glossary</h1>
+        <p class="page-meta">Plain-English definitions for common reselling, marketplace, and inventory terms — alphabetical order.</p>
+    </header>
+
+    <nav class="alpha-nav" aria-label="Jump to letter">
+        <a href="#B">B</a>
+        <a href="#C">C</a>
+        <a href="#D">D</a>
+        <a href="#F">F</a>
+        <a href="#L">L</a>
+        <a href="#N">N</a>
+        <a href="#O">O</a>
+        <a href="#R">R</a>
+        <a href="#S">S</a>
+        <a href="#T">T</a>
+    </nav>
+
+    <section class="glossary-section" aria-labelledby="letter-B">
+        <h2 class="glossary-letter" id="B">B</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-bundle">
+                <dt class="term">Bundle</dt>
+                <dd class="definition">Two or more inventory items sold together as a single listing, typically at a combined discount. Bundles increase average order value and help move slow-moving stock alongside popular items.</dd>
+            </div>
+
+        </dl>
+    </section>
+
+    <section class="glossary-section" aria-labelledby="letter-C">
+        <h2 class="glossary-letter" id="C">C</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-closet-sharing">
+                <dt class="term">Closet Sharing <span class="term-badge badge-platform">Poshmark</span></dt>
+                <dd class="definition">A Poshmark-specific action that reshares your active listings to your followers' feeds and the platform's Just In feed. Regular sharing boosts visibility and listing recency. VaultLister can automate scheduled closet shares via its Poshmark bot.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-cogs">
+                <dt class="term"><abbr title="Cost of Goods Sold">COGS</abbr> <span class="term-badge badge-acronym">Acronym</span> <span class="term-badge badge-metric">Metric</span></dt>
+                <dd class="definition">The total direct cost to acquire inventory: purchase price, shipping in, authentication fees, and any prep costs. COGS is subtracted from sale price to calculate gross profit. VaultLister tracks COGS per InventoryItem so your analytics reflect true margin.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-comps">
+                <dt class="term">Comps (Comparables)</dt>
+                <dd class="definition">Recently sold listings for the same or similar item used as pricing benchmarks. Pulling comps before listing prevents both under-pricing (leaving money on the table) and over-pricing (stalling inventory). VaultLister's AI price suggestion pulls comps automatically.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-counter-offer">
+                <dt class="term">Counter-Offer</dt>
+                <dd class="definition">A seller's response to a buyer's Offer that proposes a different price, typically between the listed price and the buyer's original offer. Counter-offers keep negotiations alive without accepting a lowball price outright.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-cross-listing">
+                <dt class="term">Cross-Listing</dt>
+                <dd class="definition">Publishing the same InventoryItem as an active Listing on multiple marketplaces simultaneously (e.g., Poshmark, eBay, Mercari, Depop). Cross-listing maximises exposure without duplicating effort. VaultLister manages cross-listings from a single inventory record and marks items sold across all platforms when one sells.</dd>
+            </div>
+
+        </dl>
+    </section>
+
+    <section class="glossary-section" aria-labelledby="letter-D">
+        <h2 class="glossary-letter" id="D">D</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-dead-stock">
+                <dt class="term">Dead Stock</dt>
+                <dd class="definition">Inventory that has not sold within 90 or more days of listing. Dead stock ties up capital and storage space. VaultLister flags dead stock in the Inventory screen and can suggest repricing or bundling actions to clear it.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-delist">
+                <dt class="term">Delist</dt>
+                <dd class="definition">Removing an active Listing from a marketplace without marking the item as sold. Common reasons include pulling inventory to relist at a higher price, taking an item to a local sale, or seasonal storage. Delisting in VaultLister updates status across all connected platforms.</dd>
+            </div>
+
+        </dl>
+    </section>
+
+    <section class="glossary-section" aria-labelledby="letter-F">
+        <h2 class="glossary-letter" id="F">F</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-fba">
+                <dt class="term"><abbr title="Fulfilled by Amazon">FBA</abbr> <span class="term-badge badge-acronym">Acronym</span> <span class="term-badge badge-platform">Amazon</span></dt>
+                <dd class="definition">Fulfilled by Amazon — a fulfilment programme where sellers ship inventory to Amazon warehouses and Amazon handles storage, packing, and shipping on the seller's behalf. FBA items qualify for Prime shipping, which can significantly increase conversion.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-follow-back">
+                <dt class="term">Follow-Back</dt>
+                <dd class="definition">The practice of following Poshmark users who follow you, which grows your audience and increases the reach of future closet shares. VaultLister's Poshmark bot can automate follow-back within the platform's daily action limits.</dd>
+            </div>
+
+        </dl>
+    </section>
+
+    <section class="glossary-section" aria-labelledby="letter-L">
+        <h2 class="glossary-letter" id="L">L</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-listing">
+                <dt class="term">Listing</dt>
+                <dd class="definition">A published record of an InventoryItem on a specific marketplace, including title, description, photos, price, and condition. A single InventoryItem can have multiple active Listings across different platforms. In VaultLister, a Listing is a distinct entity linked to its parent InventoryItem.</dd>
+            </div>
+
+        </dl>
+    </section>
+
+    <section class="glossary-section" aria-labelledby="letter-N">
+        <h2 class="glossary-letter" id="N">N</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-nwot">
+                <dt class="term"><abbr title="New Without Tags">NWOT</abbr> <span class="term-badge badge-acronym">Acronym</span></dt>
+                <dd class="definition">New Without Original Tags — an item that is unused and in new condition but no longer has its original retail tags attached. NWOT typically commands a higher price than used but less than NWT.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-nwt">
+                <dt class="term"><abbr title="New With Tags">NWT</abbr> <span class="term-badge badge-acronym">Acronym</span></dt>
+                <dd class="definition">New With Tags — an item that is unused and still has its original retail tags attached. NWT is the highest-condition designation in most resale categories and typically supports the highest price relative to comps.</dd>
+            </div>
+
+        </dl>
+    </section>
+
+    <section class="glossary-section" aria-labelledby="letter-O">
+        <h2 class="glossary-letter" id="O">O</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-offer">
+                <dt class="term">Offer</dt>
+                <dd class="definition">A buyer's proposed purchase price below the listed price, submitted through a marketplace's offer system. The seller can accept, decline, or counter. In VaultLister, Offers are tracked as a distinct entity with timestamps and status, separate from the Listing price.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-offer-to-likers">
+                <dt class="term">Offer to Likers <span class="term-badge badge-platform">Poshmark</span></dt>
+                <dd class="definition">A Poshmark feature that lets sellers send a private discounted price to users who have liked a listing. Offer to Likers messages expire after 24 hours. VaultLister's automation rules can trigger these offers based on like age and item age.</dd>
+            </div>
+
+        </dl>
+    </section>
+
+    <section class="glossary-section" aria-labelledby="letter-R">
+        <h2 class="glossary-letter" id="R">R</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-relist">
+                <dt class="term">Relist</dt>
+                <dd class="definition">Creating a new Listing for an item that was previously listed and either expired, was deleted, or is being refreshed to appear as new on a marketplace. Relisting resets the listing date and can improve visibility on platforms that sort by recency.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-roi">
+                <dt class="term"><abbr title="Return on Investment">ROI</abbr> <span class="term-badge badge-acronym">Acronym</span> <span class="term-badge badge-metric">Metric</span></dt>
+                <dd class="definition">Return on Investment — calculated as <strong>(Sale Price &minus; COGS &minus; Fees) &divide; COGS &times; 100</strong>. A key profitability metric in VaultLister's analytics. Monitoring ROI by category or source helps identify which buying channels produce the best margins.</dd>
+            </div>
+
+        </dl>
+    </section>
+
+    <section class="glossary-section" aria-labelledby="letter-S">
+        <h2 class="glossary-letter" id="S">S</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-sale">
+                <dt class="term">Sale</dt>
+                <dd class="definition">A completed transaction where a Listing is purchased by a buyer. In VaultLister, recording a Sale marks the parent InventoryItem as sold, delists it from all other platforms, and records revenue, COGS, fees, and net profit for analytics.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-str">
+                <dt class="term"><abbr title="Sell-Through Rate">STR</abbr> <span class="term-badge badge-acronym">Acronym</span> <span class="term-badge badge-metric">Metric</span></dt>
+                <dd class="definition">Sell-Through Rate — the percentage of listed inventory that sold within a given period, calculated as <strong>(Units Sold &divide; Units Listed) &times; 100</strong>. A high STR indicates strong demand or competitive pricing; a low STR suggests repricing, better photos, or a different platform may be needed.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-sourcing">
+                <dt class="term">Sourcing</dt>
+                <dd class="definition">The process of acquiring inventory to resell — through thrift stores, estate sales, retail arbitrage, wholesale, or online platforms. Sourcing strategy directly determines COGS and available margin.</dd>
+            </div>
+
+        </dl>
+    </section>
+
+    <section class="glossary-section" aria-labelledby="letter-T">
+        <h2 class="glossary-letter" id="T">T</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-tag">
+                <dt class="term">Tag</dt>
+                <dd class="definition">A user-defined label applied to an InventoryItem for filtering, grouping, and reporting. Examples: "thrifted", "bundle-ready", "electronics", "Q2-haul". VaultLister supports multi-tag filtering across Inventory and Analytics views.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-turnaround-time">
+                <dt class="term">Turnaround Time</dt>
+                <dd class="definition">The number of days between acquiring an item and selling it. Shorter turnaround time means faster capital recycling. VaultLister calculates average turnaround time per category in the Analytics screen.</dd>
+            </div>
+
+        </dl>
+    </section>
+
+</main>
+
+<footer class="footer">
+    <p>&copy; 2025 VaultLister &mdash; <a href="/terms">Terms</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="/glossary" aria-current="page">Glossary</a></p>
+</footer>
+
+</body>
+</html>

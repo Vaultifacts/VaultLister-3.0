@@ -4,12 +4,13 @@
 ## Current State
 - **Branch:** master
 - **Server:** test server on localhost:3100 (NODE_ENV=test, DISABLE_CSRF=true)
-- **Last commit:** d900c3b — feat: migrate-run CLI, per-route body limits, slow query log, API changelog
+- **Last commit:** 38e4e7a — feat: cache stats, startup timing, env-check CLI, WS count, quickstart/platforms/ER docs
 - **Production URL:** https://vaultlister.com — LIVE ✅ (Let's Encrypt SSL, auto-renewing)
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **Domain:** vaultlister.com (Namecheap, purchased 2026-03-16)
 - **SSL:** Let's Encrypt, expires 2026-06-14, auto-renewal via Certbot
 - **Nginx:** Reverse proxy on ports 80/443 → Docker app:3000
+- **HSTS:** Strict-Transport-Security confirmed present on all response types (fixed 2026-03-16 — nginx location-block inheritance)
 - **eBay OAuth:** Production keyset LIVE ✅ — OAuth flow working end-to-end on vaultlister.com
 - **E2E status:** 69/69 offer tests pass; overall 2054+ pass — all 3 browsers
 - **Unit status:** 4267 pass / 223 fail / 4490 total (Windows, PORT=3100, server running)
@@ -17,6 +18,110 @@
 - **Platforms:** 9 registered; eBay OAuth connected (production), Poshmark credentialed — 7 others need `.env` creds
 - **Exhaustive Audit:** All critical + high-priority items resolved (see plan adaptive-inventing-eagle.md)
 - **As of:** 2026-03-16
+
+## Session Summary (~125 commits, 2026-03-02 to 2026-03-16)
+
+### Infrastructure & Deploy
+- Oracle Cloud Free Tier VM provisioned (204.216.105.105, Ubuntu 22.04)
+- Docker + Docker Compose deployed, staging pipeline fully green
+- Let's Encrypt SSL, auto-renewal via Certbot (expires 2026-06-14)
+- Nginx reverse proxy (ports 80/443), HSTS, gzip, rate limiting, keepalive 32
+- GitHub Actions CI/CD: deploy-staging.yml, docker-compose.staging.yml
+- HSTS inheritance fix: `add_header` duplicated in all location blocks (2026-03-16)
+- Systemd service fallback, deployment runbook in docs/DEPLOYMENT.md
+- X-Request-ID correlation tracing end-to-end
+
+### Security Hardening
+- CSP Report-Only header with nonce+strict-dynamic path
+- CSRF: IP-only session ID, in-memory token store documented
+- IDOR tests, rate-limit tests, SQL injection parameterized query audits
+- OWASP-aligned security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
+- Secrets validation in deploy workflows
+- AES-256-CBC encryption for OAuth tokens at rest
+- SECURITY.md written
+
+### Application Features
+- eBay OAuth production keyset, popup auto-close, UTF-8 charset fix
+- All 9 platform cross-lister buttons activated (Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify, Facebook, Whatnot)
+- Poshmark automation: sharing, follow-back, offer rules, keepalive, publish bot
+- AI listing generation, image analyzer, price predictor, Vault Buddy chat
+- Chrome extension (Chromium-only, see memory note)
+- WebSocket: per-message correlation ID, auth-at-upgrade, room stats
+- Feature flags admin UI (toggle, rollout %, category badges)
+- Idempotency keys on mutating routes
+- Per-route body size limits
+- Slow query log
+- Cache stats endpoint, startup timing log
+- Env-check CLI admin command
+- Migrate-run and migrate-rollback CLI commands
+- CSP violation report endpoint (/api/csp-report)
+- Error requestId in responses for client-side correlation
+
+### Admin Dashboard
+- System Health card: CPU, Memory (heap used / RSS), Uptime, WebSocket connections
+- Request Metrics: total requests, errors, avg response, error rate
+- Top Endpoints by request count (top 15)
+- Recent Alerts + acknowledge button
+- Recent Errors (24h)
+- Security Events (24h) with counters + event table
+- Feature Flags management
+- Auto-refresh every 30 seconds
+- `system` key added to getStats() — memoryUsed, memoryTotal, memoryRss, uptime, startedAt
+
+### Public Pages Created
+| Page | Path | Priority |
+|------|------|----------|
+| Home / SPA | / | 1.0 |
+| Login | /#login | 0.8 |
+| Register | /#register | 0.8 |
+| Server Status | /status.html | 0.6 |
+| Database Schema | /schema.html | 0.5 |
+| ER Diagram | /er-diagram.html | 0.5 |
+| API Docs | /api-docs.html | 0.5 |
+| API Changelog | /api-changelog.html | 0.5 |
+| Rate Limits | /rate-limits.html | 0.5 |
+| Quickstart | /quickstart.html | 0.5 |
+| Platform Integrations | /platforms.html | 0.5 |
+| App Changelog | /changelog.html | 0.5 |
+| Terms of Service | /terms.html | 0.3 |
+| Privacy Policy | /privacy.html | 0.3 |
+| Glossary | /glossary.html | — |
+| 404 / 50x error pages | /404.html, /50x.html | — |
+| Landing | /landing.html | — |
+| Offline fallback | /offline.html | — |
+
+sitemap.xml updated 2026-03-16 with all 14 indexable pages.
+
+### Server Crons (204.216.105.105)
+| Schedule | Script | Purpose |
+|----------|--------|---------|
+| Daily 03:00 | backup.sh | Full DB + volume backup |
+| Daily 04:00 | db-integrity-check.sh | SQLite PRAGMA integrity_check |
+| Every 6h | wal-checkpoint.sh | WAL checkpoint to reduce file size |
+| Monthly 1st 05:00 | db-vacuum.sh | SQLite VACUUM |
+| Weekly Sunday 06:00 | test-backup.sh | Restore test — verifies backup validity |
+
+Server scripts also available (not cron): docker-status.sh, health-check.sh, log-analytics.sh, restore.sh, rollback.sh
+
+### Admin CLI Commands (scripts/admin.js)
+Run via: `bun scripts/admin.js <command>`
+
+| Command | Purpose |
+|---------|---------|
+| `env-check` | Validate all required env vars are set |
+| `db-stats` | Print database size, WAL size, table counts |
+| `cache-stats` | Print in-memory cache hit/miss stats |
+| `migrate-run` | Run pending DB migrations |
+| `migrate-rollback` | Roll back last migration |
+| `rotate-encryption-key` | Re-encrypt OAuth tokens with new key |
+| `security-audit` | Run security self-check |
+| `seed-demo` | Seed demo user data |
+
+### Tests
+- E2E: 2054+ pass (all 3 browsers — Chromium, Firefox, WebKit)
+- Unit: 4267 pass / 223 fail / 4490 total (Windows, PORT=3100)
+- All 69 offer E2E tests pass
+- Auth + security tests gate every commit (pre-commit hook)
 
 ## Completion Summary
 All autonomous work is complete. Remaining items require external action:
@@ -36,18 +141,22 @@ _(none)_
 ## Next Tasks
 - [ ] M: Test Poshmark automation with real credentials on staging
 - [ ] M: Complete Etsy OAuth — blocked on Etsy app approval
-- [ ] M: Set up database auto-backup cron on server
 - [ ] M: Configure Sentry + Slack monitoring (requires account creation)
 - [ ] L: Add remaining marketplace credentials to staging `.env` (Mercari, Depop, Grailed, Facebook, Whatnot, Shopify)
 - [ ] L: Update eBay webhook endpoint in eBay developer portal if needed
+- [x] M: HSTS header fix — DONE (nginx location-block inheritance, 2026-03-16)
+- [x] M: Sitemap updated with all 14 public pages — DONE (2026-03-16)
+- [x] M: Admin dashboard memory (heap + RSS) — DONE (2026-03-16, getStats() system key)
 - [x] M: eBay OAuth production — DONE (vaultlister.com, full end-to-end)
 - [x] M: Domain + SSL — DONE (vaultlister.com, Let's Encrypt)
 - [x] M: Provision staging server — DONE (204.216.105.105)
 - [x] M: Deploy pipeline nginx config copy — DONE (commit cd78bd6)
 - [x] L: QA walkthrough on vaultlister.com — 15/15 pages pass
+- [x] M: Database auto-backup cron on server — DONE (5 crons configured)
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-16: Session (HSTS fix + sitemap + admin memory + STATUS.md) — DevOps-Deployment agent. (1) HSTS: root cause was nginx add_header inheritance — location blocks with own add_header suppress server-block headers. Fixed by adding Strict-Transport-Security to all 5 location blocks with add_header (auth, api, ws, static, catch-all). Config written to server via Python base64 transfer, nginx -s reload confirmed header present. (2) Sitemap: added 11 missing public pages (status, schema, er-diagram, api-docs, api-changelog, rate-limits, quickstart, platforms, changelog, terms, privacy) with correct priorities (docs: 0.5, legal: 0.3). (3) Admin memory: getStats() in monitoring.js now returns system key with memoryUsed (heapUsed), memoryTotal (heapTotal), memoryRss (rss), uptime, startedAt. pages-admin.js System Health memory card updated to show "X used / Y RSS". (4) STATUS.md comprehensive final update. No commit.
 - 2026-03-16: Session (security hardening — CSP Report-Only + WS requestId) — Backend agent. (1) Added Content-Security-Policy-Report-Only header to securityHeaders.js: removes 'unsafe-inline' from script-src, sends violations to /api/csp-report, promotes nonce+strict-dynamic path without breaking existing page. Exported cspReportOnlyConfig and buildReportOnlyCSPWithNonce() for per-request nonce stamping. (2) Added messageId (uuidv4) to every server-initiated WebSocket message via the central send() method — enables client-side deduplication and server-side log correlation. (3) STATUS.md + plan updated. No commit.
 - 2026-03-16: Session (exhaustive audit — ~105 commits) — All agents. Phase 1 critical fixes: admin chunk, analytics route mapping, prod/staging nginx alignment, Docker image tag separation, MAINTENANCE_MODE docs, orphaned sentry.js deleted. Phase 2 high-priority: fetch timeout on frontend api.request(), IDOR + rate-limit tests, deployment runbook + SECURITY.md, secrets validation in deploy workflows. Phase 3 medium: CSRF in-memory note documented, full E2E CI configured, accessibility enforcement, systemd service, WebSocket auth-at-upgrade documented. Phase 4 final: X-Request-ID correlation tracing, CI enforcement tightened, migration CLI, per-route body limits, slow query log, API changelog. Commits 67aa010..d900c3b (12 commits across 4 phases).
 - 2026-03-16: Session (CI hardening + docs consolidation) — DevOps-Deployment agent. (1) CI performance-check: added p95 > 50ms failure condition to Check response time threshold step. (2) Branch coverage: skipped — bun:test --coverage does not emit branch coverage data (Funcs + Lines only). (3) CORS: already restricted — getCorsHeaders() uses origin whitelist, no wildcard. (4) Docs: merged DEPLOYMENT_RUNBOOK.md unique content (local validation commands, evidence file refs) into docs/DEPLOYMENT.md new "Local Validation" section; deleted DEPLOYMENT_RUNBOOK.md. (5) STATUS.md updated. No commit.

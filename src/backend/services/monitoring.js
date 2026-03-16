@@ -300,13 +300,21 @@ const monitoring = {
     // Get stats — shape expected by monitoring route and route tests
     getStats() {
         const m = this.getMetrics();
+        const mem = process.memoryUsage();
         return {
             summary: {
                 totalRequests: m.requests.total,
                 totalErrors: m.requests.errors,
                 avgResponseTime: m.latency.avg
             },
-            endpoints: []
+            endpoints: [],
+            system: {
+                memoryUsed: mem.heapUsed,
+                memoryTotal: mem.heapTotal,
+                memoryRss: mem.rss,
+                uptime: m.uptime.seconds,
+                startedAt: new Date(Date.now() - m.uptime.seconds * 1000).toISOString()
+            }
         };
     },
 
