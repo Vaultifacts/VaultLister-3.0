@@ -419,8 +419,25 @@ const apiRoutes = {
         };
     },
     '/api/status': async () => {
-        // Simple status check for load balancers
-        return { status: 200, data: { status: 'ok' } };
+        let appVersion = '1.0.0';
+        try {
+            const pkg = JSON.parse(readFileSync(join(ROOT_DIR, 'package.json'), 'utf8'));
+            appVersion = pkg.version || appVersion;
+        } catch {}
+
+        const monMetrics = monitoring.getMetrics();
+
+        return {
+            status: 200,
+            data: {
+                status: 'ok',
+                version: appVersion,
+                runtime: process.version,
+                uptime: Math.floor(process.uptime()),
+                environment: process.env.NODE_ENV || 'development',
+                database: monMetrics.database
+            }
+        };
     },
     '/api/workers/health': async () => {
         // Background worker health — returns last-run timestamps and stale detection.
@@ -606,6 +623,18 @@ function parseParams(url, pattern) {
 // In-memory gzip cache — keyed by absolute filePath; populated once per file per process lifetime.
 // Eliminates the blocking gzipSync cost on every request for large static assets.
 const gzipCache = new Map();
+
+// Idempotency key cache — prevents double-submit on POST/PUT/PATCH.
+// Key: Idempotency-Key header value. Value: { status, data, headers, expiresAt }.
+const IDEMPOTENCY_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const idempotencyCache = new Map();
+// Sweep expired entries every minute — lightweight O(n) scan; cache is small in practice.
+setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of idempotencyCache) {
+        if (v.expiresAt <= now) idempotencyCache.delete(k);
+    }
+}, 60_000).unref();
 
 // Serve static files
 function serveStatic(pathname, request) {
@@ -1157,6 +1186,27 @@ const server = Bun.serve({
             // Generate CSRF token for response
             addCSRFToken(context);
 
+            // Idempotency — check/store for POST, PUT, PATCH
+            const idempotencyKey = request.headers.get('Idempotency-Key');
+            const isMutatingMethod = method === 'POST' || method === 'PUT' || method === 'PATCH';
+            if (idempotencyKey && isMutatingMethod) {
+                const cached = idempotencyCache.get(idempotencyKey);
+                if (cached && cached.expiresAt > Date.now()) {
+                    const responseHeaders = {
+                        'Content-Type': 'application/json',
+                        'X-API-Version': '1.0.0',
+                        'X-Idempotency-Replayed': 'true',
+                        ...dynamicCorsHeaders,
+                        ...(cached.headers || {})
+                    };
+                    if (context.csrfToken) responseHeaders['X-CSRF-Token'] = context.csrfToken;
+                    return new Response(JSON.stringify(cached.data), {
+                        status: cached.status,
+                        headers: responseHeaders
+                    });
+                }
+            }
+
             // Find matching router (sort by length to match most specific first)
             const sortedRoutes = Object.entries(apiRoutes).sort((a, b) => b[0].length - a[0].length);
             for (const [prefix, router] of sortedRoutes) {
@@ -1212,6 +1262,16 @@ const server = Bun.serve({
                             for (const cookie of result.cookies) {
                                 response.headers.append('Set-Cookie', cookie);
                             }
+                        }
+
+                        // Cache idempotent response for replay
+                        if (idempotencyKey && isMutatingMethod) {
+                            idempotencyCache.set(idempotencyKey, {
+                                status: result.status || 200,
+                                data: result.data,
+                                headers: result.headers || {},
+                                expiresAt: Date.now() + IDEMPOTENCY_TTL_MS
+                            });
                         }
 
                         return response;

@@ -108,11 +108,32 @@ function buildCSPHeader(config) {
 }
 
 /**
+ * Report-Only CSP — stricter than the enforced policy.
+ * Removes 'unsafe-inline' from script-src; nonce + strict-dynamic enforced.
+ * Violations are reported to /api/csp-report without breaking the page.
+ * Promote to enforced once violation rate reaches zero in production.
+ */
+export const cspReportOnlyConfig = {
+    ...cspConfig,
+    'script-src': [
+        "'self'",
+        // No 'unsafe-inline' — this is the point of the report-only policy
+        ...(IS_PRODUCTION ? ["'strict-dynamic'"] : ['http://localhost:*'])
+    ],
+    'report-uri': ['/api/csp-report']
+};
+
+/**
  * Security headers configuration
  */
 export const securityHeadersConfig = {
-    // Content Security Policy
+    // Content Security Policy (enforced)
     'Content-Security-Policy': buildCSPHeader(cspConfig),
+
+    // Report-Only CSP — stricter (no unsafe-inline in script-src).
+    // Violations reported to /api/csp-report without breaking the page.
+    // Promote to enforced once violation rate is zero in production.
+    'Content-Security-Policy-Report-Only': buildCSPHeader(cspReportOnlyConfig),
 
     // Strict Transport Security (HTTPS only in production)
     'Strict-Transport-Security': process.env.NODE_ENV === 'production'
@@ -267,6 +288,25 @@ export function buildCSPWithNonce(nonce) {
         // When a nonce is present, 'unsafe-inline' in script-src is ignored for
         // event handlers — this directive re-enables them explicitly.
         ...(!IS_PRODUCTION ? { 'script-src-attr': ["'unsafe-inline'"] } : {})
+    };
+    return buildCSPHeader(noncedConfig);
+}
+
+/**
+ * Build the Report-Only CSP with a per-request nonce.
+ * Used alongside buildCSPWithNonce() so both enforced and report-only headers
+ * carry matching nonces — without this, nonce-bearing inline scripts would still
+ * be blocked by the report-only policy and generate spurious violation reports.
+ */
+export function buildReportOnlyCSPWithNonce(nonce) {
+    const noncedConfig = {
+        ...cspReportOnlyConfig,
+        'script-src': [
+            "'self'",
+            `'nonce-${nonce}'`,
+            ...(IS_PRODUCTION ? ["'strict-dynamic'"] : ['http://localhost:*'])
+            // Intentionally no 'unsafe-inline' — that is the whole point
+        ]
     };
     return buildCSPHeader(noncedConfig);
 }

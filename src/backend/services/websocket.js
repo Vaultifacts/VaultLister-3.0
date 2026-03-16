@@ -386,9 +386,11 @@ const websocketService = {
     },
 
     // Send message to specific WebSocket
+    // Stamps a unique messageId on every outgoing server-initiated message for
+    // correlation in logs and client-side deduplication / request tracking.
     send(ws, data) {
         if (ws.readyState === 1) { // WebSocket.OPEN
-            ws.send(JSON.stringify(data));
+            ws.send(JSON.stringify({ messageId: uuidv4(), ...data }));
         }
     },
 

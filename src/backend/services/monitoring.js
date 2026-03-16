@@ -3,9 +3,19 @@
 
 import v8 from 'v8';
 import crypto from 'crypto';
+import { statSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = join(__dirname, '..', '..', '..');
+const DB_PATH = process.env.DB_PATH || join(ROOT_DIR, 'data', 'vaultlister.db');
+
+const DB_WARN_BYTES  = 500 * 1024 * 1024; // 500 MB
+const DB_CRIT_BYTES  =   1 * 1024 * 1024 * 1024; // 1 GB
 
 // Configuration
 const SENTRY_DSN = process.env.SENTRY_DSN;
@@ -17,7 +27,8 @@ const metrics = {
     requests: { total: 0, errors: 0, latencies: [] },
     errors: [],
     uptime: { startTime: Date.now(), checks: [] },
-    performance: { cpu: [], memory: [], responseTime: [] }
+    performance: { cpu: [], memory: [], responseTime: [] },
+    database: { sizeBytes: 0, lastChecked: null }
 };
 
 // Thresholds for alerts
@@ -135,10 +146,38 @@ const monitoring = {
             clearInterval(this._metricsInterval);
             this._metricsInterval = null;
         }
+        if (this._dbSizeInterval) {
+            clearInterval(this._dbSizeInterval);
+            this._dbSizeInterval = null;
+        }
+    },
+
+    // Check database file size and alert if thresholds are exceeded
+    checkDatabaseSize() {
+        try {
+            const stat = statSync(DB_PATH);
+            const sizeBytes = stat.size;
+            metrics.database.sizeBytes = sizeBytes;
+            metrics.database.lastChecked = new Date().toISOString();
+
+            if (sizeBytes >= DB_CRIT_BYTES) {
+                logger.error(`[Monitoring] CRITICAL: database file is ${(sizeBytes / (1024 ** 3)).toFixed(2)} GB (>= 1 GB threshold): ${DB_PATH}`);
+                this.alert('db_size_critical', { sizeBytes, sizeMB: Math.round(sizeBytes / (1024 ** 2)) });
+            } else if (sizeBytes >= DB_WARN_BYTES) {
+                logger.warn(`[Monitoring] WARNING: database file is ${Math.round(sizeBytes / (1024 ** 2))} MB (>= 500 MB threshold): ${DB_PATH}`);
+                this.alert('db_size_warning', { sizeBytes, sizeMB: Math.round(sizeBytes / (1024 ** 2)) });
+            }
+        } catch (e) {
+            logger.warn('[Monitoring] Could not stat database file:', e.message);
+        }
     },
 
     // Start metrics collection
     startMetricsCollection() {
+        // Check DB size immediately on init, then every hour
+        this.checkDatabaseSize();
+        this._dbSizeInterval = setInterval(() => this.checkDatabaseSize(), 60 * 60 * 1000);
+
         // Collect metrics every 30 seconds
         this._metricsInterval = setInterval(() => {
             const memUsage = process.memoryUsage();
@@ -303,7 +342,12 @@ const monitoring = {
                 seconds: Math.floor((Date.now() - metrics.uptime.startTime) / 1000),
                 formatted: this.formatUptime(Date.now() - metrics.uptime.startTime)
             },
-            recentErrors: metrics.errors.slice(-10)
+            recentErrors: metrics.errors.slice(-10),
+            database: {
+                sizeBytes: metrics.database.sizeBytes,
+                sizeMB: Math.round(metrics.database.sizeBytes / (1024 ** 2)),
+                lastChecked: metrics.database.lastChecked
+            }
         };
     },
 

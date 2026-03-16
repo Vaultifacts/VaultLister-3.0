@@ -4,7 +4,7 @@
 ## Current State
 - **Branch:** master
 - **Server:** test server on localhost:3100 (NODE_ENV=test, DISABLE_CSRF=true)
-- **Last commit:** b83e731 — fix: audit Phase 3 — tab keyboard nav, autocomplete hints, systemd, WebSocket docs
+- **Last commit:** d900c3b — feat: migrate-run CLI, per-route body limits, slow query log, API changelog
 - **Production URL:** https://vaultlister.com — LIVE ✅ (Let's Encrypt SSL, auto-renewing)
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **Domain:** vaultlister.com (Namecheap, purchased 2026-03-16)
@@ -15,6 +15,7 @@
 - **Unit status:** 4267 pass / 223 fail / 4490 total (Windows, PORT=3100, server running)
 - **QA Walkthrough (vaultlister.com):** 15/15 pages pass — all load correctly
 - **Platforms:** 9 registered; eBay OAuth connected (production), Poshmark credentialed — 7 others need `.env` creds
+- **Exhaustive Audit:** All critical + high-priority items resolved (see plan adaptive-inventing-eagle.md)
 - **As of:** 2026-03-16
 
 ## Completion Summary
@@ -47,6 +48,8 @@ _(none)_
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-16: Session (security hardening — CSP Report-Only + WS requestId) — Backend agent. (1) Added Content-Security-Policy-Report-Only header to securityHeaders.js: removes 'unsafe-inline' from script-src, sends violations to /api/csp-report, promotes nonce+strict-dynamic path without breaking existing page. Exported cspReportOnlyConfig and buildReportOnlyCSPWithNonce() for per-request nonce stamping. (2) Added messageId (uuidv4) to every server-initiated WebSocket message via the central send() method — enables client-side deduplication and server-side log correlation. (3) STATUS.md + plan updated. No commit.
+- 2026-03-16: Session (exhaustive audit — ~105 commits) — All agents. Phase 1 critical fixes: admin chunk, analytics route mapping, prod/staging nginx alignment, Docker image tag separation, MAINTENANCE_MODE docs, orphaned sentry.js deleted. Phase 2 high-priority: fetch timeout on frontend api.request(), IDOR + rate-limit tests, deployment runbook + SECURITY.md, secrets validation in deploy workflows. Phase 3 medium: CSRF in-memory note documented, full E2E CI configured, accessibility enforcement, systemd service, WebSocket auth-at-upgrade documented. Phase 4 final: X-Request-ID correlation tracing, CI enforcement tightened, migration CLI, per-route body limits, slow query log, API changelog. Commits 67aa010..d900c3b (12 commits across 4 phases).
 - 2026-03-16: Session (CI hardening + docs consolidation) — DevOps-Deployment agent. (1) CI performance-check: added p95 > 50ms failure condition to Check response time threshold step. (2) Branch coverage: skipped — bun:test --coverage does not emit branch coverage data (Funcs + Lines only). (3) CORS: already restricted — getCorsHeaders() uses origin whitelist, no wildcard. (4) Docs: merged DEPLOYMENT_RUNBOOK.md unique content (local validation commands, evidence file refs) into docs/DEPLOYMENT.md new "Local Validation" section; deleted DEPLOYMENT_RUNBOOK.md. (5) STATUS.md updated. No commit.
 - 2026-03-16: Session (nginx keepalive + CORS audit) — DevOps-Deployment agent. Confirmed Access-Control-Max-Age: 86400 already present in getCorsHeaders() (server.js:203 — no change needed). nginx/nginx.staging.conf: increased upstream keepalive 16→32, added keepalive_timeout 65 to HTTPS server block, added proxy_http_version 1.1 + proxy_set_header Connection "" to all non-WebSocket proxy location blocks (auth, api, health, static assets, root catch-all). No commit — changes staged for review.
 - 2026-03-16: Session (domain + SSL + eBay OAuth) — Purchased vaultlister.com ($6.99 Namecheap). Configured DNS A records → 204.216.105.105. Installed Let's Encrypt SSL via Certbot (expires 2026-06-14, auto-renewal). Nginx reverse proxy on ports 80/443. Fixed eBay OAuth: callback URL format (/api/oauth/:platform/callback), trimmed scopes to 10 pre-approved, popup auto-close via localStorage+storage event, UTF-8 charset fix. Updated docker-compose.staging.yml with all marketplace env vars. Deploy pipeline now copies nginx config. QA walkthrough: 15/15 pages pass on vaultlister.com. 13 commits pushed.
