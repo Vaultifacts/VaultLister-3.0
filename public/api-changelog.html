@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VaultLister API changelog — version history and breaking changes">
+    <title>API Changelog — VaultLister</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --brand: #6366f1;
+            --brand-dark: #4f46e5;
+            --brand-light: #eef2ff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --surface: #ffffff;
+            --bg: #f9fafb;
+            --badge-new-bg: #dcfce7;
+            --badge-new-text: #15803d;
+            --badge-break-bg: #fee2e2;
+            --badge-break-text: #b91c1c;
+            --badge-dep-bg: #fef9c3;
+            --badge-dep-text: #a16207;
+            --badge-security-bg: #fee2e2;
+            --badge-security-text: #b91c1c;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-primary: #f9fafb;
+                --text-secondary: #d1d5db;
+                --text-muted: #6b7280;
+                --border: #374151;
+                --surface: #1f2937;
+                --bg: #111827;
+                --brand-light: #1e1b4b;
+                --badge-new-bg: #14532d;
+                --badge-new-text: #86efac;
+                --badge-break-bg: #7f1d1d;
+                --badge-break-text: #fca5a5;
+                --badge-dep-bg: #713f12;
+                --badge-dep-text: #fde68a;
+                --badge-security-bg: #7f1d1d;
+                --badge-security-text: #fca5a5;
+            }
+        }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            color: #fff;
+            padding: 2.5rem 1.5rem 2rem;
+            text-align: center;
+        }
+
+        .header-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .header-logo svg { flex-shrink: 0; }
+
+        .header-logo-text {
+            font-size: 1.375rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.75);
+            font-size: 1rem;
+            max-width: 520px;
+            margin: 0 auto 1.25rem;
+        }
+
+        .header-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .header-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .header-link--primary {
+            background: #6366f1;
+            color: #fff;
+        }
+        .header-link--primary:hover { background: #4f46e5; }
+
+        .header-link--outline {
+            border: 1.5px solid rgba(255,255,255,0.35);
+            color: rgba(255,255,255,0.9);
+            background: transparent;
+        }
+        .header-link--outline:hover { background: rgba(255,255,255,0.08); }
+
+        /* ── Main layout ── */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        /* ── Version block ── */
+        .version-block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            margin-bottom: 1.75rem;
+            overflow: hidden;
+        }
+
+        .version-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .version-tag {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--brand);
+            font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+        }
+
+        .version-date {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .version-label {
+            margin-left: auto;
+            display: inline-block;
+            padding: 0.1875rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .version-label--stable { background: var(--badge-new-bg); color: var(--badge-new-text); }
+        .version-label--latest { background: var(--brand); color: #fff; }
+
+        .version-body { padding: 1.25rem 1.5rem; }
+
+        .version-summary {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+        }
+
+        /* ── Change sections ── */
+        .change-section { margin-bottom: 1.25rem; }
+        .change-section:last-child { margin-bottom: 0; }
+
+        .change-section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 0.625rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .badge--new      { background: var(--badge-new-bg);      color: var(--badge-new-text); }
+        .badge--breaking { background: var(--badge-break-bg);     color: var(--badge-break-text); }
+        .badge--deprecated { background: var(--badge-dep-bg);     color: var(--badge-dep-text); }
+        .badge--security { background: var(--badge-security-bg);  color: var(--badge-security-text); }
+
+        .change-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.625rem;
+        }
+
+        .change-list li {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.625rem;
+            align-items: baseline;
+            font-size: 0.9375rem;
+        }
+
+        .change-list li::before {
+            content: '—';
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .endpoint {
+            font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+            font-size: 0.8125rem;
+            background: var(--brand-light);
+            color: var(--brand-dark);
+            padding: 0.0625rem 0.375rem;
+            border-radius: 0.25rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .endpoint { background: #1e1b4b; color: #a5b4fc; }
+        }
+
+        /* ── Breaking-change callout ── */
+        .breaking-callout {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            background: var(--badge-break-bg);
+            color: var(--badge-break-text);
+            border-radius: 0.5rem;
+            padding: 0.875rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        .breaking-callout svg { flex-shrink: 0; margin-top: 0.125rem; }
+
+        /* ── Upcoming section ── */
+        .upcoming-block {
+            background: var(--brand-light);
+            border: 1.5px dashed var(--brand);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.75rem;
+        }
+        @media (prefers-color-scheme: dark) {
+            .upcoming-block { background: #1e1b4b; }
+        }
+
+        .upcoming-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--brand);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.5rem;
+        }
+        .upcoming-block p {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+        .footer a { color: var(--brand); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.5rem; }
+            .version-header { gap: 0.5rem; }
+            .version-label { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <a class="header-logo" href="/">
+        <svg width="36" height="36" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <rect width="64" height="64" rx="16" fill="#6366f1"/>
+            <path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/>
+        </svg>
+        <span class="header-logo-text">VaultLister</span>
+    </a>
+    <h1>API Changelog</h1>
+    <p>A complete record of API changes, additions, and breaking changes by release.</p>
+    <nav class="header-links">
+        <a class="header-link header-link--primary" href="/api-docs.html">Full API Docs</a>
+        <a class="header-link header-link--outline" href="/changelog.html">App Changelog</a>
+        <a class="header-link header-link--outline" href="/">Back to App</a>
+    </nav>
+</header>
+
+<main class="container">
+
+    <!-- Upcoming / In Progress -->
+    <div class="upcoming-block" role="note">
+        <p class="upcoming-title">Upcoming in v1.1.0</p>
+        <p>Bulk cross-listing endpoint, webhook delivery retries, and OAuth token refresh improvements are planned for the next release. No breaking changes anticipated.</p>
+    </div>
+
+    <!-- v1.0.0 -->
+    <article class="version-block">
+        <div class="version-header">
+            <span class="version-tag">v1.0.0</span>
+            <span class="version-date">March 2026</span>
+            <span class="version-label version-label--latest">Latest</span>
+        </div>
+        <div class="version-body">
+            <p class="version-summary">
+                Initial public API release. All core reselling platform endpoints are now stable.
+                No prior versions exist — there are no breaking changes in this release.
+            </p>
+
+            <!-- Authentication -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    Authentication
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">POST /api/auth/login</code> — Issue JWT access token + refresh token pair.</span></li>
+                    <li><span><code class="endpoint">POST /api/auth/refresh</code> — Exchange a valid refresh token for a new access token (7-day sliding window).</span></li>
+                    <li><span><code class="endpoint">POST /api/auth/logout</code> — Revoke the current refresh token.</span></li>
+                    <li><span><code class="endpoint">POST /api/auth/register</code> — Create a new user account.</span></li>
+                    <li><span><code class="endpoint">POST /api/auth/mfa/setup</code> — Initiate TOTP MFA enrollment.</span></li>
+                    <li><span><code class="endpoint">POST /api/auth/mfa/verify</code> — Verify a TOTP code during login.</span></li>
+                    <li><span>All mutating routes require a valid <code class="endpoint">X-CSRF-Token</code> header (token issued via <code class="endpoint">GET /api/auth/csrf</code>).</span></li>
+                </ul>
+            </div>
+
+            <!-- Inventory -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    Inventory
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">GET /api/inventory</code> — List InventoryItems with pagination, full-text search (FTS5), and tag filtering.</span></li>
+                    <li><span><code class="endpoint">POST /api/inventory</code> — Create an InventoryItem.</span></li>
+                    <li><span><code class="endpoint">GET /api/inventory/:id</code> — Fetch a single InventoryItem.</span></li>
+                    <li><span><code class="endpoint">PUT /api/inventory/:id</code> — Update an InventoryItem.</span></li>
+                    <li><span><code class="endpoint">DELETE /api/inventory/:id</code> — Soft-delete an InventoryItem.</span></li>
+                </ul>
+            </div>
+
+            <!-- Listings / Cross-listing -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    Listings &amp; Cross-Listing
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">GET /api/listings</code> — List all Listings across all platforms for the authenticated user.</span></li>
+                    <li><span><code class="endpoint">POST /api/cross-list</code> — Submit an InventoryItem for cross-listing to one or more platforms.</span></li>
+                    <li><span><code class="endpoint">GET /api/listings/:id</code> — Fetch a single Listing including platform-specific metadata.</span></li>
+                    <li><span><code class="endpoint">DELETE /api/listings/:id</code> — Delist from a specific platform.</span></li>
+                </ul>
+            </div>
+
+            <!-- Offers -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    Offers
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">GET /api/offers</code> — List incoming Offers with status filter.</span></li>
+                    <li><span><code class="endpoint">POST /api/offers/:id/accept</code> — Accept an Offer.</span></li>
+                    <li><span><code class="endpoint">POST /api/offers/:id/decline</code> — Decline an Offer.</span></li>
+                    <li><span><code class="endpoint">POST /api/offers/:id/counter</code> — Submit a counter-offer.</span></li>
+                </ul>
+            </div>
+
+            <!-- Sales -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    Sales
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">GET /api/sales</code> — List Sales with date-range and platform filters.</span></li>
+                    <li><span><code class="endpoint">GET /api/sales/:id</code> — Fetch a single Sale with full Listing and InventoryItem context.</span></li>
+                    <li><span><code class="endpoint">PUT /api/sales/:id</code> — Update shipping or notes on a Sale.</span></li>
+                </ul>
+            </div>
+
+            <!-- Analytics -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    Analytics
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">GET /api/analytics/summary</code> — Aggregated revenue, sell-through rate, and top-performing platforms over a given period.</span></li>
+                    <li><span><code class="endpoint">GET /api/analytics/platform</code> — Per-platform breakdown of Sales and active Listings.</span></li>
+                    <li><span><code class="endpoint">GET /api/analytics/price-history/:itemId</code> — PriceHistory series for an InventoryItem.</span></li>
+                </ul>
+            </div>
+
+            <!-- Automations -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    Automations
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">GET /api/automations</code> — List configured Automations (closet share, follow-back, offer rules).</span></li>
+                    <li><span><code class="endpoint">POST /api/automations</code> — Create an Automation.</span></li>
+                    <li><span><code class="endpoint">PUT /api/automations/:id</code> — Update an Automation's schedule or rule set.</span></li>
+                    <li><span><code class="endpoint">DELETE /api/automations/:id</code> — Remove an Automation.</span></li>
+                    <li><span><code class="endpoint">POST /api/automations/:id/run</code> — Manually trigger an Automation run.</span></li>
+                </ul>
+            </div>
+
+            <!-- AI / Vault Buddy -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    AI Features
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">POST /api/ai/generate-listing</code> — Generate a platform-optimised listing title and description from an InventoryItem (backed by Anthropic Claude).</span></li>
+                    <li><span><code class="endpoint">POST /api/ai/price-suggestion</code> — Return a price suggestion based on PriceHistory and comparable sales.</span></li>
+                    <li><span><code class="endpoint">POST /api/ai/tag-image</code> — Analyse an ImageAsset and return suggested tags and condition notes.</span></li>
+                    <li><span><code class="endpoint">POST /api/ai/chat</code> — Vault Buddy conversational assistant (streaming SSE response).</span></li>
+                </ul>
+            </div>
+
+            <!-- Platform OAuth -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    Platform OAuth
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">GET /api/platforms</code> — List connected Platform integrations and their OAuth status.</span></li>
+                    <li><span><code class="endpoint">GET /api/oauth/:platform/start</code> — Initiate OAuth 2.0 flow for a marketplace (eBay, Etsy, Shopify, Poshmark, Mercari).</span></li>
+                    <li><span><code class="endpoint">GET /api/oauth/:platform/callback</code> — OAuth callback handler — do not call directly.</span></li>
+                    <li><span><code class="endpoint">DELETE /api/platforms/:platform</code> — Disconnect a Platform integration and revoke stored OAuth tokens.</span></li>
+                </ul>
+            </div>
+
+            <!-- Image Bank -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    Image Bank
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">POST /api/images/upload</code> — Upload an ImageAsset (multipart/form-data, max 10 MB).</span></li>
+                    <li><span><code class="endpoint">GET /api/images</code> — List ImageAssets for the authenticated user.</span></li>
+                    <li><span><code class="endpoint">DELETE /api/images/:id</code> — Delete an ImageAsset and remove from associated InventoryItems.</span></li>
+                </ul>
+            </div>
+
+            <!-- Infrastructure -->
+            <div class="change-section">
+                <div class="change-section-title">
+                    <span class="badge badge--new">New</span>
+                    Infrastructure
+                </div>
+                <ul class="change-list">
+                    <li><span><code class="endpoint">GET /api/health</code> — Health check endpoint (unauthenticated). Returns <code class="endpoint">{"status":"ok"}</code> when the server and database are available.</span></li>
+                    <li><span><code class="endpoint">POST /api/csp-report</code> — CSP violation reporting endpoint (production only).</span></li>
+                    <li><span>All responses include <code class="endpoint">X-API-Version</code> and <code class="endpoint">X-Request-ID</code> headers.</span></li>
+                    <li><span>Rate limiting is applied to all auth and AI endpoints. Limits are communicated via <code class="endpoint">RateLimit-Remaining</code> and <code class="endpoint">RateLimit-Reset</code> response headers.</span></li>
+                </ul>
+            </div>
+
+        </div>
+    </article>
+
+</main>
+
+<footer class="footer">
+    <p>
+        VaultLister API v1.0.0 &mdash;
+        <a href="/api-docs.html">Full API Reference</a> &middot;
+        <a href="/changelog.html">App Changelog</a> &middot;
+        <a href="/privacy.html">Privacy</a> &middot;
+        <a href="/terms.html">Terms</a>
+    </p>
+    <p style="margin-top:0.5rem;">Questions? Contact <a href="mailto:support@vaultlister.com">support@vaultlister.com</a></p>
+</footer>
+
+</body>
+</html>

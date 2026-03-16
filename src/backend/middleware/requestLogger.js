@@ -154,6 +154,15 @@ export function logRequestComplete(ctx, response, error = null) {
         logInfo('Request completed', logData);
     }
 
+    if (duration > 100) {
+        logger.warn('[SlowResponse] Response exceeded 100ms threshold', {
+            method: ctx.method,
+            path: ctx.path,
+            duration: `${duration}ms`,
+            status
+        });
+    }
+
     // Store in database for analytics (async, don't wait)
     storeRequestLog(ctx, status, duration, error).catch(() => {});
 }

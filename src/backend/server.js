@@ -553,20 +553,32 @@ const protectedPrefixes = [
 ];
 
 // Parse JSON body
-const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_BODY_SIZE_DEFAULT = 10 * 1024 * 1024; // 10MB default
+const MAX_BODY_SIZE_JSON    =  1 * 1024 * 1024; //  1MB for standard JSON API routes
+const MAX_BODY_SIZE_UPLOAD  = 50 * 1024 * 1024; // 50MB for file upload routes
 
-async function parseBody(request) {
+const UPLOAD_ROUTE_PREFIXES = ['/api/image-bank', '/api/batch-photo'];
+
+function getBodySizeLimit(pathname) {
+    for (const prefix of UPLOAD_ROUTE_PREFIXES) {
+        if (pathname.startsWith(prefix)) return MAX_BODY_SIZE_UPLOAD;
+    }
+    if (pathname.startsWith('/api/')) return MAX_BODY_SIZE_JSON;
+    return MAX_BODY_SIZE_DEFAULT;
+}
+
+async function parseBody(request, maxSize = MAX_BODY_SIZE_DEFAULT) {
     try {
         // Check content-length header first (fast reject)
         const contentLength = parseInt(request.headers.get('content-length') || '0');
-        if (contentLength > MAX_BODY_SIZE) {
+        if (contentLength > maxSize) {
             return { error: 'Request body too large' };
         }
 
         const text = await request.text();
 
         // Also check actual body size (content-length can be spoofed)
-        if (text.length > MAX_BODY_SIZE) {
+        if (text.length > maxSize) {
             return { error: 'Request body too large' };
         }
 
@@ -1080,12 +1092,14 @@ const server = Bun.serve({
             }
 
             // Parse body only for methods that have a body
+            const bodySizeLimit = getBodySizeLimit(effectivePath);
             const body = (method === 'GET' || method === 'HEAD' || method === 'OPTIONS')
-                ? {} : await parseBody(request);
+                ? {} : await parseBody(request, bodySizeLimit);
 
             // Reject oversized requests
             if (body && body.error === 'Request body too large') {
-                return new Response(JSON.stringify({ error: 'Request body too large', maxSize: '10MB' }), {
+                const maxMB = Math.round(bodySizeLimit / (1024 * 1024));
+                return new Response(JSON.stringify({ error: 'Request body too large', maxSize: `${maxMB}MB` }), {
                     status: 413,
                     headers: { 'Content-Type': 'application/json', ...dynamicCorsHeaders }
                 });
