@@ -107,6 +107,14 @@ const websocketService = {
     // Handle incoming messages
     async handleMessage(ws, data) {
         try {
+            // Reject messages over 64KB before any parsing
+            const raw = data.toString();
+            if (raw.length > 65536) {
+                logger.warn(`[WebSocket] Oversized message rejected (${raw.length} bytes) from connection ${ws.data.connectionId}`);
+                this.send(ws, { type: MESSAGE_TYPES.ERROR, message: 'Message too large (max 64KB)' });
+                return;
+            }
+
             // Fix 2: Add message rate limiting
             const now = Date.now();
             if (!ws.data.messageWindowStart) {
@@ -132,7 +140,20 @@ const websocketService = {
                 return;
             }
 
-            const message = JSON.parse(data.toString());
+            let message;
+            try {
+                message = JSON.parse(raw);
+            } catch {
+                logger.warn(`[WebSocket] Malformed JSON from connection ${ws.data.connectionId}`);
+                this.send(ws, { type: MESSAGE_TYPES.ERROR, message: 'Invalid message format' });
+                return;
+            }
+
+            if (!message || typeof message.type !== 'string') {
+                logger.warn(`[WebSocket] Message missing type field from connection ${ws.data.connectionId}`);
+                this.send(ws, { type: MESSAGE_TYPES.ERROR, message: 'Message must include a type field' });
+                return;
+            }
 
             switch (message.type) {
                 case MESSAGE_TYPES.PING:

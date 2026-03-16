@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Status — VaultLister</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding: 2rem 1rem;
+        }
+
+        .page-wrap {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            background: #6366f1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo-mark svg {
+            width: 20px;
+            height: 20px;
+            fill: #fff;
+        }
+
+        header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        header span {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .overall-banner {
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: border-color 0.3s;
+        }
+
+        .overall-banner.healthy { border-color: rgba(16, 185, 129, 0.4); }
+        .overall-banner.unhealthy { border-color: rgba(239, 68, 68, 0.4); }
+        .overall-banner.checking { border-color: rgba(100, 116, 139, 0.4); }
+
+        .pulse-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .pulse-dot.green { background: #10b981; }
+        .pulse-dot.red { background: #ef4444; }
+        .pulse-dot.gray { background: #475569; }
+
+        .pulse-dot.green::after,
+        .pulse-dot.red::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            animation: pulse 2s ease-out infinite;
+        }
+
+        .pulse-dot.green::after { background: rgba(16, 185, 129, 0.4); }
+        .pulse-dot.red::after { background: rgba(239, 68, 68, 0.4); }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(2.4); }
+        }
+
+        .overall-label {
+            flex: 1;
+        }
+
+        .overall-label strong {
+            display: block;
+            font-size: 1.05rem;
+            color: #fff;
+        }
+
+        .overall-label small {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .cards {
+            display: grid;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(99, 102, 241, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: #818cf8;
+        }
+
+        .card-body {
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.2rem;
+        }
+
+        .card-value {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .badge-green { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .badge-red { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .badge-gray { background: rgba(100, 116, 139, 0.15); color: #94a3b8; }
+
+        .refresh-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: #475569;
+            padding-top: 0.5rem;
+        }
+
+        .refresh-bar .last-check {
+            color: #64748b;
+        }
+
+        .progress-wrap {
+            width: 100px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #6366f1;
+            border-radius: 9999px;
+            width: 100%;
+            transition: width 0.25s linear;
+        }
+
+        a.back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            color: #64748b;
+            text-decoration: none;
+            margin-top: 2rem;
+        }
+
+        a.back-link:hover { color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+        <header>
+            <div class="logo-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <div>
+                <h1>VaultLister</h1>
+                <span>System Status</span>
+            </div>
+        </header>
+
+        <div class="overall-banner checking" id="overall-banner" role="status" aria-live="polite" aria-atomic="true">
+            <div class="pulse-dot gray" id="pulse-dot"></div>
+            <div class="overall-label">
+                <strong id="overall-label">Checking&hellip;</strong>
+                <small id="overall-sub">Contacting server</small>
+            </div>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <div class="card-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-13.5 0v-1.5m13.5 1.5v-1.5m0 0a3 3 0 00-3-3H8.25a3 3 0 00-3 3m13.5 0v1.5m-13.5-1.5h13.5" />
+                    </svg>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Server</div>
+                    <div class="card-value" id="server-value"><span class="badge badge-gray">–</span></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 2.625c0 2.278-3.694 4.125-8.25 4.125S3.75 11.278 3.75 9m16.5 2.625c0 2.278-3.694 4.125-8.25 4.125S3.75 13.903 3.75 11.625" />
+                    </svg>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Database</div>
+                    <div class="card-value" id="db-value"><span class="badge badge-gray">–</span></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Uptime</div>
+                    <div class="card-value" id="uptime-value">–</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Version</div>
+                    <div class="card-value" id="version-value">–</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="refresh-bar">
+            <span class="last-check" id="last-check-text">Not yet checked</span>
+            <div class="progress-wrap" aria-hidden="true" title="Time until next refresh">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <a class="back-link" href="/">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            Back to VaultLister
+        </a>
+    </div>
+
+    <script>
+        'use strict';
+
+        const POLL_INTERVAL = 10000;
+        let pollTimer = null;
+        let progressTimer = null;
+        let progressStart = null;
+
+        function formatUptime(seconds) {
+            if (seconds == null || isNaN(seconds)) return 'Unknown';
+            const d = Math.floor(seconds / 86400);
+            const h = Math.floor((seconds % 86400) / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            if (d > 0) return `${d}d ${h}h ${m}m`;
+            if (h > 0) return `${h}h ${m}m ${s}s`;
+            if (m > 0) return `${m}m ${s}s`;
+            return `${s}s`;
+        }
+
+        function badge(text, type) {
+            return `<span class="badge badge-${type}">${text}</span>`;
+        }
+
+        function setOverall(healthy) {
+            const banner = document.getElementById('overall-banner');
+            const dot = document.getElementById('pulse-dot');
+            const label = document.getElementById('overall-label');
+            const sub = document.getElementById('overall-sub');
+
+            banner.className = `overall-banner ${healthy ? 'healthy' : 'unhealthy'}`;
+            dot.className = `pulse-dot ${healthy ? 'green' : 'red'}`;
+            label.textContent = healthy ? 'All Systems Operational' : 'Service Disruption Detected';
+            sub.textContent = healthy
+                ? 'Server and database are responding normally'
+                : 'One or more components are not responding';
+        }
+
+        function setChecking() {
+            const banner = document.getElementById('overall-banner');
+            const dot = document.getElementById('pulse-dot');
+            const label = document.getElementById('overall-label');
+            const sub = document.getElementById('overall-sub');
+
+            banner.className = 'overall-banner checking';
+            dot.className = 'pulse-dot gray';
+            label.textContent = 'Checking\u2026';
+            sub.textContent = 'Contacting server';
+        }
+
+        async function checkHealth() {
+            try {
+                const res = await fetch('/api/health', { cache: 'no-store' });
+                const data = await res.json();
+
+                const isHealthy = res.ok && data.status === 'healthy';
+                const dbOk = isHealthy;
+
+                setOverall(isHealthy);
+
+                document.getElementById('server-value').innerHTML = badge(
+                    isHealthy ? 'Healthy' : 'Unhealthy',
+                    isHealthy ? 'green' : 'red'
+                );
+
+                document.getElementById('db-value').innerHTML = badge(
+                    dbOk ? 'Connected' : 'Unavailable',
+                    dbOk ? 'green' : 'red'
+                );
+
+                document.getElementById('uptime-value').textContent =
+                    data.uptime != null ? formatUptime(data.uptime) : 'N/A';
+
+                document.getElementById('version-value').textContent =
+                    data.version || 'N/A';
+
+            } catch (_) {
+                setOverall(false);
+                document.getElementById('server-value').innerHTML = badge('Unreachable', 'red');
+                document.getElementById('db-value').innerHTML = badge('Unknown', 'gray');
+                document.getElementById('uptime-value').textContent = 'N/A';
+                document.getElementById('version-value').textContent = 'N/A';
+            }
+
+            const now = new Date();
+            document.getElementById('last-check-text').textContent =
+                'Last checked: ' + now.toLocaleTimeString();
+
+            startProgress();
+        }
+
+        function startProgress() {
+            clearInterval(progressTimer);
+            progressStart = Date.now();
+            const fill = document.getElementById('progress-fill');
+            fill.style.width = '100%';
+
+            progressTimer = setInterval(() => {
+                const elapsed = Date.now() - progressStart;
+                const remaining = Math.max(0, 1 - elapsed / POLL_INTERVAL);
+                fill.style.width = (remaining * 100).toFixed(1) + '%';
+                if (remaining === 0) clearInterval(progressTimer);
+            }, 250);
+        }
+
+        // Initial check
+        checkHealth();
+
+        // Poll every 10 seconds
+        pollTimer = setInterval(checkHealth, POLL_INTERVAL);
+    </script>
+</body>
+</html>

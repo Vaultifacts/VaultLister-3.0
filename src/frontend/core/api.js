@@ -108,6 +108,9 @@ const api = {
                 this.csrfToken = csrfToken;
             }
 
+            // Capture request ID for error reporting
+            const requestId = response.headers.get('X-Request-ID');
+
             // Capture rate limit headers
             const rlLimit = response.headers.get('X-RateLimit-Limit');
             const rlRemaining = response.headers.get('X-RateLimit-Remaining');
@@ -141,9 +144,12 @@ const api = {
             }
 
             if (!response.ok) {
-                const err = new Error(data.error || 'Request failed');
+                const baseMsg = data.error || 'Request failed';
+                const msg = requestId ? `${baseMsg} (ref: ${requestId})` : baseMsg;
+                const err = new Error(msg);
                 err.data = data;
                 err.status = response.status;
+                err.requestId = requestId;
                 throw err;
             }
 

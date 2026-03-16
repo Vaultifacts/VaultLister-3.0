@@ -280,6 +280,16 @@ jobs:
       - name: Build Docker image
         run: docker build -t vaultlister:ci .
 
+      - name: Check Docker image size
+        run: |
+          SIZE=$(docker image inspect vaultlister:ci --format '{{.Size}}')
+          SIZE_MB=$((SIZE / 1024 / 1024))
+          echo "Image size: ${SIZE_MB}MB"
+          if [ $SIZE_MB -gt 500 ]; then
+            echo "ERROR: Image exceeds 500MB limit (${SIZE_MB}MB)"
+            exit 1
+          fi
+
   accessibility-audit:
     name: Accessibility Audit
     runs-on: ubuntu-latest

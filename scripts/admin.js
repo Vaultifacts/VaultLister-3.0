@@ -51,6 +51,9 @@ async function main() {
             case 'migrate-run':
                 await migrateRun();
                 break;
+            case 'migrate-rollback':
+                await migrateRollback(args[0] ? parseInt(args[0], 10) : 1);
+                break;
             case 'help':
             case undefined:
                 showHelp();
@@ -382,6 +385,66 @@ async function migrateRun() {
     console.log(`\nDone. Succeeded: ${succeeded} | Failed/Skipped: ${failed}`);
 }
 
+async function migrateRollback(count) {
+    const MIGRATIONS_DIR = join(ROOT_DIR, 'src', 'backend', 'db', 'migrations');
+
+    if (!Number.isInteger(count) || count < 1) {
+        console.error('Error: count must be a positive integer.');
+        process.exit(1);
+    }
+
+    const tableExists = db.prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='migrations'"
+    ).get();
+    if (!tableExists) {
+        console.error('Error: migrations table does not exist. Run db:init first.');
+        process.exit(1);
+    }
+
+    const applied = db.prepare(
+        'SELECT name FROM migrations ORDER BY id DESC LIMIT ?'
+    ).all(count);
+
+    if (applied.length === 0) {
+        console.log('No applied migrations found. Nothing to roll back.');
+        return;
+    }
+
+    console.log(`WARNING: migrate-rollback only removes the migration record from the migrations table.`);
+    console.log(`         It does NOT reverse schema changes (ALTER TABLE, CREATE TABLE, etc.).\n`);
+    console.log(`Rolling back ${applied.length} migration(s):\n`);
+
+    const deleteMigration = db.prepare('DELETE FROM migrations WHERE name = ?');
+
+    for (const row of applied) {
+        const name = row.name;
+        const filePath = join(MIGRATIONS_DIR, name);
+        const isJs = name.endsWith('.js');
+
+        if (isJs && existsSync(filePath)) {
+            try {
+                const mod = await import(pathToFileURL(filePath).href);
+                if (typeof mod.down === 'function') {
+                    await mod.down(db);
+                    deleteMigration.run(name);
+                    console.log(`  ROLLED BACK (down)  ${name}`);
+                } else {
+                    deleteMigration.run(name);
+                    console.log(`  RECORD REMOVED      ${name} (no down() export — record only)`);
+                }
+            } catch (err) {
+                console.error(`  FAILED              ${name}: ${err.message}`);
+            }
+        } else {
+            deleteMigration.run(name);
+            console.log(`  RECORD REMOVED      ${name} (SQL — record only, schema unchanged)`);
+        }
+    }
+
+    console.log(`\nDone. ${applied.length} migration record(s) removed.`);
+    console.log('Re-run `migrate-run` to re-apply them.');
+}
+
 function showHelp() {
     console.log(`
 VaultLister 3.0 Admin CLI
@@ -395,6 +458,7 @@ Commands:
   db-stats                                Show table row counts and file size
   migrate-status                          Show applied/pending migration status
   migrate-run                             Apply all pending migrations in order
+  migrate-rollback [count]                Roll back last N migrations (default: 1)
   help                                    Show this help message
 
 Examples:
@@ -405,6 +469,8 @@ Examples:
   bun scripts/admin.js db-stats
   bun scripts/admin.js migrate-status
   bun scripts/admin.js migrate-run
+  bun scripts/admin.js migrate-rollback
+  bun scripts/admin.js migrate-rollback 3
 `);
 }
 

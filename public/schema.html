@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Schema — VaultLister</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f1117;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar nav */
+        .sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            background: #161b27;
+            border-right: 1px solid rgba(255,255,255,0.06);
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 1rem;
+        }
+
+        .logo-mark {
+            width: 28px;
+            height: 28px;
+            background: #6366f1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo-mark svg { width: 16px; height: 16px; fill: #fff; }
+
+        .sidebar-logo span {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .nav-section-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #475569;
+            padding: 0.75rem 1.25rem 0.35rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 0.4rem 1.25rem;
+            font-size: 0.82rem;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.15s, background 0.15s;
+            border-left: 2px solid transparent;
+        }
+
+        .nav-link:hover {
+            color: #e2e8f0;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .nav-link.active {
+            color: #818cf8;
+            border-left-color: #6366f1;
+            background: rgba(99,102,241,0.08);
+        }
+
+        /* Main content */
+        .main {
+            flex: 1;
+            padding: 2.5rem 3rem;
+            max-width: 900px;
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.4rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 2.5rem;
+        }
+
+        .category-heading {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #6366f1;
+            margin: 3rem 0 1.25rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(99,102,241,0.25);
+        }
+
+        .category-heading:first-of-type { margin-top: 0; }
+
+        /* Table card */
+        .table-card {
+            background: #161b27;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .table-card-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            padding: 0.9rem 1.25rem;
+            background: rgba(99,102,241,0.07);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .table-name {
+            font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #818cf8;
+        }
+
+        .table-desc {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Column table */
+        table.cols {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        table.cols thead tr {
+            background: rgba(255,255,255,0.03);
+        }
+
+        table.cols th {
+            padding: 0.55rem 1rem;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #475569;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        table.cols td {
+            padding: 0.55rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            vertical-align: top;
+        }
+
+        table.cols tr:last-child td { border-bottom: none; }
+
+        table.cols tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .col-name {
+            font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+            color: #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .pk { color: #fbbf24; }
+        .fk { color: #34d399; }
+
+        .col-type {
+            font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+            color: #7dd3fc;
+            white-space: nowrap;
+        }
+
+        .col-constraints {
+            color: #94a3b8;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.1rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            margin-right: 0.25rem;
+            white-space: nowrap;
+        }
+
+        .tag-pk { background: rgba(251,191,36,0.12); color: #fbbf24; }
+        .tag-fk { background: rgba(52,211,153,0.12); color: #34d399; }
+        .tag-nn { background: rgba(148,163,184,0.1); color: #94a3b8; }
+        .tag-uniq { background: rgba(129,140,248,0.12); color: #818cf8; }
+        .tag-def { background: rgba(148,163,184,0.08); color: #64748b; }
+
+        /* FK + Index sections */
+        .extras {
+            padding: 0.75rem 1.25rem;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+
+        .extras-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #475569;
+            margin-bottom: 0.4rem;
+        }
+
+        .extra-item {
+            font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 0.2rem;
+        }
+
+        .extra-item .hl { color: #94a3b8; }
+
+        /* Remaining tables list */
+        .remaining-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .remaining-chip {
+            background: #161b27;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 6px;
+            padding: 0.5rem 0.85rem;
+            font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+
+        /* Back link */
+        a.back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            color: #64748b;
+            text-decoration: none;
+            margin-top: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        a.back-link:hover { color: #94a3b8; }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { padding: 1.5rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <!-- Sidebar -->
+    <nav class="sidebar" aria-label="Schema navigation">
+        <div class="sidebar-logo">
+            <div class="logo-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <span>VaultLister</span>
+        </div>
+
+        <div class="nav-section-label">Core Tables</div>
+        <a class="nav-link" href="#users">users</a>
+        <a class="nav-link" href="#sessions">sessions</a>
+        <a class="nav-link" href="#inventory">inventory</a>
+        <a class="nav-link" href="#listings">listings</a>
+        <a class="nav-link" href="#sales">sales</a>
+        <a class="nav-link" href="#offers">offers</a>
+        <a class="nav-link" href="#shops">shops</a>
+        <a class="nav-link" href="#automation_rules">automation_rules</a>
+
+        <div class="nav-section-label">All Tables</div>
+        <a class="nav-link" href="#remaining">30 additional tables</a>
+
+        <div class="nav-section-label">Reference</div>
+        <a class="nav-link" href="#indexes">Indexes</a>
+        <a class="nav-link" href="#fts">Full-Text Search</a>
+    </nav>
+
+    <!-- Main -->
+    <main class="main">
+        <h1 class="page-title">Database Schema</h1>
+        <p class="page-subtitle">SQLite 3 &middot; WAL mode &middot; FTS5 &middot; Foreign keys enforced &mdash; 38 tables total</p>
+
+        <!-- ======================== CORE TABLES ======================== -->
+        <h2 class="category-heading" id="core">Core Tables</h2>
+
+        <!-- users -->
+        <div class="table-card" id="users">
+            <div class="table-card-header">
+                <span class="table-name">users</span>
+                <span class="table-desc">Registered user accounts and subscription details</span>
+            </div>
+            <table class="cols" aria-label="users columns">
+                <thead>
+                    <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="col-name pk">id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-pk">PK</span></td></tr>
+                    <tr><td class="col-name">email</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-uniq">UNIQUE</span><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">password_hash</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">username</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-uniq">UNIQUE</span><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">full_name</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">avatar_url</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">subscription_tier</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 'free'</span> CHECK (free | starter | pro | business)</td></tr>
+                    <tr><td class="col-name">subscription_expires_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">timezone</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 'America/New_York'</span></td></tr>
+                    <tr><td class="col-name">locale</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 'en-US'</span></td></tr>
+                    <tr><td class="col-name">created_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                    <tr><td class="col-name">updated_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                    <tr><td class="col-name">last_login_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">is_active</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 1</span></td></tr>
+                    <tr><td class="col-name">preferences</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '{}'</span> JSON blob</td></tr>
+                    <tr><td class="col-name">onboarding_completed</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                </tbody>
+            </table>
+            <div class="extras">
+                <div class="extras-label">Indexes</div>
+                <div class="extra-item"><span class="hl">idx_users_email</span> ON users(email)</div>
+                <div class="extra-item"><span class="hl">idx_users_username</span> ON users(username)</div>
+            </div>
+        </div>
+
+        <!-- sessions -->
+        <div class="table-card" id="sessions">
+            <div class="table-card-header">
+                <span class="table-name">sessions</span>
+                <span class="table-desc">Refresh token sessions for JWT auth</span>
+            </div>
+            <table class="cols" aria-label="sessions columns">
+                <thead>
+                    <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="col-name pk">id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-pk">PK</span></td></tr>
+                    <tr><td class="col-name fk">user_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; users.id</span><span class="tag tag-nn">NOT NULL</span> ON DELETE CASCADE</td></tr>
+                    <tr><td class="col-name">refresh_token</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-uniq">UNIQUE</span><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">device_info</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">ip_address</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">created_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                    <tr><td class="col-name">expires_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">is_valid</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 1</span></td></tr>
+                </tbody>
+            </table>
+            <div class="extras">
+                <div class="extras-label">Indexes</div>
+                <div class="extra-item"><span class="hl">idx_sessions_user_id</span> ON sessions(user_id)</div>
+                <div class="extra-item"><span class="hl">idx_sessions_refresh_token</span> ON sessions(refresh_token)</div>
+            </div>
+        </div>
+
+        <!-- inventory -->
+        <div class="table-card" id="inventory">
+            <div class="table-card-header">
+                <span class="table-name">inventory</span>
+                <span class="table-desc">Master catalog of InventoryItems; source of truth for all Listings</span>
+            </div>
+            <table class="cols" aria-label="inventory columns">
+                <thead>
+                    <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="col-name pk">id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-pk">PK</span></td></tr>
+                    <tr><td class="col-name fk">user_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; users.id</span><span class="tag tag-nn">NOT NULL</span> ON DELETE CASCADE</td></tr>
+                    <tr><td class="col-name">sku</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">title</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">description</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">brand</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">category</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">subcategory</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">size</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">color</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">condition</td><td class="col-type">TEXT</td><td class="col-constraints">CHECK (new | like_new | good | fair | poor)</td></tr>
+                    <tr><td class="col-name">cost_price</td><td class="col-type">REAL</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                    <tr><td class="col-name">list_price</td><td class="col-type">REAL</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">quantity</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 1</span></td></tr>
+                    <tr><td class="col-name">low_stock_threshold</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 5</span></td></tr>
+                    <tr><td class="col-name">weight</td><td class="col-type">REAL</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">dimensions</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">material</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">tags</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '[]'</span> JSON array</td></tr>
+                    <tr><td class="col-name">images</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '[]'</span> JSON array of URLs</td></tr>
+                    <tr><td class="col-name">thumbnail_url</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 'draft'</span> CHECK (draft | active | sold | archived | deleted)</td></tr>
+                    <tr><td class="col-name">location</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">notes</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">blockchain_hash</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">sustainability_score</td><td class="col-type">REAL</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">ai_generated_data</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '{}'</span> JSON blob</td></tr>
+                    <tr><td class="col-name">custom_fields</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '{}'</span> JSON blob</td></tr>
+                    <tr><td class="col-name">created_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                    <tr><td class="col-name">updated_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                </tbody>
+            </table>
+            <div class="extras">
+                <div class="extras-label">Indexes</div>
+                <div class="extra-item"><span class="hl">idx_inventory_user_id</span> ON inventory(user_id)</div>
+                <div class="extra-item"><span class="hl">idx_inventory_status</span> ON inventory(status)</div>
+                <div class="extra-item"><span class="hl">idx_inventory_sku</span> ON inventory(sku)</div>
+                <div class="extras-label" style="margin-top:0.6rem">FTS5 Virtual Table</div>
+                <div class="extra-item"><span class="hl">inventory_fts</span> &mdash; content=inventory; indexes title, description, brand, tags. Kept in sync via INSERT/UPDATE/DELETE triggers.</div>
+            </div>
+        </div>
+
+        <!-- listings -->
+        <div class="table-card" id="listings">
+            <div class="table-card-header">
+                <span class="table-name">listings</span>
+                <span class="table-desc">Platform-specific Listings derived from an InventoryItem</span>
+            </div>
+            <table class="cols" aria-label="listings columns">
+                <thead>
+                    <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="col-name pk">id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-pk">PK</span></td></tr>
+                    <tr><td class="col-name fk">inventory_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; inventory.id</span><span class="tag tag-nn">NOT NULL</span> ON DELETE CASCADE</td></tr>
+                    <tr><td class="col-name fk">user_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; users.id</span><span class="tag tag-nn">NOT NULL</span> ON DELETE CASCADE</td></tr>
+                    <tr><td class="col-name">platform</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">platform_listing_id</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">platform_url</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">title</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">description</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">price</td><td class="col-type">REAL</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">original_price</td><td class="col-type">REAL</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">shipping_price</td><td class="col-type">REAL</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                    <tr><td class="col-name">category_path</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">condition_tag</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 'draft'</span> CHECK (draft | pending | active | sold | ended | error | archived)</td></tr>
+                    <tr><td class="col-name">images</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '[]'</span> JSON array</td></tr>
+                    <tr><td class="col-name">platform_specific_data</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '{}'</span> JSON blob</td></tr>
+                    <tr><td class="col-name">views</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                    <tr><td class="col-name">likes</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                    <tr><td class="col-name">shares</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                    <tr><td class="col-name">last_shared_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">last_bumped_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">listed_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">sold_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">error_message</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">created_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                    <tr><td class="col-name">updated_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                </tbody>
+            </table>
+            <div class="extras">
+                <div class="extras-label">Unique Constraint</div>
+                <div class="extra-item">UNIQUE(inventory_id, platform) &mdash; one listing per platform per item</div>
+                <div class="extras-label" style="margin-top:0.6rem">Indexes</div>
+                <div class="extra-item"><span class="hl">idx_listings_user_id</span>, <span class="hl">idx_listings_inventory_id</span>, <span class="hl">idx_listings_platform</span>, <span class="hl">idx_listings_status</span></div>
+            </div>
+        </div>
+
+        <!-- sales -->
+        <div class="table-card" id="sales">
+            <div class="table-card-header">
+                <span class="table-name">sales</span>
+                <span class="table-desc">Completed Sales and order tracking</span>
+            </div>
+            <table class="cols" aria-label="sales columns">
+                <thead>
+                    <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="col-name pk">id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-pk">PK</span></td></tr>
+                    <tr><td class="col-name fk">user_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; users.id</span><span class="tag tag-nn">NOT NULL</span> ON DELETE CASCADE</td></tr>
+                    <tr><td class="col-name fk">listing_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; listings.id</span> ON DELETE SET NULL</td></tr>
+                    <tr><td class="col-name fk">inventory_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; inventory.id</span> ON DELETE SET NULL</td></tr>
+                    <tr><td class="col-name">platform</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">platform_order_id</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">buyer_username</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">buyer_address</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">sale_price</td><td class="col-type">REAL</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">platform_fee</td><td class="col-type">REAL</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                    <tr><td class="col-name">shipping_cost</td><td class="col-type">REAL</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                    <tr><td class="col-name">tax_amount</td><td class="col-type">REAL</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                    <tr><td class="col-name">net_profit</td><td class="col-type">REAL</td><td class="col-constraints">Computed: sale_price &minus; platform_fee &minus; shipping_cost &minus; cost_price</td></tr>
+                    <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 'pending'</span> CHECK (pending | confirmed | shipped | delivered | cancelled | returned)</td></tr>
+                    <tr><td class="col-name">tracking_number</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">carrier</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">shipped_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">delivered_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">notes</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">created_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                    <tr><td class="col-name">updated_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                </tbody>
+            </table>
+            <div class="extras">
+                <div class="extras-label">Indexes</div>
+                <div class="extra-item"><span class="hl">idx_sales_user_id</span>, <span class="hl">idx_sales_platform</span>, <span class="hl">idx_sales_status</span></div>
+            </div>
+        </div>
+
+        <!-- offers -->
+        <div class="table-card" id="offers">
+            <div class="table-card-header">
+                <span class="table-name">offers</span>
+                <span class="table-desc">Buyer Offers on Listings with accept/decline/counter workflow</span>
+            </div>
+            <table class="cols" aria-label="offers columns">
+                <thead>
+                    <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="col-name pk">id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-pk">PK</span></td></tr>
+                    <tr><td class="col-name fk">user_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; users.id</span><span class="tag tag-nn">NOT NULL</span> ON DELETE CASCADE</td></tr>
+                    <tr><td class="col-name fk">listing_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; listings.id</span><span class="tag tag-nn">NOT NULL</span> ON DELETE CASCADE</td></tr>
+                    <tr><td class="col-name">platform</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">platform_offer_id</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">buyer_username</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">offer_amount</td><td class="col-type">REAL</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">counter_amount</td><td class="col-type">REAL</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 'pending'</span> CHECK (pending | accepted | declined | countered | expired | cancelled)</td></tr>
+                    <tr><td class="col-name">auto_action</td><td class="col-type">TEXT</td><td class="col-constraints">Automation rule that responded</td></tr>
+                    <tr><td class="col-name">responded_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">expires_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">created_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                    <tr><td class="col-name">updated_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                </tbody>
+            </table>
+            <div class="extras">
+                <div class="extras-label">Indexes</div>
+                <div class="extra-item"><span class="hl">idx_offers_user_id</span>, <span class="hl">idx_offers_listing_id</span>, <span class="hl">idx_offers_status</span></div>
+            </div>
+        </div>
+
+        <!-- shops -->
+        <div class="table-card" id="shops">
+            <div class="table-card-header">
+                <span class="table-name">shops</span>
+                <span class="table-desc">Connected marketplace Platforms (OAuth credentials, sync state)</span>
+            </div>
+            <table class="cols" aria-label="shops columns">
+                <thead>
+                    <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="col-name pk">id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-pk">PK</span></td></tr>
+                    <tr><td class="col-name fk">user_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; users.id</span><span class="tag tag-nn">NOT NULL</span> ON DELETE CASCADE</td></tr>
+                    <tr><td class="col-name">platform</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">platform_username</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">platform_user_id</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">credentials</td><td class="col-type">TEXT</td><td class="col-constraints">AES-256-CBC encrypted JSON</td></tr>
+                    <tr><td class="col-name">is_connected</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 1</span></td></tr>
+                    <tr><td class="col-name">last_sync_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">sync_status</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 'idle'</span></td></tr>
+                    <tr><td class="col-name">settings</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '{}'</span> JSON blob</td></tr>
+                    <tr><td class="col-name">stats</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '{}'</span> JSON blob</td></tr>
+                    <tr><td class="col-name">created_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                    <tr><td class="col-name">updated_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                </tbody>
+            </table>
+            <div class="extras">
+                <div class="extras-label">Unique Constraint</div>
+                <div class="extra-item">UNIQUE(user_id, platform) &mdash; one shop connection per platform per user</div>
+                <div class="extras-label" style="margin-top:0.6rem">Indexes</div>
+                <div class="extra-item"><span class="hl">idx_shops_user_id</span>, <span class="hl">idx_shops_platform</span></div>
+            </div>
+        </div>
+
+        <!-- automation_rules -->
+        <div class="table-card" id="automation_rules">
+            <div class="table-card-header">
+                <span class="table-name">automation_rules</span>
+                <span class="table-desc">Automation rules (scheduled Playwright bots: share, follow, offer, relist, price_drop)</span>
+            </div>
+            <table class="cols" aria-label="automation_rules columns">
+                <thead>
+                    <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="col-name pk">id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-pk">PK</span></td></tr>
+                    <tr><td class="col-name fk">user_id</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-fk">FK &rarr; users.id</span><span class="tag tag-nn">NOT NULL</span> ON DELETE CASCADE</td></tr>
+                    <tr><td class="col-name">name</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
+                    <tr><td class="col-name">type</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span> CHECK (share | follow | offer | relist | price_drop | custom)</td></tr>
+                    <tr><td class="col-name">platform</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">is_enabled</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 1</span></td></tr>
+                    <tr><td class="col-name">schedule</td><td class="col-type">TEXT</td><td class="col-constraints">Cron expression or interval string</td></tr>
+                    <tr><td class="col-name">conditions</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '{}'</span> JSON blob</td></tr>
+                    <tr><td class="col-name">actions</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT '{}'</span> JSON blob</td></tr>
+                    <tr><td class="col-name">last_run_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">next_run_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
+                    <tr><td class="col-name">run_count</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                    <tr><td class="col-name">error_count</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 0</span></td></tr>
+                    <tr><td class="col-name">created_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                    <tr><td class="col-name">updated_at</td><td class="col-type">DATETIME</td><td class="col-constraints"><span class="tag tag-def">DEFAULT CURRENT_TIMESTAMP</span></td></tr>
+                </tbody>
+            </table>
+            <div class="extras">
+                <div class="extras-label">Indexes</div>
+                <div class="extra-item"><span class="hl">idx_automation_rules_user_id</span> ON automation_rules(user_id)</div>
+                <div class="extra-item">Related: <span class="hl">automation_logs</span> table records every execution result</div>
+            </div>
+        </div>
+
+        <!-- ======================== REMAINING TABLES ======================== -->
+        <h2 class="category-heading" id="remaining">Remaining Tables (30)</h2>
+        <p style="font-size:0.83rem;color:#64748b;margin-bottom:1rem;">Full schema for these tables is in <code style="font-family:monospace;color:#94a3b8">src/backend/db/schema.sql</code>.</p>
+
+        <div class="remaining-grid">
+            <div class="remaining-chip">listing_templates</div>
+            <div class="remaining-chip">automation_logs</div>
+            <div class="remaining-chip">tasks</div>
+            <div class="remaining-chip">analytics_snapshots</div>
+            <div class="remaining-chip">sustainability_log</div>
+            <div class="remaining-chip">alerts</div>
+            <div class="remaining-chip">collaborations</div>
+            <div class="remaining-chip">sync_queue</div>
+            <div class="remaining-chip">notifications</div>
+            <div class="remaining-chip">security_logs</div>
+            <div class="remaining-chip">request_logs</div>
+            <div class="remaining-chip">error_logs</div>
+            <div class="remaining-chip">audit_logs</div>
+            <div class="remaining-chip">user_preferences</div>
+            <div class="remaining-chip">inventory_fts</div>
+            <div class="remaining-chip">price_history</div>
+            <div class="remaining-chip">image_assets</div>
+            <div class="remaining-chip">tags</div>
+            <div class="remaining-chip">inventory_tags</div>
+            <div class="remaining-chip">shipping_profiles</div>
+            <div class="remaining-chip">bundles</div>
+            <div class="remaining-chip">bundle_items</div>
+            <div class="remaining-chip">returns</div>
+            <div class="remaining-chip">messages</div>
+            <div class="remaining-chip">webhooks</div>
+            <div class="remaining-chip">webhook_deliveries</div>
+            <div class="remaining-chip">api_keys</div>
+            <div class="remaining-chip">reports</div>
+            <div class="remaining-chip">rum_metrics</div>
+            <div class="remaining-chip">feature_flags</div>
+        </div>
+
+        <!-- ======================== INDEXES ======================== -->
+        <h2 class="category-heading" id="indexes">Indexes (core tables)</h2>
+        <div class="table-card">
+            <table class="cols" aria-label="Core indexes">
+                <thead>
+                    <tr><th>Index Name</th><th>Table</th><th>Columns</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="col-name">idx_users_email</td><td class="col-type">users</td><td class="col-constraints">(email)</td></tr>
+                    <tr><td class="col-name">idx_users_username</td><td class="col-type">users</td><td class="col-constraints">(username)</td></tr>
+                    <tr><td class="col-name">idx_sessions_user_id</td><td class="col-type">sessions</td><td class="col-constraints">(user_id)</td></tr>
+                    <tr><td class="col-name">idx_sessions_refresh_token</td><td class="col-type">sessions</td><td class="col-constraints">(refresh_token)</td></tr>
+                    <tr><td class="col-name">idx_shops_user_id</td><td class="col-type">shops</td><td class="col-constraints">(user_id)</td></tr>
+                    <tr><td class="col-name">idx_shops_platform</td><td class="col-type">shops</td><td class="col-constraints">(platform)</td></tr>
+                    <tr><td class="col-name">idx_inventory_user_id</td><td class="col-type">inventory</td><td class="col-constraints">(user_id)</td></tr>
+                    <tr><td class="col-name">idx_inventory_status</td><td class="col-type">inventory</td><td class="col-constraints">(status)</td></tr>
+                    <tr><td class="col-name">idx_inventory_sku</td><td class="col-type">inventory</td><td class="col-constraints">(sku)</td></tr>
+                    <tr><td class="col-name">idx_listings_user_id</td><td class="col-type">listings</td><td class="col-constraints">(user_id)</td></tr>
+                    <tr><td class="col-name">idx_listings_inventory_id</td><td class="col-type">listings</td><td class="col-constraints">(inventory_id)</td></tr>
+                    <tr><td class="col-name">idx_listings_platform</td><td class="col-type">listings</td><td class="col-constraints">(platform)</td></tr>
+                    <tr><td class="col-name">idx_listings_status</td><td class="col-type">listings</td><td class="col-constraints">(status)</td></tr>
+                    <tr><td class="col-name">idx_sales_user_id</td><td class="col-type">sales</td><td class="col-constraints">(user_id)</td></tr>
+                    <tr><td class="col-name">idx_sales_platform</td><td class="col-type">sales</td><td class="col-constraints">(platform)</td></tr>
+                    <tr><td class="col-name">idx_sales_status</td><td class="col-type">sales</td><td class="col-constraints">(status)</td></tr>
+                    <tr><td class="col-name">idx_offers_user_id</td><td class="col-type">offers</td><td class="col-constraints">(user_id)</td></tr>
+                    <tr><td class="col-name">idx_offers_listing_id</td><td class="col-type">offers</td><td class="col-constraints">(listing_id)</td></tr>
+                    <tr><td class="col-name">idx_offers_status</td><td class="col-type">offers</td><td class="col-constraints">(status)</td></tr>
+                    <tr><td class="col-name">idx_automation_rules_user_id</td><td class="col-type">automation_rules</td><td class="col-constraints">(user_id)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ======================== FTS ======================== -->
+        <h2 class="category-heading" id="fts">Full-Text Search</h2>
+        <div class="table-card">
+            <div class="table-card-header">
+                <span class="table-name">inventory_fts</span>
+                <span class="table-desc">FTS5 virtual table backed by inventory</span>
+            </div>
+            <table class="cols" aria-label="FTS5 table">
+                <thead>
+                    <tr><th>Detail</th><th>Value</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="col-name">Engine</td><td class="col-constraints">FTS5 (SQLite built-in)</td></tr>
+                    <tr><td class="col-name">Content table</td><td class="col-type">inventory</td></tr>
+                    <tr><td class="col-name">Content rowid</td><td class="col-constraints">rowid</td></tr>
+                    <tr><td class="col-name">Indexed columns</td><td class="col-constraints">id, title, description, brand, tags</td></tr>
+                    <tr><td class="col-name">Sync triggers</td><td class="col-constraints">inventory_ai (INSERT), inventory_au (UPDATE), inventory_ad (DELETE)</td></tr>
+                    <tr><td class="col-name">Usage</td><td class="col-constraints">SELECT * FROM inventory_fts WHERE inventory_fts MATCH 'query'</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <a class="back-link" href="/">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            Back to VaultLister
+        </a>
+    </main>
+</div>
+
+<script>
+    'use strict';
+    // Highlight active nav link based on hash
+    function syncNav() {
+        const hash = location.hash || '#core';
+        document.querySelectorAll('.nav-link').forEach(a => {
+            a.classList.toggle('active', a.getAttribute('href') === hash);
+        });
+    }
+    window.addEventListener('hashchange', syncNav);
+    syncNav();
+</script>
+</body>
+</html>
