@@ -109,7 +109,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Setup SSH agent
-        uses: webfactory/ssh-agent@dc45a4d96b2c4e9f66b6c5a8e07b6b00f22a5ffa # v0.9.0
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
 
