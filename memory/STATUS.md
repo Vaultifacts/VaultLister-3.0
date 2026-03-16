@@ -4,14 +4,18 @@
 ## Current State
 - **Branch:** master
 - **Server:** test server on localhost:3100 (NODE_ENV=test, DISABLE_CSRF=true)
-- **Last commit:** 7e67c2e — seed demo teams (Vault Crew, eBay Specialists)
-- **E2E status:** 69/69 offer tests pass (was 27 skipped); overall 2054+ pass — all 3 browsers
-- **Unit status:** 4267 pass / 223 fail / 4490 total (Windows, PORT=3100, server running) — failures are external-service-dependent (Anthropic API key, SMTP, Notion) plus 6 async-leak errors between test files
-- **QA Remediation:** All 20 items complete across 4 phases
-- **Load test:** baseline p95=7ms / p99=8ms / 29 req/s
-- **Platforms:** 9 registered; 2 credentialed (Poshmark, eBay) — 7 others need `.env` creds (Mercari, Depop, Grailed, Facebook, Whatnot, Shopify, Etsy-blocked on app approval)
-- **As of:** 2026-03-15
-- **Walkthrough bugs fixed:** P0: dashboard buttons (00c15f1), platform-health chunk (00c15f1), customizeDashboard (00c15f1); P1: P&L $0→$5264 (ca99d8a), offers Anonymous→buyer_username (ca99d8a), Pro Member badge (9a1963a), Mac shortcuts (9a1963a); P2: login gradient (dffd9d3), About Us 9 platforms (dffd9d3), Cloudinary optional (dffd9d3); demo data quality: 12-chars debug removed, best-seller fixed, image bank thumbnails, calendar events, orders mock titles, teams seeded (7e67c2e)
+- **Last commit:** cd78bd6 — deploy pipeline copies nginx config
+- **Production URL:** https://vaultlister.com — LIVE ✅ (Let's Encrypt SSL, auto-renewing)
+- **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
+- **Domain:** vaultlister.com (Namecheap, purchased 2026-03-16)
+- **SSL:** Let's Encrypt, expires 2026-06-14, auto-renewal via Certbot
+- **Nginx:** Reverse proxy on ports 80/443 → Docker app:3000
+- **eBay OAuth:** Production keyset LIVE ✅ — OAuth flow working end-to-end on vaultlister.com
+- **E2E status:** 69/69 offer tests pass; overall 2054+ pass — all 3 browsers
+- **Unit status:** 4267 pass / 223 fail / 4490 total (Windows, PORT=3100, server running)
+- **QA Walkthrough (vaultlister.com):** 15/15 pages pass — all load correctly
+- **Platforms:** 9 registered; eBay OAuth connected (production), Poshmark credentialed — 7 others need `.env` creds
+- **As of:** 2026-03-16
 
 ## Completion Summary
 All autonomous work is complete. Remaining items require external action:
@@ -19,9 +23,8 @@ All autonomous work is complete. Remaining items require external action:
 | Item | Blocked By |
 |------|-----------|
 | Etsy integration | Etsy app approval pending (app key `1sgc9xd1hwi3zt5k33pn9k7d`) |
-| eBay production listings | User must confirm eBay prod creds in `.env` |
 | Poshmark auto-offer live test | Needs real incoming buyer offer |
-| Staging deploy | User must provision VPS + add 3 GitHub secrets |
+| Sentry + Slack monitoring | User must create accounts and add env vars |
 
 ## In Progress
 _(claim tasks here during work)_
@@ -30,17 +33,22 @@ _(claim tasks here during work)_
 _(none)_
 
 ## Next Tasks
-- [ ] M: Configure marketplace API credentials (eBay prod, Etsy, Poshmark, Mercari) in `.env`
-- [ ] M: Provision staging server + add STAGING_HOST/USER/SSH_KEY GitHub secrets
+- [ ] M: Test Poshmark automation with real credentials on staging
 - [ ] M: Complete Etsy OAuth — blocked on Etsy app approval
-- [ ] M: Verify Poshmark `bot.counterOffer()` against live marketplace — needs real offer
-- [x] L: Review and tighten `.claude/settings.json` deny rules — done (commit 9bb69a4)
-- [x] L: Sales/Analytics test verification — 197/201 pass (98%) — 2026-03-15
-- [x] L: Fix 4 orders.test.js assertion bugs — done (commit 6f476d3)
-- [x] L: Fix 27 skipped offer E2E tests — done, 69/69 pass (commit 287e3f6)
+- [ ] M: Set up database auto-backup cron on server
+- [ ] M: Configure Sentry + Slack monitoring (requires account creation)
+- [ ] L: Add remaining marketplace credentials to staging `.env` (Mercari, Depop, Grailed, Facebook, Whatnot, Shopify)
+- [ ] L: Update eBay webhook endpoint in eBay developer portal if needed
+- [x] M: eBay OAuth production — DONE (vaultlister.com, full end-to-end)
+- [x] M: Domain + SSL — DONE (vaultlister.com, Let's Encrypt)
+- [x] M: Provision staging server — DONE (204.216.105.105)
+- [x] M: Deploy pipeline nginx config copy — DONE (commit cd78bd6)
+- [x] L: QA walkthrough on vaultlister.com — 15/15 pages pass
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-16: Session (domain + SSL + eBay OAuth) — Purchased vaultlister.com ($6.99 Namecheap). Configured DNS A records → 204.216.105.105. Installed Let's Encrypt SSL via Certbot (expires 2026-06-14, auto-renewal). Nginx reverse proxy on ports 80/443. Fixed eBay OAuth: callback URL format (/api/oauth/:platform/callback), trimmed scopes to 10 pre-approved, popup auto-close via localStorage+storage event, UTF-8 charset fix. Updated docker-compose.staging.yml with all marketplace env vars. Deploy pipeline now copies nginx config. QA walkthrough: 15/15 pages pass on vaultlister.com. 13 commits pushed.
+- 2026-03-16: Session (staging deploy) — Provisioned Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04). Installed Docker + Docker Compose. Fixed CI/CD pipeline: replaced appleboy/ssh-action (drone-ssh YAML bug) with webfactory/ssh-agent + direct SSH, added staging to NODE_ENV enum, fixed empty ANTHROPIC_API_KEY validation. Deploy pipeline fully green. VaultLister staging is LIVE at http://204.216.105.105:3001 — container healthy, health endpoint returns 200.
 - 2026-03-15: Session (demo data quality + push) — Fixed Teams page showing "Updated Team [timestamp]" test artifacts: seeded "Vault Crew" + "eBay Specialists" teams for demo user (7e67c2e). Pushed 15 commits to remote (9bb69a4..7e67c2e). CI running.
 - 2026-03-15: Session (walkthrough bug fixes cont. 3) — Removed "12 chars" debug text from My Listings cards (2f95701), fixed best-seller "Unknown" via listings+inventory maps (2f95701), fixed image bank thumbnail fallback onerror (2f95701), fixed calendar event names "Ship: Synced Item N" → realistic titles in orders.js mock sync (94278ee), seeded 15 calendar events for demo user (94278ee). E2E suite passed (exit 0).
 - 2026-03-15: Session (walkthrough bug fixes cont. 2) — Fixed automation "23 failed" banner (use apiStats.failedRuns not local history count), fixed WCAG AA color contrast violations (.password-req-item + settings 10px labels: gray-500→gray-600/700), seeded 11 roadmap features (3 completed, 2 in-progress, 6 planned) (d6d7950).
@@ -68,4 +76,4 @@ _(leave notes here — format: `FROM → TO (DATE): Message`)_
 
 ## Blockers
 - Etsy OAuth: app approval pending (submitted, key `1sgc9xd1hwi3zt5k33pn9k7d`)
-- Staging deploy: needs VPS provisioned by user
+- Sentry/Slack monitoring: requires user to create accounts + add env vars
