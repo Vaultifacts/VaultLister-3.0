@@ -132,6 +132,11 @@ jobs:
       - name: Copy docker-compose file to server
         run: scp docker-compose.staging.yml ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}:/opt/vaultlister-staging/docker-compose.staging.yml
 
+      - name: Copy nginx config to server
+        run: |
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} 'mkdir -p /opt/vaultlister-staging/nginx'
+          scp nginx/nginx.staging.conf ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}:/opt/vaultlister-staging/nginx/nginx.staging.conf
+
       - name: Deploy via SSH
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -155,7 +160,7 @@ jobs:
             echo "Tagged rollback: $CURRENT_IMAGE"
           fi
 
-          # Pull and restart app + redis (nginx excluded — no config on server yet)
+          # Pull and restart app + redis (nginx config is copied above; start nginx if present)
           docker compose -f docker-compose.staging.yml pull app
           docker compose -f docker-compose.staging.yml up -d --no-deps redis
           docker compose -f docker-compose.staging.yml up -d --no-deps app
