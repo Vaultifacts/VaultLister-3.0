@@ -14,7 +14,14 @@ const PRECACHE_URLS = [
     '/offline.html',
     '/assets/favicon.svg',
     '/components/photoEditor.js',
-    '/components/chatWidget.js'
+    '/components/chatWidget.js',
+    // Phase 2: route-group chunks (pre-cached for offline use)
+    '/chunk-inventory.js?v=7e952676',
+    '/chunk-sales.js?v=7e952676',
+    '/chunk-tools.js?v=7e952676',
+    '/chunk-intelligence.js?v=7e952676',
+    '/chunk-settings.js?v=7e952676',
+    '/chunk-community.js?v=7e952676',
 ];
 
 // ─── Install: pre-cache app shell ────────────────────────────────────────────

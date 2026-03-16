@@ -42,15 +42,19 @@ const sourceFiles = [
 // (including to deferred pages/handlers) invalidates the chunk cache-bust version.
 const cssPath = join(ROOT, 'src/frontend/styles/main.css');
 const chunkFiles = [
-    'src/frontend/pages/pages-deferred.js',
+    // Route-group chunk source files (must stay in sync with scripts/build-frontend.js chunkDefs)
     'src/frontend/pages/pages-inventory-catalog.js',
-    'src/frontend/pages/pages-sales-orders.js',
-    'src/frontend/pages/pages-intelligence.js',
-    'src/frontend/pages/pages-settings-account.js',
-    'src/frontend/pages/pages-tools-tasks.js',
-    'src/frontend/pages/pages-community-help.js',
-    'src/frontend/handlers/handlers-deferred.js',
     'src/frontend/handlers/handlers-inventory-catalog.js',
+    'src/frontend/pages/pages-sales-orders.js',
+    'src/frontend/handlers/handlers-sales-orders.js',
+    'src/frontend/pages/pages-tools-tasks.js',
+    'src/frontend/handlers/handlers-tools-tasks.js',
+    'src/frontend/pages/pages-intelligence.js',
+    'src/frontend/handlers/handlers-intelligence.js',
+    'src/frontend/pages/pages-settings-account.js',
+    'src/frontend/handlers/handlers-settings-account.js',
+    'src/frontend/pages/pages-community-help.js',
+    'src/frontend/handlers/handlers-community-help.js',
     'src/frontend/services/websocketClient.js',
 ];
 const hashableFiles = [

@@ -13,9 +13,8 @@ import { createHash } from 'crypto';
 const ROOT = resolve(import.meta.dir, '..');
 const DIST = join(ROOT, 'dist');
 
-// Source files in load order (production build concatenates everything)
-const sourceFiles = [
-    // Phase 1: Core bundle
+// Phase 1: Core bundle files (critical-path, always eager-loaded)
+const coreFiles = [
     'src/frontend/core/utils.js',
     'src/frontend/core/store.js',
     'src/frontend/core/api.js',
@@ -28,28 +27,66 @@ const sourceFiles = [
     'src/frontend/ui/modals.js',
     'src/frontend/handlers/handlers-core.js',
 
-    // Phase 2: Route-group chunks (all included in production build)
-    'src/frontend/pages/pages-inventory-catalog.js',
-    'src/frontend/handlers/handlers-inventory-catalog.js',
-    'src/frontend/pages/pages-sales-orders.js',
-    'src/frontend/handlers/handlers-sales-orders.js',
-    'src/frontend/pages/pages-tools-tasks.js',
-    'src/frontend/handlers/handlers-tools-tasks.js',
-    'src/frontend/pages/pages-intelligence.js',
-    'src/frontend/handlers/handlers-intelligence.js',
-    'src/frontend/pages/pages-settings-account.js',
-    'src/frontend/handlers/handlers-settings-account.js',
-    'src/frontend/pages/pages-community-help.js',
-    'src/frontend/handlers/handlers-community-help.js',
-
-    // Init (must be last)
+    // Init (must be last in core bundle)
     'src/frontend/init.js'
 ];
 
-// ── Compute content hash (same logic as build-dev-bundle.js) ─────────────────
+// Phase 2: Route-group chunks — each built as a separate dist/chunk-{name}.js
+const chunkDefs = [
+    {
+        name: 'inventory',
+        files: [
+            'src/frontend/pages/pages-inventory-catalog.js',
+            'src/frontend/handlers/handlers-inventory-catalog.js',
+        ]
+    },
+    {
+        name: 'sales',
+        files: [
+            'src/frontend/pages/pages-sales-orders.js',
+            'src/frontend/handlers/handlers-sales-orders.js',
+        ]
+    },
+    {
+        name: 'tools',
+        files: [
+            'src/frontend/pages/pages-tools-tasks.js',
+            'src/frontend/handlers/handlers-tools-tasks.js',
+        ]
+    },
+    {
+        name: 'intelligence',
+        files: [
+            'src/frontend/pages/pages-intelligence.js',
+            'src/frontend/handlers/handlers-intelligence.js',
+        ]
+    },
+    {
+        name: 'settings',
+        files: [
+            'src/frontend/pages/pages-settings-account.js',
+            'src/frontend/handlers/handlers-settings-account.js',
+        ]
+    },
+    {
+        name: 'community',
+        files: [
+            'src/frontend/pages/pages-community-help.js',
+            'src/frontend/handlers/handlers-community-help.js',
+        ]
+    },
+];
+
+// All source files for hash computation
+const allSourceFiles = [
+    ...coreFiles,
+    ...chunkDefs.flatMap(c => c.files),
+];
+
+// ── Compute content hash ──────────────────────────────────────────────────────
 const cssPath = join(ROOT, 'src/frontend/styles/main.css');
 const hashableFiles = [
-    ...sourceFiles.map(f => join(ROOT, f)),
+    ...allSourceFiles.map(f => join(ROOT, f)),
     ...(existsSync(cssPath) ? [cssPath] : [])
 ];
 const hashInput = hashableFiles.map(f => readFileSync(f, 'utf-8')).join('');
@@ -79,50 +116,77 @@ if (existsSync(swPath)) {
 // Ensure dist directory
 mkdirSync(DIST, { recursive: true });
 
-// Concatenate all source files, injecting version into router.js
-console.log('Concatenating source files...');
-const allContent = sourceFiles
-    .map(f => {
-        let src = readFileSync(join(ROOT, f), 'utf-8');
-        if (f.endsWith('router.js')) {
-            src = src.replace(/\bconst v = '[^']*'/, `const v = '${bundleVersion}'`);
-        }
-        return src;
-    })
-    .join('\n');
+// ── Helper: concatenate files, minify, rename ─────────────────────────────────
+function buildBundle(files, outName, versionToInject) {
+    const content = files
+        .map(f => {
+            let src = readFileSync(join(ROOT, f), 'utf-8');
+            if (f.endsWith('router.js')) {
+                src = src.replace(/\bconst v = '[^']*'/, `const v = '${versionToInject}'`);
+            }
+            return src;
+        })
+        .join('\n');
 
-const tmpFile = join(DIST, 'app.tmp.js');
-writeFileSync(tmpFile, allContent);
+    const tmpName = outName.replace(/\.js$/, '.tmp.js');
+    const tmpFile = join(DIST, tmpName);
+    writeFileSync(tmpFile, content);
 
-// Minify with Bun
-console.log('Minifying...');
-try {
-    const bunPath = process.argv[0] || 'bun';
-    execSync(`${bunPath} build ${tmpFile} --outdir=${DIST} --minify --sourcemap=external`, {
-        cwd: ROOT,
-        stdio: 'inherit'
-    });
-    // Bun outputs as app.tmp.js — rename to app.js
-    const builtFile = join(DIST, 'app.tmp.js');
-    const targetFile = join(DIST, 'app.js');
-    if (existsSync(builtFile)) {
-        if (existsSync(targetFile)) unlinkSync(targetFile);
-        renameSync(builtFile, targetFile);
-        // Also rename sourcemap
-        const mapSrc = builtFile + '.map';
-        const mapDst = targetFile + '.map';
-        if (existsSync(mapSrc)) {
-            if (existsSync(mapDst)) unlinkSync(mapDst);
-            renameSync(mapSrc, mapDst);
+    try {
+        const bunPath = process.argv[0] || 'bun';
+        execSync(`${bunPath} build ${tmpFile} --outdir=${DIST} --minify --sourcemap=external`, {
+            cwd: ROOT,
+            stdio: 'inherit'
+        });
+        // Bun outputs as {tmpName} — rename to {outName}
+        const builtFile = join(DIST, tmpName);
+        const targetFile = join(DIST, outName);
+        if (existsSync(builtFile)) {
+            if (existsSync(targetFile)) unlinkSync(targetFile);
+            renameSync(builtFile, targetFile);
+            const mapSrc = builtFile + '.map';
+            const mapDst = targetFile + '.map';
+            if (existsSync(mapSrc)) {
+                if (existsSync(mapDst)) unlinkSync(mapDst);
+                renameSync(mapSrc, mapDst);
+            }
         }
+        console.log(`  ${outName} built (${(statSync(join(DIST, outName)).size / 1024).toFixed(0)} KB)`);
+    } catch (e) {
+        console.error(`Bun build failed for ${outName}, using unminified output`);
+        writeFileSync(join(DIST, outName), content);
     }
-} catch (e) {
-    console.error('Bun build failed, using unminified output');
-    writeFileSync(join(DIST, 'app.js'), allContent);
+
+    try { unlinkSync(tmpFile); } catch {}
 }
 
-// Cleanup
-try { unlinkSync(tmpFile); } catch {}
+// ── Build Phase 1: core bundle (dist/app.js) ─────────────────────────────────
+console.log('Building core bundle (dist/app.js)...');
+buildBundle(coreFiles, 'app.js', bundleVersion);
+
+// ── Build Phase 2: route-group chunks ────────────────────────────────────────
+console.log('Building route-group chunks...');
+const manifest = { version: bundleVersion, chunks: {} };
+
+for (const chunk of chunkDefs) {
+    const outName = `chunk-${chunk.name}.js`;
+    console.log(`  Building ${outName}...`);
+    buildBundle(chunk.files, outName, bundleVersion);
+
+    // Compute per-chunk content hash for the manifest
+    const chunkContent = chunk.files.map(f => readFileSync(join(ROOT, f), 'utf-8')).join('');
+    const chunkHash = createHash('sha256').update(chunkContent).digest('hex').slice(0, 8);
+    manifest.chunks[chunk.name] = {
+        file: outName,
+        hash: chunkHash,
+        url: `/chunk-${chunk.name}.js?v=${bundleVersion}`,
+    };
+}
+
+// Write manifest.json
+const manifestPath = join(DIST, 'manifest.json');
+writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+console.log(`  manifest.json written`);
 
 // ── PurgeCSS ─────────────────────────────────────────────────────────────────
 const cssOutputPath = join(DIST, 'main.css');
@@ -131,7 +195,6 @@ if (existsSync(cssPath)) {
     try {
         const { PurgeCSS } = await import('purgecss');
         const originalSize = readFileSync(cssPath, 'utf-8').length;
-        // Copy source CSS to dist first so PurgeCSS can write to it
         writeFileSync(cssOutputPath, readFileSync(cssPath, 'utf-8'));
         const purged = await new PurgeCSS().purge({
             content: [
@@ -147,14 +210,21 @@ if (existsSync(cssPath)) {
         }
     } catch (e) {
         console.warn('PurgeCSS step skipped (purgecss not installed):', e.message);
-        // Fall back to copying the original CSS unpurged
         writeFileSync(cssOutputPath, readFileSync(cssPath, 'utf-8'));
         console.log('CSS copied to dist/main.css (unpurged)');
     }
 }
 
-// Report
+// ── Report ────────────────────────────────────────────────────────────────────
+console.log('\nBuild complete:');
 if (existsSync(join(DIST, 'app.js'))) {
     const size = statSync(join(DIST, 'app.js')).size;
-    console.log(`\nBuild complete: dist/app.js (${(size / 1024).toFixed(0)} KB)`);
+    console.log(`  dist/app.js          (${(size / 1024).toFixed(0)} KB)`);
 }
+for (const chunk of chunkDefs) {
+    const p = join(DIST, `chunk-${chunk.name}.js`);
+    if (existsSync(p)) {
+        console.log(`  dist/chunk-${chunk.name}.js`.padEnd(32) + `(${(statSync(p).size / 1024).toFixed(0)} KB)`);
+    }
+}
+console.log(`  dist/manifest.json`);

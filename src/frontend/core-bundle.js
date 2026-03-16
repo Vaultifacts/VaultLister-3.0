@@ -15154,6 +15154,9 @@ const pageChunkMap = {
     'about': 'community-help',
     'terms': 'community-help',
     'privacy': 'community-help',
+
+    // admin
+    'admin-metrics': 'admin',
 };
 
 // Track which chunks are loaded
@@ -15257,6 +15260,9 @@ const router = {
         if (handlers._batchPhotoPollInterval) {
             clearInterval(handlers._batchPhotoPollInterval);
             handlers._batchPhotoPollInterval = null;
+        }
+        if (path !== 'admin-metrics' && typeof handlers.stopAdminAutoRefresh === 'function') {
+            handlers.stopAdminAutoRefresh();
         }
 
         // Clear stale filter state on page navigation
@@ -15729,7 +15735,10 @@ const components = {
                 { id: 'about', label: 'About Us', icon: 'user' },
                 { id: 'terms-of-service', label: 'Terms of Service', icon: 'help' },
                 { id: 'privacy-policy', label: 'Privacy Policy', icon: 'settings' }
-            ]}
+            ]},
+            ...(user && user.is_admin ? [{ section: 'Admin', items: [
+                { id: 'admin-metrics', label: 'System Metrics', icon: 'cpu' }
+            ]}] : [])
         ];
 
         // Get connected shops for quick-switch
@@ -26604,6 +26613,12 @@ async function initApp() {
     router.register('about', () => renderApp(pages.about()));
     router.register('terms', () => renderApp(pages.terms()));
     router.register('privacy', () => renderApp(pages.privacy()));
+
+    // Admin section
+    router.register('admin-metrics', async () => {
+        await handlers.loadAdminMetrics();
+        handlers.startAdminAutoRefresh();
+    });
 
     router.register('404', () => renderApp(pages.notFound()));
 

@@ -6,79 +6,84 @@
 // Router — with route-based chunk loading
 // ============================================
 
-// Map route paths to chunk names for on-demand loading
+// Map route paths to chunk names for on-demand loading.
+// Chunk names must match the keys in chunkDefs in scripts/build-frontend.js
+// and the built files at dist/chunk-{name}.js.
 const pageChunkMap = {
-    // dashboard
-    'dashboard': 'deferred',
+    // dashboard — no chunk (core bundle)
+    'dashboard': null,
 
-    // inventory-catalog
-    'inventory': 'inventory-catalog',
-    'listings': 'inventory-catalog',
-    'crosslist': 'inventory-catalog',
-    'templates': 'inventory-catalog',
-    'automations': 'inventory-catalog',
-    'sku-rules': 'inventory-catalog',
-    'smart-relisting': 'inventory-catalog',
-    'inventory-import': 'inventory-catalog',
-    'recently-deleted': 'inventory-catalog',
-    'platform-health': 'inventory-catalog',
+    // inventory chunk
+    'inventory': 'inventory',
+    'listings': 'inventory',
+    'crosslist': 'inventory',
+    'templates': 'inventory',
+    'automations': 'inventory',
+    'sku-rules': 'inventory',
+    'smart-relisting': 'inventory',
+    'inventory-import': 'inventory',
+    'recently-deleted': 'inventory',
+    'platform-health': 'inventory',
 
-    // sales-orders
-    'sales': 'sales-orders',
-    'orders': 'sales-orders',
-    'offers': 'sales-orders',
-    'financials': 'sales-orders',
-    'transactions': 'sales-orders',
-    'reports': 'sales-orders',
-    'report-builder': 'sales-orders',
-    'shipping-labels': 'sales-orders',
+    // sales chunk
+    'sales': 'sales',
+    'orders': 'sales',
+    'offers': 'sales',
+    'financials': 'sales',
+    'transactions': 'sales',
+    'reports': 'sales',
+    'report-builder': 'sales',
+    'shipping-labels': 'sales',
 
-    // tools-tasks
-    'checklist': 'tools-tasks',
-    'calendar': 'tools-tasks',
-    'size-charts': 'tools-tasks',
-    'image-bank': 'tools-tasks',
-    'receipt-parser': 'tools-tasks',
-    'whatnot-live': 'tools-tasks',
+    // tools chunk
+    'checklist': 'tools',
+    'calendar': 'tools',
+    'size-charts': 'tools',
+    'image-bank': 'tools',
+    'receipt-parser': 'tools',
+    'whatnot-live': 'tools',
 
-    // intelligence
+    // intelligence chunk
     'heatmaps': 'intelligence',
     'predictions': 'intelligence',
     'suppliers': 'intelligence',
     'market-intel': 'intelligence',
 
-    // settings-account
-    'settings': 'settings-account',
-    'account': 'settings-account',
-    'teams': 'settings-account',
-    'plans-billing': 'settings-account',
-    'affiliate': 'settings-account',
-    'notifications': 'settings-account',
-    'connections': 'settings-account',
-    'shipping-profiles': 'settings-account',
-    'push-notifications': 'settings-account',
-    'webhooks': 'settings-account',
-    'shops': 'settings-account',
+    // settings chunk
+    'settings': 'settings',
+    'account': 'settings',
+    'teams': 'settings',
+    'plans-billing': 'settings',
+    'affiliate': 'settings',
+    'notifications': 'settings',
+    'connections': 'settings',
+    'shipping-profiles': 'settings',
+    'push-notifications': 'settings',
+    'webhooks': 'settings',
+    'shops': 'settings',
 
-    // community-help
-    'community': 'community-help',
-    'help': 'community-help',
-    'support-articles': 'community-help',
-    'report-bug': 'community-help',
-    'tutorials': 'community-help',
-    'roadmap': 'community-help',
-    'suggest-features': 'community-help',
-    'submit-feedback': 'community-help',
-    'feedback-suggestions': 'community-help',
-    'feedback-analytics': 'community-help',
-    'changelog': 'community-help',
-    'help-support': 'community-help',
-    'refer-friend': 'community-help',
-    'terms-of-service': 'community-help',
-    'privacy-policy': 'community-help',
-    'about': 'community-help',
-    'terms': 'community-help',
-    'privacy': 'community-help',
+    // community chunk
+    'community': 'community',
+    'help': 'community',
+    'support-articles': 'community',
+    'report-bug': 'community',
+    'tutorials': 'community',
+    'roadmap': 'community',
+    'suggest-features': 'community',
+    'submit-feedback': 'community',
+    'feedback-suggestions': 'community',
+    'feedback-analytics': 'community',
+    'changelog': 'community',
+    'help-support': 'community',
+    'refer-friend': 'community',
+    'terms-of-service': 'community',
+    'privacy-policy': 'community',
+    'about': 'community',
+    'terms': 'community',
+    'privacy': 'community',
+
+    // admin
+    'admin-metrics': 'admin',
 };
 
 // Track which chunks are loaded
@@ -86,44 +91,35 @@ const _loadedChunks = new Set();
 const _loadingChunks = {};
 
 /**
- * Dynamically load a route-group chunk (pages + handlers JS files).
- * Returns a promise that resolves when both files have loaded.
+ * Dynamically load a built route-group chunk (dist/chunk-{name}.js).
+ * Returns a promise that resolves when the script has loaded.
  */
 function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
     const v = '19';
-    const files = [
-        '/pages/pages-' + chunkName + '.js?v=' + v,
-        '/handlers/handlers-' + chunkName + '.js?v=' + v
-    ];
+    const src = '/chunk-' + chunkName + '.js?v=' + v;
 
-    let loaded = 0;
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
         var timeout = setTimeout(function() {
             reject(new Error('Chunk load timeout: ' + chunkName));
         }, 15000);
 
-        files.forEach(function(src) {
-            var s = document.createElement('script');
-            s.src = src;
-            s.onload = function() {
-                loaded++;
-                if (loaded >= files.length) {
-                    clearTimeout(timeout);
-                    _loadedChunks.add(chunkName);
-                    delete _loadingChunks[chunkName];
-                    resolve();
-                }
-            };
-            s.onerror = function() {
-                clearTimeout(timeout);
-                delete _loadingChunks[chunkName];
-                reject(new Error('Failed to load chunk: ' + src));
-            };
-            document.head.appendChild(s);
-        });
+        var s = document.createElement('script');
+        s.src = src;
+        s.onload = function() {
+            clearTimeout(timeout);
+            _loadedChunks.add(chunkName);
+            delete _loadingChunks[chunkName];
+            resolve();
+        };
+        s.onerror = function() {
+            clearTimeout(timeout);
+            delete _loadingChunks[chunkName];
+            reject(new Error('Failed to load chunk: ' + src));
+        };
+        document.head.appendChild(s);
     });
 
     return _loadingChunks[chunkName];
