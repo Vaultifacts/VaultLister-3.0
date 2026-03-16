@@ -18,12 +18,8 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 
-    <!-- Preload critical resources -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Fonts (self-hosted — see public/fonts/ for download instructions) -->
+    <link rel="stylesheet" href="/fonts/inter.css">
 
     <!-- Styles -->
     <link rel="stylesheet" href="/styles/main.css?v=7e952676">
@@ -33,7 +29,7 @@
     <script src="/components/chatWidget.js" defer></script>
 
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
-    <script type="module" src="/services/websocketClient.js"></script>
+    <script type="module" src="/services/websocketClient.js" defer></script>
 
     <!-- Shared modules (loaded before core bundle for global availability) -->
     <script src="/shared/automations/presets.js" defer></script>
