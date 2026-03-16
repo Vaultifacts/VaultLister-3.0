@@ -59819,25 +59819,31 @@ const handlers = {
             // Show loading toast
             toast.info('Waiting for authorization...');
 
-            // Listen for OAuth callback
-            window.addEventListener('oauthComplete', async function handler(event) {
-                if (event.detail.platform === platform || !event.detail.platform) {
-                    window.removeEventListener('oauthComplete', handler);
+            // Listen for OAuth callback via CustomEvent and postMessage
+            const handleOAuthResult = async (detail) => {
+                if (detail.platform === platform || !detail.platform) {
+                    window.removeEventListener('oauthComplete', customEventHandler);
+                    window.removeEventListener('message', messageHandler);
 
-                    if (event.detail.success) {
+                    if (detail.success) {
                         toast.success(`${platform} connected successfully!`);
                         await handlers.loadShops();
 
-                        // Refresh page if on shops page
                         if (store.state.currentPage === 'shops') {
                             const pageContent = pages.shops();
                             document.querySelector('.page-content').innerHTML = pageContent;
                         }
                     } else {
-                        toast.error(event.detail.error || 'OAuth connection failed');
+                        toast.error(detail.error || 'OAuth connection failed');
                     }
                 }
-            });
+            };
+            const customEventHandler = (event) => handleOAuthResult(event.detail);
+            const messageHandler = (event) => {
+                if (event.data && event.data.type === 'oauthComplete') handleOAuthResult(event.data);
+            };
+            window.addEventListener('oauthComplete', customEventHandler);
+            window.addEventListener('message', messageHandler);
 
         } catch (error) {
             console.error('OAuth error:', error);
