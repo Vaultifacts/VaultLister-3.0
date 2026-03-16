@@ -785,6 +785,7 @@ const server = Bun.serve({
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>OAuth Callback</title>
     <style>
         body {
