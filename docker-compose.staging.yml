@@ -104,6 +104,7 @@ services:
     volumes:
       - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./public:/app/public:ro
       - vaultlister-staging-logs:/var/log/nginx
     depends_on:
       app:
