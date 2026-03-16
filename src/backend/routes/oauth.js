@@ -79,10 +79,15 @@ export async function oauthRouter(ctx) {
     }
 
     // GET /api/oauth/callback/:platform - Handle OAuth callback
-    // Also handles /api/oauth/:platform/callback (eBay portal may register this format)
+    // Also handles /api/oauth/:platform/callback (eBay portal may register this format).
+    // The alt format redirects to /oauth-callback so the popup page handles postMessage + close.
     const altCallbackMatch = !path.startsWith('/callback/') && path.match(/^\/([^/]+)\/callback$/);
-    if (method === 'GET' && (path.startsWith('/callback/') || altCallbackMatch)) {
-        const platform = altCallbackMatch ? altCallbackMatch[1] : path.split('/')[2];
+    if (method === 'GET' && altCallbackMatch) {
+        const qs = new URLSearchParams(queryParams).toString();
+        return { status: 302, data: null, headers: { 'Location': `/oauth-callback${qs ? '?' + qs : ''}` } };
+    }
+    if (method === 'GET' && path.startsWith('/callback/')) {
+        const platform = path.split('/')[2];
         const { code, state, error: oauthError } = queryParams;
 
         if (oauthError) {
