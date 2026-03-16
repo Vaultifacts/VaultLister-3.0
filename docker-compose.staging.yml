@@ -99,11 +99,12 @@ services:
     container_name: vaultlister-staging-nginx
     restart: unless-stopped
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - /etc/letsencrypt/live/vaultlister.com:/etc/nginx/ssl:ro
+      - /etc/letsencrypt/archive/vaultlister.com:/etc/letsencrypt/archive/vaultlister.com:ro
       - vaultlister-staging-logs:/var/log/nginx
     depends_on:
       app:
