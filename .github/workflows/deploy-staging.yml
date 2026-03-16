@@ -108,123 +108,107 @@ jobs:
       - name: Checkout (for compose file)
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - name: Copy compose file to staging server
-        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@dc45a4d96b2c4e9f66b6c5a8e07b6b00f22a5ffa # v0.9.0
         with:
-          host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_USER }}
-          key: ${{ secrets.STAGING_SSH_KEY }}
-          port: 22
-          script: |
-            mkdir -p /opt/vaultlister-staging
+          ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
 
-      - name: SCP docker-compose.staging.yml
-        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
-        env:
-          COMPOSE_CONTENT: ${{ toJSON(format('')) }}
-        with:
-          host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_USER }}
-          key: ${{ secrets.STAGING_SSH_KEY }}
-          port: 22
-          script_stop: true
-          # Inline the compose file via heredoc so no scp step is needed
-          script: |
-            set -e
-            cat > /opt/vaultlister-staging/docker-compose.staging.yml << 'COMPOSEOF'
-            $(cat docker-compose.staging.yml)
-            COMPOSEOF
+      - name: Add server to known hosts
+        run: ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Prepare server directory and .env
+        run: |
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} 'bash -s' << 'EOF'
+          mkdir -p /opt/vaultlister-staging
+          if [ ! -f /opt/vaultlister-staging/.env ]; then
+            echo "JWT_SECRET=$(openssl rand -hex 32)" > /opt/vaultlister-staging/.env
+            echo "NODE_ENV=staging" >> /opt/vaultlister-staging/.env
+            echo "PORT=3000" >> /opt/vaultlister-staging/.env
+            echo "DATA_DIR=/app/data" >> /opt/vaultlister-staging/.env
+            echo "Created .env with generated secrets"
+          fi
+          EOF
+
+      - name: Copy docker-compose file to server
+        run: scp docker-compose.staging.yml ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}:/opt/vaultlister-staging/docker-compose.staging.yml
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
-        with:
-          host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_USER }}
-          key: ${{ secrets.STAGING_SSH_KEY }}
-          port: 22
-          script_stop: true
-          script: |
-            set -e
-            cd /opt/vaultlister-staging
-
-            # Pull latest staging image from GHCR
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-
-            # Tag current image for rollback before pulling new one
-            CURRENT_IMAGE=$(docker compose -f docker-compose.staging.yml images app \
-              --format json 2>/dev/null \
-              | python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['Repository']+':'+d[0]['Tag'])" \
-              2>/dev/null || echo "")
-            if [ -n "$CURRENT_IMAGE" ] && [ "$CURRENT_IMAGE" != ":" ] && [ "$CURRENT_IMAGE" != "null:null" ]; then
-              docker tag "$CURRENT_IMAGE" "${CURRENT_IMAGE%%:*}:staging-rollback" 2>/dev/null || true
-              echo "Tagged rollback: $CURRENT_IMAGE"
-            fi
-
-            docker compose -f docker-compose.staging.yml pull app
-
-            # Rolling restart — replace app container only
-            docker compose -f docker-compose.staging.yml up -d --no-deps app
-
-            # Wait for health check to pass (up to 90 s)
-            HEALTHY=false
-            for i in $(seq 1 18); do
-              STATUS=$(docker compose -f docker-compose.staging.yml exec -T app \
-                curl -sf http://localhost:3000/api/health \
-                | python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))" \
-                2>/dev/null || echo "")
-              if [ "$STATUS" = "healthy" ]; then
-                echo "Health check passed (attempt $i)"
-                HEALTHY=true
-                break
-              fi
-              echo "Waiting for health check... ($i/18)"
-              sleep 5
-            done
-
-            # Rollback if unhealthy
-            if [ "$HEALTHY" != "true" ]; then
-              echo "ERROR: Staging health check failed — rolling back"
-              ROLLBACK_IMAGE="${CURRENT_IMAGE%%:*}:staging-rollback"
-              if docker image inspect "$ROLLBACK_IMAGE" >/dev/null 2>&1; then
-                docker compose -f docker-compose.staging.yml down --remove-orphans app 2>/dev/null || true
-                docker tag "$ROLLBACK_IMAGE" "$CURRENT_IMAGE" 2>/dev/null || true
-                docker compose -f docker-compose.staging.yml up -d --no-deps app
-                echo "Rolled back to previous image"
-              else
-                echo "WARNING: No rollback image — manual intervention required"
-              fi
-              exit 1
-            fi
-
-            docker compose -f docker-compose.staging.yml exec -T app \
-              curl -sf http://localhost:3000/api/health
-            docker image prune -f
-
-      # --------------------------------------------------------
-      # Smoke test: hit the public health endpoint through Nginx
-      # (port 3001). Retries 6 times with 10 s gaps = 60 s max.
-      # --------------------------------------------------------
-      - name: Smoke test — public health endpoint
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Write token to temp file on server (avoids shell escaping issues with JWT chars)
+          printf '%s' "$GH_TOKEN" | ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} 'cat > /tmp/.gh_token && chmod 600 /tmp/.gh_token'
+
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} 'bash -s' << 'DEPLOY'
           set -e
-          echo "Running smoke test against http://${{ secrets.STAGING_HOST }}:3001/api/health"
+          cd /opt/vaultlister-staging
+
+          GH_TOKEN=$(cat /tmp/.gh_token)
+          rm -f /tmp/.gh_token
+
+          echo "$GH_TOKEN" | docker login ghcr.io -u "Vaultifacts" --password-stdin
+
+          # Tag current image for rollback
+          CURRENT_IMAGE=$(docker inspect --format='{{.Config.Image}}' vaultlister-staging-app 2>/dev/null || echo "")
+          if [ -n "$CURRENT_IMAGE" ]; then
+            docker tag "$CURRENT_IMAGE" "${CURRENT_IMAGE%%:*}:staging-rollback" 2>/dev/null || true
+            echo "Tagged rollback: $CURRENT_IMAGE"
+          fi
+
+          # Pull and restart app + redis (nginx excluded — no config on server yet)
+          docker compose -f docker-compose.staging.yml pull app
+          docker compose -f docker-compose.staging.yml up -d --no-deps redis
+          docker compose -f docker-compose.staging.yml up -d --no-deps app
+
+          # Wait for container health check (up to 90s)
+          HEALTHY=false
+          for i in $(seq 1 18); do
+            STATUS=$(docker inspect --format='{{.State.Health.Status}}' vaultlister-staging-app 2>/dev/null || echo "starting")
+            echo "Health status attempt $i: $STATUS"
+            if [ "$STATUS" = "healthy" ]; then
+              HEALTHY=true
+              break
+            fi
+            sleep 5
+          done
+
+          if [ "$HEALTHY" != "true" ]; then
+            echo "ERROR: Container health check failed"
+            docker logs vaultlister-staging-app --tail 50
+            exit 1
+          fi
+
+          echo "Deploy complete — container is healthy"
+          docker image prune -f
+          DEPLOY
+
+      # --------------------------------------------------------
+      # Smoke test: curl health endpoint from inside the server
+      # (avoids Oracle Cloud firewall on non-standard ports)
+      # --------------------------------------------------------
+      - name: Smoke test — health endpoint via SSH
+        run: |
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} 'bash -s' << 'SMOKE'
+          set -e
           PASSED=false
           for i in $(seq 1 6); do
             HTTP_STATUS=$(curl -o /dev/null -sw "%{http_code}" \
-              "http://${{ secrets.STAGING_HOST }}:3001/api/health" \
+              "http://localhost:3001/api/health" \
               --connect-timeout 10 --max-time 15 2>/dev/null || echo "000")
             if [ "$HTTP_STATUS" = "200" ]; then
               echo "Smoke test passed (attempt $i) — HTTP $HTTP_STATUS"
               PASSED=true
               break
             fi
-            echo "Smoke test attempt $i failed (HTTP $HTTP_STATUS) — retrying in 10s"
+            echo "Smoke test attempt $i: HTTP $HTTP_STATUS — retrying in 10s"
             sleep 10
           done
           if [ "$PASSED" != "true" ]; then
             echo "ERROR: Smoke test failed after all retries"
+            docker logs vaultlister-staging-app --tail 30
             exit 1
           fi
+          SMOKE
 
       - name: Mark deployment success
         if: success()
