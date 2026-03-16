@@ -10,7 +10,7 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 
 const envSchema = z.object({
     // ── Runtime ──────────────────────────────────────────────────────────
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+    NODE_ENV: z.enum(['development', 'production', 'test', 'staging']).default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
 
     // ── Security — always required ────────────────────────────────────────
@@ -28,7 +28,7 @@ const envSchema = z.object({
     DATA_DIR: z.string().default('./data'),
 
     // ── Optional — validated for shape when present ───────────────────────
-    ANTHROPIC_API_KEY: z.string().min(1).optional(),
+    ANTHROPIC_API_KEY: z.string().min(1).optional().or(z.literal('')),
     REDIS_URL: z.string().url('REDIS_URL must be a valid URL').optional().or(z.literal('')),
     FRONTEND_URL: z.string().url('FRONTEND_URL must be a valid URL').optional().or(z.literal('')),
     TRUST_PROXY: z.enum(['0', '1', 'true', 'false']).optional(),
