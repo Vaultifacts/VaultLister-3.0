@@ -16546,32 +16546,17 @@ Object.assign(handlers, {
             // Show loading toast
             toast.info('Waiting for authorization...');
 
-            // Listen for OAuth callback via CustomEvent (same-origin dispatchEvent)
-            // and postMessage (cross-context popup → opener)
-            const handleOAuthResult = async (detail) => {
-                if (detail.platform === platform || !detail.platform) {
-                    window.removeEventListener('oauthComplete', customEventHandler);
-                    window.removeEventListener('message', messageHandler);
-
-                    if (detail.success) {
-                        toast.success(`${platform} connected successfully!`);
-                        await handlers.loadShops();
-
-                        if (store.state.currentPage === 'shops') {
-                            const pageContent = pages.shops();
-                            document.querySelector('.page-content').innerHTML = pageContent;
-                        }
-                    } else {
-                        toast.error(detail.error || 'OAuth connection failed');
+            // Poll for popup close — when closed, refresh shops data
+            const pollTimer = setInterval(async () => {
+                if (popup.closed) {
+                    clearInterval(pollTimer);
+                    await handlers.loadShops();
+                    if (store.state.currentPage === 'shops') {
+                        const pageContent = pages.shops();
+                        document.querySelector('.page-content').innerHTML = pageContent;
                     }
                 }
-            };
-            const customEventHandler = (event) => handleOAuthResult(event.detail);
-            const messageHandler = (event) => {
-                if (event.data && event.data.type === 'oauthComplete') handleOAuthResult(event.data);
-            };
-            window.addEventListener('oauthComplete', customEventHandler);
-            window.addEventListener('message', messageHandler);
+            }, 500);
 
         } catch (error) {
             console.error('OAuth error:', error);
