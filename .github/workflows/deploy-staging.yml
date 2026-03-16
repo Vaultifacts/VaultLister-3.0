@@ -111,6 +111,12 @@ jobs:
       deployments: write
 
     steps:
+      - name: Validate required secrets
+        run: |
+          if [ -z "${{ secrets.STAGING_HOST }}" ]; then echo "ERROR: STAGING_HOST secret not set"; exit 1; fi
+          if [ -z "${{ secrets.STAGING_USER }}" ]; then echo "ERROR: STAGING_USER secret not set"; exit 1; fi
+          if [ -z "${{ secrets.STAGING_SSH_KEY }}" ]; then echo "ERROR: STAGING_SSH_KEY secret not set"; exit 1; fi
+
       - name: Checkout (for compose file)
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 

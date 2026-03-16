@@ -49,9 +49,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
             type=sha,prefix=
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+            type=raw,value=staging,enable=${{ github.event.inputs.environment == 'staging' || github.event.inputs.environment == '' }}
+            type=raw,value=prod,enable=${{ github.event.inputs.environment == 'production' }}
+            type=raw,value=latest,enable=${{ github.event.inputs.environment == 'production' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5

@@ -75,6 +75,13 @@ const chunkDefs = [
             'src/frontend/handlers/handlers-community-help.js',
         ]
     },
+    {
+        name: 'admin',
+        files: [
+            'src/frontend/pages/pages-admin.js',
+            'src/frontend/handlers/handlers-admin.js',
+        ]
+    },
 ];
 
 // All source files for hash computation

@@ -75,11 +75,16 @@ const api = {
             headers['X-CSRF-Token'] = this.csrfToken;
         }
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
         try {
             const response = await fetch(url, {
                 ...options,
-                headers
+                headers,
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             // Handle rate limiting with retry
             if (response.status === 429 && retryCount < this.maxRetries) {
@@ -144,6 +149,8 @@ const api = {
 
             return data;
         } catch (error) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') throw new Error('Request timed out');
             if (!navigator.onLine) {
                 // Queue for offline sync
                 offlineQueue.add({ endpoint, options });
