@@ -3125,8 +3125,14 @@ const pages = {
                                 <label for="reg-password" class="form-label">Password</label>
                                 <input id="reg-password" type="password" class="form-input" name="password" required
                                        placeholder="Min 12 characters" minlength="12" autocomplete="new-password"
-                                       aria-label="Password" aria-describedby="password-reqs"
+                                       aria-label="Password" aria-describedby="password-reqs reg-strength-label"
                                        oninput="handlers.checkRegisterPassword(this)">
+                                <div id="reg-strength-meter" style="display:none; margin-top:6px;">
+                                    <div style="height:4px; background:var(--gray-200,#e5e7eb); border-radius:2px; overflow:hidden;">
+                                        <div id="reg-strength-bar" style="height:100%; width:0%; transition:width 0.3s,background 0.3s; border-radius:2px;"></div>
+                                    </div>
+                                    <span id="reg-strength-label" style="font-size:12px; margin-top:3px; display:block;"></span>
+                                </div>
                                 <div class="password-requirements" id="password-reqs">
                                     <div class="password-req-item" data-req="length">
                                         <span class="req-icon">&#9675;</span> At least 12 characters

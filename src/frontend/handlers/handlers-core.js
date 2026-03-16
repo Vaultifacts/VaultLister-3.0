@@ -63,6 +63,38 @@ const handlers = {
                 if (icon) icon.innerHTML = '&#9675;';
             }
         });
+
+        const meter = document.getElementById('reg-strength-meter');
+        const bar = document.getElementById('reg-strength-bar');
+        const label = document.getElementById('reg-strength-label');
+        if (!meter || !bar || !label) return;
+
+        if (!pw) {
+            meter.style.display = 'none';
+            return;
+        }
+        meter.style.display = 'block';
+
+        let score = 0;
+        if (pw.length >= 8) score++;
+        if (pw.length >= 12) score++;
+        if (/[A-Z]/.test(pw)) score++;
+        if (/[a-z]/.test(pw)) score++;
+        if (/[0-9]/.test(pw)) score++;
+        if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+        const levels = [
+            { max: 1, width: '16%', color: 'var(--danger, #ef4444)', text: 'Weak' },
+            { max: 2, width: '33%', color: '#f97316', text: 'Fair' },
+            { max: 3, width: '50%', color: '#eab308', text: 'Good' },
+            { max: 4, width: '75%', color: '#84cc16', text: 'Strong' },
+            { max: 6, width: '100%', color: 'var(--success, #22c55e)', text: 'Very Strong' },
+        ];
+        const level = levels.find(l => score <= l.max) || levels[levels.length - 1];
+        bar.style.width = level.width;
+        bar.style.background = level.color;
+        label.textContent = level.text;
+        label.style.color = level.color;
     },
 
     socialLogin(provider) {

@@ -4,7 +4,7 @@
 ## Current State
 - **Branch:** master
 - **Server:** test server on localhost:3100 (NODE_ENV=test, DISABLE_CSRF=true)
-- **Last commit:** cd78bd6 — deploy pipeline copies nginx config
+- **Last commit:** 6f476d3 — fix: orders.test.js assertion bugs (add 403) + aria-label on 10 dropdown buttons
 - **Production URL:** https://vaultlister.com — LIVE ✅ (Let's Encrypt SSL, auto-renewing)
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **Domain:** vaultlister.com (Namecheap, purchased 2026-03-16)
@@ -47,6 +47,7 @@ _(none)_
 
 ## Last Completed Work
 <!-- Most recent first -->
+- 2026-03-16: Session (nginx keepalive + CORS audit) — DevOps-Deployment agent. Confirmed Access-Control-Max-Age: 86400 already present in getCorsHeaders() (server.js:203 — no change needed). nginx/nginx.staging.conf: increased upstream keepalive 16→32, added keepalive_timeout 65 to HTTPS server block, added proxy_http_version 1.1 + proxy_set_header Connection "" to all non-WebSocket proxy location blocks (auth, api, health, static assets, root catch-all). No commit — changes staged for review.
 - 2026-03-16: Session (domain + SSL + eBay OAuth) — Purchased vaultlister.com ($6.99 Namecheap). Configured DNS A records → 204.216.105.105. Installed Let's Encrypt SSL via Certbot (expires 2026-06-14, auto-renewal). Nginx reverse proxy on ports 80/443. Fixed eBay OAuth: callback URL format (/api/oauth/:platform/callback), trimmed scopes to 10 pre-approved, popup auto-close via localStorage+storage event, UTF-8 charset fix. Updated docker-compose.staging.yml with all marketplace env vars. Deploy pipeline now copies nginx config. QA walkthrough: 15/15 pages pass on vaultlister.com. 13 commits pushed.
 - 2026-03-16: Session (staging deploy) — Provisioned Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04). Installed Docker + Docker Compose. Fixed CI/CD pipeline: replaced appleboy/ssh-action (drone-ssh YAML bug) with webfactory/ssh-agent + direct SSH, added staging to NODE_ENV enum, fixed empty ANTHROPIC_API_KEY validation. Deploy pipeline fully green. VaultLister staging is LIVE at http://204.216.105.105:3001 — container healthy, health endpoint returns 200.
 - 2026-03-15: Session (demo data quality + push) — Fixed Teams page showing "Updated Team [timestamp]" test artifacts: seeded "Vault Crew" + "eBay Specialists" teams for demo user (7e67c2e). Pushed 15 commits to remote (9bb69a4..7e67c2e). CI running.

@@ -70252,6 +70252,35 @@ const handlers = {
 };
 
 // ============================================
+// System Announcement Banner
+// ============================================
+function initAnnouncementBanner() {
+    const STORAGE_KEY = 'vaultlister_announcement_dismissed';
+    const banner = document.getElementById('announcement-banner');
+    const textEl = document.getElementById('announcement-banner-text');
+    const closeBtn = document.getElementById('announcement-banner-close');
+    if (!banner || !textEl || !closeBtn) return;
+
+    api.get('/settings/announcement').then(data => {
+        const ann = data && data.announcement;
+        if (!ann || !ann.text) return;
+
+        const dismissedKey = STORAGE_KEY + '_' + btoa(ann.text).slice(0, 16);
+        if (sessionStorage.getItem(dismissedKey)) return;
+
+        textEl.textContent = ann.text;
+        banner.removeAttribute('hidden');
+        banner.classList.add('visible');
+
+        closeBtn.addEventListener('click', () => {
+            banner.classList.remove('visible');
+            sessionStorage.setItem(dismissedKey, '1');
+            setTimeout(() => banner.setAttribute('hidden', ''), 350);
+        });
+    }).catch(() => {});
+}
+
+// ============================================
 // App Initialization
 // ============================================
 async function initApp() {
@@ -70316,6 +70345,7 @@ async function initApp() {
     sessionMonitor.init();
     notificationCenter.init();
     savedViews.init();
+    initAnnouncementBanner();
 
     // Add global UI elements
     const globalUI = document.createElement('div');

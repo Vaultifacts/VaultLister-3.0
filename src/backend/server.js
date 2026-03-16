@@ -81,6 +81,7 @@ import { startGDPRWorker, stopGDPRWorker, getGDPRWorkerStatus } from './workers/
 import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
 import { featureFlags } from './services/featureFlags.js';
+import { settingsRouter } from './routes/settings.js';
 import { analyticsService } from './services/analytics.js';
 import { authenticateToken } from './middleware/auth.js';
 import redisService from './services/redis.js';
@@ -292,6 +293,7 @@ const apiRoutes = {
     '/api/onboarding': onboardingRouter,
     '/api/offline-sync': offlineSyncRouter,
     '/api/monitoring': monitoringRouter,
+    '/api/settings': settingsRouter,
     '/api/feature-flags': async (ctx) => {
         const { method, path, user } = ctx;
 
