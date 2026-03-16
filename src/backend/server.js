@@ -710,6 +710,31 @@ function serveStatic(pathname, request) {
     }
 }
 
+// Request timeout helper.
+// Races a handler promise against a deadline. On timeout returns a 408 response.
+// timeoutMs of 0 disables the timeout (used for WebSocket upgrades and streaming routes).
+function withRequestTimeout(handlerPromise, timeoutMs) {
+    if (!timeoutMs) return handlerPromise;
+    return new Promise((resolve) => {
+        const timer = setTimeout(() => {
+            resolve(new Response(
+                JSON.stringify({ error: 'Request Timeout', status: 408 }),
+                { status: 408, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }, timeoutMs);
+        handlerPromise.then((result) => {
+            clearTimeout(timer);
+            resolve(result);
+        }).catch((err) => {
+            clearTimeout(timer);
+            resolve(new Response(
+                JSON.stringify({ error: 'Internal Server Error', status: 500 }),
+                { status: 500, headers: { 'Content-Type': 'application/json' } }
+            ));
+        });
+    });
+}
+
 // Main server handler
 const server = Bun.serve({
     port: process.env.PORT || 3000,
@@ -726,6 +751,76 @@ const server = Bun.serve({
                 status: 414,
                 headers: { 'Content-Type': 'application/json' }
             });
+        }
+
+        // Maintenance mode — checked before all routing except health probes.
+        // Set MAINTENANCE_MODE=true in .env to activate. Health endpoints bypass it.
+        if (process.env.MAINTENANCE_MODE === 'true') {
+            const isHealthPath = pathname === '/api/health' ||
+                pathname === '/api/health/live' ||
+                pathname === '/api/health/ready' ||
+                pathname === '/api/workers/health' ||
+                pathname === '/api/status';
+            if (!isHealthPath) {
+                if (pathname.startsWith('/api/')) {
+                    return new Response(
+                        JSON.stringify({ error: 'Service temporarily unavailable', status: 503 }),
+                        {
+                            status: 503,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Retry-After': '300'
+                            }
+                        }
+                    );
+                }
+                const maintenanceHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaultLister – Maintenance</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f0f13;
+    color: #e2e2e8;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+  .card {
+    max-width: 480px;
+    background: #1a1a24;
+    border: 1px solid #2e2e3e;
+    border-radius: 16px;
+    padding: 48px 40px;
+  }
+  .logo { font-size: 1.5rem; font-weight: 700; color: #a78bfa; margin-bottom: 32px; letter-spacing: -0.5px; }
+  h1 { font-size: 1.4rem; font-weight: 600; margin-bottom: 12px; }
+  p { color: #9898b0; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">VaultLister</div>
+  <h1>We'll be right back</h1>
+  <p>VaultLister is temporarily down for scheduled maintenance.<br>Check back shortly — we appreciate your patience.</p>
+</div>
+</body>
+</html>`;
+                return new Response(maintenanceHtml, {
+                    status: 503,
+                    headers: {
+                        'Content-Type': 'text/html',
+                        'Retry-After': '300'
+                    }
+                });
+            }
         }
 
         // WebSocket upgrade for /ws endpoint
@@ -927,6 +1022,15 @@ const server = Bun.serve({
 
         // API routes
         if (pathname.startsWith('/api/')) {
+            // Select per-request timeout:
+            //   - File uploads (multipart/form-data): 60s
+            //   - All other API requests: 30s
+            const contentType = request.headers.get('content-type') || '';
+            const isUpload = contentType.includes('multipart/form-data');
+            const apiTimeoutMs = isUpload ? 60_000 : 30_000;
+
+            return withRequestTimeout((async () => {
+
             // Normalize versioned API paths: /api/v1/... → /api/...
             // All existing routes gain a /api/v1/ alias automatically.
             // New routes should be written against /api/ — versioning is additive.
@@ -1106,10 +1210,12 @@ const server = Bun.serve({
                 }
             }
 
-            return new Response(JSON.stringify({ error: 'Not found' }), {
+            return new Response(JSON.stringify({ error: 'Not Found', path: pathname, status: 404 }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json', ...dynamicCorsHeaders }
             });
+
+            })(), apiTimeoutMs);
         }
 
         // Redirect /api-docs to /api-docs/index.html

@@ -387,6 +387,10 @@ const handlers = {
             store.setState({ darkMode: prefersDark });
             localStorage.removeItem('vaultlister_darkmode');
         }
+        if (store.state.user) {
+            const currentPrefs = (() => { try { return JSON.parse(store.state.user.preferences || '{}'); } catch { return {}; } })();
+            api.put('/auth/profile', { preferences: { ...currentPrefs, dark_mode: mode } }).catch(() => {});
+        }
         renderApp(pages.settings());
     },
 
@@ -549,6 +553,44 @@ const handlers = {
                 toast.error('Please log in to view orders');
             } else {
                 toast.error('Failed to load orders: ' + errorMsg);
+            }
+        }
+    },
+
+    loadSystemStatus: async function() {
+        const serverEl = document.getElementById('system-status-server');
+        const dbEl = document.getElementById('system-status-db');
+        const uptimeEl = document.getElementById('system-status-uptime');
+        const dotEl = document.getElementById('system-status-dot');
+        if (!serverEl) return;
+        try {
+            const data = await api.get('/health/detailed');
+            const isHealthy = data.status === 'healthy';
+            serverEl.textContent = isHealthy ? 'Healthy' : 'Unhealthy';
+            serverEl.style.color = isHealthy ? 'var(--green-500)' : 'var(--red-500)';
+            const dbCheck = data.checks?.database;
+            if (dbCheck) {
+                const dbOk = dbCheck.status === 'healthy';
+                dbEl.textContent = dbOk ? 'Connected' : 'Unavailable';
+                dbEl.style.color = dbOk ? 'var(--green-500)' : 'var(--red-500)';
+            }
+            if (data.uptime !== undefined) {
+                const sec = Math.floor(data.uptime);
+                const h = Math.floor(sec / 3600);
+                const m = Math.floor((sec % 3600) / 60);
+                uptimeEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
+            }
+            if (dotEl) {
+                dotEl.className = 'system-status-dot ' + (isHealthy ? 'system-status-healthy' : 'system-status-unhealthy');
+                dotEl.setAttribute('aria-label', isHealthy ? 'System healthy' : 'System unhealthy');
+                dotEl.setAttribute('title', isHealthy ? 'System healthy' : 'System unhealthy');
+            }
+        } catch {
+            if (serverEl) { serverEl.textContent = 'Unavailable'; serverEl.style.color = 'var(--red-500)'; }
+            if (dotEl) {
+                dotEl.className = 'system-status-dot system-status-unhealthy';
+                dotEl.setAttribute('aria-label', 'System unhealthy');
+                dotEl.setAttribute('title', 'System unhealthy');
             }
         }
     },

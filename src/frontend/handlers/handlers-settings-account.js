@@ -1690,6 +1690,10 @@ Object.assign(handlers, {
         }
         store.setState({ darkMode: enabled });
         localStorage.setItem('vaultlister_dark_mode', enabled ? 'true' : 'false');
+        if (store.state.user) {
+            const currentPrefs = (() => { try { return JSON.parse(store.state.user.preferences || '{}'); } catch { return {}; } })();
+            api.put('/auth/profile', { preferences: { ...currentPrefs, dark_mode: enabled ? 'dark' : 'light' } }).catch(() => {});
+        }
         toast.info(`Dark mode ${enabled ? 'enabled' : 'disabled'}`);
     },
 

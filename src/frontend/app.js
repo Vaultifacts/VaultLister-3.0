@@ -15303,7 +15303,11 @@ const router = {
     },
 
     async loadPageData(path) {
-        if (path === 'inventory') {
+        if (path === 'dashboard') {
+            if (store.state.user?.is_admin) {
+                handlers.loadSystemStatus?.();
+            }
+        } else if (path === 'inventory') {
             await handlers.loadInventory();
         } else if (path === 'automations') {
             await handlers.loadAutomations();

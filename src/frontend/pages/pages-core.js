@@ -463,6 +463,30 @@ const pages = {
                 </div>
             ` : ''}
 
+                ${store.state.user?.is_admin ? `<!-- System Status Widget (admin only) -->
+                <div class="card dashboard-widget" id="system-status-card" style="width: 100%; margin-bottom: var(--space-4);" role="region" aria-label="System Status">
+                    <div class="card-header flex justify-between items-center">
+                        <h3 class="card-title">System Status</h3>
+                        <span id="system-status-dot" class="system-status-dot system-status-unknown" aria-label="Status unknown" title="Status unknown"></span>
+                    </div>
+                    <div class="card-body">
+                        <div class="system-status-grid">
+                            <div class="system-status-item">
+                                <span class="system-status-label">Server</span>
+                                <span class="system-status-value" id="system-status-server">—</span>
+                            </div>
+                            <div class="system-status-item">
+                                <span class="system-status-label">Database</span>
+                                <span class="system-status-value" id="system-status-db">—</span>
+                            </div>
+                            <div class="system-status-item">
+                                <span class="system-status-label">Uptime</span>
+                                <span class="system-status-value" id="system-status-uptime">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>` : ''}
+
                 <!-- Monthly Goal Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')) handlers.setMonthlyGoal()" title="Click to edit goal">
