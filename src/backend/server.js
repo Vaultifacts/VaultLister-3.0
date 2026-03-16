@@ -877,10 +877,9 @@ const server = Bun.serve({
                 const result = await response.json();
 
                 if (result.success) {
-                    document.querySelector('.container').innerHTML = '<h2 class="success">✓ Connected Successfully!</h2><p>You can close this window.</p>';
+                    document.querySelector('.container').innerHTML = '<h2 class="success">✓ Connected Successfully!</h2><p>This window will close automatically.</p>';
                     if (window.opener) {
-                        try { window.opener.dispatchEvent(new CustomEvent('oauthComplete', { detail: { success: true, platform: platform, username: result.username } })); } catch(e) {}
-                        window.opener.postMessage({ type: 'oauthComplete', success: true, platform: platform, username: result.username }, window.location.origin);
+                        try { window.opener.location.reload(); } catch(e) {}
                     }
                 } else {
                     var c = document.querySelector('.container');
