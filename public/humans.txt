@@ -1,0 +1,14 @@
+/* TEAM */
+Creator: VaultLister Team
+Contact: info@vaultlister.com
+From: Calgary, Alberta, Canada
+
+/* THANKS */
+Claude by Anthropic — AI pair programmer
+
+/* SITE */
+Last update: 2026-03-16
+Language: English
+Standards: HTML5, CSS3, ES2024
+Components: Bun.js, SQLite, Playwright, Anthropic SDK
+Software: Claude Code by Anthropic
