@@ -143,13 +143,12 @@ jobs:
           key: ${{ secrets.STAGING_SSH_KEY }}
           port: 22
           script_stop: true
-          envs: GITHUB_TOKEN,IMAGE_REPO,GITHUB_ACTOR
           script: |
             set -e
             cd /opt/vaultlister-staging
 
             # Pull latest staging image from GHCR
-            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
             # Tag current image for rollback before pulling new one
             CURRENT_IMAGE=$(docker compose -f docker-compose.staging.yml images app \
@@ -200,9 +199,6 @@ jobs:
             docker compose -f docker-compose.staging.yml exec -T app \
               curl -sf http://localhost:3000/api/health
             docker image prune -f
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
 
       # --------------------------------------------------------
       # Smoke test: hit the public health endpoint through Nginx
