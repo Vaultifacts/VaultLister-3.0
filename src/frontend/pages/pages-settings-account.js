@@ -1288,7 +1288,32 @@ Object.assign(pages, {
                     `;
 
                 case 'tools':
+                    const rli = store.state.rateLimitInfo || {};
+                    const rlResetLabel = rli.reset
+                        ? (() => { const secs = Math.max(0, rli.reset - Math.floor(Date.now() / 1000)); return secs > 0 ? `${secs}s` : 'now'; })()
+                        : '—';
                     return `
+                        <div class="settings-section">
+                            <h4 class="settings-section-title">API Usage</h4>
+                            <div class="card" style="padding:1rem 1.25rem;">
+                                <dl style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem 1rem;margin:0;">
+                                    <div>
+                                        <dt style="font-size:0.75rem;color:var(--text-muted,#6b7280);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Limit</dt>
+                                        <dd style="font-size:1.25rem;font-weight:700;margin:0.125rem 0 0;">${escapeHtml(String(rli.limit ?? '—'))}</dd>
+                                    </div>
+                                    <div>
+                                        <dt style="font-size:0.75rem;color:var(--text-muted,#6b7280);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Remaining</dt>
+                                        <dd style="font-size:1.25rem;font-weight:700;margin:0.125rem 0 0;">${escapeHtml(String(rli.remaining ?? '—'))}</dd>
+                                    </div>
+                                    <div>
+                                        <dt style="font-size:0.75rem;color:var(--text-muted,#6b7280);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Resets in</dt>
+                                        <dd style="font-size:1.25rem;font-weight:700;margin:0.125rem 0 0;">${escapeHtml(rlResetLabel)}</dd>
+                                    </div>
+                                </dl>
+                                <p style="font-size:0.8125rem;color:var(--text-muted,#6b7280);margin:0.75rem 0 0;">Updated automatically on each API call. Make any request to refresh.</p>
+                            </div>
+                        </div>
+
                         <div class="settings-section">
                             <h4 class="settings-section-title">Tools & Configuration</h4>
                             <div class="tools-grid">

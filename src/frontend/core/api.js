@@ -103,6 +103,18 @@ const api = {
                 this.csrfToken = csrfToken;
             }
 
+            // Capture rate limit headers
+            const rlLimit = response.headers.get('X-RateLimit-Limit');
+            const rlRemaining = response.headers.get('X-RateLimit-Remaining');
+            const rlReset = response.headers.get('X-RateLimit-Reset');
+            if (rlLimit !== null || rlRemaining !== null || rlReset !== null) {
+                store.state.rateLimitInfo = {
+                    limit: rlLimit ? parseInt(rlLimit, 10) : store.state.rateLimitInfo?.limit ?? null,
+                    remaining: rlRemaining ? parseInt(rlRemaining, 10) : store.state.rateLimitInfo?.remaining ?? null,
+                    reset: rlReset ? parseInt(rlReset, 10) : store.state.rateLimitInfo?.reset ?? null
+                };
+            }
+
             const contentType = response.headers.get('content-type') || '';
             const data = contentType.includes('application/json') ? await response.json() : { error: await response.text() };
 
