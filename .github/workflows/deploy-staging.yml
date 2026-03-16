@@ -221,6 +221,15 @@ jobs:
           fi
           SMOKE
 
+      - name: Rollback on smoke test failure
+        if: failure()
+        run: |
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} 'bash -s' << 'ROLLBACK'
+          set -e
+          echo "Smoke test failed — executing rollback"
+          /opt/vaultlister-staging/rollback.sh
+          ROLLBACK
+
       - name: Mark deployment success
         if: success()
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
