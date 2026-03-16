@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VaultLister 3.0 — Platform integration status for all 9 supported marketplaces.">
+    <title>Platform Integrations — VaultLister</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --brand: #6366f1;
+            --brand-dark: #4f46e5;
+            --brand-light: #eef2ff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --surface: #ffffff;
+            --bg: #f9fafb;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-primary: #f9fafb;
+                --text-secondary: #d1d5db;
+                --text-muted: #6b7280;
+                --border: #374151;
+                --surface: #1f2937;
+                --bg: #111827;
+                --brand-light: #1e1b4b;
+            }
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .site-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .logo-mark {
+            width: 32px;
+            height: 32px;
+            background: var(--brand);
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo-mark svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+        }
+
+        .header-sep {
+            color: var(--border);
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .page-title-small {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Page layout */
+        .page-wrap {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        .page-hero {
+            margin-bottom: 2.5rem;
+        }
+
+        .page-hero h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-hero p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 560px;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* Status badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+            line-height: 1;
+        }
+
+        .badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .badge-production {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-production::before { background: #22c55e; }
+
+        .badge-pending {
+            background: #fef9c3;
+            color: #a16207;
+        }
+
+        .badge-pending::before { background: #f59e0b; }
+
+        .badge-automation {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .badge-automation::before { background: #38bdf8; }
+
+        @media (prefers-color-scheme: dark) {
+            .badge-production { background: #14532d; color: #86efac; }
+            .badge-pending    { background: #422006; color: #fde68a; }
+            .badge-automation { background: #0c4a6e; color: #7dd3fc; }
+        }
+
+        /* Method chips */
+        .method-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            font-family: 'Fira Code', Consolas, monospace;
+            white-space: nowrap;
+        }
+
+        .method-oauth    { background: #f3e8ff; color: #7e22ce; }
+        .method-rest     { background: #ecfdf5; color: #065f46; }
+        .method-browser  { background: #f1f5f9; color: #475569; }
+
+        @media (prefers-color-scheme: dark) {
+            .method-oauth   { background: #3b0764; color: #d8b4fe; }
+            .method-rest    { background: #064e3b; color: #6ee7b7; }
+            .method-browser { background: #1e293b; color: #94a3b8; }
+        }
+
+        /* Platform grid */
+        .platforms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1rem;
+        }
+
+        @media (max-width: 500px) {
+            .platforms-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Platform card */
+        .platform-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.25rem 1.1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .platform-card:hover {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px var(--brand-light);
+        }
+
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.9rem;
+        }
+
+        /* Logo placeholder */
+        .platform-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--brand);
+            letter-spacing: -0.03em;
+            font-family: 'Inter', system-ui, sans-serif;
+            user-select: none;
+        }
+
+        .card-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-meta h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            align-items: center;
+        }
+
+        .card-body {
+            font-size: 0.83rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-footer strong {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Section heading */
+        .section-heading {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.85rem;
+            margin-top: 2rem;
+        }
+
+        .section-heading:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Footer */
+        .site-footer {
+            margin-top: 3rem;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .site-footer a {
+            color: var(--brand);
+            text-decoration: none;
+        }
+
+        .site-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <a href="/" class="logo" aria-label="VaultLister home">
+        <span class="logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/>
+            </svg>
+        </span>
+        VaultLister
+    </a>
+    <span class="header-sep" aria-hidden="true">/</span>
+    <span class="page-title-small">Platform Integrations</span>
+</header>
+
+<div class="page-wrap">
+    <div class="page-hero">
+        <h1>Platform Integrations</h1>
+        <p>VaultLister 3.0 connects to 9 marketplaces. Each platform uses either an official API or a browser automation bot depending on what the platform exposes.</p>
+    </div>
+
+    <div class="legend" role="list" aria-label="Status legend">
+        <div class="legend-item" role="listitem">
+            <span class="badge badge-production">Production ready</span>
+            <span>— live with official API</span>
+        </div>
+        <div class="legend-item" role="listitem">
+            <span class="badge badge-automation">Automation</span>
+            <span>— Playwright browser bot</span>
+        </div>
+        <div class="legend-item" role="listitem">
+            <span class="badge badge-pending">Pending</span>
+            <span>— awaiting approval or credential setup</span>
+        </div>
+    </div>
+
+    <p class="section-heading">Official API</p>
+    <div class="platforms-grid" role="list">
+
+        <!-- eBay -->
+        <article class="platform-card" role="listitem">
+            <div class="card-top">
+                <div class="platform-logo" aria-hidden="true">eB</div>
+                <div class="card-meta">
+                    <h2>eBay</h2>
+                    <div class="card-badges">
+                        <span class="badge badge-production">Production ready</span>
+                        <span class="method-chip method-oauth">OAuth 2.0</span>
+                    </div>
+                </div>
+            </div>
+            <p class="card-body">
+                Full listing creation, inventory sync, offer management, and order import via the eBay Sell and Buy APIs. Scopes: <code>sell.inventory</code>, <code>sell.fulfillment</code>, <code>sell.marketing</code>.
+            </p>
+            <div class="card-footer">
+                <strong>Setup:</strong> add <code>EBAY_CLIENT_ID</code> and <code>EBAY_CLIENT_SECRET</code> to <code>.env</code>, then connect via Settings &rarr; Platforms.
+            </div>
+        </article>
+
+        <!-- Etsy -->
+        <article class="platform-card" role="listitem">
+            <div class="card-top">
+                <div class="platform-logo" aria-hidden="true">Et</div>
+                <div class="card-meta">
+                    <h2>Etsy</h2>
+                    <div class="card-badges">
+                        <span class="badge badge-pending">Pending app approval</span>
+                        <span class="method-chip method-oauth">OAuth 2.0</span>
+                    </div>
+                </div>
+            </div>
+            <p class="card-body">
+                Listing creation, inventory management, and order sync via Etsy Open API v3. Integration is code-complete; activation is gated on Etsy developer app approval for production access.
+            </p>
+            <div class="card-footer">
+                <strong>Setup:</strong> add <code>ETSY_API_KEY</code> to <code>.env</code> once the app is approved.
+            </div>
+        </article>
+
+        <!-- Shopify -->
+        <article class="platform-card" role="listitem">
+            <div class="card-top">
+                <div class="platform-logo" aria-hidden="true">Sh</div>
+                <div class="card-meta">
+                    <h2>Shopify</h2>
+                    <div class="card-badges">
+                        <span class="badge badge-production">Production ready</span>
+                        <span class="method-chip method-rest">REST API</span>
+                    </div>
+                </div>
+            </div>
+            <p class="card-body">
+                Product and inventory sync, order import, and fulfillment updates via the Shopify Admin REST API. Requires a private app or custom app token scoped to <code>write_products</code> and <code>read_orders</code>.
+            </p>
+            <div class="card-footer">
+                <strong>Setup:</strong> add <code>SHOPIFY_STORE_DOMAIN</code> and <code>SHOPIFY_ACCESS_TOKEN</code> to <code>.env</code>.
+            </div>
+        </article>
+
+    </div>
+
+    <p class="section-heading">Browser Automation</p>
+    <div class="platforms-grid" role="list">
+
+        <!-- Poshmark -->
+        <article class="platform-card" role="listitem">
+            <div class="card-top">
+                <div class="platform-logo" aria-hidden="true">Po</div>
+                <div class="card-meta">
+                    <h2>Poshmark</h2>
+                    <div class="card-badges">
+                        <span class="badge badge-automation">Automation</span>
+                        <span class="method-chip method-browser">Playwright</span>
+                    </div>
+                </div>
+            </div>
+            <p class="card-body">
+                Listing creation, closet sharing, follow-back automation, and offer management via headless Chromium. Supports scheduled sharing with configurable rate limits.
+            </p>
+            <div class="card-footer">
+                <strong>Setup:</strong> add <code>POSHMARK_EMAIL</code> and <code>POSHMARK_PASSWORD</code> to <code>.env</code>.
+            </div>
+        </article>
+
+        <!-- Mercari -->
+        <article class="platform-card" role="listitem">
+            <div class="card-top">
+                <div class="platform-logo" aria-hidden="true">Me</div>
+                <div class="card-meta">
+                    <h2>Mercari</h2>
+                    <div class="card-badges">
+                        <span class="badge badge-automation">Automation</span>
+                        <span class="method-chip method-browser">Playwright</span>
+                    </div>
+                </div>
+            </div>
+            <p class="card-body">
+                Listing creation and price updates via headless Chromium. Automatic relisting to keep items surfaced in search. Offer acceptance rules configurable per item.
+            </p>
+            <div class="card-footer">
+                <strong>Setup:</strong> add <code>MERCARI_EMAIL</code> and <code>MERCARI_PASSWORD</code> to <code>.env</code>.
+            </div>
+        </article>
+
+        <!-- Depop -->
+        <article class="platform-card" role="listitem">
+            <div class="card-top">
+                <div class="platform-logo" aria-hidden="true">Dp</div>
+                <div class="card-meta">
+                    <h2>Depop</h2>
+                    <div class="card-badges">
+                        <span class="badge badge-automation">Automation</span>
+                        <span class="method-chip method-browser">Playwright</span>
+                    </div>
+                </div>
+            </div>
+            <p class="card-body">
+                Listing creation, image upload, and price-drop automation via headless Chromium. Integrates with the image bank for automatic watermarking before upload.
+            </p>
+            <div class="card-footer">
+                <strong>Setup:</strong> add <code>DEPOP_USERNAME</code> and <code>DEPOP_PASSWORD</code> to <code>.env</code>.
+            </div>
+        </article>
+
+        <!-- Grailed -->
+        <article class="platform-card" role="listitem">
+            <div class="card-top">
+                <div class="platform-logo" aria-hidden="true">Gr</div>
+                <div class="card-meta">
+                    <h2>Grailed</h2>
+                    <div class="card-badges">
+                        <span class="badge badge-automation">Automation</span>
+                        <span class="method-chip method-browser">Playwright</span>
+                    </div>
+                </div>
+            </div>
+            <p class="card-body">
+                Listing creation and bump automation via headless Chromium. Category and size mapping handled automatically from InventoryItem attributes.
+            </p>
+            <div class="card-footer">
+                <strong>Setup:</strong> add <code>GRAILED_EMAIL</code> and <code>GRAILED_PASSWORD</code> to <code>.env</code>.
+            </div>
+        </article>
+
+        <!-- Facebook Marketplace -->
+        <article class="platform-card" role="listitem">
+            <div class="card-top">
+                <div class="platform-logo" aria-hidden="true">FB</div>
+                <div class="card-meta">
+                    <h2>Facebook Marketplace</h2>
+                    <div class="card-badges">
+                        <span class="badge badge-automation">Automation</span>
+                        <span class="method-chip method-browser">Playwright</span>
+                    </div>
+                </div>
+            </div>
+            <p class="card-body">
+                Listing creation via headless Chromium. No official seller API is available; all actions are performed through the standard web interface with human-pace rate limiting.
+            </p>
+            <div class="card-footer">
+                <strong>Setup:</strong> add <code>FACEBOOK_EMAIL</code> and <code>FACEBOOK_PASSWORD</code> to <code>.env</code>.
+            </div>
+        </article>
+
+        <!-- Whatnot -->
+        <article class="platform-card" role="listitem">
+            <div class="card-top">
+                <div class="platform-logo" aria-hidden="true">Wn</div>
+                <div class="card-meta">
+                    <h2>Whatnot</h2>
+                    <div class="card-badges">
+                        <span class="badge badge-automation">Automation</span>
+                        <span class="method-chip method-browser">Playwright</span>
+                    </div>
+                </div>
+            </div>
+            <p class="card-body">
+                Inventory sync and listing creation for Whatnot shows via headless Chromium. Scheduled show reminders and lot creation from inventory items.
+            </p>
+            <div class="card-footer">
+                <strong>Setup:</strong> add <code>WHATNOT_EMAIL</code> and <code>WHATNOT_PASSWORD</code> to <code>.env</code>.
+            </div>
+        </article>
+
+    </div>
+</div>
+
+<footer class="site-footer">
+    <a href="/">VaultLister 3.0</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/quickstart.html">Quickstart</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/api-docs.html">API Docs</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/changelog.html">Changelog</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/status.html">Status</a>
+</footer>
+
+</body>
+</html>

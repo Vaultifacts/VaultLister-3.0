@@ -253,6 +253,10 @@ function getStatement(sql) {
     return statementCache.get(sql);
 }
 
+export function getStatementCacheStats() {
+    return { size: statementCache.size, maxSize: MAX_STATEMENT_CACHE };
+}
+
 export const query = {
     // Get single row
     get(sql, params = []) {

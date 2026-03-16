@@ -173,6 +173,7 @@ Object.assign(pages, {
         const summary = metrics?.summary || {};
         const endpoints = metrics?.endpoints || [];
         const system = metrics?.system || {};
+        const wsStats = metrics?.websocket || null;
 
         const cpuPct = system.cpu != null ? Math.round(system.cpu) : null;
         const memUsed = system.memoryUsed != null ? system.memoryUsed : null;
@@ -240,7 +241,7 @@ Object.assign(pages, {
                     ` : ''}
                 </div>
                 <div class="card-body">
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-4 gap-4">
                         <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
                             <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">CPU Usage</div>
                             <div style="font-size: 28px; font-weight: 700; color: ${cpuPct != null && cpuPct > 80 ? 'var(--danger)' : cpuPct != null && cpuPct > 60 ? 'var(--warning)' : 'var(--text-primary)'};">
@@ -270,6 +271,11 @@ Object.assign(pages, {
                             <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">Uptime</div>
                             <div style="font-size: 28px; font-weight: 700;">${formatUptime(uptimeSeconds)}</div>
                             ${system.startedAt ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Since ${formatTimestamp(system.startedAt)}</div>` : ''}
+                        </div>
+                        <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">WebSocket Connections</div>
+                            <div style="font-size: 28px; font-weight: 700;">${wsStats != null ? wsStats.totalConnections : '--'}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">${wsStats != null ? `${wsStats.connectedUsers} user${wsStats.connectedUsers !== 1 ? 's' : ''}, ${wsStats.rooms} room${wsStats.rooms !== 1 ? 's' : ''}` : ''}</div>
                         </div>
                     </div>
                 </div>

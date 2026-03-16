@@ -4,6 +4,7 @@
 import { monitor, healthChecker, securityMonitor } from '../services/monitoring.js';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import websocketService from '../services/websocket.js';
 
 export async function monitoringRouter(ctx) {
     const { method, path, user } = ctx;
@@ -55,7 +56,7 @@ export async function monitoringRouter(ctx) {
         }
 
         const stats = monitor.getStats();
-        return { status: 200, data: stats };
+        return { status: 200, data: { ...stats, websocket: websocketService.getStats() } };
     }
 
     // GET /api/metrics/prometheus - Prometheus format metrics (admin only)

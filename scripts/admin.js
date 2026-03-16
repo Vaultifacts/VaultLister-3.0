@@ -54,6 +54,9 @@ async function main() {
             case 'migrate-rollback':
                 await migrateRollback(args[0] ? parseInt(args[0], 10) : 1);
                 break;
+            case 'env-check':
+                envCheck();
+                break;
             case 'help':
             case undefined:
                 showHelp();
@@ -445,6 +448,51 @@ async function migrateRollback(count) {
     console.log('Re-run `migrate-run` to re-apply them.');
 }
 
+function envCheck() {
+    const examplePath = join(ROOT_DIR, '.env.example');
+    const envPath = join(ROOT_DIR, '.env');
+
+    if (!existsSync(examplePath)) {
+        console.error('Error: .env.example not found at', examplePath);
+        process.exit(1);
+    }
+
+    function parseEnvKeys(filePath) {
+        if (!existsSync(filePath)) return new Set();
+        const lines = readFileSync(filePath, 'utf8').split('\n');
+        const keys = new Set();
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('#')) continue;
+            const match = trimmed.match(/^([A-Za-z][A-Za-z0-9_]*)\s*=/);
+            if (match) keys.add(match[1]);
+        }
+        return keys;
+    }
+
+    const exampleKeys = parseEnvKeys(examplePath);
+    const envKeys = parseEnvKeys(envPath);
+
+    const missing = [...exampleKeys].filter(k => !envKeys.has(k));
+    const extra = [...envKeys].filter(k => !exampleKeys.has(k));
+
+    console.log('Environment Check');
+    console.log('-----------------');
+    if (missing.length === 0) {
+        console.log('All .env.example variables are present in .env.');
+    } else {
+        console.log(`\nMissing from .env (${missing.length}):`);
+        for (const k of missing) console.log(`  - ${k}`);
+    }
+
+    if (extra.length > 0) {
+        console.log(`\nCustom additions in .env not in .env.example (${extra.length}):`);
+        for (const k of extra) console.log(`  + ${k}`);
+    }
+
+    console.log(`\nTotal in .env.example: ${exampleKeys.size} | Total in .env: ${envKeys.size}`);
+}
+
 function showHelp() {
     console.log(`
 VaultLister 3.0 Admin CLI
@@ -459,6 +507,7 @@ Commands:
   migrate-status                          Show applied/pending migration status
   migrate-run                             Apply all pending migrations in order
   migrate-rollback [count]                Roll back last N migrations (default: 1)
+  env-check                               Compare .env.example with .env (missing/extra vars)
   help                                    Show this help message
 
 Examples:
@@ -471,6 +520,7 @@ Examples:
   bun scripts/admin.js migrate-run
   bun scripts/admin.js migrate-rollback
   bun scripts/admin.js migrate-rollback 3
+  bun scripts/admin.js env-check
 `);
 }
 

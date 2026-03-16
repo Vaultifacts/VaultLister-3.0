@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Developer quickstart guide for VaultLister 3.0 — get running in minutes.">
+    <title>Developer Quickstart — VaultLister</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --brand: #6366f1;
+            --brand-dark: #4f46e5;
+            --brand-light: #eef2ff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --surface: #ffffff;
+            --bg: #f9fafb;
+            --code-bg: #f3f4f6;
+            --code-text: #374151;
+            --step-line: #e5e7eb;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-primary: #f9fafb;
+                --text-secondary: #d1d5db;
+                --text-muted: #6b7280;
+                --border: #374151;
+                --surface: #1f2937;
+                --bg: #111827;
+                --brand-light: #1e1b4b;
+                --code-bg: #0f172a;
+                --code-text: #e2e8f0;
+                --step-line: #374151;
+            }
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .site-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .logo-mark {
+            width: 32px;
+            height: 32px;
+            background: var(--brand);
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo-mark svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+        }
+
+        .header-sep {
+            color: var(--border);
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .page-title-small {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 0;
+            max-width: 1060px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 700px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 80px;
+        }
+
+        .sidebar-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+        }
+
+        .sidebar nav a {
+            display: block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .sidebar nav a:hover {
+            background: var(--brand-light);
+            color: var(--brand);
+        }
+
+        /* Main content */
+        .content {
+            min-width: 0;
+            padding-left: 3rem;
+        }
+
+        @media (max-width: 700px) {
+            .content { padding-left: 0; }
+        }
+
+        .page-hero {
+            margin-bottom: 2.5rem;
+        }
+
+        .page-hero h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-hero p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 560px;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            scroll-margin-top: 80px;
+        }
+
+        /* Steps */
+        .steps {
+            list-style: none;
+            counter-reset: step-counter;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            left: 18px;
+            top: 28px;
+            bottom: 20px;
+            width: 2px;
+            background: var(--step-line);
+        }
+
+        .step {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 52px;
+            padding-bottom: 1.75rem;
+        }
+
+        .step::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--brand);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .step h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+            line-height: 1.3;
+        }
+
+        .step p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin-top: 0.4rem;
+            margin-bottom: 0.2rem;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+            font-size: 0.82em;
+            background: var(--code-bg);
+            color: var(--brand);
+            padding: 0.1em 0.35em;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            color: inherit;
+            font-size: 1em;
+        }
+
+        /* Demo credentials card */
+        .demo-card {
+            background: var(--brand-light);
+            border: 1px solid var(--brand);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-top: 0.75rem;
+        }
+
+        .demo-card .demo-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--brand);
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .demo-row:last-child { margin-bottom: 0; }
+
+        .demo-key {
+            color: var(--text-muted);
+            width: 70px;
+            flex-shrink: 0;
+            font-size: 0.8rem;
+        }
+
+        .demo-val {
+            font-family: 'Fira Code', Consolas, monospace;
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Commands table */
+        .cmd-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .cmd-table thead th {
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cmd-table tbody td {
+            padding: 0.55rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .cmd-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .cmd-table td:first-child {
+            white-space: nowrap;
+        }
+
+        .cmd-table td:last-child {
+            color: var(--text-secondary);
+        }
+
+        /* Structure tree */
+        .tree {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+            font-size: 0.82rem;
+            line-height: 1.75;
+            color: var(--code-text);
+            overflow-x: auto;
+        }
+
+        .tree .dir {
+            color: var(--brand);
+            font-weight: 600;
+        }
+
+        .tree .comment {
+            color: var(--text-muted);
+        }
+
+        /* Prereqs */
+        .prereq-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .prereq-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .prereq-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .badge-required {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-optional {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .badge-required { background: #14532d; color: #86efac; }
+            .badge-optional { background: #374151; color: #9ca3af; }
+        }
+
+        .prereq-info strong {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.1rem;
+        }
+
+        .prereq-info span {
+            color: var(--text-secondary);
+        }
+
+        /* Notice */
+        .notice {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            color: #92400e;
+            margin-top: 0.75rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .notice {
+                background: #422006;
+                border-color: #92400e;
+                color: #fde68a;
+            }
+        }
+
+        /* Footer */
+        .site-footer {
+            margin-top: 3rem;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .site-footer a {
+            color: var(--brand);
+            text-decoration: none;
+        }
+
+        .site-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <a href="/" class="logo" aria-label="VaultLister home">
+        <span class="logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/>
+            </svg>
+        </span>
+        VaultLister
+    </a>
+    <span class="header-sep" aria-hidden="true">/</span>
+    <span class="page-title-small">Developer Quickstart</span>
+</header>
+
+<div class="layout">
+    <aside class="sidebar" aria-label="Page navigation">
+        <p class="sidebar-label">On this page</p>
+        <nav>
+            <a href="#prerequisites">Prerequisites</a>
+            <a href="#setup">Setup</a>
+            <a href="#running">Running locally</a>
+            <a href="#demo-login">Demo login</a>
+            <a href="#key-commands">Key commands</a>
+            <a href="#structure">Project structure</a>
+            <a href="#next-steps">Next steps</a>
+        </nav>
+    </aside>
+
+    <main class="content" id="main-content">
+        <div class="page-hero">
+            <h1>Developer Quickstart</h1>
+            <p>Get a local VaultLister 3.0 instance running in under five minutes. No accounts or cloud services required for the core experience.</p>
+        </div>
+
+        <!-- Prerequisites -->
+        <section class="section" id="prerequisites">
+            <h2>Prerequisites</h2>
+            <ul class="prereq-list" role="list">
+                <li class="prereq-item">
+                    <span class="prereq-badge badge-required" aria-label="Required">Required</span>
+                    <div class="prereq-info">
+                        <strong>Bun 1.3+</strong>
+                        <span>Runtime and package manager. Install via <code>curl -fsSL https://bun.sh/install | bash</code> or see <a href="https://bun.sh" target="_blank" rel="noopener">bun.sh</a>.</span>
+                    </div>
+                </li>
+                <li class="prereq-item">
+                    <span class="prereq-badge badge-required" aria-label="Required">Required</span>
+                    <div class="prereq-info">
+                        <strong>Git 2.x</strong>
+                        <span>For cloning and version control.</span>
+                    </div>
+                </li>
+                <li class="prereq-item">
+                    <span class="prereq-badge badge-optional" aria-label="Optional">Optional</span>
+                    <div class="prereq-info">
+                        <strong>Docker 24+</strong>
+                        <span>Only needed for production deployment or running the full containerized stack.</span>
+                    </div>
+                </li>
+                <li class="prereq-item">
+                    <span class="prereq-badge badge-optional" aria-label="Optional">Optional</span>
+                    <div class="prereq-info">
+                        <strong>Playwright browsers</strong>
+                        <span>Required only if you want to test marketplace automation bots. Install after <code>bun install</code> by running <code>bunx playwright install</code>.</span>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Setup -->
+        <section class="section" id="setup">
+            <h2>Setup</h2>
+            <ol class="steps" role="list">
+                <li class="step">
+                    <h3>Clone the repository</h3>
+                    <pre><code>git clone https://github.com/Vaultifacts/VaultLister-3.0.git
+cd VaultLister-3.0</code></pre>
+                </li>
+                <li class="step">
+                    <h3>Create your <code>.env</code> file</h3>
+                    <p>Copy the example file and set a strong value for <code>JWT_SECRET</code>. All other values are optional for local development.</p>
+                    <pre><code>cp .env.example .env</code></pre>
+                    <div class="notice" role="note">
+                        Open <code>.env</code> in your editor and set <code>JWT_SECRET</code> to any random 32+ character string before starting the server.
+                    </div>
+                </li>
+                <li class="step">
+                    <h3>Install dependencies</h3>
+                    <pre><code>bun install</code></pre>
+                </li>
+                <li class="step">
+                    <h3>Initialize the database</h3>
+                    <pre><code>bun run db:init</code></pre>
+                    <p>Creates the SQLite database at <code>data/vaultlister.db</code> in WAL mode with all tables and seed data including the demo account.</p>
+                </li>
+            </ol>
+        </section>
+
+        <!-- Running -->
+        <section class="section" id="running">
+            <h2>Running locally</h2>
+            <ol class="steps" role="list">
+                <li class="step">
+                    <h3>Start the development server</h3>
+                    <pre><code>bun run dev</code></pre>
+                    <p>The server starts on <strong>port 3000</strong> by default. File changes to backend routes and frontend pages hot-reload automatically.</p>
+                </li>
+                <li class="step">
+                    <h3>Open the app</h3>
+                    <p>Navigate to:</p>
+                    <pre><code>http://localhost:3000</code></pre>
+                </li>
+            </ol>
+        </section>
+
+        <!-- Demo login -->
+        <section class="section" id="demo-login">
+            <h2>Demo login</h2>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                A demo account is pre-seeded by <code>db:init</code>. Use it to explore the full UI without configuring marketplace credentials.
+            </p>
+            <div class="demo-card" role="region" aria-label="Demo account credentials">
+                <p class="demo-label">Demo account</p>
+                <div class="demo-row">
+                    <span class="demo-key">Email</span>
+                    <span class="demo-val">demo@vaultlister.com</span>
+                </div>
+                <div class="demo-row">
+                    <span class="demo-key">Password</span>
+                    <span class="demo-val">DemoPassword123!</span>
+                </div>
+                <div class="demo-row">
+                    <span class="demo-key">MFA</span>
+                    <span class="demo-val" style="color: var(--text-muted);">disabled (dev only)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key commands -->
+        <section class="section" id="key-commands">
+            <h2>Key commands</h2>
+            <table class="cmd-table" aria-label="Available npm and bun scripts">
+                <thead>
+                    <tr>
+                        <th scope="col">Command</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>bun run dev</code></td>
+                        <td>Start dev server with hot reload on port 3000</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run dev:bg</code></td>
+                        <td>Start dev server in the background</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run test:unit</code></td>
+                        <td>Run unit tests (Bun:test)</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run test:e2e</code></td>
+                        <td>Run end-to-end tests (Playwright)</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run test:all</code></td>
+                        <td>Run all tests in sequence</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run build</code></td>
+                        <td>Production build — bundle and minify assets</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run lint</code></td>
+                        <td>Syntax check all source files</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun run db:reset</code></td>
+                        <td>Wipe and re-seed the local database</td>
+                    </tr>
+                    <tr>
+                        <td><code>bun scripts/help.js</code></td>
+                        <td>List all available scripts with descriptions</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Project structure -->
+        <section class="section" id="structure">
+            <h2>Project structure</h2>
+            <div class="tree" role="region" aria-label="Project directory structure">
+<span class="dir">vaultlister-3/</span>
+├── <span class="dir">src/</span>
+│   ├── <span class="dir">backend/</span>
+│   │   ├── <span class="dir">routes/</span>          <span class="comment"># API route handlers — one file per domain</span>
+│   │   └── <span class="dir">middleware/</span>       <span class="comment"># Auth, CSRF, rate limiting, security headers</span>
+│   ├── <span class="dir">frontend/</span>
+│   │   ├── app.js             <span class="comment"># SPA entry point, store, router</span>
+│   │   ├── <span class="dir">pages/</span>           <span class="comment"># Lazy-loaded route pages</span>
+│   │   ├── <span class="dir">handlers/</span>        <span class="comment"># Event handlers grouped by domain</span>
+│   │   └── <span class="dir">components/</span>      <span class="comment"># Reusable UI components</span>
+│   └── <span class="dir">shared/</span>
+│       ├── <span class="dir">ai/</span>              <span class="comment"># Anthropic SDK wrappers — never call SDK directly</span>
+│       └── <span class="dir">automations/</span>     <span class="comment"># Playwright bots for marketplace automations</span>
+├── <span class="dir">public/</span>                   <span class="comment"># Static files served at root</span>
+├── <span class="dir">scripts/</span>                  <span class="comment"># Dev utilities — session-start, session-end, etc.</span>
+├── <span class="dir">data/</span>                     <span class="comment"># SQLite database and audit logs (git-ignored)</span>
+├── <span class="dir">chrome-extension/</span>        <span class="comment"># Chromium extension source</span>
+├── .env.example               <span class="comment"># Copy to .env and fill in values</span>
+└── CLAUDE.md                  <span class="comment"># Project instructions for AI agents</span>
+            </div>
+        </section>
+
+        <!-- Next steps -->
+        <section class="section" id="next-steps">
+            <h2>Next steps</h2>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem;">
+                <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="color: var(--brand); font-size: 1rem;" aria-hidden="true">&#8594;</span>
+                    Read <a href="/public/platforms.html" style="color: var(--brand); text-decoration: none; font-weight: 500;">Platform Integration Status</a> — see which marketplaces are ready to connect
+                </li>
+                <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="color: var(--brand); font-size: 1rem;" aria-hidden="true">&#8594;</span>
+                    Read <a href="/public/er-diagram.html" style="color: var(--brand); text-decoration: none; font-weight: 500;">Database ER Diagram</a> — understand the data model before writing queries
+                </li>
+                <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="color: var(--brand); font-size: 1rem;" aria-hidden="true">&#8594;</span>
+                    Read <a href="/api-docs.html" style="color: var(--brand); text-decoration: none; font-weight: 500;">API Documentation</a> — full reference for all endpoints
+                </li>
+                <li style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="color: var(--brand); font-size: 1rem;" aria-hidden="true">&#8594;</span>
+                    Read <a href="/CONTRIBUTING.md" style="color: var(--brand); text-decoration: none; font-weight: 500;">CONTRIBUTING.md</a> — contribution guidelines, branch naming, and code conventions
+                </li>
+            </ul>
+        </section>
+    </main>
+</div>
+
+<footer class="site-footer">
+    <a href="/">VaultLister 3.0</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/quickstart.html">Quickstart</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/api-docs.html">API Docs</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/changelog.html">Changelog</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/status.html">Status</a>
+</footer>
+
+</body>
+</html>

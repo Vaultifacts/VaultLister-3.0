@@ -1,4 +1,5 @@
 // src/backend/server.js - VaultLister Backend Server - Bun.js with robust shutdown hooks and logging (beginner-friendly)
+const startTime = performance.now();
 import './env.js'; // Validate required env vars before anything else — exits with clear errors on misconfiguration
 import { readFileSync, existsSync, appendFileSync, writeFileSync, unlinkSync, mkdirSync } from 'fs';
 import { gzipSync } from 'zlib';
@@ -6,7 +7,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { join, dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
-import { initializeDatabase, cleanupExpiredData } from './db/database.js';
+import { initializeDatabase, cleanupExpiredData, getStatementCacheStats } from './db/database.js';
 import { authRouter } from './routes/auth.js';
 import { inventoryRouter } from './routes/inventory.js';
 import { listingsRouter } from './routes/listings.js';
@@ -456,7 +457,9 @@ const apiRoutes = {
                 runtime: process.version,
                 uptime: Math.floor(process.uptime()),
                 environment: process.env.NODE_ENV || 'development',
-                database: monMetrics.database
+                database: monMetrics.database,
+                statementCache: getStatementCacheStats(),
+                websocket: websocketService.getStats()
             }
         };
     },
@@ -1484,6 +1487,8 @@ logger.info(`
 `);
 
 log(`Server started`);
+const startupMs = Math.round(performance.now() - startTime);
+logger.info(`[Server] Started in ${startupMs}ms on port ${server.port}`);
 
 // Start background services
 startTokenRefreshScheduler();

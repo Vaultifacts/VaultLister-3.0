@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VaultLister 3.0 — Entity-relationship diagram for the core database schema.">
+    <title>Database ER Diagram — VaultLister</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --brand: #6366f1;
+            --brand-dark: #4f46e5;
+            --brand-light: #eef2ff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --surface: #ffffff;
+            --bg: #f9fafb;
+            --table-header-bg: #f3f4f6;
+            --pk-color: #b45309;
+            --pk-bg: #fef9c3;
+            --fk-color: #0369a1;
+            --fk-bg: #e0f2fe;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-primary: #f9fafb;
+                --text-secondary: #d1d5db;
+                --text-muted: #6b7280;
+                --border: #374151;
+                --surface: #1f2937;
+                --bg: #111827;
+                --brand-light: #1e1b4b;
+                --table-header-bg: #111827;
+                --pk-color: #fde68a;
+                --pk-bg: #422006;
+                --fk-color: #7dd3fc;
+                --fk-bg: #0c4a6e;
+            }
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .site-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .logo-mark {
+            width: 32px;
+            height: 32px;
+            background: var(--brand);
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo-mark svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+        }
+
+        .header-sep {
+            color: var(--border);
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .page-title-small {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Page layout */
+        .page-wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        .page-hero {
+            margin-bottom: 2rem;
+        }
+
+        .page-hero h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-hero p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 600px;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 0.9rem 1.1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            color: var(--text-secondary);
+            width: 100%;
+            margin-bottom: 0.1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-pill {
+            display: inline-block;
+            padding: 0.1rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            font-family: 'Fira Code', Consolas, monospace;
+        }
+
+        .pill-pk { background: var(--pk-bg); color: var(--pk-color); }
+        .pill-fk { background: var(--fk-bg); color: var(--fk-color); }
+
+        /* Diagram canvas */
+        .diagram-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        /* ASCII diagram */
+        .ascii-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow-x: auto;
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .ascii-diagram {
+            font-family: 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace;
+            font-size: 0.78rem;
+            line-height: 1.55;
+            color: var(--text-primary);
+            white-space: pre;
+            margin: 0;
+        }
+
+        .ascii-diagram .entity {
+            color: var(--brand);
+            font-weight: 700;
+        }
+
+        .ascii-diagram .rel-label {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .ascii-diagram .cardinality {
+            color: #f59e0b;
+        }
+
+        /* Entity table cards */
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 480px) {
+            .tables-grid { grid-template-columns: 1fr; }
+        }
+
+        .entity-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .entity-card-header {
+            background: var(--brand);
+            color: #fff;
+            padding: 0.55rem 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .entity-card-header h3 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            font-family: 'Fira Code', Consolas, monospace;
+        }
+
+        .entity-card-header .row-note {
+            font-size: 0.7rem;
+            opacity: 0.75;
+        }
+
+        .entity-fields {
+            list-style: none;
+        }
+
+        .field-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.38rem 0.9rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+
+        .field-row:last-child {
+            border-bottom: none;
+        }
+
+        .field-name {
+            font-family: 'Fira Code', Consolas, monospace;
+            font-size: 0.78rem;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .field-type {
+            font-family: 'Fira Code', Consolas, monospace;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .field-tag {
+            display: inline-block;
+            padding: 0.05rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+
+        .tag-pk { background: var(--pk-bg); color: var(--pk-color); }
+        .tag-fk { background: var(--fk-bg); color: var(--fk-color); }
+
+        /* Relationships table */
+        .rel-table-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
+        .rel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .rel-table thead th {
+            background: var(--table-header-bg);
+            text-align: left;
+            padding: 0.6rem 1rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .rel-table tbody td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .rel-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rel-table td:first-child,
+        .rel-table td:nth-child(3) {
+            font-family: 'Fira Code', Consolas, monospace;
+            font-size: 0.78rem;
+            white-space: nowrap;
+            color: var(--brand);
+        }
+
+        .rel-table td:nth-child(2) {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #f59e0b;
+        }
+
+        .rel-table td:last-child {
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+        }
+
+        /* Footer */
+        .site-footer {
+            margin-top: 3rem;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .site-footer a {
+            color: var(--brand);
+            text-decoration: none;
+        }
+
+        .site-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <a href="/" class="logo" aria-label="VaultLister home">
+        <span class="logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/>
+            </svg>
+        </span>
+        VaultLister
+    </a>
+    <span class="header-sep" aria-hidden="true">/</span>
+    <span class="page-title-small">Database ER Diagram</span>
+</header>
+
+<div class="page-wrap">
+    <div class="page-hero">
+        <h1>Database ER Diagram</h1>
+        <p>Entity-relationship overview of the core VaultLister 3.0 schema. All ID columns are <code>TEXT</code> (UUID). The database is SQLite 3 in WAL mode with FTS5 for full-text search on inventory.</p>
+    </div>
+
+    <div class="legend" role="region" aria-label="Diagram legend">
+        <p class="legend-title">Legend</p>
+        <div class="legend-item">
+            <span class="legend-pill pill-pk">PK</span>
+            Primary key
+        </div>
+        <div class="legend-item">
+            <span class="legend-pill pill-fk">FK</span>
+            Foreign key
+        </div>
+        <div class="legend-item">
+            <span style="color: #f59e0b; font-weight: 700; font-size: 0.85rem;">1 : N</span>
+            One-to-many relationship
+        </div>
+    </div>
+
+    <!-- ASCII diagram -->
+    <div class="diagram-section">
+        <p class="section-label">Relationship map</p>
+        <div class="ascii-wrap" role="region" aria-label="ASCII entity-relationship diagram">
+            <pre class="ascii-diagram" aria-hidden="false"><span class="entity">users</span>
+  │
+  ├─[1:N]──────────────► <span class="entity">inventory</span>
+  │                           │
+  │                           └─[1:N]────────► <span class="entity">listings</span>
+  │                                                │
+  ├─[1:N]──────────────────────────────────────────┘
+  │
+  ├─[1:N]──────────────► <span class="entity">sales</span>
+  │
+  ├─[1:N]──────────────► <span class="entity">offers</span>
+  │
+  ├─[1:N]──────────────► <span class="entity">shops</span>
+  │
+  └─[1:N]──────────────► <span class="entity">sessions</span></pre>
+        </div>
+
+        <p class="section-label">Relationships</p>
+        <div class="rel-table-wrap" role="region" aria-label="Relationship details table">
+            <table class="rel-table" aria-label="Entity relationships">
+                <thead>
+                    <tr>
+                        <th scope="col">Parent entity</th>
+                        <th scope="col">Cardinality</th>
+                        <th scope="col">Child entity</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>users</td>
+                        <td aria-label="one to many">1 : N</td>
+                        <td>inventory</td>
+                        <td>Each user owns zero or more InventoryItems. Deleting a user cascades to their inventory.</td>
+                    </tr>
+                    <tr>
+                        <td>users</td>
+                        <td aria-label="one to many">1 : N</td>
+                        <td>listings</td>
+                        <td>Each user owns zero or more Listings across all platforms. A Listing also belongs to one InventoryItem.</td>
+                    </tr>
+                    <tr>
+                        <td>inventory</td>
+                        <td aria-label="one to many">1 : N</td>
+                        <td>listings</td>
+                        <td>One InventoryItem can have one Listing per platform (up to 9). Status syncs back when a sale occurs.</td>
+                    </tr>
+                    <tr>
+                        <td>users</td>
+                        <td aria-label="one to many">1 : N</td>
+                        <td>sales</td>
+                        <td>Each Sale belongs to one user and is linked to the originating Listing and InventoryItem.</td>
+                    </tr>
+                    <tr>
+                        <td>users</td>
+                        <td aria-label="one to many">1 : N</td>
+                        <td>offers</td>
+                        <td>Each Offer belongs to one user. Offers are associated with a Listing and a platform buyer ID.</td>
+                    </tr>
+                    <tr>
+                        <td>users</td>
+                        <td aria-label="one to many">1 : N</td>
+                        <td>shops</td>
+                        <td>Each user can have one shop profile per platform (e.g., Poshmark closet, eBay store).</td>
+                    </tr>
+                    <tr>
+                        <td>users</td>
+                        <td aria-label="one to many">1 : N</td>
+                        <td>sessions</td>
+                        <td>Auth sessions for JWT refresh token tracking. Supports multiple devices (Remember Me).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Entity cards -->
+    <div class="diagram-section">
+        <p class="section-label">Core entities</p>
+        <div class="tables-grid" role="list">
+
+            <!-- users -->
+            <article class="entity-card" role="listitem" aria-label="users table">
+                <div class="entity-card-header">
+                    <h3>users</h3>
+                    <span class="row-note">1 row per account</span>
+                </div>
+                <ul class="entity-fields" aria-label="users columns">
+                    <li class="field-row">
+                        <span class="field-tag tag-pk">PK</span>
+                        <span class="field-name">id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">email</span>
+                        <span class="field-type">TEXT UNIQUE</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">password_hash</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">totp_secret</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">plan</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">created_at</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                </ul>
+            </article>
+
+            <!-- inventory -->
+            <article class="entity-card" role="listitem" aria-label="inventory table">
+                <div class="entity-card-header">
+                    <h3>inventory</h3>
+                    <span class="row-note">1 row per item</span>
+                </div>
+                <ul class="entity-fields" aria-label="inventory columns">
+                    <li class="field-row">
+                        <span class="field-tag tag-pk">PK</span>
+                        <span class="field-name">id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-tag tag-fk">FK</span>
+                        <span class="field-name">user_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">title</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">description</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">cost_price</span>
+                        <span class="field-type">REAL</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">list_price</span>
+                        <span class="field-type">REAL</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">status</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">tags</span>
+                        <span class="field-type">TEXT (JSON)</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">created_at</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                </ul>
+            </article>
+
+            <!-- listings -->
+            <article class="entity-card" role="listitem" aria-label="listings table">
+                <div class="entity-card-header">
+                    <h3>listings</h3>
+                    <span class="row-note">1 row per platform listing</span>
+                </div>
+                <ul class="entity-fields" aria-label="listings columns">
+                    <li class="field-row">
+                        <span class="field-tag tag-pk">PK</span>
+                        <span class="field-name">id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-tag tag-fk">FK</span>
+                        <span class="field-name">user_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-tag tag-fk">FK</span>
+                        <span class="field-name">inventory_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">platform</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">platform_listing_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">status</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">listed_at</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                </ul>
+            </article>
+
+            <!-- sales -->
+            <article class="entity-card" role="listitem" aria-label="sales table">
+                <div class="entity-card-header">
+                    <h3>sales</h3>
+                    <span class="row-note">1 row per completed sale</span>
+                </div>
+                <ul class="entity-fields" aria-label="sales columns">
+                    <li class="field-row">
+                        <span class="field-tag tag-pk">PK</span>
+                        <span class="field-name">id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-tag tag-fk">FK</span>
+                        <span class="field-name">user_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-tag tag-fk">FK</span>
+                        <span class="field-name">listing_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">sale_price</span>
+                        <span class="field-type">REAL</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">platform_fees</span>
+                        <span class="field-type">REAL</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">net_profit</span>
+                        <span class="field-type">REAL</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">sold_at</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                </ul>
+            </article>
+
+            <!-- offers -->
+            <article class="entity-card" role="listitem" aria-label="offers table">
+                <div class="entity-card-header">
+                    <h3>offers</h3>
+                    <span class="row-note">1 row per offer</span>
+                </div>
+                <ul class="entity-fields" aria-label="offers columns">
+                    <li class="field-row">
+                        <span class="field-tag tag-pk">PK</span>
+                        <span class="field-name">id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-tag tag-fk">FK</span>
+                        <span class="field-name">user_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-tag tag-fk">FK</span>
+                        <span class="field-name">listing_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">offer_amount</span>
+                        <span class="field-type">REAL</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">status</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">buyer_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">created_at</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                </ul>
+            </article>
+
+            <!-- shops -->
+            <article class="entity-card" role="listitem" aria-label="shops table">
+                <div class="entity-card-header">
+                    <h3>shops</h3>
+                    <span class="row-note">1 row per platform connection</span>
+                </div>
+                <ul class="entity-fields" aria-label="shops columns">
+                    <li class="field-row">
+                        <span class="field-tag tag-pk">PK</span>
+                        <span class="field-name">id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-tag tag-fk">FK</span>
+                        <span class="field-name">user_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">platform</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">shop_name</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">access_token_enc</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">refresh_token_enc</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">connected_at</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                </ul>
+            </article>
+
+            <!-- sessions -->
+            <article class="entity-card" role="listitem" aria-label="sessions table">
+                <div class="entity-card-header">
+                    <h3>sessions</h3>
+                    <span class="row-note">1 row per device/refresh token</span>
+                </div>
+                <ul class="entity-fields" aria-label="sessions columns">
+                    <li class="field-row">
+                        <span class="field-tag tag-pk">PK</span>
+                        <span class="field-name">id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-tag tag-fk">FK</span>
+                        <span class="field-name">user_id</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">refresh_token_hash</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">ip_address</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">user_agent</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">expires_at</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                    <li class="field-row">
+                        <span class="field-name">created_at</span>
+                        <span class="field-type">TEXT</span>
+                    </li>
+                </ul>
+            </article>
+
+        </div>
+    </div>
+
+</div>
+
+<footer class="site-footer">
+    <a href="/">VaultLister 3.0</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/quickstart.html">Quickstart</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/platforms.html">Platforms</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/api-docs.html">API Docs</a>
+    &nbsp;&middot;&nbsp;
+    <a href="/changelog.html">Changelog</a>
+</footer>
+
+</body>
+</html>
