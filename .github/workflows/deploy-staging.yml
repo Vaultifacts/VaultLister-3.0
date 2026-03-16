@@ -143,6 +143,10 @@ jobs:
           ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} 'mkdir -p /opt/vaultlister-staging/nginx'
           scp nginx/nginx.staging.conf ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}:/opt/vaultlister-staging/nginx/nginx.staging.conf
 
+      - name: Pre-deploy database backup
+        run: |
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} '/opt/vaultlister-staging/backup.sh'
+
       - name: Deploy via SSH
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

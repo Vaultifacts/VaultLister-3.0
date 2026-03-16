@@ -1,0 +1,2481 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "VaultLister API",
+    "version": "1.0.0",
+    "description": "REST API for VaultLister 3.0 — multi-channel reselling platform. Most endpoints require a Bearer JWT token in the Authorization header.",
+    "contact": {
+      "name": "VaultLister Support",
+      "email": "support@vaultlister.com"
+    }
+  },
+  "servers": [
+    { "url": "https://vaultlister.com", "description": "Production" },
+    { "url": "http://localhost:3000", "description": "Local development" }
+  ],
+  "tags": [
+    { "name": "auth", "description": "Registration, login, sessions, MFA, password reset" },
+    { "name": "inventory", "description": "Inventory item management, categories, suppliers" },
+    { "name": "listings", "description": "Cross-platform listing management, folders, refresh" },
+    { "name": "sales", "description": "Sales recording and statistics" },
+    { "name": "orders", "description": "Order management, shipping, returns, splits" },
+    { "name": "offers", "description": "Offer management, rules, auto-accept" },
+    { "name": "analytics", "description": "Dashboard metrics, forecasting, heatmaps, exports" },
+    { "name": "shops", "description": "Connected marketplace accounts and sync" },
+    { "name": "automations", "description": "Automation rules, presets, run history, scheduling" },
+    { "name": "notifications", "description": "In-app notification management" },
+    { "name": "reports", "description": "Custom reports, P&L, scheduling" },
+    { "name": "tasks", "description": "Background task queue" },
+    { "name": "templates", "description": "Listing and message templates" },
+    { "name": "image-bank", "description": "Image storage, folders, AI analysis" },
+    { "name": "ai", "description": "AI-powered listing generation, price suggestions, translation" },
+    { "name": "billing", "description": "Subscription plans, usage, plan changes" },
+    { "name": "teams", "description": "Team management, invitations, roles" },
+    { "name": "shipping-labels", "description": "Label generation, batches, addresses, rates" },
+    { "name": "shipping-profiles", "description": "Reusable shipping configuration profiles" },
+    { "name": "barcode", "description": "Barcode scanning, lookup, validation" }
+  ],
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Register a new user account",
+        "security": [],
+        "responses": {
+          "201": { "description": "User created" },
+          "400": { "description": "Validation error" },
+          "409": { "description": "Email already registered" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Login and receive JWT tokens",
+        "security": [],
+        "responses": {
+          "200": { "description": "Login successful, returns access + refresh tokens" },
+          "401": { "description": "Invalid credentials" },
+          "423": { "description": "Account locked" }
+        }
+      }
+    },
+    "/api/auth/demo-login": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Demo login without exposing credentials in frontend",
+        "security": [],
+        "responses": {
+          "200": { "description": "Demo session started" }
+        }
+      }
+    },
+    "/api/auth/mfa-verify": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Verify MFA code during login",
+        "security": [],
+        "responses": {
+          "200": { "description": "MFA verified, tokens issued" },
+          "401": { "description": "Invalid MFA code" }
+        }
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Refresh access token using refresh token",
+        "security": [],
+        "responses": {
+          "200": { "description": "New access token issued" },
+          "401": { "description": "Invalid or expired refresh token" }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Logout and revoke session",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Logged out" }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Get current authenticated user",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "User profile" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/auth/profile": {
+      "put": {
+        "tags": ["auth"],
+        "summary": "Update user profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Profile updated" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/auth/password": {
+      "put": {
+        "tags": ["auth"],
+        "summary": "Change password",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Password changed" },
+          "400": { "description": "Current password incorrect" }
+        }
+      }
+    },
+    "/api/auth/sessions": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "List active sessions",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Session list" }
+        }
+      }
+    },
+    "/api/auth/sessions/{id}": {
+      "delete": {
+        "tags": ["auth"],
+        "summary": "Revoke a specific session",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Session revoked" },
+          "404": { "description": "Session not found" }
+        }
+      }
+    },
+    "/api/auth/sessions/revoke-all": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Revoke all other sessions",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "All other sessions revoked" }
+        }
+      }
+    },
+    "/api/auth/password-reset": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Request a password reset email",
+        "security": [],
+        "responses": {
+          "200": { "description": "Reset email sent if account exists" }
+        }
+      }
+    },
+    "/api/auth/verify-email": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Verify email address via token",
+        "security": [],
+        "parameters": [{ "name": "token", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Email verified" },
+          "400": { "description": "Invalid or expired token" }
+        }
+      }
+    },
+    "/api/auth/resend-verification": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Resend email verification link",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Verification email sent" }
+        }
+      }
+    },
+    "/api/inventory": {
+      "get": {
+        "tags": ["inventory"],
+        "summary": "List all inventory items",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["active", "draft", "sold"] } }
+        ],
+        "responses": {
+          "200": { "description": "Paginated inventory list" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["inventory"],
+        "summary": "Create a new inventory item",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Item created" },
+          "400": { "description": "Validation error" }
+        }
+      }
+    },
+    "/api/inventory/stats": {
+      "get": {
+        "tags": ["inventory"],
+        "summary": "Get inventory statistics (totals, values)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Stats object" }
+        }
+      }
+    },
+    "/api/inventory/bulk": {
+      "post": {
+        "tags": ["inventory"],
+        "summary": "Bulk operations on inventory items",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Bulk operation result" }
+        }
+      }
+    },
+    "/api/inventory/import/csv": {
+      "post": {
+        "tags": ["inventory"],
+        "summary": "Import items from CSV",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Import result" }
+        }
+      }
+    },
+    "/api/inventory/import/url": {
+      "post": {
+        "tags": ["inventory"],
+        "summary": "Import an item from a marketplace URL",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Item imported" },
+          "400": { "description": "Unsupported URL" }
+        }
+      }
+    },
+    "/api/inventory/cleanup-deleted": {
+      "post": {
+        "tags": ["inventory"],
+        "summary": "Remove deleted items older than 30 days",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Cleaned up" }
+        }
+      }
+    },
+    "/api/inventory/deleted": {
+      "get": {
+        "tags": ["inventory"],
+        "summary": "List recently deleted items (within 30 days)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Deleted items list" }
+        }
+      }
+    },
+    "/api/inventory/categories": {
+      "get": {
+        "tags": ["inventory"],
+        "summary": "List user-defined inventory categories",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Categories list" }
+        }
+      },
+      "post": {
+        "tags": ["inventory"],
+        "summary": "Create a category",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Category created" }
+        }
+      }
+    },
+    "/api/inventory/categories/{id}": {
+      "put": {
+        "tags": ["inventory"],
+        "summary": "Update a category",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "delete": {
+        "tags": ["inventory"],
+        "summary": "Delete a category",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/inventory/suppliers": {
+      "get": {
+        "tags": ["inventory"],
+        "summary": "List suppliers",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Supplier list" }
+        }
+      },
+      "post": {
+        "tags": ["inventory"],
+        "summary": "Create a supplier",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Supplier created" }
+        }
+      }
+    },
+    "/api/inventory/suppliers/{id}": {
+      "put": {
+        "tags": ["inventory"],
+        "summary": "Update a supplier",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["inventory"],
+        "summary": "Delete a supplier",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/inventory/suppliers/{id}/performance": {
+      "get": {
+        "tags": ["inventory"],
+        "summary": "Supplier performance analytics",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Performance stats" }
+        }
+      }
+    },
+    "/api/inventory/{id}": {
+      "get": {
+        "tags": ["inventory"],
+        "summary": "Get a single inventory item",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Item" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "put": {
+        "tags": ["inventory"],
+        "summary": "Update an inventory item",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "delete": {
+        "tags": ["inventory"],
+        "summary": "Soft-delete an inventory item (moves to Recently Deleted)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Soft-deleted" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/api/inventory/{id}/history": {
+      "get": {
+        "tags": ["inventory"],
+        "summary": "Get item purchase and sales history",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "History" }
+        }
+      }
+    },
+    "/api/inventory/{id}/restore": {
+      "post": {
+        "tags": ["inventory"],
+        "summary": "Restore a soft-deleted item",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Restored" }
+        }
+      }
+    },
+    "/api/inventory/{id}/permanent": {
+      "delete": {
+        "tags": ["inventory"],
+        "summary": "Permanently delete an item",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Permanently deleted" }
+        }
+      }
+    },
+    "/api/listings": {
+      "get": {
+        "tags": ["listings"],
+        "summary": "List all listings",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Listings list" }
+        }
+      },
+      "post": {
+        "tags": ["listings"],
+        "summary": "Create a new listing",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Listing created" }
+        }
+      }
+    },
+    "/api/listings/crosslist": {
+      "post": {
+        "tags": ["listings"],
+        "summary": "Create listings for multiple platforms at once",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Cross-listed" }
+        }
+      }
+    },
+    "/api/listings/batch": {
+      "post": {
+        "tags": ["listings"],
+        "summary": "Create multiple listings at once",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Batch created" }
+        }
+      }
+    },
+    "/api/listings/stats": {
+      "get": {
+        "tags": ["listings"],
+        "summary": "Get listing statistics",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Stats" }
+        }
+      }
+    },
+    "/api/listings/stale": {
+      "get": {
+        "tags": ["listings"],
+        "summary": "Get stale listings that need refreshing",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Stale listings" }
+        }
+      }
+    },
+    "/api/listings/refresh-bulk": {
+      "post": {
+        "tags": ["listings"],
+        "summary": "Refresh multiple stale listings",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Refresh results" }
+        }
+      }
+    },
+    "/api/listings/folders": {
+      "get": {
+        "tags": ["listings"],
+        "summary": "List all folders with pagination",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Folders" }
+        }
+      },
+      "post": {
+        "tags": ["listings"],
+        "summary": "Create a folder",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Folder created" }
+        }
+      }
+    },
+    "/api/listings/folders/{id}": {
+      "patch": {
+        "tags": ["listings"],
+        "summary": "Update a folder",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["listings"],
+        "summary": "Delete a folder",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/listings/{id}": {
+      "get": {
+        "tags": ["listings"],
+        "summary": "Get a single listing",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Listing" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "put": {
+        "tags": ["listings"],
+        "summary": "Update a listing",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["listings"],
+        "summary": "Delete a listing",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/listings/{id}/share": {
+      "post": {
+        "tags": ["listings"],
+        "summary": "Share a listing (Poshmark)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Shared" }
+        }
+      }
+    },
+    "/api/listings/{id}/delist": {
+      "post": {
+        "tags": ["listings"],
+        "summary": "Delist a listing",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Delisted" }
+        }
+      }
+    },
+    "/api/listings/{id}/relist": {
+      "post": {
+        "tags": ["listings"],
+        "summary": "Relist a listing",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Relisted" }
+        }
+      }
+    },
+    "/api/listings/{id}/refresh": {
+      "post": {
+        "tags": ["listings"],
+        "summary": "Delist and immediately relist a listing",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Refreshed" }
+        }
+      }
+    },
+    "/api/listings/{id}/refresh-history": {
+      "get": {
+        "tags": ["listings"],
+        "summary": "Get refresh history for a listing",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Refresh history" }
+        }
+      }
+    },
+    "/api/listings/{id}/staleness-settings": {
+      "put": {
+        "tags": ["listings"],
+        "summary": "Update staleness settings for a listing",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      }
+    },
+    "/api/sales": {
+      "get": {
+        "tags": ["sales"],
+        "summary": "List all sales",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Sales list" }
+        }
+      },
+      "post": {
+        "tags": ["sales"],
+        "summary": "Record a new sale",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Sale recorded" }
+        }
+      }
+    },
+    "/api/sales/stats": {
+      "get": {
+        "tags": ["sales"],
+        "summary": "Get sales statistics",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Stats" }
+        }
+      }
+    },
+    "/api/sales/{id}": {
+      "get": {
+        "tags": ["sales"],
+        "summary": "Get a single sale",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Sale" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "put": {
+        "tags": ["sales"],
+        "summary": "Update a sale",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["sales"],
+        "summary": "Delete a sale",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/orders": {
+      "get": {
+        "tags": ["orders"],
+        "summary": "List all orders",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Orders list" }
+        }
+      },
+      "post": {
+        "tags": ["orders"],
+        "summary": "Create a new order",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Order created" }
+        }
+      }
+    },
+    "/api/orders/sync-all": {
+      "post": {
+        "tags": ["orders"],
+        "summary": "Sync orders from all connected platforms",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Sync result" }
+        }
+      }
+    },
+    "/api/orders/sync/{platform}": {
+      "post": {
+        "tags": ["orders"],
+        "summary": "Sync orders from a specific platform",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "platform", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Sync result" }
+        }
+      }
+    },
+    "/api/orders/{id}": {
+      "get": {
+        "tags": ["orders"],
+        "summary": "Get a single order",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Order" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "put": {
+        "tags": ["orders"],
+        "summary": "Update an order",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["orders"],
+        "summary": "Delete an order",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/orders/{id}/ship": {
+      "post": {
+        "tags": ["orders"],
+        "summary": "Mark order as shipped",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Marked shipped" }
+        }
+      }
+    },
+    "/api/orders/{id}/deliver": {
+      "post": {
+        "tags": ["orders"],
+        "summary": "Mark order as delivered",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Marked delivered" }
+        }
+      }
+    },
+    "/api/orders/{id}/return": {
+      "post": {
+        "tags": ["orders"],
+        "summary": "Initiate a return",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Return initiated" }
+        }
+      },
+      "patch": {
+        "tags": ["orders"],
+        "summary": "Update return status",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      }
+    },
+    "/api/orders/{id}/split": {
+      "post": {
+        "tags": ["orders"],
+        "summary": "Split order into multiple shipments",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Split created" }
+        }
+      }
+    },
+    "/api/orders/{id}/priority": {
+      "patch": {
+        "tags": ["orders"],
+        "summary": "Update order priority",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Priority updated" }
+        }
+      }
+    },
+    "/api/orders/{id}/shipments": {
+      "get": {
+        "tags": ["orders"],
+        "summary": "Get child shipments for a split order",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Shipments" }
+        }
+      }
+    },
+    "/api/offers": {
+      "get": {
+        "tags": ["offers"],
+        "summary": "List all offers",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Offers list" }
+        }
+      }
+    },
+    "/api/offers/rules": {
+      "get": {
+        "tags": ["offers"],
+        "summary": "Get offer auto-accept/decline rules",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Rules list" }
+        }
+      },
+      "post": {
+        "tags": ["offers"],
+        "summary": "Create an offer rule",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Rule created" }
+        }
+      }
+    },
+    "/api/offers/rules/{id}": {
+      "put": {
+        "tags": ["offers"],
+        "summary": "Update an offer rule",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["offers"],
+        "summary": "Delete an offer rule",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/offers/stats": {
+      "get": {
+        "tags": ["offers"],
+        "summary": "Get offer statistics",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Stats" }
+        }
+      }
+    },
+    "/api/offers/{id}": {
+      "get": {
+        "tags": ["offers"],
+        "summary": "Get a single offer",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Offer" }
+        }
+      }
+    },
+    "/api/offers/{id}/accept": {
+      "post": {
+        "tags": ["offers"],
+        "summary": "Accept an offer",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Accepted" }
+        }
+      }
+    },
+    "/api/offers/{id}/decline": {
+      "post": {
+        "tags": ["offers"],
+        "summary": "Decline an offer",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Declined" }
+        }
+      }
+    },
+    "/api/offers/{id}/counter": {
+      "post": {
+        "tags": ["offers"],
+        "summary": "Send a counter-offer",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Counter sent" }
+        }
+      }
+    },
+    "/api/analytics/dashboard": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Get dashboard analytics overview",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "period", "in": "query", "schema": { "type": "string", "enum": ["7d", "30d", "90d", "1y", "all"] } }],
+        "responses": {
+          "200": { "description": "Dashboard stats" }
+        }
+      }
+    },
+    "/api/analytics/sales": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Sales analytics breakdown",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Sales analytics" }
+        }
+      }
+    },
+    "/api/analytics/inventory": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Inventory analytics",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Inventory analytics" }
+        }
+      }
+    },
+    "/api/analytics/platforms": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Per-platform performance breakdown",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Platform analytics" }
+        }
+      }
+    },
+    "/api/analytics/inventory-deep": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Deep inventory analytics — aging, sell-through, margins",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Deep analytics" }
+        }
+      }
+    },
+    "/api/analytics/performance": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Advanced performance metrics (advanced tier required)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Performance metrics" },
+          "403": { "description": "Tier restriction" }
+        }
+      }
+    },
+    "/api/analytics/sustainability": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Sustainability impact metrics",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Sustainability data" }
+        }
+      }
+    },
+    "/api/analytics/forecast": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Inventory demand forecasting",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Forecast data" }
+        }
+      }
+    },
+    "/api/analytics/heatmap": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Engagement heatmap (24x7 hourly grid)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Heatmap grid" }
+        }
+      }
+    },
+    "/api/analytics/heatmap/listings": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Per-listing engagement breakdown",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Listing heatmap data" }
+        }
+      }
+    },
+    "/api/analytics/heatmap/geography": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Geographic engagement data",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Geographic data" }
+        }
+      }
+    },
+    "/api/analytics/export": {
+      "post": {
+        "tags": ["analytics"],
+        "summary": "Export analytics data",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Export file" }
+        }
+      }
+    },
+    "/api/analytics/price-suggestions": {
+      "get": {
+        "tags": ["analytics"],
+        "summary": "Age-based price recommendations",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Price suggestions" }
+        }
+      }
+    },
+    "/api/shops": {
+      "get": {
+        "tags": ["shops"],
+        "summary": "List all connected marketplace shops",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Shops list" }
+        }
+      },
+      "post": {
+        "tags": ["shops"],
+        "summary": "Connect a new marketplace shop",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Shop connected" }
+        }
+      }
+    },
+    "/api/shops/health": {
+      "get": {
+        "tags": ["shops"],
+        "summary": "Platform connection health dashboard",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Health status per platform" }
+        }
+      }
+    },
+    "/api/shops/sync-all": {
+      "post": {
+        "tags": ["shops"],
+        "summary": "Sync all connected shops",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Sync results" }
+        }
+      }
+    },
+    "/api/shops/sync-status": {
+      "get": {
+        "tags": ["shops"],
+        "summary": "Get sync status for all shops",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Sync status per shop" }
+        }
+      }
+    },
+    "/api/shops/{platform}": {
+      "get": {
+        "tags": ["shops"],
+        "summary": "Get a specific shop by platform name",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "platform", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Shop" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "put": {
+        "tags": ["shops"],
+        "summary": "Update shop settings",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "platform", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["shops"],
+        "summary": "Disconnect a shop",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "platform", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Disconnected" }
+        }
+      }
+    },
+    "/api/shops/{platform}/sync": {
+      "post": {
+        "tags": ["shops"],
+        "summary": "Sync data for a specific shop",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "platform", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Sync result" }
+        }
+      }
+    },
+    "/api/shops/{platform}/stats": {
+      "get": {
+        "tags": ["shops"],
+        "summary": "Get statistics for a specific shop",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "platform", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Shop stats" }
+        }
+      }
+    },
+    "/api/automations": {
+      "get": {
+        "tags": ["automations"],
+        "summary": "List all automation rules",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Rules list" }
+        }
+      },
+      "post": {
+        "tags": ["automations"],
+        "summary": "Create a new automation rule",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Rule created" }
+        }
+      }
+    },
+    "/api/automations/logs": {
+      "get": {
+        "tags": ["automations"],
+        "summary": "Get automation run logs",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Logs" }
+        }
+      }
+    },
+    "/api/automations/history": {
+      "get": {
+        "tags": ["automations"],
+        "summary": "Get detailed automation run history",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Run history" }
+        }
+      },
+      "delete": {
+        "tags": ["automations"],
+        "summary": "Clear automation run history",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Cleared" }
+        }
+      }
+    },
+    "/api/automations/history/export": {
+      "get": {
+        "tags": ["automations"],
+        "summary": "Export run history as CSV",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "CSV file" }
+        }
+      }
+    },
+    "/api/automations/presets": {
+      "get": {
+        "tags": ["automations"],
+        "summary": "Get built-in automation presets",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Presets list" }
+        }
+      }
+    },
+    "/api/automations/from-preset": {
+      "post": {
+        "tags": ["automations"],
+        "summary": "Create a rule from a preset",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Rule created from preset" }
+        }
+      }
+    },
+    "/api/automations/stats": {
+      "get": {
+        "tags": ["automations"],
+        "summary": "Get automation statistics",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Stats" }
+        }
+      }
+    },
+    "/api/automations/schedule-settings": {
+      "get": {
+        "tags": ["automations"],
+        "summary": "Get schedule settings",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Settings" }
+        }
+      },
+      "post": {
+        "tags": ["automations"],
+        "summary": "Save schedule settings",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Saved" }
+        }
+      }
+    },
+    "/api/automations/notification-prefs": {
+      "get": {
+        "tags": ["automations"],
+        "summary": "Get automation notification preferences",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Preferences" }
+        }
+      },
+      "post": {
+        "tags": ["automations"],
+        "summary": "Save automation notification preferences",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Saved" }
+        }
+      }
+    },
+    "/api/automations/{id}": {
+      "get": {
+        "tags": ["automations"],
+        "summary": "Get a single automation rule",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Rule" }
+        }
+      },
+      "put": {
+        "tags": ["automations"],
+        "summary": "Update an automation rule",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["automations"],
+        "summary": "Delete an automation rule",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/automations/{id}/clone": {
+      "post": {
+        "tags": ["automations"],
+        "summary": "Clone/duplicate an automation rule",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "201": { "description": "Clone created" }
+        }
+      }
+    },
+    "/api/automations/{id}/run": {
+      "post": {
+        "tags": ["automations"],
+        "summary": "Run an automation rule manually",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Run triggered" }
+        }
+      }
+    },
+    "/api/automations/{id}/toggle": {
+      "post": {
+        "tags": ["automations"],
+        "summary": "Toggle automation rule enabled/disabled",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Toggled" }
+        }
+      }
+    },
+    "/api/automations/run/{runId}/logs": {
+      "get": {
+        "tags": ["automations"],
+        "summary": "Get action logs for a specific run",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "runId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Run logs" }
+        }
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "tags": ["notifications"],
+        "summary": "Get all notifications (paginated)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Notifications list" }
+        }
+      }
+    },
+    "/api/notifications/unread": {
+      "get": {
+        "tags": ["notifications"],
+        "summary": "Get unread notifications",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Unread notifications" }
+        }
+      }
+    },
+    "/api/notifications/count": {
+      "get": {
+        "tags": ["notifications"],
+        "summary": "Get unread notification count",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Count" }
+        }
+      }
+    },
+    "/api/notifications/read-all": {
+      "put": {
+        "tags": ["notifications"],
+        "summary": "Mark all notifications as read",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "All marked read" }
+        }
+      }
+    },
+    "/api/notifications/{id}/read": {
+      "put": {
+        "tags": ["notifications"],
+        "summary": "Mark a single notification as read",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Marked read" }
+        }
+      }
+    },
+    "/api/notifications/{id}": {
+      "delete": {
+        "tags": ["notifications"],
+        "summary": "Delete a notification",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/reports": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "List user's saved reports",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Reports list" }
+        }
+      },
+      "post": {
+        "tags": ["reports"],
+        "summary": "Create a new saved report",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Report created" }
+        }
+      }
+    },
+    "/api/reports/generate": {
+      "post": {
+        "tags": ["reports"],
+        "summary": "Generate widget data on demand without saving",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Generated data" }
+        }
+      }
+    },
+    "/api/reports/pnl": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Generate Profit and Loss statement",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "P&L data" }
+        }
+      }
+    },
+    "/api/reports/templates": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "List pre-built report configurations",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Templates" }
+        }
+      }
+    },
+    "/api/reports/widgets": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Return widget type catalog",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Widget catalog" }
+        }
+      }
+    },
+    "/api/reports/query": {
+      "post": {
+        "tags": ["reports"],
+        "summary": "Execute a restricted custom SELECT query (enterprise only)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Query results" },
+          "403": { "description": "Enterprise tier required" }
+        }
+      }
+    },
+    "/api/reports/{id}": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Get a single report with widget data",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Report with data" }
+        }
+      },
+      "put": {
+        "tags": ["reports"],
+        "summary": "Update a report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["reports"],
+        "summary": "Delete a report and its schedules",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/reports/{id}/run": {
+      "post": {
+        "tags": ["reports"],
+        "summary": "Execute a saved report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Report output" }
+        }
+      }
+    },
+    "/api/reports/{id}/schedule": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "Get schedule for a report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Schedule" }
+        }
+      },
+      "post": {
+        "tags": ["reports"],
+        "summary": "Create or update a report schedule",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Schedule saved" }
+        }
+      },
+      "delete": {
+        "tags": ["reports"],
+        "summary": "Remove a report schedule",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Schedule removed" }
+        }
+      }
+    },
+    "/api/tasks": {
+      "get": {
+        "tags": ["tasks"],
+        "summary": "List background tasks",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Tasks list" }
+        }
+      },
+      "post": {
+        "tags": ["tasks"],
+        "summary": "Create a new background task",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Task created" }
+        }
+      }
+    },
+    "/api/tasks/bulk": {
+      "post": {
+        "tags": ["tasks"],
+        "summary": "Create multiple tasks at once",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Tasks created" }
+        }
+      }
+    },
+    "/api/tasks/clear": {
+      "post": {
+        "tags": ["tasks"],
+        "summary": "Clear completed and failed tasks",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Cleared" }
+        }
+      }
+    },
+    "/api/tasks/queue": {
+      "get": {
+        "tags": ["tasks"],
+        "summary": "Get queue status",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Queue stats" }
+        }
+      }
+    },
+    "/api/tasks/{id}": {
+      "get": {
+        "tags": ["tasks"],
+        "summary": "Get task details",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Task" }
+        }
+      },
+      "delete": {
+        "tags": ["tasks"],
+        "summary": "Delete a task",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/tasks/{id}/cancel": {
+      "post": {
+        "tags": ["tasks"],
+        "summary": "Cancel a running task",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Cancelled" }
+        }
+      }
+    },
+    "/api/tasks/{id}/retry": {
+      "post": {
+        "tags": ["tasks"],
+        "summary": "Retry a failed task",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Retried" }
+        }
+      }
+    },
+    "/api/templates": {
+      "get": {
+        "tags": ["templates"],
+        "summary": "List all templates",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Templates list" }
+        }
+      },
+      "post": {
+        "tags": ["templates"],
+        "summary": "Create a template",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Template created" }
+        }
+      }
+    },
+    "/api/templates/{id}": {
+      "get": {
+        "tags": ["templates"],
+        "summary": "Get a single template",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Template" }
+        }
+      },
+      "put": {
+        "tags": ["templates"],
+        "summary": "Update a template",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["templates"],
+        "summary": "Delete a template",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/templates/{id}/use": {
+      "post": {
+        "tags": ["templates"],
+        "summary": "Increment template use count",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Count incremented" }
+        }
+      }
+    },
+    "/api/image-bank": {
+      "get": {
+        "tags": ["image-bank"],
+        "summary": "List images with filters",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Images list" }
+        }
+      }
+    },
+    "/api/image-bank/upload": {
+      "post": {
+        "tags": ["image-bank"],
+        "summary": "Upload new images",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Uploaded" }
+        }
+      }
+    },
+    "/api/image-bank/search": {
+      "get": {
+        "tags": ["image-bank"],
+        "summary": "Full-text search images",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Search results" }
+        }
+      }
+    },
+    "/api/image-bank/analyze": {
+      "post": {
+        "tags": ["image-bank"],
+        "summary": "AI-analyze an image with Claude Vision",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Analysis result" }
+        }
+      }
+    },
+    "/api/image-bank/bulk-delete": {
+      "post": {
+        "tags": ["image-bank"],
+        "summary": "Delete multiple images",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/image-bank/bulk-move": {
+      "post": {
+        "tags": ["image-bank"],
+        "summary": "Move images to a folder",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Moved" }
+        }
+      }
+    },
+    "/api/image-bank/bulk-tag": {
+      "post": {
+        "tags": ["image-bank"],
+        "summary": "Add tags to multiple images",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Tagged" }
+        }
+      }
+    },
+    "/api/image-bank/folders": {
+      "get": {
+        "tags": ["image-bank"],
+        "summary": "List image folders (tree structure)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Folder tree" }
+        }
+      },
+      "post": {
+        "tags": ["image-bank"],
+        "summary": "Create an image folder",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Folder created" }
+        }
+      }
+    },
+    "/api/image-bank/folders/{id}": {
+      "patch": {
+        "tags": ["image-bank"],
+        "summary": "Update an image folder",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["image-bank"],
+        "summary": "Delete an image folder",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/image-bank/import-from-inventory": {
+      "post": {
+        "tags": ["image-bank"],
+        "summary": "Import existing inventory images into image bank",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Imported" }
+        }
+      }
+    },
+    "/api/image-bank/{id}": {
+      "get": {
+        "tags": ["image-bank"],
+        "summary": "Get single image details",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Image" }
+        }
+      },
+      "patch": {
+        "tags": ["image-bank"],
+        "summary": "Update image metadata",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["image-bank"],
+        "summary": "Delete an image",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/ai/generate-listing": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Generate listing description, title, tags, and price suggestion from item details",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Generated listing content" }
+        }
+      }
+    },
+    "/api/ai/generate-title": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Generate a listing title only",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Title" }
+        }
+      }
+    },
+    "/api/ai/generate-description": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Generate a listing description",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Description" }
+        }
+      }
+    },
+    "/api/ai/generate-tags": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Generate tags and keywords",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Tags array" }
+        }
+      }
+    },
+    "/api/ai/suggest-price": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Suggest price based on item details and market data",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Price suggestion" }
+        }
+      }
+    },
+    "/api/ai/analyze-image": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Analyze a product image",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Image analysis" }
+        }
+      }
+    },
+    "/api/ai/analyze-listing-image": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Advanced AI image analysis with Claude Vision",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Analysis" }
+        }
+      }
+    },
+    "/api/ai/optimize-listing": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Optimize an existing listing",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Optimized listing" }
+        }
+      }
+    },
+    "/api/ai/bulk-generate": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Bulk generate listings for multiple items",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Bulk generation results" }
+        }
+      }
+    },
+    "/api/ai/detect-duplicates": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Find potential duplicate listings",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Duplicates found" }
+        }
+      }
+    },
+    "/api/ai/sourcing-suggestions": {
+      "get": {
+        "tags": ["ai"],
+        "summary": "Get AI sourcing suggestions",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Suggestions" }
+        }
+      }
+    },
+    "/api/ai/translate": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Translate a listing for international markets",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Translated listing" }
+        }
+      }
+    },
+    "/api/ai/category-mapping": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Map categories across marketplaces",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Category mapping" }
+        }
+      }
+    },
+    "/api/ai/generate-hashtags": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Generate optimized hashtags with trending analysis",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Hashtags" }
+        }
+      }
+    },
+    "/api/ai/image-enhancement": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Get AI suggestions for image improvement",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Enhancement suggestions" }
+        }
+      }
+    },
+    "/api/billing/usage": {
+      "get": {
+        "tags": ["billing"],
+        "summary": "Get current usage metrics",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Usage" }
+        }
+      }
+    },
+    "/api/billing/usage/history": {
+      "get": {
+        "tags": ["billing"],
+        "summary": "Get usage history over past 6 months",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Usage history" }
+        }
+      }
+    },
+    "/api/billing/usage/refresh": {
+      "post": {
+        "tags": ["billing"],
+        "summary": "Recalculate current usage from database counts",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Refreshed usage" }
+        }
+      }
+    },
+    "/api/billing/plans": {
+      "get": {
+        "tags": ["billing"],
+        "summary": "Return all available subscription plans",
+        "security": [],
+        "responses": {
+          "200": { "description": "Plans" }
+        }
+      }
+    },
+    "/api/billing/prorate": {
+      "post": {
+        "tags": ["billing"],
+        "summary": "Calculate proration for a plan change",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Proration amount" }
+        }
+      }
+    },
+    "/api/billing/change-plan": {
+      "post": {
+        "tags": ["billing"],
+        "summary": "Change user's subscription plan",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Plan changed" }
+        }
+      }
+    },
+    "/api/billing/select-plan": {
+      "post": {
+        "tags": ["billing"],
+        "summary": "Select a subscription plan",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Plan selected" }
+        }
+      }
+    },
+    "/api/teams": {
+      "get": {
+        "tags": ["teams"],
+        "summary": "List user's teams",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Teams list" }
+        }
+      },
+      "post": {
+        "tags": ["teams"],
+        "summary": "Create a new team",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Team created" }
+        }
+      }
+    },
+    "/api/teams/join": {
+      "post": {
+        "tags": ["teams"],
+        "summary": "Accept a team invitation",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Joined team" }
+        }
+      }
+    },
+    "/api/teams/permissions": {
+      "get": {
+        "tags": ["teams"],
+        "summary": "Get role permissions matrix",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Permissions matrix" }
+        }
+      }
+    },
+    "/api/teams/{id}": {
+      "get": {
+        "tags": ["teams"],
+        "summary": "Get team details",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Team" }
+        }
+      },
+      "patch": {
+        "tags": ["teams"],
+        "summary": "Update team",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["teams"],
+        "summary": "Delete team",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/teams/{id}/invite": {
+      "post": {
+        "tags": ["teams"],
+        "summary": "Invite a member to the team",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Invitation sent" }
+        }
+      }
+    },
+    "/api/teams/{id}/leave": {
+      "post": {
+        "tags": ["teams"],
+        "summary": "Leave a team",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Left team" }
+        }
+      }
+    },
+    "/api/teams/{id}/activity": {
+      "get": {
+        "tags": ["teams"],
+        "summary": "Get team activity log",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Activity log" }
+        }
+      }
+    },
+    "/api/teams/{id}/members/{memberId}": {
+      "patch": {
+        "tags": ["teams"],
+        "summary": "Update a member's role",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "memberId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Role updated" }
+        }
+      },
+      "delete": {
+        "tags": ["teams"],
+        "summary": "Remove a member from the team",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "memberId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Removed" }
+        }
+      }
+    },
+    "/api/shipping-labels": {
+      "get": {
+        "tags": ["shipping-labels"],
+        "summary": "List shipping labels",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Labels list" }
+        }
+      },
+      "post": {
+        "tags": ["shipping-labels"],
+        "summary": "Create a shipping label",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Label created" }
+        }
+      }
+    },
+    "/api/shipping-labels/addresses": {
+      "get": {
+        "tags": ["shipping-labels"],
+        "summary": "List return addresses",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Addresses" }
+        }
+      },
+      "post": {
+        "tags": ["shipping-labels"],
+        "summary": "Create a return address",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Address created" }
+        }
+      }
+    },
+    "/api/shipping-labels/addresses/{id}": {
+      "patch": {
+        "tags": ["shipping-labels"],
+        "summary": "Update a return address",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["shipping-labels"],
+        "summary": "Delete a return address",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/shipping-labels/batches": {
+      "get": {
+        "tags": ["shipping-labels"],
+        "summary": "List label batches",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Batches" }
+        }
+      },
+      "post": {
+        "tags": ["shipping-labels"],
+        "summary": "Create a label batch",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Batch created" }
+        }
+      }
+    },
+    "/api/shipping-labels/batches/{id}/process": {
+      "post": {
+        "tags": ["shipping-labels"],
+        "summary": "Process a label batch",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Processed" }
+        }
+      }
+    },
+    "/api/shipping-labels/rates": {
+      "post": {
+        "tags": ["shipping-labels"],
+        "summary": "Get shipping rates",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Rates" }
+        }
+      }
+    },
+    "/api/shipping-labels/print-batch": {
+      "post": {
+        "tags": ["shipping-labels"],
+        "summary": "Mark labels as printed",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Marked printed" }
+        }
+      }
+    },
+    "/api/shipping-labels/download-batch": {
+      "get": {
+        "tags": ["shipping-labels"],
+        "summary": "Get batch download info",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Download info" }
+        }
+      }
+    },
+    "/api/shipping-labels/{id}": {
+      "get": {
+        "tags": ["shipping-labels"],
+        "summary": "Get a single shipping label",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Label" }
+        }
+      },
+      "patch": {
+        "tags": ["shipping-labels"],
+        "summary": "Update a shipping label",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["shipping-labels"],
+        "summary": "Delete a shipping label",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/shipping-profiles": {
+      "get": {
+        "tags": ["shipping-profiles"],
+        "summary": "List user's shipping profiles",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Profiles list" }
+        }
+      },
+      "post": {
+        "tags": ["shipping-profiles"],
+        "summary": "Create a shipping profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Profile created" }
+        }
+      }
+    },
+    "/api/shipping-profiles/{id}": {
+      "get": {
+        "tags": ["shipping-profiles"],
+        "summary": "Get a single shipping profile",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Profile" }
+        }
+      },
+      "put": {
+        "tags": ["shipping-profiles"],
+        "summary": "Update a shipping profile",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["shipping-profiles"],
+        "summary": "Delete a shipping profile",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/api/shipping-profiles/{id}/set-default": {
+      "put": {
+        "tags": ["shipping-profiles"],
+        "summary": "Set a profile as default",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Default set" }
+        }
+      }
+    },
+    "/api/barcode/lookup/{code}": {
+      "get": {
+        "tags": ["barcode"],
+        "summary": "Look up a barcode",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "code", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Barcode data" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/api/barcode/save": {
+      "post": {
+        "tags": ["barcode"],
+        "summary": "Save a barcode lookup manually",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Saved" }
+        }
+      }
+    },
+    "/api/barcode/recent": {
+      "get": {
+        "tags": ["barcode"],
+        "summary": "Get recently scanned barcodes",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Recent scans" }
+        }
+      }
+    },
+    "/api/barcode/validate": {
+      "post": {
+        "tags": ["barcode"],
+        "summary": "Validate barcode format",
+        "security": [],
+        "responses": {
+          "200": { "description": "Validation result" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Missing or invalid Authorization header"
+      },
+      "BadRequest": {
+        "description": "Request validation failed"
+      },
+      "NotFound": {
+        "description": "Resource not found"
+      }
+    }
+  }
+}

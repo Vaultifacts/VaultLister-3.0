@@ -1044,6 +1044,7 @@ const server = Bun.serve({
                         const securityHeaders = applySecurityHeaders(context);
                         const responseHeaders = {
                             'Content-Type': 'application/json',
+                            'X-API-Version': '1.0.0',
                             ...dynamicCorsHeaders,
                             ...(result.headers || {}),
                             ...securityHeaders
@@ -1096,6 +1097,7 @@ const server = Bun.serve({
                             status: errorResult.status || 500,
                             headers: {
                                 'Content-Type': 'application/json',
+                                'X-API-Version': '1.0.0',
                                 ...dynamicCorsHeaders,
                                 ...securityHeaders
                             }
@@ -1119,6 +1121,26 @@ const server = Bun.serve({
         if (pathname !== '/' && pathname.includes('.') && !pathname.startsWith('/api/')) {
             const staticResponse = serveStatic(pathname, request);
             if (staticResponse) return staticResponse;
+        }
+
+        // Landing page — serve public/landing.html for unauthenticated root visits.
+        // If the request is for "/" and has no vl_access cookie, show the marketing page.
+        // Authenticated users (vl_access cookie present) go straight to the SPA.
+        if (pathname === '/') {
+            const cookieHeader = request.headers.get('Cookie') || '';
+            const hasAuthCookie = /(?:^|;\s*)vl_access=/.test(cookieHeader);
+            if (!hasAuthCookie) {
+                const landingPath = join(PUBLIC_DIR, 'landing.html');
+                if (existsSync(landingPath)) {
+                    return new Response(readFileSync(landingPath, 'utf-8'), {
+                        headers: {
+                            'Content-Type': 'text/html',
+                            'Cache-Control': 'no-cache, must-revalidate',
+                            ...dynamicCorsHeaders
+                        }
+                    });
+                }
+            }
         }
 
         // SPA fallback - serve index.html (with security headers)

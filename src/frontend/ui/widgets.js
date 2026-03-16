@@ -1937,9 +1937,12 @@ const commandPalette = {
 // ============================================
 const keyboardShortcuts = {
     shortcuts: [
-        { keys: ['⌘', 'K'], label: 'Open command palette' },
+        { keys: ['⌘', 'K'], label: 'Open command palette / focus search' },
+        { keys: ['/'], label: 'Focus search bar' },
         { keys: ['⌘', 'S'], label: 'Save current form' },
-        { keys: ['N'], label: 'New item (on inventory page)' },
+        { keys: ['⌘', 'N'], label: 'New item' },
+        { keys: ['⌘', '⇧', 'S'], label: 'Go to Shops' },
+        { keys: ['⌘', '⇧', 'D'], label: 'Go to Dashboard' },
         { keys: ['?'], label: 'Show keyboard shortcuts' },
         { keys: ['ESC'], label: 'Close modal/dialog' },
         { keys: ['⌘', '/'], label: 'Focus search' },
@@ -1977,6 +1980,20 @@ const keyboardShortcuts = {
 
             this.lastKey = e.key.toLowerCase();
             this.lastKeyTime = now;
+
+            // Cmd+Shift+S to go to Shops
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                router.navigate('shops');
+                return;
+            }
+
+            // Cmd+Shift+D to go to Dashboard
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
+                e.preventDefault();
+                router.navigate('dashboard');
+                return;
+            }
 
             // Cmd+S to save
             if ((e.metaKey || e.ctrlKey) && e.key === 's') {

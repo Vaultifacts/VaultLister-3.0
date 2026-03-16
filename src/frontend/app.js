@@ -9422,6 +9422,54 @@ const onboarding = {
     }
 };
 
+// Dashboard onboarding tour — shows once on first login, uses the existing onboardingTour engine
+function startDashboardTour() {
+    if (localStorage.getItem('onboarding_complete')) return;
+
+    const steps = [
+        {
+            target: '.header',
+            title: 'Welcome to VaultLister!',
+            content: 'This quick tour will show you the key areas to get started. Click Next to continue or Skip to dismiss.',
+            position: 'bottom'
+        },
+        {
+            target: '[data-testid="nav-inventory"]',
+            title: 'Add your first item',
+            content: 'Inventory is where you manage all the items you sell. Start by adding your first product here.',
+            position: 'right'
+        },
+        {
+            target: '[data-testid="nav-shops"]',
+            title: 'Connect a marketplace',
+            content: 'My Shops lets you link your selling accounts — Poshmark, eBay, Mercari, and more.',
+            position: 'right'
+        },
+        {
+            target: '[data-testid="nav-automations"]',
+            title: 'Set up automations',
+            content: 'Automations handle repetitive tasks like closet sharing, offer rules, and relisting on a schedule.',
+            position: 'right'
+        },
+        {
+            target: '[data-testid="nav-analytics"]',
+            title: 'Track your sales',
+            content: 'Analytics gives you a full picture of revenue, sell-through rate, and platform performance.',
+            position: 'right'
+        }
+    ];
+
+    onboardingTour.start(steps, {
+        showProgress: true,
+        onComplete() {
+            localStorage.setItem('onboarding_complete', '1');
+        },
+        onSkip() {
+            localStorage.setItem('onboarding_complete', '1');
+        }
+    });
+}
+
 // ============================================
 // Celebrations (Confetti, etc.)
 // ============================================
@@ -70301,6 +70349,7 @@ async function initApp() {
                 const fab = document.querySelector('.fab');
                 if (fab) fab.setAttribute('onclick', 'handlers.showDashboardQuickActions()');
             }
+            startDashboardTour();
         }, 100);
     });
     router.register('inventory', async () => {

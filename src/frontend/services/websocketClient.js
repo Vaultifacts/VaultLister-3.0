@@ -48,6 +48,7 @@ class VaultListerSocket {
                     this.reconnectAttempts = 0;
                     this.connecting = false;
                     this._explicitDisconnect = false;
+                    this._dispatchStatus('connected');
 
                     // Start ping watchdog — server sends a ping every 30s.
                     this._resetPingTimeout();
@@ -75,7 +76,10 @@ class VaultListerSocket {
                     this.connecting = false;
                     this._clearPingTimeout();
                     if (!this._explicitDisconnect) {
+                        this._dispatchStatus('reconnecting');
                         this.attemptReconnect();
+                    } else {
+                        this._dispatchStatus('disconnected');
                     }
                 };
 
@@ -228,6 +232,7 @@ class VaultListerSocket {
     attemptReconnect() {
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
             console.log('[WS] Max reconnect attempts reached');
+            this._dispatchStatus('disconnected');
             this.emit('max_reconnect_reached');
             return;
         }
@@ -246,6 +251,13 @@ class VaultListerSocket {
                 this.connect(this.token).catch(() => {});
             }
         }, delay);
+    }
+
+    // Dispatch a DOM custom event for connection status changes.
+    // Listeners can subscribe via: document.addEventListener('vl:ws-status', e => { e.detail.status })
+    // Possible statuses: 'connected' | 'reconnecting' | 'disconnected'
+    _dispatchStatus(status) {
+        document.dispatchEvent(new CustomEvent('vl:ws-status', { detail: { status } }));
     }
 
     // Emit event to handlers
@@ -306,6 +318,27 @@ window.wsSubscribe = {
     onConnected: (handler) => wsClient.on('auth_success', handler),
     onDisconnected: (handler) => wsClient.on('max_reconnect_reached', handler)
 };
+
+// Update the WS status dot when connection status changes
+document.addEventListener('vl:ws-status', (e) => {
+    const dot = document.getElementById('ws-status-dot');
+    if (!dot) return;
+    const { status } = e.detail;
+    dot.classList.remove('ws-status-dot--connected', 'ws-status-dot--reconnecting', 'ws-status-dot--disconnected');
+    if (status === 'connected') {
+        dot.classList.add('ws-status-dot--connected');
+        dot.setAttribute('aria-label', 'WebSocket connected');
+        dot.setAttribute('title', 'Connected');
+    } else if (status === 'reconnecting') {
+        dot.classList.add('ws-status-dot--reconnecting');
+        dot.setAttribute('aria-label', 'WebSocket reconnecting');
+        dot.setAttribute('title', 'Reconnecting...');
+    } else {
+        dot.classList.add('ws-status-dot--disconnected');
+        dot.setAttribute('aria-label', 'WebSocket disconnected');
+        dot.setAttribute('title', 'Disconnected');
+    }
+});
 
 // Auto-initialize when token is available
 document.addEventListener('DOMContentLoaded', () => {

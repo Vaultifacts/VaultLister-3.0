@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaultLister API Docs</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css">
+    <style>
+        body { margin: 0; background: #fafafa; }
+        .api-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .api-header h1 { margin: 0 0 0.25rem; font-size: 1.75rem; }
+        .api-header p { margin: 0; opacity: 0.75; font-size: 0.9rem; }
+        .api-header a { color: #a5b4fc; text-decoration: none; }
+        .api-header a:hover { text-decoration: underline; }
+        .swagger-ui .topbar { display: none; }
+    </style>
+</head>
+<body>
+    <div class="api-header">
+        <h1>VaultLister API</h1>
+        <p>Interactive endpoint reference &bull; <a href="/">Back to app</a> &bull; <a href="/api-docs.json" download>Download JSON spec</a></p>
+    </div>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+    <script>
+        SwaggerUIBundle({
+            url: '/api-docs.json',
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+            layout: 'BaseLayout',
+            persistAuthorization: true,
+            displayRequestDuration: true,
+            filter: true
+        });
+    </script>
+</body>
+</html>

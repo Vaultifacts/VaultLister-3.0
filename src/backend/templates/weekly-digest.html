@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>VaultLister Weekly Sales Digest</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0f0f14;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+  <!-- Preheader (hidden preview text) -->
+  <div style="display:none;font-size:1px;color:#0f0f14;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Your weekly sales summary: {{this_week_revenue}} in revenue, {{items_sold}} items sold. {{preheader_comparison}}
+  </div>
+
+  <!-- Outer wrapper -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f0f14;">
+    <tr>
+      <td align="center" style="padding:24px 16px;">
+
+        <!-- Email container -->
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#1a1a24;border-radius:12px;overflow:hidden;border:1px solid #2d2d3d;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#6b21a8 0%,#7c3aed 50%,#4f46e5 100%);padding:32px 40px;text-align:center;">
+              <!-- Logo placeholder -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding-bottom:12px;">
+                    <div style="display:inline-block;width:48px;height:48px;background-color:rgba(255,255,255,0.15);border-radius:12px;line-height:48px;text-align:center;font-size:24px;">
+                      <!-- Replace with: <img src="{{logo_url}}" width="48" height="48" alt="VaultLister" style="display:block;border-radius:12px;"> -->
+                      V
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <span style="font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">VaultLister</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top:4px;">
+                    <span style="font-size:13px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1.5px;">Weekly Sales Digest</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top:8px;">
+                    <span style="font-size:13px;color:rgba(255,255,255,0.55);">Week of {{week_start_date}} &ndash; {{week_end_date}}</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- This week's headline stats -->
+          <tr>
+            <td style="padding:32px 40px 0 40px;">
+              <p style="margin:0 0 20px 0;font-size:16px;font-weight:600;color:#a78bfa;text-transform:uppercase;letter-spacing:1px;">This Week</p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <!-- Total Revenue -->
+                  <td width="33%" style="padding:0 6px 0 0;vertical-align:top;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f0f14;border-radius:8px;border:1px solid #2d2d3d;">
+                      <tr>
+                        <td style="padding:16px;text-align:center;">
+                          <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Revenue</div>
+                          <div style="font-size:24px;font-weight:700;color:#c4b5fd;">{{this_week_revenue}}</div>
+                          <div style="font-size:12px;margin-top:6px;color:{{revenue_trend_color}};">{{revenue_vs_last_week}}</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <!-- Items Sold -->
+                  <td width="33%" style="padding:0 3px;vertical-align:top;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f0f14;border-radius:8px;border:1px solid #2d2d3d;">
+                      <tr>
+                        <td style="padding:16px;text-align:center;">
+                          <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Items Sold</div>
+                          <div style="font-size:24px;font-weight:700;color:#c4b5fd;">{{items_sold}}</div>
+                          <div style="font-size:12px;margin-top:6px;color:{{items_trend_color}};">{{items_vs_last_week}}</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <!-- Avg Sale Price -->
+                  <td width="33%" style="padding:0 0 0 6px;vertical-align:top;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f0f14;border-radius:8px;border:1px solid #2d2d3d;">
+                      <tr>
+                        <td style="padding:16px;text-align:center;">
+                          <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Avg Price</div>
+                          <div style="font-size:24px;font-weight:700;color:#c4b5fd;">{{avg_sale_price}}</div>
+                          <div style="font-size:12px;margin-top:6px;color:{{avg_trend_color}};">{{avg_vs_last_week}}</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:28px 40px 0 40px;">
+              <div style="height:1px;background-color:#2d2d3d;"></div>
+            </td>
+          </tr>
+
+          <!-- Top Selling Items -->
+          <tr>
+            <td style="padding:24px 40px 0 40px;">
+              <p style="margin:0 0 16px 0;font-size:16px;font-weight:600;color:#a78bfa;text-transform:uppercase;letter-spacing:1px;">Top Selling Items</p>
+
+              <!-- Item 1 -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;background-color:#0f0f14;border-radius:8px;border:1px solid #2d2d3d;">
+                <tr>
+                  <td style="padding:14px 16px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="vertical-align:middle;">
+                          <span style="font-size:11px;font-weight:700;color:#7c3aed;background-color:#1e1030;padding:2px 8px;border-radius:4px;">#1</span>
+                          <span style="font-size:14px;font-weight:600;color:#e5e7eb;margin-left:10px;">{{top_item_1_title}}</span>
+                        </td>
+                        <td align="right" style="vertical-align:middle;white-space:nowrap;">
+                          <span style="font-size:16px;font-weight:700;color:#c4b5fd;">{{top_item_1_price}}</span>
+                          <span style="font-size:12px;color:#6b7280;margin-left:6px;">{{top_item_1_platform}}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Item 2 -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;background-color:#0f0f14;border-radius:8px;border:1px solid #2d2d3d;">
+                <tr>
+                  <td style="padding:14px 16px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="vertical-align:middle;">
+                          <span style="font-size:11px;font-weight:700;color:#7c3aed;background-color:#1e1030;padding:2px 8px;border-radius:4px;">#2</span>
+                          <span style="font-size:14px;font-weight:600;color:#e5e7eb;margin-left:10px;">{{top_item_2_title}}</span>
+                        </td>
+                        <td align="right" style="vertical-align:middle;white-space:nowrap;">
+                          <span style="font-size:16px;font-weight:700;color:#c4b5fd;">{{top_item_2_price}}</span>
+                          <span style="font-size:12px;color:#6b7280;margin-left:6px;">{{top_item_2_platform}}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Item 3 -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;background-color:#0f0f14;border-radius:8px;border:1px solid #2d2d3d;">
+                <tr>
+                  <td style="padding:14px 16px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="vertical-align:middle;">
+                          <span style="font-size:11px;font-weight:700;color:#7c3aed;background-color:#1e1030;padding:2px 8px;border-radius:4px;">#3</span>
+                          <span style="font-size:14px;font-weight:600;color:#e5e7eb;margin-left:10px;">{{top_item_3_title}}</span>
+                        </td>
+                        <td align="right" style="vertical-align:middle;white-space:nowrap;">
+                          <span style="font-size:16px;font-weight:700;color:#c4b5fd;">{{top_item_3_price}}</span>
+                          <span style="font-size:12px;color:#6b7280;margin-left:6px;">{{top_item_3_platform}}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:28px 40px 0 40px;">
+              <div style="height:1px;background-color:#2d2d3d;"></div>
+            </td>
+          </tr>
+
+          <!-- Platform Breakdown -->
+          <tr>
+            <td style="padding:24px 40px 0 40px;">
+              <p style="margin:0 0 16px 0;font-size:16px;font-weight:600;color:#a78bfa;text-transform:uppercase;letter-spacing:1px;">Platform Breakdown</p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f0f14;border-radius:8px;border:1px solid #2d2d3d;">
+                <tr>
+                  <td style="padding:16px 20px;">
+
+                    <!-- Platform row: Poshmark -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:13px;color:#d1d5db;width:120px;">Poshmark</td>
+                        <td style="padding:0 12px;">
+                          <!-- Bar background -->
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#2d2d3d;border-radius:4px;height:8px;">
+                            <tr>
+                              <td style="width:{{poshmark_pct}};background:linear-gradient(90deg,#7c3aed,#a78bfa);border-radius:4px;height:8px;font-size:0;">&nbsp;</td>
+                              <td></td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td align="right" style="font-size:13px;font-weight:600;color:#c4b5fd;white-space:nowrap;width:80px;">{{poshmark_revenue}}</td>
+                        <td align="right" style="font-size:12px;color:#6b7280;white-space:nowrap;width:40px;padding-left:8px;">{{poshmark_items}}x</td>
+                      </tr>
+                    </table>
+
+                    <!-- Platform row: eBay -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:13px;color:#d1d5db;width:120px;">eBay</td>
+                        <td style="padding:0 12px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#2d2d3d;border-radius:4px;height:8px;">
+                            <tr>
+                              <td style="width:{{ebay_pct}};background:linear-gradient(90deg,#7c3aed,#a78bfa);border-radius:4px;height:8px;font-size:0;">&nbsp;</td>
+                              <td></td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td align="right" style="font-size:13px;font-weight:600;color:#c4b5fd;white-space:nowrap;width:80px;">{{ebay_revenue}}</td>
+                        <td align="right" style="font-size:12px;color:#6b7280;white-space:nowrap;width:40px;padding-left:8px;">{{ebay_items}}x</td>
+                      </tr>
+                    </table>
+
+                    <!-- Platform row: Mercari -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:13px;color:#d1d5db;width:120px;">Mercari</td>
+                        <td style="padding:0 12px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#2d2d3d;border-radius:4px;height:8px;">
+                            <tr>
+                              <td style="width:{{mercari_pct}};background:linear-gradient(90deg,#7c3aed,#a78bfa);border-radius:4px;height:8px;font-size:0;">&nbsp;</td>
+                              <td></td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td align="right" style="font-size:13px;font-weight:600;color:#c4b5fd;white-space:nowrap;width:80px;">{{mercari_revenue}}</td>
+                        <td align="right" style="font-size:12px;color:#6b7280;white-space:nowrap;width:40px;padding-left:8px;">{{mercari_items}}x</td>
+                      </tr>
+                    </table>
+
+                    <!-- Platform row: Depop -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:13px;color:#d1d5db;width:120px;">Depop</td>
+                        <td style="padding:0 12px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#2d2d3d;border-radius:4px;height:8px;">
+                            <tr>
+                              <td style="width:{{depop_pct}};background:linear-gradient(90deg,#7c3aed,#a78bfa);border-radius:4px;height:8px;font-size:0;">&nbsp;</td>
+                              <td></td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td align="right" style="font-size:13px;font-weight:600;color:#c4b5fd;white-space:nowrap;width:80px;">{{depop_revenue}}</td>
+                        <td align="right" style="font-size:12px;color:#6b7280;white-space:nowrap;width:40px;padding-left:8px;">{{depop_items}}x</td>
+                      </tr>
+                    </table>
+
+                    <!-- Platform row: Other -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-size:13px;color:#d1d5db;width:120px;">Other</td>
+                        <td style="padding:0 12px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#2d2d3d;border-radius:4px;height:8px;">
+                            <tr>
+                              <td style="width:{{other_pct}};background:linear-gradient(90deg,#7c3aed,#a78bfa);border-radius:4px;height:8px;font-size:0;">&nbsp;</td>
+                              <td></td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td align="right" style="font-size:13px;font-weight:600;color:#c4b5fd;white-space:nowrap;width:80px;">{{other_revenue}}</td>
+                        <td align="right" style="font-size:12px;color:#6b7280;white-space:nowrap;width:40px;padding-left:8px;">{{other_items}}x</td>
+                      </tr>
+                    </table>
+
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:28px 40px 0 40px;">
+              <div style="height:1px;background-color:#2d2d3d;"></div>
+            </td>
+          </tr>
+
+          <!-- Week-over-week comparison -->
+          <tr>
+            <td style="padding:24px 40px 0 40px;">
+              <p style="margin:0 0 16px 0;font-size:16px;font-weight:600;color:#a78bfa;text-transform:uppercase;letter-spacing:1px;">vs. Last Week</p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f0f14;border-radius:8px;border:1px solid #2d2d3d;">
+                <tr>
+                  <td style="padding:16px 20px;">
+
+                    <!-- Revenue comparison -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:13px;color:#9ca3af;width:130px;">Revenue</td>
+                        <td style="font-size:13px;color:#6b7280;text-decoration:line-through;">{{last_week_revenue}}</td>
+                        <td style="font-size:13px;color:#d1d5db;padding:0 8px;">&#8594;</td>
+                        <td style="font-size:13px;font-weight:600;color:#c4b5fd;">{{this_week_revenue}}</td>
+                        <td align="right" style="font-size:12px;font-weight:700;color:{{revenue_trend_color}};">{{revenue_change_pct}}</td>
+                      </tr>
+                    </table>
+
+                    <!-- Items sold comparison -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:13px;color:#9ca3af;width:130px;">Items Sold</td>
+                        <td style="font-size:13px;color:#6b7280;text-decoration:line-through;">{{last_week_items}}</td>
+                        <td style="font-size:13px;color:#d1d5db;padding:0 8px;">&#8594;</td>
+                        <td style="font-size:13px;font-weight:600;color:#c4b5fd;">{{items_sold}}</td>
+                        <td align="right" style="font-size:12px;font-weight:700;color:{{items_trend_color}};">{{items_change_pct}}</td>
+                      </tr>
+                    </table>
+
+                    <!-- Avg price comparison -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="font-size:13px;color:#9ca3af;width:130px;">Avg Sale Price</td>
+                        <td style="font-size:13px;color:#6b7280;text-decoration:line-through;">{{last_week_avg}}</td>
+                        <td style="font-size:13px;color:#d1d5db;padding:0 8px;">&#8594;</td>
+                        <td style="font-size:13px;font-weight:600;color:#c4b5fd;">{{avg_sale_price}}</td>
+                        <td align="right" style="font-size:12px;font-weight:700;color:{{avg_trend_color}};">{{avg_change_pct}}</td>
+                      </tr>
+                    </table>
+
+                    <!-- Net profit comparison -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-size:13px;color:#9ca3af;width:130px;">Net Profit</td>
+                        <td style="font-size:13px;color:#6b7280;text-decoration:line-through;">{{last_week_profit}}</td>
+                        <td style="font-size:13px;color:#d1d5db;padding:0 8px;">&#8594;</td>
+                        <td style="font-size:13px;font-weight:600;color:#c4b5fd;">{{this_week_profit}}</td>
+                        <td align="right" style="font-size:12px;font-weight:700;color:{{profit_trend_color}};">{{profit_change_pct}}</td>
+                      </tr>
+                    </table>
+
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td style="padding:28px 40px 0 40px;text-align:center;">
+              <a href="{{app_url}}/analytics" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 32px;border-radius:8px;">View Full Analytics</a>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:32px 40px 28px 40px;">
+              <div style="height:1px;background-color:#2d2d3d;margin-bottom:24px;"></div>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="text-align:center;">
+                    <p style="margin:0 0 8px 0;font-size:12px;color:#4b5563;">
+                      VaultLister &bull; <a href="{{app_url}}" style="color:#7c3aed;text-decoration:none;">{{app_url}}</a>
+                    </p>
+                    <p style="margin:0 0 8px 0;font-size:12px;color:#4b5563;">
+                      You received this because weekly digests are enabled for <strong style="color:#6b7280;">{{user_email}}</strong>
+                    </p>
+                    <p style="margin:0;font-size:12px;">
+                      <a href="{{unsubscribe_url}}" style="color:#6b7280;text-decoration:underline;">Unsubscribe from weekly digest</a>
+                      &nbsp;&bull;&nbsp;
+                      <a href="{{preferences_url}}" style="color:#6b7280;text-decoration:underline;">Email preferences</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Email container -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

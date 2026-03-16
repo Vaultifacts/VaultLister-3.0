@@ -50143,6 +50143,40 @@ body.dark-mode .transfer-list-actions button:hover:not(:disabled) {
     transform: translateY(0);
 }
 
+/* WebSocket connection status dot — fixed bottom-left */
+.ws-status-dot {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    z-index: 1000;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    cursor: default;
+    /* Keep above sidebar but below modals */
+}
+
+.ws-status-dot--connected {
+    background: var(--green-500, #22c55e);
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+}
+
+.ws-status-dot--reconnecting {
+    background: var(--yellow-400, #facc15);
+    animation: ws-dot-pulse 1.2s ease-in-out infinite;
+}
+
+.ws-status-dot--disconnected {
+    background: var(--red-500, #ef4444);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
+}
+
+@keyframes ws-dot-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.25); }
+    50%       { opacity: 0.6; box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.1); }
+}
+
 /* ============================================
    Dark Mode for Part 4 Components
    ============================================ */

@@ -729,6 +729,20 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
+    // Ctrl/Cmd + Shift shortcuts
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+        switch (e.key.toLowerCase()) {
+            case 's':
+                e.preventDefault();
+                router.navigate('shops');
+                return;
+            case 'd':
+                e.preventDefault();
+                router.navigate('dashboard');
+                return;
+        }
+    }
+
     // Ctrl/Cmd + key shortcuts
     if (e.ctrlKey || e.metaKey) {
         switch (e.key.toLowerCase()) {
@@ -800,6 +814,10 @@ document.addEventListener('keydown', (e) => {
     // Single key shortcuts (no modifiers)
     if (!e.ctrlKey && !e.metaKey && !e.altKey) {
         switch (e.key) {
+            case '/':
+                e.preventDefault();
+                (document.getElementById('global-search') || document.getElementById('inventory-search'))?.focus();
+                break;
             case '?':
                 e.preventDefault();
                 handlers.showKeyboardShortcuts?.();

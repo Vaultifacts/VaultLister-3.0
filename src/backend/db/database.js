@@ -174,7 +174,8 @@ function runMigrations() {
             '095_add_user_preferences.sql',
             '096_add_listings_unique_constraint.sql',
             '097_fix_fts5_delete_trigger.sql',
-            '098_add_is_admin.sql'
+            '098_add_is_admin.sql',
+            '099_optimize_query_indexes.sql'
         ];
 
         for (const migrationFile of migrationFiles) {
