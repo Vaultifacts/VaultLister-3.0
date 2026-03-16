@@ -6,8 +6,9 @@ class VaultListerSocket {
         this.ws = null;
         this.url = null;
         this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 5;
+        this.maxReconnectAttempts = 10;
         this.reconnectDelay = 1000;
+        this.maxReconnectDelay = 30000;
         this.handlers = new Map();
         this.pendingMessages = [];
         this.maxPendingMessages = 100;
@@ -15,6 +16,7 @@ class VaultListerSocket {
         this.connectionId = null;
         this.reconnectTimerId = null;
         this.connecting = false;
+        this._explicitDisconnect = false;
     }
 
     // Initialize WebSocket connection
@@ -31,6 +33,7 @@ class VaultListerSocket {
         this.url = `${protocol}//${window.location.host}/ws`;
         this.token = token;
         this.connecting = true;
+        this._explicitDisconnect = false;
 
         return new Promise((resolve, reject) => {
             try {
@@ -40,6 +43,7 @@ class VaultListerSocket {
                     console.log('[WS] Connected');
                     this.reconnectAttempts = 0;
                     this.connecting = false;
+                    this._explicitDisconnect = false;
 
                     // Authenticate immediately
                     if (this.token) {
@@ -61,7 +65,10 @@ class VaultListerSocket {
                 this.ws.onclose = (event) => {
                     console.log('[WS] Disconnected:', event.code, event.reason);
                     this.authenticated = false;
-                    this.attemptReconnect();
+                    this.connecting = false;
+                    if (!this._explicitDisconnect) {
+                        this.attemptReconnect();
+                    }
                 };
 
                 this.ws.onerror = () => {
@@ -189,9 +196,12 @@ class VaultListerSocket {
         }
 
         this.reconnectAttempts++;
-        const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1) * (0.5 + Math.random() * 0.5);
+        const delay = Math.min(
+            this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
+            this.maxReconnectDelay
+        );
 
-        console.log(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+        console.log(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
 
         this.reconnectTimerId = setTimeout(() => {
             this.reconnectTimerId = null;
@@ -206,8 +216,9 @@ class VaultListerSocket {
         this.handleMessage({ type, ...data });
     }
 
-    // Disconnect
+    // Disconnect (explicit — suppresses auto-reconnect)
     disconnect() {
+        this._explicitDisconnect = true;
         this.cancelReconnect();
         this.connecting = false;
         if (this.ws) {

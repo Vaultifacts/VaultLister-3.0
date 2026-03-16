@@ -221,6 +221,12 @@ jobs:
           fi
           SMOKE
 
+      - name: Full smoke test suite
+        if: success()
+        run: |
+          scp scripts/smoke-test-staging.sh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}:/tmp/smoke-test.sh
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} 'chmod +x /tmp/smoke-test.sh && /tmp/smoke-test.sh https://vaultlister.com && rm /tmp/smoke-test.sh'
+
       - name: Rollback on smoke test failure
         if: failure()
         run: |
