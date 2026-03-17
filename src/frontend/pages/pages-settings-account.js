@@ -79,6 +79,8 @@ Object.assign(pages, {
             facebook: '#1877f2'
         };
 
+        const shopsActiveTab = store.state.activeTab || 'shops';
+
         return `
             <div class="page-header">
                 <div>
@@ -93,6 +95,19 @@ Object.assign(pages, {
                     </div>
                 ` : ''}
             </div>
+
+            <div class="consolidated-tabs">
+                <button class="consolidated-tab ${shopsActiveTab === 'shops' ? 'active' : ''}"
+                        onclick="store.setState({activeTab:'shops'});renderApp(pages.shops())">
+                    ${components.icon('store', 16)} <span>My Shops</span>
+                </button>
+                <button class="consolidated-tab ${shopsActiveTab === 'health' ? 'active' : ''}"
+                        onclick="store.setState({activeTab:'health'});handlers.loadPlatformHealth();renderApp(pages.shops())">
+                    ${components.icon('activity', 16)} <span>Health</span>
+                </button>
+            </div>
+
+            ${shopsActiveTab === 'health' ? (typeof pages.platformHealth === 'function' ? pages.platformHealth() : '<div class="empty-state"><p>Platform Health data loading...</p></div>') : `
 
             <!-- My Shops Hero Section -->
             <div class="shops-hero mb-6">
@@ -596,6 +611,7 @@ Object.assign(pages, {
 
             <!-- Business FAB -->
             ${businessFAB.render()}
+            `}
         `;
     },
 
@@ -1801,6 +1817,15 @@ Object.assign(pages, {
                         </div>
                     `;
 
+                case 'teams':
+                    return typeof pages.teams === 'function' ? pages.teams() : '<div class="empty-state"><p>Teams management loading...</p></div>';
+
+                case 'reference-data':
+                    return typeof pages.sizeCharts === 'function' ? pages.sizeCharts() : '<div class="empty-state"><p>Size Charts loading...</p></div>';
+
+                case 'admin':
+                    return typeof pages.adminMetrics === 'function' ? pages.adminMetrics() : '<div class="empty-state"><p>Admin metrics loading...</p></div>';
+
                 default:
                     return '';
             }
@@ -1911,6 +1936,17 @@ Object.assign(pages, {
                         </svg>
                         Data
                     </button>
+                    <button class="settings-tab ${activeTab === 'teams' ? 'active' : ''}" onclick="handlers.setSettingsTab('teams')">
+                        ${components.icon('community', 18)} Teams
+                    </button>
+                    <button class="settings-tab ${activeTab === 'reference-data' ? 'active' : ''}" onclick="handlers.setSettingsTab('reference-data')">
+                        ${components.icon('tag', 18)} Reference Data
+                    </button>
+                    ${(store.state.user && store.state.user.is_admin) ? `
+                    <button class="settings-tab ${activeTab === 'admin' ? 'active' : ''}" onclick="handlers.setSettingsTab('admin')">
+                        ${components.icon('cpu', 18)} Admin
+                    </button>
+                    ` : ''}
                 </div>
 
                 <!-- Settings Content -->

@@ -101,6 +101,9 @@ Object.assign(pages, {
                                     </button>
                                 </div>
                             </div>
+                            <button class="btn btn-secondary" data-testid="hero-trash" onclick="router.navigate('recently-deleted')" title="Trash">
+                                ${components.icon('trash', 16)}${(store.state.deletedItems || []).length > 0 ? ` <span class="nav-item-badge">${(store.state.deletedItems || []).length}</span>` : ''}
+                            </button>
                             <button class="btn btn-primary" data-testid="hero-add-item" onclick="modals.addItem()">
                                 ${components.icon('plus', 16)} Add Item
                             </button>

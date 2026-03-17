@@ -15551,51 +15551,26 @@ const components = {
         const draftListings = (store.state.listings || []).filter(l => l.status === 'draft').length;
 
         const navItems = [
-            { section: 'Main', items: [
+            { section: 'Sell', items: [
                 { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
-                { id: 'listings', label: 'My Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
-                { id: 'orders', label: 'Orders', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
+                { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
+                { id: 'orders-sales', label: 'Orders & Sales', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
                 { id: 'offers', label: 'Offers', icon: 'offers', badge: store.state.offers.filter(o => o.status === 'pending').length || null }
             ]},
-            { section: 'Tools', items: [
+            { section: 'Manage', items: [
                 { id: 'automations', label: 'Automations', icon: 'automation' },
-                { id: 'checklist', label: 'Checklist', icon: 'list', badge: activeChecklistItems > 0 ? activeChecklistItems : null, badgeType: 'info' },
-                { id: 'image-bank', label: 'Image Bank', icon: 'image' },
-                { id: 'calendar', label: 'Calendar', icon: 'calendar' },
-                { id: 'size-charts', label: 'Size Charts', icon: 'tag' },
-                { id: 'recently-deleted', label: 'Trash', icon: 'trash' }
-            ]},
-            { section: 'Business', items: [
-                { id: 'shops', label: 'My Shops', icon: 'shops' },
-                { id: 'transactions', label: 'Transactions', icon: 'dollar' },
                 { id: 'financials', label: 'Financials', icon: 'dollar' },
                 { id: 'analytics', label: 'Analytics', icon: 'analytics' },
-                { id: 'report-builder', label: 'Reports', icon: 'activity' }
+                { id: 'shops', label: 'My Shops', icon: 'shops' },
+                { id: 'planner', label: 'Planner', icon: 'calendar', badge: activeChecklistItems > 0 ? activeChecklistItems : null, badgeType: 'info' },
+                { id: 'image-bank', label: 'Image Bank', icon: 'image' }
             ]},
-            { section: 'Intelligence', items: [
-                { id: 'predictions', label: 'Predictions', icon: 'activity' },
-                { id: 'suppliers', label: 'Suppliers', icon: 'shops' },
-                { id: 'market-intel', label: 'Market Intel', icon: 'analytics' }
-            ]},
-            { section: 'Collaboration', items: [
-                { id: 'teams', label: 'Teams', icon: 'community' },
-            ]},
-            { section: 'Resources', items: [
+            { section: '', divider: true, items: [
                 { id: 'settings', label: 'Settings', icon: 'settings' },
-                { id: 'help-support', label: 'Help & Support', icon: 'help' },
-                { id: 'roadmap', label: 'Roadmap', icon: 'automation' },
-                { id: 'changelog', label: 'Changelog', icon: 'list' },
-                { id: 'feedback-suggestions', label: 'Feedback & Suggestions', icon: 'community' }
-            ]},
-            { section: 'Company', items: [
-                { id: 'about', label: 'About Us', icon: 'user' },
-                { id: 'terms-of-service', label: 'Terms of Service', icon: 'help' },
-                { id: 'privacy-policy', label: 'Privacy Policy', icon: 'settings' }
-            ]},
-            ...(user && user.is_admin ? [{ section: 'Admin', items: [
-                { id: 'admin-metrics', label: 'System Metrics', icon: 'cpu' }
-            ]}] : [])
+                { id: 'help-support', label: 'Help', icon: 'help' },
+                { id: 'changelog', label: 'Changelog', icon: 'list' }
+            ]}
         ];
 
         // Get connected shops for quick-switch
@@ -15645,8 +15620,8 @@ const components = {
                 ` : ''}
                 <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
                     ${navItems.map(section => `
-                        <div class="nav-section">
-                            <div class="nav-section-title">${section.section}</div>
+                        <div class="nav-section${section.divider ? ' nav-section-bottom' : ''}">
+                            ${section.divider ? '<div class="nav-section-divider"></div>' : `<div class="nav-section-title">${section.section}</div>`}
                             ${section.items.map(item => `
                                 <button class="nav-item ${currentPage === item.id ? 'active' : ''}"
                                         onclick="router.navigate('${item.id}')"
@@ -70463,8 +70438,18 @@ async function initApp() {
         await handlers.loadOrders();
         renderApp(pages.orders());
     });
+    router.register('orders-sales', async () => {
+        renderApp(pages.ordersSales());
+        await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
+        renderApp(pages.ordersSales());
+    });
     router.register('checklist', () => renderApp(pages.checklist()));
     router.register('calendar', () => renderApp(pages.calendar()));
+    router.register('planner', async () => {
+        renderApp(pages.planner());
+        await handlers.loadChecklistItems();
+        renderApp(pages.planner());
+    });
     router.register('size-charts', () => renderApp(pages.sizeCharts()));
     router.register('image-bank', async () => {
         renderApp(pages.imageBank());

@@ -1629,9 +1629,10 @@ Object.assign(pages, {
                 <button class="tab ${currentTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'accounts' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('accounts')">Chart of Accounts</button>
                 <button class="tab ${currentTab === 'statements' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'statements' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('statements')">Financial Statements</button>
                 <button class="tab ${currentTab === 'pnl' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'pnl' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('pnl')">Profit &amp; Loss (P&amp;L)</button>
+                <button class="tab ${currentTab === 'transactions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'transactions' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('transactions')">Transactions</button>
             </div>
 
-            ${tabContent[currentTab] || tabContent.accounts}
+            ${currentTab === 'transactions' ? this.transactions() : (tabContent[currentTab] || tabContent.accounts)}
 
             <!-- Tax Estimate Calculator -->
             <div class="card mb-6">
@@ -1958,6 +1959,46 @@ Object.assign(pages, {
     // Sustainability page
     // Shops page,
 
+    // Consolidated Orders & Sales page (Phase 2 sidebar consolidation)
+    ordersSales() {
+        const activeTab = store.state.activeTab || 'orders';
+        const tabs = [
+            { id: 'orders', label: 'Orders & Fulfillment', icon: 'sales' },
+            { id: 'sales-summary', label: 'Sales Summary', icon: 'analytics' },
+            { id: 'shipping', label: 'Shipping', icon: 'truck' },
+        ];
+
+        const renderTabContent = () => {
+            switch (activeTab) {
+                case 'sales-summary':
+                    return this.sales();
+                case 'shipping':
+                    return this.shippingLabelsPage();
+                default:
+                    return this.orders();
+            }
+        };
+
+        return `
+            <div class="page-header">
+                <div class="page-header-top">
+                    <h1 class="page-title">${components.icon('sales', 24)} Orders & Sales</h1>
+                </div>
+            </div>
+            <div class="consolidated-tabs">
+                ${tabs.map(tab => `
+                    <button class="consolidated-tab ${activeTab === tab.id ? 'active' : ''}"
+                            onclick="store.setState({activeTab:'${tab.id}'});renderApp(pages.ordersSales())">
+                        ${components.icon(tab.icon, 16)}
+                        <span>${tab.label}</span>
+                    </button>
+                `).join('')}
+            </div>
+            <div class="consolidated-tab-content">
+                ${renderTabContent()}
+            </div>
+        `;
+    },
 
     orders() {
         let orders = store.state.orders || [];

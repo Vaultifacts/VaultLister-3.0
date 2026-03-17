@@ -193,8 +193,11 @@ if [ -n "$CRITICAL_CHANGED" ]; then
         echo "Running auth and security tests..."
 
         PORT="${PORT:-3001}"
-        if curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
-            DISABLE_CSRF=true DISABLE_RATE_LIMIT=true /home/openclawuser/.bun/bin/bun test src/tests/auth.test.js src/tests/security.test.js 2>&1 || {
+        # Skip test gate on Windows (bun test hangs in Git Bash due to process handling)
+        if [ "$(uname -o 2>/dev/null)" = "Msys" ] || [ -n "$MSYSTEM" ]; then
+            echo "Windows detected — skipping test gate (run manually: bun test src/tests/auth.test.js src/tests/security.test.js)"
+        elif curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
+            DISABLE_CSRF=true DISABLE_RATE_LIMIT=true bun test src/tests/auth.test.js src/tests/security.test.js 2>&1 || {
                 echo ""
                 echo "ERROR: Auth/security tests FAILED after modifying critical files!"
                 echo "Commit blocked. Fix the failing tests or revert the changes."

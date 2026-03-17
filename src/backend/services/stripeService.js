@@ -2,9 +2,9 @@ import Stripe from 'stripe';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: '2024-12-18.acacia'
-});
+}) : null;
 
 // Placeholder Price IDs — replace with real IDs after creating products in Stripe Dashboard
 export const STRIPE_PRICE_IDS = {

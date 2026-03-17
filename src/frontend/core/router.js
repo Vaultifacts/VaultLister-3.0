@@ -28,6 +28,7 @@ const pageChunkMap = {
     // sales chunk
     'sales': 'sales',
     'orders': 'sales',
+    'orders-sales': 'sales',
     'offers': 'sales',
     'financials': 'sales',
     'transactions': 'sales',
@@ -38,6 +39,7 @@ const pageChunkMap = {
     // tools chunk
     'checklist': 'tools',
     'calendar': 'tools',
+    'planner': 'tools',
     'size-charts': 'tools',
     'image-bank': 'tools',
     'receipt-parser': 'tools',
@@ -134,7 +136,7 @@ const router = {
 
     async navigate(path) {
         // Track tool usage
-        if (['automations', 'checklist', 'image-bank', 'calendar', 'size-charts'].includes(path)) {
+        if (['automations', 'checklist', 'image-bank', 'calendar', 'size-charts', 'planner'].includes(path)) {
             toolUsageAnalytics.track(path);
         }
 
@@ -161,9 +163,40 @@ const router = {
         await this.handleRoute();
     },
 
+    // Route aliases for sidebar consolidation — old routes redirect to new parent pages
+    routeAliases: {
+        'orders': { target: 'orders-sales', tab: 'orders' },
+        'sales': { target: 'orders-sales', tab: 'sales-summary' },
+        'transactions': { target: 'financials', tab: 'transactions' },
+        'report-builder': { target: 'analytics', tab: 'reports' },
+        'predictions': { target: 'analytics', tab: 'predictions' },
+        'market-intel': { target: 'analytics', tab: 'market-intel' },
+        'suppliers': { target: 'analytics', tab: 'sourcing' },
+        'platform-health': { target: 'shops', tab: 'health' },
+        'checklist': { target: 'planner', tab: 'tasks' },
+        'calendar': { target: 'planner', tab: 'calendar' },
+        'roadmap': { target: 'help-support', tab: 'roadmap' },
+        'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
+        'teams': { target: 'settings', tab: 'teams' },
+        'size-charts': { target: 'settings', tab: 'reference-data' },
+        'recently-deleted': { target: 'inventory', tab: 'trash' },
+        'about': { target: 'help-support', tab: 'about' },
+        'terms-of-service': { target: 'help-support', tab: 'terms' },
+        'privacy-policy': { target: 'help-support', tab: 'privacy' },
+        'admin-metrics': { target: 'settings', tab: 'admin' },
+    },
+
     async handleRoute(isInitialLoad = false) {
         let path = (window.location.hash.slice(1) || 'dashboard').split('?')[0];
         const previousPage = store.state.currentPage;
+
+        // Resolve route aliases (old routes → new consolidated pages)
+        const alias = this.routeAliases[path];
+        if (alias) {
+            path = alias.target;
+            store.setState({ activeTab: alias.tab });
+            window.history.replaceState({}, '', `#${path}`);
+        }
 
         // Clear timers/intervals on navigation to prevent leaks
         if (window._lockoutCountdown) {
@@ -188,7 +221,7 @@ const router = {
         // Handle settings deep-linking: #settings/appearance → set tab and use 'settings' as route
         if (path.startsWith('settings/')) {
             const tab = path.split('/')[1];
-            const validTabs = ['profile','appearance','notifications','integrations','tools','billing','data'];
+            const validTabs = ['profile','appearance','notifications','integrations','tools','billing','data','teams','reference-data','admin'];
             if (validTabs.includes(tab)) {
                 store.setState({ settingsTab: tab });
             }
@@ -279,9 +312,16 @@ const router = {
                     await handlers.loadTickets();
                 } else if (path === 'orders') {
                     await handlers.loadOrders();
+                } else if (path === 'orders-sales') {
+                    await Promise.all([
+                        handlers.loadOrders(),
+                        handlers.loadSales()
+                    ]);
                 } else if (path === 'offers') {
                     await handlers.loadOffers();
                 } else if (path === 'checklist') {
+                    await handlers.loadChecklistItems();
+                } else if (path === 'planner') {
                     await handlers.loadChecklistItems();
                 } else if (path === 'heatmaps') {
                     await handlers.loadHeatmapData();

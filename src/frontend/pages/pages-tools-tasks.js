@@ -436,6 +436,55 @@ Object.assign(pages, {
         `;
     },
 
+    // Consolidated Planner page (Phase 6 sidebar consolidation)
+    planner() {
+        const activeTab = store.state.activeTab || 'tasks';
+        const tabs = [
+            { id: 'tasks', label: 'Tasks', icon: 'list' },
+            { id: 'calendar', label: 'Calendar', icon: 'calendar' },
+            { id: 'completed', label: 'Completed', icon: 'check' },
+        ];
+
+        const renderTabContent = () => {
+            switch (activeTab) {
+                case 'calendar':
+                    return this.calendar();
+                case 'completed':
+                    // Show completed checklist items
+                    const prevTab = store.state.checklistTab;
+                    store.state.checklistTab = 'completed';
+                    const content = this.checklist();
+                    store.state.checklistTab = prevTab;
+                    return content;
+                default:
+                    return this.checklist();
+            }
+        };
+
+        const activeChecklistItems = (store.state.checklistItems || []).filter(item => !item.completed).length;
+
+        return `
+            <div class="page-header">
+                <div class="page-header-top">
+                    <h1 class="page-title">${components.icon('calendar', 24)} Planner</h1>
+                </div>
+            </div>
+            <div class="consolidated-tabs">
+                ${tabs.map(tab => `
+                    <button class="consolidated-tab ${activeTab === tab.id ? 'active' : ''}"
+                            onclick="store.setState({activeTab:'${tab.id}'});renderApp(pages.planner())">
+                        ${components.icon(tab.icon, 16)}
+                        <span>${tab.label}</span>
+                        ${tab.id === 'tasks' && activeChecklistItems > 0 ? `<span class="nav-item-badge nav-item-badge-info">${activeChecklistItems}</span>` : ''}
+                    </button>
+                `).join('')}
+            </div>
+            <div class="consolidated-tab-content">
+                ${renderTabContent()}
+            </div>
+        `;
+    },
+
     // Calendar page,
 
 

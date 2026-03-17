@@ -178,8 +178,20 @@ async function initApp() {
         await handlers.loadOrders();
         renderApp(pages.orders());
     });
+    // Consolidated: Orders & Sales page
+    router.register('orders-sales', async () => {
+        renderApp(pages.ordersSales());
+        await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
+        renderApp(pages.ordersSales());
+    });
     router.register('checklist', () => renderApp(pages.checklist()));
     router.register('calendar', () => renderApp(pages.calendar()));
+    // Consolidated: Planner page
+    router.register('planner', async () => {
+        renderApp(pages.planner());
+        await handlers.loadChecklistItems();
+        renderApp(pages.planner());
+    });
     router.register('size-charts', () => renderApp(pages.sizeCharts()));
     router.register('image-bank', async () => {
         renderApp(pages.imageBank());

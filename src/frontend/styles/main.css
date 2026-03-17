@@ -1620,6 +1620,8 @@ body.dark-mode .sidebar-collapse-btn {
 
 .sidebar-nav {
     flex: 1;
+    display: flex;
+    flex-direction: column;
     padding: var(--space-4) 0;
     overflow-y: auto;
 }
@@ -1799,6 +1801,66 @@ body.dark-mode .shop-switch-divider {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: #6b7280 !important;
+}
+
+.nav-section-bottom {
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+.nav-section-divider {
+    height: 1px;
+    background: var(--gray-200);
+    margin: var(--space-2) var(--space-5);
+}
+
+/* Consolidated page tab bar (sidebar consolidation) */
+.consolidated-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--gray-200);
+    margin-bottom: var(--space-6);
+    overflow-x: auto;
+}
+
+.consolidated-tab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-5);
+    border: none;
+    background: transparent;
+    color: var(--gray-500);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.consolidated-tab:hover {
+    color: var(--gray-700);
+}
+
+.consolidated-tab.active {
+    color: var(--primary-600);
+    border-bottom-color: var(--primary-600);
+    font-weight: 600;
+}
+
+body.dark-mode .consolidated-tabs {
+    border-bottom-color: var(--gray-700);
+}
+
+body.dark-mode .consolidated-tab:hover {
+    color: var(--gray-300);
+}
+
+body.dark-mode .consolidated-tab.active {
+    color: var(--primary-400);
+    border-bottom-color: var(--primary-400);
 }
 
 .nav-item {

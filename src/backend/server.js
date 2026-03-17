@@ -707,14 +707,22 @@ function serveStatic(pathname, request) {
             isValidPath = newResolvedPath.startsWith(resolvedFrontendDir);
 
             if (!isValidPath || !existsSync(filePath)) {
-                // Try shared directory (for /shared/* paths like presets.js)
-                const sharedPath = join(SHARED_DIR, pathname.replace(/^\/shared\//, '/'));
-                const resolvedShared = path.resolve(sharedPath);
-                if (resolvedShared.startsWith(resolvedSharedDir) && existsSync(sharedPath)) {
-                    filePath = sharedPath;
+                // Try dist directory for chunk files (dev mode fallback)
+                const distPath = join(DIST_DIR, pathname);
+                const resolvedDist = path.resolve(distPath);
+                if (resolvedDist.startsWith(resolvedDistDir) && existsSync(distPath)) {
+                    filePath = distPath;
                     isValidPath = true;
                 } else {
-                    return null;
+                    // Try shared directory (for /shared/* paths like presets.js)
+                    const sharedPath = join(SHARED_DIR, pathname.replace(/^\/shared\//, '/'));
+                    const resolvedShared = path.resolve(sharedPath);
+                    if (resolvedShared.startsWith(resolvedSharedDir) && existsSync(sharedPath)) {
+                        filePath = sharedPath;
+                        isValidPath = true;
+                    } else {
+                        return null;
+                    }
                 }
             }
         }

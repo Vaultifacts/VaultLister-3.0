@@ -2395,12 +2395,16 @@ const pages = {
                 ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
                 ${!hiddenTabs.includes('profitability-analysis') ? `<button class="tab ${currentTab === 'profitability' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'profitability' ? 'true' : 'false'}" tabindex="${currentTab === 'profitability' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('profitability')">Profitability Analysis</button>` : ''}
                 ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
+                ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
+                ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Sourcing</button>` : ''}
                 <button class="btn btn-ghost btn-sm ml-auto" onclick="handlers.showAnalyticsCustomization()" title="Customize Analytics">
                     ${components.icon('settings', 16)}
                 </button>
             </div>
 
-            ${currentTab === 'live' ? (() => {
+            ${currentTab === 'market-intel' ? (typeof pages.marketIntel === 'function' ? pages.marketIntel() : '<div class="empty-state"><p>Market Intel data will appear here. Navigate to load data.</p></div>')
+            : currentTab === 'sourcing' ? (typeof pages.suppliers === 'function' ? pages.suppliers() : '<div class="empty-state"><p>Sourcing data will appear here. Navigate to load data.</p></div>')
+            : currentTab === 'live' ? (() => {
                 const orders = store.state.orders || [];
                 const sales = store.state.sales || [];
                 const inventory = store.state.inventory || [];

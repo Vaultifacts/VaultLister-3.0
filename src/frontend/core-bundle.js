@@ -8246,11 +8246,16 @@ const api = {
             headers['X-CSRF-Token'] = this.csrfToken;
         }
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
         try {
             const response = await fetch(url, {
                 ...options,
-                headers
+                headers,
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             // Handle rate limiting with retry
             if (response.status === 429 && retryCount < this.maxRetries) {
@@ -8274,6 +8279,21 @@ const api = {
                 this.csrfToken = csrfToken;
             }
 
+            // Capture request ID for error reporting
+            const requestId = response.headers.get('X-Request-ID');
+
+            // Capture rate limit headers
+            const rlLimit = response.headers.get('X-RateLimit-Limit');
+            const rlRemaining = response.headers.get('X-RateLimit-Remaining');
+            const rlReset = response.headers.get('X-RateLimit-Reset');
+            if (rlLimit !== null || rlRemaining !== null || rlReset !== null) {
+                store.state.rateLimitInfo = {
+                    limit: rlLimit ? parseInt(rlLimit, 10) : store.state.rateLimitInfo?.limit ?? null,
+                    remaining: rlRemaining ? parseInt(rlRemaining, 10) : store.state.rateLimitInfo?.remaining ?? null,
+                    reset: rlReset ? parseInt(rlReset, 10) : store.state.rateLimitInfo?.reset ?? null
+                };
+            }
+
             const contentType = response.headers.get('content-type') || '';
             const data = contentType.includes('application/json') ? await response.json() : { error: await response.text() };
 
@@ -8295,14 +8315,19 @@ const api = {
             }
 
             if (!response.ok) {
-                const err = new Error(data.error || 'Request failed');
+                const baseMsg = data.error || 'Request failed';
+                const msg = requestId ? `${baseMsg} (ref: ${requestId})` : baseMsg;
+                const err = new Error(msg);
                 err.data = data;
                 err.status = response.status;
+                err.requestId = requestId;
                 throw err;
             }
 
             return data;
         } catch (error) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') throw new Error('Request timed out');
             if (!navigator.onLine) {
                 // Queue for offline sync
                 offlineQueue.add({ endpoint, options });
@@ -10636,9 +10661,12 @@ const commandPalette = {
 // ============================================
 const keyboardShortcuts = {
     shortcuts: [
-        { keys: ['⌘', 'K'], label: 'Open command palette' },
+        { keys: ['⌘', 'K'], label: 'Open command palette / focus search' },
+        { keys: ['/'], label: 'Focus search bar' },
         { keys: ['⌘', 'S'], label: 'Save current form' },
-        { keys: ['N'], label: 'New item (on inventory page)' },
+        { keys: ['⌘', 'N'], label: 'New item' },
+        { keys: ['⌘', '⇧', 'S'], label: 'Go to Shops' },
+        { keys: ['⌘', '⇧', 'D'], label: 'Go to Dashboard' },
         { keys: ['?'], label: 'Show keyboard shortcuts' },
         { keys: ['ESC'], label: 'Close modal/dialog' },
         { keys: ['⌘', '/'], label: 'Focus search' },
@@ -10676,6 +10704,20 @@ const keyboardShortcuts = {
 
             this.lastKey = e.key.toLowerCase();
             this.lastKeyTime = now;
+
+            // Cmd+Shift+S to go to Shops
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                router.navigate('shops');
+                return;
+            }
+
+            // Cmd+Shift+D to go to Dashboard
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
+                e.preventDefault();
+                router.navigate('dashboard');
+                return;
+            }
 
             // Cmd+S to save
             if ((e.metaKey || e.ctrlKey) && e.key === 's') {
@@ -15081,79 +15123,83 @@ const pricePositionChart = {
 // Router — with route-based chunk loading
 // ============================================
 
-// Map route paths to chunk names for on-demand loading
+// Map route paths to chunk names for on-demand loading.
+// Chunk names must match the keys in chunkDefs in scripts/build-frontend.js
+// and the built files at dist/chunk-{name}.js.
 const pageChunkMap = {
-    // dashboard
-    'dashboard': 'deferred',
+    // dashboard — no chunk (core bundle)
+    'dashboard': null,
 
-    // inventory-catalog
-    'inventory': 'inventory-catalog',
-    'listings': 'inventory-catalog',
-    'crosslist': 'inventory-catalog',
-    'templates': 'inventory-catalog',
-    'automations': 'inventory-catalog',
-    'sku-rules': 'inventory-catalog',
-    'smart-relisting': 'inventory-catalog',
-    'inventory-import': 'inventory-catalog',
-    'recently-deleted': 'inventory-catalog',
-    'platform-health': 'inventory-catalog',
+    // inventory chunk
+    'inventory': 'inventory',
+    'listings': 'inventory',
+    'crosslist': 'inventory',
+    'templates': 'inventory',
+    'automations': 'inventory',
+    'sku-rules': 'inventory',
+    'smart-relisting': 'inventory',
+    'inventory-import': 'inventory',
+    'recently-deleted': 'inventory',
+    'platform-health': 'inventory',
 
-    // sales-orders
-    'sales': 'sales-orders',
-    'orders': 'sales-orders',
-    'offers': 'sales-orders',
-    'financials': 'sales-orders',
-    'transactions': 'sales-orders',
-    'reports': 'sales-orders',
-    'report-builder': 'sales-orders',
-    'shipping-labels': 'sales-orders',
+    // sales chunk
+    'sales': 'sales',
+    'orders': 'sales',
+    'orders-sales': 'sales',
+    'offers': 'sales',
+    'financials': 'sales',
+    'transactions': 'sales',
+    'reports': 'sales',
+    'report-builder': 'sales',
+    'shipping-labels': 'sales',
 
-    // tools-tasks
-    'checklist': 'tools-tasks',
-    'calendar': 'tools-tasks',
-    'size-charts': 'tools-tasks',
-    'image-bank': 'tools-tasks',
-    'receipt-parser': 'tools-tasks',
-    'whatnot-live': 'tools-tasks',
+    // tools chunk
+    'checklist': 'tools',
+    'calendar': 'tools',
+    'planner': 'tools',
+    'size-charts': 'tools',
+    'image-bank': 'tools',
+    'receipt-parser': 'tools',
+    'whatnot-live': 'tools',
 
-    // intelligence
+    // intelligence chunk
     'heatmaps': 'intelligence',
     'predictions': 'intelligence',
     'suppliers': 'intelligence',
     'market-intel': 'intelligence',
 
-    // settings-account
-    'settings': 'settings-account',
-    'account': 'settings-account',
-    'teams': 'settings-account',
-    'plans-billing': 'settings-account',
-    'affiliate': 'settings-account',
-    'notifications': 'settings-account',
-    'connections': 'settings-account',
-    'shipping-profiles': 'settings-account',
-    'push-notifications': 'settings-account',
-    'webhooks': 'settings-account',
-    'shops': 'settings-account',
+    // settings chunk
+    'settings': 'settings',
+    'account': 'settings',
+    'teams': 'settings',
+    'plans-billing': 'settings',
+    'affiliate': 'settings',
+    'notifications': 'settings',
+    'connections': 'settings',
+    'shipping-profiles': 'settings',
+    'push-notifications': 'settings',
+    'webhooks': 'settings',
+    'shops': 'settings',
 
-    // community-help
-    'community': 'community-help',
-    'help': 'community-help',
-    'support-articles': 'community-help',
-    'report-bug': 'community-help',
-    'tutorials': 'community-help',
-    'roadmap': 'community-help',
-    'suggest-features': 'community-help',
-    'submit-feedback': 'community-help',
-    'feedback-suggestions': 'community-help',
-    'feedback-analytics': 'community-help',
-    'changelog': 'community-help',
-    'help-support': 'community-help',
-    'refer-friend': 'community-help',
-    'terms-of-service': 'community-help',
-    'privacy-policy': 'community-help',
-    'about': 'community-help',
-    'terms': 'community-help',
-    'privacy': 'community-help',
+    // community chunk
+    'community': 'community',
+    'help': 'community',
+    'support-articles': 'community',
+    'report-bug': 'community',
+    'tutorials': 'community',
+    'roadmap': 'community',
+    'suggest-features': 'community',
+    'submit-feedback': 'community',
+    'feedback-suggestions': 'community',
+    'feedback-analytics': 'community',
+    'changelog': 'community',
+    'help-support': 'community',
+    'refer-friend': 'community',
+    'terms-of-service': 'community',
+    'privacy-policy': 'community',
+    'about': 'community',
+    'terms': 'community',
+    'privacy': 'community',
 
     // admin
     'admin-metrics': 'admin',
@@ -15164,44 +15210,35 @@ const _loadedChunks = new Set();
 const _loadingChunks = {};
 
 /**
- * Dynamically load a route-group chunk (pages + handlers JS files).
- * Returns a promise that resolves when both files have loaded.
+ * Dynamically load a built route-group chunk (dist/chunk-{name}.js).
+ * Returns a promise that resolves when the script has loaded.
  */
 function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '7e952676';
-    const files = [
-        '/pages/pages-' + chunkName + '.js?v=' + v,
-        '/handlers/handlers-' + chunkName + '.js?v=' + v
-    ];
+    const v = '3481073c';
+    const src = '/chunk-' + chunkName + '.js?v=' + v;
 
-    let loaded = 0;
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
         var timeout = setTimeout(function() {
             reject(new Error('Chunk load timeout: ' + chunkName));
         }, 15000);
 
-        files.forEach(function(src) {
-            var s = document.createElement('script');
-            s.src = src;
-            s.onload = function() {
-                loaded++;
-                if (loaded >= files.length) {
-                    clearTimeout(timeout);
-                    _loadedChunks.add(chunkName);
-                    delete _loadingChunks[chunkName];
-                    resolve();
-                }
-            };
-            s.onerror = function() {
-                clearTimeout(timeout);
-                delete _loadingChunks[chunkName];
-                reject(new Error('Failed to load chunk: ' + src));
-            };
-            document.head.appendChild(s);
-        });
+        var s = document.createElement('script');
+        s.src = src;
+        s.onload = function() {
+            clearTimeout(timeout);
+            _loadedChunks.add(chunkName);
+            delete _loadingChunks[chunkName];
+            resolve();
+        };
+        s.onerror = function() {
+            clearTimeout(timeout);
+            delete _loadingChunks[chunkName];
+            reject(new Error('Failed to load chunk: ' + src));
+        };
+        document.head.appendChild(s);
     });
 
     return _loadingChunks[chunkName];
@@ -15216,7 +15253,7 @@ const router = {
 
     async navigate(path) {
         // Track tool usage
-        if (['automations', 'checklist', 'image-bank', 'calendar', 'size-charts'].includes(path)) {
+        if (['automations', 'checklist', 'image-bank', 'calendar', 'size-charts', 'planner'].includes(path)) {
             toolUsageAnalytics.track(path);
         }
 
@@ -15243,9 +15280,40 @@ const router = {
         await this.handleRoute();
     },
 
+    // Route aliases for sidebar consolidation — old routes redirect to new parent pages
+    routeAliases: {
+        'orders': { target: 'orders-sales', tab: 'orders' },
+        'sales': { target: 'orders-sales', tab: 'sales-summary' },
+        'transactions': { target: 'financials', tab: 'transactions' },
+        'report-builder': { target: 'analytics', tab: 'reports' },
+        'predictions': { target: 'analytics', tab: 'predictions' },
+        'market-intel': { target: 'analytics', tab: 'market-intel' },
+        'suppliers': { target: 'analytics', tab: 'sourcing' },
+        'platform-health': { target: 'shops', tab: 'health' },
+        'checklist': { target: 'planner', tab: 'tasks' },
+        'calendar': { target: 'planner', tab: 'calendar' },
+        'roadmap': { target: 'help-support', tab: 'roadmap' },
+        'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
+        'teams': { target: 'settings', tab: 'teams' },
+        'size-charts': { target: 'settings', tab: 'reference-data' },
+        'recently-deleted': { target: 'inventory', tab: 'trash' },
+        'about': { target: 'help-support', tab: 'about' },
+        'terms-of-service': { target: 'help-support', tab: 'terms' },
+        'privacy-policy': { target: 'help-support', tab: 'privacy' },
+        'admin-metrics': { target: 'settings', tab: 'admin' },
+    },
+
     async handleRoute(isInitialLoad = false) {
         let path = (window.location.hash.slice(1) || 'dashboard').split('?')[0];
         const previousPage = store.state.currentPage;
+
+        // Resolve route aliases (old routes → new consolidated pages)
+        const alias = this.routeAliases[path];
+        if (alias) {
+            path = alias.target;
+            store.setState({ activeTab: alias.tab });
+            window.history.replaceState({}, '', `#${path}`);
+        }
 
         // Clear timers/intervals on navigation to prevent leaks
         if (window._lockoutCountdown) {
@@ -15261,9 +15329,6 @@ const router = {
             clearInterval(handlers._batchPhotoPollInterval);
             handlers._batchPhotoPollInterval = null;
         }
-        if (path !== 'admin-metrics' && typeof handlers.stopAdminAutoRefresh === 'function') {
-            handlers.stopAdminAutoRefresh();
-        }
 
         // Clear stale filter state on page navigation
         if (previousPage && previousPage !== path) {
@@ -15273,7 +15338,7 @@ const router = {
         // Handle settings deep-linking: #settings/appearance → set tab and use 'settings' as route
         if (path.startsWith('settings/')) {
             const tab = path.split('/')[1];
-            const validTabs = ['profile','appearance','notifications','integrations','tools','billing','data'];
+            const validTabs = ['profile','appearance','notifications','integrations','tools','billing','data','teams','reference-data','admin'];
             if (validTabs.includes(tab)) {
                 store.setState({ settingsTab: tab });
             }
@@ -15364,9 +15429,16 @@ const router = {
                     await handlers.loadTickets();
                 } else if (path === 'orders') {
                     await handlers.loadOrders();
+                } else if (path === 'orders-sales') {
+                    await Promise.all([
+                        handlers.loadOrders(),
+                        handlers.loadSales()
+                    ]);
                 } else if (path === 'offers') {
                     await handlers.loadOffers();
                 } else if (path === 'checklist') {
+                    await handlers.loadChecklistItems();
+                } else if (path === 'planner') {
                     await handlers.loadChecklistItems();
                 } else if (path === 'heatmaps') {
                     await handlers.loadHeatmapData();
@@ -15693,52 +15765,26 @@ const components = {
         const draftListings = (store.state.listings || []).filter(l => l.status === 'draft').length;
 
         const navItems = [
-            { section: 'Main', items: [
+            { section: 'Sell', items: [
                 { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
-                { id: 'listings', label: 'My Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
-                { id: 'orders', label: 'Orders', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
+                { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
+                { id: 'orders-sales', label: 'Orders & Sales', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
                 { id: 'offers', label: 'Offers', icon: 'offers', badge: store.state.offers.filter(o => o.status === 'pending').length || null }
             ]},
-            { section: 'Tools', items: [
+            { section: 'Manage', items: [
                 { id: 'automations', label: 'Automations', icon: 'automation' },
-                { id: 'checklist', label: 'Checklist', icon: 'list', badge: activeChecklistItems > 0 ? activeChecklistItems : null, badgeType: 'info' },
-                { id: 'image-bank', label: 'Image Bank', icon: 'image' },
-                { id: 'calendar', label: 'Calendar', icon: 'calendar' },
-                { id: 'size-charts', label: 'Size Charts', icon: 'tag' },
-                { id: 'recently-deleted', label: 'Trash', icon: 'trash' }
-            ]},
-            { section: 'Business', items: [
-                { id: 'shops', label: 'My Shops', icon: 'shops' },
-                { id: 'platform-health', label: 'Platform Health', icon: 'activity' },
-                { id: 'transactions', label: 'Transactions', icon: 'dollar' },
                 { id: 'financials', label: 'Financials', icon: 'dollar' },
                 { id: 'analytics', label: 'Analytics', icon: 'analytics' },
-                { id: 'report-builder', label: 'Reports', icon: 'activity' }
+                { id: 'shops', label: 'My Shops', icon: 'shops' },
+                { id: 'planner', label: 'Planner', icon: 'calendar', badge: activeChecklistItems > 0 ? activeChecklistItems : null, badgeType: 'info' },
+                { id: 'image-bank', label: 'Image Bank', icon: 'image' }
             ]},
-            { section: 'Intelligence', items: [
-                { id: 'predictions', label: 'Predictions', icon: 'activity' },
-                { id: 'suppliers', label: 'Suppliers', icon: 'shops' },
-                { id: 'market-intel', label: 'Market Intel', icon: 'analytics' }
-            ]},
-            { section: 'Collaboration', items: [
-                { id: 'teams', label: 'Teams', icon: 'community' },
-            ]},
-            { section: 'Resources', items: [
+            { section: '', divider: true, items: [
                 { id: 'settings', label: 'Settings', icon: 'settings' },
-                { id: 'help-support', label: 'Help & Support', icon: 'help' },
-                { id: 'roadmap', label: 'Roadmap', icon: 'automation' },
-                { id: 'changelog', label: 'Changelog', icon: 'list' },
-                { id: 'feedback-suggestions', label: 'Feedback & Suggestions', icon: 'community' }
-            ]},
-            { section: 'Company', items: [
-                { id: 'about', label: 'About Us', icon: 'user' },
-                { id: 'terms-of-service', label: 'Terms of Service', icon: 'help' },
-                { id: 'privacy-policy', label: 'Privacy Policy', icon: 'settings' }
-            ]},
-            ...(user && user.is_admin ? [{ section: 'Admin', items: [
-                { id: 'admin-metrics', label: 'System Metrics', icon: 'cpu' }
-            ]}] : [])
+                { id: 'help-support', label: 'Help', icon: 'help' },
+                { id: 'changelog', label: 'Changelog', icon: 'list' }
+            ]}
         ];
 
         // Get connected shops for quick-switch
@@ -15788,8 +15834,8 @@ const components = {
                 ` : ''}
                 <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
                     ${navItems.map(section => `
-                        <div class="nav-section">
-                            <div class="nav-section-title">${section.section}</div>
+                        <div class="nav-section${section.divider ? ' nav-section-bottom' : ''}">
+                            ${section.divider ? '<div class="nav-section-divider"></div>' : `<div class="nav-section-title">${section.section}</div>`}
                             ${section.items.map(item => `
                                 <button class="nav-item ${currentPage === item.id ? 'active' : ''}"
                                         onclick="router.navigate('${item.id}')"
@@ -17945,6 +17991,30 @@ const pages = {
                 </div>
             ` : ''}
 
+                ${store.state.user?.is_admin ? `<!-- System Status Widget (admin only) -->
+                <div class="card dashboard-widget" id="system-status-card" style="width: 100%; margin-bottom: var(--space-4);" role="region" aria-label="System Status">
+                    <div class="card-header flex justify-between items-center">
+                        <h3 class="card-title">System Status</h3>
+                        <span id="system-status-dot" class="system-status-dot system-status-unknown" aria-label="Status unknown" title="Status unknown"></span>
+                    </div>
+                    <div class="card-body">
+                        <div class="system-status-grid">
+                            <div class="system-status-item">
+                                <span class="system-status-label">Server</span>
+                                <span class="system-status-value" id="system-status-server">—</span>
+                            </div>
+                            <div class="system-status-item">
+                                <span class="system-status-label">Database</span>
+                                <span class="system-status-value" id="system-status-db">—</span>
+                            </div>
+                            <div class="system-status-item">
+                                <span class="system-status-label">Uptime</span>
+                                <span class="system-status-value" id="system-status-uptime">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>` : ''}
+
                 <!-- Monthly Goal Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')) handlers.setMonthlyGoal()" title="Click to edit goal">
@@ -19148,16 +19218,16 @@ const pages = {
 
                 <!-- Reports Sub-tabs -->
                 <div class="tabs mb-4" role="tablist" style="padding: 1rem 1rem 0 1rem;">
-                    <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'errors' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsReportsSubTab('errors')">
+                    <button class="tab ${subTab === 'errors' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'errors' ? 'true' : 'false'}" tabindex="${subTab === 'errors' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('errors')">
                         <i class="fas fa-exclamation-circle"></i> Errors
                     </button>
-                    <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'supplier' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsReportsSubTab('supplier')">
+                    <button class="tab ${subTab === 'supplier' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'supplier' ? 'true' : 'false'}" tabindex="${subTab === 'supplier' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('supplier')">
                         <i class="fas fa-chart-line"></i> Supplier Monitoring
                     </button>
-                    <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'turnover' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsReportsSubTab('turnover')">
+                    <button class="tab ${subTab === 'turnover' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'turnover' ? 'true' : 'false'}" tabindex="${subTab === 'turnover' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('turnover')">
                         <i class="fas fa-sync-alt"></i> Inventory Turnover
                     </button>
-                    <button class="tab ${subTab === 'custom' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'custom' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsReportsSubTab('custom')">
+                    <button class="tab ${subTab === 'custom' ? 'active' : ''}" role="tab" aria-selected="${subTab === 'custom' ? 'true' : 'false'}" tabindex="${subTab === 'custom' ? '0' : '-1'}" onclick="handlers.switchAnalyticsReportsSubTab('custom')">
                         <i class="fas fa-file-csv"></i> Custom Reports
                     </button>
                 </div>
@@ -19844,21 +19914,25 @@ const pages = {
 
             <!-- Analytics Tabs -->
             <div class="tabs mb-6" role="tablist">
-                ${!hiddenTabs.includes('live') ? `<button class="tab ${currentTab === 'live' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'live' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('live')">${components.icon('activity', 14)} Live</button>` : ''}
-                ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
-                ${!hiddenTabs.includes('performance') ? `<button class="tab ${currentTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'performance' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('performance')">Performance</button>` : ''}
-                ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
-                ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
-                ${!hiddenTabs.includes('reports') ? `<button class="tab ${currentTab === 'reports' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'reports' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('reports')">Reports</button>` : ''}
-                ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
-                ${!hiddenTabs.includes('profitability-analysis') ? `<button class="tab ${currentTab === 'profitability' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'profitability' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('profitability')">Profitability Analysis</button>` : ''}
-                ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
+                ${!hiddenTabs.includes('live') ? `<button class="tab ${currentTab === 'live' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'live' ? 'true' : 'false'}" tabindex="${currentTab === 'live' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('live')">${components.icon('activity', 14)} Live</button>` : ''}
+                ${!hiddenTabs.includes('graphs') ? `<button class="tab ${currentTab === 'graphs' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'graphs' ? 'true' : 'false'}" tabindex="${currentTab === 'graphs' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('graphs')">Graphs</button>` : ''}
+                ${!hiddenTabs.includes('performance') ? `<button class="tab ${currentTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'performance' ? 'true' : 'false'}" tabindex="${currentTab === 'performance' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('performance')">Performance</button>` : ''}
+                ${!hiddenTabs.includes('heatmaps') ? `<button class="tab ${currentTab === 'heatmaps' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'heatmaps' ? 'true' : 'false'}" tabindex="${currentTab === 'heatmaps' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('heatmaps')">Heatmaps</button>` : ''}
+                ${!hiddenTabs.includes('predictions') ? `<button class="tab ${currentTab === 'predictions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'predictions' ? 'true' : 'false'}" tabindex="${currentTab === 'predictions' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('predictions')">Predictions</button>` : ''}
+                ${!hiddenTabs.includes('reports') ? `<button class="tab ${currentTab === 'reports' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'reports' ? 'true' : 'false'}" tabindex="${currentTab === 'reports' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('reports')">Reports</button>` : ''}
+                ${!hiddenTabs.includes('ratio-analysis') ? `<button class="tab ${currentTab === 'ratio-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'ratio-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'ratio-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('ratio-analysis')">Ratio Analysis</button>` : ''}
+                ${!hiddenTabs.includes('profitability-analysis') ? `<button class="tab ${currentTab === 'profitability' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'profitability' ? 'true' : 'false'}" tabindex="${currentTab === 'profitability' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('profitability')">Profitability Analysis</button>` : ''}
+                ${!hiddenTabs.includes('product-analysis') ? `<button class="tab ${currentTab === 'product-analysis' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'product-analysis' ? 'true' : 'false'}" tabindex="${currentTab === 'product-analysis' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('product-analysis')">Product Analysis</button>` : ''}
+                ${!hiddenTabs.includes('market-intel') ? `<button class="tab ${currentTab === 'market-intel' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'market-intel' ? 'true' : 'false'}" tabindex="${currentTab === 'market-intel' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('market-intel')">Market Intel</button>` : ''}
+                ${!hiddenTabs.includes('sourcing') ? `<button class="tab ${currentTab === 'sourcing' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'sourcing' ? 'true' : 'false'}" tabindex="${currentTab === 'sourcing' ? '0' : '-1'}" onclick="handlers.switchAnalyticsTab('sourcing')">Sourcing</button>` : ''}
                 <button class="btn btn-ghost btn-sm ml-auto" onclick="handlers.showAnalyticsCustomization()" title="Customize Analytics">
                     ${components.icon('settings', 16)}
                 </button>
             </div>
 
-            ${currentTab === 'live' ? (() => {
+            ${currentTab === 'market-intel' ? (typeof pages.marketIntel === 'function' ? pages.marketIntel() : '<div class="empty-state"><p>Market Intel data will appear here. Navigate to load data.</p></div>')
+            : currentTab === 'sourcing' ? (typeof pages.suppliers === 'function' ? pages.suppliers() : '<div class="empty-state"><p>Sourcing data will appear here. Navigate to load data.</p></div>')
+            : currentTab === 'live' ? (() => {
                 const orders = store.state.orders || [];
                 const sales = store.state.sales || [];
                 const inventory = store.state.inventory || [];
@@ -20513,7 +20587,7 @@ const pages = {
                             <div class="form-group">
                                 <label for="login-email" class="form-label">Email</label>
                                 <input id="login-email" type="email" class="form-input" name="email" required
-                                       aria-label="Email address" aria-describedby="login-email-error"
+                                       autocomplete="email" aria-label="Email address" aria-describedby="login-email-error"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-email-error" role="alert">Please enter a valid email address</span>
                             </div>
@@ -20572,19 +20646,25 @@ const pages = {
                             <div class="form-group">
                                 <label for="reg-email" class="form-label">Email</label>
                                 <input id="reg-email" type="email" class="form-input" name="email" required
-                                       aria-label="Email address" placeholder="you@example.com">
+                                       autocomplete="email" aria-label="Email address" placeholder="you@example.com">
                             </div>
                             <div class="form-group">
                                 <label for="reg-username" class="form-label">Username</label>
                                 <input id="reg-username" type="text" class="form-input" name="username" required
-                                       aria-label="Username" placeholder="Choose a username" minlength="3">
+                                       autocomplete="username" aria-label="Username" placeholder="Choose a username" minlength="3">
                             </div>
                             <div class="form-group">
                                 <label for="reg-password" class="form-label">Password</label>
                                 <input id="reg-password" type="password" class="form-input" name="password" required
                                        placeholder="Min 12 characters" minlength="12" autocomplete="new-password"
-                                       aria-label="Password" aria-describedby="password-reqs"
+                                       aria-label="Password" aria-describedby="password-reqs reg-strength-label"
                                        oninput="handlers.checkRegisterPassword(this)">
+                                <div id="reg-strength-meter" style="display:none; margin-top:6px;">
+                                    <div style="height:4px; background:var(--gray-200,#e5e7eb); border-radius:2px; overflow:hidden;">
+                                        <div id="reg-strength-bar" style="height:100%; width:0%; transition:width 0.3s,background 0.3s; border-radius:2px;"></div>
+                                    </div>
+                                    <span id="reg-strength-label" style="font-size:12px; margin-top:3px; display:block;"></span>
+                                </div>
                                 <div class="password-requirements" id="password-reqs">
                                     <div class="password-req-item" data-req="length">
                                         <span class="req-icon">&#9675;</span> At least 12 characters
@@ -20653,7 +20733,7 @@ const pages = {
                         <form id="forgot-password-form" onsubmit="handlers.requestPasswordReset(event)">
                             <div class="form-group">
                                 <label for="forgot-email" class="form-label">Email Address</label>
-                                <input id="forgot-email" type="email" class="form-input" name="email" required placeholder="you@example.com" aria-label="Email address" data-testid="forgot-email">
+                                <input id="forgot-email" type="email" class="form-input" name="email" required placeholder="you@example.com" autocomplete="email" aria-label="Email address" data-testid="forgot-email">
                             </div>
                             <button type="submit" class="btn btn-primary w-full mb-4">Send Reset Link</button>
                             <div class="text-center">
@@ -23110,6 +23190,124 @@ const modals = {
         `);
     },
 
+    // Generate listing from an existing inventory item
+    generateListingFromItem(itemId) {
+        const item = (store.state.inventory || []).find(i => i.id === itemId);
+        if (!item) {
+            toast.error('Item not found in inventory');
+            return;
+        }
+        const itemTitle = escapeHtml(item.title || 'Untitled Item');
+        const itemBrand = escapeHtml(item.brand || '');
+        const itemCategory = escapeHtml(item.category || '');
+        const itemCondition = item.condition || 'good';
+        const itemSize = escapeHtml(item.size || '');
+        const itemColor = escapeHtml(item.color || '');
+
+        this.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Generate AI Listing</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div id="gli-step-generate">
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg flex items-start gap-3">
+                        <div>
+                            <div class="font-semibold text-sm">${itemTitle}</div>
+                            <div class="text-xs text-gray-500">${[itemBrand, itemCategory, itemSize ? 'Size ' + itemSize : '', itemColor].filter(Boolean).join(' · ')}</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Target Platform</label>
+                        <select id="gli-platform" class="form-select">
+                            <option value="poshmark">Poshmark (80 char title)</option>
+                            <option value="ebay">eBay (80 char title)</option>
+                            <option value="mercari">Mercari (40 char title)</option>
+                            <option value="depop">Depop (65 char title)</option>
+                            <option value="grailed">Grailed (100 char title)</option>
+                            <option value="facebook">Facebook Marketplace</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Additional Notes <span class="text-gray-400 font-normal">(optional)</span></label>
+                        <input type="text" id="gli-notes" class="form-input" placeholder="e.g. slight fade on collar, original box included" maxlength="300">
+                        <p class="text-xs text-gray-500 mt-1">Add any details not captured in the item record</p>
+                    </div>
+                </div>
+
+                <div id="gli-step-loading" class="hidden text-center py-10">
+                    <div class="inline-block animate-spin rounded-full h-14 w-14 border-4 border-gray-200 border-t-primary-500 mb-4"></div>
+                    <div class="text-base font-semibold mb-1">Generating listing...</div>
+                    <div class="text-sm text-gray-500">Claude is writing your listing</div>
+                </div>
+
+                <div id="gli-step-results" class="hidden">
+                    <div class="mb-4 p-3 bg-green-50 border-l-4 border-green-500 rounded">
+                        <div class="font-semibold text-green-900 text-sm mb-1">Listing generated — review and edit below</div>
+                        <div id="gli-ai-source" class="text-xs text-green-700"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" id="gli-result-title" class="form-input" maxlength="100">
+                        <p class="text-xs text-gray-500 mt-1"><span id="gli-title-count">0</span> characters</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="gli-result-description" class="form-input" rows="7"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tags</label>
+                        <input type="text" id="gli-result-tags" class="form-input" placeholder="Comma-separated tags">
+                        <p class="text-xs text-gray-500 mt-1"><span id="gli-tags-count">0</span> tags</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Price</label>
+                        <div class="flex items-center gap-3">
+                            <input type="number" id="gli-result-price" class="form-input" step="0.01" style="max-width: 140px;">
+                            <span id="gli-price-range" class="text-sm text-gray-500"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button id="gli-generate-btn" class="btn btn-primary" onclick="handlers.runGenerateListingFromItem('${itemId}')">
+                    Generate with AI
+                </button>
+                <button id="gli-save-btn" class="btn btn-primary hidden" onclick="handlers.saveGeneratedListing('${itemId}')">
+                    Save as Draft Listing
+                </button>
+            </div>
+        `);
+
+        // Wire up character counter for title after modal renders
+        setTimeout(() => {
+            const titleInput = document.getElementById('gli-result-title');
+            if (titleInput) {
+                titleInput.addEventListener('input', () => {
+                    const counter = document.getElementById('gli-title-count');
+                    if (counter) counter.textContent = titleInput.value.length;
+                });
+            }
+            const tagsInput = document.getElementById('gli-result-tags');
+            if (tagsInput) {
+                tagsInput.addEventListener('input', () => {
+                    const counter = document.getElementById('gli-tags-count');
+                    if (counter) {
+                        const tags = tagsInput.value.split(',').filter(t => t.trim());
+                        counter.textContent = tags.length;
+                    }
+                });
+            }
+        }, 50);
+    },
+
     // Create post modal
     createPost() {
         const currentTab = store.state.communityTab || 'discussion';
@@ -24880,6 +25078,38 @@ const handlers = {
                 if (icon) icon.innerHTML = '&#9675;';
             }
         });
+
+        const meter = document.getElementById('reg-strength-meter');
+        const bar = document.getElementById('reg-strength-bar');
+        const label = document.getElementById('reg-strength-label');
+        if (!meter || !bar || !label) return;
+
+        if (!pw) {
+            meter.style.display = 'none';
+            return;
+        }
+        meter.style.display = 'block';
+
+        let score = 0;
+        if (pw.length >= 8) score++;
+        if (pw.length >= 12) score++;
+        if (/[A-Z]/.test(pw)) score++;
+        if (/[a-z]/.test(pw)) score++;
+        if (/[0-9]/.test(pw)) score++;
+        if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+        const levels = [
+            { max: 1, width: '16%', color: 'var(--danger, #ef4444)', text: 'Weak' },
+            { max: 2, width: '33%', color: '#f97316', text: 'Fair' },
+            { max: 3, width: '50%', color: '#eab308', text: 'Good' },
+            { max: 4, width: '75%', color: '#84cc16', text: 'Strong' },
+            { max: 6, width: '100%', color: 'var(--success, #22c55e)', text: 'Very Strong' },
+        ];
+        const level = levels.find(l => score <= l.max) || levels[levels.length - 1];
+        bar.style.width = level.width;
+        bar.style.background = level.color;
+        label.textContent = level.text;
+        label.style.color = level.color;
     },
 
     socialLogin(provider) {
@@ -25204,6 +25434,10 @@ const handlers = {
             store.setState({ darkMode: prefersDark });
             localStorage.removeItem('vaultlister_darkmode');
         }
+        if (store.state.user) {
+            const currentPrefs = (() => { try { return JSON.parse(store.state.user.preferences || '{}'); } catch { return {}; } })();
+            api.put('/auth/profile', { preferences: { ...currentPrefs, dark_mode: mode } }).catch(() => {});
+        }
         renderApp(pages.settings());
     },
 
@@ -25366,6 +25600,44 @@ const handlers = {
                 toast.error('Please log in to view orders');
             } else {
                 toast.error('Failed to load orders: ' + errorMsg);
+            }
+        }
+    },
+
+    loadSystemStatus: async function() {
+        const serverEl = document.getElementById('system-status-server');
+        const dbEl = document.getElementById('system-status-db');
+        const uptimeEl = document.getElementById('system-status-uptime');
+        const dotEl = document.getElementById('system-status-dot');
+        if (!serverEl) return;
+        try {
+            const data = await api.get('/health/detailed');
+            const isHealthy = data.status === 'healthy';
+            serverEl.textContent = isHealthy ? 'Healthy' : 'Unhealthy';
+            serverEl.style.color = isHealthy ? 'var(--green-500)' : 'var(--red-500)';
+            const dbCheck = data.checks?.database;
+            if (dbCheck) {
+                const dbOk = dbCheck.status === 'healthy';
+                dbEl.textContent = dbOk ? 'Connected' : 'Unavailable';
+                dbEl.style.color = dbOk ? 'var(--green-500)' : 'var(--red-500)';
+            }
+            if (data.uptime !== undefined) {
+                const sec = Math.floor(data.uptime);
+                const h = Math.floor(sec / 3600);
+                const m = Math.floor((sec % 3600) / 60);
+                uptimeEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
+            }
+            if (dotEl) {
+                dotEl.className = 'system-status-dot ' + (isHealthy ? 'system-status-healthy' : 'system-status-unhealthy');
+                dotEl.setAttribute('aria-label', isHealthy ? 'System healthy' : 'System unhealthy');
+                dotEl.setAttribute('title', isHealthy ? 'System healthy' : 'System unhealthy');
+            }
+        } catch {
+            if (serverEl) { serverEl.textContent = 'Unavailable'; serverEl.style.color = 'var(--red-500)'; }
+            if (dotEl) {
+                dotEl.className = 'system-status-dot system-status-unhealthy';
+                dotEl.setAttribute('aria-label', 'System unhealthy');
+                dotEl.setAttribute('title', 'System unhealthy');
             }
         }
     },
@@ -26465,8 +26737,20 @@ async function initApp() {
         await handlers.loadOrders();
         renderApp(pages.orders());
     });
+    // Consolidated: Orders & Sales page
+    router.register('orders-sales', async () => {
+        renderApp(pages.ordersSales());
+        await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
+        renderApp(pages.ordersSales());
+    });
     router.register('checklist', () => renderApp(pages.checklist()));
     router.register('calendar', () => renderApp(pages.calendar()));
+    // Consolidated: Planner page
+    router.register('planner', async () => {
+        renderApp(pages.planner());
+        await handlers.loadChecklistItems();
+        renderApp(pages.planner());
+    });
     router.register('size-charts', () => renderApp(pages.sizeCharts()));
     router.register('image-bank', async () => {
         renderApp(pages.imageBank());
@@ -26613,12 +26897,6 @@ async function initApp() {
     router.register('about', () => renderApp(pages.about()));
     router.register('terms', () => renderApp(pages.terms()));
     router.register('privacy', () => renderApp(pages.privacy()));
-
-    // Admin section
-    router.register('admin-metrics', async () => {
-        await handlers.loadAdminMetrics();
-        handlers.startAdminAutoRefresh();
-    });
 
     router.register('404', () => renderApp(pages.notFound()));
 
@@ -27022,6 +27300,20 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
+    // Ctrl/Cmd + Shift shortcuts
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+        switch (e.key.toLowerCase()) {
+            case 's':
+                e.preventDefault();
+                router.navigate('shops');
+                return;
+            case 'd':
+                e.preventDefault();
+                router.navigate('dashboard');
+                return;
+        }
+    }
+
     // Ctrl/Cmd + key shortcuts
     if (e.ctrlKey || e.metaKey) {
         switch (e.key.toLowerCase()) {
@@ -27093,6 +27385,10 @@ document.addEventListener('keydown', (e) => {
     // Single key shortcuts (no modifiers)
     if (!e.ctrlKey && !e.metaKey && !e.altKey) {
         switch (e.key) {
+            case '/':
+                e.preventDefault();
+                (document.getElementById('global-search') || document.getElementById('inventory-search'))?.focus();
+                break;
             case '?':
                 e.preventDefault();
                 handlers.showKeyboardShortcuts?.();
@@ -28008,5 +28304,113 @@ document.addEventListener('keydown', function(e) {
     setInterval(rumFlush, FLUSH_INTERVAL);
     document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'hidden') rumFlush();
+    });
+})();
+
+// ============================================
+// PWA Install Prompt
+// ============================================
+(function() {
+    var DISMISS_KEY = 'vaultlister_pwa_dismiss_until';
+    var DELAY_MS = 30000; // 30 seconds
+    var SNOOZE_DAYS = 7;
+
+    var deferredPrompt = null;
+    var bannerEl = null;
+
+    function isDismissed() {
+        var until = localStorage.getItem(DISMISS_KEY);
+        return until && Date.now() < parseInt(until, 10);
+    }
+
+    function createBanner() {
+        var el = document.createElement('div');
+        el.id = 'pwa-install-banner';
+        el.setAttribute('role', 'banner');
+        el.setAttribute('aria-label', 'Install VaultLister app');
+        el.style.cssText = [
+            'position:fixed',
+            'bottom:1.25rem',
+            'left:50%',
+            'transform:translateX(-50%) translateY(120%)',
+            'z-index:9999',
+            'display:flex',
+            'align-items:center',
+            'gap:0.75rem',
+            'background:#1f2937',
+            'color:#f9fafb',
+            'padding:0.75rem 1rem',
+            'border-radius:0.75rem',
+            'box-shadow:0 4px 24px rgba(0,0,0,0.35)',
+            'font-family:Inter,system-ui,sans-serif',
+            'font-size:0.9rem',
+            'max-width:calc(100vw - 2rem)',
+            'width:max-content',
+            'transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+            'will-change:transform'
+        ].join(';');
+
+        var icon = '<svg width="28" height="28" viewBox="0 0 64 64" fill="none" aria-hidden="true" style="flex-shrink:0"><rect width="64" height="64" rx="14" fill="#6366f1"/><path d="M20 44V20h8l8 16 8-16h8v24h-6V30l-6 14h-8l-6-14v14h-6z" fill="white"/></svg>';
+        var text = '<span style="flex:1;line-height:1.3"><strong style="display:block;font-size:0.9375rem">Install VaultLister</strong><span style="color:#9ca3af;font-size:0.8125rem">Add to home screen for quick access</span></span>';
+
+        var btnInstall = document.createElement('button');
+        btnInstall.textContent = 'Install';
+        btnInstall.style.cssText = 'background:#6366f1;color:#fff;border:none;padding:0.4rem 0.875rem;border-radius:0.5rem;font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnInstall.addEventListener('click', function() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function() {
+                deferredPrompt = null;
+                hideBanner();
+            });
+        });
+
+        var btnDismiss = document.createElement('button');
+        btnDismiss.textContent = 'Dismiss';
+        btnDismiss.setAttribute('aria-label', 'Dismiss install prompt for 7 days');
+        btnDismiss.style.cssText = 'background:transparent;color:#9ca3af;border:none;padding:0.4rem 0.5rem;border-radius:0.5rem;font-size:0.8125rem;cursor:pointer;white-space:nowrap;flex-shrink:0';
+        btnDismiss.addEventListener('click', function() {
+            localStorage.setItem(DISMISS_KEY, String(Date.now() + SNOOZE_DAYS * 86400000));
+            hideBanner();
+        });
+
+        el.innerHTML = icon + text;
+        el.appendChild(btnInstall);
+        el.appendChild(btnDismiss);
+        return el;
+    }
+
+    function showBanner() {
+        if (!deferredPrompt || isDismissed()) return;
+        if (!bannerEl) {
+            bannerEl = createBanner();
+            document.body.appendChild(bannerEl);
+        }
+        // Trigger reflow then slide up
+        void bannerEl.offsetWidth;
+        bannerEl.style.transform = 'translateX(-50%) translateY(0)';
+    }
+
+    function hideBanner() {
+        if (!bannerEl) return;
+        bannerEl.style.transform = 'translateX(-50%) translateY(120%)';
+        setTimeout(function() {
+            if (bannerEl && bannerEl.parentNode) bannerEl.parentNode.removeChild(bannerEl);
+            bannerEl = null;
+        }, 350);
+    }
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (!isDismissed()) {
+            setTimeout(showBanner, DELAY_MS);
+        }
+    });
+
+    // Clean up if the user installs via browser UI directly
+    window.addEventListener('appinstalled', function() {
+        deferredPrompt = null;
+        hideBanner();
     });
 })();

@@ -2660,11 +2660,35 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         ];
         const completedSteps = gettingStartedSteps.filter(s => s.completed).length;
 
+        const helpActiveTab = store.state.activeTab || 'help';
+
         return `
             <div class="page-header">
-                <h1 class="page-title">Help & Support</h1>
+                <h1 class="page-title">${components.icon('help', 24)} Help</h1>
                 <p class="page-description">Get the help you need to succeed</p>
             </div>
+
+            <div class="consolidated-tabs">
+                <button class="consolidated-tab ${helpActiveTab === 'help' ? 'active' : ''}"
+                        onclick="store.setState({activeTab:'help'});renderApp(pages.helpSupport())">
+                    ${components.icon('help', 16)} <span>Help & Support</span>
+                </button>
+                <button class="consolidated-tab ${helpActiveTab === 'roadmap' ? 'active' : ''}"
+                        onclick="store.setState({activeTab:'roadmap'});renderApp(pages.helpSupport())">
+                    ${components.icon('automation', 16)} <span>Roadmap</span>
+                </button>
+                <button class="consolidated-tab ${helpActiveTab === 'feedback' ? 'active' : ''}"
+                        onclick="store.setState({activeTab:'feedback'});renderApp(pages.helpSupport())">
+                    ${components.icon('community', 16)} <span>Feedback</span>
+                </button>
+            </div>
+
+            ${helpActiveTab === 'roadmap' ? (typeof pages.roadmap === 'function' ? pages.roadmap() : '<div class="empty-state"><p>Roadmap loading...</p></div>')
+            : helpActiveTab === 'feedback' ? (typeof pages.feedbackSuggestions === 'function' ? pages.feedbackSuggestions() : '<div class="empty-state"><p>Feedback loading...</p></div>')
+            : helpActiveTab === 'about' ? (typeof pages.about === 'function' ? pages.about() : '')
+            : helpActiveTab === 'terms' ? (typeof pages.termsOfService === 'function' ? pages.termsOfService() : '')
+            : helpActiveTab === 'privacy' ? (typeof pages.privacyPolicy === 'function' ? pages.privacyPolicy() : '')
+            : `
 
             <!-- Quick Stats -->
             <div class="help-stats-row">
@@ -2927,6 +2951,13 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     </div>
                 </div>
             </div>
+
+            <div class="help-footer-links" style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--gray-200);display:flex;gap:1.5rem;font-size:0.8rem;color:var(--gray-500);">
+                <a href="#" onclick="event.preventDefault();store.setState({activeTab:'about'});renderApp(pages.helpSupport())" style="color:var(--gray-500);text-decoration:none;">About Us</a>
+                <a href="#" onclick="event.preventDefault();store.setState({activeTab:'terms'});renderApp(pages.helpSupport())" style="color:var(--gray-500);text-decoration:none;">Terms of Service</a>
+                <a href="#" onclick="event.preventDefault();store.setState({activeTab:'privacy'});renderApp(pages.helpSupport())" style="color:var(--gray-500);text-decoration:none;">Privacy Policy</a>
+            </div>
+            `}
         `;
     },
 
