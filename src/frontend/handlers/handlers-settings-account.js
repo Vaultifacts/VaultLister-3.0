@@ -2097,20 +2097,29 @@ Object.assign(handlers, {
     // Feature 4: Connected Services Status Indicators,
 
 
-    checkIntegrationStatus: function() {
-        const platforms = ['ebay', 'mercari', 'whatnot'];
-        const statuses = {
-            ebay: 'connected',
-            mercari: 'connected',
-            whatnot: 'connected',
-            poshmark: 'disconnected',
-            depop: 'disconnected',
-            facebook: 'disconnected'
-        };
-
-        store.setState({ platformConnections: statuses });
-        toast.success('Integration status refreshed');
-        renderApp(pages.settings());
+    checkIntegrationStatus: async function() {
+        try {
+            const shops = await api.get('/shops');
+            const shopList = Array.isArray(shops) ? shops : (shops.shops || []);
+            const statuses = {
+                ebay: 'disconnected',
+                mercari: 'disconnected',
+                whatnot: 'disconnected',
+                poshmark: 'disconnected',
+                depop: 'disconnected',
+                facebook: 'disconnected'
+            };
+            for (const shop of shopList) {
+                if (shop.is_connected && statuses.hasOwnProperty(shop.platform)) {
+                    statuses[shop.platform] = 'connected';
+                }
+            }
+            store.setState({ platformConnections: statuses });
+            toast.success('Integration status refreshed');
+            renderApp(pages.settings());
+        } catch (e) {
+            toast.error('Failed to check integration status');
+        }
     },
 
     // Feature 5: Settings Changelog (What Changed Since Last Visit),
