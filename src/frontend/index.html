@@ -149,6 +149,31 @@
         });
     </script>
 
+    <!-- Auto-update: detect new deploys and reload seamlessly -->
+    <script>
+        (function() {
+            var currentVersion = null;
+            setInterval(function() {
+                fetch('/api/health', { cache: 'no-store' })
+                    .then(function(r) { return r.json(); })
+                    .then(function(d) {
+                        if (!currentVersion) { currentVersion = d.version || d.timestamp; return; }
+                        // If SW updated, force reload
+                        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                            navigator.serviceWorker.controller.postMessage({ type: 'CHECK_UPDATE' });
+                        }
+                    })
+                    .catch(function() {});
+            }, 60000);
+            // Listen for SW update notification
+            if (navigator.serviceWorker) {
+                navigator.serviceWorker.addEventListener('controllerchange', function() {
+                    if (currentVersion) location.reload();
+                });
+            }
+        })();
+    </script>
+
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
