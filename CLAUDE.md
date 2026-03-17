@@ -4,6 +4,9 @@
 
 # CLAUDE.md – VaultLister 3.0
 
+## Notion Dashboard
+https://www.notion.so/VaultLister-3-0-2799f0c81de682f49f9e81d8cb0f8aaf
+
 ## Core Mission
 Zero-cost, offline-capable multi-channel reselling platform for listing to 9+ marketplaces, managing inventory, and automating reseller workflows with AI-powered tools.
 
