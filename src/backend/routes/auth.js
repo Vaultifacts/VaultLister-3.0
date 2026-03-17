@@ -177,7 +177,7 @@ async function ensureTestDemoUser() {
     const demoPassword = process.env.DEMO_PASSWORD || 'DemoPassword123!';
 
     let existing = query.get(
-        'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled FROM users WHERE email = ?',
+        'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ?',
         [demoEmail]
     );
 
@@ -193,7 +193,7 @@ async function ensureTestDemoUser() {
     }
 
     return query.get(
-        'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled FROM users WHERE email = ? AND is_active = 1',
+        'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = 1',
         [demoEmail]
     );
 }
@@ -342,7 +342,7 @@ export async function authRouter(ctx) {
                 && password === (process.env.DEMO_PASSWORD || 'DemoPassword123!');
 
             let user = query.get(
-                'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled FROM users WHERE email = ? AND is_active = 1',
+                'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = 1',
                 [normalizedEmail]
             );
 
