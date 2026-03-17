@@ -301,7 +301,7 @@ export async function billingRouter(ctx) {
             }
 
             const appUrl = process.env.APP_URL || 'http://localhost:3000';
-            const resolvedSuccess = successUrl || `${appUrl}/?app=1#billing?upgraded=1`;
+            const resolvedSuccess = successUrl || `${appUrl}/?app=1#plans-billing`;
             const resolvedCancel  = cancelUrl  || `${appUrl}/?app=1#plans-billing`;
 
             const session = await createCheckoutSession(user.id, STRIPE_PRICE_IDS[planId], resolvedSuccess, resolvedCancel);
