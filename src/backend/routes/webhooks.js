@@ -62,9 +62,10 @@ export async function webhooksRouter(ctx) {
 
         let event;
         try {
+            logger.info('[Webhooks/Stripe] Verifying signature', null, { rawBodyLength: (ctx.rawBody || '').length, sigLength: sig.length });
             event = constructWebhookEvent(ctx.rawBody || '', sig);
         } catch (err) {
-            logger.warn('[Webhooks/Stripe] Signature verification failed', null, { detail: err.message });
+            logger.warn('[Webhooks/Stripe] Signature verification failed', null, { detail: err?.message || String(err), rawBodyLength: (ctx.rawBody || '').length });
             return { status: 400, data: { error: `Webhook signature verification failed: ${err.message}` } };
         }
 
