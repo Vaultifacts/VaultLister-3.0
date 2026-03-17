@@ -1806,14 +1806,6 @@ body.dark-mode .shop-switch-divider {
 .nav-section-bottom {
     margin-top: auto;
     margin-bottom: 0;
-    position: sticky;
-    bottom: 0;
-    background: inherit;
-    padding-bottom: var(--space-2);
-}
-
-body.dark-mode .nav-section-bottom {
-    background: var(--gray-900);
 }
 
 .nav-section-divider {
