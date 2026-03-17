@@ -1177,65 +1177,35 @@ Object.assign(pages, {
                                 </button>
                             </div>
                             <div class="integrations-grid">
-                                <div class="integration-card connected">
-                                    <div class="integration-icon" style="background: #E53238; position: relative;">
-                                        <span style="font-weight: bold; color: white;">e</span>
-                                        <span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: #10b981; border-radius: 50%; border: 2px solid white;"></span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>eBay</h5>
-                                        <span class="integration-status connected">Connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('ebay')">Manage</button>
-                                </div>
-                                <div class="integration-card connected">
-                                    <div class="integration-icon" style="background: #4169E1;">
-                                        <span style="font-weight: bold; color: white;">M</span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Mercari</h5>
-                                        <span class="integration-status connected">Connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('mercari')">Manage</button>
-                                </div>
-                                <div class="integration-card">
-                                    <div class="integration-icon" style="background: #7B2D8E;">
-                                        <span style="font-weight: bold; color: white;">P</span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Poshmark</h5>
-                                        <span class="integration-status">Not connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('poshmark')">Connect</button>
-                                </div>
-                                <div class="integration-card connected">
-                                    <div class="integration-icon" style="background: #6366F1;">
-                                        <span style="font-weight: bold; color: white;">W</span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Whatnot</h5>
-                                        <span class="integration-status connected">Connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('whatnot')">Manage</button>
-                                </div>
-                                <div class="integration-card">
-                                    <div class="integration-icon" style="background: #FF5A5F;">
-                                        <span style="font-weight: bold; color: white;">D</span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Depop</h5>
-                                        <span class="integration-status">Not connected</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('depop')">Connect</button>
-                                </div>
-                                <div class="integration-card">
-                                    <div class="integration-icon" style="background: #1877F2;">
-                                        <span style="font-weight: bold; color: white;">F</span>
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Facebook Marketplace</h5>
-                                        <span class="integration-status">Not connected</span>
-                                    </div>
+                                ${(function() {
+                                    const platforms = [
+                                        { id: 'ebay', name: 'eBay', color: '#E53238', letter: 'e' },
+                                        { id: 'mercari', name: 'Mercari', color: '#4169E1', letter: 'M' },
+                                        { id: 'poshmark', name: 'Poshmark', color: '#7B2D8E', letter: 'P' },
+                                        { id: 'whatnot', name: 'Whatnot', color: '#6366F1', letter: 'W' },
+                                        { id: 'depop', name: 'Depop', color: '#FF5A5F', letter: 'D' },
+                                        { id: 'facebook', name: 'Facebook Marketplace', color: '#1877F2', letter: 'F' }
+                                    ];
+                                    const shops = store.state.shops || [];
+                                    const connectedPlatforms = new Set(shops.filter(s => s.is_connected).map(s => s.platform));
+                                    return platforms.map(p => {
+                                        const connected = connectedPlatforms.has(p.id);
+                                        return `<div class="integration-card ${connected ? 'connected' : ''}">
+                                            <div class="integration-icon" style="background: ${p.color};${connected ? ' position: relative;' : ''}">
+                                                <span style="font-weight: bold; color: white;">${p.letter}</span>
+                                                ${connected ? '<span class="service-status-dot connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: #10b981; border-radius: 50%; border: 2px solid white;"></span>' : ''}
+                                            </div>
+                                            <div class="integration-info">
+                                                <h5>${escapeHtml(p.name)}</h5>
+                                                <span class="integration-status ${connected ? 'connected' : ''}">${connected ? 'Connected' : 'Not connected'}</span>
+                                            </div>
+                                            ${connected
+                                                ? `<button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('${p.id}')">Manage</button>`
+                                                : `<button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('${p.id}')">Connect</button>`
+                                            }
+                                        </div>`;
+                                    }).join('');
+                                })()
                                     <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('facebook')">Connect</button>
                                 </div>
                             </div>
