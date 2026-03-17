@@ -1355,7 +1355,7 @@ const server = Bun.serve({
         if (pathname === '/') {
             const cookieHeader = request.headers.get('Cookie') || '';
             const hasAuthCookie = /(?:^|;\s*)vl_access=/.test(cookieHeader);
-            if (!hasAuthCookie) {
+            if (!hasAuthCookie && !url.searchParams.has('app')) {
                 const landingPath = join(PUBLIC_DIR, 'landing.html');
                 if (existsSync(landingPath)) {
                     return new Response(readFileSync(landingPath, 'utf-8'), {
