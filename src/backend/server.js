@@ -106,7 +106,7 @@ const PUBLIC_DIR = join(ROOT_DIR, 'public');
 const FRONTEND_DIR = join(ROOT_DIR, 'src', 'frontend');
 const SHARED_DIR = join(ROOT_DIR, 'src', 'shared');
 const DIST_DIR = join(ROOT_DIR, 'dist');
-const IS_PROD = process.env.NODE_ENV === 'production';
+const IS_PROD = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging';
 
 // Build hash — injected into sw.js at serve time so every deploy busts the SW cache.
 // Falls back to a startup timestamp so the cache always invalidates on server restart.

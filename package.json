@@ -13,7 +13,7 @@
     "test:unit": "bun run test:setup && bun test src/tests/",
     "test:setup": "bun run dev:stop && bun scripts/kill-port.js 3100 && bun run dev:test-bg",
     "start": "bun run src/backend/server.js",
-    "build": "bun scripts/build-frontend.js",
+    "build": "bun scripts/build-dev-bundle.js && bun scripts/build-frontend.js",
     "build:prod": "NODE_ENV=production bun scripts/build-frontend.js",
     "build:analyze": "bun scripts/build-frontend.js 2>&1 | tee bundle-stats.txt",
     "test": "bun run test:setup && powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/ps/run-bun-tests.ps1",
