@@ -11813,27 +11813,28 @@ const mobileUI = {
 
     renderBottomNav() {
         if (!this.isMobile()) return '';
+        const cp = store.state.currentPage;
         return `
             <nav class="mobile-bottom-nav">
-                <a href="#" class="mobile-nav-item ${store.state.currentPage === 'dashboard' ? 'active' : ''}" ${store.state.currentPage === 'dashboard' ? 'aria-current="page"' : ''} onclick="router.navigate('dashboard')">
+                <a href="#" class="mobile-nav-item ${cp === 'dashboard' ? 'active' : ''}" ${cp === 'dashboard' ? 'aria-current="page"' : ''} onclick="router.navigate('dashboard')">
                     ${components.icon('home', 20)}
                     <span>Home</span>
                 </a>
-                <a href="#" class="mobile-nav-item ${store.state.currentPage === 'inventory' ? 'active' : ''}" ${store.state.currentPage === 'inventory' ? 'aria-current="page"' : ''} onclick="router.navigate('inventory')">
+                <a href="#" class="mobile-nav-item ${cp === 'inventory' ? 'active' : ''}" ${cp === 'inventory' ? 'aria-current="page"' : ''} onclick="router.navigate('inventory')">
                     ${components.icon('inventory', 20)}
                     <span>Inventory</span>
                 </a>
-                <a href="#" class="mobile-nav-item ${store.state.currentPage === 'listings' ? 'active' : ''}" ${store.state.currentPage === 'listings' ? 'aria-current="page"' : ''} onclick="router.navigate('listings')">
+                <a href="#" class="mobile-nav-item ${cp === 'listings' ? 'active' : ''}" ${cp === 'listings' ? 'aria-current="page"' : ''} onclick="router.navigate('listings')">
                     ${components.icon('list', 20)}
                     <span>Listings</span>
                 </a>
-                <a href="#" class="mobile-nav-item ${store.state.currentPage === 'sales' ? 'active' : ''}" ${store.state.currentPage === 'sales' ? 'aria-current="page"' : ''} onclick="router.navigate('sales')">
+                <a href="#" class="mobile-nav-item ${cp === 'orders-sales' ? 'active' : ''}" ${cp === 'orders-sales' ? 'aria-current="page"' : ''} onclick="router.navigate('orders-sales')">
                     ${components.icon('sales', 20)}
-                    <span>Sales</span>
+                    <span>Orders</span>
                 </a>
-                <a href="#" class="mobile-nav-item ${store.state.currentPage === 'settings' ? 'active' : ''}" ${store.state.currentPage === 'settings' ? 'aria-current="page"' : ''} onclick="router.navigate('settings')">
-                    ${components.icon('settings', 20)}
-                    <span>More</span>
+                <a href="#" class="mobile-nav-item ${cp === 'offers' ? 'active' : ''}" ${cp === 'offers' ? 'aria-current="page"' : ''} onclick="router.navigate('offers')">
+                    ${components.icon('offers', 20)}
+                    <span>Offers</span>
                 </a>
             </nav>
         `;
@@ -15208,7 +15209,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a2056350';
+    const v = '18982ed1';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
