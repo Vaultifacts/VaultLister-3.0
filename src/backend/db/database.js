@@ -176,7 +176,8 @@ function runMigrations() {
             '097_fix_fts5_delete_trigger.sql',
             '098_add_is_admin.sql',
             '099_optimize_query_indexes.sql',
-            '100_add_app_settings.sql'
+            '100_add_app_settings.sql',
+            '101_add_auto_sync.sql'
         ];
 
         for (const migrationFile of migrationFiles) {

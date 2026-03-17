@@ -44874,33 +44874,46 @@ const handlers = {
 
     showShopSettings: function(platform) {
         const shop = (store.state.shops || []).find(s => s.platform === platform);
-        modals.show(`${platform.charAt(0).toUpperCase() + platform.slice(1)} Settings`, `
+        const autoSyncEnabled = shop?.auto_sync_enabled !== undefined ? !!shop.auto_sync_enabled : true;
+        const autoSyncInterval = shop?.auto_sync_interval_minutes || 15;
+        const platformLabel = platform.charAt(0).toUpperCase() + platform.slice(1);
+        modals.show(`${platformLabel} Settings`, `
             <div class="form-group">
-                <label class="form-label">Auto-sync interval</label>
-                <select class="form-select">
-                    <option value="15">Every 15 minutes</option>
-                    <option value="30">Every 30 minutes</option>
-                    <option value="60" selected>Every hour</option>
-                    <option value="manual">Manual only</option>
-                </select>
+                <label class="form-label flex items-center gap-2">
+                    <input type="checkbox" id="shop-auto-sync-enabled" ${autoSyncEnabled ? 'checked' : ''}>
+                    Auto-sync enabled
+                </label>
             </div>
             <div class="form-group">
-                <label class="form-label">Sync options</label>
-                <label class="flex items-center gap-2 mb-2">
-                    <input type="checkbox" checked> Sync inventory
-                </label>
-                <label class="flex items-center gap-2 mb-2">
-                    <input type="checkbox" checked> Sync orders
-                </label>
-                <label class="flex items-center gap-2">
-                    <input type="checkbox"> Sync analytics
-                </label>
+                <label class="form-label">Auto-sync interval</label>
+                <select class="form-select" id="shop-auto-sync-interval">
+                    <option value="5" ${autoSyncInterval === 5 ? 'selected' : ''}>Every 5 minutes</option>
+                    <option value="15" ${autoSyncInterval === 15 ? 'selected' : ''}>Every 15 minutes</option>
+                    <option value="30" ${autoSyncInterval === 30 ? 'selected' : ''}>Every 30 minutes</option>
+                    <option value="60" ${autoSyncInterval === 60 ? 'selected' : ''}>Every hour</option>
+                </select>
             </div>
             <div class="flex justify-end gap-2 mt-4">
                 <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                <button class="btn btn-primary" onclick="toast.success('Settings saved'); modals.close();">Save</button>
+                <button class="btn btn-primary" onclick="handlers.saveShopSettings('${platform}')">Save</button>
             </div>
         `);
+    },
+
+    saveShopSettings: async function(platform) {
+        const autoSyncEnabled = document.getElementById('shop-auto-sync-enabled')?.checked ? 1 : 0;
+        const autoSyncInterval = parseInt(document.getElementById('shop-auto-sync-interval')?.value || '15', 10);
+        try {
+            const result = await api.put(`/api/shops/${platform}`, { auto_sync_enabled: autoSyncEnabled, auto_sync_interval_minutes: autoSyncInterval });
+            if (result.shop) {
+                const shops = (store.state.shops || []).map(s => s.platform === platform ? result.shop : s);
+                store.setState({ shops });
+            }
+            toast.success('Settings saved');
+            modals.close();
+        } catch (err) {
+            toast.error('Failed to save settings');
+        }
     },
 
     // Shop Branding handler

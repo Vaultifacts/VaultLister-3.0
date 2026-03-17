@@ -94,6 +94,7 @@ import { handleError } from './middleware/errorHandler.js';
 import { logRequestComplete } from './middleware/requestLogger.js';
 import { generateETag, etagMatches } from './middleware/cache.js';
 import { startTokenRefreshScheduler, stopTokenRefreshScheduler, getRefreshSchedulerStatus } from './services/tokenRefreshScheduler.js';
+import { startSyncScheduler, stopSyncScheduler } from './services/syncScheduler.js';
 import { startTaskWorker, stopTaskWorker, getTaskWorkerStatus } from './workers/taskWorker.js';
 import { startEmailPollingWorker, stopEmailPollingWorker, getEmailPollingStatus } from './workers/emailPollingWorker.js';
 import { startPriceCheckWorker, stopPriceCheckWorker, getPriceCheckWorkerStatus } from './workers/priceCheckWorker.js';
@@ -1492,6 +1493,7 @@ logger.info(`[Server] Started in ${startupMs}ms on port ${server.port}`);
 
 // Start background services
 startTokenRefreshScheduler();
+startSyncScheduler();
 startTaskWorker();
 startEmailPollingWorker();
 startPriceCheckWorker();
@@ -1520,6 +1522,7 @@ async function gracefulShutdown(signal) {
 
     // Stop background services first
     stopTokenRefreshScheduler();
+    stopSyncScheduler();
     stopTaskWorker();
     stopEmailPollingWorker();
     stopPriceCheckWorker();

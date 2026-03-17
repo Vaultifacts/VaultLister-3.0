@@ -124,7 +124,7 @@ export async function shopsRouter(ctx) {
                 return { status: 404, data: { error: 'Shop not found' } };
             }
 
-            const { username, credentials, settings, isConnected } = body;
+            const { username, credentials, settings, isConnected, auto_sync_enabled, auto_sync_interval_minutes } = body;
 
             const updates = [];
             const values = [];
@@ -147,6 +147,20 @@ export async function shopsRouter(ctx) {
             if (isConnected !== undefined) {
                 updates.push('is_connected = ?');
                 values.push(isConnected ? 1 : 0);
+            }
+
+            if (auto_sync_enabled !== undefined) {
+                updates.push('auto_sync_enabled = ?');
+                values.push(auto_sync_enabled ? 1 : 0);
+            }
+
+            if (auto_sync_interval_minutes !== undefined) {
+                const interval = parseInt(auto_sync_interval_minutes, 10);
+                if (![5, 15, 30, 60].includes(interval)) {
+                    return { status: 400, data: { error: 'auto_sync_interval_minutes must be 5, 15, 30, or 60' } };
+                }
+                updates.push('auto_sync_interval_minutes = ?');
+                values.push(interval);
             }
 
             if (updates.length > 0) {
