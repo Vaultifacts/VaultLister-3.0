@@ -3,7 +3,7 @@
 // Quinn v3 / TestFixMaster — Sales & Orders Table Exhaustive Micro-Audit
 // =============================================================================
 // Phase 0: Discovery — full-page screenshot, a11y snapshot, element enumeration
-// Phase 1: Hero section & filters (#sales: filters, #orders: filters + status)
+// Phase 1: Hero section & filters (#orders-sales: Sales tab, #orders-sales: Orders tab)
 // Phase 2: Search & sorting controls
 // Phase 3: Sortable column headers — verify sort indicators, aria-sort
 // Phase 4: Row interactions — click (detail), dblclick (edit), action buttons
@@ -41,7 +41,7 @@ const ORDERS_COLUMNS = [
   { field: 'shipped_at', label: 'Shipped', sortId: 'sort-shipped_at' },
 ];
 
-async function loginAndNavigate(page, route = 'sales') {
+async function loginAndNavigate(page, route = 'orders-sales') {
   await page.goto(`${BASE}/#login`);
   await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
   await page.goto(`${BASE}/#login`);
@@ -83,10 +83,10 @@ async function loginAndNavigate(page, route = 'sales') {
 // PHASE 0: Discovery — Page structure, a11y snapshot, element count
 // ============================================================================
 
-test.describe('Quinn v3 #sales Table Micro-Audit', () => {
-  
+test.describe('Quinn v3 #orders-sales Table Micro-Audit', () => {
+
   test('P0.1: Page loads and renders sales table', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     
     const appExists = await page.locator('#app').isVisible();
     expect(appExists).toBe(true);
@@ -97,7 +97,7 @@ test.describe('Quinn v3 #sales Table Micro-Audit', () => {
   });
 
   test('P0.2: Accessibility snapshot — sales page', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page); // Ensure render complete
     
     const a11yIssues = await page.evaluate(() => {
@@ -123,7 +123,7 @@ test.describe('Quinn v3 #sales Table Micro-Audit', () => {
   });
 
   test('P0.3: Element enumeration — count table headers and rows', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const headerCount = await page.locator('thead th').count().catch(() => 0);
@@ -138,10 +138,10 @@ test.describe('Quinn v3 #sales Table Micro-Audit', () => {
 // PHASE 1: Hero section & filters — buttons, filter menu, status selector
 // ============================================================================
 
-test.describe('Quinn v3 #sales Table — Phase 1: Hero & Filters', () => {
-  
+test.describe('Quinn v3 #orders-sales Table — Phase 1: Hero & Filters', () => {
+
   test('P1.1: Filter controls are present and clickable', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     
     // Look for common filter patterns
     const filterButton = await page.locator('[data-testid="filter-btn"], [aria-label*="Filter"], button:has-text("Filter")').first().isVisible().catch(() => false);
@@ -151,7 +151,7 @@ test.describe('Quinn v3 #sales Table — Phase 1: Hero & Filters', () => {
   });
 
   test('P1.2: Date range selector (if present)', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     
     const dateInput = await page.locator('input[type="date"], input[placeholder*="date" i], [data-testid*="date"]').first().isVisible().catch(() => false);
     if (dateInput) {
@@ -161,7 +161,7 @@ test.describe('Quinn v3 #sales Table — Phase 1: Hero & Filters', () => {
   });
 
   test('P1.3: Export/bulk action buttons present', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     
     const exportBtn = await page.locator('button:has-text("Export"), [data-testid="export-btn"], [aria-label*="Export" i]').first().isVisible().catch(() => false);
     const bulkBtn = await page.locator('button:has-text("Bulk"), [data-testid="bulk-action"]').first().isVisible().catch(() => false);
@@ -176,10 +176,10 @@ test.describe('Quinn v3 #sales Table — Phase 1: Hero & Filters', () => {
 // PHASE 2: Search & filtering controls
 // ============================================================================
 
-test.describe('Quinn v3 #sales Table — Phase 2: Search & Filtering', () => {
-  
+test.describe('Quinn v3 #orders-sales Table — Phase 2: Search & Filtering', () => {
+
   test('P2.1: Search input is present and accepts input', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     
     const searchInput = await page.locator('input[placeholder*="Search" i], [data-testid="search-input"]').first().isVisible().catch(() => false);
     expect(searchInput).toBe(true);
@@ -193,7 +193,7 @@ test.describe('Quinn v3 #sales Table — Phase 2: Search & Filtering', () => {
   });
 
   test('P2.2: Filter operations (status, platform if present)', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     // Attempt to find and use a filter
@@ -212,10 +212,10 @@ test.describe('Quinn v3 #sales Table — Phase 2: Search & Filtering', () => {
 // PHASE 3: Sortable column headers — sort indicators, aria-sort, DOM state
 // ============================================================================
 
-test.describe('Quinn v3 #sales Table — Phase 3: Sortable Columns', () => {
-  
+test.describe('Quinn v3 #orders-sales Table — Phase 3: Sortable Columns', () => {
+
   test('P3.1: Sort headers have aria-sort attribute', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const sortHeaders = await page.locator('[aria-sort]').count();
@@ -225,7 +225,7 @@ test.describe('Quinn v3 #sales Table — Phase 3: Sortable Columns', () => {
   });
 
   test('P3.2: Click sortable header changes aria-sort value', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const firstSortHeader = page.locator('[aria-sort="none"], [aria-sort="ascending"], [aria-sort="descending"]').first();
@@ -243,7 +243,7 @@ test.describe('Quinn v3 #sales Table — Phase 3: Sortable Columns', () => {
   });
 
   test('P3.3: Sort indicators (↑ ↓ ⇅) render correctly', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const headers = await page.locator('thead th').allTextContents();
@@ -254,7 +254,7 @@ test.describe('Quinn v3 #sales Table — Phase 3: Sortable Columns', () => {
   });
 
   test('P3.4: D10 check — sort indicators update on click (no race condition)', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const sortableHeader = page.locator('[aria-sort]:not([aria-sort="none"])').first();
@@ -278,10 +278,10 @@ test.describe('Quinn v3 #sales Table — Phase 3: Sortable Columns', () => {
 // PHASE 4: Row interactions — click (detail), hover states, action buttons
 // ============================================================================
 
-test.describe('Quinn v3 #sales Table — Phase 4: Row Interactions', () => {
-  
+test.describe('Quinn v3 #orders-sales Table — Phase 4: Row Interactions', () => {
+
   test('P4.1: Click row opens detail view or modal', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const firstRow = page.locator('tbody tr').first();
@@ -298,7 +298,7 @@ test.describe('Quinn v3 #sales Table — Phase 4: Row Interactions', () => {
   });
 
   test('P4.2: Row hover state shows action buttons', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const firstRow = page.locator('tbody tr').first();
@@ -315,7 +315,7 @@ test.describe('Quinn v3 #sales Table — Phase 4: Row Interactions', () => {
   });
 
   test('P4.3: Checkbox row selection (if present)', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const checkbox = page.locator('tbody tr input[type="checkbox"]').first();
@@ -333,10 +333,10 @@ test.describe('Quinn v3 #sales Table — Phase 4: Row Interactions', () => {
 // PHASE 5: Bulk actions bar — select-all, action buttons, behavior
 // ============================================================================
 
-test.describe('Quinn v3 #sales Table — Phase 5: Bulk Actions', () => {
-  
+test.describe('Quinn v3 #orders-sales Table — Phase 5: Bulk Actions', () => {
+
   test('P5.1: Select-all checkbox (if present)', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const selectAllCheckbox = page.locator('thead input[type="checkbox"]').first();
@@ -357,7 +357,7 @@ test.describe('Quinn v3 #sales Table — Phase 5: Bulk Actions', () => {
   });
 
   test('P5.2: Bulk action buttons are functional', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     // Select a row
@@ -381,10 +381,10 @@ test.describe('Quinn v3 #sales Table — Phase 5: Bulk Actions', () => {
 // PHASE 6: Edge cases & negatives — empty search, rapid sort, filter combinations
 // ============================================================================
 
-test.describe('Quinn v3 #sales Table — Phase 6: Edge Cases', () => {
-  
+test.describe('Quinn v3 #orders-sales Table — Phase 6: Edge Cases', () => {
+
   test('P6.1: Empty search returns no results', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const searchInput = page.locator('input[placeholder*="Search" i], [data-testid="search-input"]').first();
@@ -401,7 +401,7 @@ test.describe('Quinn v3 #sales Table — Phase 6: Edge Cases', () => {
   });
 
   test('P6.2: D11 check — rapid sort clicks do not crash', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const sortHeader = page.locator('[aria-sort]:not([aria-sort="none"])').first();
@@ -421,7 +421,7 @@ test.describe('Quinn v3 #sales Table — Phase 6: Edge Cases', () => {
   });
 
   test('P6.3: Filter + search combination', async ({ page }) => {
-    await loginAndNavigate(page, 'sales');
+    await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
     const searchInput = page.locator('input[placeholder*="Search" i]').first();

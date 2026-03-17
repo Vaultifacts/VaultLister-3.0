@@ -182,7 +182,7 @@ test.describe('Quinn v3 > Listings Table > Phase 0: Discovery', () => {
     const items = await breadcrumb.locator('li').allTextContents();
     const texts = items.map(t => t.replace(/\s+/g, ' ').trim()).filter(t => t.length > 0);
     expect(texts.some(t => t.includes('Home'))).toBe(true);
-    expect(texts.some(t => t.includes('My Listings'))).toBe(true);
+    expect(texts.some(t => t.includes('Listings'))).toBe(true);
   });
 });
 
@@ -857,7 +857,7 @@ test.describe('Quinn v3 > Listings Table > Phase 6: Edge Cases', () => {
     const title = page.locator('.listings-hero-title');
     await expect(title).toBeVisible();
     const titleText = await title.textContent();
-    expect(titleText?.trim()).toBe('My Listings');
+    expect(titleText?.trim()).toBe('Listings');
 
     const subtitle = page.locator('.listings-hero-subtitle');
     await expect(subtitle).toBeVisible();

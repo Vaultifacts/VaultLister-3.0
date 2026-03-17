@@ -107,10 +107,10 @@ test.describe('1. Deep Post-Login Exploration', () => {
 
   test('Orders page exploration', async ({ page }) => {
     await login(page);
-    await page.goto(`${BASE}/#orders`);
+    await page.goto(`${BASE}/#orders-sales`);
     await page.waitForTimeout(2000);
     await page.screenshot({ path: 'e2e/screenshots/v2-orders.png', fullPage: true });
-    
+
     const content = await page.locator('body').innerText();
     console.log(`[ORD] Orders content (500 chars): ${content.substring(0, 500).replace(/\n/g, ' | ')}`);
   });
@@ -234,8 +234,8 @@ test.describe('2. Form & CRUD Testing', () => {
 
   test('Search functionality across pages', async ({ page }) => {
     await login(page);
-    
-    const pages = ['#inventory', '#listings', '#orders', '#offers'];
+
+    const pages = ['#inventory', '#listings', '#orders-sales', '#offers'];
     for (const p of pages) {
       await page.goto(`${BASE}/${p}`);
       await page.waitForTimeout(1500);
@@ -362,7 +362,7 @@ test.describe('3. Deep Accessibility', () => {
 // ============================================================
 
 test.describe('4. Visual - Mobile Responsive', () => {
-  const sections = ['#dashboard', '#inventory', '#listings', '#orders', '#offers', '#settings', '#analytics', '#financials'];
+  const sections = ['#dashboard', '#inventory', '#listings', '#orders-sales', '#offers', '#settings', '#analytics', '#financials'];
   
   for (const section of sections) {
     test(`Mobile view: ${section}`, async ({ page }) => {
@@ -398,8 +398,8 @@ test.describe('4. Visual - Mobile Responsive', () => {
 test.describe('5. Performance - Page Transitions', () => {
   test('Page navigation timing', async ({ page }) => {
     await login(page);
-    
-    const sections = ['#inventory', '#listings', '#orders', '#offers', '#analytics', '#financials', '#settings', '#help'];
+
+    const sections = ['#inventory', '#listings', '#orders-sales', '#offers', '#analytics', '#financials', '#settings', '#help-support'];
     const timings = [];
     
     for (const section of sections) {
@@ -435,7 +435,7 @@ test.describe('5. Performance - Page Transitions', () => {
     const endpoints = [
       '/api/inventory',
       '/api/listings',
-      '/api/orders',
+      '/api/orders-sales',
       '/api/offers',
       '/api/analytics/dashboard',
       '/api/financials/summary',
@@ -574,9 +574,9 @@ test.describe('7. Edge Cases - Deep', () => {
     await login(page);
     await page.goto(`${BASE}/#inventory`);
     await page.waitForTimeout(1500);
-    
+
     // Rapid navigation
-    const sections = ['#dashboard', '#inventory', '#listings', '#orders', '#dashboard'];
+    const sections = ['#dashboard', '#inventory', '#listings', '#orders-sales', '#dashboard'];
     for (const s of sections) {
       page.goto(`${BASE}/${s}`); // intentionally not awaiting
     }

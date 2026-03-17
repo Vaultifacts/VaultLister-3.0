@@ -17,49 +17,33 @@ test.setTimeout(90_000);
 const BASE = `http://localhost:${process.env.PORT || 3001}`;
 const DEMO = { email: 'demo@vaultlister.com', password: 'DemoPassword123!' };
 
-// All sidebar nav items grouped by section
+// All sidebar nav items grouped by section (consolidated 14-item structure)
+// Old routes redirect via aliases: checklist→planner, calendar→planner,
+// transactions→financials, report-builder→analytics, predictions→analytics,
+// market-intel→analytics, suppliers→analytics, platform-health→shops,
+// teams→settings, size-charts→settings, admin-metrics→settings,
+// roadmap→help-support, feedback-suggestions→help-support,
+// recently-deleted→inventory, about/terms-of-service/privacy-policy→help-support,
+// orders→orders-sales, sales→orders-sales
 const NAV_SECTIONS = [
-  { section: 'Main', items: [
+  { section: 'SELL', items: [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'inventory', label: 'Inventory' },
-    { id: 'listings', label: 'My Listings' },
-    { id: 'orders', label: 'Orders' },
+    { id: 'listings', label: 'Listings' },
+    { id: 'orders-sales', label: 'Orders & Sales' },
     { id: 'offers', label: 'Offers' },
   ]},
-  { section: 'Tools', items: [
+  { section: 'MANAGE', items: [
     { id: 'automations', label: 'Automations' },
-    { id: 'checklist', label: 'Checklist' },
-    { id: 'image-bank', label: 'Image Bank' },
-    { id: 'calendar', label: 'Calendar' },
-    { id: 'size-charts', label: 'Size Charts' },
-    { id: 'recently-deleted', label: 'Trash' },
-  ]},
-  { section: 'Business', items: [
-    { id: 'shops', label: 'My Shops' },
-    { id: 'transactions', label: 'Transactions' },
     { id: 'financials', label: 'Financials' },
     { id: 'analytics', label: 'Analytics' },
-    { id: 'report-builder', label: 'Reports' },
+    { id: 'shops', label: 'My Shops' },
+    { id: 'planner', label: 'Planner' },
+    { id: 'image-bank', label: 'Image Bank' },
   ]},
-  { section: 'Intelligence', items: [
-    { id: 'predictions', label: 'Predictions' },
-    { id: 'suppliers', label: 'Suppliers' },
-    { id: 'market-intel', label: 'Market Intel' },
-  ]},
-  { section: 'Collaboration', items: [
-    { id: 'teams', label: 'Teams' },
-  ]},
-  { section: 'Resources', items: [
+  { section: 'Bottom', items: [
     { id: 'settings', label: 'Settings' },
-    { id: 'help-support', label: 'Help & Support' },
-    { id: 'roadmap', label: 'Roadmap' },
-    { id: 'changelog', label: 'Changelog' },
-    { id: 'feedback-suggestions', label: 'Feedback & Suggestions' },
-  ]},
-  { section: 'Company', items: [
-    { id: 'about', label: 'About Us' },
-    { id: 'terms-of-service', label: 'Terms of Service' },
-    { id: 'privacy-policy', label: 'Privacy Policy' },
+    { id: 'help-support', label: 'Help' },
   ]},
 ];
 
@@ -184,12 +168,12 @@ test.describe('Quinn v3 > Navigation > Phase 0: Discovery', () => {
     const visible = elements.filter(e => e.visible);
     console.log(`Sidebar: ${elements.length} total elements, ${visible.length} visible`);
 
-    // Must have at least 28 nav item buttons (one per route)
+    // Must have at least 14 nav item buttons (consolidated structure)
     const navButtons = visible.filter(e => e.className?.includes('nav-item'));
     console.log(`Nav item buttons: ${navButtons.length}`);
-    expect(navButtons.length).toBeGreaterThanOrEqual(28);
+    expect(navButtons.length).toBeGreaterThanOrEqual(14);
 
-    // Verify all 7 section titles exist
+    // Verify all 3 section titles exist
     const sectionTitles = await page.locator('.sidebar .nav-section-title').allTextContents();
     for (const section of NAV_SECTIONS) {
       expect(sectionTitles).toContain(section.section);
@@ -427,8 +411,8 @@ test.describe('Quinn v3 > Navigation > Phase 3: Keyboard Shortcuts', () => {
     const altNavMap = [
       { key: '1', route: 'dashboard', label: 'Dashboard' },
       { key: '2', route: 'inventory', label: 'Inventory' },
-      { key: '3', route: 'listings', label: 'My Listings' },
-      { key: '4', route: 'orders', label: 'Orders' },
+      { key: '3', route: 'listings', label: 'Listings' },
+      { key: '4', route: 'orders-sales', label: 'Orders & Sales' },
       { key: '5', route: 'analytics', label: 'Analytics' },
     ];
 
@@ -466,7 +450,7 @@ test.describe('Quinn v3 > Navigation > Phase 3: Keyboard Shortcuts', () => {
     await loginAndNavigate(page, 'dashboard');
 
     const ctrlNavMap = [
-      { key: 'e', route: 'listings', label: 'My Listings' },
+      { key: 'e', route: 'listings', label: 'Listings' },
       { key: 'i', route: 'inventory', label: 'Inventory' },
       { key: 'd', route: 'dashboard', label: 'Dashboard' },
     ];
@@ -610,7 +594,7 @@ test.describe('Quinn v3 > Navigation > Phase 4: Footer & Edge Cases', () => {
     }
   });
 
-  test('P4-4: Section titles render for all 7 sections', async ({ page }) => {
+  test('P4-4: Section titles render for all 3 sections', async ({ page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     const sectionTitles = await page.locator('.nav-section-title').allTextContents();
@@ -619,7 +603,7 @@ test.describe('Quinn v3 > Navigation > Phase 4: Footer & Edge Cases', () => {
     for (const section of NAV_SECTIONS) {
       expect(trimmed).toContain(section.section);
     }
-    expect(trimmed.length).toBe(7);
+    expect(trimmed.length).toBe(3);
   });
 
   test('P4-5: Sidebar scroll position restores after navigation', async ({ page }) => {
@@ -680,9 +664,9 @@ test.describe('Quinn v3 > Navigation > Phase 4: Footer & Edge Cases', () => {
     await loginAndNavigate(page, 'dashboard');
 
     // Check badge rendering for items that can have badges
-    // (Inventory, Listings, Orders, Offers, Checklist)
+    // (Inventory, Listings, Orders & Sales, Offers)
     // Even if counts are 0, the badge element should not render (conditional)
-    const badgeItems = ['inventory', 'listings', 'orders', 'offers', 'checklist'];
+    const badgeItems = ['inventory', 'listings', 'orders-sales', 'offers'];
 
     for (const id of badgeItems) {
       const navBtn = page.locator(`.nav-item[onclick="router.navigate('${id}')"]`).first();

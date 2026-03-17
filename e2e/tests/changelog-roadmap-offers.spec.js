@@ -117,7 +117,7 @@ test.describe('Changelog Features', () => {
     });
 
     test('8. should display What\'s New banner on roadmap', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Wait for roadmap page to render
@@ -165,7 +165,7 @@ test.describe('Roadmap Features', () => {
     });
 
     test('1. should display roadmap page with features', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Wait for roadmap page to render
@@ -186,7 +186,7 @@ test.describe('Roadmap Features', () => {
     });
 
     test('2. should allow searching roadmap features', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Wait for roadmap page to render
@@ -206,7 +206,7 @@ test.describe('Roadmap Features', () => {
     });
 
     test('3. should display Subscribe button for notifications', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Find subscribe button
@@ -215,7 +215,7 @@ test.describe('Roadmap Features', () => {
     });
 
     test('4. should show dependencies and blockers', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Look for dependency indicators
@@ -227,7 +227,7 @@ test.describe('Roadmap Features', () => {
     });
 
     test('5. should display roadmap categories', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Wait for roadmap page to render
@@ -244,7 +244,7 @@ test.describe('Roadmap Features', () => {
     });
 
     test('6. should show estimated release dates (ETA)', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Look for ETA badges
@@ -256,7 +256,7 @@ test.describe('Roadmap Features', () => {
     });
 
     test('7. should allow voting on roadmap features', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Wait for roadmap page to render
@@ -272,7 +272,7 @@ test.describe('Roadmap Features', () => {
     });
 
     test('8. should link completed roadmap items to changelog', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Look for completed features with changelog link
@@ -285,7 +285,7 @@ test.describe('Roadmap Features', () => {
     });
 
     test('9. should display progress indicators for in-progress items', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Wait for roadmap to render
@@ -513,7 +513,7 @@ test.describe('UI/UX Verification Tests', () => {
     });
 
     test('roadmap cards should display vote counts', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Verify vote counts are displayed
@@ -550,7 +550,7 @@ test.describe('UI/UX Verification Tests', () => {
     });
 
     test('roadmap should show progress overview cards', async ({ page }) => {
-        await page.goto(`${BASE_URL}/#roadmap`);
+        await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
         // Wait for roadmap page to fully render

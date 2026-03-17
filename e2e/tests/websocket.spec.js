@@ -161,7 +161,7 @@ test.describe('WebSocket Real-Time Updates', () => {
 
         if (await salesBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
             await salesBtn.click();
-            await page.waitForURL(/#sales/, { timeout: 10000 });
+            await page.waitForURL(/#orders-sales/, { timeout: 10000 });
         }
 
         // Wait for content to load
@@ -174,7 +174,7 @@ test.describe('WebSocket Real-Time Updates', () => {
             // Intercept any sale-related updates
             const originalFetch = window.fetch;
             window.fetch = function(...args) {
-                if (args[0].includes('/sales')) {
+                if (args[0].includes('/orders-sales')) {
                     window.saleUpdates.push({ url: args[0], time: Date.now() });
                 }
                 return originalFetch.apply(this, args);
@@ -441,7 +441,7 @@ test.describe('WebSocket Real-Time Updates', () => {
                 const url = args[0];
                 if (url.includes('/api/')) {
                     // Extract message type from URL
-                    if (url.includes('/sales')) window.messageTypes.add('sales');
+                    if (url.includes('/orders-sales')) window.messageTypes.add('sales');
                     if (url.includes('/offers')) window.messageTypes.add('offers');
                     if (url.includes('/inventory')) window.messageTypes.add('inventory');
                     if (url.includes('/notifications')) window.messageTypes.add('notifications');
@@ -452,7 +452,7 @@ test.describe('WebSocket Real-Time Updates', () => {
 
         // Navigate through different sections to trigger different message types
         const sections = [
-            { btn: 'Sales', url: /#sales/ },
+            { btn: 'Sales', url: /#orders-sales/ },
             { btn: 'Offers', url: /#offers/ },
             { btn: 'Inventory', url: /#inventory/ }
         ];

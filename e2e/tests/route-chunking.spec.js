@@ -19,7 +19,7 @@ test.describe('Route-Based Chunking', () => {
     });
 
     test('loads sales-orders chunk on navigation @chunking', async ({ authedPage }) => {
-        await authedPage.goto(`${BASE}/#sales`);
+        await authedPage.goto(`${BASE}/#orders-sales`);
         await authedPage.waitForFunction(
             () => document.querySelector('#app')?.innerHTML.length > 200,
             { timeout: 15000 }
@@ -28,7 +28,7 @@ test.describe('Route-Based Chunking', () => {
     });
 
     test('loads tools-tasks chunk on navigation @chunking', async ({ authedPage }) => {
-        await authedPage.goto(`${BASE}/#checklist`);
+        await authedPage.goto(`${BASE}/#planner`);
         await authedPage.waitForFunction(
             () => document.querySelector('#app')?.innerHTML.length > 200,
             { timeout: 15000 }
@@ -37,7 +37,7 @@ test.describe('Route-Based Chunking', () => {
     });
 
     test('loads intelligence chunk on navigation @chunking', async ({ authedPage }) => {
-        await authedPage.goto(`${BASE}/#predictions`);
+        await authedPage.goto(`${BASE}/#analytics`);
         await authedPage.waitForFunction(
             () => document.querySelector('#app')?.innerHTML.length > 200,
             { timeout: 15000 }
@@ -64,7 +64,7 @@ test.describe('Route-Based Chunking', () => {
     });
 
     test('navigates between different chunk groups without error @chunking', async ({ authedPage }) => {
-        const routes = ['#inventory', '#sales', '#checklist', '#settings', '#help', '#dashboard'];
+        const routes = ['#inventory', '#orders-sales', '#planner', '#settings', '#help-support', '#dashboard'];
         for (const route of routes) {
             await authedPage.goto(`${BASE}/${route}`);
             await authedPage.waitForFunction(
