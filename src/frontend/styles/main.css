@@ -28760,6 +28760,21 @@ body.dark-mode .insight-value {
     color: #e5e7eb;
 }
 
+/* Need Refresh stat card — warning background is pale yellow (#fef3c7) by default;
+   override to a dark amber surface so text/icon remain readable in dark mode */
+body.dark-mode .health-stat.warning {
+    background: #451a03;
+}
+
+body.dark-mode .health-stat-icon.stale {
+    background: #78350f;
+    color: #fcd34d;
+}
+
+body.dark-mode .health-stat-label {
+    color: #9ca3af;
+}
+
 body.dark-mode .inventory-hero-categories {
     border-top-color: #374151;
 }
@@ -30535,6 +30550,13 @@ body.dark-mode .storage-overview {
 .dark-mode .quick-action-btn {
     background: var(--gray-800);
     border-color: var(--gray-700);
+}
+
+/* Automation category card icons — inline style sets background to ${color}20 (12% opacity),
+   which is near-invisible on a dark card surface. Boost to 30% opacity using color-mix so
+   the tinted icon background remains visible without overriding the per-category hue. */
+.dark-mode .automation-category-card .category-icon {
+    background: color-mix(in srgb, var(--category-color) 30%, transparent) !important;
 }
 
 .dark-mode .checklist-hero {
