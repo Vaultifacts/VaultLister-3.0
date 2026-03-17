@@ -4127,6 +4127,58 @@ Object.assign(handlers, {
         }
     },
 
+    async stripeCheckout(planId) {
+        try {
+            toast.info('Redirecting to Stripe Checkout…');
+            const data = await api.post('/billing/checkout', { planId });
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                toast.error(data.error || 'Failed to create checkout session');
+            }
+        } catch (error) {
+            toast.error(error.message || 'Failed to start checkout');
+        }
+    },
+
+    async stripePortal() {
+        try {
+            toast.info('Opening Stripe Customer Portal…');
+            const data = await api.post('/billing/portal', {});
+            if (data.url) {
+                window.open(data.url, '_blank', 'noopener,noreferrer');
+            } else {
+                toast.error(data.error || 'Failed to open portal');
+            }
+        } catch (error) {
+            toast.error(error.message || 'Failed to open Stripe portal');
+        }
+    },
+
+    async stripeCancelSubscription() {
+        if (!confirm('Are you sure you want to cancel your subscription and downgrade to the Free plan?')) return;
+        try {
+            const data = await api.post('/billing/cancel', {});
+            toast.success(data.message || 'Subscription cancelled');
+            const userData = await api.get('/auth/me');
+            if (userData?.user) store.setState({ user: userData.user });
+            router.navigate('plans-billing');
+        } catch (error) {
+            toast.error(error.message || 'Failed to cancel subscription');
+        }
+    },
+
+    async refreshBillingUsage() {
+        try {
+            await api.post('/billing/usage/refresh', {});
+            const data = await api.get('/billing/usage');
+            if (data.usage) store.setState({ billingUsage: data.usage });
+            router.navigate('plans-billing');
+        } catch (error) {
+            toast.error(error.message || 'Failed to refresh usage');
+        }
+    },
+
     // Quick Photo,
 
     setupMFA: async function() {

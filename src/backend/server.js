@@ -1123,7 +1123,8 @@ const server = Bun.serve({
 
             // Public endpoints that don't require auth
             const isPublicWebhook = effectivePath.startsWith('/api/webhooks/incoming') ||
-                effectivePath.startsWith('/api/webhooks/ebay/account-deletion');
+                effectivePath.startsWith('/api/webhooks/ebay/account-deletion') ||
+                effectivePath === '/api/webhooks/stripe';
             const isOAuthCallback = effectivePath.startsWith('/api/oauth/callback') ||
                 /^\/api\/oauth\/[^/]+\/callback$/.test(effectivePath) ||
                 effectivePath.match(/^\/api\/social-auth\/[^/]+\/callback/) ||
@@ -1147,8 +1148,18 @@ const server = Bun.serve({
 
             // Parse body only for methods that have a body
             const bodySizeLimit = getBodySizeLimit(effectivePath);
-            const body = (method === 'GET' || method === 'HEAD' || method === 'OPTIONS')
-                ? {} : await parseBody(request, bodySizeLimit);
+            const isStripeWebhook = effectivePath === '/api/webhooks/stripe';
+            let rawBodyText = null;
+            let body;
+            if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
+                body = {};
+            } else if (isStripeWebhook) {
+                // Stripe signature verification requires the raw unparsed body text
+                rawBodyText = await request.text();
+                try { body = rawBodyText ? JSON.parse(rawBodyText) : {}; } catch { body = {}; }
+            } else {
+                body = await parseBody(request, bodySizeLimit);
+            }
 
             // Reject oversized requests
             if (body && body.error === 'Request body too large') {
@@ -1174,6 +1185,7 @@ const server = Bun.serve({
                 method,
                 path: effectivePath,
                 body,
+                rawBody: rawBodyText,
                 query,
                 user,
                 request,

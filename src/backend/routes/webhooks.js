@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { processWebhookEvent, verifySignature } from '../services/webhookProcessor.js';
 import { logger } from '../shared/logger.js';
+import { constructWebhookEvent, TIER_FOR_PRICE } from '../services/stripeService.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
@@ -44,6 +45,123 @@ export async function webhooksRouter(ctx) {
         }
         return null;
     };
+
+    // ===== PUBLIC: Stripe Webhook =====
+    // POST /webhooks/stripe — handles Stripe billing events
+    if (method === 'POST' && path === '/stripe') {
+        const sig = ctx.headers?.['stripe-signature'];
+        if (!sig) {
+            logger.warn('[Webhooks/Stripe] Missing stripe-signature header');
+            return { status: 400, data: { error: 'Missing stripe-signature header' } };
+        }
+
+        if (!process.env.STRIPE_WEBHOOK_SECRET) {
+            logger.error('[Webhooks/Stripe] STRIPE_WEBHOOK_SECRET not set in .env');
+            return { status: 500, data: { error: 'Stripe webhook not configured' } };
+        }
+
+        let event;
+        try {
+            event = constructWebhookEvent(ctx.rawBody || '', sig);
+        } catch (err) {
+            logger.warn('[Webhooks/Stripe] Signature verification failed', null, { detail: err.message });
+            return { status: 400, data: { error: `Webhook signature verification failed: ${err.message}` } };
+        }
+
+        try {
+            const STRIPE_SYSTEM_USER = '00000000-0000-0000-0000-000000000001';
+
+            switch (event.type) {
+                case 'checkout.session.completed': {
+                    const session = event.data.object;
+                    const vaultUserId = session.metadata?.vaultlister_user_id;
+                    if (vaultUserId && session.subscription) {
+                        // Determine tier from the subscription's price
+                        const subObj = session.subscription;
+                        // We only have the subscription ID here; price lookup happens on subscription.updated
+                        // For now, mark as starter (lowest paid) — subscription.updated fires immediately after and sets the real tier
+                        query.run(
+                            'UPDATE users SET stripe_subscription_id = ?, updated_at = datetime(\'now\') WHERE id = ?',
+                            [subObj, vaultUserId]
+                        );
+                        logger.info(`[Webhooks/Stripe] checkout.session.completed: user ${vaultUserId} subscription ${subObj}`);
+                    }
+                    break;
+                }
+
+                case 'customer.subscription.updated': {
+                    const sub = event.data.object;
+                    const priceId = sub.items?.data?.[0]?.price?.id;
+                    const tier = TIER_FOR_PRICE[priceId] || null;
+                    if (tier && sub.customer) {
+                        const dbUser = query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [sub.customer]);
+                        if (dbUser) {
+                            query.run(
+                                'UPDATE users SET subscription_tier = ?, stripe_subscription_id = ?, updated_at = datetime(\'now\') WHERE id = ?',
+                                [tier, sub.id, dbUser.id]
+                            );
+                            logger.info(`[Webhooks/Stripe] subscription.updated: user ${dbUser.id} → tier ${tier}`);
+                        }
+                    }
+                    break;
+                }
+
+                case 'customer.subscription.deleted': {
+                    const sub = event.data.object;
+                    if (sub.customer) {
+                        const dbUser = query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [sub.customer]);
+                        if (dbUser) {
+                            query.run(
+                                'UPDATE users SET subscription_tier = \'free\', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = datetime(\'now\') WHERE id = ?',
+                                [dbUser.id]
+                            );
+                            logger.info(`[Webhooks/Stripe] subscription.deleted: user ${dbUser.id} downgraded to free`);
+                        }
+                    }
+                    break;
+                }
+
+                case 'invoice.payment_failed': {
+                    const invoice = event.data.object;
+                    if (invoice.customer) {
+                        const dbUser = query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [invoice.customer]);
+                        if (dbUser) {
+                            // Insert notification for the user
+                            try {
+                                query.run(
+                                    'INSERT INTO notifications (id, user_id, type, title, message, is_read, created_at) VALUES (?, ?, \'billing\', \'Payment Failed\', \'Your subscription payment failed. Please update your payment method to keep your plan active.\', 0, datetime(\'now\'))',
+                                    [uuidv4(), dbUser.id]
+                                );
+                            } catch {
+                                // notifications table schema may vary — log and continue
+                            }
+                            logger.warn(`[Webhooks/Stripe] invoice.payment_failed: user ${dbUser.id}`);
+                        }
+                    }
+                    break;
+                }
+
+                default:
+                    logger.info(`[Webhooks/Stripe] Unhandled event type: ${event.type}`);
+            }
+
+            // Store event for audit trail
+            try {
+                query.run(
+                    'INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at) VALUES (?, ?, \'stripe\', ?, ?, \'processed\', datetime(\'now\'))',
+                    [uuidv4(), STRIPE_SYSTEM_USER, event.type, JSON.stringify(event.data.object)]
+                );
+            } catch {
+                // Don't fail the Stripe response if audit insert fails
+            }
+
+            return { status: 200, data: { received: true } };
+
+        } catch (error) {
+            logger.error('[Webhooks/Stripe] Error processing event', null, { detail: error.message });
+            return { status: 500, data: { error: 'Failed to process Stripe event' } };
+        }
+    }
 
     // ===== PUBLIC: eBay Marketplace Account Deletion =====
     // Required by eBay Developer Program compliance for production keysets.

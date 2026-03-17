@@ -183,6 +183,7 @@ export function validateCSRF(ctx) {
         '/api/auth/resend-verification',
         '/api/auth/demo-login',
         '/api/webhooks/incoming',
+        '/api/webhooks/stripe',
         '/api/csp-report',
         '/api/monitoring/rum'
     ];

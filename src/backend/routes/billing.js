@@ -1,6 +1,14 @@
 import { query } from '../db/database.js';
 import { nanoid } from 'nanoid';
 import { logger } from '../shared/logger.js';
+import {
+    createCheckoutSession,
+    createPortalSession,
+    cancelSubscription,
+    getSubscription,
+    STRIPE_PRICE_IDS,
+    TIER_FOR_PRICE
+} from '../services/stripeService.js';
 
 // Single source of truth for plan definitions
 const PLANS = {
@@ -280,6 +288,92 @@ export async function billingRouter(ctx) {
                     message: `Plan changed to ${PLANS[planId].display_name} successfully`,
                     plan: planId,
                     previous_plan: currentTier
+                }
+            };
+        }
+
+        // POST /api/billing/checkout — create Stripe Checkout session
+        if (method === 'POST' && path === '/checkout') {
+            const { planId, successUrl, cancelUrl } = body || {};
+
+            if (!planId || !STRIPE_PRICE_IDS[planId]) {
+                return { status: 400, data: { error: `Invalid planId. Paid plans: ${Object.keys(STRIPE_PRICE_IDS).join(', ')}` } };
+            }
+
+            const appUrl = process.env.APP_URL || 'http://localhost:3000';
+            const resolvedSuccess = successUrl || `${appUrl}/#billing?upgraded=1`;
+            const resolvedCancel  = cancelUrl  || `${appUrl}/#billing`;
+
+            const session = await createCheckoutSession(user.id, STRIPE_PRICE_IDS[planId], resolvedSuccess, resolvedCancel);
+
+            return { status: 200, data: { url: session.url, session_id: session.id } };
+        }
+
+        // POST /api/billing/portal — create Stripe Customer Portal session
+        if (method === 'POST' && path === '/portal') {
+            const dbUser = query.get('SELECT stripe_customer_id FROM users WHERE id = ?', [user.id]);
+            if (!dbUser?.stripe_customer_id) {
+                return { status: 400, data: { error: 'No Stripe customer found. Subscribe to a plan first.' } };
+            }
+
+            const appUrl = process.env.APP_URL || 'http://localhost:3000';
+            const returnUrl = (body || {}).returnUrl || `${appUrl}/#billing`;
+
+            const session = await createPortalSession(dbUser.stripe_customer_id, returnUrl);
+
+            return { status: 200, data: { url: session.url } };
+        }
+
+        // POST /api/billing/cancel — cancel active Stripe subscription
+        if (method === 'POST' && path === '/cancel') {
+            const dbUser = query.get('SELECT stripe_subscription_id FROM users WHERE id = ?', [user.id]);
+            if (!dbUser?.stripe_subscription_id) {
+                return { status: 400, data: { error: 'No active subscription found.' } };
+            }
+
+            await cancelSubscription(dbUser.stripe_subscription_id);
+
+            query.run(
+                'UPDATE users SET subscription_tier = \'free\', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = datetime(\'now\') WHERE id = ?',
+                [user.id]
+            );
+
+            logger.info(`[Billing] User ${user.id} cancelled subscription`);
+
+            return { status: 200, data: { message: 'Subscription cancelled. You have been downgraded to the Free plan.' } };
+        }
+
+        // GET /api/billing/subscription — get current subscription details from Stripe
+        if (method === 'GET' && path === '/subscription') {
+            const dbUser = query.get(
+                'SELECT subscription_tier, subscription_expires_at, stripe_customer_id, stripe_subscription_id FROM users WHERE id = ?',
+                [user.id]
+            );
+
+            if (!dbUser?.stripe_subscription_id) {
+                return {
+                    status: 200,
+                    data: {
+                        tier: dbUser?.subscription_tier || 'free',
+                        stripe_active: false,
+                        subscription: null
+                    }
+                };
+            }
+
+            const subscription = await getSubscription(dbUser.stripe_subscription_id);
+
+            return {
+                status: 200,
+                data: {
+                    tier: dbUser.subscription_tier,
+                    stripe_active: subscription.status === 'active',
+                    subscription: {
+                        id: subscription.id,
+                        status: subscription.status,
+                        current_period_end: subscription.current_period_end,
+                        cancel_at_period_end: subscription.cancel_at_period_end
+                    }
                 }
             };
         }

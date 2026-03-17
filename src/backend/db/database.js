@@ -177,7 +177,8 @@ function runMigrations() {
             '098_add_is_admin.sql',
             '099_optimize_query_indexes.sql',
             '100_add_app_settings.sql',
-            '101_add_auto_sync.sql'
+            '101_add_auto_sync.sql',
+            '102_add_stripe_columns.sql'
         ];
 
         for (const migrationFile of migrationFiles) {

@@ -2360,187 +2360,190 @@ Object.assign(pages, {
         `;
     },
 
-    // Plans & Billing page,
+    // Plans & Billing page
 
 
     plansBilling() {
         const user = store.state.user || {};
         const currentPlan = user.subscription_tier || 'free';
+        const usage = store.state.billingUsage || [];
+
+        const PLANS = [
+            {
+                id: 'free',
+                name: 'Free',
+                price: '$0',
+                period: 'forever free',
+                features: [
+                    { text: '10 listings', ok: true },
+                    { text: '50 orders / month', ok: true },
+                    { text: '5 automations', ok: true },
+                    { text: '100 MB storage', ok: true },
+                    { text: 'AI listing generator', ok: false },
+                    { text: 'Priority support', ok: false }
+                ],
+                btnLabel: 'Current Plan',
+                btnClass: 'btn-outline',
+                popular: false
+            },
+            {
+                id: 'starter',
+                name: 'Starter',
+                price: '$9.99',
+                period: 'per month',
+                features: [
+                    { text: '100 listings', ok: true },
+                    { text: '500 orders / month', ok: true },
+                    { text: '20 automations', ok: true },
+                    { text: '1 GB storage', ok: true },
+                    { text: 'Basic analytics', ok: true },
+                    { text: 'Priority support', ok: false }
+                ],
+                btnLabel: 'Upgrade to Starter',
+                btnClass: 'btn-secondary',
+                popular: false
+            },
+            {
+                id: 'pro',
+                name: 'Pro',
+                price: '$24.99',
+                period: 'per month',
+                features: [
+                    { text: '500 listings', ok: true },
+                    { text: '2,500 orders / month', ok: true },
+                    { text: '100 automations', ok: true },
+                    { text: '5 GB storage', ok: true },
+                    { text: 'AI listing generator', ok: true },
+                    { text: 'Chat support', ok: true }
+                ],
+                btnLabel: 'Upgrade to Pro',
+                btnClass: 'btn-primary',
+                popular: true
+            },
+            {
+                id: 'business',
+                name: 'Business',
+                price: '$49.99',
+                period: 'per month',
+                features: [
+                    { text: 'Unlimited listings', ok: true },
+                    { text: 'Unlimited orders', ok: true },
+                    { text: 'Unlimited automations', ok: true },
+                    { text: '25 GB storage', ok: true },
+                    { text: 'Team collaboration', ok: true },
+                    { text: 'Dedicated account manager', ok: true }
+                ],
+                btnLabel: 'Upgrade to Business',
+                btnClass: 'btn-secondary',
+                popular: false
+            }
+        ];
+
+        const planCards = PLANS.map(plan => {
+            const isActive = currentPlan === plan.id;
+            const featureList = plan.features.map(f => `
+                <li class="flex items-center gap-2 text-sm ${f.ok ? '' : 'text-gray-400'}">
+                    <span style="color: ${f.ok ? 'var(--success)' : 'currentColor'};">${components.icon(f.ok ? 'check' : 'x', 16)}</span>
+                    ${escapeHtml(f.text)}
+                </li>`).join('');
+
+            let actionBtn;
+            if (isActive) {
+                actionBtn = `<button class="btn ${plan.btnClass} w-full" disabled>Current Plan</button>`;
+            } else if (plan.id === 'free') {
+                actionBtn = `<button class="btn btn-outline w-full" onclick="handlers.stripeCancelSubscription()">Downgrade to Free</button>`;
+            } else {
+                actionBtn = `<button class="btn ${plan.btnClass} w-full" onclick="handlers.stripeCheckout('${plan.id}')">${escapeHtml(plan.btnLabel)}</button>`;
+            }
+
+            return `
+                <div class="card ${isActive ? 'ring-2 ring-primary' : ''}" style="position: relative;">
+                    ${plan.popular ? `<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--primary);color:white;padding:4px 16px;border-radius:var(--radius-full);font-size:12px;font-weight:600;">Most Popular</div>` : ''}
+                    <div class="card-body text-center">
+                        <h3 class="text-xl font-bold mb-2">${escapeHtml(plan.name)}</h3>
+                        <div class="text-4xl font-bold text-primary mb-1">${escapeHtml(plan.price)}</div>
+                        <div class="text-sm text-gray-500 mb-4">${escapeHtml(plan.period)}</div>
+                        <ul class="text-left space-y-2 mb-6">${featureList}</ul>
+                        ${actionBtn}
+                    </div>
+                </div>`;
+        }).join('');
+
+        const usageRows = usage.length ? usage.map(u => {
+            const pct = u.plan_limit > 0 ? Math.min(100, Math.round((u.current_value / u.plan_limit) * 100)) : 0;
+            const barColor = pct >= 95 ? 'var(--error)' : pct >= 80 ? 'var(--warning)' : 'var(--primary)';
+            return `
+                <div class="mb-4">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-capitalize">${escapeHtml(u.metric.replace(/_/g, ' '))}</span>
+                        <span>${u.current_value} / ${u.plan_limit < 0 ? 'Unlimited' : u.plan_limit}</span>
+                    </div>
+                    <div style="background:var(--gray-200);border-radius:4px;height:6px;">
+                        <div style="width:${pct}%;background:${barColor};height:6px;border-radius:4px;transition:width 0.3s;"></div>
+                    </div>
+                </div>`;
+        }).join('') : `<p class="text-sm text-gray-500">No usage data yet. <button class="btn btn-xs btn-ghost" onclick="handlers.refreshBillingUsage()">Refresh</button></p>`;
+
+        const manageBtn = currentPlan !== 'free' ? `
+            <button class="btn btn-secondary" onclick="handlers.stripePortal()">
+                ${components.icon('settings', 16)} Manage Subscription
+            </button>` : '';
 
         return `
             <div class="page-header">
-                <h1 class="page-title">Plans & Billing</h1>
+                <h1 class="page-title">Plans &amp; Billing</h1>
                 <p class="page-description">Manage your subscription and payment methods</p>
             </div>
 
-            <!-- Current Plan -->
+            <!-- Current Plan Banner -->
             <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">Current Plan</h3>
-                </div>
                 <div class="card-body">
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="flex items-center gap-3">
-                                <span class="badge badge-lg badge-success">${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</span>
+                                <span class="badge badge-lg badge-success">${escapeHtml(currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1))}</span>
                                 <span class="text-gray-500">Active</span>
                             </div>
-                            <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlan === 'free' ? 'Free plan with limited features' : 'Premium plan with all features unlocked'}.</p>
+                            <p class="text-sm text-gray-600 mt-1">
+                                ${currentPlan === 'free' ? 'You are on the Free plan.' : 'Your paid plan is active. Use the Stripe portal to update your payment method or view invoices.'}
+                            </p>
                         </div>
-                        ${currentPlan === 'free' ? `
-                            <button class="btn btn-primary" onclick="handlers.showPlanComparison()">
-                                Upgrade to Premium
-                            </button>
-                        ` : `
-                            <button class="btn btn-secondary" onclick="handlers.showProrationCalculator()">
-                                Manage Subscription
-                            </button>
-                        `}
+                        <div class="flex gap-2">
+                            ${manageBtn}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Pricing Plans -->
-            <div class="grid grid-cols-3 gap-6 mb-6">
-                <!-- Free Plan -->
-                <div class="card ${currentPlan === 'free' ? 'ring-2 ring-primary' : ''}">
-                    <div class="card-body text-center">
-                        <h3 class="text-xl font-bold mb-2">Free</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">$0</div>
-                        <div class="text-sm text-gray-500 mb-4">Forever free</div>
-                        <ul class="text-left space-y-2 mb-6">
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Up to 100 inventory items
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Cross-list to 3 platforms
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Basic analytics
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Manual cross-listing
-                            </li>
-                            <li class="flex items-center gap-2 text-sm text-gray-400">
-                                <span>${components.icon('x', 16)}</span>
-                                AI listing generator
-                            </li>
-                            <li class="flex items-center gap-2 text-sm text-gray-400">
-                                <span>${components.icon('x', 16)}</span>
-                                Automation features
-                            </li>
-                        </ul>
-                        ${currentPlan === 'free' ? `
-                            <button class="btn btn-outline w-full" disabled>Current Plan</button>
-                        ` : `
-                            <button class="btn btn-outline w-full" onclick="handlers.confirmPlanChange('free')">Downgrade to Free</button>
-                        `}
-                    </div>
-                </div>
-
-                <!-- Pro Plan -->
-                <div class="card ${currentPlan === 'pro' ? 'ring-2 ring-primary' : ''}" style="position: relative;">
-                    <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 4px 16px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600;">
-                        Most Popular
-                    </div>
-                    <div class="card-body text-center">
-                        <h3 class="text-xl font-bold mb-2">Pro</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">$19</div>
-                        <div class="text-sm text-gray-500 mb-4">per month</div>
-                        <ul class="text-left space-y-2 mb-6">
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Unlimited inventory items
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Cross-list to all 6 platforms
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Advanced analytics & reports
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                AI listing generator (50/mo)
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Basic automations
-                            </li>
-                            <li class="flex items-center gap-2 text-sm text-gray-400">
-                                <span>${components.icon('x', 16)}</span>
-                                Priority support
-                            </li>
-                        </ul>
-                        ${currentPlan === 'pro' ? `
-                            <button class="btn btn-primary w-full" disabled>Current Plan</button>
-                        ` : `
-                            <button class="btn btn-primary w-full" onclick="handlers.selectPlan('pro')">
-                                ${currentPlan === 'business' ? 'Switch to Pro' : 'Upgrade to Pro'}
-                            </button>
-                        `}
-                    </div>
-                </div>
-
-                <!-- Business Plan -->
-                <div class="card ${currentPlan === 'business' ? 'ring-2 ring-primary' : ''}">
-                    <div class="card-body text-center">
-                        <h3 class="text-xl font-bold mb-2">Business</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">$49</div>
-                        <div class="text-sm text-gray-500 mb-4">per month</div>
-                        <ul class="text-left space-y-2 mb-6">
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Everything in Pro
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Unlimited AI generations
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Advanced automations
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Bulk operations
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Priority support
-                            </li>
-                            <li class="flex items-center gap-2 text-sm">
-                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                API access
-                            </li>
-                        </ul>
-                        ${currentPlan === 'business' ? `
-                            <button class="btn btn-secondary w-full" disabled>Current Plan</button>
-                        ` : `
-                            <button class="btn btn-secondary w-full" onclick="handlers.selectPlan('business')">Upgrade to Business</button>
-                        `}
-                    </div>
-                </div>
+            <!-- Plan Grid -->
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                ${planCards}
             </div>
 
-            <!-- Billing History -->
-            <div class="card">
+            <!-- Usage Stats -->
+            <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Billing History</h3>
+                    <h3 class="card-title">Current Usage</h3>
+                    <button class="btn btn-xs btn-ghost ml-auto" onclick="handlers.refreshBillingUsage()">${components.icon('refresh', 14)} Refresh</button>
                 </div>
                 <div class="card-body">
-                    <div class="text-center py-8 text-gray-500">
-                        <div class="text-4xl mb-2">${components.icon('dollar', 32)}</div>
-                        <p>No billing history yet</p>
-                        <p class="text-sm">Upgrade to a paid plan to see your invoices here</p>
-                    </div>
+                    ${usageRows}
                 </div>
             </div>
+
+            <!-- Stripe Portal Link -->
+            ${currentPlan !== 'free' ? `
+            <div class="card">
+                <div class="card-body flex items-center justify-between">
+                    <div>
+                        <div class="font-medium">Invoices &amp; Payment Methods</div>
+                        <p class="text-sm text-gray-500">View past invoices and update your card in the Stripe Customer Portal.</p>
+                    </div>
+                    <button class="btn btn-ghost" onclick="handlers.stripePortal()">
+                        Open Portal ${components.icon('external-link', 14)}
+                    </button>
+                </div>
+            </div>` : ''}
         `;
     },
 

@@ -36,6 +36,13 @@ services:
       - EMAIL_FROM=${EMAIL_FROM:-noreply@staging.vaultlister.com}
       # AI (optional)
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # Stripe Payments (optional — leave empty to disable paid plans)
+      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-}
+      - STRIPE_PRICE_STARTER=${STRIPE_PRICE_STARTER:-}
+      - STRIPE_PRICE_PRO=${STRIPE_PRICE_PRO:-}
+      - STRIPE_PRICE_BUSINESS=${STRIPE_PRICE_BUSINESS:-}
       # App URL (for OAuth callbacks)
       - APP_URL=${APP_URL:-}
       - OAUTH_REDIRECT_URI=${OAUTH_REDIRECT_URI:-}
