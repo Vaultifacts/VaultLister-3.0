@@ -1,11 +1,7 @@
 // Poshmark Automation Bot using Playwright
 // Handles sharing, following, and offer management
 
-import { chromium as chromiumExtra } from 'playwright-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-chromiumExtra.use(StealthPlugin());
-// Use stealth-patched chromium for all bot operations (bypasses reCAPTCHA v3 fingerprinting)
-const chromium = chromiumExtra;
+import { stealthChromium as chromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
 import { logger } from '../../backend/shared/logger.js';
@@ -73,19 +69,20 @@ export class PoshmarkBot {
             this.browser = await chromium.launch({
                 headless: this.options.headless,
                 slowMo: this.options.slowMo,
-                args: ['--no-sandbox', '--disable-blink-features=AutomationControlled'],
-                ignoreDefaultArgs: ['--enable-automation']
+                args: STEALTH_ARGS,
+                ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
             });
 
             const context = await this.browser.newContext({
-                userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                viewport: { width: 1280, height: 800 }
+                userAgent: randomChromeUA(),
+                viewport: randomViewport(),
+                locale: 'en-US',
+                timezoneId: 'America/New_York',
             });
 
             this.page = await context.newPage();
 
-            // Block unnecessary resources for speed
-            await this.page.route('**/*.{png,jpg,jpeg,gif,webp}', route => route.abort());
+            // Block analytics/tracking only — DO NOT block images (detectable)
             await this.page.route('**/analytics/**', route => route.abort());
             await this.page.route('**/tracking/**', route => route.abort());
 
@@ -118,6 +115,7 @@ export class PoshmarkBot {
                 const cookies = JSON.parse(fs.readFileSync(COOKIE_FILE, 'utf8'));
                 await this.page.context().addCookies(cookies);
                 await this.page.goto(`${POSHMARK_URL}/feed`, { waitUntil: 'domcontentloaded' });
+                await mouseWiggle(this.page);
                 const isLoggedIn = await this.page.$('.user-image, .header__account-info-list, .dropdown__menu--user, [data-et="my_closet"]');
                 if (isLoggedIn) {
                     this.isLoggedIn = true;
@@ -139,19 +137,22 @@ export class PoshmarkBot {
 
         try {
             await this.page.goto(`${POSHMARK_URL}/login`, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
 
             // Wait for login form
             await this.page.waitForSelector('input[name="login_form[username_email]"]', { timeout: 10000 });
 
-            // Enter credentials
+            // Enter credentials with natural mouse movement to each field
+            await humanClick(this.page, 'input[name="login_form[username_email]"]');
             await humanType(this.page, 'input[name="login_form[username_email]"]', username);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
+            await humanClick(this.page, 'input[name="login_form[password]"]');
             await humanType(this.page, 'input[name="login_form[password]"]', password);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
-            // Submit form
-            await this.page.click('button[type="submit"]');
+            // Submit form with natural click
+            await humanClick(this.page, 'button[type="submit"]');
 
             // Poshmark is a SPA — wait for URL to leave /login rather than a full navigation event
             await this.page.waitForFunction(
@@ -192,6 +193,7 @@ export class PoshmarkBot {
 
         try {
             await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
 
             // Find and click share button
@@ -201,13 +203,13 @@ export class PoshmarkBot {
                 return false;
             }
 
-            await shareButton.click();
+            await humanClick(this.page, shareButton);
             await this.page.waitForTimeout(randomDelay(500, 1000));
 
             // Click "To My Followers" option
             const toFollowersOption = await this.page.$('[data-test="share-to-followers"]');
             if (toFollowersOption) {
-                await toFollowersOption.click();
+                await humanClick(this.page, toFollowersOption);
                 await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
                 this.stats.shares++;
                 writeAuditLog('share_item', { listingUrl });
@@ -233,6 +235,7 @@ export class PoshmarkBot {
 
         try {
             await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             // Get all listing cards
@@ -246,19 +249,21 @@ export class PoshmarkBot {
                     // Find share button within the listing
                     const shareBtn = await listing.$('[data-test="tile-share"]');
                     if (shareBtn) {
-                        await shareBtn.click();
+                        await humanClick(this.page, shareBtn);
                         await this.page.waitForTimeout(randomDelay(500, 1000));
 
                         // Click "To My Followers"
                         const toFollowers = await this.page.$('[data-test="share-to-followers"]');
                         if (toFollowers) {
-                            await toFollowers.click();
+                            await humanClick(this.page, toFollowers);
                             shared++;
                             this.stats.shares++;
                             writeAuditLog('share_closet_item', { username, shared, maxShares });
                             logger.info(`[PoshmarkBot] Shared item ${shared}/${maxShares}`);
                         }
 
+                        // Occasional idle wiggle between shares (every ~5 items)
+                        if (shared % 5 === 0) await mouseWiggle(this.page);
                         await this.page.waitForTimeout(jitteredDelay(delayBetween));
                     }
                 } catch (e) {
@@ -284,13 +289,14 @@ export class PoshmarkBot {
 
         try {
             await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.followDelay));
 
             // Find follow button
             const followBtn = await this.page.$('[data-test="follow-button"]:not([data-test-value="following"])');
 
             if (followBtn) {
-                await followBtn.click();
+                await humanClick(this.page, followBtn);
                 this.stats.follows++;
                 writeAuditLog('follow_user', { username });
                 logger.info('[PoshmarkBot] Followed user successfully');
@@ -315,6 +321,7 @@ export class PoshmarkBot {
         try {
             // Navigate to followers page
             await this.page.goto(`${POSHMARK_URL}/user/followers`, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             let followed = 0;
@@ -326,11 +333,12 @@ export class PoshmarkBot {
                 const followBtn = await card.$('[data-test="follow-button"]:not([data-test-value="following"])');
 
                 if (followBtn) {
-                    await followBtn.click();
+                    await humanClick(this.page, followBtn);
                     followed++;
                     this.stats.follows++;
                     writeAuditLog('follow_back', { followed, maxFollows });
                     logger.info(`[PoshmarkBot] Followed back ${followed}/${maxFollows}`);
+                    if (followed % 5 === 0) await mouseWiggle(this.page);
                     await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.followDelay));
                 }
             }
@@ -381,6 +389,7 @@ export class PoshmarkBot {
 
         try {
             await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
@@ -388,13 +397,13 @@ export class PoshmarkBot {
             if (offerCards[offerIndex]) {
                 const acceptBtn = await offerCards[offerIndex].$('[data-test="accept-offer"]');
                 if (acceptBtn) {
-                    await acceptBtn.click();
+                    await humanClick(this.page, acceptBtn);
                     await this.page.waitForTimeout(randomDelay(1000, 2000));
 
                     // Confirm accept
                     const confirmBtn = await this.page.$('[data-test="confirm-accept"]');
                     if (confirmBtn) {
-                        await confirmBtn.click();
+                        await humanClick(this.page, confirmBtn);
                         this.stats.offers++;
                         writeAuditLog('accept_offer', { offerIndex });
                         logger.info('[PoshmarkBot] Offer accepted');
@@ -419,6 +428,7 @@ export class PoshmarkBot {
 
         try {
             await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
@@ -426,17 +436,18 @@ export class PoshmarkBot {
             if (offerCards[offerIndex]) {
                 const counterBtn = await offerCards[offerIndex].$('[data-test="counter-offer"]');
                 if (counterBtn) {
-                    await counterBtn.click();
+                    await humanClick(this.page, counterBtn);
                     await this.page.waitForTimeout(randomDelay(500, 1000));
 
                     // Enter counter amount
+                    await humanClick(this.page, '[data-test="counter-amount-input"]');
                     await humanType(this.page, '[data-test="counter-amount-input"]', counterAmount.toString());
                     await this.page.waitForTimeout(randomDelay(500, 1000));
 
                     // Submit counter
                     const submitBtn = await this.page.$('[data-test="submit-counter"]');
                     if (submitBtn) {
-                        await submitBtn.click();
+                        await humanClick(this.page, submitBtn);
                         this.stats.offers++;
                         writeAuditLog('counter_offer', { offerIndex, counterAmount });
                         logger.info('[PoshmarkBot] Counter offer sent');
@@ -461,6 +472,7 @@ export class PoshmarkBot {
 
         try {
             await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
@@ -468,13 +480,13 @@ export class PoshmarkBot {
             if (offerCards[offerIndex]) {
                 const declineBtn = await offerCards[offerIndex].$('[data-test="decline-offer"]');
                 if (declineBtn) {
-                    await declineBtn.click();
+                    await humanClick(this.page, declineBtn);
                     await this.page.waitForTimeout(randomDelay(1000, 2000));
 
                     // Confirm decline
                     const confirmBtn = await this.page.$('[data-test="confirm-decline"]');
                     if (confirmBtn) {
-                        await confirmBtn.click();
+                        await humanClick(this.page, confirmBtn);
                         writeAuditLog('decline_offer', { offerIndex });
                         logger.info('[PoshmarkBot] Offer declined');
                         return true;
@@ -501,6 +513,7 @@ export class PoshmarkBot {
 
         try {
             await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             // Find the "Offer/Price Drop" or "Send Offer to Likers" button
@@ -512,7 +525,7 @@ export class PoshmarkBot {
                 return { sent: false, reason: 'no_otl_button' };
             }
 
-            await otlBtn.click();
+            await humanClick(this.page, otlBtn);
             await this.page.waitForTimeout(randomDelay(1500, 2500));
 
             // Fill in the offer price (Poshmark shows a price input in the OTL modal)
@@ -550,7 +563,7 @@ export class PoshmarkBot {
                 'button:has-text("Submit"), button:has-text("Send Offer"), button[data-test*="submit"], button[type="submit"]'
             );
             if (submitBtn) {
-                await submitBtn.click();
+                await humanClick(this.page, submitBtn);
                 await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
                 this.stats.offers++;
                 writeAuditLog('send_otl', { listingUrl, discountPercent, shippingDiscount });
@@ -631,6 +644,7 @@ export class PoshmarkBot {
 
         try {
             await this.page.goto(`${POSHMARK_URL}/${feedType}`, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             let shared = 0;
@@ -641,8 +655,8 @@ export class PoshmarkBot {
                 const unsharedTiles = tiles.slice(shared, shared + 10);
 
                 if (unsharedTiles.length === 0) {
-                    // Scroll down to load more
-                    await this.page.evaluate(() => window.scrollBy(0, 800));
+                    // Scroll down to load more — human-like
+                    await humanScroll(this.page, 600 + Math.floor(Math.random() * 400));
                     await this.page.waitForTimeout(randomDelay(1500, 2500));
                     const newTiles = await this.page.$$('[data-test="tile"], .card--small');
                     if (newTiles.length <= shared) break; // No new items loaded
@@ -655,18 +669,19 @@ export class PoshmarkBot {
                     try {
                         const shareBtn = await tile.$('[data-test="tile-share"], button[aria-label*="share" i]');
                         if (shareBtn) {
-                            await shareBtn.click();
+                            await humanClick(this.page, shareBtn);
                             await this.page.waitForTimeout(randomDelay(500, 1000));
 
                             const toFollowers = await this.page.$('[data-test="share-to-followers"]');
                             if (toFollowers) {
-                                await toFollowers.click();
+                                await humanClick(this.page, toFollowers);
                                 shared++;
                                 this.stats.shares++;
                                 writeAuditLog('community_share', { feedType, shared, maxShares });
                                 logger.info(`[PoshmarkBot] Community shared ${shared}/${maxShares}`);
                             }
 
+                            if (shared % 5 === 0) await mouseWiggle(this.page);
                             await this.page.waitForTimeout(jitteredDelay(delayBetween));
                         }
                     } catch (e) {
@@ -711,6 +726,7 @@ export class PoshmarkBot {
 
         try {
             await listPage.goto(`${POSHMARK_URL}/create-listing`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await mouseWiggle(listPage);
             await listPage.waitForTimeout(randomDelay(2000, 3000));
 
             // Session guard — if redirected to login, session expired
@@ -796,7 +812,7 @@ export class PoshmarkBot {
             );
             if (!submitBtn) throw new Error('Submit button not found on create-listing form');
 
-            await submitBtn.click();
+            await humanClick(listPage, submitBtn);
 
             // Wait for redirect to the new listing page
             await listPage.waitForFunction(
@@ -928,6 +944,7 @@ export class PoshmarkBot {
 
         try {
             await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             const listings = await this.page.$$eval(

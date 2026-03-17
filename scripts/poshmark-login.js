@@ -9,7 +9,7 @@
 // Step 3: Enter the SMS code Poshmark texts you.
 // Step 4: Close the window once you see your feed/closet.
 
-import { chromium } from 'playwright';
+import { stealthChromium as chromium, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS } from '../src/shared/automations/stealth.js';
 import { join, dirname } from 'path';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -44,8 +44,8 @@ console.log('');
 const context = await chromium.launchPersistentContext(PROFILE_DIR, {
     headless: false,
     slowMo: 0,
-    args: ['--no-sandbox', '--start-maximized'],
-    ignoreDefaultArgs: ['--enable-automation'],
+    args: [...STEALTH_ARGS, '--start-maximized'],
+    ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS,
     viewport: null   // use full window size
 });
 

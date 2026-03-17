@@ -2,7 +2,7 @@
 // Delete a Poshmark listing by URL
 // Usage: POSHMARK_COUNTRY=ca node scripts/poshmark-delete-listing.mjs <listing-url>
 
-import { firefox } from 'playwright';
+import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS } from '../src/shared/automations/stealth.js';
 import { existsSync, readFileSync, appendFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -26,10 +26,12 @@ function auditLog(event, meta={}) {
 let browser;
 try {
     const cookies = JSON.parse(readFileSync(COOKIE_FILE, 'utf8'));
-    browser = await firefox.launch({ headless: true, slowMo: 50 });
+    browser = await stealthChromium.launch({ headless: true, slowMo: 50, args: STEALTH_ARGS, ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS });
     const ctx = await browser.newContext({
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-        viewport: { width: 1280, height: 900 }
+        userAgent: randomChromeUA(),
+        viewport: randomViewport(),
+        locale: 'en-US',
+        timezoneId: 'America/New_York',
     });
     const page = await ctx.newPage();
     await ctx.addCookies(cookies);

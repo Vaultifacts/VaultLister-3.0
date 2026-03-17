@@ -9,7 +9,7 @@
 // to maintain authenticated sessions across runs without requiring re-login or SMS 2FA.
 // Falls back to cookie file if the profile directory does not exist.
 
-import { chromium } from 'playwright';
+import { stealthChromium as chromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from '../src/shared/automations/stealth.js';
 import { appendFileSync, existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -91,22 +91,29 @@ async function main() {
     const useProfile = existsSync(PROFILE_DIR);
     process.stderr.write('[bot] Session mode: ' + (useProfile ? 'persistent-profile (' + PROFILE_DIR + ')' : 'cookie-fallback') + '\n');
 
+    const ua = randomChromeUA();
+    const vp = randomViewport();
+
     let browser = null;
     let context;
     if (useProfile) {
         context = await chromium.launchPersistentContext(PROFILE_DIR, {
             headless: true,
             slowMo: 30,
-            args: ['--no-sandbox', '--disable-blink-features=AutomationControlled'],
-            ignoreDefaultArgs: ['--enable-automation'],
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 800 }
+            args: STEALTH_ARGS,
+            ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS,
+            userAgent: ua,
+            viewport: vp,
+            locale: 'en-US',
+            timezoneId: 'America/New_York',
         });
     } else {
-        browser = await chromium.launch({ headless: true, slowMo: 30, args: ['--no-sandbox'] });
+        browser = await chromium.launch({ headless: true, slowMo: 30, args: STEALTH_ARGS, ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS });
         context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 800 }
+            userAgent: ua,
+            viewport: vp,
+            locale: 'en-US',
+            timezoneId: 'America/New_York',
         });
         if (existsSync(COOKIES_PATH)) {
             try {

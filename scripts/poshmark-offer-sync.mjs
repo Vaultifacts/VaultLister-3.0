@@ -11,7 +11,7 @@
  * --headful   Show browser window (useful for debugging selectors)
  */
 
-import { firefox } from 'playwright';
+import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, mouseWiggle } from '../src/shared/automations/stealth.js';
 import { existsSync, readFileSync, appendFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -75,15 +75,19 @@ try {
         process.exit(1);
     }
 
-    // ── Launch browser ────────────────────────────────────────────────────────
-    browser = await firefox.launch({
+    // ── Launch browser (stealth Chromium instead of plain Firefox) ─────────
+    browser = await stealthChromium.launch({
         headless: !isHeadful,
-        slowMo: 50
+        slowMo: 50,
+        args: STEALTH_ARGS,
+        ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS,
     });
 
     const context = await browser.newContext({
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-        viewport: { width: 1280, height: 800 }
+        userAgent: randomChromeUA(),
+        viewport: randomViewport(),
+        locale: 'en-US',
+        timezoneId: 'America/New_York',
     });
     page = await context.newPage();
 

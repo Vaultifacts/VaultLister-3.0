@@ -10,7 +10,7 @@
  *   node scripts/poshmark-keepalive.js --loop    # run every 6 hours
  */
 
-import { chromium } from 'playwright';
+import { stealthChromium as chromium, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS } from '../src/shared/automations/stealth.js';
 import { join, dirname } from 'path';
 import { readFileSync, existsSync, writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -43,8 +43,8 @@ export async function refreshPoshmarkSession() {
     try {
         context = await chromium.launchPersistentContext(PROFILE_DIR, {
             headless: true,
-            args: ['--no-sandbox', '--disable-blink-features=AutomationControlled'],
-            ignoreDefaultArgs: ['--enable-automation']
+            args: STEALTH_ARGS,
+            ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
         });
 
         const page = context.pages()[0] || await context.newPage();

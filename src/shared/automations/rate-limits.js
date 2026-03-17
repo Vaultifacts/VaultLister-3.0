@@ -6,13 +6,13 @@
 
 export const RATE_LIMITS = {
     poshmark: {
-        shareDelay:     3000,   // 3s between shares (Posh detects < 2s)
-        followDelay:    2500,   // 2.5s between follows
-        offerDelay:     5000,   // 5s between offers
-        loginCooldown:  60000,  // 1min between login attempts
-        maxSharesPerRun:  300,  // Poshmark flags > 300 shares/hour
-        maxFollowsPerRun: 100,  // Conservative follow limit per run
-        maxOffersPerRun:   50,  // Offers per run
+        shareDelay:     4000,   // 4s between shares (Posh detects < 2s; extra margin for safety)
+        followDelay:    3500,   // 3.5s between follows
+        offerDelay:     6000,   // 6s between offers
+        loginCooldown:  90000,  // 1.5min between login attempts
+        maxSharesPerRun:  200,  // Conservative: Poshmark flags > 300 shares/hour
+        maxFollowsPerRun:  75,  // Conservative follow limit per run
+        maxOffersPerRun:   40,  // Offers per run
     },
     mercari: {
         actionDelay:    4000,   // 4s between any action
