@@ -1205,9 +1205,7 @@ Object.assign(pages, {
                                             }
                                         </div>`;
                                     }).join('');
-                                })()
-                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('facebook')">Connect</button>
-                                </div>
+                                })()}
                             </div>
                         </div>
 
