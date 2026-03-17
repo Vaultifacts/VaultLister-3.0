@@ -65,9 +65,8 @@ backups/
 # Coverage
 coverage/
 
-# Bun
+# Bun (binary lockfile — text lockfile bun.lock is tracked for reproducible builds)
 bun.lockb
-bun.lock
 
 # Project notes
 VaultLister 3.0.txt
