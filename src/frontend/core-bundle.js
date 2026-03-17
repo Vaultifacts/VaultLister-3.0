@@ -8809,29 +8809,20 @@ const globalSearch = {
 
         // Page navigation results
         const pages = [
-            { id: 'dashboard', label: 'Dashboard', section: 'Main', icon: 'dashboard' },
-            { id: 'inventory', label: 'Inventory', section: 'Main', icon: 'inventory' },
-            { id: 'listings', label: 'My Listings', section: 'Main', icon: 'list' },
-            { id: 'orders', label: 'Orders', section: 'Main', icon: 'sales' },
-            { id: 'offers', label: 'Offers', section: 'Main', icon: 'offers' },
-            { id: 'transactions', label: 'Transactions', section: 'Main', icon: 'dollar' },
-            { id: 'shops', label: 'My Shops', section: 'Main', icon: 'store' },
-            { id: 'automations', label: 'Automations', section: 'Tools', icon: 'automation' },
-            { id: 'checklist', label: 'Checklist', section: 'Tools', icon: 'list' },
-            { id: 'calendar', label: 'Calendar', section: 'Tools', icon: 'calendar' },
-            { id: 'image-bank', label: 'Image Bank', section: 'Tools', icon: 'image' },
-            { id: 'sku-rules', label: 'SKU Manager', section: 'Tools', icon: 'tag' },
-            { id: 'analytics', label: 'Analytics', section: 'Business', icon: 'analytics' },
-            { id: 'financials', label: 'Financials', section: 'Business', icon: 'dollar' },
-            { id: 'market-intel', label: 'Market Intel', section: 'Business', icon: 'trending' },
-            { id: 'suppliers', label: 'Suppliers', section: 'Business', icon: 'truck' },
-            { id: 'sales', label: 'Sales', section: 'Business', icon: 'sales' },
-            { id: 'settings', label: 'Settings', section: 'Resources', icon: 'settings' },
-            { id: 'help', label: 'Help & Support', section: 'Resources', icon: 'help' },
-            { id: 'feedback', label: 'Feedback', section: 'Resources', icon: 'community' },
-            { id: 'roadmap', label: 'Roadmap', section: 'Resources', icon: 'map' },
-            { id: 'webhooks', label: 'Webhooks', section: 'Tools', icon: 'link' },
-            { id: 'receipt-parser', label: 'Receipt Parser', section: 'Tools', icon: 'scan' },
+            { id: 'dashboard', label: 'Dashboard', section: 'Sell', icon: 'dashboard' },
+            { id: 'inventory', label: 'Inventory', section: 'Sell', icon: 'inventory' },
+            { id: 'listings', label: 'Listings', section: 'Sell', icon: 'list' },
+            { id: 'orders-sales', label: 'Orders & Sales', section: 'Sell', icon: 'sales' },
+            { id: 'offers', label: 'Offers', section: 'Sell', icon: 'offers' },
+            { id: 'automations', label: 'Automations', section: 'Manage', icon: 'automation' },
+            { id: 'financials', label: 'Financials', section: 'Manage', icon: 'dollar' },
+            { id: 'analytics', label: 'Analytics', section: 'Manage', icon: 'analytics' },
+            { id: 'shops', label: 'My Shops', section: 'Manage', icon: 'store' },
+            { id: 'planner', label: 'Planner', section: 'Manage', icon: 'calendar' },
+            { id: 'image-bank', label: 'Image Bank', section: 'Manage', icon: 'image' },
+            { id: 'settings', label: 'Settings', section: 'Settings', icon: 'settings' },
+            { id: 'help-support', label: 'Help', section: 'Help', icon: 'help' },
+            { id: 'changelog', label: 'Changelog', section: 'Changelog', icon: 'list' },
         ].filter(p => p.label.toLowerCase().includes(q) || p.section.toLowerCase().includes(q));
 
         // Inventory items
@@ -15217,7 +15208,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '3481073c';
+    const v = '1e61c990';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16254,31 +16245,33 @@ const components = {
     // Breadcrumb navigation component
     breadcrumb(currentPage) {
         const pageInfo = {
-            'dashboard': { label: 'Dashboard', section: 'Main' },
-            'inventory': { label: 'Inventory', section: 'Main' },
-            'listings': { label: 'My Listings', section: 'Main' },
-            'orders': { label: 'Orders', section: 'Main' },
-            'offers': { label: 'Offers', section: 'Main' },
-            'automations': { label: 'Automations', section: 'Tools' },
-            'checklist': { label: 'Checklist', section: 'Tools' },
-            'image-bank': { label: 'Image Bank', section: 'Tools' },
-            'calendar': { label: 'Calendar', section: 'Tools' },
-            'size-charts': { label: 'Size Charts', section: 'Tools' },
-            'shops': { label: 'My Shops', section: 'Business' },
-            'platform-health': { label: 'Platform Health', section: 'Business' },
-            'transactions': { label: 'Transactions', section: 'Business' },
-            'financials': { label: 'Financials', section: 'Business' },
-            'analytics': { label: 'Analytics', section: 'Business' },
-            'predictions': { label: 'Predictions', section: 'Intelligence' },
-            'suppliers': { label: 'Suppliers', section: 'Intelligence' },
-            'market-intel': { label: 'Market Intel', section: 'Intelligence' },
-            'settings': { label: 'Settings', section: 'Resources' },
-            'help-support': { label: 'Help & Support', section: 'Resources' },
-            'roadmap': { label: 'Roadmap', section: 'Resources' },
-            'changelog': { label: 'Changelog', section: 'Resources' },
-            'about': { label: 'About Us', section: 'Company' },
-            'terms': { label: 'Terms of Service', section: 'Company' },
-            'privacy': { label: 'Privacy Policy', section: 'Company' }
+            'dashboard': { label: 'Dashboard', section: 'Sell' },
+            'inventory': { label: 'Inventory', section: 'Sell' },
+            'listings': { label: 'Listings', section: 'Sell' },
+            'orders': { label: 'Orders', section: 'Sell' },
+            'orders-sales': { label: 'Orders & Sales', section: 'Sell' },
+            'offers': { label: 'Offers', section: 'Sell' },
+            'automations': { label: 'Automations', section: 'Manage' },
+            'checklist': { label: 'Checklist', section: 'Manage' },
+            'planner': { label: 'Planner', section: 'Manage' },
+            'image-bank': { label: 'Image Bank', section: 'Manage' },
+            'calendar': { label: 'Calendar', section: 'Manage' },
+            'size-charts': { label: 'Size Charts', section: 'Manage' },
+            'shops': { label: 'My Shops', section: 'Manage' },
+            'platform-health': { label: 'Platform Health', section: 'Manage' },
+            'transactions': { label: 'Transactions', section: 'Manage' },
+            'financials': { label: 'Financials', section: 'Manage' },
+            'analytics': { label: 'Analytics', section: 'Manage' },
+            'predictions': { label: 'Predictions', section: 'Manage' },
+            'suppliers': { label: 'Suppliers', section: 'Manage' },
+            'market-intel': { label: 'Market Intel', section: 'Manage' },
+            'settings': { label: 'Settings', section: '' },
+            'help-support': { label: 'Help', section: '' },
+            'roadmap': { label: 'Roadmap', section: '' },
+            'changelog': { label: 'Changelog', section: '' },
+            'about': { label: 'About Us', section: '' },
+            'terms': { label: 'Terms of Service', section: '' },
+            'privacy': { label: 'Privacy Policy', section: '' }
         };
 
         const info = pageInfo[currentPage] || { label: currentPage, section: '' };

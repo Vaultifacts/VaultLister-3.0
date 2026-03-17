@@ -520,7 +520,7 @@ Object.assign(pages, {
             return `
                 <div class="page-header flex justify-between items-start">
                     <div>
-                        <h1 class="page-title">My Listings</h1>
+                        <h1 class="page-title">Listings</h1>
                         <p class="page-description">View and manage your listings across all platforms</p>
                     </div>
                     <div class="flex gap-2">
@@ -561,7 +561,7 @@ Object.assign(pages, {
             return `
                 <div class="page-header flex justify-between items-start">
                     <div>
-                        <h1 class="page-title">My Listings</h1>
+                        <h1 class="page-title">Listings</h1>
                         <p class="page-description">View and manage your listings across all platforms</p>
                     </div>
                     <div class="flex gap-2">
@@ -604,7 +604,7 @@ Object.assign(pages, {
             return `
                 <div class="page-header flex justify-between items-start">
                     <div>
-                        <h1 class="page-title">My Listings</h1>
+                        <h1 class="page-title">Listings</h1>
                         <p class="page-description">Archived listings that have been removed from active selling</p>
                     </div>
                 </div>
@@ -760,7 +760,7 @@ Object.assign(pages, {
                     <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
                     <li>
                         <a href="#" onclick="handlers.switchListingsTab('listings'); return false;" style="color: ${currentListingsTab === 'listings' ? 'var(--primary-600)' : 'var(--gray-500)'}; text-decoration: none; font-weight: ${currentListingsTab === 'listings' ? '600' : '400'};">
-                            My Listings
+                            Listings
                         </a>
                     </li>
                     ${currentListingsTab !== 'listings' ? `
@@ -782,7 +782,7 @@ Object.assign(pages, {
             <div class="listings-hero">
                 <div class="listings-hero-header">
                     <div class="listings-hero-title-group">
-                        <h1 class="listings-hero-title">My Listings</h1>
+                        <h1 class="listings-hero-title">Listings</h1>
                         <p class="listings-hero-subtitle">View and manage your listings across all platforms</p>
                     </div>
                     <div class="listings-hero-actions">

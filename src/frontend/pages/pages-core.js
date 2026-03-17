@@ -365,7 +365,7 @@ const pages = {
                             ${components.icon('package', 16)}
                             <span><strong>${unshipped.length}</strong> order${unshipped.length > 1 ? 's' : ''} need${unshipped.length === 1 ? 's' : ''} shipping${daysOld > 0 ? ` — oldest is ${daysOld} day${daysOld > 1 ? 's' : ''} old` : ''}</span>
                         </div>
-                        <button class="btn btn-sm btn-${urgency}" onclick="router.navigate('orders')">View Orders</button>
+                        <button class="btn btn-sm btn-${urgency}" onclick="router.navigate('orders-sales')">View Orders</button>
                     </div>
                 `;
             })()}
@@ -557,7 +557,7 @@ const pages = {
                             <button class="btn btn-secondary" onclick="router.navigate('listings')" style="justify-content: flex-start;">
                                 ${components.icon('plus', 16)} Add New Listing
                             </button>
-                            <button class="btn btn-secondary" onclick="router.navigate('orders')" style="justify-content: flex-start;">
+                            <button class="btn btn-secondary" onclick="router.navigate('orders-sales')" style="justify-content: flex-start;">
                                 ${components.icon('cart', 16)} View Orders
                             </button>
                             <button class="btn btn-secondary" onclick="router.navigate('image-bank')" style="justify-content: flex-start;">
