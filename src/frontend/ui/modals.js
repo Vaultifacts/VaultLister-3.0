@@ -2107,6 +2107,124 @@ const modals = {
         `);
     },
 
+    // Generate listing from an existing inventory item
+    generateListingFromItem(itemId) {
+        const item = (store.state.inventory || []).find(i => i.id === itemId);
+        if (!item) {
+            toast.error('Item not found in inventory');
+            return;
+        }
+        const itemTitle = escapeHtml(item.title || 'Untitled Item');
+        const itemBrand = escapeHtml(item.brand || '');
+        const itemCategory = escapeHtml(item.category || '');
+        const itemCondition = item.condition || 'good';
+        const itemSize = escapeHtml(item.size || '');
+        const itemColor = escapeHtml(item.color || '');
+
+        this.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Generate AI Listing</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div id="gli-step-generate">
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg flex items-start gap-3">
+                        <div>
+                            <div class="font-semibold text-sm">${itemTitle}</div>
+                            <div class="text-xs text-gray-500">${[itemBrand, itemCategory, itemSize ? 'Size ' + itemSize : '', itemColor].filter(Boolean).join(' · ')}</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Target Platform</label>
+                        <select id="gli-platform" class="form-select">
+                            <option value="poshmark">Poshmark (80 char title)</option>
+                            <option value="ebay">eBay (80 char title)</option>
+                            <option value="mercari">Mercari (40 char title)</option>
+                            <option value="depop">Depop (65 char title)</option>
+                            <option value="grailed">Grailed (100 char title)</option>
+                            <option value="facebook">Facebook Marketplace</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Additional Notes <span class="text-gray-400 font-normal">(optional)</span></label>
+                        <input type="text" id="gli-notes" class="form-input" placeholder="e.g. slight fade on collar, original box included" maxlength="300">
+                        <p class="text-xs text-gray-500 mt-1">Add any details not captured in the item record</p>
+                    </div>
+                </div>
+
+                <div id="gli-step-loading" class="hidden text-center py-10">
+                    <div class="inline-block animate-spin rounded-full h-14 w-14 border-4 border-gray-200 border-t-primary-500 mb-4"></div>
+                    <div class="text-base font-semibold mb-1">Generating listing...</div>
+                    <div class="text-sm text-gray-500">Claude is writing your listing</div>
+                </div>
+
+                <div id="gli-step-results" class="hidden">
+                    <div class="mb-4 p-3 bg-green-50 border-l-4 border-green-500 rounded">
+                        <div class="font-semibold text-green-900 text-sm mb-1">Listing generated — review and edit below</div>
+                        <div id="gli-ai-source" class="text-xs text-green-700"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" id="gli-result-title" class="form-input" maxlength="100">
+                        <p class="text-xs text-gray-500 mt-1"><span id="gli-title-count">0</span> characters</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="gli-result-description" class="form-input" rows="7"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tags</label>
+                        <input type="text" id="gli-result-tags" class="form-input" placeholder="Comma-separated tags">
+                        <p class="text-xs text-gray-500 mt-1"><span id="gli-tags-count">0</span> tags</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Price</label>
+                        <div class="flex items-center gap-3">
+                            <input type="number" id="gli-result-price" class="form-input" step="0.01" style="max-width: 140px;">
+                            <span id="gli-price-range" class="text-sm text-gray-500"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button id="gli-generate-btn" class="btn btn-primary" onclick="handlers.runGenerateListingFromItem('${itemId}')">
+                    Generate with AI
+                </button>
+                <button id="gli-save-btn" class="btn btn-primary hidden" onclick="handlers.saveGeneratedListing('${itemId}')">
+                    Save as Draft Listing
+                </button>
+            </div>
+        `);
+
+        // Wire up character counter for title after modal renders
+        setTimeout(() => {
+            const titleInput = document.getElementById('gli-result-title');
+            if (titleInput) {
+                titleInput.addEventListener('input', () => {
+                    const counter = document.getElementById('gli-title-count');
+                    if (counter) counter.textContent = titleInput.value.length;
+                });
+            }
+            const tagsInput = document.getElementById('gli-result-tags');
+            if (tagsInput) {
+                tagsInput.addEventListener('input', () => {
+                    const counter = document.getElementById('gli-tags-count');
+                    if (counter) {
+                        const tags = tagsInput.value.split(',').filter(t => t.trim());
+                        counter.textContent = tags.length;
+                    }
+                });
+            }
+        }, 50);
+    },
+
     // Create post modal
     createPost() {
         const currentTab = store.state.communityTab || 'discussion';

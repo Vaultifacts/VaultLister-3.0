@@ -438,6 +438,9 @@ Object.assign(pages, {
                                             })()}
                                         </td>
                                         <td>
+                                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); modals.generateListingFromItem('${item.id}')" title="Generate AI listing for this item">
+                                                ${components.icon('wand', 14)} Generate Listing
+                                            </button>
                                             <button class="btn btn-secondary btn-sm" data-testid="edit-item-${item.id}" onclick="handlers.editItem('${item.id}')" title="Edit item">
                                                 ${components.icon('settings', 14)} Edit
                                             </button>

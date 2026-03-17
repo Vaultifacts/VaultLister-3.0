@@ -9,6 +9,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import { logger } from '../shared/logger.js';
 import { validateBase64Image } from '../services/imageStorage.js';
 import { requireFeature } from '../middleware/featureFlags.js';
+import { sanitizeForAI } from '../../shared/ai/sanitize-input.js';
+import { withTimeout } from '../shared/fetchWithTimeout.js';
+import { circuitBreaker } from '../shared/circuitBreaker.js';
 
 // Configurable AI thresholds — override via environment variables
 const AI_CONFIG = {
@@ -193,34 +196,120 @@ Important:
         }
     }
 
-    // POST /api/ai/generate-listing - Generate listing from image/details
+    // POST /api/ai/generate-listing - Generate listing from image/details or an existing inventory item
     if (method === 'POST' && path === '/generate-listing') {
-        const { imageUrl, imageBase64, category, brand, condition, keywords } = body;
+        const { imageUrl, imageBase64, category, brand, condition, keywords, inventoryId, platform = 'poshmark', notes: extraNotes } = body;
+
+        const platformGuidelines = {
+            poshmark: { titleMax: 80, descMax: 500, emphasize: 'brand, condition, style keywords' },
+            ebay: { titleMax: 80, descMax: 1000, emphasize: 'specifics, measurements, model numbers' },
+            mercari: { titleMax: 40, descMax: 1000, emphasize: 'condition, shipping details' },
+            depop: { titleMax: 65, descMax: 1000, emphasize: 'aesthetic, vintage, Y2K style' },
+            grailed: { titleMax: 100, descMax: 2000, emphasize: 'designer details, condition, fit' },
+            facebook: { titleMax: 100, descMax: 5000, emphasize: 'local pickup, condition' }
+        };
+        const guidelines = platformGuidelines[platform] || platformGuidelines.poshmark;
 
         try {
+            let itemData = {};
+
+            // If inventoryId provided, pull item from DB for richer context
+            if (inventoryId) {
+                const item = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+                if (!item) {
+                    return { status: 404, data: { error: 'Inventory item not found' } };
+                }
+                itemData = item;
+            }
+
             // Analyze image if provided
             let imageAnalysis = {};
             if (imageUrl || imageBase64) {
                 imageAnalysis = await analyzeImage(imageUrl || imageBase64);
             }
 
-            // Generate listing content
+            // Build generation context from DB item + override fields + image analysis
             const context = {
-                category: category || imageAnalysis.category,
-                brand: brand || imageAnalysis.brand,
-                condition: condition || 'good',
-                keywords: keywords || imageAnalysis.tags || [],
+                category: category || itemData.category || imageAnalysis.category,
+                brand: brand || itemData.brand || imageAnalysis.brand,
+                condition: condition || itemData.condition || 'good',
+                size: itemData.size,
+                color: itemData.color,
+                material: itemData.material,
+                originalPrice: itemData.cost_price,
+                notes: [extraNotes, itemData.notes].filter(Boolean).join('. ') || undefined,
+                keywords: keywords || (itemData.tags ? (typeof itemData.tags === 'string' ? JSON.parse(itemData.tags) : itemData.tags) : []) || imageAnalysis.tags || [],
                 colors: imageAnalysis.colors || [],
                 style: imageAnalysis.style
             };
 
+            // Use Claude Sonnet for platform-specific generation when API key is available
+            if (process.env.ANTHROPIC_API_KEY) {
+                try {
+                    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+                    const safeBrand = sanitizeForAI(context.brand || 'Unknown', 100);
+                    const safeCategory = sanitizeForAI(context.category || 'Clothing', 100);
+                    const safeCondition = sanitizeForAI(context.condition || 'good', 50);
+                    const safeColor = sanitizeForAI(context.color || 'N/A', 50);
+                    const safeSize = sanitizeForAI(context.size || 'N/A', 20);
+                    const safeMaterial = sanitizeForAI(context.material || 'N/A', 100);
+                    const safeNotes = sanitizeForAI(context.notes || (context.keywords.length ? context.keywords.join(', ') : 'None'), 500);
+                    const safePrice = context.originalPrice ? `$${sanitizeForAI(String(context.originalPrice), 20)}` : 'N/A';
+                    const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+
+                    const userContent = `Brand: ${safeBrand}\nCategory: ${safeCategory}\nCondition: ${safeCondition}\nColor: ${safeColor}\nSize: ${safeSize}\nMaterial: ${safeMaterial}\nOriginal Cost: ${safePrice}\nNotes/Keywords: ${safeNotes}`;
+
+                    const response = await circuitBreaker('anthropic-listing-platform', () =>
+                        withTimeout(anthropic.messages.create({
+                            model: 'claude-sonnet-4-6',
+                            max_tokens: 1500,
+                            system: `You are an expert reseller. Generate a ${platformName} marketplace listing for the secondhand item described. Platform guidelines: title max ${guidelines.titleMax} chars, description max ${guidelines.descMax} chars, emphasize ${guidelines.emphasize}. Respond with ONLY valid JSON in this exact format: {"title":"listing title SEO-optimized for ${platformName}","description":"persuasive description with DETAILS section (brand, size, color, condition) and friendly closing line","tags":["up to 20 relevant search tags"],"suggestedPrice":number}`,
+                            messages: [{ role: 'user', content: userContent }]
+                        }), 30000, 'Anthropic platform listing generation'),
+                        { failureThreshold: 3, cooldownMs: 60000 }
+                    );
+
+                    const m = response.content[0].text.trim().match(/\{[\s\S]*\}/);
+                    if (m) {
+                        const r = JSON.parse(m[0]);
+                        if (r.title && r.description && Array.isArray(r.tags)) {
+                            const priceRange = getPriceRange(context);
+                            const resolvedPrice = r.suggestedPrice || priceRange.suggested;
+                            return {
+                                status: 200,
+                                data: {
+                                    title: r.title.slice(0, guidelines.titleMax),
+                                    description: r.description.slice(0, guidelines.descMax),
+                                    tags: r.tags.slice(0, 20),
+                                    aiSource: 'claude-sonnet',
+                                    suggestedPrice: resolvedPrice,
+                                    priceRange: { low: priceRange.low, suggested: resolvedPrice, high: priceRange.high },
+                                    priceSource: priceRange.priceSource,
+                                    category: context.category,
+                                    brand: context.brand,
+                                    platform,
+                                    inventoryId: inventoryId || null
+                                }
+                            };
+                        }
+                    }
+                } catch (claudeErr) {
+                    logger.warn('[AI] Claude Sonnet listing generation failed, falling back to Haiku/template', {
+                        error: claudeErr.message,
+                        inventoryId: inventoryId || null
+                    });
+                }
+            }
+
+            // Fallback: Haiku or template (via generateListing in listing-generator.js)
             const listing = await generateListing(context);
             const priceRange = getPriceRange(context);
 
             return {
                 status: 200,
                 data: {
-                    title: listing.title,
+                    title: listing.title.slice(0, guidelines.titleMax),
                     description: listing.description,
                     tags: listing.tags,
                     aiSource: listing.source,
@@ -229,6 +318,8 @@ Important:
                     priceSource: priceRange.priceSource,
                     category: context.category,
                     brand: context.brand,
+                    platform,
+                    inventoryId: inventoryId || null,
                     imageAnalysis
                 }
             };

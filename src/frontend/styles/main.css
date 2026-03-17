@@ -67671,3 +67671,58 @@ kbd {
         max-width: 85vw;
     }
 }
+
+/* ===================================================
+   Mobile fix: menu-button touch target (44px minimum)
+   =================================================== */
+@media (max-width: 1024px) {
+    .menu-button {
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+}
+
+/* ===================================================
+   Mobile fix: modal margin on small screens
+   The existing rule uses width: 95% + margin: 20px
+   which can overflow at <480px. Replace with safe values.
+   =================================================== */
+@media (max-width: 480px) {
+    .modal {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        max-height: 95vh;
+    }
+
+    .modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+}
+
+/* ===================================================
+   Mobile fix: header search bar shrinks on narrow screens
+   =================================================== */
+@media (max-width: 640px) {
+    .search-bar {
+        width: auto;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .header {
+        padding: 0 var(--space-3);
+        gap: var(--space-2);
+    }
+
+    .header-right {
+        gap: var(--space-2);
+    }
+}

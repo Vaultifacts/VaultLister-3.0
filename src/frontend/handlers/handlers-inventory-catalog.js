@@ -7882,6 +7882,105 @@ Object.assign(handlers, {
     },
 
 
+    // Generate listing from an existing inventory item (called from modals.generateListingFromItem)
+    runGenerateListingFromItem: async function(itemId) {
+        const platform = document.getElementById('gli-platform')?.value || 'poshmark';
+        const notes = document.getElementById('gli-notes')?.value || '';
+
+        document.getElementById('gli-step-generate')?.classList.add('hidden');
+        document.getElementById('gli-generate-btn')?.classList.add('hidden');
+        document.getElementById('gli-step-loading')?.classList.remove('hidden');
+
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post('/ai/generate-listing', {
+                inventoryId: itemId,
+                platform,
+                notes: notes || undefined
+            });
+
+            document.getElementById('gli-step-loading')?.classList.add('hidden');
+            document.getElementById('gli-step-results')?.classList.remove('hidden');
+            document.getElementById('gli-save-btn')?.classList.remove('hidden');
+
+            const titleInput = document.getElementById('gli-result-title');
+            const descInput = document.getElementById('gli-result-description');
+            const tagsInput = document.getElementById('gli-result-tags');
+            const priceInput = document.getElementById('gli-result-price');
+            const priceRange = document.getElementById('gli-price-range');
+            const titleCount = document.getElementById('gli-title-count');
+            const tagsCount = document.getElementById('gli-tags-count');
+            const aiSource = document.getElementById('gli-ai-source');
+
+            if (titleInput) {
+                titleInput.value = result.title || '';
+                if (titleCount) titleCount.textContent = (result.title || '').length;
+            }
+            if (descInput) descInput.value = result.description || '';
+            if (tagsInput) {
+                const tags = Array.isArray(result.tags) ? result.tags.join(', ') : (result.tags || '');
+                tagsInput.value = tags;
+                if (tagsCount) tagsCount.textContent = Array.isArray(result.tags) ? result.tags.length : 0;
+            }
+            if (priceInput) priceInput.value = result.suggestedPrice || '';
+            if (priceRange && result.priceRange) {
+                priceRange.textContent = `$${result.priceRange.low} – $${result.priceRange.high} suggested range`;
+            }
+            if (aiSource) {
+                aiSource.textContent = result.aiSource === 'claude-sonnet' ? 'Powered by Claude Sonnet' : result.aiSource === 'claude' ? 'Powered by Claude Haiku' : 'Generated from templates';
+            }
+        } catch (error) {
+            document.getElementById('gli-step-loading')?.classList.add('hidden');
+            document.getElementById('gli-step-generate')?.classList.remove('hidden');
+            document.getElementById('gli-generate-btn')?.classList.remove('hidden');
+            toast.error(error.message || 'AI generation failed. Please try again.');
+        }
+    },
+
+    saveGeneratedListing: async function(itemId) {
+        const title = document.getElementById('gli-result-title')?.value?.trim();
+        const description = document.getElementById('gli-result-description')?.value?.trim();
+        const tagsRaw = document.getElementById('gli-result-tags')?.value || '';
+        const price = parseFloat(document.getElementById('gli-result-price')?.value || '0');
+        const platform = document.getElementById('gli-platform')?.value || 'poshmark';
+
+        if (!title) {
+            toast.error('Title is required');
+            return;
+        }
+
+        const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+
+        const saveBtn = document.getElementById('gli-save-btn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+        }
+
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/listings', {
+                inventoryId: itemId,
+                platform,
+                title,
+                description,
+                price: price || 0,
+                platformSpecificData: tags.length ? { tags } : undefined
+            });
+
+            modals.close();
+            toast.success('Draft listing saved');
+            await handlers.loadInventory();
+        } catch (error) {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save as Draft Listing';
+            }
+            toast.error(error.message || 'Failed to save listing');
+        }
+    },
+
+
     submitAdvancedCrosslist: async function(event, itemIds) {
         event.preventDefault();
         const form = event.target;
