@@ -1,21 +1,12 @@
 // Inventory E2E Tests
-import { test, expect } from '@playwright/test';
-import { demoUser, generateInventoryItem, selectors, routes } from '../fixtures/test-data.js';
+import { test, expect } from '../fixtures/auth.js';
+import { generateInventoryItem, selectors, routes } from '../fixtures/test-data.js';
 
 test.describe('Inventory Management', () => {
-    test.beforeEach(async ({ page }) => {
-        // Login before each test
-        await page.goto(routes.login);
-        await page.waitForSelector(selectors.loginForm);
-        await page.fill(selectors.emailInput, demoUser.email);
-        await page.fill(selectors.passwordInput, demoUser.password);
-        await page.click(selectors.submitButton);
-        await page.waitForURL(/#dashboard/, { timeout: 10000 });
-    });
 
-    test('should navigate to inventory page', async ({ page }) => {
-        // Click on inventory button in sidebar
-        const inventoryBtn = page.locator('button.nav-item:has-text("Inventory")').first();
+    test('should navigate to inventory page', async ({ authedPage: page }) => {
+        // Click on inventory link in sidebar
+        const inventoryBtn = page.locator('.nav-item:has-text("Inventory"), a:has-text("Inventory")').first();
         await inventoryBtn.waitFor({ state: 'visible', timeout: 10000 });
         await inventoryBtn.click();
 
@@ -26,7 +17,7 @@ test.describe('Inventory Management', () => {
         await expect(page).toHaveURL(/#inventory/);
     });
 
-    test('should display inventory items', async ({ page }) => {
+    test('should display inventory items', async ({ authedPage: page }) => {
         await page.goto(routes.inventory);
         await page.waitForURL(/#inventory/, { timeout: 5000 });
 
@@ -37,7 +28,7 @@ test.describe('Inventory Management', () => {
         await expect(page).toHaveURL(/#inventory/);
     });
 
-    test('should search inventory items', async ({ page }) => {
+    test('should search inventory items', async ({ authedPage: page }) => {
         await page.goto(routes.inventory);
         await page.waitForURL(/#inventory/, { timeout: 5000 });
 
@@ -59,7 +50,7 @@ test.describe('Inventory Management', () => {
         }
     });
 
-    test('should filter inventory by status', async ({ page }) => {
+    test('should filter inventory by status', async ({ authedPage: page }) => {
         await page.goto(routes.inventory);
         await page.waitForURL(/#inventory/, { timeout: 5000 });
 
@@ -82,7 +73,7 @@ test.describe('Inventory Management', () => {
         }
     });
 
-    test('should show inventory statistics', async ({ page }) => {
+    test('should show inventory statistics', async ({ authedPage: page }) => {
         await page.goto(routes.inventory);
         await page.waitForURL(/#inventory/, { timeout: 5000 });
 
