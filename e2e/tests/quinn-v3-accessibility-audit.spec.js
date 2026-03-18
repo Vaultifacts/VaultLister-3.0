@@ -74,12 +74,24 @@ function assertNoCriticalViolations(results, label) {
   }
 }
 
+// Helper: set vl_access cookie so the SPA loads instead of the landing page
+async function setVlAccessCookie(page) {
+  const url = new URL(BASE);
+  await page.context().addCookies([{
+    name: 'vl_access',
+    value: 'e2e-test-bypass',
+    domain: url.hostname,
+    path: '/',
+  }]);
+}
+
 // =============================================================================
 // P0: PRE-AUTH PAGES
 // =============================================================================
 test.describe('Quinn v3 > Accessibility > P0: Pre-Auth Pages', () => {
 
   test('P0-1: Login page passes WCAG 2.1 AA audit', async ({ page }) => {
+    await setVlAccessCookie(page);
     await page.goto(`${BASE}/#login`);
     await page.waitForSelector('#login-form', { timeout: 10_000 });
     await waitForSpaRender(page);
@@ -89,6 +101,7 @@ test.describe('Quinn v3 > Accessibility > P0: Pre-Auth Pages', () => {
   });
 
   test('P0-2: Register page passes WCAG 2.1 AA audit', async ({ page }) => {
+    await setVlAccessCookie(page);
     await page.goto(`${BASE}/#register`);
     await waitForSpaRender(page);
 
@@ -97,6 +110,7 @@ test.describe('Quinn v3 > Accessibility > P0: Pre-Auth Pages', () => {
   });
 
   test('P0-3: Forgot password page passes WCAG 2.1 AA audit', async ({ page }) => {
+    await setVlAccessCookie(page);
     await page.goto(`${BASE}/#forgot-password`);
     await waitForSpaRender(page);
 
@@ -231,6 +245,7 @@ test.describe('Quinn v3 > Accessibility > P3: Specific WCAG Checks', () => {
   });
 
   test('P3-2: All form inputs have associated labels or aria-label', async ({ page }) => {
+    await setVlAccessCookie(page);
     await page.goto(`${BASE}/#login`);
     await page.waitForSelector('#login-form', { timeout: 10_000 });
     await waitForSpaRender(page);
@@ -304,6 +319,7 @@ test.describe('Quinn v3 > Accessibility > P3: Specific WCAG Checks', () => {
   });
 
   test('P3-3: Focus is visible when tabbing through interactive elements', async ({ page }) => {
+    await setVlAccessCookie(page);
     await page.goto(`${BASE}/#login`);
     await page.waitForSelector('#login-form', { timeout: 10_000 });
     await waitForSpaRender(page);
