@@ -60,41 +60,45 @@ export const test = base.extend({
 
     // Provides a page that's already authenticated via localStorage injection
     authedPage: async ({ page, authData }, use) => {
-        // Navigate to the app first (needed for localStorage access on the right origin)
-        await page.goto(BASE);
+        // Set vl_access cookie so all navigations bypass the landing page and reach the SPA
+        const url = new URL(BASE);
+        await page.context().addCookies([{
+            name: 'vl_access',
+            value: authData.token,
+            domain: url.hostname,
+            path: '/',
+        }]);
+
+        // Navigate to SPA
+        await page.goto(`${BASE}/#login`);
         await page.waitForLoadState('domcontentloaded');
 
-        // Inject auth tokens
+        // Inject auth tokens into localStorage
         await injectAuth(page, authData);
 
-        // Reload so the SPA picks up localStorage auth
-        await page.reload();
+        // Navigate to dashboard — SPA will pick up tokens from localStorage
+        await page.goto(`${BASE}/#dashboard`);
         await page.waitForLoadState('domcontentloaded');
 
-        // Directly set the store state and re-render if hydration missed tokens
-        await page.evaluate((authData) => {
+        // Directly set the store state if hydration missed tokens
+        await page.evaluate((ad) => {
             if (typeof store !== 'undefined' && store.setState) {
                 store.setState({
-                    user: authData.user,
-                    token: authData.token,
-                    refreshToken: authData.refreshToken
+                    user: ad.user,
+                    token: ad.token,
+                    refreshToken: ad.refreshToken
                 });
-            }
-            if (typeof router !== 'undefined' && router.navigate) {
-                router.navigate('dashboard');
             }
         }, authData);
 
-        // Wait for dashboard content to appear
+        // Wait for SPA content to render
         await page.waitForFunction(
             () => {
                 const app = document.querySelector('#app');
                 return app && app.innerHTML.length > 200;
             },
             { timeout: 15000 }
-        ).catch(() => {
-            // SPA may still be loading
-        });
+        ).catch(() => {});
 
         await use(page);
     }
