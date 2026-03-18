@@ -2,10 +2,20 @@
 import { test, expect } from '@playwright/test';
 import { demoUser, selectors, routes } from '../fixtures/test-data.js';
 
+const BASE_URL = `http://localhost:${process.env.PORT || 3001}`;
+
 test.describe('Authentication', () => {
     test.beforeEach(async ({ page }) => {
+        // Set vl_access cookie to bypass landing page and reach the SPA
+        const url = new URL(BASE_URL);
+        await page.context().addCookies([{
+            name: 'vl_access',
+            value: 'e2e-test-bypass',
+            domain: url.hostname,
+            path: '/',
+        }]);
         // Clear any existing session
-        await page.goto('/');
+        await page.goto(BASE_URL + '/#login');
         await page.evaluate(() => localStorage.clear());
     });
 

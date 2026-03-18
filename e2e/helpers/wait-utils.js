@@ -57,35 +57,51 @@ export async function loginAndNavigate(page, route = 'dashboard', { baseUrl = nu
   const BASE = baseUrl || `http://localhost:${process.env.PORT || 3001}`;
   const DEMO = { email: 'demo@vaultlister.com', password: 'DemoPassword123!' };
 
-  await page.goto(`${BASE}/#login`);
-  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
-  await page.goto(`${BASE}/#login`);
-  await page.waitForSelector('#login-form', { timeout: 10_000 });
-  await waitForSpaRender(page);
+  // Set vl_access cookie to bypass landing page and reach the SPA
+  const url = new URL(BASE);
+  await page.context().addCookies([{
+    name: 'vl_access',
+    value: 'e2e-test-bypass',
+    domain: url.hostname,
+    path: '/',
+  }]);
 
-  await page.locator('#login-email').fill(DEMO.email);
-  await page.locator('#login-password').fill(DEMO.password);
-  await page.locator('#login-submit-btn').click();
-
-  try {
-    await page.waitForFunction(
-      () => !window.location.hash.includes('#login'),
-      { timeout: 20_000 }
-    );
-  } catch {
-    await page.evaluate(async () => {
-      try {
-        const res = await fetch('/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        const data = await res.json();
-        if (data.token) {
-          store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
-          router.navigate('dashboard');
-        }
-      } catch (e) { /* ignore */ }
-    });
-    await waitForSpaRender(page, 10_000);
+  // Login via API (fast, avoids flaky form interactions)
+  const loginResp = await page.request.post(`${BASE}/api/auth/login`, {
+    data: { email: DEMO.email, password: DEMO.password }
+  });
+  if (loginResp.ok()) {
+    const loginData = await loginResp.json();
+    // Navigate to SPA and inject auth tokens
+    await page.goto(`${BASE}/#login`);
+    await page.evaluate((data) => {
+      localStorage.setItem('vaultlister_state', JSON.stringify({
+        user: data.user,
+        token: data.token,
+        refreshToken: data.refreshToken
+      }));
+    }, loginData);
+    await page.goto(`${BASE}/#dashboard`);
+    await page.waitForLoadState('domcontentloaded');
+    await page.evaluate((data) => {
+      if (typeof store !== 'undefined' && store.setState) {
+        store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
+      }
+    }, loginData);
+    await waitForSpaRender(page);
+  } else {
+    // Fallback: form login
+    await page.goto(`${BASE}/#login`);
+    await page.waitForSelector('#login-form', { timeout: 10_000 });
+    await waitForSpaRender(page);
+    await page.locator('#login-email').fill(DEMO.email);
+    await page.locator('#login-password').fill(DEMO.password);
+    await page.locator('#login-submit-btn').click();
+    try {
+      await page.waitForFunction(() => !window.location.hash.includes('#login'), { timeout: 20_000 });
+    } catch { /* ignore */ }
+    await waitForSpaRender(page);
   }
-  await waitForSpaRender(page);
 
   if (route !== 'dashboard') {
     await page.evaluate((r) => router.navigate(r), route);
