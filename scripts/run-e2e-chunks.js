@@ -11,10 +11,10 @@
  *   node scripts/run-e2e-chunks.js --summary    # run all, show summary at end
  */
 
-import { readdirSync, writeFileSync, mkdirSync } from 'fs';
+import { readdirSync, writeFileSync, readFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -175,55 +175,60 @@ for (let i = 0; i < chunksToRun.length; i++) {
     console.log(`    ${chunk.description}`);
 
     const port = process.env.PORT || '3000';
-    const cmd = `npx playwright test ${fileGlob} --project=chromium --workers=2 --reporter=dot 2>&1`;
+    const jsonReport = join(REPORT_DIR, `chunk-${num}.json`);
+    const args = ['playwright', 'test', ...chunk.files.map(f => `e2e/tests/${f}`),
+        '--project=chromium', '--workers=2', '--retries=1',
+        '--reporter=list,json',
+        `--output=${join(REPORT_DIR, `chunk-${num}-results`)}`
+    ];
     const start = Date.now();
 
+    mkdirSync(REPORT_DIR, { recursive: true });
+
+    const result = spawnSync('npx', args, {
+        cwd: ROOT,
+        env: {
+            ...process.env,
+            NODE_ENV: 'test',
+            PORT: port,
+            TEST_PORT: port,
+            PW_WORKERS: '2',
+            DISABLE_RATE_LIMIT: 'true',
+            DISABLE_CSRF: 'true',
+            PLAYWRIGHT_JSON_OUTPUT_NAME: jsonReport,
+        },
+        timeout: 600000, // 10 min per chunk
+        stdio: 'inherit',
+        shell: true,
+    });
+
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+
+    // Parse results from JSON report if available
+    let passed = 0, failed = 0;
     try {
-        const output = execSync(cmd, {
-            cwd: ROOT,
-            env: {
-                ...process.env,
-                NODE_ENV: 'test',
-                PORT: port,
-                TEST_PORT: port,
-                PW_WORKERS: '2',
-                DISABLE_RATE_LIMIT: 'true',
-                DISABLE_CSRF: 'true',
-            },
-            timeout: 600000, // 10 min per chunk
-            stdio: ['pipe', 'pipe', 'pipe'],
-            maxBuffer: 50 * 1024 * 1024,
-            shell: true,
-        });
+        const report = JSON.parse(readFileSync(jsonReport, 'utf8'));
+        for (const suite of report.suites || []) {
+            for (const spec of suite.specs || []) {
+                if (spec.ok) passed++;
+                else failed++;
+            }
+        }
+    } catch {
+        // JSON report not available — use exit code
+        passed = result.status === 0 ? '?' : 0;
+        failed = result.status === 0 ? 0 : '?';
+    }
 
-        const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-        const out = output.toString();
-        const passMatch = out.match(/(\d+) passed/);
-        const failMatch = out.match(/(\d+) failed/);
-        const passed = passMatch ? parseInt(passMatch[1]) : '?';
-        const failed = failMatch ? parseInt(failMatch[1]) : 0;
-
+    if (result.status === 0) {
         console.log(`    ✓ ${passed} passed, ${failed} failed (${elapsed}s)`);
         results.push({ chunk: chunk.name, passed, failed, elapsed, status: 'done' });
-
-    } catch (err) {
-        const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-        const out = (err.stdout?.toString() || '') + (err.stderr?.toString() || '');
-
-        const passMatch = out.match(/(\d+) passed/);
-        const failMatch = out.match(/(\d+) failed/);
-        const passed = passMatch ? parseInt(passMatch[1]) : 0;
-        const failed = failMatch ? parseInt(failMatch[1]) : '?';
-
-        if (passed > 0 || (failMatch && parseInt(failMatch[1]) > 0)) {
-            // Tests ran but some failed (normal Playwright exit code 1)
-            console.log(`    ⚠ ${passed} passed, ${failed} failed (${elapsed}s)`);
-            results.push({ chunk: chunk.name, passed, failed, elapsed, status: 'partial' });
-        } else {
-            console.log(`    ✗ Crashed or timed out (${elapsed}s)`);
-            console.log(`      ${out.split('\n').filter(l => l.includes('Error')).slice(0, 3).join('\n      ')}`);
-            results.push({ chunk: chunk.name, passed, failed, elapsed, status: 'crashed' });
-        }
+    } else if (result.status === 1) {
+        console.log(`    ⚠ ${passed} passed, ${failed} failed (${elapsed}s)`);
+        results.push({ chunk: chunk.name, passed, failed, elapsed, status: 'partial' });
+    } else {
+        console.log(`    ✗ Crashed or timed out (exit ${result.status}, ${elapsed}s)`);
+        results.push({ chunk: chunk.name, passed, failed, elapsed, status: 'crashed' });
     }
 
     console.log('');
