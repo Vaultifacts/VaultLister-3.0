@@ -657,9 +657,10 @@ test.describe('Quinn v3 > Orders Table > Phase 6: Edge Cases', () => {
   });
 
   test('P6-4: Orders sidebar nav shows active state', async ({ authedPage: page }) => {
-    await loginAndNavigate(page, 'orders');
+    await loginAndNavigate(page, 'orders-sales');
 
-    const navBtn = page.locator('[data-testid="nav-orders"]');
+    // Sidebar consolidation: "Orders" is now "Orders & Sales" (nav-orders-sales)
+    const navBtn = page.locator('[data-testid="nav-orders-sales"]');
     await expect(navBtn).toBeVisible();
     await expect(navBtn).toHaveClass(/active/);
     await expect(navBtn).toHaveAttribute('aria-current', 'page');
