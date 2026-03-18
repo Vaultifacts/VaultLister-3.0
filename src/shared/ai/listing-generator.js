@@ -347,7 +347,7 @@ export async function generateListing(context) {
 
             const response = await circuitBreaker('anthropic-listing', () =>
                 withTimeout(anthropic.messages.create({
-                    model: 'claude-haiku-4-5-20251001',
+                    model: 'claude-haiku-4-5',
                     max_tokens: 1024,
                     system: 'You are an expert reseller. Generate a marketplace listing for the secondhand item described by the user. Respond with ONLY valid JSON in this exact format: {"title":"listing title max 80 chars SEO-optimized with brand and key attributes","description":"200-500 word persuasive description with condition, features, and item details. Include a DETAILS section with brand, size, color, condition. End with a friendly closing line.","tags":["tag1","tag2","up to 20 relevant search tags"]}',
                     messages: [{ role: 'user', content: userContent }]

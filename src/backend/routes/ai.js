@@ -238,7 +238,7 @@ Important:
                 material: itemData.material,
                 originalPrice: itemData.cost_price,
                 notes: [extraNotes, itemData.notes].filter(Boolean).join('. ') || undefined,
-                keywords: keywords || (itemData.tags ? (typeof itemData.tags === 'string' ? JSON.parse(itemData.tags) : itemData.tags) : []) || imageAnalysis.tags || [],
+                keywords: (Array.isArray(keywords) ? keywords : keywords ? [keywords] : null) || (itemData.tags ? (typeof itemData.tags === 'string' ? JSON.parse(itemData.tags) : itemData.tags) : []) || imageAnalysis.tags || [],
                 colors: imageAnalysis.colors || [],
                 style: imageAnalysis.style
             };
