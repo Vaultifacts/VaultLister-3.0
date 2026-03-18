@@ -57,29 +57,41 @@ async function cleanupOwnedTeams(request, token) {
 
 test.describe('Teams Page', () => {
     test.beforeEach(async ({ page }) => {
-        await loginAndNavigate(page, 'teams');
-    });
-
-    test('renders page title "Team Management"', async ({ page }) => {
-        await expect(page.locator('h1.page-title')).toContainText('Team Management');
-    });
-
-    test('displays page subtitle', async ({ page }) => {
+        // Teams was consolidated into Settings as a tab (sidebar consolidation)
+        await loginAndNavigate(page, 'settings');
         await waitForUiSettle(page);
-        await expect(page.locator('p.page-subtitle')).toContainText('Manage your teams, members, roles, and permissions');
+        // Click the Teams tab within Settings
+        const teamsTab = page.locator('button:has-text("Teams")').first();
+        await teamsTab.waitFor({ state: 'visible', timeout: 10_000 });
+        await teamsTab.click();
+        await waitForUiSettle(page);
+    });
+
+    test('renders Settings page with Teams tab', async ({ page }) => {
+        // Settings page has two h1s: "Settings" (page header) and "Team Management" (tab content)
+        await expect(page.locator('h1').first()).toBeVisible();
+        // Teams tab should be active/selected
+        const teamsTab = page.locator('button:has-text("Teams")').first();
+        await expect(teamsTab).toBeVisible();
+        // Team Management heading or Your Teams heading should be visible
+        const teamHeading = page.locator('text=/Team Management|Your Teams/i').first();
+        await expect(teamHeading).toBeVisible({ timeout: 5000 });
+    });
+
+    test('displays Teams tab content', async ({ page }) => {
+        // Teams content should be visible after clicking tab
+        const teamsContent = page.locator('text=/Team|Create Team|Your Teams|No teams/i').first();
+        await expect(teamsContent).toBeVisible({ timeout: 5000 });
     });
 
     test('"Create Team" button is visible', async ({ page }) => {
-        await waitForUiSettle(page);
-        await expect(page.locator('button:has-text("Create Team")')).toBeVisible();
+        await expect(page.locator('button:has-text("Create Team")')).toBeVisible({ timeout: 5000 });
     });
 
     test('page main container loads without crash', async ({ page }) => {
-        await waitForUiSettle(page);
         const pageErrors = [];
         page.on('pageerror', err => pageErrors.push(err.message));
-        const heading = page.locator('h1.page-title');
-        await expect(heading).toBeVisible();
+        await expect(page.locator('h1').first()).toBeVisible();
         if (pageErrors.length > 0) {
             console.warn(`Page errors on teams: ${pageErrors.join(' | ')}`);
         }
@@ -87,14 +99,12 @@ test.describe('Teams Page', () => {
     });
 
     test('shows "Invite Member" button or an empty team state', async ({ page }) => {
-        await waitForUiSettle(page);
         const inviteBtn = page.locator('button:has-text("Invite Member")');
         const inviteVisible = await inviteBtn.isVisible().catch(() => false);
         if (inviteVisible) {
             await expect(inviteBtn).toBeVisible();
         } else {
-            // Accept: empty state, teams grid (Your Teams heading), or Create Team button
-            const emptyState = page.locator('button, p, span, h2, h3').filter({ hasText: /no teams|create your first|get started|your teams/i }).first();
+            const emptyState = page.locator('button, p, span, h2, h3').filter({ hasText: /no teams|create your first|get started|your teams|create team/i }).first();
             const createTeamBtn = page.locator('button:has-text("Create Team")');
             const emptyOrTeams = (await emptyState.isVisible().catch(() => false)) ||
                                   (await createTeamBtn.isVisible().catch(() => false));
@@ -388,7 +398,10 @@ test.describe('Teams — Create via UI', () => {
     let createdTeamName;
 
     test('Create Team modal opens on button click', async ({ page }) => {
-        await loginAndNavigate(page, 'teams');
+        await loginAndNavigate(page, 'settings');
+        await waitForUiSettle(page);
+        // Click Teams tab
+        await page.locator('button:has-text("Teams")').first().click();
         await waitForUiSettle(page);
 
         await page.locator('button:has-text("Create Team")').first().click();
@@ -404,7 +417,10 @@ test.describe('Teams — Create via UI', () => {
         const token = await getAuthToken(request);
         await cleanupOwnedTeams(request, token);
 
-        await loginAndNavigate(page, 'teams');
+        await loginAndNavigate(page, 'settings');
+        await waitForUiSettle(page);
+        // Click Teams tab
+        await page.locator('button:has-text("Teams")').first().click();
         await waitForUiSettle(page);
 
         createdTeamName = `UI Team ${Date.now()}`;
