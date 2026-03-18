@@ -1,25 +1,11 @@
 // Community E2E Tests
-import { test, expect } from '@playwright/test';
-import { demoUser, routes } from '../fixtures/test-data.js';
+import { test, expect, BASE } from '../fixtures/auth.js';
+import { routes } from '../fixtures/test-data.js';
 
 test.describe('Community Features', () => {
-    test.beforeEach(async ({ page }) => {
-        // Login before each test
-        await page.goto(routes.login);
-        await page.waitForTimeout(1000);
 
-        const emailInput = page.locator('input[type="email"]').first();
-        const passwordInput = page.locator('input[type="password"]').first();
-        const submitBtn = page.locator('button[type="submit"]').first();
-
-        await emailInput.fill(demoUser.email);
-        await passwordInput.fill(demoUser.password);
-        await submitBtn.click();
-
-        await page.waitForURL(/#dashboard/, { timeout: 10000 });
-    });
-
-    test('should navigate to community page', async ({ page, baseURL }) => {
+    test('should navigate to community page', async ({ authedPage: page }) => {
+        const baseURL = BASE;
         // Navigate to community via hash — use baseURL from Playwright config
         await page.goto(`${baseURL}/#community`);
         await page.waitForURL(/#community/, { timeout: 10000 });
@@ -33,7 +19,7 @@ test.describe('Community Features', () => {
         await expect(pageTitle).toContainText('Community');
     });
 
-    test('should switch between community tabs', async ({ page }) => {
+    test('should switch between community tabs', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#community`);
         await page.waitForTimeout(1000);
 
@@ -68,7 +54,7 @@ test.describe('Community Features', () => {
         await expect(page).toHaveURL(/#community/);
     });
 
-    test('should open create post modal', async ({ page }) => {
+    test('should open create post modal', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#community`);
         await page.waitForTimeout(1000);
 
@@ -91,7 +77,7 @@ test.describe('Community Features', () => {
         }
     });
 
-    test('should display community posts', async ({ page }) => {
+    test('should display community posts', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#community`);
         await page.waitForTimeout(2000);
 
@@ -99,7 +85,7 @@ test.describe('Community Features', () => {
         await expect(page).toHaveURL(/#community/);
     });
 
-    test('should view leaderboard', async ({ page }) => {
+    test('should view leaderboard', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#community`);
         await page.waitForTimeout(1000);
 

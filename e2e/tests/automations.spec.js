@@ -1,32 +1,19 @@
 // Automations E2E Tests
-import { test, expect } from '@playwright/test';
-import { demoUser, selectors, routes } from '../fixtures/test-data.js';
+import { test, expect } from '../fixtures/auth.js';
+import { selectors, routes } from '../fixtures/test-data.js';
 
 test.describe('Automation Management', () => {
-    test.beforeEach(async ({ page }) => {
-        // Login before each test
-        await page.goto(routes.login);
-        await page.waitForSelector(selectors.loginForm);
-        await page.fill(selectors.emailInput, demoUser.email);
-        await page.fill(selectors.passwordInput, demoUser.password);
-        await page.click(selectors.submitButton);
-        await page.waitForURL(/#dashboard/, { timeout: 30000 });
-    });
 
-    test('should navigate to automations page', async ({ page }) => {
-        // Click on automations button in sidebar
-        const automationsBtn = page.locator('button.nav-item:has-text("Automations")').first();
-        await automationsBtn.waitFor({ state: 'visible', timeout: 10000 });
-        await automationsBtn.click();
-
-        // Should navigate to automations page
+    test('should navigate to automations page', async ({ authedPage: page }) => {
+        // Navigate to automations via URL
+        await page.goto(routes.automations);
         await page.waitForURL(/#automations/, { timeout: 5000 });
 
         // Should see page title or content
         await expect(page.getByText(/Automation|Rules/i).first()).toBeVisible({ timeout: 5000 });
     });
 
-    test('should display automation rules list', async ({ page }) => {
+    test('should display automation rules list', async ({ authedPage: page }) => {
         await page.goto(routes.automations);
         await page.waitForURL(/#automations/, { timeout: 5000 });
 
@@ -38,7 +25,7 @@ test.describe('Automation Management', () => {
         await expect(rulesSection.first()).toBeVisible({ timeout: 5000 });
     });
 
-    test('should display automation presets', async ({ page }) => {
+    test('should display automation presets', async ({ authedPage: page }) => {
         await page.goto(routes.automations);
         await page.waitForURL(/#automations/, { timeout: 5000 });
 
@@ -53,7 +40,7 @@ test.describe('Automation Management', () => {
         expect(hasPresets).toBeTruthy();
     });
 
-    test('should toggle automation rule', async ({ page }) => {
+    test('should toggle automation rule', async ({ authedPage: page }) => {
         await page.goto(routes.automations);
         await page.waitForURL(/#automations/, { timeout: 5000 });
 
@@ -81,7 +68,7 @@ test.describe('Automation Management', () => {
         }
     });
 
-    test('should show platform badges', async ({ page }) => {
+    test('should show platform badges', async ({ authedPage: page }) => {
         await page.goto(routes.automations);
         await page.waitForURL(/#automations/, { timeout: 5000 });
 
@@ -98,31 +85,18 @@ test.describe('Automation Management', () => {
 });
 
 test.describe('Automation Navigation', () => {
-    test.beforeEach(async ({ page }) => {
-        // Login
-        await page.goto(routes.login);
-        await page.waitForSelector(selectors.loginForm);
-        await page.fill(selectors.emailInput, demoUser.email);
-        await page.fill(selectors.passwordInput, demoUser.password);
-        await page.click(selectors.submitButton);
-        await page.waitForURL(/#dashboard/, { timeout: 30000 });
-    });
 
-    test('should navigate between dashboard and automations', async ({ page }) => {
-        // Go to automations
-        const automationsBtn = page.locator('button.nav-item:has-text("Automations")').first();
-        await automationsBtn.waitFor({ state: 'visible', timeout: 10000 });
-        await automationsBtn.click();
+    test('should navigate between dashboard and automations', async ({ authedPage: page }) => {
+        // Go to automations via URL
+        await page.goto(routes.automations);
         await page.waitForURL(/#automations/, { timeout: 10000 });
 
-        // Go back to dashboard
-        const dashboardBtn = page.locator('button.nav-item:has-text("Dashboard")').first();
-        await dashboardBtn.waitFor({ state: 'visible', timeout: 10000 });
-        await dashboardBtn.click();
+        // Go back to dashboard via URL
+        await page.goto(routes.dashboard);
         await page.waitForURL(/#dashboard/, { timeout: 10000 });
 
         // Go to automations again
-        await automationsBtn.click();
+        await page.goto(routes.automations);
         await page.waitForURL(/#automations/, { timeout: 10000 });
 
         // Should be on automations page

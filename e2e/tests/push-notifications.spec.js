@@ -1,33 +1,12 @@
 // Push Notifications E2E Tests
-import { test, expect } from '@playwright/test';
-import { demoUser, routes, selectors } from '../fixtures/test-data.js';
+import { test, expect } from '../fixtures/auth.js';
+import { routes, selectors } from '../fixtures/test-data.js';
 
 test.describe('Push Notifications', () => {
-    test.beforeEach(async ({ page }) => {
-        // Clear any existing notifications and permissions
-        await page.goto('/');
-        await page.evaluate(() => localStorage.clear());
 
-        // Login before each test
-        await page.goto(routes.login);
-        await page.waitForSelector(selectors.loginForm);
-        await page.waitForLoadState('domcontentloaded');
-        await page.waitForFunction(() => typeof window.auth !== 'undefined' && typeof window.auth.login === 'function', { timeout: 10000 });
-
-        await page.fill(selectors.emailInput, demoUser.email);
-        await page.fill(selectors.passwordInput, demoUser.password);
-
-        const [response] = await Promise.all([
-            page.waitForResponse(resp => resp.url().includes('/api/auth/login') && resp.status() === 200),
-            page.click(selectors.submitButton)
-        ]);
-
-        await page.waitForURL(/#dashboard/, { timeout: 15000 });
-    });
-
-    test('should navigate to notification settings', async ({ page }) => {
+    test('should navigate to notification settings', async ({ authedPage: page }) => {
         // Navigate to settings
-        const settingsBtn = page.locator('button.nav-item:has-text("Settings"), a:has-text("Settings"), [href*="settings"]').first();
+        const settingsBtn = page.locator('.nav-item:has-text("Settings"), a:has-text("Settings"), [href*="settings"]').first();
         if (await settingsBtn.isVisible({ timeout: 5000 })) {
             await settingsBtn.click();
             await page.waitForURL(/#settings/, { timeout: 10000 });
@@ -35,7 +14,7 @@ test.describe('Push Notifications', () => {
         }
     });
 
-    test('should display notification preferences UI', async ({ page }) => {
+    test('should display notification preferences UI', async ({ authedPage: page }) => {
         // Navigate to settings
         await page.goto(routes.settings);
         await page.waitForTimeout(1000);
@@ -51,7 +30,8 @@ test.describe('Push Notifications', () => {
         }
     });
 
-    test('should request notification permission when enabling', async ({ context, page }) => {
+    test('should request notification permission when enabling', async ({ authedPage: page }) => {
+        const context = page.context();
         // Mock permission request
         await context.grantPermissions(['notifications']);
 
@@ -80,7 +60,8 @@ test.describe('Push Notifications', () => {
         }
     });
 
-    test('should deny notification permission and show fallback', async ({ context, page }) => {
+    test('should deny notification permission and show fallback', async ({ authedPage: page }) => {
+        const context = page.context();
         // Clear all permissions (Playwright has no denyPermissions — clearPermissions revokes grants)
         await context.clearPermissions();
 
@@ -110,7 +91,7 @@ test.describe('Push Notifications', () => {
         }
     });
 
-    test('should save notification preferences', async ({ page }) => {
+    test('should save notification preferences', async ({ authedPage: page }) => {
         // Navigate to settings
         await page.goto(routes.settings);
         await page.waitForTimeout(1000);
@@ -142,7 +123,7 @@ test.describe('Push Notifications', () => {
         }
     });
 
-    test('should display different notification types in preferences', async ({ page }) => {
+    test('should display different notification types in preferences', async ({ authedPage: page }) => {
         // Navigate to settings
         await page.goto(routes.settings);
         await page.waitForTimeout(1000);
@@ -170,7 +151,7 @@ test.describe('Push Notifications', () => {
         expect(foundNotificationTypes).toBeGreaterThanOrEqual(0);
     });
 
-    test('should handle notification registration API error gracefully', async ({ page }) => {
+    test('should handle notification registration API error gracefully', async ({ authedPage: page }) => {
         // Navigate to settings
         await page.goto(routes.settings);
         await page.waitForTimeout(1000);
@@ -197,7 +178,7 @@ test.describe('Push Notifications', () => {
         }
     });
 
-    test('should persist notification preferences across page reloads', async ({ page }) => {
+    test('should persist notification preferences across page reloads', async ({ authedPage: page }) => {
         // Navigate to settings
         await page.goto(routes.settings);
         await page.waitForTimeout(1000);
@@ -232,7 +213,7 @@ test.describe('Push Notifications', () => {
         }
     });
 
-    test('should handle notification service worker registration', async ({ page }) => {
+    test('should handle notification service worker registration', async ({ authedPage: page }) => {
         // Check if service worker is registered (if applicable)
         const swRegistered = await page.evaluate(() => {
             if ('serviceWorker' in navigator) {
@@ -247,7 +228,7 @@ test.describe('Push Notifications', () => {
         expect([true, false]).toContain(swRegistered);
     });
 
-    test('should cleanup notification subscription on logout', async ({ page }) => {
+    test('should cleanup notification subscription on logout', async ({ authedPage: page }) => {
         // Enable notifications (if not already)
         await page.goto(routes.settings);
         await page.waitForTimeout(1000);
@@ -285,7 +266,8 @@ test.describe('Push Notifications', () => {
         await page.waitForURL(/#login/, { timeout: 15000 });
     });
 
-    test('should test notification with browser capabilities', async ({ page, context }) => {
+    test('should test notification with browser capabilities', async ({ authedPage: page }) => {
+        const context = page.context();
         // Grant notification permission
         await context.grantPermissions(['notifications']);
 

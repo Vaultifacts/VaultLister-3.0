@@ -9,7 +9,8 @@ test.describe('GDPR and Privacy - Data Management', () => {
     test.beforeAll(async ({ browser }) => {
         // Create a test user specifically for GDPR tests
         // This user will be used for destructive operations
-        const page = await browser.newPage();
+        const context = await browser.newContext();
+        const page = await context.newPage();
 
         const testUser = generateTestUser();
         testUserEmail = testUser.email;
@@ -30,21 +31,52 @@ test.describe('GDPR and Privacy - Data Management', () => {
     });
 
     test.beforeEach(async ({ page }) => {
-        // Login with test user for GDPR operations
-        await page.goto(routes.login);
-        await page.waitForSelector(selectors.loginForm);
-        await page.waitForLoadState('domcontentloaded');
-        await page.waitForFunction(() => typeof window.auth !== 'undefined' && typeof window.auth.login === 'function', { timeout: 10000 });
+        const BASE = `http://localhost:${process.env.PORT || 3000}`;
+        const url = new URL(BASE);
 
-        await page.fill(selectors.emailInput, testUserEmail);
-        await page.fill(selectors.passwordInput, testUserPassword);
+        // Set vl_access cookie to bypass landing page and reach the SPA
+        await page.context().addCookies([{
+            name: 'vl_access',
+            value: 'e2e-test-bypass',
+            domain: url.hostname,
+            path: '/',
+        }]);
 
-        const [response] = await Promise.all([
-            page.waitForResponse(resp => resp.url().includes('/api/auth/login') && resp.status() === 200),
-            page.click(selectors.submitButton)
-        ]);
+        // Login with test user for GDPR operations via API
+        const loginResp = await page.request.post(`${BASE}/api/auth/login`, {
+            data: { email: testUserEmail, password: testUserPassword }
+        });
 
-        await page.waitForURL(/#dashboard/, { timeout: 15000 });
+        if (loginResp.ok()) {
+            const loginData = await loginResp.json();
+            await page.goto(`${BASE}/#login`);
+            await page.evaluate((data) => {
+                localStorage.setItem('vaultlister_state', JSON.stringify({
+                    user: data.user,
+                    token: data.token,
+                    refreshToken: data.refreshToken
+                }));
+            }, loginData);
+            await page.goto(`${BASE}/#dashboard`);
+            await page.waitForLoadState('domcontentloaded');
+            await page.evaluate((data) => {
+                if (typeof store !== 'undefined' && store.setState) {
+                    store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
+                }
+            }, loginData);
+            await page.waitForFunction(
+                () => document.querySelector('#app')?.innerHTML.length > 100,
+                { timeout: 10_000 }
+            ).catch(() => {});
+        } else {
+            // Fallback: form login
+            await page.goto(`${BASE}/#login`);
+            await page.waitForSelector(selectors.loginForm, { timeout: 10_000 });
+            await page.fill(selectors.emailInput, testUserEmail);
+            await page.fill(selectors.passwordInput, testUserPassword);
+            await page.click(selectors.submitButton);
+            await page.waitForURL(/#dashboard/, { timeout: 15000 });
+        }
     });
 
     test('should navigate to privacy/GDPR settings', async ({ page }) => {

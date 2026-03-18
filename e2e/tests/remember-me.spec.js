@@ -28,6 +28,16 @@ test.describe('Remember Me — Issue #2', () => {
         // Create context with addInitScript to set sessionStorage BEFORE app JS runs.
         // hydrate() only trusts tokens from sessionStorage (not localStorage) per Q18 security fix.
         const context = await browser.newContext();
+
+        // Set vl_access cookie to bypass landing page and reach the SPA
+        const url = new URL(BASE);
+        await context.addCookies([{
+            name: 'vl_access',
+            value: 'e2e-test-bypass',
+            domain: url.hostname,
+            path: '/',
+        }]);
+
         await context.addInitScript((state) => {
             sessionStorage.setItem('vaultlister_state', state);
         }, stateJson);

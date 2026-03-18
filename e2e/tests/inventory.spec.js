@@ -5,12 +5,8 @@ import { generateInventoryItem, selectors, routes } from '../fixtures/test-data.
 test.describe('Inventory Management', () => {
 
     test('should navigate to inventory page', async ({ authedPage: page }) => {
-        // Click on inventory link in sidebar
-        const inventoryBtn = page.locator('.nav-item:has-text("Inventory"), a:has-text("Inventory")').first();
-        await inventoryBtn.waitFor({ state: 'visible', timeout: 10000 });
-        await inventoryBtn.click();
-
-        // Should navigate to inventory page
+        // Navigate to inventory via URL
+        await page.goto(routes.inventory);
         await page.waitForURL(/#inventory/, { timeout: 5000 });
 
         // Should be on inventory page

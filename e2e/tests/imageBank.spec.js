@@ -1,25 +1,10 @@
 // Image Bank E2E Tests
-import { test, expect } from '@playwright/test';
-import { demoUser, routes } from '../fixtures/test-data.js';
+import { test, expect } from '../fixtures/auth.js';
+import { routes } from '../fixtures/test-data.js';
 
 test.describe('Image Bank', () => {
-    test.beforeEach(async ({ page }) => {
-        // Login before each test
-        await page.goto(routes.login);
-        await page.waitForTimeout(1000);
 
-        const emailInput = page.locator('input[type="email"]').first();
-        const passwordInput = page.locator('input[type="password"]').first();
-        const submitBtn = page.locator('button[type="submit"]').first();
-
-        await emailInput.fill(demoUser.email);
-        await passwordInput.fill(demoUser.password);
-        await submitBtn.click();
-
-        await page.waitForURL(/#dashboard/, { timeout: 10000 });
-    });
-
-    test('should navigate to image bank page', async ({ page }) => {
+    test('should navigate to image bank page', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
         await page.waitForURL(/#image-bank/, { timeout: 5000 });
 
@@ -36,7 +21,7 @@ test.describe('Image Bank', () => {
         }
     });
 
-    test('should switch between grid and list view', async ({ page }) => {
+    test('should switch between grid and list view', async ({ authedPage: page }) => {
         await page.goto(routes.imageBank);
         await page.waitForTimeout(2000);
 
@@ -70,7 +55,7 @@ test.describe('Image Bank', () => {
         await expect(page.locator('body')).toBeVisible();
     });
 
-    test('should display folder tree in sidebar', async ({ page }) => {
+    test('should display folder tree in sidebar', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
         await page.waitForTimeout(1500);
 
@@ -81,7 +66,7 @@ test.describe('Image Bank', () => {
         await expect(page).toHaveURL(/#image-bank/);
     });
 
-    test('should search images', async ({ page }) => {
+    test('should search images', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
         await page.waitForTimeout(1500);
 
@@ -97,7 +82,7 @@ test.describe('Image Bank', () => {
         }
     });
 
-    test('should open upload modal', async ({ page }) => {
+    test('should open upload modal', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
         await page.waitForTimeout(1500);
 
@@ -114,7 +99,7 @@ test.describe('Image Bank', () => {
         }
     });
 
-    test('should open create folder modal', async ({ page }) => {
+    test('should open create folder modal', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
         await page.waitForTimeout(1500);
 
@@ -139,7 +124,7 @@ test.describe('Image Bank', () => {
         }
     });
 
-    test('should filter images by folder', async ({ page }) => {
+    test('should filter images by folder', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
         await page.waitForTimeout(2000);
 
@@ -155,7 +140,7 @@ test.describe('Image Bank', () => {
         }
     });
 
-    test('should display empty state when no images', async ({ page }) => {
+    test('should display empty state when no images', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
         await page.waitForTimeout(2000);
 
@@ -163,7 +148,7 @@ test.describe('Image Bank', () => {
         await expect(page).toHaveURL(/#image-bank/);
     });
 
-    test('should enable multi-select mode', async ({ page }) => {
+    test('should enable multi-select mode', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
         await page.waitForTimeout(1500);
 
@@ -179,7 +164,7 @@ test.describe('Image Bank', () => {
         }
     });
 
-    test('should show image details panel', async ({ page }) => {
+    test('should show image details panel', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#image-bank`);
         await page.waitForTimeout(2000);
 

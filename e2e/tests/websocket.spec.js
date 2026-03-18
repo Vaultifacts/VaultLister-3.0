@@ -1,31 +1,10 @@
 // WebSocket Real-Time Updates E2E Tests
-import { test, expect } from '@playwright/test';
-import { demoUser, routes, selectors } from '../fixtures/test-data.js';
+import { test, expect, apiLogin, BASE } from '../fixtures/auth.js';
+import { routes, selectors } from '../fixtures/test-data.js';
 
 test.describe('WebSocket Real-Time Updates', () => {
-    test.beforeEach(async ({ page }) => {
-        // Clear any existing connections
-        await page.goto('/');
-        await page.evaluate(() => localStorage.clear());
 
-        // Login before each test
-        await page.goto(routes.login);
-        await page.waitForSelector(selectors.loginForm);
-        await page.waitForLoadState('domcontentloaded');
-        await page.waitForFunction(() => typeof window.auth !== 'undefined' && typeof window.auth.login === 'function', { timeout: 10000 });
-
-        await page.fill(selectors.emailInput, demoUser.email);
-        await page.fill(selectors.passwordInput, demoUser.password);
-
-        const [response] = await Promise.all([
-            page.waitForResponse(resp => resp.url().includes('/api/auth/login') && resp.status() === 200),
-            page.click(selectors.submitButton)
-        ]);
-
-        await page.waitForURL(/#dashboard/, { timeout: 15000 });
-    });
-
-    test('should establish WebSocket connection on dashboard', async ({ page }) => {
+    test('should establish WebSocket connection on dashboard', async ({ authedPage: page }) => {
         // Navigate to dashboard
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1000);
@@ -47,7 +26,7 @@ test.describe('WebSocket Real-Time Updates', () => {
         expect([true, false]).toContain(wsConnected);
     });
 
-    test('should receive real-time dashboard updates', async ({ page }) => {
+    test('should receive real-time dashboard updates', async ({ authedPage: page }) => {
         // Navigate to dashboard
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1500);
@@ -77,7 +56,7 @@ test.describe('WebSocket Real-Time Updates', () => {
         expect([true, false]).toContain(messagesReceived);
     });
 
-    test('should update statistics in real-time', async ({ page }) => {
+    test('should update statistics in real-time', async ({ authedPage: page }) => {
         // Navigate to dashboard
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1500);
@@ -101,7 +80,7 @@ test.describe('WebSocket Real-Time Updates', () => {
         }
     });
 
-    test('should handle WebSocket disconnection gracefully', async ({ page }) => {
+    test('should handle WebSocket disconnection gracefully', async ({ authedPage: page }) => {
         // Navigate to dashboard
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1000);
@@ -121,7 +100,7 @@ test.describe('WebSocket Real-Time Updates', () => {
         await expect(page).toHaveURL(/#dashboard/);
     });
 
-    test('should reconnect after network recovery', async ({ page }) => {
+    test('should reconnect after network recovery', async ({ authedPage: page }) => {
         // Navigate to dashboard
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1000);
@@ -155,14 +134,10 @@ test.describe('WebSocket Real-Time Updates', () => {
         expect(reconnected).toBe(true);
     });
 
-    test('should receive real-time sales notifications', async ({ page }) => {
-        // Navigate to sales page
-        const salesBtn = page.locator('button.nav-item:has-text("Sales"), a:has-text("Sales")').first();
-
-        if (await salesBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-            await salesBtn.click();
-            await page.waitForURL(/#orders-sales/, { timeout: 10000 });
-        }
+    test('should receive real-time sales notifications', async ({ authedPage: page }) => {
+        // Navigate to sales page via URL
+        await page.goto(routes.ordersSales || `${BASE}/#orders-sales`);
+        await page.waitForURL(/#orders-sales/, { timeout: 10000 }).catch(() => {});
 
         // Wait for content to load
         await page.waitForTimeout(1500);
@@ -189,14 +164,10 @@ test.describe('WebSocket Real-Time Updates', () => {
         expect(updatesReceived).toBe(true);
     });
 
-    test('should receive real-time offer notifications', async ({ page }) => {
-        // Navigate to offers page
-        const offersBtn = page.locator('button.nav-item:has-text("Offers"), a:has-text("Offers")').first();
-
-        if (await offersBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-            await offersBtn.click();
-            await page.waitForURL(/#offers/, { timeout: 10000 });
-        }
+    test('should receive real-time offer notifications', async ({ authedPage: page }) => {
+        // Navigate to offers page via URL
+        await page.goto(routes.offers || `${BASE}/#offers`);
+        await page.waitForURL(/#offers/, { timeout: 10000 }).catch(() => {});
 
         // Wait for content to load
         await page.waitForTimeout(1500);
@@ -222,7 +193,7 @@ test.describe('WebSocket Real-Time Updates', () => {
         expect(updatesTracked).toBe(true);
     });
 
-    test('should handle WebSocket message backlog when offline', async ({ page }) => {
+    test('should handle WebSocket message backlog when offline', async ({ authedPage: page }) => {
         // Navigate to dashboard
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1000);
@@ -243,14 +214,10 @@ test.describe('WebSocket Real-Time Updates', () => {
         expect(isOnline).toBe(true);
     });
 
-    test('should update inventory count in real-time', async ({ page }) => {
-        // Navigate to inventory page
-        const inventoryBtn = page.locator('button.nav-item:has-text("Inventory"), a:has-text("Inventory")').first();
-
-        if (await inventoryBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-            await inventoryBtn.click();
-            await page.waitForURL(/#inventory/, { timeout: 10000 });
-        }
+    test('should update inventory count in real-time', async ({ authedPage: page }) => {
+        // Navigate to inventory page via URL
+        await page.goto(routes.inventory);
+        await page.waitForURL(/#inventory/, { timeout: 10000 }).catch(() => {});
 
         // Wait for inventory to load
         await page.waitForTimeout(1500);
@@ -287,25 +254,30 @@ test.describe('WebSocket Real-Time Updates', () => {
         }
     });
 
-    test('should broadcast updates across multiple connections', async ({ browser }) => {
+    test('should broadcast updates across multiple connections', async ({ authedPage: page, browser, request }) => {
+        // Get auth data via API
+        const loginData = await apiLogin(request);
+        const url = new URL(BASE);
+
         // Open two pages with same user
-        const page1 = await browser.newPage();
-        const page2 = await browser.newPage();
+        const context1 = await browser.newContext();
+        const context2 = await browser.newContext();
+        await context1.addCookies([{ name: 'vl_access', value: loginData.token, domain: url.hostname, path: '/' }]);
+        await context2.addCookies([{ name: 'vl_access', value: loginData.token, domain: url.hostname, path: '/' }]);
+        const page1 = await context1.newPage();
+        const page2 = await context2.newPage();
 
         try {
-            // Login on both pages
-            for (const page of [page1, page2]) {
-                await page.goto(routes.login);
-                await page.waitForSelector(selectors.loginForm);
-                await page.fill(selectors.emailInput, demoUser.email);
-                await page.fill(selectors.passwordInput, demoUser.password);
-
-                await Promise.all([
-                    page.waitForResponse(resp => resp.url().includes('/api/auth/login') && resp.status() === 200),
-                    page.click(selectors.submitButton)
-                ]);
-
-                await page.waitForURL(/#dashboard/, { timeout: 15000 });
+            // Login on both pages via localStorage injection
+            for (const p of [page1, page2]) {
+                await p.goto(`${BASE}/#login`);
+                await p.evaluate((data) => {
+                    localStorage.setItem('vaultlister_state', JSON.stringify({
+                        user: data.user, token: data.token, refreshToken: data.refreshToken
+                    }));
+                }, loginData);
+                await p.goto(`${BASE}/#dashboard`);
+                await p.waitForLoadState('domcontentloaded');
             }
 
             // Navigate both to dashboard
@@ -335,7 +307,7 @@ test.describe('WebSocket Real-Time Updates', () => {
         }
     });
 
-    test('should close WebSocket connection on logout', async ({ page }) => {
+    test('should close WebSocket connection on logout', async ({ authedPage: page }) => {
         // Establish connection
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1000);
@@ -365,7 +337,7 @@ test.describe('WebSocket Real-Time Updates', () => {
         expect(wsConnected).toBeDefined();
     });
 
-    test('should handle WebSocket authentication errors', async ({ page }) => {
+    test('should handle WebSocket authentication errors', async ({ authedPage: page }) => {
         // Navigate to dashboard
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1000);
@@ -388,7 +360,7 @@ test.describe('WebSocket Real-Time Updates', () => {
         expect([/#dashboard/, /#login/].some(pattern => pattern.test(url))).toBe(true);
     });
 
-    test('should throttle WebSocket messages to prevent flooding', async ({ page }) => {
+    test('should throttle WebSocket messages to prevent flooding', async ({ authedPage: page }) => {
         // Navigate to dashboard
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1000);
@@ -426,7 +398,7 @@ test.describe('WebSocket Real-Time Updates', () => {
         }
     });
 
-    test('should support multiple message types over WebSocket', async ({ page }) => {
+    test('should support multiple message types over WebSocket', async ({ authedPage: page }) => {
         // Navigate to dashboard
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1000);
@@ -452,18 +424,15 @@ test.describe('WebSocket Real-Time Updates', () => {
 
         // Navigate through different sections to trigger different message types
         const sections = [
-            { btn: 'Sales', url: /#orders-sales/ },
-            { btn: 'Offers', url: /#offers/ },
-            { btn: 'Inventory', url: /#inventory/ }
+            { route: `${BASE}/#orders-sales`, url: /#orders-sales/ },
+            { route: `${BASE}/#offers`, url: /#offers/ },
+            { route: `${BASE}/#inventory`, url: /#inventory/ }
         ];
 
         for (const section of sections) {
-            const btn = page.locator(`button.nav-item:has-text("${section.btn}"), a:has-text("${section.btn}")`).first();
-            if (await btn.isVisible({ timeout: 3000 }).catch(() => false)) {
-                await btn.click();
-                await page.waitForURL(section.url, { timeout: 5000 }).catch(() => {});
-                await page.waitForTimeout(500);
-            }
+            await page.goto(section.route);
+            await page.waitForURL(section.url, { timeout: 5000 }).catch(() => {});
+            await page.waitForTimeout(500);
         }
 
         // Check collected message types
@@ -473,7 +442,7 @@ test.describe('WebSocket Real-Time Updates', () => {
         expect(types.length).toBeGreaterThanOrEqual(0);
     });
 
-    test('should handle heartbeat/ping-pong messages', async ({ page }) => {
+    test('should handle heartbeat/ping-pong messages', async ({ authedPage: page }) => {
         // Navigate to dashboard
         await page.goto(routes.dashboard);
         await page.waitForTimeout(1000);
