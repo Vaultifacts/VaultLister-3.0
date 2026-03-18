@@ -99,7 +99,7 @@ Determine receipt type based on context:
 Return ONLY valid JSON with no additional text or markdown formatting.`;
 
     const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 2000,
         messages: [{
             role: 'user',
