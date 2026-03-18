@@ -284,7 +284,9 @@ test.describe('Quinn v3 > Register Page > Batch 1: E1-E3', () => {
     await expect(pwEl).toHaveAttribute('minlength', '12');
     await expect(pwEl).toHaveAttribute('autocomplete', 'new-password');
     await expect(pwEl).toHaveAttribute('aria-label', 'Password');
-    await expect(pwEl).toHaveAttribute('aria-describedby', 'password-reqs');
+    // aria-describedby may include additional IDs (e.g. "password-reqs reg-strength-label")
+    const ariaDescribedby = await pwEl.getAttribute('aria-describedby');
+    expect(ariaDescribedby).toContain('password-reqs');
     await expect(pwEl).toHaveAttribute('placeholder', 'Min 12 characters');
     await expect(pwEl).toHaveValue('');
 
@@ -627,6 +629,18 @@ test.describe('Quinn v3 > Register Page > Batch 3: E7-E9', () => {
     // Screenshot before
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-register-E9-before.png' });
 
+    // Dismiss overlays that intercept button clicks
+    const dismissBtn = page.locator('button:has-text("Dismiss announcement")');
+    if (await dismissBtn.isVisible().catch(() => false)) {
+      await dismissBtn.click();
+      await page.waitForTimeout(400);
+    }
+    const acceptBtn = page.locator('#cookie-banner button:has-text("Accept"), #cookie-banner button:has-text("Decline")').first();
+    if (await acceptBtn.isVisible().catch(() => false)) {
+      await acceptBtn.click();
+      await page.waitForTimeout(200);
+    }
+
     // === DEFECT CHECK D3: Sign In uses window.location.reload() ===
     // This is a full page reload instead of client-side router.navigate('login')
     // Causes unnecessary flash/reload for users in a SPA
@@ -808,8 +822,11 @@ test.describe('Quinn v3 > Register Page > Batch 4: E10-E12', () => {
     const cspViolations = [];
     page.on('console', msg => {
       const text = msg.text();
+      // Only capture BLOCKING violations — skip report-only (non-blocking) CSP messages
       if ((text.includes('Content Security Policy') || text.includes('CSP') ||
-          text.includes('Refused to') || text.includes('blocked by')) && !text.includes('blocked by Playwright')) {
+          text.includes('Refused to') || text.includes('blocked by')) &&
+          !text.includes('blocked by Playwright') &&
+          !text.includes('report-only')) {
         cspViolations.push(text);
       }
     });
@@ -820,9 +837,9 @@ test.describe('Quinn v3 > Register Page > Batch 4: E10-E12', () => {
     await goToRegister(page);
     await waitForTableRows(page); // Let any deferred scripts/styles load
 
-    // Check for CSP violations
+    // Check for blocking CSP violations (report-only violations are expected and logged above)
     if (cspViolations.length > 0) {
-      console.warn(`CSP violations found on register page: ${JSON.stringify(cspViolations)}`);
+      console.warn(`Blocking CSP violations found on register page: ${JSON.stringify(cspViolations)}`);
     }
     expect(cspViolations.length).toBe(0);
 

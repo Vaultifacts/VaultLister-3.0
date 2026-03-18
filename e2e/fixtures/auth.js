@@ -69,18 +69,16 @@ export const test = base.extend({
             path: '/',
         }]);
 
-        // Navigate to SPA
+        // Navigate to SPA and inject auth tokens into localStorage before SPA init
         await page.goto(`${BASE}/#login`);
         await page.waitForLoadState('domcontentloaded');
-
-        // Inject auth tokens into localStorage
         await injectAuth(page, authData);
 
-        // Navigate to dashboard — SPA will pick up tokens from localStorage
+        // Navigate to dashboard — SPA hydrates from localStorage on DOMContentLoaded
         await page.goto(`${BASE}/#dashboard`);
         await page.waitForLoadState('domcontentloaded');
 
-        // Directly set the store state if hydration missed tokens
+        // Directly set the store state in case hydration missed tokens (race condition guard)
         await page.evaluate((ad) => {
             if (typeof store !== 'undefined' && store.setState) {
                 store.setState({
@@ -91,14 +89,36 @@ export const test = base.extend({
             }
         }, authData);
 
-        // Wait for SPA content to render
+        // If SPA redirected to login (auth check race), force navigation to dashboard
+        const hashAfterInject = await page.evaluate(() => window.location.hash);
+        if (hashAfterInject.includes('login') || !hashAfterInject.includes('dashboard')) {
+            await page.evaluate((ad) => {
+                if (typeof store !== 'undefined' && store.setState) {
+                    store.setState({ user: ad.user, token: ad.token, refreshToken: ad.refreshToken });
+                }
+                if (typeof router !== 'undefined' && router.navigate) {
+                    router.navigate('dashboard');
+                }
+            }, authData);
+        }
+
+        // Wait for authenticated SPA content (sidebar indicates authenticated dashboard)
         await page.waitForFunction(
-            () => {
-                const app = document.querySelector('#app');
-                return app && app.innerHTML.length > 200;
-            },
+            () => !!document.querySelector('.sidebar'),
             { timeout: 15000 }
         ).catch(() => {});
+
+        // Dismiss overlays that intercept pointer events on sidebar/nav elements
+        const dismissBtn = page.locator('button:has-text("Dismiss announcement")');
+        if (await dismissBtn.isVisible().catch(() => false)) {
+            await dismissBtn.click().catch(() => {});
+            await page.waitForTimeout(300);
+        }
+        const acceptBtn = page.locator('#cookie-banner button:has-text("Accept"), #cookie-banner button:has-text("Decline")').first();
+        if (await acceptBtn.isVisible().catch(() => false)) {
+            await acceptBtn.click().catch(() => {});
+            await page.waitForTimeout(200);
+        }
 
         await use(page);
     }

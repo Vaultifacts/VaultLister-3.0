@@ -39,6 +39,14 @@ test.describe('P0: Mobile viewport (375x812)', () => {
   test.use({ viewport: { width: 375, height: 812 } });
 
   test('login form renders fully visible, no horizontal overflow', async ({ page }) => {
+    // Set vl_access cookie so server serves the SPA (not landing.html)
+    const url = new URL(BASE);
+    await page.context().addCookies([{
+      name: 'vl_access',
+      value: 'e2e-test-bypass',
+      domain: url.hostname,
+      path: '/',
+    }]);
     await page.goto(`${BASE}/#login`);
     await waitForSpaRender(page);
 

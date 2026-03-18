@@ -752,6 +752,17 @@ test.describe('Quinn v3 > Login Page > Phase 1: Batch 3 (Elements 7-9)', () => {
     await page.waitForSelector('#login-form', { timeout: 10_000 });
     await waitForSpaRender(page);
     await waitForSpaRender(page);
+    // Dismiss overlays that intercept link clicks
+    const dismissBtn = page.locator('button:has-text("Dismiss announcement")');
+    if (await dismissBtn.isVisible().catch(() => false)) {
+      await dismissBtn.click();
+      await page.waitForTimeout(400);
+    }
+    const acceptBtn = page.locator('#cookie-banner button:has-text("Accept"), #cookie-banner button:has-text("Decline")').first();
+    if (await acceptBtn.isVisible().catch(() => false)) {
+      await acceptBtn.click();
+      await page.waitForTimeout(200);
+    }
   });
 
   // -------------------------------------------------------

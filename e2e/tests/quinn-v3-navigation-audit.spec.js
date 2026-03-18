@@ -25,15 +25,17 @@ const DEMO = { email: 'demo@vaultlister.com', password: 'DemoPassword123!' };
 // roadmap→help-support, feedback-suggestions→help-support,
 // recently-deleted→inventory, about/terms-of-service/privacy-policy→help-support,
 // orders→orders-sales, sales→orders-sales
+// Section names match the actual rendered sidebar (app.js: 'Sell', 'Manage', empty divider)
+// The bottom section uses a divider, not a title label, so section is '' (no title rendered)
 const NAV_SECTIONS = [
-  { section: 'SELL', items: [
+  { section: 'Sell', items: [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'inventory', label: 'Inventory' },
     { id: 'listings', label: 'Listings' },
     { id: 'orders-sales', label: 'Orders & Sales' },
     { id: 'offers', label: 'Offers' },
   ]},
-  { section: 'MANAGE', items: [
+  { section: 'Manage', items: [
     { id: 'automations', label: 'Automations' },
     { id: 'financials', label: 'Financials' },
     { id: 'analytics', label: 'Analytics' },
@@ -41,7 +43,7 @@ const NAV_SECTIONS = [
     { id: 'planner', label: 'Planner' },
     { id: 'image-bank', label: 'Image Bank' },
   ]},
-  { section: 'Bottom', items: [
+  { section: '', divider: true, items: [
     { id: 'settings', label: 'Settings' },
     { id: 'help-support', label: 'Help' },
   ]},
@@ -144,10 +146,12 @@ test.describe('Quinn v3 > Navigation > Phase 0: Discovery', () => {
     console.log(`Nav item buttons: ${navButtons.length}`);
     expect(navButtons.length).toBeGreaterThanOrEqual(14);
 
-    // Verify all 3 section titles exist
+    // Verify section titles exist for sections that have a title (non-divider sections)
     const sectionTitles = await page.locator('.sidebar .nav-section-title').allTextContents();
     for (const section of NAV_SECTIONS) {
-      expect(sectionTitles).toContain(section.section);
+      if (section.section && !section.divider) {
+        expect(sectionTitles).toContain(section.section);
+      }
     }
 
     // Verify sidebar footer elements
@@ -571,10 +575,13 @@ test.describe('Quinn v3 > Navigation > Phase 4: Footer & Edge Cases', () => {
     const sectionTitles = await page.locator('.nav-section-title').allTextContents();
     const trimmed = sectionTitles.map(s => s.trim());
 
-    for (const section of NAV_SECTIONS) {
+    // Only titled sections (non-divider) should appear as .nav-section-title elements
+    const titledSections = NAV_SECTIONS.filter(s => s.section && !s.divider);
+    for (const section of titledSections) {
       expect(trimmed).toContain(section.section);
     }
-    expect(trimmed.length).toBe(3);
+    // Two titled sections: Sell and Manage (bottom section uses a divider, not a title)
+    expect(trimmed.length).toBe(titledSections.length);
   });
 
   test('P4-5: Sidebar scroll position restores after navigation', async ({ authedPage: page }) => {
