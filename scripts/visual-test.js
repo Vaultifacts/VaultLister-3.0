@@ -10,7 +10,7 @@ import { resolve, join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = `http://localhost:${process.env.PORT || 3001}`;
 const SCREENSHOTS_DIR = resolve(__dirname, '..', 'screenshots');
 const CURRENT_DIR = join(SCREENSHOTS_DIR, 'current');
 const BASELINES_DIR = join(SCREENSHOTS_DIR, 'baselines');
@@ -368,6 +368,15 @@ async function launchBrowser(viewportName = 'desktop') {
 
 async function login(page, retries = 2) {
     console.log('Logging in as demo user...');
+
+    // Set vl_access cookie so server serves SPA instead of landing page
+    const url = new URL(BASE_URL);
+    await page.context().addCookies([{
+        name: 'vl_access',
+        value: 'visual-test-bypass',
+        domain: url.hostname,
+        path: '/',
+    }]);
 
     await page.goto(`${BASE_URL}/#login`);
     await page.waitForSelector('#login-form', { timeout: 10000 });
