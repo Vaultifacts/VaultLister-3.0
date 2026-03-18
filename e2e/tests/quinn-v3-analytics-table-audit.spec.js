@@ -11,13 +11,12 @@
 // Phase 6: Edge cases & negatives — empty data, invalid dates, data updates
 // =============================================================================
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 import { waitForSpaRender, waitForTableRows, waitForUiSettle } from '../helpers/wait-utils.js';
 
 test.setTimeout(90_000);
 
 const BASE = `http://localhost:${process.env.PORT || 3001}`;
-const DEMO = { email: 'demo@vaultlister.com', password: 'DemoPassword123!' };
 
 // Expected metric cards on analytics dashboard
 const METRIC_CARDS = [
@@ -37,52 +36,16 @@ const CHART_TYPES = [
   { id: 'platform-chart', label: 'Platform Breakdown', type: 'doughnut' },
 ];
 
-async function loginAndNavigate(page, route = 'analytics') {
-  await page.goto(`${BASE}/#login`);
-  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
-  await page.goto(`${BASE}/#login`);
-  await page.waitForSelector('#login-form', { timeout: 10_000 });
-  await waitForSpaRender(page);
-
-  await page.locator('#login-email').fill(DEMO.email);
-  await page.locator('#login-password').fill(DEMO.password);
-  await page.locator('#login-submit-btn').click();
-
-  try {
-    await page.waitForFunction(
-      () => !window.location.hash.includes('#login'),
-      { timeout: 20_000 }
-    );
-  } catch {
-    await page.evaluate(async () => {
-      try {
-        const res = await fetch('/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        const data = await res.json();
-        if (data.token) {
-          store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
-          router.navigate('dashboard');
-        }
-      } catch (e) { /* ignore */ }
-    });
-    await waitForSpaRender(page, 10_000);
-  }
-  await waitForSpaRender(page);
-
-  if (route !== 'dashboard') {
-    await page.evaluate((r) => router.navigate(r), route);
-    await waitForSpaRender(page);
-    await waitForUiSettle(page); // analytics loads data async
-  }
-}
-
 // ============================================================================
 // PHASE 0: Discovery — Page structure, a11y snapshot, element count
 // ============================================================================
 
 test.describe('Quinn v3 #analytics Dashboard Micro-Audit', () => {
   
-  test('P0.1: Analytics page loads and renders', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P0.1: Analytics page loads and renders', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     
     const appExists = await page.locator('#app').isVisible();
     expect(appExists).toBe(true);
@@ -92,8 +55,10 @@ test.describe('Quinn v3 #analytics Dashboard Micro-Audit', () => {
     expect(analyticsContainer || await page.locator('h1, h2').count() > 0).toBe(true);
   });
 
-  test('P0.2: Accessibility snapshot — analytics page', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P0.2: Accessibility snapshot — analytics page', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const a11yIssues = await page.evaluate(() => {
@@ -117,8 +82,10 @@ test.describe('Quinn v3 #analytics Dashboard Micro-Audit', () => {
     }
   });
 
-  test('P0.3: Element enumeration — count metric cards and charts', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P0.3: Element enumeration — count metric cards and charts', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const metricCards = await page.locator('[data-testid*="metric"], .metric-card').count().catch(() => 0);
@@ -135,8 +102,10 @@ test.describe('Quinn v3 #analytics Dashboard Micro-Audit', () => {
 
 test.describe('Quinn v3 #analytics — Phase 1: Chart Rendering', () => {
   
-  test('P1.1: Revenue/sales charts render with data', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P1.1: Revenue/sales charts render with data', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     // Look for common chart containers
@@ -151,8 +120,10 @@ test.describe('Quinn v3 #analytics — Phase 1: Chart Rendering', () => {
     }
   });
 
-  test('P1.2: Metric cards display values', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P1.2: Metric cards display values', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const metricCards = page.locator('[data-testid*="metric"], .metric, .stat-card');
@@ -169,8 +140,10 @@ test.describe('Quinn v3 #analytics — Phase 1: Chart Rendering', () => {
     }
   });
 
-  test('P1.3: Charts are interactive (hover/click)', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P1.3: Charts are interactive (hover/click)', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const chart = page.locator('canvas, svg[class*="chart"]').first();
@@ -193,8 +166,10 @@ test.describe('Quinn v3 #analytics — Phase 1: Chart Rendering', () => {
 
 test.describe('Quinn v3 #analytics — Phase 2: Period Selection', () => {
   
-  test('P2.1: Period buttons are present (7d, 30d, 90d, etc.)', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P2.1: Period buttons are present (7d, 30d, 90d, etc.)', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const periodBtns = await page.locator('button:has-text("7d"), button:has-text("30d"), button:has-text("90d"), [data-testid*="period"]').count().catch(() => 0);
@@ -204,8 +179,10 @@ test.describe('Quinn v3 #analytics — Phase 2: Period Selection', () => {
     expect(hasAnyFilter >= 0).toBe(true);
   });
 
-  test('P2.2: Clicking period button updates charts', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P2.2: Clicking period button updates charts', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const periodBtn = page.locator('button:has-text("30d"), button:has-text("7d")').first();
@@ -222,8 +199,10 @@ test.describe('Quinn v3 #analytics — Phase 2: Period Selection', () => {
     }
   });
 
-  test('P2.3: Date range picker (if present)', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P2.3: Date range picker (if present)', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const dateInput = page.locator('input[type="date"], [data-testid*="date"], input[placeholder*="date" i]').first();
@@ -243,8 +222,10 @@ test.describe('Quinn v3 #analytics — Phase 2: Period Selection', () => {
 
 test.describe('Quinn v3 #analytics — Phase 3: Metric Cards', () => {
   
-  test('P3.1: Metric cards display valid currency/percentage values', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P3.1: Metric cards display valid currency/percentage values', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const cards = page.locator('[data-testid*="metric"], .metric-card, .stat');
@@ -258,8 +239,10 @@ test.describe('Quinn v3 #analytics — Phase 3: Metric Cards', () => {
     }
   });
 
-  test('P3.2: Comparison indicators (↑ ↓) for trend data', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P3.2: Comparison indicators (↑ ↓) for trend data', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const trendIndicators = await page.locator('text=/[↑↓]/').count().catch(() => 0);
@@ -269,8 +252,10 @@ test.describe('Quinn v3 #analytics — Phase 3: Metric Cards', () => {
     expect(allText.length > 0).toBe(true);
   });
 
-  test('P3.3: Metric cards are aligned and responsive', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P3.3: Metric cards are aligned and responsive', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const cards = page.locator('[data-testid*="metric"], .metric-card');
@@ -297,8 +282,10 @@ test.describe('Quinn v3 #analytics — Phase 3: Metric Cards', () => {
 
 test.describe('Quinn v3 #analytics — Phase 4: Drill-Down & Details', () => {
   
-  test('P4.1: Clicking chart point or row opens detail view', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P4.1: Clicking chart point or row opens detail view', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const rows = page.locator('table tbody tr, [data-testid*="row"]');
@@ -315,8 +302,10 @@ test.describe('Quinn v3 #analytics — Phase 4: Drill-Down & Details', () => {
     }
   });
 
-  test('P4.2: Sortable columns in analytics table', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P4.2: Sortable columns in analytics table', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const sortHeaders = await page.locator('[aria-sort], th[role="columnheader"]').count().catch(() => 0);
@@ -328,8 +317,10 @@ test.describe('Quinn v3 #analytics — Phase 4: Drill-Down & Details', () => {
     }
   });
 
-  test('P4.3: Pagination (if analytics table has many rows)', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P4.3: Pagination (if analytics table has many rows)', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const paginator = page.locator('[data-testid="pagination"], .pagination, [aria-label*="page"]');
@@ -346,8 +337,10 @@ test.describe('Quinn v3 #analytics — Phase 4: Drill-Down & Details', () => {
 
 test.describe('Quinn v3 #analytics — Phase 5: Export & Actions', () => {
   
-  test('P5.1: Export button is present and clickable', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P5.1: Export button is present and clickable', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const exportBtn = page.locator('button:has-text("Export"), [data-testid="export-btn"], [aria-label*="Export"]').first();
@@ -363,8 +356,10 @@ test.describe('Quinn v3 #analytics — Phase 5: Export & Actions', () => {
     }
   });
 
-  test('P5.2: Print function (if available)', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P5.2: Print function (if available)', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const printBtn = page.locator('button:has-text("Print"), [aria-label*="Print"]').first();
@@ -383,8 +378,10 @@ test.describe('Quinn v3 #analytics — Phase 5: Export & Actions', () => {
 
 test.describe('Quinn v3 #analytics — Phase 6: Edge Cases', () => {
   
-  test('P6.1: Empty period shows empty state message', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P6.1: Empty period shows empty state message', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     // Try to select a future date
@@ -403,8 +400,10 @@ test.describe('Quinn v3 #analytics — Phase 6: Edge Cases', () => {
     }
   });
 
-  test('P6.2: Page remains stable with rapid period switching', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P6.2: Page remains stable with rapid period switching', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     const periodBtns = page.locator('button:has-text("7d"), button:has-text("30d"), button:has-text("90d")');
@@ -423,8 +422,10 @@ test.describe('Quinn v3 #analytics — Phase 6: Edge Cases', () => {
     }
   });
 
-  test('P6.3: Data updates when period changes', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P6.3: Data updates when period changes', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await waitForSpaRender(page);
     
     // Capture initial metric value
@@ -448,8 +449,10 @@ test.describe('Quinn v3 #analytics — Phase 6: Edge Cases', () => {
     }
   });
 
-  test('P6.4: Responsive layout on narrow viewport', async ({ page }) => {
-    await loginAndNavigate(page, 'analytics');
+  test('P6.4: Responsive layout on narrow viewport', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#analytics`);
+  await waitForSpaRender(page);
+  await waitForUiSettle(page);
     await page.setViewportSize({ width: 375, height: 667 }); // Mobile viewport
     await waitForSpaRender(page);
     

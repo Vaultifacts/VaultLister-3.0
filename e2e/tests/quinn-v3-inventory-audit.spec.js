@@ -8,7 +8,7 @@
 // Phase 1: Micro-batch testing — hero buttons, search/filter, table, modal fields
 // =============================================================================
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 import { waitForSpaRender, waitForTableRows, waitForUiSettle, waitForElement, waitForElementGone } from '../helpers/wait-utils.js';
 
 // Inventory tests require login + navigation — give extra time for slower browsers
@@ -17,41 +17,8 @@ test.setTimeout(90_000);
 const BASE = `http://localhost:${process.env.PORT || 3001}`;
 const DEMO = { email: 'demo@vaultlister.com', password: 'DemoPassword123!' };
 
-// Login helper — navigates to dashboard after login
+// Navigation helper — authedPage fixture handles auth; this just navigates to the target route
 async function loginAndNavigate(page, route = 'inventory') {
-  await page.goto(`${BASE}/#login`);
-  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
-  await page.goto(`${BASE}/#login`);
-  await page.waitForSelector('#login-form', { timeout: 10_000 });
-  await waitForSpaRender(page);
-
-  await page.locator('#login-email').fill(DEMO.email);
-  await page.locator('#login-password').fill(DEMO.password);
-  await page.locator('#login-submit-btn').click();
-
-  // Wait for login to complete — generous timeout for slow browsers
-  try {
-    await page.waitForFunction(
-      () => !window.location.hash.includes('#login'),
-      { timeout: 20_000 }
-    );
-  } catch {
-    // Fallback: try demo-login API directly
-    await page.evaluate(async () => {
-      try {
-        const res = await fetch('/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        const data = await res.json();
-        if (data.token) {
-          store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
-          router.navigate('dashboard');
-        }
-      } catch (e) { /* ignore */ }
-    });
-    await waitForTableRows(page);
-  }
-  await waitForSpaRender(page);
-
-  // Navigate to target route
   if (route !== 'dashboard') {
     await page.evaluate((r) => router.navigate(r), route);
     await waitForSpaRender(page);
@@ -64,7 +31,7 @@ async function loginAndNavigate(page, route = 'inventory') {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Page > Phase 0: Discovery', () => {
 
-  test('P0-1: Full page screenshot + accessibility snapshot', async ({ page }) => {
+  test('P0-1: Full page screenshot + accessibility snapshot', async ({ authedPage: page }) => {
     const consoleMessages = [];
     page.on('console', msg => consoleMessages.push({ type: msg.type(), text: msg.text() }));
     const pageErrors = [];
@@ -106,7 +73,7 @@ test.describe('Quinn v3 > Inventory Page > Phase 0: Discovery', () => {
     }
   });
 
-  test('P0-2: Enumerate all interactive elements on inventory page', async ({ page }) => {
+  test('P0-2: Enumerate all interactive elements on inventory page', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -193,7 +160,7 @@ test.describe('Quinn v3 > Inventory Page > Phase 0: Discovery', () => {
     console.log(`Nav items (sidebar): ${categories.navItems.length}`);
   });
 
-  test('P0-3: Open Add Item modal + enumerate its elements', async ({ page }) => {
+  test('P0-3: Open Add Item modal + enumerate its elements', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -303,7 +270,7 @@ test.describe('Quinn v3 > Inventory Page > Phase 0: Discovery', () => {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Page > Batch 1: Hero Buttons', () => {
 
-  test('E1-E3: Bundle, Restock, Alerts buttons — open modals/panels', async ({ page }) => {
+  test('E1-E3: Bundle, Restock, Alerts buttons — open modals/panels', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -361,7 +328,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 1: Hero Buttons', () => {
     // Verdict: PASS if each opens a modal/panel without JS errors
   });
 
-  test('E4-E5: Lookup button + Tools dropdown', async ({ page }) => {
+  test('E4-E5: Lookup button + Tools dropdown', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -418,7 +385,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 1: Hero Buttons', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-inventory-E5-tools.png' });
   });
 
-  test('E6: Add Item button — opens modal with correct title', async ({ page }) => {
+  test('E6: Add Item button — opens modal with correct title', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -472,7 +439,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 1: Hero Buttons', () => {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Page > Batch 2: Search & Filter', () => {
 
-  test('E7: Search input — type, debounce, clear', async ({ page }) => {
+  test('E7: Search input — type, debounce, clear', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -520,7 +487,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 2: Search & Filter', () => {
     // Verdict: PASS
   });
 
-  test('E8: Filter menu — open, add filter, clear', async ({ page }) => {
+  test('E8: Filter menu — open, add filter, clear', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -573,7 +540,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 2: Search & Filter', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-inventory-E8-filter-menu.png' });
   });
 
-  test('E9: Import/Export/Bulk Edit buttons', async ({ page }) => {
+  test('E9: Import/Export/Bulk Edit buttons', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -621,7 +588,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 2: Search & Filter', () => {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Page > Batch 3: Table Interaction', () => {
 
-  test('E10: Table sort headers — click toggles sort direction', async ({ page }) => {
+  test('E10: Table sort headers — click toggles sort direction', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -648,7 +615,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 3: Table Interaction', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-inventory-E10-sorted.png' });
   });
 
-  test('E11: Select-all checkbox + individual row checkboxes', async ({ page }) => {
+  test('E11: Select-all checkbox + individual row checkboxes', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -692,7 +659,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 3: Table Interaction', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-inventory-E11-checkboxes.png' });
   });
 
-  test('E12: Table row click → item history, double-click → edit', async ({ page }) => {
+  test('E12: Table row click → item history, double-click → edit', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -740,7 +707,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 3: Table Interaction', () => {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Page > Batch 4: Add Item Modal Fields', () => {
 
-  test('E13: Add Item modal — title (required), SKU, brand, category', async ({ page }) => {
+  test('E13: Add Item modal — title (required), SKU, brand, category', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await page.evaluate(() => modals.addItem());
     await waitForSpaRender(page);
@@ -792,7 +759,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 4: Add Item Modal Fields', () =
     await page.evaluate(() => modals.close());
   });
 
-  test('E14: Add Item modal — price fields, quantity, description', async ({ page }) => {
+  test('E14: Add Item modal — price fields, quantity, description', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await page.evaluate(() => modals.addItem());
     await waitForSpaRender(page);
@@ -838,7 +805,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 4: Add Item Modal Fields', () =
     await page.evaluate(() => modals.close());
   });
 
-  test('E15: Add Item modal — submit with minimal valid data', async ({ page }) => {
+  test('E15: Add Item modal — submit with minimal valid data', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await page.evaluate(() => modals.addItem());
     await waitForSpaRender(page);
@@ -879,7 +846,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 4: Add Item Modal Fields', () =
     console.log(`Modal still visible after submit: ${modalStillVisible}`);
   });
 
-  test('E16: Add Item modal — empty submit blocked, Cancel closes', async ({ page }) => {
+  test('E16: Add Item modal — empty submit blocked, Cancel closes', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await page.evaluate(() => modals.addItem());
     await waitForSpaRender(page);
@@ -924,7 +891,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 4: Add Item Modal Fields', () =
 // =============================================================================
 test.describe('Quinn v3 > Inventory Page > Batch 5: Stats & Health', () => {
 
-  test('E17: Stat cards — 6 cards visible with non-negative values', async ({ page }) => {
+  test('E17: Stat cards — 6 cards visible with non-negative values', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await expect(page.locator('.inventory-hero-title')).toBeVisible({ timeout: 10_000 });
 
@@ -954,7 +921,7 @@ test.describe('Quinn v3 > Inventory Page > Batch 5: Stats & Health', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-inventory-E17-stat-cards.png' });
   });
 
-  test('E18: CSP check — no blocking violations on inventory page', async ({ page }) => {
+  test('E18: CSP check — no blocking violations on inventory page', async ({ authedPage: page }) => {
     const cspViolations = [];
     page.on('console', msg => {
       const text = msg.text();

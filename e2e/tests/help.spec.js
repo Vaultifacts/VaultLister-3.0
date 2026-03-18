@@ -1,26 +1,10 @@
 // Help & Support E2E Tests
-import { test, expect } from '@playwright/test';
-import { demoUser, routes } from '../fixtures/test-data.js';
+import { test, expect } from '../fixtures/auth.js';
+import { routes } from '../fixtures/test-data.js';
 
 test.describe('Help & Support System', () => {
-    test.beforeEach(async ({ page }) => {
-        // Login before each test
-        await page.goto(routes.login);
-        await page.waitForSelector('#login-form');
 
-        const emailInput = page.locator('input[type="email"]').first();
-        const passwordInput = page.locator('input[type="password"]').first();
-        const submitBtn = page.locator('button[type="submit"]').first();
-
-        await emailInput.fill(demoUser.email);
-        await passwordInput.fill(demoUser.password);
-        await Promise.all([
-            page.waitForURL(/#dashboard/, { timeout: 30000 }),
-            submitBtn.click()
-        ]);
-    });
-
-    test('should navigate to tutorials page', async ({ page }) => {
+    test('should navigate to tutorials page', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#tutorials`);
         await page.waitForURL(/#tutorials/, { timeout: 5000 });
 
@@ -37,7 +21,7 @@ test.describe('Help & Support System', () => {
         }
     });
 
-    test('should filter video tutorials by category', async ({ page }) => {
+    test('should filter video tutorials by category', async ({ authedPage: page }) => {
         await page.goto(routes.tutorials);
         await page.waitForTimeout(2000);
 
@@ -62,7 +46,7 @@ test.describe('Help & Support System', () => {
         await expect(page.locator('body')).toBeVisible();
     });
 
-    test('should display video embeds', async ({ page }) => {
+    test('should display video embeds', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#tutorials`);
         await page.waitForTimeout(2000);
 
@@ -74,7 +58,7 @@ test.describe('Help & Support System', () => {
         await expect(page).toHaveURL(/#tutorials/);
     });
 
-    test('should navigate to support articles page', async ({ page }) => {
+    test('should navigate to support articles page', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#support-articles`);
         await page.waitForURL(/#support-articles/, { timeout: 5000 });
 
@@ -82,7 +66,7 @@ test.describe('Help & Support System', () => {
         await page.waitForTimeout(1000);
     });
 
-    test('should search knowledge base', async ({ page }) => {
+    test('should search knowledge base', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#support-articles`);
         await page.waitForTimeout(1500);
 
@@ -98,7 +82,7 @@ test.describe('Help & Support System', () => {
         }
     });
 
-    test('should expand FAQ accordions', async ({ page }) => {
+    test('should expand FAQ accordions', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#support-articles`);
         await page.waitForTimeout(2000);
 
@@ -118,7 +102,7 @@ test.describe('Help & Support System', () => {
         }
     });
 
-    test('should vote on FAQ helpfulness', async ({ page }) => {
+    test('should vote on FAQ helpfulness', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#support-articles`);
         await page.waitForTimeout(2000);
 
@@ -141,7 +125,7 @@ test.describe('Help & Support System', () => {
         }
     });
 
-    test('should navigate to report bug page', async ({ page }) => {
+    test('should navigate to report bug page', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#report-bug`);
         await page.waitForURL(/#report-bug/, { timeout: 5000 });
 
@@ -149,7 +133,7 @@ test.describe('Help & Support System', () => {
         await page.waitForTimeout(1000);
     });
 
-    test('should open submit ticket modal', async ({ page }) => {
+    test('should open submit ticket modal', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#report-bug`);
         await page.waitForTimeout(1500);
 
@@ -180,7 +164,7 @@ test.describe('Help & Support System', () => {
         }
     });
 
-    test('should display user tickets', async ({ page }) => {
+    test('should display user tickets', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#report-bug`);
         await page.waitForTimeout(2000);
 
@@ -188,7 +172,7 @@ test.describe('Help & Support System', () => {
         await expect(page).toHaveURL(/#report-bug/);
     });
 
-    test('should open article in modal', async ({ page }) => {
+    test('should open article in modal', async ({ authedPage: page }) => {
         await page.goto(`http://localhost:${process.env.PORT || 3000}/#support-articles`);
         await page.waitForTimeout(2000);
 

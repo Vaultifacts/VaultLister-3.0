@@ -7,9 +7,9 @@
 // Fails only on critical/serious violations; logs all others for debugging.
 // =============================================================================
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 import AxeBuilder from '@axe-core/playwright';
-import { loginAndNavigate, waitForSpaRender, waitForUiSettle, waitForElement } from '../helpers/wait-utils.js';
+import { waitForSpaRender, waitForUiSettle, waitForElement } from '../helpers/wait-utils.js';
 
 const BASE = `http://localhost:${process.env.PORT || 3001}`;
 
@@ -110,23 +110,23 @@ test.describe('Quinn v3 > Accessibility > P0: Pre-Auth Pages', () => {
 // =============================================================================
 test.describe('Quinn v3 > Accessibility > P1: Authenticated Pages', () => {
 
-  test('P1-1: Dashboard passes WCAG 2.1 AA audit', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
-
+  test('P1-1: Dashboard passes WCAG 2.1 AA audit', async ({ authedPage: page }) => {
     const results = await runAxeScan(page);
     assertNoCriticalViolations(results, 'Dashboard');
   });
 
-  test('P1-2: Inventory page passes WCAG 2.1 AA audit', async ({ page }) => {
+  test('P1-2: Inventory page passes WCAG 2.1 AA audit', async ({ authedPage: page }) => {
     test.setTimeout(60_000); // Inventory has many DOM elements — axe scan takes longer
-    await loginAndNavigate(page, 'inventory');
+    await page.goto(`${BASE}/#inventory`);
+    await waitForSpaRender(page);
 
     const results = await runAxeScan(page);
     assertNoCriticalViolations(results, 'Inventory');
   });
 
-  test('P1-3: Settings page passes WCAG 2.1 AA audit', async ({ page }) => {
-    await loginAndNavigate(page, 'settings');
+  test('P1-3: Settings page passes WCAG 2.1 AA audit', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#settings`);
+    await waitForSpaRender(page);
 
     const results = await runAxeScan(page);
     assertNoCriticalViolations(results, 'Settings');
@@ -138,8 +138,9 @@ test.describe('Quinn v3 > Accessibility > P1: Authenticated Pages', () => {
 // =============================================================================
 test.describe('Quinn v3 > Accessibility > P2: Interactive Elements', () => {
 
-  test('P2-1: Add Item modal passes WCAG 2.1 AA audit', async ({ page }) => {
-    await loginAndNavigate(page, 'inventory');
+  test('P2-1: Add Item modal passes WCAG 2.1 AA audit', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#inventory`);
+    await waitForSpaRender(page);
 
     // Open the Add Item modal
     const addBtn = page.locator('button, a, [role="button"]').filter({ hasText: /add item/i }).first();
@@ -162,8 +163,7 @@ test.describe('Quinn v3 > Accessibility > P2: Interactive Elements', () => {
     }
   });
 
-  test('P2-2: Notification dropdown passes WCAG 2.1 AA audit', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
+  test('P2-2: Notification dropdown passes WCAG 2.1 AA audit', async ({ authedPage: page }) => {
 
     // Look for notification bell / icon
     const notifBtn = page.locator(
@@ -184,8 +184,9 @@ test.describe('Quinn v3 > Accessibility > P2: Interactive Elements', () => {
     }
   });
 
-  test('P2-3: Inventory filter menu passes WCAG 2.1 AA audit', async ({ page }) => {
-    await loginAndNavigate(page, 'inventory');
+  test('P2-3: Inventory filter menu passes WCAG 2.1 AA audit', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#inventory`);
+    await waitForSpaRender(page);
 
     // Look for filter / sort controls
     const filterBtn = page.locator(
@@ -212,8 +213,7 @@ test.describe('Quinn v3 > Accessibility > P2: Interactive Elements', () => {
 // =============================================================================
 test.describe('Quinn v3 > Accessibility > P3: Specific WCAG Checks', () => {
 
-  test('P3-1: All images have alt text', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
+  test('P3-1: All images have alt text', async ({ authedPage: page }) => {
 
     // Count images missing alt attribute entirely
     const missingAlt = page.locator('img:not([alt])');

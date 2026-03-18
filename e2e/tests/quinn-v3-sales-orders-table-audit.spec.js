@@ -11,7 +11,7 @@
 // Phase 6: Edge cases & negatives — empty search, rapid sort, filter edge cases
 // =============================================================================
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 import { waitForSpaRender, waitForTableRows, waitForUiSettle } from '../helpers/wait-utils.js';
 
 test.setTimeout(90_000);
@@ -42,36 +42,6 @@ const ORDERS_COLUMNS = [
 ];
 
 async function loginAndNavigate(page, route = 'orders-sales') {
-  await page.goto(`${BASE}/#login`);
-  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
-  await page.goto(`${BASE}/#login`);
-  await page.waitForSelector('#login-form', { timeout: 10_000 });
-  await waitForSpaRender(page);
-
-  await page.locator('#login-email').fill(DEMO.email);
-  await page.locator('#login-password').fill(DEMO.password);
-  await page.locator('#login-submit-btn').click();
-
-  try {
-    await page.waitForFunction(
-      () => !window.location.hash.includes('#login'),
-      { timeout: 20_000 }
-    );
-  } catch {
-    await page.evaluate(async () => {
-      try {
-        const res = await fetch('/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        const data = await res.json();
-        if (data.token) {
-          store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
-          router.navigate('dashboard');
-        }
-      } catch (e) { /* ignore */ }
-    });
-    await waitForSpaRender(page, 10_000);
-  }
-  await waitForSpaRender(page);
-
   if (route !== 'dashboard') {
     await page.evaluate((r) => router.navigate(r), route);
     await waitForSpaRender(page);
@@ -85,7 +55,7 @@ async function loginAndNavigate(page, route = 'orders-sales') {
 
 test.describe('Quinn v3 #orders-sales Table Micro-Audit', () => {
 
-  test('P0.1: Page loads and renders sales table', async ({ page }) => {
+  test('P0.1: Page loads and renders sales table', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     
     const appExists = await page.locator('#app').isVisible();
@@ -96,7 +66,7 @@ test.describe('Quinn v3 #orders-sales Table Micro-Audit', () => {
     expect(tableExists || await page.locator('tr').count() > 0).toBe(true);
   });
 
-  test('P0.2: Accessibility snapshot — sales page', async ({ page }) => {
+  test('P0.2: Accessibility snapshot — sales page', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page); // Ensure render complete
     
@@ -122,7 +92,7 @@ test.describe('Quinn v3 #orders-sales Table Micro-Audit', () => {
     }
   });
 
-  test('P0.3: Element enumeration — count table headers and rows', async ({ page }) => {
+  test('P0.3: Element enumeration — count table headers and rows', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -140,7 +110,7 @@ test.describe('Quinn v3 #orders-sales Table Micro-Audit', () => {
 
 test.describe('Quinn v3 #orders-sales Table — Phase 1: Hero & Filters', () => {
 
-  test('P1.1: Filter controls are present and clickable', async ({ page }) => {
+  test('P1.1: Filter controls are present and clickable', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     
     // Look for common filter patterns
@@ -150,7 +120,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 1: Hero & Filters', () => 
     expect(filterButton || statusFilter).toBe(true);
   });
 
-  test('P1.2: Date range selector (if present)', async ({ page }) => {
+  test('P1.2: Date range selector (if present)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     
     const dateInput = await page.locator('input[type="date"], input[placeholder*="date" i], [data-testid*="date"]').first().isVisible().catch(() => false);
@@ -160,7 +130,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 1: Hero & Filters', () => 
     }
   });
 
-  test('P1.3: Export/bulk action buttons present', async ({ page }) => {
+  test('P1.3: Export/bulk action buttons present', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     
     const exportBtn = await page.locator('button:has-text("Export"), [data-testid="export-btn"], [aria-label*="Export" i]').first().isVisible().catch(() => false);
@@ -178,7 +148,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 1: Hero & Filters', () => 
 
 test.describe('Quinn v3 #orders-sales Table — Phase 2: Search & Filtering', () => {
 
-  test('P2.1: Search input is present and accepts input', async ({ page }) => {
+  test('P2.1: Search input is present and accepts input', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     
     const searchInput = await page.locator('input[placeholder*="Search" i], [data-testid="search-input"]').first().isVisible().catch(() => false);
@@ -192,7 +162,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 2: Search & Filtering', ()
     }
   });
 
-  test('P2.2: Filter operations (status, platform if present)', async ({ page }) => {
+  test('P2.2: Filter operations (status, platform if present)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -214,7 +184,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 2: Search & Filtering', ()
 
 test.describe('Quinn v3 #orders-sales Table — Phase 3: Sortable Columns', () => {
 
-  test('P3.1: Sort headers have aria-sort attribute', async ({ page }) => {
+  test('P3.1: Sort headers have aria-sort attribute', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -224,7 +194,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 3: Sortable Columns', () =
     expect(sortHeaders).toBeGreaterThanOrEqual(0);
   });
 
-  test('P3.2: Click sortable header changes aria-sort value', async ({ page }) => {
+  test('P3.2: Click sortable header changes aria-sort value', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -242,7 +212,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 3: Sortable Columns', () =
     }
   });
 
-  test('P3.3: Sort indicators (↑ ↓ ⇅) render correctly', async ({ page }) => {
+  test('P3.3: Sort indicators (↑ ↓ ⇅) render correctly', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -253,7 +223,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 3: Sortable Columns', () =
     expect(headers.length).toBeGreaterThanOrEqual(0);
   });
 
-  test('P3.4: D10 check — sort indicators update on click (no race condition)', async ({ page }) => {
+  test('P3.4: D10 check — sort indicators update on click (no race condition)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -280,7 +250,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 3: Sortable Columns', () =
 
 test.describe('Quinn v3 #orders-sales Table — Phase 4: Row Interactions', () => {
 
-  test('P4.1: Click row opens detail view or modal', async ({ page }) => {
+  test('P4.1: Click row opens detail view or modal', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -297,7 +267,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 4: Row Interactions', () =
     }
   });
 
-  test('P4.2: Row hover state shows action buttons', async ({ page }) => {
+  test('P4.2: Row hover state shows action buttons', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -314,7 +284,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 4: Row Interactions', () =
     }
   });
 
-  test('P4.3: Checkbox row selection (if present)', async ({ page }) => {
+  test('P4.3: Checkbox row selection (if present)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -335,7 +305,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 4: Row Interactions', () =
 
 test.describe('Quinn v3 #orders-sales Table — Phase 5: Bulk Actions', () => {
 
-  test('P5.1: Select-all checkbox (if present)', async ({ page }) => {
+  test('P5.1: Select-all checkbox (if present)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -356,7 +326,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 5: Bulk Actions', () => {
     }
   });
 
-  test('P5.2: Bulk action buttons are functional', async ({ page }) => {
+  test('P5.2: Bulk action buttons are functional', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -383,7 +353,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 5: Bulk Actions', () => {
 
 test.describe('Quinn v3 #orders-sales Table — Phase 6: Edge Cases', () => {
 
-  test('P6.1: Empty search returns no results', async ({ page }) => {
+  test('P6.1: Empty search returns no results', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -400,7 +370,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 6: Edge Cases', () => {
     }
   });
 
-  test('P6.2: D11 check — rapid sort clicks do not crash', async ({ page }) => {
+  test('P6.2: D11 check — rapid sort clicks do not crash', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     
@@ -420,7 +390,7 @@ test.describe('Quinn v3 #orders-sales Table — Phase 6: Edge Cases', () => {
     }
   });
 
-  test('P6.3: Filter + search combination', async ({ page }) => {
+  test('P6.3: Filter + search combination', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     

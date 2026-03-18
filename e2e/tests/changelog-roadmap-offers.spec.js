@@ -1,33 +1,10 @@
-import { test, expect } from '@playwright/test';
-import { demoUser } from '../fixtures/test-data.js';
+import { test, expect } from '../fixtures/auth.js';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}`;
-let authToken;
-
-test.beforeAll(async ({ request }) => {
-    const response = await request.post(`${BASE_URL}/api/auth/login`, {
-        data: { email: demoUser.email, password: demoUser.password }
-    });
-    const body = await response.json();
-    authToken = body.token;
-});
+const BASE_URL = `http://localhost:${process.env.PORT || 3001}`;
 
 test.describe('Changelog Features', () => {
-    test.beforeEach(async ({ page }) => {
-        await page.goto(`${BASE_URL}/#login`);
-        await page.waitForSelector('#login-form');
-        const emailInput = page.locator('input[type="email"]').first();
-        const passwordInput = page.locator('input[type="password"]').first();
-        const submitBtn = page.locator('button[type="submit"]').first();
-        await emailInput.fill(demoUser.email);
-        await passwordInput.fill(demoUser.password);
-        await Promise.all([
-            page.waitForURL(/#dashboard/, { timeout: 30000 }),
-            submitBtn.click()
-        ]);
-    });
 
-    test('1. should display changelog page with versions', async ({ page }) => {
+    test('1. should display changelog page with versions', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#changelog`);
         await page.waitForLoadState('networkidle');
 
@@ -40,7 +17,7 @@ test.describe('Changelog Features', () => {
         await expect(page.locator('h2.version-number:has-text("v1.5.0")')).toBeVisible();
     });
 
-    test('2. should display Before/After screenshots for UI changes', async ({ page }) => {
+    test('2. should display Before/After screenshots for UI changes', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#changelog`);
         await page.waitForLoadState('networkidle');
 
@@ -52,7 +29,7 @@ test.describe('Changelog Features', () => {
         await expect(screenshotComparison).toBeVisible();
     });
 
-    test('3. should display change type badges (Feature/Fix/Improvement/Breaking)', async ({ page }) => {
+    test('3. should display change type badges (Feature/Fix/Improvement/Breaking)', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#changelog`);
         await page.waitForLoadState('networkidle');
 
@@ -64,7 +41,7 @@ test.describe('Changelog Features', () => {
         await expect(improvementBadge).toBeVisible();
     });
 
-    test('4. should display affected areas per change', async ({ page }) => {
+    test('4. should display affected areas per change', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#changelog`);
         await page.waitForLoadState('networkidle');
 
@@ -76,7 +53,7 @@ test.describe('Changelog Features', () => {
         await expect(page.locator('.change-details-open').locator('text=Affected Areas').first()).toBeVisible();
     });
 
-    test('5. should filter by version in sidebar', async ({ page }) => {
+    test('5. should filter by version in sidebar', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#changelog`);
         await page.waitForLoadState('networkidle');
 
@@ -87,7 +64,7 @@ test.describe('Changelog Features', () => {
         await expect(page.locator('h2:has-text("v1.5.0")')).toBeVisible();
     });
 
-    test('6. should allow voting on changelog items (Helpful/Not Helpful)', async ({ page }) => {
+    test('6. should allow voting on changelog items (Helpful/Not Helpful)', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#changelog`);
         await page.waitForLoadState('networkidle');
 
@@ -104,7 +81,7 @@ test.describe('Changelog Features', () => {
         await expect(helpfulBtn).toBeVisible();
     });
 
-    test('7. should provide RSS feed for changelog', async ({ page }) => {
+    test('7. should provide RSS feed for changelog', async ({ authedPage: page, authToken }) => {
         const response = await page.request.get(`${BASE_URL}/api/roadmap/changelog/rss`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -116,7 +93,7 @@ test.describe('Changelog Features', () => {
         expect(body).toContain('v1.6.0');
     });
 
-    test('8. should display What\'s New banner on roadmap', async ({ page }) => {
+    test('8. should display What\'s New banner on roadmap', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -132,7 +109,7 @@ test.describe('Changelog Features', () => {
         }
     });
 
-    test('9. should search within changelog', async ({ page }) => {
+    test('9. should search within changelog', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#changelog`);
         await page.waitForLoadState('networkidle');
 
@@ -150,21 +127,8 @@ test.describe('Changelog Features', () => {
 });
 
 test.describe('Roadmap Features', () => {
-    test.beforeEach(async ({ page }) => {
-        await page.goto(`${BASE_URL}/#login`);
-        await page.waitForSelector('#login-form');
-        const emailInput = page.locator('input[type="email"]').first();
-        const passwordInput = page.locator('input[type="password"]').first();
-        const submitBtn = page.locator('button[type="submit"]').first();
-        await emailInput.fill(demoUser.email);
-        await passwordInput.fill(demoUser.password);
-        await Promise.all([
-            page.waitForURL(/#dashboard/, { timeout: 30000 }),
-            submitBtn.click()
-        ]);
-    });
 
-    test('1. should display roadmap page with features', async ({ page }) => {
+    test('1. should display roadmap page with features', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -185,7 +149,7 @@ test.describe('Roadmap Features', () => {
         }
     });
 
-    test('2. should allow searching roadmap features', async ({ page }) => {
+    test('2. should allow searching roadmap features', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -205,7 +169,7 @@ test.describe('Roadmap Features', () => {
         }
     });
 
-    test('3. should display Subscribe button for notifications', async ({ page }) => {
+    test('3. should display Subscribe button for notifications', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -214,7 +178,7 @@ test.describe('Roadmap Features', () => {
         await expect(subscribeBtn).toBeVisible();
     });
 
-    test('4. should show dependencies and blockers', async ({ page }) => {
+    test('4. should show dependencies and blockers', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -226,7 +190,7 @@ test.describe('Roadmap Features', () => {
         }
     });
 
-    test('5. should display roadmap categories', async ({ page }) => {
+    test('5. should display roadmap categories', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -243,7 +207,7 @@ test.describe('Roadmap Features', () => {
         }
     });
 
-    test('6. should show estimated release dates (ETA)', async ({ page }) => {
+    test('6. should show estimated release dates (ETA)', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -255,7 +219,7 @@ test.describe('Roadmap Features', () => {
         }
     });
 
-    test('7. should allow voting on roadmap features', async ({ page }) => {
+    test('7. should allow voting on roadmap features', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -271,7 +235,7 @@ test.describe('Roadmap Features', () => {
         }
     });
 
-    test('8. should link completed roadmap items to changelog', async ({ page }) => {
+    test('8. should link completed roadmap items to changelog', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -284,7 +248,7 @@ test.describe('Roadmap Features', () => {
         }
     });
 
-    test('9. should display progress indicators for in-progress items', async ({ page }) => {
+    test('9. should display progress indicators for in-progress items', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -305,21 +269,8 @@ test.describe('Roadmap Features', () => {
 });
 
 test.describe('Offers Features', () => {
-    test.beforeEach(async ({ page }) => {
-        await page.goto(`${BASE_URL}/#login`);
-        await page.waitForSelector('#login-form');
-        const emailInput = page.locator('input[type="email"]').first();
-        const passwordInput = page.locator('input[type="password"]').first();
-        const submitBtn = page.locator('button[type="submit"]').first();
-        await emailInput.fill(demoUser.email);
-        await passwordInput.fill(demoUser.password);
-        await Promise.all([
-            page.waitForURL(/#dashboard/, { timeout: 30000 }),
-            submitBtn.click()
-        ]);
-    });
 
-    test('1. should display offers page with pending offers', async ({ page }) => {
+    test('1. should display offers page with pending offers', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#offers`);
         await page.waitForLoadState('networkidle');
 
@@ -334,7 +285,7 @@ test.describe('Offers Features', () => {
         }
     });
 
-    test('2. should show offer expiration timer with countdown', async ({ page }) => {
+    test('2. should show offer expiration timer with countdown', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#offers`);
         await page.waitForLoadState('networkidle');
 
@@ -346,7 +297,7 @@ test.describe('Offers Features', () => {
         }
     });
 
-    test('3. should allow bulk accept offers', async ({ page }) => {
+    test('3. should allow bulk accept offers', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#offers`);
         await page.waitForLoadState('networkidle');
 
@@ -357,7 +308,7 @@ test.describe('Offers Features', () => {
         }
     });
 
-    test('4. should have decline button with error styling (btn-error CSS)', async ({ page }) => {
+    test('4. should have decline button with error styling (btn-error CSS)', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#offers`);
         await page.waitForLoadState('networkidle');
 
@@ -368,7 +319,7 @@ test.describe('Offers Features', () => {
         }
     });
 
-    test('5. should display offer history per item', async ({ page }) => {
+    test('5. should display offer history per item', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#offers`);
         await page.waitForLoadState('networkidle');
 
@@ -377,7 +328,7 @@ test.describe('Offers Features', () => {
         await expect(historyCard).toBeVisible();
     });
 
-    test('6. should highlight best offer with badge', async ({ page }) => {
+    test('6. should highlight best offer with badge', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#offers`);
         await page.waitForLoadState('networkidle');
 
@@ -389,7 +340,7 @@ test.describe('Offers Features', () => {
         }
     });
 
-    test('7. should support saved decline responses', async ({ page }) => {
+    test('7. should support saved decline responses', async ({ authedPage: page, authToken }) => {
         // This is a functional test - would need UI confirmation
         // The backend supports storing decline reasons
         const response = await page.request.get(`${BASE_URL}/api/offers`, {
@@ -399,7 +350,7 @@ test.describe('Offers Features', () => {
         expect(response.status()).toBe(200);
     });
 
-    test('8. should display counter-offer suggestions', async ({ page }) => {
+    test('8. should display counter-offer suggestions', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#offers`);
         await page.waitForLoadState('networkidle');
 
@@ -411,7 +362,7 @@ test.describe('Offers Features', () => {
         }
     });
 
-    test('9. should allow individual offer actions (Accept/Counter/Decline)', async ({ page }) => {
+    test('9. should allow individual offer actions (Accept/Counter/Decline)', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#offers`);
         await page.waitForLoadState('networkidle');
 
@@ -429,7 +380,7 @@ test.describe('Offers Features', () => {
 });
 
 test.describe('API Integration Tests', () => {
-    test('should fetch roadmap features via API', async ({ page }) => {
+    test('should fetch roadmap features via API', async ({ authedPage: page, authToken }) => {
         const response = await page.request.get(`${BASE_URL}/api/roadmap`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -440,7 +391,7 @@ test.describe('API Integration Tests', () => {
         expect(Array.isArray(body.features)).toBe(true);
     });
 
-    test('should fetch offers via API', async ({ page }) => {
+    test('should fetch offers via API', async ({ authedPage: page, authToken }) => {
         const response = await page.request.get(`${BASE_URL}/api/offers`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -452,7 +403,7 @@ test.describe('API Integration Tests', () => {
         expect(body).toHaveProperty('pending');
     });
 
-    test('should fetch RSS changelog feed', async ({ page }) => {
+    test('should fetch RSS changelog feed', async ({ authedPage: page, authToken }) => {
         const response = await page.request.get(`${BASE_URL}/api/roadmap/changelog/rss`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -464,7 +415,7 @@ test.describe('API Integration Tests', () => {
         expect(body).toContain('VaultLister Changelog');
     });
 
-    test('should return 404 for invalid offer ID', async ({ page }) => {
+    test('should return 404 for invalid offer ID', async ({ authedPage: page, authToken }) => {
         const response = await page.request.get(`${BASE_URL}/api/offers/invalid-id`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -472,7 +423,7 @@ test.describe('API Integration Tests', () => {
         expect(response.status()).toBe(404);
     });
 
-    test('should require CSRF token for state-changing operations', async ({ page }) => {
+    test('should require CSRF token for state-changing operations', async ({ authedPage: page, authToken }) => {
         const response = await page.request.post(`${BASE_URL}/api/offers/some-id/accept`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -486,21 +437,8 @@ test.describe('API Integration Tests', () => {
 });
 
 test.describe('UI/UX Verification Tests', () => {
-    test.beforeEach(async ({ page }) => {
-        await page.goto(`${BASE_URL}/#login`);
-        await page.waitForSelector('#login-form');
-        const emailInput = page.locator('input[type="email"]').first();
-        const passwordInput = page.locator('input[type="password"]').first();
-        const submitBtn = page.locator('button[type="submit"]').first();
-        await emailInput.fill(demoUser.email);
-        await passwordInput.fill(demoUser.password);
-        await Promise.all([
-            page.waitForURL(/#dashboard/, { timeout: 30000 }),
-            submitBtn.click()
-        ]);
-    });
 
-    test('changelog should have responsive layout', async ({ page }) => {
+    test('changelog should have responsive layout', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#changelog`);
         await page.waitForLoadState('networkidle');
 
@@ -512,7 +450,7 @@ test.describe('UI/UX Verification Tests', () => {
         await expect(content).toBeVisible();
     });
 
-    test('roadmap cards should display vote counts', async ({ page }) => {
+    test('roadmap cards should display vote counts', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 
@@ -526,7 +464,7 @@ test.describe('UI/UX Verification Tests', () => {
         }
     });
 
-    test('offers page should have insights grid', async ({ page }) => {
+    test('offers page should have insights grid', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#offers`);
         await page.waitForLoadState('networkidle');
 
@@ -538,7 +476,7 @@ test.describe('UI/UX Verification Tests', () => {
         expect(await insightCards.count()).toBeGreaterThan(0);
     });
 
-    test('changelog should show type filter badges', async ({ page }) => {
+    test('changelog should show type filter badges', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#changelog`);
         await page.waitForLoadState('networkidle');
 
@@ -549,7 +487,7 @@ test.describe('UI/UX Verification Tests', () => {
         expect(await typeFilters.count()).toBeGreaterThan(0);
     });
 
-    test('roadmap should show progress overview cards', async ({ page }) => {
+    test('roadmap should show progress overview cards', async ({ authedPage: page }) => {
         await page.goto(`${BASE_URL}/#help-support`);
         await page.waitForLoadState('networkidle');
 

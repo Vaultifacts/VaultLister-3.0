@@ -14,6 +14,13 @@ const BASE = `http://localhost:${process.env.PORT || 3001}`;
 
 // Navigate to forgot password page with clean state
 async function goToForgotPassword(page) {
+  const url = new URL(BASE);
+  await page.context().addCookies([{
+    name: 'vl_access',
+    value: 'e2e-test-bypass',
+    domain: url.hostname,
+    path: '/',
+  }]);
   await page.goto(`${BASE}/#login`);
   await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
   await page.goto(`${BASE}/#forgot-password`);

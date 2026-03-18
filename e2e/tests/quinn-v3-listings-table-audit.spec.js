@@ -11,7 +11,7 @@
 // Phase 6: Edge cases — filter combos, empty states, rapid tab switch
 // =============================================================================
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 import { waitForSpaRender, waitForTableRows, waitForUiSettle, waitForElement, waitForElementGone } from '../helpers/wait-utils.js';
 
 test.setTimeout(90_000);
@@ -42,37 +42,8 @@ const COLUMN_OPTIONS = [
 // Health stats
 const HEALTH_STATS = ['Active', 'Drafts', 'Need Refresh', 'Avg Age'];
 
+// Navigation helper — authedPage fixture handles auth; this just navigates to the target route
 async function loginAndNavigate(page, route = 'listings') {
-  await page.goto(`${BASE}/#login`);
-  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
-  await page.goto(`${BASE}/#login`);
-  await page.waitForSelector('#login-form', { timeout: 10_000 });
-  await waitForSpaRender(page);
-
-  await page.locator('#login-email').fill(DEMO.email);
-  await page.locator('#login-password').fill(DEMO.password);
-  await page.locator('#login-submit-btn').click();
-
-  try {
-    await page.waitForFunction(
-      () => !window.location.hash.includes('#login'),
-      { timeout: 20_000 }
-    );
-  } catch {
-    await page.evaluate(async () => {
-      try {
-        const res = await fetch('/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        const data = await res.json();
-        if (data.token) {
-          store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
-          router.navigate('dashboard');
-        }
-      } catch (e) { /* ignore */ }
-    });
-    await waitForSpaRender(page, 10_000);
-  }
-  await waitForSpaRender(page);
-
   if (route !== 'dashboard') {
     await page.evaluate((r) => router.navigate(r), route);
     await waitForSpaRender(page);
@@ -90,7 +61,7 @@ async function getListingRowCount(page) {
 // =============================================================================
 test.describe('Quinn v3 > Listings Table > Phase 0: Discovery', () => {
 
-  test('P0-1: Listings full-page screenshot + a11y snapshot', async ({ page }) => {
+  test('P0-1: Listings full-page screenshot + a11y snapshot', async ({ authedPage: page }) => {
     const consoleErrors = [];
     page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
     const pageErrors = [];
@@ -118,7 +89,7 @@ test.describe('Quinn v3 > Listings Table > Phase 0: Discovery', () => {
     }
   });
 
-  test('P0-2: Enumerate ALL interactive elements on listings page', async ({ page }) => {
+  test('P0-2: Enumerate ALL interactive elements on listings page', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const elements = await page.evaluate(() => {
@@ -172,7 +143,7 @@ test.describe('Quinn v3 > Listings Table > Phase 0: Discovery', () => {
     expect(tabs.length).toBe(4);
   });
 
-  test('P0-3: Breadcrumb navigation renders correctly', async ({ page }) => {
+  test('P0-3: Breadcrumb navigation renders correctly', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const breadcrumb = page.locator('.listing-breadcrumb');
@@ -191,7 +162,7 @@ test.describe('Quinn v3 > Listings Table > Phase 0: Discovery', () => {
 // =============================================================================
 test.describe('Quinn v3 > Listings Table > Phase 1: Hero Buttons', () => {
 
-  test('P1-1: Health button, New Folder button, Fees button', async ({ page }) => {
+  test('P1-1: Health button, New Folder button, Fees button', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     // --- Health button ---
@@ -240,7 +211,7 @@ test.describe('Quinn v3 > Listings Table > Phase 1: Hero Buttons', () => {
     }
   });
 
-  test('P1-2: Add New Listing(s) dropdown — 3 menu items', async ({ page }) => {
+  test('P1-2: Add New Listing(s) dropdown — 3 menu items', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const addDropdown = page.locator('.listings-hero-actions .dropdown').first();
@@ -281,7 +252,7 @@ test.describe('Quinn v3 > Listings Table > Phase 1: Hero Buttons', () => {
     }
   });
 
-  test('P1-3: Add dropdown — Create New + CSV Import', async ({ page }) => {
+  test('P1-3: Add dropdown — Create New + CSV Import', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const addDropdown = page.locator('.listings-hero-actions .dropdown').first();
@@ -324,7 +295,7 @@ test.describe('Quinn v3 > Listings Table > Phase 1: Hero Buttons', () => {
 // =============================================================================
 test.describe('Quinn v3 > Listings Table > Phase 2: Tabs', () => {
 
-  test('P2-1: Default tab is Listings, verify aria-selected', async ({ page }) => {
+  test('P2-1: Default tab is Listings, verify aria-selected', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const tablist = page.locator('[role="tablist"]');
@@ -344,7 +315,7 @@ test.describe('Quinn v3 > Listings Table > Phase 2: Tabs', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-list-P2-1-default-tab.png' });
   });
 
-  test('P2-2: Switch to Archived, Templates tabs', async ({ page }) => {
+  test('P2-2: Switch to Archived, Templates tabs', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     // --- Switch to Archived ---
@@ -371,7 +342,7 @@ test.describe('Quinn v3 > Listings Table > Phase 2: Tabs', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-list-P2-2-templates.png' });
   });
 
-  test('P2-3: Switch to Recently Deleted, then back to Listings', async ({ page }) => {
+  test('P2-3: Switch to Recently Deleted, then back to Listings', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     // --- Switch to Recently Deleted ---
@@ -407,7 +378,7 @@ test.describe('Quinn v3 > Listings Table > Phase 2: Tabs', () => {
 // =============================================================================
 test.describe('Quinn v3 > Listings Table > Phase 3: Filters', () => {
 
-  test('P3-1: Folder filter, Status filter, Platform filter dropdowns', async ({ page }) => {
+  test('P3-1: Folder filter, Status filter, Platform filter dropdowns', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     // --- Folder filter ---
@@ -448,7 +419,7 @@ test.describe('Quinn v3 > Listings Table > Phase 3: Filters', () => {
     expect(platformOptions.length).toBeGreaterThanOrEqual(2);
   });
 
-  test('P3-2: Column customization dropdown — toggle columns', async ({ page }) => {
+  test('P3-2: Column customization dropdown — toggle columns', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     // Find the Customize dropdown
@@ -498,7 +469,7 @@ test.describe('Quinn v3 > Listings Table > Phase 3: Filters', () => {
     await waitForSpaRender(page);
   });
 
-  test('P3-3: Platform filter — select specific platform, verify filtering', async ({ page }) => {
+  test('P3-3: Platform filter — select specific platform, verify filtering', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const rowsBefore = await getListingRowCount(page);
@@ -531,7 +502,7 @@ test.describe('Quinn v3 > Listings Table > Phase 3: Filters', () => {
 // =============================================================================
 test.describe('Quinn v3 > Listings Table > Phase 4: Row Interactions', () => {
 
-  test('P4-1: Expand/collapse listing row — details panel', async ({ page }) => {
+  test('P4-1: Expand/collapse listing row — details panel', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const rowCount = await getListingRowCount(page);
@@ -574,7 +545,7 @@ test.describe('Quinn v3 > Listings Table > Phase 4: Row Interactions', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-list-P4-1-after-collapse.png' });
   });
 
-  test('P4-2: Actions dropdown — View Details, Edit, Archive', async ({ page }) => {
+  test('P4-2: Actions dropdown — View Details, Edit, Archive', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const rowCount = await getListingRowCount(page);
@@ -622,7 +593,7 @@ test.describe('Quinn v3 > Listings Table > Phase 4: Row Interactions', () => {
     }
   });
 
-  test('P4-3: Actions dropdown — Schedule Price Drop + pricing sparkline visible', async ({ page }) => {
+  test('P4-3: Actions dropdown — Schedule Price Drop + pricing sparkline visible', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const rowCount = await getListingRowCount(page);
@@ -673,7 +644,7 @@ test.describe('Quinn v3 > Listings Table > Phase 4: Row Interactions', () => {
 // =============================================================================
 test.describe('Quinn v3 > Listings Table > Phase 5: Health Bar', () => {
 
-  test('P5-1: Health score ring renders with valid percentage', async ({ page }) => {
+  test('P5-1: Health score ring renders with valid percentage', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const healthRing = page.locator('.health-score-ring');
@@ -701,7 +672,7 @@ test.describe('Quinn v3 > Listings Table > Phase 5: Health Bar', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-list-P5-1-health-ring.png' });
   });
 
-  test('P5-2: Health stats — Active, Drafts, Need Refresh, Avg Age', async ({ page }) => {
+  test('P5-2: Health stats — Active, Drafts, Need Refresh, Avg Age', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     for (const statLabel of HEALTH_STATS) {
@@ -716,7 +687,7 @@ test.describe('Quinn v3 > Listings Table > Phase 5: Health Bar', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-list-P5-2-health-stats.png' });
   });
 
-  test('P5-3: Platform mini badges render with counts', async ({ page }) => {
+  test('P5-3: Platform mini badges render with counts', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const platformSection = page.locator('.listings-platform-mini');
@@ -763,7 +734,7 @@ test.describe('Quinn v3 > Listings Table > Phase 5: Health Bar', () => {
 // =============================================================================
 test.describe('Quinn v3 > Listings Table > Phase 6: Edge Cases', () => {
 
-  test('P6-1: Status filter "ended" — likely empty, verify empty state', async ({ page }) => {
+  test('P6-1: Status filter "ended" — likely empty, verify empty state', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const statusSelect = page.locator('select').filter({ hasText: 'All Listings' }).first();
@@ -782,7 +753,7 @@ test.describe('Quinn v3 > Listings Table > Phase 6: Edge Cases', () => {
     await waitForSpaRender(page);
   });
 
-  test('P6-2: Rapid tab switching — no crash', async ({ page }) => {
+  test('P6-2: Rapid tab switching — no crash', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const pageErrors = [];
@@ -808,7 +779,7 @@ test.describe('Quinn v3 > Listings Table > Phase 6: Edge Cases', () => {
     }
   });
 
-  test('P6-3: Combined platform + status filter, then reset', async ({ page }) => {
+  test('P6-3: Combined platform + status filter, then reset', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const rowsBefore = await getListingRowCount(page);
@@ -839,7 +810,7 @@ test.describe('Quinn v3 > Listings Table > Phase 6: Edge Cases', () => {
     expect(rowsReset).toBe(rowsBefore);
   });
 
-  test('P6-4: Listings sidebar nav shows active state', async ({ page }) => {
+  test('P6-4: Listings sidebar nav shows active state', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const navBtn = page.locator('[data-testid="nav-listings"]');
@@ -851,7 +822,7 @@ test.describe('Quinn v3 > Listings Table > Phase 6: Edge Cases', () => {
     expect(otherActive).toBe(1);
   });
 
-  test('P6-5: Page title and subtitle render correctly', async ({ page }) => {
+  test('P6-5: Page title and subtitle render correctly', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'listings');
 
     const title = page.locator('.listings-hero-title');

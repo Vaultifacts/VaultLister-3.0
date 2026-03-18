@@ -7,8 +7,8 @@
 // P2: Orientation Change — portrait/landscape reflow at both breakpoints
 // =============================================================================
 
-import { test, expect } from '@playwright/test';
-import { loginAndNavigate, waitForSpaRender, waitForUiSettle } from '../helpers/wait-utils.js';
+import { test, expect, BASE } from '../fixtures/auth.js';
+import { waitForSpaRender, waitForUiSettle } from '../helpers/wait-utils.js';
 
 test.setTimeout(90_000);
 
@@ -39,7 +39,6 @@ test.describe('P0: Mobile viewport (375x812)', () => {
   test.use({ viewport: { width: 375, height: 812 } });
 
   test('login form renders fully visible, no horizontal overflow', async ({ page }) => {
-    const BASE = `http://localhost:${process.env.PORT || 3001}`;
     await page.goto(`${BASE}/#login`);
     await waitForSpaRender(page);
 
@@ -56,16 +55,16 @@ test.describe('P0: Mobile viewport (375x812)', () => {
     await expect(page.locator('#login-submit-btn')).toBeVisible();
   });
 
-  test('dashboard renders without horizontal scroll', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
+  test('dashboard renders without horizontal scroll', async ({ authedPage: page }) => {
+    await waitForUiSettle(page);
 
     await assertNoOverflowSoft(page, test, 'dashboard');
     const appContent = page.locator('#app');
     await expect(appContent).toBeVisible();
   });
 
-  test('sidebar is hidden by default on mobile', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
+  test('sidebar is hidden by default on mobile', async ({ authedPage: page }) => {
+    await waitForUiSettle(page);
 
     // Sidebar should either not be visible or be collapsed
     const sidebar = page.locator('.sidebar, [data-testid="sidebar"], nav.sidebar, #sidebar');
@@ -93,8 +92,8 @@ test.describe('P0: Mobile viewport (375x812)', () => {
     // If no sidebar element found at all, that's also acceptable on mobile
   });
 
-  test('hamburger menu button exists and is clickable', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
+  test('hamburger menu button exists and is clickable', async ({ authedPage: page }) => {
+    await waitForUiSettle(page);
 
     // Look for common hamburger/menu button selectors
     const hamburger = page.locator(
@@ -119,8 +118,9 @@ test.describe('P0: Mobile viewport (375x812)', () => {
     await assertNoOverflowSoft(page, test, 'hamburger-menu');
   });
 
-  test('inventory table has horizontal scroll or responsive layout', async ({ page }) => {
-    await loginAndNavigate(page, 'inventory');
+  test('inventory table has horizontal scroll or responsive layout', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#inventory`);
+    await waitForSpaRender(page);
 
     // The table container should handle overflow gracefully
     const tableContainer = page.locator(
@@ -146,8 +146,8 @@ test.describe('P0: Mobile viewport (375x812)', () => {
     await assertNoOverflowSoft(page, test, 'inventory-table');
   });
 
-  test('navigation still works — can reach all major routes', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
+  test('navigation still works — can reach all major routes', async ({ authedPage: page }) => {
+    await waitForUiSettle(page);
 
     const majorRoutes = ['inventory', 'orders', 'settings', 'analytics'];
 
@@ -164,8 +164,9 @@ test.describe('P0: Mobile viewport (375x812)', () => {
     }
   });
 
-  test('modals do not overflow the viewport', async ({ page }) => {
-    await loginAndNavigate(page, 'inventory');
+  test('modals do not overflow the viewport', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#inventory`);
+    await waitForSpaRender(page);
 
     // Try to open the Add Item modal
     const addBtn = page.locator(
@@ -194,8 +195,8 @@ test.describe('P0: Mobile viewport (375x812)', () => {
     }
   });
 
-  test('toast notifications are visible and not clipped', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
+  test('toast notifications are visible and not clipped', async ({ authedPage: page }) => {
+    await waitForUiSettle(page);
 
     // Trigger a toast by performing an action that generates one
     // We can also inject one directly to test rendering
@@ -247,14 +248,14 @@ test.describe('P0: Mobile viewport (375x812)', () => {
 test.describe('P1: Tablet viewport (768x1024)', () => {
   test.use({ viewport: { width: 768, height: 1024 } });
 
-  test('dashboard renders without horizontal overflow', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
+  test('dashboard renders without horizontal overflow', async ({ authedPage: page }) => {
+    await waitForUiSettle(page);
 
     await assertNoOverflowSoft(page, test, 'tablet-dashboard');
   });
 
-  test('sidebar may be visible or collapsible', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
+  test('sidebar may be visible or collapsible', async ({ authedPage: page }) => {
+    await waitForUiSettle(page);
 
     const sidebar = page.locator('.sidebar, [data-testid="sidebar"], nav.sidebar, #sidebar').first();
     const sidebarCount = await sidebar.count();
@@ -286,8 +287,9 @@ test.describe('P1: Tablet viewport (768x1024)', () => {
     await assertNoOverflowSoft(page, test, 'tablet-sidebar');
   });
 
-  test('inventory table renders with readable columns', async ({ page }) => {
-    await loginAndNavigate(page, 'inventory');
+  test('inventory table renders with readable columns', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#inventory`);
+    await waitForSpaRender(page);
 
     const table = page.locator('table, .data-table, [data-testid="inventory-table"]').first();
     const tableExists = await table.count();
@@ -314,8 +316,9 @@ test.describe('P1: Tablet viewport (768x1024)', () => {
     await assertNoOverflowSoft(page, test, 'tablet-inventory');
   });
 
-  test('settings tabs render properly', async ({ page }) => {
-    await loginAndNavigate(page, 'settings');
+  test('settings tabs render properly', async ({ authedPage: page }) => {
+    await page.goto(`${BASE}/#settings`);
+    await waitForSpaRender(page);
 
     // Settings page should render without overflow (soft — known CSS issue)
     await assertNoOverflowSoft(page, test, 'tablet-settings');
@@ -348,8 +351,8 @@ test.describe('P1: Tablet viewport (768x1024)', () => {
     }
   });
 
-  test('stats cards do not overflow', async ({ page }) => {
-    await loginAndNavigate(page, 'dashboard');
+  test('stats cards do not overflow', async ({ authedPage: page }) => {
+    await waitForUiSettle(page);
 
     const statsContainer = page.locator(
       '.stats-cards, .dashboard-stats, .stat-cards, ' +
@@ -388,10 +391,10 @@ test.describe('P1: Tablet viewport (768x1024)', () => {
 
 test.describe('P2: Orientation change', () => {
 
-  test('mobile portrait to landscape reflows without crash', async ({ page }) => {
+  test('mobile portrait to landscape reflows without crash', async ({ authedPage: page }) => {
     // Start in portrait (375x812)
     await page.setViewportSize({ width: 375, height: 812 });
-    await loginAndNavigate(page, 'dashboard');
+    await waitForUiSettle(page);
 
     await assertNoOverflowSoft(page, test, 'mobile-portrait');
 
@@ -412,10 +415,10 @@ test.describe('P2: Orientation change', () => {
     expect(hash).toContain('inventory');
   });
 
-  test('tablet portrait to landscape adapts layout', async ({ page }) => {
+  test('tablet portrait to landscape adapts layout', async ({ authedPage: page }) => {
     // Start in portrait (768x1024)
     await page.setViewportSize({ width: 768, height: 1024 });
-    await loginAndNavigate(page, 'dashboard');
+    await waitForUiSettle(page);
 
     await assertNoOverflowSoft(page, test, 'tablet-portrait');
 

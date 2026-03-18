@@ -11,7 +11,7 @@
 // Phase 6: Edge cases & negatives — empty search, rapid sort, filter edge cases
 // =============================================================================
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 import { waitForSpaRender, waitForTableRows, waitForUiSettle, waitForElement, waitForElementGone } from '../helpers/wait-utils.js';
 
 test.setTimeout(90_000);
@@ -54,37 +54,8 @@ const BULK_ACTIONS = [
   { label: 'Delete', handler: 'deleteSelected' },
 ];
 
+// Navigation helper — authedPage fixture handles auth; this just navigates to the target route
 async function loginAndNavigate(page, route = 'inventory') {
-  await page.goto(`${BASE}/#login`);
-  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
-  await page.goto(`${BASE}/#login`);
-  await page.waitForSelector('#login-form', { timeout: 10_000 });
-  await waitForSpaRender(page);
-
-  await page.locator('#login-email').fill(DEMO.email);
-  await page.locator('#login-password').fill(DEMO.password);
-  await page.locator('#login-submit-btn').click();
-
-  try {
-    await page.waitForFunction(
-      () => !window.location.hash.includes('#login'),
-      { timeout: 20_000 }
-    );
-  } catch {
-    await page.evaluate(async () => {
-      try {
-        const res = await fetch('/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        const data = await res.json();
-        if (data.token) {
-          store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
-          router.navigate('dashboard');
-        }
-      } catch (e) { /* ignore */ }
-    });
-    await waitForSpaRender(page, 10_000);
-  }
-  await waitForSpaRender(page);
-
   if (route !== 'dashboard') {
     await page.evaluate((r) => router.navigate(r), route);
     await waitForSpaRender(page);
@@ -102,7 +73,7 @@ async function getRowCount(page) {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Table > Phase 0: Discovery', () => {
 
-  test('P0-1: Inventory full-page screenshot + a11y snapshot', async ({ page }) => {
+  test('P0-1: Inventory full-page screenshot + a11y snapshot', async ({ authedPage: page }) => {
     const consoleErrors = [];
     page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
     const pageErrors = [];
@@ -135,7 +106,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 0: Discovery', () => {
     }
   });
 
-  test('P0-2: Enumerate ALL interactive elements on inventory page', async ({ page }) => {
+  test('P0-2: Enumerate ALL interactive elements on inventory page', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -194,7 +165,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 0: Discovery', () => {
     }
   });
 
-  test('P0-3: Verify inventory hero stats render with valid numbers', async ({ page }) => {
+  test('P0-3: Verify inventory hero stats render with valid numbers', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -221,7 +192,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 0: Discovery', () => {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Table > Phase 1: Hero Buttons', () => {
 
-  test('P1-1: Bundle Builder, Restock, Low Stock Alerts', async ({ page }) => {
+  test('P1-1: Bundle Builder, Restock, Low Stock Alerts', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -273,7 +244,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 1: Hero Buttons', () => {
     }
   });
 
-  test('P1-2: Quick Lookup, Tools dropdown, Add Item', async ({ page }) => {
+  test('P1-2: Quick Lookup, Tools dropdown, Add Item', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -338,7 +309,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 1: Hero Buttons', () => {
     }
   });
 
-  test('P1-3: Tools dropdown items — Bulk Prices, Age Analysis, Calculator', async ({ page }) => {
+  test('P1-3: Tools dropdown items — Bulk Prices, Age Analysis, Calculator', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -388,7 +359,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 1: Hero Buttons', () => {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Table > Phase 2: Search & Filter', () => {
 
-  test('P2-1: Search input, Filter button, Import button', async ({ page }) => {
+  test('P2-1: Search input, Filter button, Import button', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -455,7 +426,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 2: Search & Filter', () => {
     if (impModal) { await page.keyboard.press('Escape'); await page.waitForTimeout(150); }
   });
 
-  test('P2-2: Export button, Bulk Edit button, Column Picker button', async ({ page }) => {
+  test('P2-2: Export button, Bulk Edit button, Column Picker button', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -498,7 +469,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 2: Search & Filter', () => {
     }
   });
 
-  test('P2-3: Filter — add filter by status, verify filter badge, clear all', async ({ page }) => {
+  test('P2-3: Filter — add filter by status, verify filter badge, clear all', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -557,7 +528,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 3: Sort Headers', () => {
     const batch = sortBatches[batchIdx];
     const batchLabels = batch.map(b => b.label).join(', ');
 
-    test(`P3-${batchIdx + 1}: Sort — ${batchLabels}`, async ({ page }) => {
+    test(`P3-${batchIdx + 1}: Sort — ${batchLabels}`, async ({ authedPage: page }) => {
       await loginAndNavigate(page, 'inventory');
       await waitForTableRows(page);
 
@@ -644,7 +615,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 3: Sort Headers', () => {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Table > Phase 4: Row Interactions', () => {
 
-  test('P4-1: Row checkbox select, row click (item history), row dblclick (edit)', async ({ page }) => {
+  test('P4-1: Row checkbox select, row click (item history), row dblclick (edit)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -707,7 +678,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 4: Row Interactions', () => {
     }
   });
 
-  test('P4-2: Edit button, Delete button, row aria-label on checkbox', async ({ page }) => {
+  test('P4-2: Edit button, Delete button, row aria-label on checkbox', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -750,7 +721,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 4: Row Interactions', () => {
     expect(ariaLabel).toMatch(/^Select item /);
   });
 
-  test('P4-3: Select multiple rows, verify selection count updates', async ({ page }) => {
+  test('P4-3: Select multiple rows, verify selection count updates', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -794,7 +765,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 4: Row Interactions', () => {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Table > Phase 5: Bulk Actions', () => {
 
-  test('P5-1: Select-all checkbox toggles all rows', async ({ page }) => {
+  test('P5-1: Select-all checkbox toggles all rows', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -844,7 +815,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 5: Bulk Actions', () => {
     expect(uncheckedCount).toBe(0);
   });
 
-  test('P5-2: Bulk action buttons — Status, Price, Edit (visible when selected)', async ({ page }) => {
+  test('P5-2: Bulk action buttons — Status, Price, Edit (visible when selected)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -883,7 +854,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 5: Bulk Actions', () => {
     await page.waitForTimeout(150);
   });
 
-  test('P5-3: Bulk action buttons — Crosslist, Export, Delete + clear selection', async ({ page }) => {
+  test('P5-3: Bulk action buttons — Crosslist, Export, Delete + clear selection', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -942,7 +913,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 5: Bulk Actions', () => {
 // =============================================================================
 test.describe('Quinn v3 > Inventory Table > Phase 6: Edge Cases', () => {
 
-  test('P6-1: Empty search shows "no results" state, clear restores', async ({ page }) => {
+  test('P6-1: Empty search shows "no results" state, clear restores', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -985,7 +956,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 6: Edge Cases', () => {
     expect(restoredRows).toBeGreaterThanOrEqual(initialRows - 1); // Allow minor variance under load
   });
 
-  test('P6-2: Rapid sort clicks (5 clicks on same column) — no crash', async ({ page }) => {
+  test('P6-2: Rapid sort clicks (5 clicks on same column) — no crash', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -1013,7 +984,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 6: Edge Cases', () => {
     }
   });
 
-  test('P6-3: Select-all then deselect individual — count decrements', async ({ page }) => {
+  test('P6-3: Select-all then deselect individual — count decrements', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -1047,7 +1018,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 6: Edge Cases', () => {
     await page.waitForTimeout(150);
   });
 
-  test('P6-4: Filter edge case — empty value, category column', async ({ page }) => {
+  test('P6-4: Filter edge case — empty value, category column', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -1087,7 +1058,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 6: Edge Cases', () => {
     await page.waitForTimeout(150);
   });
 
-  test('P6-5: Page title and hero subtitle reflect item count', async ({ page }) => {
+  test('P6-5: Page title and hero subtitle reflect item count', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 
@@ -1103,7 +1074,7 @@ test.describe('Quinn v3 > Inventory Table > Phase 6: Edge Cases', () => {
     expect(subtitleText?.trim()).toBe('Manage your product catalog');
   });
 
-  test('P6-6: Inventory sidebar nav shows active state', async ({ page }) => {
+  test('P6-6: Inventory sidebar nav shows active state', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await waitForTableRows(page);
 

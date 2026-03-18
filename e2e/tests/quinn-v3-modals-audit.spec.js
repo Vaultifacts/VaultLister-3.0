@@ -11,7 +11,7 @@
 // Phase 6: Edge cases — rapid open/close, nested modals, scroll lock
 // =============================================================================
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 import { waitForSpaRender, waitForTableRows, waitForUiSettle, waitForElement, waitForElementGone } from '../helpers/wait-utils.js';
 
 test.setTimeout(90_000);
@@ -19,37 +19,8 @@ test.setTimeout(90_000);
 const BASE = `http://localhost:${process.env.PORT || 3001}`;
 const DEMO = { email: 'demo@vaultlister.com', password: 'DemoPassword123!' };
 
+// Navigation helper — authedPage fixture handles auth; this just navigates to the target route
 async function loginAndNavigate(page, route = 'inventory') {
-  await page.goto(`${BASE}/#login`);
-  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
-  await page.goto(`${BASE}/#login`);
-  await page.waitForSelector('#login-form', { timeout: 10_000 });
-  await waitForSpaRender(page);
-
-  await page.locator('#login-email').fill(DEMO.email);
-  await page.locator('#login-password').fill(DEMO.password);
-  await page.locator('#login-submit-btn').click();
-
-  try {
-    await page.waitForFunction(
-      () => !window.location.hash.includes('#login'),
-      { timeout: 20_000 }
-    );
-  } catch {
-    await page.evaluate(async () => {
-      try {
-        const res = await fetch('/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        const data = await res.json();
-        if (data.token) {
-          store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
-          router.navigate('dashboard');
-        }
-      } catch (e) { /* ignore */ }
-    });
-    await waitForSpaRender(page, 10_000);
-  }
-  await waitForSpaRender(page);
-
   if (route !== 'dashboard') {
     await page.evaluate((r) => router.navigate(r), route);
     await waitForSpaRender(page);
@@ -89,7 +60,7 @@ function getModal(page) {
 
 test.describe('Quinn v3 > Modals > Phase 0: Discovery', () => {
 
-  test('P0-1: Modal overlay has role="dialog" and aria-modal="true"', async ({ page }) => {
+  test('P0-1: Modal overlay has role="dialog" and aria-modal="true"', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await openAddItemModal(page);
 
@@ -101,7 +72,7 @@ test.describe('Quinn v3 > Modals > Phase 0: Discovery', () => {
     expect(ariaModal).toBe('true');
   });
 
-  test('P0-2: Modal has aria-labelledby pointing to title', async ({ page }) => {
+  test('P0-2: Modal has aria-labelledby pointing to title', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await openAddItemModal(page);
 
@@ -118,7 +89,7 @@ test.describe('Quinn v3 > Modals > Phase 0: Discovery', () => {
     }
   });
 
-  test('P0-3: Screenshot baseline — Add Item modal', async ({ page }) => {
+  test('P0-3: Screenshot baseline — Add Item modal', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await openAddItemModal(page);
 
@@ -141,7 +112,7 @@ test.describe('Quinn v3 > Modals > Phase 0: Discovery', () => {
 
 test.describe('Quinn v3 > Modals > Phase 1: Add Item Modal', () => {
 
-  test('P1-1: Close button (X) dismisses modal', async ({ page }) => {
+  test('P1-1: Close button (X) dismisses modal', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await openAddItemModal(page);
 
@@ -157,7 +128,7 @@ test.describe('Quinn v3 > Modals > Phase 1: Add Item Modal', () => {
     expect(isVisible).toBe(false);
   });
 
-  test('P1-2: Escape key dismisses modal', async ({ page }) => {
+  test('P1-2: Escape key dismisses modal', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await openAddItemModal(page);
 
@@ -171,7 +142,7 @@ test.describe('Quinn v3 > Modals > Phase 1: Add Item Modal', () => {
     expect(isVisible).toBe(false);
   });
 
-  test('P1-3: Click outside modal dismisses it', async ({ page }) => {
+  test('P1-3: Click outside modal dismisses it', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await openAddItemModal(page);
 
@@ -191,7 +162,7 @@ test.describe('Quinn v3 > Modals > Phase 1: Add Item Modal', () => {
     expect(isVisible).toBe(false);
   });
 
-  test('P1-4: Focus trap — Tab cycles within modal', async ({ page }) => {
+  test('P1-4: Focus trap — Tab cycles within modal', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await openAddItemModal(page);
 
@@ -214,7 +185,7 @@ test.describe('Quinn v3 > Modals > Phase 1: Add Item Modal', () => {
     expect(activeInModal).toBe(true);
   });
 
-  test('P1-5: Focus trap — Shift+Tab wraps backwards', async ({ page }) => {
+  test('P1-5: Focus trap — Shift+Tab wraps backwards', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
     await openAddItemModal(page);
 
@@ -230,7 +201,7 @@ test.describe('Quinn v3 > Modals > Phase 1: Add Item Modal', () => {
     expect(activeInModal).toBe(true);
   });
 
-  test('P1-6: Focus restored to trigger after close', async ({ page }) => {
+  test('P1-6: Focus restored to trigger after close', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     // Click the Add Item button (the trigger) — use same resilient pattern as openAddItemModal
@@ -263,7 +234,7 @@ test.describe('Quinn v3 > Modals > Phase 1: Add Item Modal', () => {
 
 test.describe('Quinn v3 > Modals > Phase 2: Confirm Dialog', () => {
 
-  test('P2-1: Confirm dialog renders with title and message', async ({ page }) => {
+  test('P2-1: Confirm dialog renders with title and message', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     // Trigger a confirm dialog via JavaScript
@@ -294,7 +265,7 @@ test.describe('Quinn v3 > Modals > Phase 2: Confirm Dialog', () => {
     await page.keyboard.press('Escape');
   });
 
-  test('P2-2: Cancel button resolves with false', async ({ page }) => {
+  test('P2-2: Cancel button resolves with false', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     // Set up confirm and track result
@@ -319,7 +290,7 @@ test.describe('Quinn v3 > Modals > Phase 2: Confirm Dialog', () => {
     expect(result === false || result === null).toBe(true);
   });
 
-  test('P2-3: Confirm button resolves with true', async ({ page }) => {
+  test('P2-3: Confirm button resolves with true', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     const result = await page.evaluate(() => {
@@ -347,7 +318,7 @@ test.describe('Quinn v3 > Modals > Phase 2: Confirm Dialog', () => {
 
 test.describe('Quinn v3 > Modals > Phase 3: Prompt Dialog', () => {
 
-  test('P3-1: Prompt renders with text input and auto-focuses', async ({ page }) => {
+  test('P3-1: Prompt renders with text input and auto-focuses', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     await page.evaluate(() => {
@@ -366,7 +337,7 @@ test.describe('Quinn v3 > Modals > Phase 3: Prompt Dialog', () => {
     await page.keyboard.press('Escape');
   });
 
-  test('P3-2: Enter key submits prompt value', async ({ page }) => {
+  test('P3-2: Enter key submits prompt value', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     const result = await page.evaluate(() => {
@@ -384,7 +355,7 @@ test.describe('Quinn v3 > Modals > Phase 3: Prompt Dialog', () => {
     expect(result).toBe('hello');
   });
 
-  test('P3-3: Prompt with select input type', async ({ page }) => {
+  test('P3-3: Prompt with select input type', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     await page.evaluate(() => {
@@ -417,7 +388,7 @@ test.describe('Quinn v3 > Modals > Phase 3: Prompt Dialog', () => {
 
 test.describe('Quinn v3 > Modals > Phase 4: XSS Prevention', () => {
 
-  test('P4-1: Confirm dialog escapes HTML in message', async ({ page }) => {
+  test('P4-1: Confirm dialog escapes HTML in message', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     await page.evaluate(() => {
@@ -436,7 +407,7 @@ test.describe('Quinn v3 > Modals > Phase 4: XSS Prevention', () => {
     await page.keyboard.press('Escape');
   });
 
-  test('P4-2: Prompt dialog escapes HTML in title/placeholder', async ({ page }) => {
+  test('P4-2: Prompt dialog escapes HTML in title/placeholder', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     await page.evaluate(() => {
@@ -458,7 +429,7 @@ test.describe('Quinn v3 > Modals > Phase 4: XSS Prevention', () => {
 
 test.describe('Quinn v3 > Modals > Phase 5: Edge Cases', () => {
 
-  test('P5-1: Rapid open/close does not crash', async ({ page }) => {
+  test('P5-1: Rapid open/close does not crash', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     // Rapidly open and close modal 5 times using modals.show (no Promise hang)
@@ -474,7 +445,7 @@ test.describe('Quinn v3 > Modals > Phase 5: Edge Cases', () => {
     expect(appVisible).toBe(true);
   });
 
-  test('P5-2: Body scroll locked when modal is open', async ({ page }) => {
+  test('P5-2: Body scroll locked when modal is open', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     // Open modal — may fail in webkit if Add Item button is not immediately interactive
@@ -507,7 +478,7 @@ test.describe('Quinn v3 > Modals > Phase 5: Edge Cases', () => {
     await page.keyboard.press('Escape');
   });
 
-  test('P5-3: Multiple modals.close() calls do not throw', async ({ page }) => {
+  test('P5-3: Multiple modals.close() calls do not throw', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'inventory');
 
     // Call close when no modal is open — should not throw

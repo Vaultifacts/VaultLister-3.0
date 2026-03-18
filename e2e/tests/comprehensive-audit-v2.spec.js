@@ -1,22 +1,13 @@
 // Comprehensive Analytical QA Session v2 - TestFixMaster
 // Deeper exploration: post-login sections, forms, CRUD operations
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 
 const BASE = `http://localhost:${process.env.PORT || 3000}`;
 const DEMO_EMAIL = 'demo@vaultlister.com';
 const DEMO_PASSWORD = 'DemoPassword123!';
 
-// Helper: login and return page
+// Helper: navigate to a hash route (auth already injected by authedPage fixture)
 async function login(page) {
-  await page.goto(`${BASE}/#login`);
-  await page.waitForLoadState('networkidle');
-  const emailInput = page.locator('input[type="email"], input[name="email"]');
-  if (await emailInput.count() > 0) {
-    await emailInput.first().fill(DEMO_EMAIL);
-    await page.locator('input[type="password"]').first().fill(DEMO_PASSWORD);
-    await page.locator('button[type="submit"]').first().click();
-    await page.waitForTimeout(2000);
-  }
   return page;
 }
 
@@ -26,7 +17,7 @@ async function login(page) {
 
 test.describe('1. Deep Post-Login Exploration', () => {
   
-  test('Dashboard analysis', async ({ page }) => {
+  test('Dashboard analysis', async ({ authedPage: page }) => {
     await login(page);
     await page.screenshot({ path: 'e2e/screenshots/v2-dashboard-full.png', fullPage: true });
     
@@ -49,7 +40,7 @@ test.describe('1. Deep Post-Login Exploration', () => {
     console.log(`[DASH] Console errors: ${errors.length > 0 ? JSON.stringify(errors) : 'none'}`);
   });
 
-  test('Inventory page exploration', async ({ page }) => {
+  test('Inventory page exploration', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#inventory`);
     await page.waitForTimeout(2000);
@@ -95,7 +86,7 @@ test.describe('1. Deep Post-Login Exploration', () => {
     console.log(`[INV] Page content (500 chars): ${pageContent.substring(0, 500).replace(/\n/g, ' | ')}`);
   });
 
-  test('Listings page exploration', async ({ page }) => {
+  test('Listings page exploration', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#listings`);
     await page.waitForTimeout(2000);
@@ -105,7 +96,7 @@ test.describe('1. Deep Post-Login Exploration', () => {
     console.log(`[LIST] Listings content (500 chars): ${content.substring(0, 500).replace(/\n/g, ' | ')}`);
   });
 
-  test('Orders page exploration', async ({ page }) => {
+  test('Orders page exploration', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#orders-sales`);
     await page.waitForTimeout(2000);
@@ -115,7 +106,7 @@ test.describe('1. Deep Post-Login Exploration', () => {
     console.log(`[ORD] Orders content (500 chars): ${content.substring(0, 500).replace(/\n/g, ' | ')}`);
   });
 
-  test('Offers page exploration', async ({ page }) => {
+  test('Offers page exploration', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#offers`);
     await page.waitForTimeout(2000);
@@ -125,7 +116,7 @@ test.describe('1. Deep Post-Login Exploration', () => {
     console.log(`[OFF] Offers content (500 chars): ${content.substring(0, 500).replace(/\n/g, ' | ')}`);
   });
 
-  test('Settings page exploration', async ({ page }) => {
+  test('Settings page exploration', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#settings`);
     await page.waitForTimeout(2000);
@@ -143,7 +134,7 @@ test.describe('1. Deep Post-Login Exploration', () => {
     });
   });
 
-  test('Financials page exploration', async ({ page }) => {
+  test('Financials page exploration', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#financials`);
     await page.waitForTimeout(2000);
@@ -153,7 +144,7 @@ test.describe('1. Deep Post-Login Exploration', () => {
     console.log(`[FIN] Financials content (500 chars): ${content.substring(0, 500).replace(/\n/g, ' | ')}`);
   });
 
-  test('Analytics page exploration', async ({ page }) => {
+  test('Analytics page exploration', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#analytics`);
     await page.waitForTimeout(2000);
@@ -163,7 +154,7 @@ test.describe('1. Deep Post-Login Exploration', () => {
     console.log(`[ANA] Analytics content (500 chars): ${content.substring(0, 500).replace(/\n/g, ' | ')}`);
   });
 
-  test('Help page exploration', async ({ page }) => {
+  test('Help page exploration', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#help`);
     await page.waitForTimeout(2000);
@@ -173,7 +164,7 @@ test.describe('1. Deep Post-Login Exploration', () => {
     console.log(`[HELP] Help content (500 chars): ${content.substring(0, 500).replace(/\n/g, ' | ')}`);
   });
 
-  test('Automations page exploration', async ({ page }) => {
+  test('Automations page exploration', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#automations`);
     await page.waitForTimeout(2000);
@@ -190,7 +181,7 @@ test.describe('1. Deep Post-Login Exploration', () => {
 
 test.describe('2. Form & CRUD Testing', () => {
   
-  test('Inventory - add item with edge cases', async ({ page }) => {
+  test('Inventory - add item with edge cases', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#inventory`);
     await page.waitForTimeout(1500);
@@ -232,7 +223,7 @@ test.describe('2. Form & CRUD Testing', () => {
     }
   });
 
-  test('Search functionality across pages', async ({ page }) => {
+  test('Search functionality across pages', async ({ authedPage: page }) => {
     await login(page);
 
     const pages = ['#inventory', '#listings', '#orders-sales', '#offers'];
@@ -270,7 +261,7 @@ test.describe('2. Form & CRUD Testing', () => {
 
 test.describe('3. Deep Accessibility', () => {
   
-  test('Post-login accessibility audit', async ({ page }) => {
+  test('Post-login accessibility audit', async ({ authedPage: page }) => {
     await login(page);
     await page.waitForTimeout(1000);
     
@@ -332,7 +323,7 @@ test.describe('3. Deep Accessibility', () => {
     console.log(`[A11Y-DEEP] ARIA roles: ${JSON.stringify(audit.ariaRoles)}`);
   });
 
-  test('Sidebar keyboard navigation', async ({ page }) => {
+  test('Sidebar keyboard navigation', async ({ authedPage: page }) => {
     await login(page);
     
     // Try to navigate sidebar with keyboard
@@ -365,7 +356,7 @@ test.describe('4. Visual - Mobile Responsive', () => {
   const sections = ['#dashboard', '#inventory', '#listings', '#orders-sales', '#offers', '#settings', '#analytics', '#financials'];
   
   for (const section of sections) {
-    test(`Mobile view: ${section}`, async ({ page }) => {
+    test(`Mobile view: ${section}`, async ({ authedPage: page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
       await login(page);
       await page.goto(`${BASE}/${section}`);
@@ -396,7 +387,7 @@ test.describe('4. Visual - Mobile Responsive', () => {
 // ============================================================
 
 test.describe('5. Performance - Page Transitions', () => {
-  test('Page navigation timing', async ({ page }) => {
+  test('Page navigation timing', async ({ authedPage: page }) => {
     await login(page);
 
     const sections = ['#inventory', '#listings', '#orders-sales', '#offers', '#analytics', '#financials', '#settings', '#help-support'];
@@ -570,7 +561,7 @@ test.describe('6. Security - Deep', () => {
 
 test.describe('7. Edge Cases - Deep', () => {
   
-  test('Concurrent actions', async ({ page }) => {
+  test('Concurrent actions', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#inventory`);
     await page.waitForTimeout(1500);
@@ -588,7 +579,7 @@ test.describe('7. Edge Cases - Deep', () => {
     console.log(`[EDGE-DEEP] Page functional: ${content.length > 0 && content !== 'ERROR'}`);
   });
 
-  test('Large data handling in forms', async ({ page }) => {
+  test('Large data handling in forms', async ({ authedPage: page }) => {
     await login(page);
     await page.goto(`${BASE}/#inventory`);
     await page.waitForTimeout(1500);
@@ -610,7 +601,7 @@ test.describe('7. Edge Cases - Deep', () => {
     }
   });
 
-  test('Dark mode toggle if available', async ({ page }) => {
+  test('Dark mode toggle if available', async ({ authedPage: page }) => {
     await login(page);
     
     // Look for dark mode toggle
@@ -627,7 +618,7 @@ test.describe('7. Edge Cases - Deep', () => {
     }
   });
 
-  test('Logout and session cleanup', async ({ page }) => {
+  test('Logout and session cleanup', async ({ authedPage: page }) => {
     await login(page);
     
     // Find logout
@@ -661,7 +652,7 @@ test.describe('7. Edge Cases - Deep', () => {
 
 test.describe('8. Flakiness - Fresh Server', () => {
   for (let i = 1; i <= 5; i++) {
-    test(`Fresh login attempt ${i}/5`, async ({ page }) => {
+    test(`Fresh login attempt ${i}/5`, async ({ authedPage: page }) => {
       const start = Date.now();
       await page.goto(`${BASE}/#login`);
       await page.waitForLoadState('networkidle');

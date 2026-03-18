@@ -9,7 +9,7 @@
 // Phase 4: Sidebar footer — user info, logout button, tooltips
 // =============================================================================
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 import { waitForSpaRender, waitForTableRows, waitForUiSettle, waitForElement, waitForElementGone } from '../helpers/wait-utils.js';
 
 test.setTimeout(90_000);
@@ -49,37 +49,8 @@ const NAV_SECTIONS = [
 
 const ALL_NAV_ITEMS = NAV_SECTIONS.flatMap(s => s.items);
 
+// Navigation helper — authedPage fixture handles auth; this just navigates to the target route
 async function loginAndNavigate(page, route = 'dashboard') {
-  await page.goto(`${BASE}/#login`);
-  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
-  await page.goto(`${BASE}/#login`);
-  await page.waitForSelector('#login-form', { timeout: 10_000 });
-  await waitForSpaRender(page);
-
-  await page.locator('#login-email').fill(DEMO.email);
-  await page.locator('#login-password').fill(DEMO.password);
-  await page.locator('#login-submit-btn').click();
-
-  try {
-    await page.waitForFunction(
-      () => !window.location.hash.includes('#login'),
-      { timeout: 20_000 }
-    );
-  } catch {
-    await page.evaluate(async () => {
-      try {
-        const res = await fetch('/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        const data = await res.json();
-        if (data.token) {
-          store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
-          router.navigate('dashboard');
-        }
-      } catch (e) { /* ignore */ }
-    });
-    await waitForTableRows(page);
-  }
-  await waitForSpaRender(page);
-
   if (route !== 'dashboard') {
     await page.evaluate((r) => router.navigate(r), route);
     await waitForSpaRender(page);
@@ -92,7 +63,7 @@ async function loginAndNavigate(page, route = 'dashboard') {
 // =============================================================================
 test.describe('Quinn v3 > Navigation > Phase 0: Discovery', () => {
 
-  test('P0-1: Dashboard full page screenshot + accessibility snapshot', async ({ page }) => {
+  test('P0-1: Dashboard full page screenshot + accessibility snapshot', async ({ authedPage: page }) => {
     const consoleErrors = [];
     page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
     const pageErrors = [];
@@ -126,7 +97,7 @@ test.describe('Quinn v3 > Navigation > Phase 0: Discovery', () => {
     }
   });
 
-  test('P0-2: Enumerate ALL sidebar interactive elements', async ({ page }) => {
+  test('P0-2: Enumerate ALL sidebar interactive elements', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
     await expect(page.locator('.sidebar')).toBeVisible({ timeout: 10_000 });
 
@@ -190,7 +161,7 @@ test.describe('Quinn v3 > Navigation > Phase 0: Discovery', () => {
     expect(userAvatar?.trim().length).toBeGreaterThan(0);
   });
 
-  test('P0-3: Verify aria-current="page" on active nav item (dashboard)', async ({ page }) => {
+  test('P0-3: Verify aria-current="page" on active nav item (dashboard)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     // Dashboard nav item should have aria-current="page"
@@ -219,7 +190,7 @@ test.describe('Quinn v3 > Navigation > Phase 1: Nav Items', () => {
     const batch = batches[batchIdx];
     const batchLabels = batch.map(b => b.label).join(', ');
 
-    test(`P1-${batchIdx + 1}: Nav click — ${batchLabels}`, async ({ page }) => {
+    test(`P1-${batchIdx + 1}: Nav click — ${batchLabels}`, async ({ authedPage: page }) => {
       await loginAndNavigate(page, 'dashboard');
       await expect(page.locator('.sidebar')).toBeVisible({ timeout: 10_000 });
 
@@ -283,7 +254,7 @@ test.describe('Quinn v3 > Navigation > Phase 1: Nav Items', () => {
 // =============================================================================
 test.describe('Quinn v3 > Navigation > Phase 2: Collapse/Expand', () => {
 
-  test('P2-1: Toggle collapse — sidebar class, button text, aria-label update', async ({ page }) => {
+  test('P2-1: Toggle collapse — sidebar class, button text, aria-label update', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
     const sidebar = page.locator('.sidebar');
     const collapseBtn = page.locator('.sidebar-collapse-btn');
@@ -313,7 +284,7 @@ test.describe('Quinn v3 > Navigation > Phase 2: Collapse/Expand', () => {
     await page.waitForTimeout(300);
   });
 
-  test('P2-2: Collapse state persists across navigation', async ({ page }) => {
+  test('P2-2: Collapse state persists across navigation', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
     const collapseBtn = page.locator('.sidebar-collapse-btn');
 
@@ -336,7 +307,7 @@ test.describe('Quinn v3 > Navigation > Phase 2: Collapse/Expand', () => {
     await page.waitForTimeout(150);
   });
 
-  test('P2-3: Rapid collapse/expand toggle (10 times)', async ({ page }) => {
+  test('P2-3: Rapid collapse/expand toggle (10 times)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
     const collapseBtn = page.locator('.sidebar-collapse-btn');
 
@@ -358,7 +329,7 @@ test.describe('Quinn v3 > Navigation > Phase 2: Collapse/Expand', () => {
     expect(errors).toHaveLength(0);
   });
 
-  test('P2-4: Nav click while sidebar is collapsed navigates correctly', async ({ page }) => {
+  test('P2-4: Nav click while sidebar is collapsed navigates correctly', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     // Collapse sidebar (soft — collapse may not persist due to known SPA re-render issue)
@@ -405,7 +376,7 @@ test.describe('Quinn v3 > Navigation > Phase 2: Collapse/Expand', () => {
 // =============================================================================
 test.describe('Quinn v3 > Navigation > Phase 3: Keyboard Shortcuts', () => {
 
-  test('P3-1: Alt+1 through Alt+5 quick navigation', async ({ page }) => {
+  test('P3-1: Alt+1 through Alt+5 quick navigation', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     const altNavMap = [
@@ -446,7 +417,7 @@ test.describe('Quinn v3 > Navigation > Phase 3: Keyboard Shortcuts', () => {
     }
   });
 
-  test('P3-2: Ctrl+D (dashboard), Ctrl+E (listings), Ctrl+I (inventory)', async ({ page }) => {
+  test('P3-2: Ctrl+D (dashboard), Ctrl+E (listings), Ctrl+I (inventory)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     const ctrlNavMap = [
@@ -472,7 +443,7 @@ test.describe('Quinn v3 > Navigation > Phase 3: Keyboard Shortcuts', () => {
     }
   });
 
-  test('P3-3: ? opens keyboard shortcuts modal, Escape closes it', async ({ page }) => {
+  test('P3-3: ? opens keyboard shortcuts modal, Escape closes it', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     // Ensure no modals open initially
@@ -504,7 +475,7 @@ test.describe('Quinn v3 > Navigation > Phase 3: Keyboard Shortcuts', () => {
     await expect(page.locator('.modal')).not.toBeVisible();
   });
 
-  test('P3-4: Tab key focus order through sidebar nav items', async ({ page }) => {
+  test('P3-4: Tab key focus order through sidebar nav items', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     // Focus the first sidebar element via click then Tab through
@@ -549,7 +520,7 @@ test.describe('Quinn v3 > Navigation > Phase 3: Keyboard Shortcuts', () => {
 // =============================================================================
 test.describe('Quinn v3 > Navigation > Phase 4: Footer & Edge Cases', () => {
 
-  test('P4-1: User info displays username and plan tier', async ({ page }) => {
+  test('P4-1: User info displays username and plan tier', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     const userInfo = page.locator('.sidebar .user-info');
@@ -567,7 +538,7 @@ test.describe('Quinn v3 > Navigation > Phase 4: Footer & Edge Cases', () => {
     expect(avatar?.trim()).toBe(username?.trim()[0].toUpperCase());
   });
 
-  test('P4-2: Logout button has aria-label and icon', async ({ page }) => {
+  test('P4-2: Logout button has aria-label and icon', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     const logoutBtn = page.locator('.sidebar-logout-btn');
@@ -581,7 +552,7 @@ test.describe('Quinn v3 > Navigation > Phase 4: Footer & Edge Cases', () => {
     expect(labelText?.trim()).toBe('Logout');
   });
 
-  test('P4-3: Nav item hover title attributes present for all items', async ({ page }) => {
+  test('P4-3: Nav item hover title attributes present for all items', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     // Check every nav item has a title attribute matching its label
@@ -594,7 +565,7 @@ test.describe('Quinn v3 > Navigation > Phase 4: Footer & Edge Cases', () => {
     }
   });
 
-  test('P4-4: Section titles render for all 3 sections', async ({ page }) => {
+  test('P4-4: Section titles render for all 3 sections', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     const sectionTitles = await page.locator('.nav-section-title').allTextContents();
@@ -606,7 +577,7 @@ test.describe('Quinn v3 > Navigation > Phase 4: Footer & Edge Cases', () => {
     expect(trimmed.length).toBe(3);
   });
 
-  test('P4-5: Sidebar scroll position restores after navigation', async ({ page }) => {
+  test('P4-5: Sidebar scroll position restores after navigation', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     // Check if sidebar is scrollable (content must exceed container height)
@@ -660,7 +631,7 @@ test.describe('Quinn v3 > Navigation > Phase 4: Footer & Edge Cases', () => {
     expect(scrollAfter).toBeGreaterThanOrEqual(0);
   });
 
-  test('P4-6: Badges render on nav items with pending counts', async ({ page }) => {
+  test('P4-6: Badges render on nav items with pending counts', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'dashboard');
 
     // Check badge rendering for items that can have badges

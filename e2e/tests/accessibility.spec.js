@@ -2,23 +2,14 @@
 // Scans 6 key pages for critical and serious accessibility violations.
 // Known pre-existing violations are baselined per page; tests fail only
 // when NEW violation types appear (regression detection).
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 import AxeBuilder from '@axe-core/playwright';
 import { demoUser, routes, selectors } from '../fixtures/test-data.js';
 
 /**
- * Helper: log in via UI and navigate to a target route.
+ * Helper: navigate to a target route (auth already injected by authedPage fixture).
  */
 async function loginAndNavigate(page, targetRoute) {
-    await page.goto(routes.login);
-    await page.waitForSelector(selectors.loginForm, { timeout: 10000 });
-    await page.fill(selectors.emailInput, demoUser.email);
-    await page.fill(selectors.passwordInput, demoUser.password);
-    await Promise.all([
-        page.waitForURL(/#dashboard/, { timeout: 15000 }),
-        page.click(selectors.submitButton)
-    ]);
-
     if (targetRoute && targetRoute !== routes.dashboard) {
         await page.goto(targetRoute);
         await page.waitForLoadState('networkidle');
@@ -69,7 +60,7 @@ test.describe('Accessibility - WCAG 2.1 AA', () => {
     // Public Pages (no auth needed)
     // ============================================================
 
-    test('Login page has no new critical/serious violations', async ({ page }) => {
+    test('Login page has no new critical/serious violations', async ({ authedPage: page }) => {
         await page.goto(routes.login);
         await page.waitForSelector(selectors.loginForm, { timeout: 10000 });
 
@@ -77,7 +68,7 @@ test.describe('Accessibility - WCAG 2.1 AA', () => {
         expect(violations, formatViolations(violations)).toHaveLength(0);
     });
 
-    test('Register page has no new critical/serious violations', async ({ page }) => {
+    test('Register page has no new critical/serious violations', async ({ authedPage: page }) => {
         await page.goto(routes.register);
         await page.waitForLoadState('networkidle');
 
@@ -89,28 +80,28 @@ test.describe('Accessibility - WCAG 2.1 AA', () => {
     // Authenticated Pages
     // ============================================================
 
-    test('Dashboard has no new critical/serious violations', async ({ page }) => {
+    test('Dashboard has no new critical/serious violations', async ({ authedPage: page }) => {
         await loginAndNavigate(page, routes.dashboard);
 
         const violations = await getSeriesViolations(page, KNOWN_RULES.dashboard);
         expect(violations, formatViolations(violations)).toHaveLength(0);
     });
 
-    test('Inventory page has no new critical/serious violations', async ({ page }) => {
+    test('Inventory page has no new critical/serious violations', async ({ authedPage: page }) => {
         await loginAndNavigate(page, routes.inventory);
 
         const violations = await getSeriesViolations(page, KNOWN_RULES.inventory);
         expect(violations, formatViolations(violations)).toHaveLength(0);
     });
 
-    test('Listings page has no new critical/serious violations', async ({ page }) => {
+    test('Listings page has no new critical/serious violations', async ({ authedPage: page }) => {
         await loginAndNavigate(page, routes.listings);
 
         const violations = await getSeriesViolations(page, KNOWN_RULES.listings);
         expect(violations, formatViolations(violations)).toHaveLength(0);
     });
 
-    test('Analytics page has no new critical/serious violations', async ({ page }) => {
+    test('Analytics page has no new critical/serious violations', async ({ authedPage: page }) => {
         await loginAndNavigate(page, routes.analytics);
 
         const violations = await getSeriesViolations(page, KNOWN_RULES.analytics);

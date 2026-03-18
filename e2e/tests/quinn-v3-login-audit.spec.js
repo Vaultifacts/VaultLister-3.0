@@ -24,6 +24,13 @@ test.describe('Quinn v3 > Login Page > Phase 0: Discovery', () => {
     const networkRequests = [];
     page.on('request', req => networkRequests.push({ url: req.url(), method: req.method() }));
 
+    const _url = new URL(BASE);
+    await page.context().addCookies([{
+      name: 'vl_access',
+      value: 'e2e-test-bypass',
+      domain: _url.hostname,
+      path: '/',
+    }]);
     await page.goto(`${BASE}/#login`);
     await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
     await page.goto(`${BASE}/#login`);
@@ -78,6 +85,13 @@ test.describe('Quinn v3 > Login Page > Phase 0: Discovery', () => {
   });
 
   test('P0-2: Enumerate every interactive element (zero interaction)', async ({ page }) => {
+    const _url = new URL(BASE);
+    await page.context().addCookies([{
+      name: 'vl_access',
+      value: 'e2e-test-bypass',
+      domain: _url.hostname,
+      path: '/',
+    }]);
     await page.goto(`${BASE}/#login`);
     await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
     await page.goto(`${BASE}/#login`);
@@ -200,6 +214,13 @@ test.describe('Quinn v3 > Login Page > Phase 0: Discovery', () => {
 // Batch 1: Elements 1-3 (skip-nav link, email input, password input)
 test.describe('Quinn v3 > Login Page > Phase 1: Batch 1 (Elements 1-3)', () => {
   test.beforeEach(async ({ page }) => {
+    const _url = new URL(BASE);
+    await page.context().addCookies([{
+      name: 'vl_access',
+      value: 'e2e-test-bypass',
+      domain: _url.hostname,
+      path: '/',
+    }]);
     await page.goto(`${BASE}/#login`);
     await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
     await page.goto(`${BASE}/#login`);
@@ -484,6 +505,13 @@ test.describe('Quinn v3 > Login Page > Phase 1: Batch 1 (Elements 1-3)', () => {
 // =============================================================================
 test.describe('Quinn v3 > Login Page > Phase 1: Batch 2 (Elements 4-6)', () => {
   test.beforeEach(async ({ page }) => {
+    const _url = new URL(BASE);
+    await page.context().addCookies([{
+      name: 'vl_access',
+      value: 'e2e-test-bypass',
+      domain: _url.hostname,
+      path: '/',
+    }]);
     await page.goto(`${BASE}/#login`);
     await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
     await page.goto(`${BASE}/#login`);
@@ -711,6 +739,13 @@ test.describe('Quinn v3 > Login Page > Phase 1: Batch 2 (Elements 4-6)', () => {
 // =============================================================================
 test.describe('Quinn v3 > Login Page > Phase 1: Batch 3 (Elements 7-9)', () => {
   test.beforeEach(async ({ page }) => {
+    const _url = new URL(BASE);
+    await page.context().addCookies([{
+      name: 'vl_access',
+      value: 'e2e-test-bypass',
+      domain: _url.hostname,
+      path: '/',
+    }]);
     await page.goto(`${BASE}/#login`);
     await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
     await page.goto(`${BASE}/#login`);
@@ -822,6 +857,13 @@ test.describe('Quinn v3 > Login Page > Phase 1: Batch 3 (Elements 7-9)', () => {
 // =============================================================================
 test.describe('Quinn v3 > Login Page > Phase 1: Batch 4 (Error states + CSP)', () => {
   test.beforeEach(async ({ page }) => {
+    const _url = new URL(BASE);
+    await page.context().addCookies([{
+      name: 'vl_access',
+      value: 'e2e-test-bypass',
+      domain: _url.hostname,
+      path: '/',
+    }]);
     await page.goto(`${BASE}/#login`);
     await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
     await page.goto(`${BASE}/#login`);

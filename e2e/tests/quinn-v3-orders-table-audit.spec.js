@@ -11,7 +11,7 @@
 // Phase 6: Edge cases — empty search, combined filters, rapid pipeline clicks
 // =============================================================================
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.js';
 import { waitForSpaRender, waitForTableRows, waitForUiSettle, waitForElement, waitForElementGone } from '../helpers/wait-utils.js';
 
 test.setTimeout(90_000);
@@ -26,36 +26,6 @@ const PIPELINE_STAGES = ['Pending', 'Confirmed', 'Shipped', 'Delivered'];
 const QUICK_STATS = ['Total Value', 'All Time Orders', 'Completion Rate'];
 
 async function loginAndNavigate(page, route = 'orders') {
-  await page.goto(`${BASE}/#login`);
-  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
-  await page.goto(`${BASE}/#login`);
-  await page.waitForSelector('#login-form', { timeout: 10_000 });
-  await waitForSpaRender(page);
-
-  await page.locator('#login-email').fill(DEMO.email);
-  await page.locator('#login-password').fill(DEMO.password);
-  await page.locator('#login-submit-btn').click();
-
-  try {
-    await page.waitForFunction(
-      () => !window.location.hash.includes('#login'),
-      { timeout: 20_000 }
-    );
-  } catch {
-    await page.evaluate(async () => {
-      try {
-        const res = await fetch('/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        const data = await res.json();
-        if (data.token) {
-          store.setState({ user: data.user, token: data.token, refreshToken: data.refreshToken });
-          router.navigate('dashboard');
-        }
-      } catch (e) { /* ignore */ }
-    });
-    await waitForSpaRender(page, 10_000);
-  }
-  await waitForSpaRender(page);
-
   if (route !== 'dashboard') {
     await page.evaluate((r) => router.navigate(r), route);
     await waitForSpaRender(page);
@@ -72,7 +42,7 @@ async function getOrderRowCount(page) {
 // =============================================================================
 test.describe('Quinn v3 > Orders Table > Phase 0: Discovery', () => {
 
-  test('P0-1: Orders full-page screenshot + a11y snapshot', async ({ page }) => {
+  test('P0-1: Orders full-page screenshot + a11y snapshot', async ({ authedPage: page }) => {
     const consoleErrors = [];
     page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
     const pageErrors = [];
@@ -100,7 +70,7 @@ test.describe('Quinn v3 > Orders Table > Phase 0: Discovery', () => {
     }
   });
 
-  test('P0-2: Enumerate ALL interactive elements on orders page', async ({ page }) => {
+  test('P0-2: Enumerate ALL interactive elements on orders page', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const elements = await page.evaluate(() => {
@@ -146,7 +116,7 @@ test.describe('Quinn v3 > Orders Table > Phase 0: Discovery', () => {
     expect(visible.length).toBeGreaterThan(10);
   });
 
-  test('P0-3: Orders hero title and subtitle', async ({ page }) => {
+  test('P0-3: Orders hero title and subtitle', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const title = page.locator('.orders-hero-title');
@@ -166,7 +136,7 @@ test.describe('Quinn v3 > Orders Table > Phase 0: Discovery', () => {
 // =============================================================================
 test.describe('Quinn v3 > Orders Table > Phase 1: Hero Buttons', () => {
 
-  test('P1-1: Ship Calc, Returns, Shipping Labels buttons', async ({ page }) => {
+  test('P1-1: Ship Calc, Returns, Shipping Labels buttons', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     // --- Ship Calc ---
@@ -210,7 +180,7 @@ test.describe('Quinn v3 > Orders Table > Phase 1: Hero Buttons', () => {
     }
   });
 
-  test('P1-2: Sync button, More dropdown (Import, Labels, Export, Batch Ship, Map)', async ({ page }) => {
+  test('P1-2: Sync button, More dropdown (Import, Labels, Export, Batch Ship, Map)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     // --- Sync ---
@@ -249,7 +219,7 @@ test.describe('Quinn v3 > Orders Table > Phase 1: Hero Buttons', () => {
     await page.waitForTimeout(150);
   });
 
-  test('P1-3: More dropdown items — Import Orders, Export CSV, Order Map', async ({ page }) => {
+  test('P1-3: More dropdown items — Import Orders, Export CSV, Order Map', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const moreDropdown = page.locator('.orders-hero-actions .dropdown').first();
@@ -289,7 +259,7 @@ test.describe('Quinn v3 > Orders Table > Phase 1: Hero Buttons', () => {
 // =============================================================================
 test.describe('Quinn v3 > Orders Table > Phase 2: Pipeline', () => {
 
-  test('P2-1: Pipeline stages render with counts', async ({ page }) => {
+  test('P2-1: Pipeline stages render with counts', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const pipeline = page.locator('.orders-pipeline');
@@ -309,7 +279,7 @@ test.describe('Quinn v3 > Orders Table > Phase 2: Pipeline', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-orders-P2-1-pipeline.png' });
   });
 
-  test('P2-2: Click pipeline stages — filters table by status', async ({ page }) => {
+  test('P2-2: Click pipeline stages — filters table by status', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const rowsBefore = await getOrderRowCount(page);
@@ -334,7 +304,7 @@ test.describe('Quinn v3 > Orders Table > Phase 2: Pipeline', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-orders-P2-2-delivered-filter.png' });
   });
 
-  test('P2-3: Pipeline connectors render, urgent alert renders if present', async ({ page }) => {
+  test('P2-3: Pipeline connectors render, urgent alert renders if present', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     // Pipeline connectors
@@ -366,7 +336,7 @@ test.describe('Quinn v3 > Orders Table > Phase 2: Pipeline', () => {
 // =============================================================================
 test.describe('Quinn v3 > Orders Table > Phase 3: Filters', () => {
 
-  test('P3-1: Search input, Platform filter, Status filter', async ({ page }) => {
+  test('P3-1: Search input, Platform filter, Status filter', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     // --- Search ---
@@ -396,7 +366,7 @@ test.describe('Quinn v3 > Orders Table > Phase 3: Filters', () => {
     expect(statusOptions.some(o => o.includes('Shipped'))).toBe(true);
   });
 
-  test('P3-2: Date Range filter, Clear Filters button', async ({ page }) => {
+  test('P3-2: Date Range filter, Clear Filters button', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     // --- Date Range ---
@@ -430,7 +400,7 @@ test.describe('Quinn v3 > Orders Table > Phase 3: Filters', () => {
     }
   });
 
-  test('P3-3: Platform filter — select specific, verify row count change', async ({ page }) => {
+  test('P3-3: Platform filter — select specific, verify row count change', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const rowsBefore = await getOrderRowCount(page);
@@ -456,7 +426,7 @@ test.describe('Quinn v3 > Orders Table > Phase 3: Filters', () => {
 // =============================================================================
 test.describe('Quinn v3 > Orders Table > Phase 4: Row Interactions', () => {
 
-  test('P4-1: Select-all checkbox, per-row checkbox, row urgency styling', async ({ page }) => {
+  test('P4-1: Select-all checkbox, per-row checkbox, row urgency styling', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const rowCount = await getOrderRowCount(page);
@@ -492,7 +462,7 @@ test.describe('Quinn v3 > Orders Table > Phase 4: Row Interactions', () => {
     console.log(`Overdue rows: ${overdueRows}, Warning rows: ${warningRows}`);
   });
 
-  test('P4-2: Action buttons — View, Notes, Bell (first 3)', async ({ page }) => {
+  test('P4-2: Action buttons — View, Notes, Bell (first 3)', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const rowCount = await getOrderRowCount(page);
@@ -531,7 +501,7 @@ test.describe('Quinn v3 > Orders Table > Phase 4: Row Interactions', () => {
     if (bellModal) { await page.keyboard.press('Escape'); await page.waitForTimeout(150); }
   });
 
-  test('P4-3: Action buttons — Flag, Split Shipment, Print Packing Slip', async ({ page }) => {
+  test('P4-3: Action buttons — Flag, Split Shipment, Print Packing Slip', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const rowCount = await getOrderRowCount(page);
@@ -576,7 +546,7 @@ test.describe('Quinn v3 > Orders Table > Phase 4: Row Interactions', () => {
 // =============================================================================
 test.describe('Quinn v3 > Orders Table > Phase 5: Quick Stats', () => {
 
-  test('P5-1: Quick stats render — Total Value, All Time Orders, Completion Rate', async ({ page }) => {
+  test('P5-1: Quick stats render — Total Value, All Time Orders, Completion Rate', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const statsContainer = page.locator('.orders-quick-stats');
@@ -594,7 +564,7 @@ test.describe('Quinn v3 > Orders Table > Phase 5: Quick Stats', () => {
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-orders-P5-1-quick-stats.png' });
   });
 
-  test('P5-2: Total Value is formatted as currency, Completion Rate as percentage', async ({ page }) => {
+  test('P5-2: Total Value is formatted as currency, Completion Rate as percentage', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const statsContainer = page.locator('.orders-quick-stats');
@@ -616,7 +586,7 @@ test.describe('Quinn v3 > Orders Table > Phase 5: Quick Stats', () => {
 // =============================================================================
 test.describe('Quinn v3 > Orders Table > Phase 6: Edge Cases', () => {
 
-  test('P6-1: Search for nonexistent buyer — empty results', async ({ page }) => {
+  test('P6-1: Search for nonexistent buyer — empty results', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const rowsBefore = await getOrderRowCount(page);
@@ -638,7 +608,7 @@ test.describe('Quinn v3 > Orders Table > Phase 6: Edge Cases', () => {
     expect(rowsReset).toBe(rowsBefore);
   });
 
-  test('P6-2: Combined status + date filter', async ({ page }) => {
+  test('P6-2: Combined status + date filter', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const rowsBefore = await getOrderRowCount(page);
@@ -663,7 +633,7 @@ test.describe('Quinn v3 > Orders Table > Phase 6: Edge Cases', () => {
     await waitForSpaRender(page);
   });
 
-  test('P6-3: Rapid pipeline stage clicks — no crash', async ({ page }) => {
+  test('P6-3: Rapid pipeline stage clicks — no crash', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const pageErrors = [];
@@ -686,7 +656,7 @@ test.describe('Quinn v3 > Orders Table > Phase 6: Edge Cases', () => {
     }
   });
 
-  test('P6-4: Orders sidebar nav shows active state', async ({ page }) => {
+  test('P6-4: Orders sidebar nav shows active state', async ({ authedPage: page }) => {
     await loginAndNavigate(page, 'orders');
 
     const navBtn = page.locator('[data-testid="nav-orders"]');
