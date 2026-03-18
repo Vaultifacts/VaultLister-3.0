@@ -30,16 +30,22 @@ const scrapers = {
             // Images
             const images = [];
 
-            // Main image
-            const mainImg = document.querySelector('#landingImage')?.src ||
-                           document.querySelector('#imgBlkFront')?.src;
+            // Main image — upgrade to full-res
+            const rawMainImg = document.querySelector('#landingImage')?.src ||
+                              document.querySelector('#imgBlkFront')?.src;
+            const mainImg = rawMainImg
+                ? rawMainImg.replace(/\._[A-Z0-9_,]+_\./i, '.')
+                : null;
             if (mainImg) images.push(mainImg);
 
-            // Thumbnail images
+            // Thumbnail images — upgrade to full-res by stripping size suffixes
             const thumbs = document.querySelectorAll('.imageThumbnail img, #altImages img');
             thumbs.forEach(img => {
-                if (img.src && !images.includes(img.src)) {
-                    images.push(img.src);
+                const hiRes = img.src
+                    ? img.src.replace(/\._[A-Z0-9_,]+_\./i, '.')
+                    : null;
+                if (hiRes && !images.includes(hiRes)) {
+                    images.push(hiRes);
                 }
             });
 

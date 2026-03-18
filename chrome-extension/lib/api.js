@@ -1,16 +1,30 @@
 // VaultLister API Client for Chrome Extension
 
-const API_BASE_URL = 'http://localhost:3000/api';
+// Resolve base URL: prefer stored preference, fall back to localhost
+async function resolveBaseUrl() {
+    try {
+        const result = await chrome.storage.local.get(['api_base_url']);
+        return result.api_base_url || 'http://localhost:3000/api';
+    } catch {
+        return 'http://localhost:3000/api';
+    }
+}
 
 class VaultListerAPI {
     constructor() {
         this.token = null;
-        this.loadToken();
+        this.baseUrl = 'http://localhost:3000/api';
+        this._ready = this._init();
+    }
+
+    async _init() {
+        this.baseUrl = await resolveBaseUrl();
+        const result = await chrome.storage.local.get(['auth_token']);
+        this.token = result.auth_token || null;
     }
 
     async loadToken() {
-        const result = await chrome.storage.local.get(['auth_token']);
-        this.token = result.auth_token || null;
+        await this._ready;
     }
 
     async saveToken(token) {
@@ -24,7 +38,8 @@ class VaultListerAPI {
     }
 
     async request(endpoint, options = {}) {
-        const url = `${API_BASE_URL}${endpoint}`;
+        await this._ready;
+        const url = `${this.baseUrl}${endpoint}`;
         const headers = {
             'Content-Type': 'application/json',
             ...options.headers
@@ -88,7 +103,7 @@ class VaultListerAPI {
 
     // Price Tracking
     async addPriceTracking(data) {
-        return await this.request('/extension/price-track', {
+        return await this.request('/extension/price-tracking', {
             method: 'POST',
             body: JSON.stringify(data)
         });
@@ -96,7 +111,7 @@ class VaultListerAPI {
 
     async getPriceTracking(params = {}) {
         const query = new URLSearchParams(params).toString();
-        return await this.request(`/extension/price-track?${query}`);
+        return await this.request(`/extension/price-tracking?${query}`);
     }
 
     // Scraped Products
@@ -136,5 +151,7 @@ class VaultListerAPI {
     }
 }
 
-// Export singleton instance
+// Singleton instance — available as global `api` in both popup (script tag) and service worker (module import)
 const api = new VaultListerAPI();
+// eslint-disable-next-line no-undef
+(typeof self !== 'undefined' ? self : globalThis).api = api;

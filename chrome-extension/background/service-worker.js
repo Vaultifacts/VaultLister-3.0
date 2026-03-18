@@ -1,8 +1,14 @@
 // Background Service Worker for VaultLister Extension
 // Handles price tracking, alarms, notifications, and sync
 
-importScripts('../lib/api.js');
-importScripts('../lib/logger.js');
+import '../lib/api.js';
+import '../lib/logger.js';
+
+// Resolve app URL from the same base the API client uses
+async function getAppUrl() {
+    await api.loadToken();
+    return api.baseUrl.replace('/api', '');
+}
 
 // Initialize extension
 chrome.runtime.onInstalled.addListener(() => {
@@ -24,6 +30,11 @@ chrome.runtime.onInstalled.addListener(() => {
     // Set up price tracking alarm (check every 6 hours)
     chrome.alarms.create('price-tracking', {
         periodInMinutes: 360
+    });
+
+    // Set up badge update alarm (every minute)
+    chrome.alarms.create('badge-update', {
+        periodInMinutes: 1
     });
 });
 
@@ -49,8 +60,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         }
     } else if (info.menuItemId === 'cross-list-image') {
         try {
-            // Open VaultLister with image URL
-            const url = `http://localhost:3000?action=crosslist&image=${encodeURIComponent(info.srcUrl)}`;
+            const appUrl = await getAppUrl();
+            const url = `${appUrl}?action=crosslist&image=${encodeURIComponent(info.srcUrl)}`;
             chrome.tabs.create({ url });
         } catch (error) {
             logger.error('Failed to cross-list:', error);
@@ -88,7 +99,7 @@ async function handleProductScraped(productData) {
         });
 
         // Update badge
-        updateBadge();
+        await updateBadge();
 
         // Notify popup
         chrome.runtime.sendMessage({ action: 'productScraped' });
@@ -108,10 +119,12 @@ async function getInventoryItems() {
     }
 }
 
-// Price tracking alarm
+// Price tracking alarm + badge update alarm
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === 'price-tracking') {
         await checkPriceUpdates();
+    } else if (alarm.name === 'badge-update') {
+        await updateBadge();
     }
 });
 
@@ -120,25 +133,28 @@ async function checkPriceUpdates() {
     try {
         // Get all tracked products
         const result = await api.getPriceTracking({ status: 'active' });
-        const trackedProducts = result.items || [];
+        const trackedProducts = result.tracking || result.items || [];
 
         for (const product of trackedProducts) {
-            // Check current price (would need to scrape again)
-            const currentPrice = await scrapePrice(product.source_url);
+            // Scrape current price via a background fetch
+            const currentPrice = await scrapePrice(product.listing_url || product.source_url);
 
-            if (currentPrice && currentPrice < product.target_price) {
-                // Price dropped!
+            if (currentPrice && currentPrice < (product.alert_threshold || product.target_price)) {
+                // Price dropped
                 chrome.notifications.create({
                     type: 'basic',
                     iconUrl: '../icons/icon48.png',
                     title: 'Price Drop Alert!',
-                    message: `${product.product_name} is now $${currentPrice.toFixed(2)}`
+                    message: `${product.title || product.product_name} is now $${currentPrice.toFixed(2)}`
                 });
 
                 // Notify popup
                 chrome.runtime.sendMessage({
                     action: 'priceAlert',
-                    data: { productName: product.product_name, newPrice: currentPrice }
+                    data: {
+                        productName: product.title || product.product_name,
+                        newPrice: currentPrice
+                    }
                 });
             }
         }
@@ -147,24 +163,23 @@ async function checkPriceUpdates() {
     }
 }
 
-// Scrape price from URL
+// Scrape price from URL using fetch + regex (DOMParser not available in SW)
 async function scrapePrice(url) {
+    if (!url) return null;
     try {
         const response = await fetch(url);
         const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
 
-        // Try Amazon price
-        const amazonPrice = doc.querySelector('.a-price-whole');
-        if (amazonPrice) {
-            return parseFloat(amazonPrice.textContent.replace(',', ''));
+        // Amazon: price whole part
+        const amazonMatch = html.match(/<span class="a-price-whole[^"]*">([0-9,]+)</);
+        if (amazonMatch) {
+            return parseFloat(amazonMatch[1].replace(',', ''));
         }
 
-        // Try Nordstrom price
-        const nordstromPrice = doc.querySelector('[data-testid="product-price"]');
-        if (nordstromPrice) {
-            return parseFloat(nordstromPrice.textContent.replace(/[$,]/g, ''));
+        // Nordstrom: data-testid="product-price" content
+        const nordstromMatch = html.match(/data-testid="product-price"[^>]*>\$?([0-9,.]+)/);
+        if (nordstromMatch) {
+            return parseFloat(nordstromMatch[1].replace(/[$,]/g, ''));
         }
 
         return null;
@@ -191,11 +206,8 @@ async function updateBadge() {
     }
 }
 
-// Periodic badge update
-setInterval(updateBadge, 60000); // Every minute
-
 // Handle notification clicks
-chrome.notifications.onClicked.addListener((notificationId) => {
-    // Open VaultLister
-    chrome.tabs.create({ url: 'http://localhost:3000' });
+chrome.notifications.onClicked.addListener(async (notificationId) => {
+    const appUrl = await getAppUrl();
+    chrome.tabs.create({ url: appUrl });
 });

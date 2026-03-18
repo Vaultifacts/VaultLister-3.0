@@ -1,5 +1,15 @@
 // VaultLister Extension Popup Logic
 
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 let state = {
     isAuthenticated: false,
     scrapedCount: 0,
@@ -90,10 +100,10 @@ function updateUI() {
         syncQueueEl.innerHTML = state.syncQueue.map(item => `
             <div class="sync-item">
                 <div class="sync-item-info">
-                    <div class="sync-item-title">${item.action_type}</div>
-                    <div class="sync-item-meta">${new Date(item.created_at).toLocaleDateString()}</div>
+                    <div class="sync-item-title">${escapeHtml(item.action_type)}</div>
+                    <div class="sync-item-meta">${escapeHtml(new Date(item.created_at).toLocaleDateString())}</div>
                 </div>
-                <button class="sync-item-action" onclick="processSyncItem('${item.id}')">
+                <button class="sync-item-action" data-id="${escapeHtml(item.id)}" onclick="processSyncItem(this.dataset.id)">
                     Process
                 </button>
             </div>
@@ -188,8 +198,10 @@ priceTrackBtn.addEventListener('click', async () => {
 });
 
 // Open App
-openAppBtn.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'http://localhost:3000' });
+openAppBtn.addEventListener('click', async () => {
+    await api.loadToken();
+    const url = api.baseUrl.replace('/api', '');
+    chrome.tabs.create({ url });
 });
 
 // Sync Now
@@ -239,6 +251,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         showToast(`Price drop: ${request.data.productName}`, 'success');
     }
 });
+
+// Wire sign-up link to resolved base URL
+(async () => {
+    await api.loadToken();
+    const signupLink = document.getElementById('signup-link');
+    if (signupLink) {
+        signupLink.href = api.baseUrl.replace('/api', '');
+    }
+})();
 
 // Initialize on load
 init();

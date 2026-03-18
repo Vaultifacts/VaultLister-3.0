@@ -1,6 +1,16 @@
 // Autofill Helper for Marketplace Platforms
 // Assists with filling out listing forms on Poshmark, eBay, and Mercari
 
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // Detect platform
 const platform = detectPlatform();
 
@@ -176,8 +186,14 @@ function displayItems(items) {
         return;
     }
 
-    container.innerHTML = items.map(item => `
-        <div class="vaultlister-item" data-item='${JSON.stringify(item).replace(/'/g, '&apos;')}' style="
+    container.innerHTML = items.map(item => {
+        const safeItem = escapeHtml(JSON.stringify(item));
+        const imgSrc = escapeHtml(item.images && item.images[0] ? item.images[0] : '');
+        const imgAlt = escapeHtml(item.title || item.name || '');
+        const displayName = escapeHtml(item.title || item.name || 'Untitled');
+        const brandText = escapeHtml(item.brand || 'No brand');
+        const costText = escapeHtml(((item.list_price || item.cost || 0)).toFixed(2));
+        return `<div class="vaultlister-item" data-item="${safeItem}" style="
             display: flex;
             gap: 12px;
             padding: 12px;
@@ -189,19 +205,19 @@ function displayItems(items) {
         " onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f9fafb'"
            onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'"
            onclick="window.fillFormWithItem(this.dataset.item)">
-            ${item.images && item.images.length > 0 ? `
-                <img src="${item.images[0]}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;" alt="${item.name}">
+            ${imgSrc ? `
+                <img src="${imgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;" alt="${imgAlt}">
             ` : `
                 <div style="width: 60px; height: 60px; background: #e5e7eb; border-radius: 6px;"></div>
             `}
             <div style="flex: 1;">
-                <div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">${item.name}</div>
+                <div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">${displayName}</div>
                 <div style="font-size: 13px; color: #6b7280;">
-                    ${item.brand || 'No brand'} • $${(item.cost || 0).toFixed(2)}
+                    ${brandText} &bull; $${costText}
                 </div>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 // Display error

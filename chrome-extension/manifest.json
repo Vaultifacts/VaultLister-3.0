@@ -12,6 +12,7 @@
   ],
   "host_permissions": [
     "http://localhost:3000/*",
+    "https://vaultlister.com/*",
     "https://www.amazon.com/*",
     "https://www.nordstrom.com/*",
     "https://poshmark.com/*",
@@ -19,7 +20,8 @@
     "https://www.mercari.com/*"
   ],
   "background": {
-    "service_worker": "background/service-worker.js"
+    "service_worker": "background/service-worker.js",
+    "type": "module"
   },
   "content_scripts": [
     {
