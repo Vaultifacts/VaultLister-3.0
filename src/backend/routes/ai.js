@@ -332,15 +332,38 @@ Important:
     // POST /api/ai/generate-title - Generate title only
     if (method === 'POST' && path === '/generate-title') {
         try {
-            const { description, brand, category, keywords } = body;
+            const { description, brand, category, keywords, condition, color, size } = body;
 
             if (!description && !keywords?.length) {
                 return { status: 400, data: { error: 'Description or keywords required' } };
             }
 
-            const title = generateTitle({ description, brand, category, keywords });
+            if (process.env.ANTHROPIC_API_KEY) {
+                try {
+                    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+                    const safeBrand = sanitizeForAI(brand || 'Unknown', 100);
+                    const safeCategory = sanitizeForAI(category || 'Clothing', 100);
+                    const safeKeywords = sanitizeForAI((keywords || []).join(', ') || 'N/A', 200);
+                    const safeDesc = sanitizeForAI(description || 'N/A', 300);
+                    const userContent = `Brand: ${safeBrand}\nCategory: ${safeCategory}\nCondition: ${sanitizeForAI(condition || 'N/A', 50)}\nColor: ${sanitizeForAI(color || 'N/A', 50)}\nSize: ${sanitizeForAI(size || 'N/A', 20)}\nKeywords: ${safeKeywords}\nDescription: ${safeDesc}`;
+                    const response = await circuitBreaker('anthropic-title', () =>
+                        withTimeout(anthropic.messages.create({
+                            model: 'claude-haiku-4-5',
+                            max_tokens: 128,
+                            system: 'You are an expert reseller copywriter. Generate a single marketplace listing title (max 80 chars, SEO-optimized with brand and key attributes). Respond with ONLY the title text — no quotes, no JSON, no explanation.',
+                            messages: [{ role: 'user', content: userContent }]
+                        }), 15000, 'Anthropic title generation'),
+                        { failureThreshold: 3, cooldownMs: 60000 }
+                    );
+                    const title = response.content[0].text.trim().slice(0, 80);
+                    if (title) return { status: 200, data: { title, source: 'claude-haiku' } };
+                } catch (err) {
+                    logger.warn('[AI] Haiku title generation failed, falling back to template', { error: err.message });
+                }
+            }
 
-            return { status: 200, data: { title } };
+            const title = generateTitle({ description, brand, category, keywords, condition, color, size });
+            return { status: 200, data: { title, source: 'template' } };
         } catch (error) {
             logger.error('[AI] Error generating title', user?.id, { detail: error.message });
             return { status: 500, data: { error: 'Internal server error' } };
@@ -356,11 +379,28 @@ Important:
                 return { status: 400, data: { error: 'Title required' } };
             }
 
-            const description = generateDescription({
-                title, brand, category, condition, size, color, material, keywords
-            });
+            if (process.env.ANTHROPIC_API_KEY) {
+                try {
+                    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+                    const userContent = `Title: ${sanitizeForAI(title, 100)}\nBrand: ${sanitizeForAI(brand || 'Unknown', 100)}\nCategory: ${sanitizeForAI(category || 'Clothing', 100)}\nCondition: ${sanitizeForAI(condition || 'good', 50)}\nSize: ${sanitizeForAI(size || 'N/A', 20)}\nColor: ${sanitizeForAI(color || 'N/A', 50)}\nMaterial: ${sanitizeForAI(material || 'N/A', 100)}\nKeywords: ${sanitizeForAI((keywords || []).join(', ') || 'N/A', 200)}`;
+                    const response = await circuitBreaker('anthropic-description', () =>
+                        withTimeout(anthropic.messages.create({
+                            model: 'claude-haiku-4-5',
+                            max_tokens: 700,
+                            system: 'You are an expert reseller copywriter. Write a 200-500 word marketplace listing description for the secondhand item provided. Include a DETAILS section (brand, size, color, condition) and end with a friendly closing line. Respond with ONLY the description text — no JSON, no extra commentary.',
+                            messages: [{ role: 'user', content: userContent }]
+                        }), 20000, 'Anthropic description generation'),
+                        { failureThreshold: 3, cooldownMs: 60000 }
+                    );
+                    const description = response.content[0].text.trim();
+                    if (description) return { status: 200, data: { description, source: 'claude-haiku' } };
+                } catch (err) {
+                    logger.warn('[AI] Haiku description generation failed, falling back to template', { error: err.message });
+                }
+            }
 
-            return { status: 200, data: { description } };
+            const description = generateDescription({ title, brand, category, condition, size, color, material, keywords });
+            return { status: 200, data: { description, source: 'template' } };
         } catch (error) {
             logger.error('[AI] Error generating description', user?.id, { detail: error.message });
             return { status: 500, data: { error: 'Internal server error' } };
@@ -376,9 +416,33 @@ Important:
                 return { status: 400, data: { error: 'Title or description required' } };
             }
 
-            const tags = generateTags({ title, description, brand, category });
+            if (process.env.ANTHROPIC_API_KEY) {
+                try {
+                    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+                    const userContent = `Title: ${sanitizeForAI(title || 'N/A', 100)}\nDescription: ${sanitizeForAI(description || 'N/A', 300)}\nBrand: ${sanitizeForAI(brand || 'Unknown', 100)}\nCategory: ${sanitizeForAI(category || 'Clothing', 100)}`;
+                    const response = await circuitBreaker('anthropic-tags', () =>
+                        withTimeout(anthropic.messages.create({
+                            model: 'claude-haiku-4-5',
+                            max_tokens: 256,
+                            system: 'You are an expert reseller. Generate up to 20 relevant search tags for the marketplace listing provided. Respond with ONLY a JSON array of lowercase strings, e.g. ["tag1","tag2"]. No explanation, no extra text.',
+                            messages: [{ role: 'user', content: userContent }]
+                        }), 15000, 'Anthropic tags generation'),
+                        { failureThreshold: 3, cooldownMs: 60000 }
+                    );
+                    const m = response.content[0].text.trim().match(/\[[\s\S]*\]/);
+                    if (m) {
+                        const parsed = JSON.parse(m[0]);
+                        if (Array.isArray(parsed) && parsed.length) {
+                            return { status: 200, data: { tags: parsed.slice(0, 20), source: 'claude-haiku' } };
+                        }
+                    }
+                } catch (err) {
+                    logger.warn('[AI] Haiku tags generation failed, falling back to template', { error: err.message });
+                }
+            }
 
-            return { status: 200, data: { tags } };
+            const tags = generateTags({ title, description, brand, category });
+            return { status: 200, data: { tags, source: 'template' } };
         } catch (error) {
             logger.error('[AI] Error generating tags', user?.id, { detail: error.message });
             return { status: 500, data: { error: 'Internal server error' } };
