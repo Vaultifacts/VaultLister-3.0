@@ -3566,11 +3566,9 @@ Object.assign(handlers, {
         } else {
             store.setState({ selectedOrderIds: [] });
         }
-        // Re-render checkboxes
-        if (store.state.currentPage === 'orders') {
-            const pageContent = pages.orders();
-            document.querySelector('.page-content').innerHTML = pageContent;
-        }
+        document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => {
+            cb.checked = checked;
+        });
     },
 
 

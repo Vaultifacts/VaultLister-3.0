@@ -305,11 +305,9 @@ test.describe('Quinn v3 #orders-sales Table — Phase 4: Row Interactions', () =
 
 test.describe('Quinn v3 #orders-sales Table — Phase 5: Bulk Actions', () => {
 
-  test.skip('P5.1: Select-all checkbox (if present)', async ({ authedPage: page }) => {
-    // DEFECT: The select-all checkbox exists in the table header but checking it does not
-    // mark all tbody row checkboxes as checked (allChecked = false). The select-all handler
-    // is either not wired up or the check event does not propagate to individual rows.
-    // This is a real UI bug in the orders-sales bulk selection feature.
+  test('P5.1: Select-all checkbox (if present)', async ({ authedPage: page }) => {
+    // Fixed: toggleAllOrderSelection now directly sets cb.checked on all tbody checkboxes
+    // instead of relying on a broken re-render with wrong currentPage guard.
     await loginAndNavigate(page, 'orders-sales');
     await waitForSpaRender(page);
     

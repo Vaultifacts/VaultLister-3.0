@@ -474,14 +474,16 @@ test.describe('P4: Reconnection Logic', () => {
 // =============================================================================
 test.describe('P5: Offline/Online Resilience', () => {
 
-  test.skip('P5-1  going offline does not crash the app', async ({ page }) => {
-    // DEFECT: Going offline triggers WS auth retry (401) which calls router.navigate('login'),
-    // redirecting away from dashboard. The hash ends up as '#login' instead of staying on
-    // '#dashboard'. This is a real UI bug — api.request intercepts the WS 401 error and
-    // navigates to login, which should not happen when the user is simply offline.
-    // Tracked: offline should not clear auth state or redirect the user.
+  test('P5-1  going offline does not crash the app', async ({ page }) => {
+    // Fixed: api.request now checks navigator.onLine before clearing auth state and
+    // redirecting to login on a 401 response. Going offline no longer clears the session.
     await loginAndNavigate(page, 'dashboard');
     await waitForWsClient(page);
+
+    // Ensure we are actually on the dashboard before going offline
+    await page.evaluate(() => router.navigate('dashboard'));
+    await waitForUiSettle(page);
+    await page.waitForFunction(() => window.location.hash.includes('dashboard'), { timeout: 5000 });
 
     // Go offline
     await page.context().setOffline(true);
@@ -493,7 +495,7 @@ test.describe('P5: Offline/Online Resilience', () => {
     );
     expect(appOk).toBe(true);
 
-    // Hash should still be dashboard
+    // Hash should still be dashboard (not redirected to login by offline 401)
     const hash = await page.evaluate(() => window.location.hash);
     expect(hash).toContain('dashboard');
 
@@ -972,13 +974,16 @@ test.describe('P9: Push Simulation & DOM Updates', () => {
     expect(toastAppeared.found).toBe(true);
   });
 
-  test.skip('P9-3  emitted notification event updates notification badge', async ({ page }) => {
-    // DEFECT: notificationCenter.add() does not update the #notification-badge DOM element
-    // synchronously when called in the same evaluate() call as ws.emit(). The badge count
-    // remains unchanged (increased = false) after the notification is dispatched. This is a
-    // real UI bug — the badge counter should update immediately when a notification is added.
+  test('P9-3  emitted notification event updates notification badge', async ({ page }) => {
+    // Fixed: notificationCenter is now exposed on window so the test can access it directly.
+    // add() already called updateBadge() synchronously — the issue was window visibility.
     await loginAndNavigate(page, 'dashboard');
     await waitForWsClient(page);
+
+    // Ensure we are on the authenticated dashboard so #notification-badge exists in the header
+    await page.evaluate(() => router.navigate('dashboard'));
+    await waitForUiSettle(page);
+    await page.waitForFunction(() => !!document.getElementById('notification-badge'), { timeout: 5000 });
 
     const result = await page.evaluate(() => {
       const ws = window.VaultListerSocket;

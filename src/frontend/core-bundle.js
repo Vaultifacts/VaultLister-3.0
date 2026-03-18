@@ -8301,12 +8301,19 @@ const api = {
             if (!response.ok && response.status === 401 && !isRetryAfterRefresh && !endpoint.includes('/auth/login')) {
                 const errorMsg = data.error || '';
                 if (errorMsg.includes('expired') || errorMsg.includes('Invalid')) {
+                    if (!navigator.onLine) {
+                        throw new Error('You are offline. Please reconnect to continue.');
+                    }
                     const refreshed = await this.refreshAccessToken();
                     if (refreshed) {
                         // Retry the original request with new token
                         return this.request(endpoint, options, 0, true);
                     } else {
-                        // Refresh failed, redirect to login
+                        // Refresh failed — only redirect if we are actually online.
+                        // An offline 401 is a network artifact, not a real auth failure.
+                        if (!navigator.onLine) {
+                            throw new Error('You are offline. Please reconnect to continue.');
+                        }
                         store.setState({ user: null, token: null, refreshToken: null });
                         router.navigate('login');
                         throw new Error('Session expired. Please log in again.');
@@ -11107,6 +11114,7 @@ const notificationCenter = {
         `;
     }
 };
+window.notificationCenter = notificationCenter;
 
 // ============================================
 // Lightbox
@@ -15209,7 +15217,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '18982ed1';
+    const v = '6ff2814d';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {

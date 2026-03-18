@@ -2383,6 +2383,7 @@ const notificationCenter = {
         `;
     }
 };
+window.notificationCenter = notificationCenter;
 
 // ============================================
 // Lightbox
