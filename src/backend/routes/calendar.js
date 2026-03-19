@@ -1,9 +1,18 @@
 // Calendar Routes
 // Calendar events for listings, orders, automations, and custom events
+// Also handles Google Calendar OAuth flow (#17)
 
 import { query } from '../db/database.js';
 import { nanoid } from 'nanoid';
 import { logger } from '../shared/logger.js';
+import {
+    isGoogleConfigured,
+    buildGoogleAuthUrl,
+    getAccessToken,
+    revokeGoogleToken,
+    getConnectionStatus
+} from '../services/googleOAuth.js';
+import { validateCSRF } from '../middleware/csrf.js';
 
 /**
  * Calendar router
@@ -414,9 +423,172 @@ export async function calendarRouter(ctx) {
         }
     }
 
+    // ============================================================
+    // GOOGLE CALENDAR OAUTH (#17)
+    // ============================================================
+
+    const calendarSyncEnabled = process.env.FEATURE_CALENDAR_SYNC !== 'false';
+
+    // GET /api/calendar/google/authorize — start Google Calendar OAuth
+    if (method === 'GET' && path === '/google/authorize') {
+        if (!calendarSyncEnabled) {
+            return { status: 503, data: { error: 'Google Calendar sync is not enabled.' } };
+        }
+        if (!isGoogleConfigured()) {
+            return {
+                status: 400,
+                data: {
+                    error: 'Google Calendar not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in environment.',
+                    configured: false
+                }
+            };
+        }
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        const { authorizationUrl, state } = buildGoogleAuthUrl(user.id, 'calendar', baseUrl);
+        logger.info('[Calendar] Google Calendar OAuth initiated', user.id);
+        return { status: 200, data: { authorizationUrl, state } };
+    }
+
+    // GET /api/calendar/google/status — connection status
+    if (method === 'GET' && path === '/google/status') {
+        const status = getConnectionStatus(user.id, 'calendar');
+        return {
+            status: 200,
+            data: {
+                ...status,
+                configured: isGoogleConfigured(),
+                featureEnabled: calendarSyncEnabled
+            }
+        };
+    }
+
+    // POST /api/calendar/google/sync — push local events to Google Calendar
+    if (method === 'POST' && path === '/google/sync') {
+        if (!calendarSyncEnabled) {
+            return { status: 503, data: { error: 'Google Calendar sync is not enabled.' } };
+        }
+
+        const csrf = validateCSRF(ctx);
+        if (!csrf.valid) return { status: csrf.status || 403, data: { error: csrf.error } };
+
+        const accessToken = await getAccessToken(user.id, 'calendar');
+        if (!accessToken) {
+            return { status: 401, data: { error: 'Google Calendar not connected. Authorize first via /api/calendar/google/authorize.' } };
+        }
+
+        try {
+            const { start_date, end_date } = body || {};
+
+            let sql = `SELECT * FROM calendar_events WHERE user_id = ? AND completed = 0`;
+            const params = [user.id];
+            if (start_date) { sql += ' AND date >= ?'; params.push(start_date); }
+            if (end_date) { sql += ' AND date <= ?'; params.push(end_date); }
+            sql += ' ORDER BY date ASC LIMIT 250';
+
+            const events = query.all(sql, params);
+
+            let pushed = 0;
+            let failed = 0;
+
+            for (const ev of events) {
+                try {
+                    const gcalEvent = buildGoogleCalendarEvent(ev);
+                    const resp = await fetch(
+                        'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+                        {
+                            method: 'POST',
+                            headers: {
+                                Authorization: `Bearer ${accessToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(gcalEvent),
+                            signal: AbortSignal.timeout(10000)
+                        }
+                    );
+                    if (resp.ok) {
+                        pushed++;
+                    } else {
+                        failed++;
+                        logger.warn('[Calendar] Failed to push event to Google Calendar', user.id, { eventId: ev.id, status: resp.status });
+                    }
+                } catch (evErr) {
+                    failed++;
+                    logger.warn('[Calendar] Error pushing event', user.id, { eventId: ev.id, detail: evErr.message });
+                }
+            }
+
+            // Update last_synced_at in sync settings
+            query.run(
+                `UPDATE calendar_sync_settings SET last_synced_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                 WHERE user_id = ? AND provider = 'google'`,
+                [user.id]
+            );
+
+            logger.info('[Calendar] Google Calendar sync complete', user.id, { pushed, failed, total: events.length });
+            return {
+                status: 200,
+                data: { success: true, pushed, failed, total: events.length }
+            };
+        } catch (err) {
+            logger.error('[Calendar] Google Calendar sync error', user.id, { detail: err.message });
+            return { status: 500, data: { error: 'Google Calendar sync failed.' } };
+        }
+    }
+
+    // DELETE /api/calendar/google/revoke — disconnect Google Calendar
+    if (method === 'DELETE' && path === '/google/revoke') {
+        const csrf = validateCSRF(ctx);
+        if (!csrf.valid) return { status: csrf.status || 403, data: { error: csrf.error } };
+
+        try {
+            await revokeGoogleToken(user.id, 'calendar');
+            logger.info('[Calendar] Google Calendar token revoked', user.id);
+            return { status: 200, data: { success: true, message: 'Google Calendar disconnected.' } };
+        } catch (err) {
+            logger.error('[Calendar] Google Calendar revoke error', user.id, { detail: err.message });
+            return { status: 500, data: { error: 'Failed to revoke Google Calendar connection.' } };
+        }
+    }
+
     // 404
     return {
         status: 404,
         data: { error: 'Endpoint not found' }
     };
+}
+
+// ----------------------------------------------------------------
+// Internal helpers
+// ----------------------------------------------------------------
+
+function buildGoogleCalendarEvent(ev) {
+    const dateStr = ev.date; // YYYY-MM-DD
+    if (ev.all_day || !ev.time) {
+        return {
+            summary: ev.title,
+            description: ev.description || '',
+            start: { date: dateStr },
+            end: { date: dateStr },
+            colorId: gcalColorId(ev.color)
+        };
+    }
+    const startDt = `${dateStr}T${ev.time}:00`;
+    const endDt = `${dateStr}T${ev.time}:00`; // same time — event duration managed on Google side
+    return {
+        summary: ev.title,
+        description: ev.description || '',
+        start: { dateTime: startDt, timeZone: 'UTC' },
+        end: { dateTime: endDt, timeZone: 'UTC' },
+        colorId: gcalColorId(ev.color)
+    };
+}
+
+const COLOR_MAP = {
+    '#ef4444': '11', '#f97316': '6', '#eab308': '5',
+    '#22c55e': '2', '#3b82f6': '9', '#8b5cf6': '3',
+    '#6366f1': '9', '#ec4899': '4'
+};
+
+function gcalColorId(hex) {
+    return COLOR_MAP[hex?.toLowerCase()] || '9';
 }

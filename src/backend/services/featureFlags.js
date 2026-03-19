@@ -38,6 +38,9 @@ const DEFAULT_FLAGS = {
     'integration.whatnot': { enabled: true, rolloutPercentage: 100 },
     'integration.vestiaire': { enabled: false, rolloutPercentage: 25 },
     'integration.shopify': { enabled: false, rolloutPercentage: 0 },
+    'integration.outlook': { enabled: true, rolloutPercentage: 100 },
+    'integration.googleDrive': { enabled: false, rolloutPercentage: 0 },
+    'integration.googleCalendarSync': { enabled: false, rolloutPercentage: 0 },
 
     // Beta Features
     'beta.newInventoryView': { enabled: false, rolloutPercentage: 5 },
