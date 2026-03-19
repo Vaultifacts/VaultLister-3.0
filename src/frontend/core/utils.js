@@ -3860,6 +3860,7 @@ const progressiveImage = {
 
     observeAll() {
         if (this._observer) this._observer.disconnect();
+        if (!('IntersectionObserver' in window)) { document.querySelectorAll('[data-lazy-src]').forEach(el => this.load(el)); return; }
         this._observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -5720,6 +5721,7 @@ const stickySectionObserver = {
 
     init(selector = '.sticky-section-header') {
         if (this._observer) this._observer.disconnect();
+        if (!('IntersectionObserver' in window)) return;
         const headers = document.querySelectorAll(selector);
 
         this._observer = new IntersectionObserver(

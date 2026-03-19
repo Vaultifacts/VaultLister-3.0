@@ -1011,22 +1011,23 @@ export async function analyticsRouter(ctx) {
         }
         try {
             let updated = 0;
-            for (const item of items) {
-                if (!item.id || item.suggested_price == null) continue;
-                const existing = query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [item.id, user.id]);
-                if (!existing) continue;
-                query.run('UPDATE inventory SET list_price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
-                    [item.suggested_price, item.id, user.id]);
+            query.transaction(() => {
+                for (const item of items) {
+                    if (!item.id || item.suggested_price == null) continue;
+                    const existing = query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [item.id, user.id]);
+                    if (!existing) continue;
+                    query.run('UPDATE inventory SET list_price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                        [item.suggested_price, item.id, user.id]);
 
-                // Log price change in price_history if table exists
-                try {
-                    query.run(`INSERT INTO price_history (id, inventory_id, user_id, old_price, new_price, change_reason)
-                        VALUES (?, ?, ?, ?, ?, ?)`,
-                        [uuidv4(), item.id, user.id, item.current_price || 0, item.suggested_price, 'auto_suggestion']);
-                } catch (_) { /* price_history table may not exist */ }
+                    try {
+                        query.run(`INSERT INTO price_history (id, inventory_id, user_id, old_price, new_price, change_reason)
+                            VALUES (?, ?, ?, ?, ?, ?)`,
+                            [uuidv4(), item.id, user.id, item.current_price || 0, item.suggested_price, 'auto_suggestion']);
+                    } catch (_) { /* price_history table may not exist */ }
 
-                updated++;
-            }
+                    updated++;
+                }
+            });
             return { status: 200, data: { updated, message: `Updated ${updated} item prices` } };
         } catch (error) {
             logger.error('[Analytics] apply price suggestions failed', user?.id, { detail: error?.message });

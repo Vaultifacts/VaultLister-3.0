@@ -397,38 +397,40 @@ export async function relistingRouter(ctx) {
             const results = [];
             for (const item of itemsToProcess) {
                 try {
-                    // Update listing price if changed
-                    const changes = [];
-                    if (item.new_price && item.new_price !== item.original_price) {
-                        query.run('UPDATE inventory SET list_price = ? WHERE id = ? AND user_id = ?', [item.new_price, item.inventory_id, user.id]);
-                        changes.push({ field: 'price', from: item.original_price, to: item.new_price });
-                    }
+                    query.transaction(() => {
+                        // Update listing price if changed
+                        const changes = [];
+                        if (item.new_price && item.new_price !== item.original_price) {
+                            query.run('UPDATE inventory SET list_price = ? WHERE id = ? AND user_id = ?', [item.new_price, item.inventory_id, user.id]);
+                            changes.push({ field: 'price', from: item.original_price, to: item.new_price });
+                        }
 
-                    // Update listing refresh timestamp
-                    query.run(`
-                        UPDATE listings SET last_refreshed_at = datetime('now')
-                        WHERE id = ? AND user_id = ?
-                    `, [item.listing_id, user.id]);
+                        // Update listing refresh timestamp
+                        query.run(`
+                            UPDATE listings SET last_refreshed_at = datetime('now')
+                            WHERE id = ? AND user_id = ?
+                        `, [item.listing_id, user.id]);
 
-                    // Mark as completed
-                    query.run(`
-                        UPDATE relisting_queue
-                        SET status = 'completed', processed_at = datetime('now'), changes_made = ?
-                        WHERE id = ? AND user_id = ?
-                    `, [JSON.stringify(changes), item.id, user.id]);
+                        // Mark as completed
+                        query.run(`
+                            UPDATE relisting_queue
+                            SET status = 'completed', processed_at = datetime('now'), changes_made = ?
+                            WHERE id = ? AND user_id = ?
+                        `, [JSON.stringify(changes), item.id, user.id]);
 
-                    // Track performance
-                    const perfId = uuidv4();
-                    query.run(`
-                        INSERT INTO relisting_performance (
-                            id, user_id, listing_id, relist_queue_id,
-                            price_before, views_before, likes_before, days_without_sale, price_after
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `, [perfId, user.id, item.listing_id, item.id,
-                        item.original_price, item.views_before, item.likes_before,
-                        item.days_listed, item.new_price]);
+                        // Track performance
+                        const perfId = uuidv4();
+                        query.run(`
+                            INSERT INTO relisting_performance (
+                                id, user_id, listing_id, relist_queue_id,
+                                price_before, views_before, likes_before, days_without_sale, price_after
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        `, [perfId, user.id, item.listing_id, item.id,
+                            item.original_price, item.views_before, item.likes_before,
+                            item.days_listed, item.new_price]);
 
-                    results.push({ id: item.id, status: 'completed', changes });
+                        results.push({ id: item.id, status: 'completed', changes });
+                    });
                 } catch (error) {
                     query.run(`
                         UPDATE relisting_queue SET status = 'failed', error_message = ?
