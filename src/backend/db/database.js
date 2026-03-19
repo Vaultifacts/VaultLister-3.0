@@ -29,7 +29,7 @@ db.exec('PRAGMA cache_size = 10000');
 db.exec('PRAGMA temp_store = MEMORY');
 db.exec('PRAGMA foreign_keys = ON');
 db.exec('PRAGMA busy_timeout = 5000'); // Wait up to 5 seconds for database locks
-db.exec('PRAGMA mmap_size = 30000000'); // 30 MB memory-mapped I/O
+db.exec('PRAGMA mmap_size = 268435456'); // 256 MB memory-mapped I/O
 db.exec('PRAGMA analysis_limit = 1000');
 
 // Initialize schema if needed
@@ -248,7 +248,7 @@ export function escapeLike(str) {
 }
 
 // Generic query helpers with prepared statement caching
-const MAX_STATEMENT_CACHE = 500;
+const MAX_STATEMENT_CACHE = 1000;
 const statementCache = new Map();
 
 function getStatement(sql) {
@@ -476,6 +476,9 @@ export function cleanupExpiredData() {
     if (totalDeleted > 0) {
         logger.info(`✓ Cleaned up ${totalDeleted} expired records:`, results);
     }
+
+    // Run incremental ANALYZE optimization
+    db.exec('PRAGMA optimize');
 
     return results;
 }
