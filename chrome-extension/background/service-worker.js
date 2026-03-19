@@ -7,24 +7,30 @@ import '../lib/logger.js';
 // Resolve app URL from the same base the API client uses
 async function getAppUrl() {
     await api.loadToken();
-    return api.baseUrl.replace('/api', '');
+    const base = api.baseUrl;
+    if (!base || (!base.startsWith('http://localhost') && !base.startsWith('https://'))) {
+        throw new Error('Invalid base URL');
+    }
+    return base.replace('/api', '');
 }
 
 // Initialize extension
 chrome.runtime.onInstalled.addListener(() => {
     logger.infoSync('VaultLister Extension installed');
 
-    // Create context menus
-    chrome.contextMenus.create({
-        id: 'add-to-vaultlister',
-        title: 'Add to VaultLister',
-        contexts: ['image']
-    });
+    // Create context menus (removeAll first to avoid duplicate ID errors on reinstall/update)
+    chrome.contextMenus.removeAll(() => {
+        chrome.contextMenus.create({
+            id: 'add-to-vaultlister',
+            title: 'Add to VaultLister',
+            contexts: ['image']
+        });
 
-    chrome.contextMenus.create({
-        id: 'cross-list-image',
-        title: 'Cross-list this image',
-        contexts: ['image']
+        chrome.contextMenus.create({
+            id: 'cross-list-image',
+            title: 'Cross-list this image',
+            contexts: ['image']
+        });
     });
 
     // Set up price tracking alarm (check every 6 hours)
@@ -173,7 +179,10 @@ async function checkPriceUpdates() {
 async function scrapePrice(url) {
     if (!url) return null;
     try {
-        const response = await fetch(url);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(url, { credentials: 'omit', signal: controller.signal });
+        clearTimeout(timeoutId);
         const html = await response.text();
 
         // Amazon: price whole part

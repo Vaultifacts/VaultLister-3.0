@@ -4,6 +4,7 @@
 import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { applyRateLimit } from '../middleware/rateLimiter.js';
 
 /**
  * Extension router
@@ -89,6 +90,9 @@ export async function extensionRouter(ctx) {
 
     // POST /api/extension/price-tracking - Add price tracking (alias for /price-track)
     if (method === 'POST' && path === '/price-tracking') {
+        const rateLimitError = applyRateLimit(ctx, 'api');
+        if (rateLimitError) return rateLimitError;
+
         const { url, site, productTitle, currentPrice, targetPrice } = body;
 
         if (!productTitle || !url || !currentPrice) {
@@ -259,6 +263,9 @@ export async function extensionRouter(ctx) {
 
     // POST /api/extension/quick-add - Quick add item to inventory
     if (method === 'POST' && path === '/quick-add') {
+        const rateLimitError = applyRateLimit(ctx, 'api');
+        if (rateLimitError) return rateLimitError;
+
         const { title, price, brand, images, description, category } = body;
 
         if (!title) {
@@ -363,6 +370,9 @@ export async function extensionRouter(ctx) {
 
     // POST /api/extension/scraped - Save scraped product
     if (method === 'POST' && path === '/scraped') {
+        const rateLimitError = applyRateLimit(ctx, 'api');
+        if (rateLimitError) return rateLimitError;
+
         const { title, price, images, brand, description, category, source, sourceUrl } = body;
 
         if (!title || !source) {
@@ -663,6 +673,9 @@ export async function extensionRouter(ctx) {
 
     // POST /api/extension/sync - Add to sync queue
     if (method === 'POST' && path === '/sync') {
+        const rateLimitError = applyRateLimit(ctx, 'api');
+        if (rateLimitError) return rateLimitError;
+
         const { action_type, data } = body;
 
         if (!action_type) {

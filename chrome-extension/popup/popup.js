@@ -126,7 +126,7 @@ loginForm.addEventListener('submit', async (e) => {
         showToast('Logged in successfully!', 'success');
     } catch (error) {
         showLoginView();
-        showToast('Login failed: ' + error.message, 'error');
+        showToast('Login failed. Please check your credentials.', 'error');
     }
 });
 

@@ -223,7 +223,7 @@ function displayItems(items) {
 // Display error
 function displayError(message) {
     const container = document.getElementById('vaultlister-items-list');
-    container.innerHTML = `<p style="text-align: center; color: #ef4444;">${message}</p>`;
+    container.innerHTML = `<p style="text-align: center; color: #ef4444;">${escapeHtml(message)}</p>`;
 }
 
 // Fill form with item data
@@ -315,6 +315,7 @@ function showSuccessMessage() {
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (sender.id !== chrome.runtime.id) return;
     if (request.action === 'fillForm' && request.data) {
         window.fillFormWithItem(JSON.stringify(request.data));
         sendResponse({ success: true });
