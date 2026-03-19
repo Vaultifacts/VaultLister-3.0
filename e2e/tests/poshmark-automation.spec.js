@@ -80,12 +80,12 @@ async function poshmarkLogin(context) {
     try {
         await page.goto(`${POSHMARK_URL}/feed`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     } catch {
-        test.skip(true, 'Poshmark unreachable — skipping live test');
+        test.skip(!LIVE_TESTS_ENABLED, 'Poshmark unreachable — skipping live test');
         return null;
     }
     await page.waitForTimeout(2000);
     if (page.url().includes('/login')) {
-        test.skip(true, 'Poshmark session expired — need fresh login');
+        test.skip(!LIVE_TESTS_ENABLED, 'Poshmark session expired — need fresh login via: node scripts/poshmark-login.js');
         return null;
     }
     return page;
