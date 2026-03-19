@@ -13,28 +13,71 @@ async function resolveBaseUrl() {
 class VaultListerAPI {
     constructor() {
         this.token = null;
+        this.refreshToken = null;
         this.baseUrl = 'http://localhost:3000/api';
         this._ready = this._init();
     }
 
     async _init() {
         this.baseUrl = await resolveBaseUrl();
-        const result = await chrome.storage.local.get(['auth_token']);
+        const result = await chrome.storage.local.get(['auth_token', 'refresh_token']);
         this.token = result.auth_token || null;
+        this.refreshToken = result.refresh_token || null;
     }
 
     async loadToken() {
         await this._ready;
     }
 
-    async saveToken(token) {
+    async saveToken(token, refreshToken = null) {
         this.token = token;
-        await chrome.storage.local.set({ auth_token: token });
+        if (refreshToken) {
+            this.refreshToken = refreshToken;
+        }
+        const store = { auth_token: token };
+        if (this.refreshToken) {
+            store.refresh_token = this.refreshToken;
+        }
+        await chrome.storage.local.set(store);
     }
 
     async clearToken() {
         this.token = null;
+        this.refreshToken = null;
         await chrome.storage.local.remove('auth_token');
+        await chrome.storage.local.remove('refresh_token');
+    }
+
+    async refreshAccessToken() {
+        if (!this.refreshToken) {
+            await this.clearToken();
+            throw new Error('No refresh token available');
+        }
+
+        try {
+            const response = await fetch(`${this.baseUrl}/auth/refresh`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken: this.refreshToken })
+            });
+
+            if (!response.ok) {
+                await this.clearToken();
+                throw new Error('Refresh failed');
+            }
+
+            const data = await response.json();
+            if (data.data && data.data.token) {
+                await this.saveToken(data.data.token, data.data.refreshToken || this.refreshToken);
+                return true;
+            }
+
+            await this.clearToken();
+            throw new Error('No token in refresh response');
+        } catch (error) {
+            await this.clearToken();
+            throw error;
+        }
     }
 
     async request(endpoint, options = {}) {
@@ -56,9 +99,32 @@ class VaultListerAPI {
             });
 
             if (response.status === 401) {
-                // Token expired or invalid
-                await this.clearToken();
-                throw new Error('Authentication required');
+                // Token expired — attempt refresh
+                try {
+                    await this.refreshAccessToken();
+                    // Retry request with new token
+                    const retryHeaders = {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    };
+                    if (this.token) {
+                        retryHeaders['Authorization'] = `Bearer ${this.token}`;
+                    }
+                    const retryResponse = await fetch(url, {
+                        ...options,
+                        headers: retryHeaders
+                    });
+
+                    if (!retryResponse.ok) {
+                        const data = await retryResponse.json();
+                        throw new Error(data.error || 'API request failed');
+                    }
+
+                    return await retryResponse.json();
+                } catch (refreshError) {
+                    // Refresh failed, clear auth and throw
+                    throw new Error('Authentication required');
+                }
             }
 
             const data = await response.json();
@@ -80,7 +146,7 @@ class VaultListerAPI {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
-        await this.saveToken(data.token);
+        await this.saveToken(data.data.token, data.data.refreshToken);
         return data;
     }
 
