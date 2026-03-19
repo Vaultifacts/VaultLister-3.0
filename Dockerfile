@@ -60,7 +60,7 @@ ENV LOG_DIR=/app/logs
 ENV TRUST_PROXY=1
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=60s --start-period=5s --retries=3 \
     CMD bun -e "fetch('http://localhost:3000/api/health',{signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
 # Switch to non-root user
