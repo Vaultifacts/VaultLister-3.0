@@ -450,6 +450,10 @@ export async function authRouter(ctx) {
     // POST /api/auth/demo-login - Demo login without exposing credentials in frontend
     if (method === 'POST' && path === '/demo-login') {
         try {
+            // SECURITY: Apply auth-tier rate limiting to prevent bcrypt DoS attacks
+            const demoRateError = applyRateLimit(ctx, 'auth');
+            if (demoRateError) return demoRateError;
+
             const demoEmail = process.env.DEMO_EMAIL;
             const demoPassword = process.env.DEMO_PASSWORD;
 
@@ -875,6 +879,10 @@ export async function authRouter(ctx) {
 
     // POST /api/auth/password-reset - Request password reset
     if (method === 'POST' && path === '/password-reset') {
+        // SECURITY: Apply mutation-tier rate limiting to prevent abuse of password reset flow
+        const resetRateError = applyRateLimit(ctx, 'mutation');
+        if (resetRateError) return resetRateError;
+
         const { email } = body;
 
         // Validate email format

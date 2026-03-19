@@ -427,9 +427,8 @@ export async function auditLogRouter(ctx) {
         return { status: 200, data: { activity } };
     }
 
-    // Admin-only endpoints
-    const isAdmin = user.subscription_tier === 'enterprise' || user.is_admin;
-    if (!isAdmin) {
+    // Admin-only endpoints (SECURITY: only is_admin flag grants access, never subscription_tier)
+    if (!user.is_admin) {
         return { status: 403, data: { error: 'Admin access required' } };
     }
 
