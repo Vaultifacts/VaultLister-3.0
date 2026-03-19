@@ -74,15 +74,15 @@ export async function analyticsRouter(ctx) {
         if (_cached) return { status: 200, data: _cached, cacheControl: cacheForUser(300) };
         try {
 
-            const PERIOD_FILTERS = {
-                '7d':  "AND created_at >= datetime('now', '-7 days')",
-                '30d': "AND created_at >= datetime('now', '-30 days')",
-                '90d': "AND created_at >= datetime('now', '-90 days')",
-                '6m':  "AND created_at >= datetime('now', '-6 months')",
-                '1y':  "AND created_at >= datetime('now', '-1 year')",
-                'all': ''
+            const PERIOD_OFFSETS = {
+                '7d':  '-7 days',
+                '30d': '-30 days',
+                '90d': '-90 days',
+                '6m':  '-6 months',
+                '1y':  '-1 year',
+                'all': null
             };
-            const salesDateFilter = PERIOD_FILTERS[period] ?? PERIOD_FILTERS['30d'];
+            const periodOffset = PERIOD_OFFSETS[period] ?? PERIOD_OFFSETS['30d'];
 
             // Batch queries: 5 queries instead of 16
             const invRow = query.get(`
@@ -106,12 +106,12 @@ export async function analyticsRouter(ctx) {
 
             const salesRow = query.get(`
                 SELECT
-                    COUNT(CASE WHEN 1=1 ${salesDateFilter} THEN 1 END) as total,
-                    COALESCE(SUM(CASE WHEN 1=1 ${salesDateFilter} THEN sale_price ELSE 0 END), 0) as revenue,
-                    COALESCE(SUM(CASE WHEN 1=1 ${salesDateFilter} THEN net_profit ELSE 0 END), 0) as profit,
+                    COUNT(CASE WHEN periodOffset IS NULL OR created_at >= datetime('now', ?) THEN 1 END) as total,
+                    COALESCE(SUM(CASE WHEN periodOffset IS NULL OR created_at >= datetime('now', ?) THEN sale_price ELSE 0 END), 0) as revenue,
+                    COALESCE(SUM(CASE WHEN periodOffset IS NULL OR created_at >= datetime('now', ?) THEN net_profit ELSE 0 END), 0) as profit,
                     COUNT(CASE WHEN status IN ('pending', 'confirmed') THEN 1 END) as pendingShipments
                 FROM sales WHERE user_id = ?
-            `, [user.id]) || {};
+            `, [user.id, periodOffset, periodOffset, periodOffset]) || {};
 
             const offersRow = query.get(`
                 SELECT
@@ -179,14 +179,14 @@ export async function analyticsRouter(ctx) {
         if (_cached2) return { status: 200, data: _cached2, cacheControl: cacheForUser(300) };
 
         try {
-            const SALES_DATE_FILTERS = {
-                '7d':  "AND s.created_at >= datetime('now', '-7 days')",
-                '30d': "AND s.created_at >= datetime('now', '-30 days')",
-                '90d': "AND s.created_at >= datetime('now', '-90 days')",
-                '1y':  "AND s.created_at >= datetime('now', '-1 year')",
-                'all': ''
+            const SALES_DATE_OFFSETS = {
+                '7d':  '-7 days',
+                '30d': '-30 days',
+                '90d': '-90 days',
+                '1y':  '-1 year',
+                'all': null
             };
-            const dateFilter = SALES_DATE_FILTERS[period] ?? SALES_DATE_FILTERS['30d'];
+            const salesPeriodOffset = SALES_DATE_OFFSETS[period] ?? SALES_DATE_OFFSETS['30d'];
 
             const GROUP_CLAUSES = {
                 'day':   "DATE(s.created_at)",
@@ -205,10 +205,10 @@ export async function analyticsRouter(ctx) {
                     COALESCE(SUM(i.cost_price), 0) as cogs
                 FROM sales s
                 LEFT JOIN inventory i ON s.inventory_id = i.id
-                WHERE s.user_id = ? ${dateFilter}
+                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= datetime('now', ?))
                 GROUP BY ${groupClause}
                 ORDER BY period DESC
-            `, [user.id]);
+            `, [user.id, salesPeriodOffset]);
 
             const byPlatform = query.all(`
                 SELECT
@@ -217,10 +217,10 @@ export async function analyticsRouter(ctx) {
                     SUM(s.sale_price) as revenue,
                     SUM(s.net_profit) as profit
                 FROM sales s
-                WHERE s.user_id = ? ${dateFilter}
+                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= datetime('now', ?))
                 GROUP BY s.platform
                 ORDER BY revenue DESC
-            `, [user.id]);
+            `, [user.id, salesPeriodOffset]);
 
             const topItems = query.all(`
                 SELECT
@@ -228,10 +228,10 @@ export async function analyticsRouter(ctx) {
                     s.sale_price, s.net_profit, s.platform, s.created_at
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
-                WHERE s.user_id = ? ${dateFilter}
+                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= datetime('now', ?))
                 ORDER BY s.sale_price DESC
                 LIMIT 10
-            `, [user.id]);
+            `, [user.id, salesPeriodOffset]);
 
             _setCached(_ck2, { salesData, byPlatform, topItems });
             return { status: 200, data: { salesData, byPlatform, topItems }, cacheControl: cacheForUser(300) };

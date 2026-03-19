@@ -183,7 +183,8 @@ function runMigrations() {
             '104_fix_listings_folders_user_id.sql',
             '105_add_composite_indexes.sql',
             '106_fix_purchase_number_unique.sql',
-            '107_document_security_logs_id_design.sql'
+            '107_document_security_logs_id_design.sql',
+            '108_add_offers_soft_delete.sql'
         ];
 
         for (const migrationFile of migrationFiles) {

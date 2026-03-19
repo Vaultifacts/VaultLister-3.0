@@ -237,6 +237,25 @@ async function main() {
     console.log(`Applied migrations: ${applied.size}`);
     console.log(`Available migrations: ${files.length}\n`);
 
+    // S-06: Detect duplicate migration names (conflict prevention)
+    const seenNames = new Set();
+    const duplicates = [];
+    for (const file of files) {
+        if (seenNames.has(file)) {
+            duplicates.push(file);
+        }
+        seenNames.add(file);
+    }
+    
+    if (duplicates.length > 0) {
+        console.error("ERROR: Duplicate migration file names detected:");
+        for (const dup of duplicates) {
+            console.error(`  - ${dup}`);
+        }
+        console.error("Please rename migration files to have unique names.");
+        process.exit(1);
+    }
+
     // Run SQL file migrations
     let newMigrations = 0;
 
