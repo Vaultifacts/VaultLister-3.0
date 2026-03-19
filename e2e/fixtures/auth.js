@@ -60,6 +60,12 @@ export const test = base.extend({
 
     // Provides a page that's already authenticated via localStorage injection
     authedPage: async ({ page, authData }, use) => {
+        // Clear cookies and localStorage from previous tests
+        await page.context().clearCookies();
+        await page.evaluate(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+        });
         // Set vl_access cookie so all navigations bypass the landing page and reach the SPA
         const url = new URL(BASE);
         await page.context().addCookies([{

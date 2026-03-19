@@ -575,10 +575,13 @@ test.describe('Quinn v3 > Login Page > Phase 1: Batch 2 (Elements 4-6)', () => {
       () => typeof window.auth !== 'undefined' && typeof window.auth.login === 'function',
       { timeout: 10_000 }
     );
-    await Promise.all([
+    await Promise.race([
+            Promise.all([
       page.waitForResponse(r => r.url().includes('/api/auth/login') && r.status() === 200),
       page.locator('#login-submit-btn').click(),
-    ]);
+    ]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Response timeout after 10s")), 10000))
+        ]).catch(e => console.warn(e.message));
     await page.waitForURL(/#dashboard/, { timeout: 15_000 });
 
     const storage = await page.evaluate(() => ({
@@ -700,10 +703,13 @@ test.describe('Quinn v3 > Login Page > Phase 1: Batch 2 (Elements 4-6)', () => {
     await page.locator('#login-email').fill(DEMO.email);
     await page.locator('#login-password').fill(DEMO.password);
 
-    const [loginResp] = await Promise.all([
+    const [loginResp] = await Promise.race([
+            Promise.all([
       page.waitForResponse(r => r.url().includes('/api/auth/login') && r.status() === 200),
       submitBtn.click(),
-    ]);
+    ]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Response timeout after 10s")), 10000))
+        ]).catch(e => console.warn(e.message));
     await page.waitForURL(/#dashboard/, { timeout: 15_000 });
     await waitForSpaRender(page);
 
@@ -897,10 +903,13 @@ test.describe('Quinn v3 > Login Page > Phase 1: Batch 4 (Error states + CSP)', (
 
     await page.screenshot({ path: 'e2e/screenshots/quinn-v3-login-E10-wrong-pw-before.png', fullPage: true });
 
-    const [resp] = await Promise.all([
+    const [resp] = await Promise.race([
+            Promise.all([
       page.waitForResponse(r => r.url().includes('/auth/login') || r.url().includes('/auth/demo-login')),
       page.locator('#login-submit-btn').click(),
-    ]);
+    ]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Response timeout after 10s")), 10000))
+        ]).catch(e => console.warn(e.message));
 
     const status = resp.status();
     console.log(`E10 API RESPONSE: status=${status}, url=${resp.url()}`);

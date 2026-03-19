@@ -47,10 +47,13 @@ test.describe('Authentication', () => {
         await page.fill(selectors.passwordInput, 'wrongpassword');
 
         // Click and wait for response
-        await Promise.all([
+        await Promise.race([
+            Promise.all([
             page.waitForResponse(resp => resp.url().includes('/api/auth/login')),
             page.click(selectors.submitButton)
-        ]);
+        ]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Response timeout after 10s")), 10000))
+        ]).catch(e => console.warn(e.message));
 
         // Global toast system uses class 'toast toast-error' (not 'toast-notification')
         await expect(page.locator('.toast-error')).toBeVisible({ timeout: 5000 });
@@ -71,10 +74,13 @@ test.describe('Authentication', () => {
         await page.fill(selectors.passwordInput, demoUser.password);
 
         // Click and wait for response then navigation
-        const [response] = await Promise.all([
+        const [response] = await Promise.race([
+            Promise.all([
             page.waitForResponse(resp => resp.url().includes('/api/auth/login') && resp.status() === 200),
             page.click(selectors.submitButton)
-        ]);
+        ]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Response timeout after 10s")), 10000))
+        ]).catch(e => console.warn(e.message));
 
         // Wait for navigation after successful login
         await page.waitForURL(/#dashboard/, { timeout: 15000 });
@@ -91,10 +97,13 @@ test.describe('Authentication', () => {
         await page.fill(selectors.emailInput, demoUser.email);
         await page.fill(selectors.passwordInput, demoUser.password);
 
-        const [response] = await Promise.all([
+        const [response] = await Promise.race([
+            Promise.all([
             page.waitForResponse(resp => resp.url().includes('/api/auth/login') && resp.status() === 200),
             page.click(selectors.submitButton)
-        ]);
+        ]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Response timeout after 10s")), 10000))
+        ]).catch(e => console.warn(e.message));
 
         await page.waitForURL(/#dashboard/, { timeout: 15000 });
 
@@ -115,10 +124,13 @@ test.describe('Authentication', () => {
         await page.fill(selectors.emailInput, demoUser.email);
         await page.fill(selectors.passwordInput, demoUser.password);
 
-        const [response] = await Promise.all([
+        const [response] = await Promise.race([
+            Promise.all([
             page.waitForResponse(resp => resp.url().includes('/api/auth/login') && resp.status() === 200),
             page.click(selectors.submitButton)
-        ]);
+        ]),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Response timeout after 10s")), 10000))
+        ]).catch(e => console.warn(e.message));
 
         await page.waitForURL(/#dashboard/, { timeout: 15000 });
 

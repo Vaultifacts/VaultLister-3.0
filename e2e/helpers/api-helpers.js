@@ -29,7 +29,17 @@ export async function seedInventoryItem(token, overrides = {}) {
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
     body: JSON.stringify(item),
   });
-  return res.json();
+  const created = await res.json();
+  
+  // Validate inserted data
+  if (!created.id) {
+    throw new Error(`Seed validation failed: no id in response - ${JSON.stringify(created)}`);
+  }
+  if (!created.name) {
+    throw new Error(`Seed validation failed: no name in response - ${JSON.stringify(created)}`);
+  }
+  
+  return created;
 }
 
 /** Delete a test inventory item by ID */
@@ -47,6 +57,15 @@ export async function seedInventoryBatch(token, count = 5) {
     const item = await seedInventoryItem(token, { name: `Batch Item ${i + 1}` });
     items.push(item);
   }
+  
+  // Validate batch seeding result
+  if (items.length === 0) {
+    throw new Error('Seed validation failed: no items created in batch');
+  }
+  if (items.length !== count) {
+    throw new Error(`Seed validation failed: expected ${count} items, got ${items.length}`);
+  }
+  
   return items;
 }
 
