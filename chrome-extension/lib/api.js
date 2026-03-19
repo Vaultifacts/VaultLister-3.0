@@ -85,6 +85,7 @@ class VaultListerAPI {
         const url = `${this.baseUrl}${endpoint}`;
         const headers = {
             'Content-Type': 'application/json',
+            'X-API-Version': '1',
             ...options.headers
         };
 

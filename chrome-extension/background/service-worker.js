@@ -232,14 +232,20 @@ async function updateBadge() {
 
     badgeUpdateInProgress = true;
     try {
+        // Check auth state
+        const isAuthenticated = api.isAuthenticated();
+        const badgeColor = isAuthenticated ? '#6366f1' : '#9ca3af';
+
         const result = await api.getSyncQueue();
         const count = result.items?.length || 0;
 
         if (count > 0) {
             chrome.action.setBadgeText({ text: count.toString() });
-            chrome.action.setBadgeBackgroundColor({ color: '#6366f1' });
+            chrome.action.setBadgeBackgroundColor({ color: badgeColor });
         } else {
             chrome.action.setBadgeText({ text: '' });
+            // Set badge background color based on auth state even when no count
+            chrome.action.setBadgeBackgroundColor({ color: badgeColor });
         }
     } catch (error) {
         logger.error('Failed to update badge:', error);

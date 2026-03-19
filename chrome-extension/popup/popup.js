@@ -17,6 +17,25 @@ let state = {
     syncQueue: []
 };
 
+// Check cache storage quota before caching large payloads
+async function checkStorageQuota() {
+    try {
+        if (navigator.storage && navigator.storage.estimate) {
+            const estimate = await navigator.storage.estimate();
+            const percentUsed = (estimate.usage / estimate.quota) * 100;
+            if (percentUsed > 90) {
+                console.warn(`Storage quota ${percentUsed.toFixed(1)}% full`);
+                return false;
+            }
+            return true;
+        }
+        return true;
+    } catch (error) {
+        console.warn('Could not estimate storage:', error);
+        return true;
+    }
+}
+
 // DOM Elements
 const loading = document.getElementById('loading');
 const loginView = document.getElementById('login-view');
