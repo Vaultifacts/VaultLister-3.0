@@ -216,7 +216,7 @@ export async function marketIntelRouter(ctx) {
                 }
             });
         } catch (error) {
-            // Table might not exist
+            logger.error('[MarketIntel] Competitor listing insert failed', user?.id, { competitorId, detail: error?.message });
         }
 
         return {
@@ -307,7 +307,7 @@ export async function marketIntelRouter(ctx) {
                 insight.insights_json, insight.valid_until
             ]);
         } catch (error) {
-            // Table might not exist
+            logger.error('[MarketIntel] Market insight insert failed', user?.id, { category: insight?.category, detail: error?.message });
         }
 
         return { status: 200, data: insight };
