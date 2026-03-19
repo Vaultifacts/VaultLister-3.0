@@ -1,9 +1,36 @@
 // Push Subscriptions Router for VaultLister
 // Manages Web Push API subscriptions
 
+import webpush from 'web-push';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+
+// Configure VAPID — generate keys with: npx web-push generate-vapid-keys
+// Required env vars: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
+(function configureVapid() {
+    const publicKey = process.env.VAPID_PUBLIC_KEY;
+    const privateKey = process.env.VAPID_PRIVATE_KEY;
+    const subject = process.env.VAPID_SUBJECT || 'mailto:admin@vaultlister.app';
+
+    if (publicKey && privateKey) {
+        webpush.setVapidDetails(subject, publicKey, privateKey);
+    } else {
+        logger.warn('[Push] VAPID keys not configured — push notifications will not be sent. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in .env');
+    }
+})();
+
+const PUSH_SETTINGS_KEY = 'push_notifications';
+const DEFAULT_PUSH_SETTINGS = {
+    enabled: true,
+    categories: {
+        sales: true,
+        offers: true,
+        orders: true,
+        sync: false,
+        marketing: false
+    }
+};
 
 export async function pushSubscriptionsRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
@@ -150,14 +177,22 @@ export async function pushSubscriptionsRouter(ctx) {
             return { status: 400, data: { error: 'No active push subscriptions' } };
         }
 
-        // In production, we would use web-push library to send notifications
-        // For now, return success and update last_used_at
+        const testPayload = JSON.stringify({
+            title: 'VaultLister Test',
+            body: 'Push notifications are working!',
+            data: { type: 'test' },
+            timestamp: Date.now()
+        });
+
         const sent = [];
 
         for (const sub of subscriptions) {
             try {
-                // Mock sending push notification
-                // In production: webpush.sendNotification(subscription, payload)
+                await webpush.sendNotification(
+                    { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } },
+                    testPayload
+                );
+
                 query.run(`
                     UPDATE push_subscriptions SET last_used_at = datetime('now')
                     WHERE id = ?
@@ -168,7 +203,6 @@ export async function pushSubscriptionsRouter(ctx) {
             } catch (error) {
                 logger.error('[Push] Test notification failed', user?.id || null, { detail: error.message });
 
-                // If subscription is invalid, mark as inactive
                 if (error.statusCode === 410 || error.statusCode === 404) {
                     query.run(`
                         UPDATE push_subscriptions SET is_active = 0, updated_at = datetime('now')
@@ -222,8 +256,10 @@ export async function pushSubscriptionsRouter(ctx) {
 
         for (const sub of subscriptions) {
             try {
-                // In production, use web-push library
-                // webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } }, payload);
+                await webpush.sendNotification(
+                    { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } },
+                    payload
+                );
 
                 query.run(`
                     UPDATE push_subscriptions SET last_used_at = datetime('now')
@@ -234,6 +270,13 @@ export async function pushSubscriptionsRouter(ctx) {
 
             } catch (error) {
                 logger.error('[Push] Send notification failed', user?.id || null, { detail: error.message });
+
+                if (error.statusCode === 410 || error.statusCode === 404) {
+                    query.run(`
+                        UPDATE push_subscriptions SET is_active = 0, updated_at = datetime('now')
+                        WHERE id = ?
+                    `, [sub.id]);
+                }
             }
         }
 
@@ -273,21 +316,19 @@ export async function pushSubscriptionsRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        // For now, return default settings
-        // In a full implementation, these would be stored per-user
-        return {
-            status: 200,
-            data: {
-                enabled: true,
-                categories: {
-                    sales: true,
-                    offers: true,
-                    orders: true,
-                    sync: false,
-                    marketing: false
-                }
-            }
-        };
+        try {
+            const row = query.get(
+                'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
+                [user.id, PUSH_SETTINGS_KEY]
+            );
+
+            const settings = row ? JSON.parse(row.settings) : DEFAULT_PUSH_SETTINGS;
+
+            return { status: 200, data: settings };
+        } catch (error) {
+            logger.error('[Push] Get settings failed', user?.id || null, { detail: error.message });
+            return { status: 200, data: DEFAULT_PUSH_SETTINGS };
+        }
     }
 
     // PUT /push/settings - Update notification preferences
@@ -295,17 +336,27 @@ export async function pushSubscriptionsRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        // In a full implementation, save these preferences
         const { enabled, categories } = body;
 
-        return {
-            status: 200,
-            data: {
-                updated: true,
-                enabled: enabled !== undefined ? enabled : true,
-                categories: categories || {}
-            }
+        const updated = {
+            enabled: enabled !== undefined ? enabled : DEFAULT_PUSH_SETTINGS.enabled,
+            categories: { ...DEFAULT_PUSH_SETTINGS.categories, ...(categories || {}) }
         };
+
+        try {
+            query.run(`
+                INSERT INTO user_preferences (id, user_id, key, settings, created_at, updated_at)
+                VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                ON CONFLICT(user_id, key) DO UPDATE SET
+                    settings = excluded.settings,
+                    updated_at = datetime('now')
+            `, [uuidv4(), user.id, PUSH_SETTINGS_KEY, JSON.stringify(updated)]);
+
+            return { status: 200, data: { updated: true, ...updated } };
+        } catch (error) {
+            logger.error('[Push] Save settings failed', user?.id || null, { detail: error.message });
+            return { status: 500, data: { error: 'Failed to save notification settings' } };
+        }
     }
 
     return { status: 404, data: { error: 'Route not found' } };
