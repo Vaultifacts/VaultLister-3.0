@@ -221,6 +221,20 @@ export class FacebookBot {
         }
     }
 
+    /**
+     * Share a Marketplace listing (AU-11: TODO)
+     * Currently unimplemented. Expected behavior:
+     * 1. Click share button
+     * 2. Confirm share action
+     * 3. Wait for confirmation message
+     * 4. Log to audit trail
+     * 5. Return success/failure status
+     */
+    async shareListing(listingUrl) {
+        console.log('[FacebookBot] Share action not yet implemented');
+        return { implemented: false, message: 'Share action is a TODO — not yet available' };
+    }
+
     getStats() {
         return { ...this.stats };
     }
