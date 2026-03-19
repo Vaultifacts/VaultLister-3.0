@@ -6,6 +6,7 @@ import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
 import { getOAuthConfig } from '../tokenRefreshScheduler.js';
 import { fetchWithTimeout } from '../../shared/fetchWithTimeout.js';
+import { logger } from '../../shared/logger.js';
 
 /**
  * Sync all data from eBay for a shop
@@ -223,25 +224,8 @@ async function syncEbayOrders(shop, accessToken, mode) {
  */
 async function fetchEbayListings(accessToken, mode) {
     if (mode === 'mock') {
-        // Return mock listings for testing
-        return [
-            {
-                sku: 'MOCK-SKU-001',
-                listingId: 'mock-listing-1',
-                title: 'Mock eBay Item 1',
-                price: { value: '29.99', currency: 'USD' },
-                quantity: 1,
-                status: 'ACTIVE'
-            },
-            {
-                sku: 'MOCK-SKU-002',
-                listingId: 'mock-listing-2',
-                title: 'Mock eBay Item 2',
-                price: { value: '49.99', currency: 'USD' },
-                quantity: 3,
-                status: 'ACTIVE'
-            }
-        ];
+        logger.warn('[eBaySync] Sync in mock mode — returning empty data');
+        return [];
     }
 
     // Real eBay API call
@@ -272,20 +256,8 @@ async function fetchEbayListings(accessToken, mode) {
  */
 async function fetchEbayOrders(accessToken, mode) {
     if (mode === 'mock') {
-        // Return mock orders for testing
-        return [
-            {
-                orderId: 'mock-order-1',
-                buyer: { username: 'mock_buyer_1' },
-                pricingSummary: {
-                    total: { value: '34.99', currency: 'USD' },
-                    deliveryCost: { value: '5.00', currency: 'USD' }
-                },
-                orderFulfillmentStatus: 'FULFILLED',
-                creationDate: new Date().toISOString(),
-                lineItems: [{ sku: 'MOCK-SKU-001', title: 'Mock eBay Item 1' }]
-            }
-        ];
+        logger.warn('[eBaySync] Orders sync in mock mode — returning empty data');
+        return [];
     }
 
     // Real eBay API call

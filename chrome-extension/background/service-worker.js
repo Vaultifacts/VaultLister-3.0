@@ -71,6 +71,12 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 // Handle messages from content scripts and popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // Security: only accept messages from our own extension
+    if (sender.id !== chrome.runtime.id) {
+        sendResponse({ success: false, error: 'Unauthorized sender' });
+        return;
+    }
+
     if (request.action === 'productScraped') {
         handleProductScraped(request.data)
             .then(() => sendResponse({ success: true }))

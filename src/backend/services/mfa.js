@@ -131,8 +131,9 @@ export async function setupMFA(userId, email) {
         VALUES (?, ?, ?, 'mfa_setup', datetime('now', '+10 minutes'))
     `, [uuidv4(), userId, setupToken]);
 
-    // Temporarily store the secret (not yet activated)
-    // We'll store it permanently only after verification
+    // Store secret temporarily on user record (not yet activated — mfa_enabled stays 0)
+    query.run('UPDATE users SET mfa_secret = ? WHERE id = ?', [secret, userId]);
+
     return {
         setupToken,
         secret,

@@ -166,6 +166,9 @@ export async function securityRouter(ctx) {
     // POST /api/security/reset-password - Reset password with token
     if (method === 'POST' && path === '/reset-password') {
         try {
+            const resetRateError = applyRateLimit(ctx, 'auth');
+            if (resetRateError) return resetRateError;
+
             const { token, password } = body;
 
             if (!token || !password) {
