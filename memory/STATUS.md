@@ -3,7 +3,7 @@
 
 ## Current State
 - **Branch:** master
-- **Last commit:** 9a81f1d — [AUTO] fix: Chrome extension EXT-03 — add JWT token refresh on 401
+- **Last commit:** 6e6ac72 — [AUTO] fix: frontend audit items F-03, F-04, F-07, F-08 — add JWT token refresh on 401
 - **Production URL:** https://vaultlister.com — LIVE ✅
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **SSH access:** `ssh -i ssh-key-2026-03-15.key ubuntu@204.216.105.105` (user is `ubuntu`, NOT `openclawuser`)
@@ -17,6 +17,16 @@
 - **As of:** 2026-03-19
 
 ## Last Completed Work (2026-03-19)
+
+### Session Summary — Frontend Audit Fixes (1 commit)
+
+**Commit 6e6ac72 — Frontend Audit Items F-03, F-04, F-07, F-08 (4 targeted fixes)**
+- F-03 fix: Bulk photo modal state now clears batchPhotoTransformations and selectedImages on close
+- F-04 fix: Listing status safe when category is null — added null check in title pattern replace
+- F-07/F-08 fix: Quick Photo handler now has TODO comment and 'Coming Soon' toast message
+- Applied to: src/frontend/app.js, src/frontend/handlers/handlers-deferred.js
+
+### Previous Session Summary
 
 ### Session Summary — Chrome Extension Token Refresh Fix (1 commit)
 
