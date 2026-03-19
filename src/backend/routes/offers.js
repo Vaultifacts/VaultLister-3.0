@@ -117,18 +117,20 @@ export async function offersRouter(ctx) {
             WHERE o.id = ? AND o.user_id = ?
         `, [id, user.id]);
 
-        // Best-effort sale creation — failure must not block the 200 response
+        // Best-effort sale creation — wrapped in transaction for atomicity
         try {
-            const saleId = uuidv4();
-            query.run(
-                `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, tax_amount, net_profit, status, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, 'confirmed', CURRENT_TIMESTAMP)`,
-                [saleId, user.id, offer.listing_id, offer.platform, offer.buyer_username, offer.offer_amount, offer.offer_amount]
-            );
-            query.run(
-                `UPDATE listings SET status = 'sold', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status != 'sold'`,
-                [offer.listing_id]
-            );
+            query.transaction(() => {
+                const saleId = uuidv4();
+                query.run(
+                    `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, tax_amount, net_profit, status, created_at)
+                     VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, 'confirmed', CURRENT_TIMESTAMP)`,
+                    [saleId, user.id, offer.listing_id, offer.platform, offer.buyer_username, offer.offer_amount, offer.offer_amount]
+                );
+                query.run(
+                    `UPDATE listings SET status = 'sold', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status != 'sold'`,
+                    [offer.listing_id]
+                );
+            });
         } catch (saleErr) {
             logger.warn('Best-effort sale creation failed for offer ' + id + ': ' + saleErr.message);
         }

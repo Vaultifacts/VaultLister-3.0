@@ -155,10 +155,10 @@ function runMigrations() {
             '076_fix_teams_owner_fk.sql',
             '077_fix_users_old_rename.sql',
             '078_add_brand_size_guides.sql',
-            '079_add_watermark_tables.sql',
+            '079_add_engagement_heatmap_index.sql',
             '080_add_offers_table.sql',
-            '081_add_onboarding_tables.sql',
-            '082_add_offline_sync.sql',
+            '081_add_enhanced_mfa_tables.sql',
+            '082_add_service_tables.sql',
             '083_add_audit_log_table.sql',
             '084_add_missing_columns.sql',
             '085_add_missing_indexes.sql',
@@ -178,7 +178,9 @@ function runMigrations() {
             '099_optimize_query_indexes.sql',
             '100_add_app_settings.sql',
             '101_add_auto_sync.sql',
-            '102_add_stripe_columns.sql'
+            '102_add_stripe_columns.sql',
+            '103_add_google_integrations.sql',
+            '104_fix_listings_folders_user_id.sql'
         ];
 
         for (const migrationFile of migrationFiles) {

@@ -137,8 +137,7 @@ export async function salesRouter(ctx) {
         let sale;
 
         try {
-            const db = query.db || require('../db/database.js').default;
-            const transaction = db.transaction(() => {
+            query.transaction(() => {
                 // Use FIFO costing if inventory item exists
                 if (inventoryId) {
                     // Get cost layers in FIFO order (oldest first)
@@ -228,9 +227,6 @@ export async function salesRouter(ctx) {
                     }
                 }
             });
-
-            // Execute the transaction
-            transaction();
 
             // Fetch the created sale after successful transaction
             sale = query.get('SELECT * FROM sales WHERE id = ?', [id]);
