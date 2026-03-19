@@ -1,10 +1,10 @@
 // Mercari Automation Bot using Playwright
 // Handles sharing/refreshing and relisting on Mercari
 
-import { chromium } from 'playwright';
+import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
-import { RATE_LIMITS } from './rate-limits.js';
+import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 
 const MERCARI_URL = 'https://www.mercari.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -47,18 +47,28 @@ export class MercariBot {
 
     async init() {
         console.log('[MercariBot] Initializing browser...');
-        this.browser = await chromium.launch({
-            headless: this.options.headless,
-            slowMo: this.options.slowMo
-        });
-        const context = await this.browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 800 }
-        });
-        this.page = await context.newPage();
-        await this.page.route('**/*.{png,jpg,jpeg,gif,webp}', route => route.abort());
-        await this.page.route('**/analytics/**', route => route.abort());
-        console.log('[MercariBot] Browser initialized');
+        try {
+            this.browser = await stealthChromium.launch({
+                headless: this.options.headless,
+                args: STEALTH_ARGS,
+                ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
+            });
+            const context = await this.browser.newContext({
+                userAgent: randomChromeUA(),
+                viewport: randomViewport(),
+                locale: 'en-US',
+                timezoneId: 'America/New_York',
+            });
+            this.page = await context.newPage();
+            await this.page.route('**/analytics/**', route => route.abort());
+            await this.page.route('**/tracking/**', route => route.abort());
+            console.log('[MercariBot] Browser initialized');
+        } catch (err) {
+            if (this.browser) await this.browser.close().catch(() => {});
+            this.browser = null;
+            this.page = null;
+            throw err;
+        }
     }
 
     async login() {
@@ -107,7 +117,8 @@ export class MercariBot {
         console.log('[MercariBot] Refreshing listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay(1500, 2500));
+            await mouseWiggle(this.page);
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
 
             const editBtn = await this.page.$('button:has-text("Edit"), a:has-text("Edit"), [data-testid*="edit"]');
             if (!editBtn) {
@@ -115,15 +126,16 @@ export class MercariBot {
                 return false;
             }
 
-            await editBtn.click();
+            await humanClick(this.page, editBtn);
             await this.page.waitForTimeout(randomDelay(2000, 3000));
 
             // Find and click save/update without changing anything
             const saveBtn = await this.page.$('button:has-text("Update"), button:has-text("Save"), button[type="submit"]');
             if (saveBtn) {
-                await saveBtn.click();
-                await this.page.waitForTimeout(randomDelay(2000, 3500));
+                await humanClick(this.page, saveBtn);
+                await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
                 this.stats.shares++;
+                writeAuditLog('refresh_listing', { listingUrl });
                 console.log('[MercariBot] Listing refreshed');
                 return true;
             }
@@ -140,11 +152,12 @@ export class MercariBot {
      * Refresh all listings in the seller's shop
      */
     async refreshAllListings(options = {}) {
-        const { maxRefresh = 50, delayBetween = 4000 } = options;
+        const { maxRefresh = 50, delayBetween = RATE_LIMITS.mercari.actionDelay } = options;
         console.log(`[MercariBot] Refreshing up to ${maxRefresh} listings`);
 
         try {
             await this.page.goto(`${MERCARI_URL}/mypage/listings`, { waitUntil: 'networkidle' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             const listingLinks = await this.page.$$eval(
@@ -160,9 +173,10 @@ export class MercariBot {
                 const success = await this.refreshListing(link);
                 if (success) refreshed++;
                 else skipped++;
-                await this.page.waitForTimeout(delayBetween + randomDelay(500, 1500));
+                await this.page.waitForTimeout(jitteredDelay(delayBetween));
             }
 
+            writeAuditLog('refresh_all_complete', { refreshed, skipped, total: uniqueLinks.length });
             console.log(`[MercariBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
             return { refreshed, skipped, total: uniqueLinks.length };
         } catch (error) {
@@ -179,19 +193,21 @@ export class MercariBot {
         console.log('[MercariBot] Relisting item:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay(1500, 2500));
+            await mouseWiggle(this.page);
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
 
             // Look for relist/re-list button (Mercari sometimes has this)
             const relistBtn = await this.page.$('button:has-text("Relist"), button:has-text("Re-list"), [data-testid*="relist"]');
             if (relistBtn) {
-                await relistBtn.click();
+                await humanClick(this.page, relistBtn);
                 await this.page.waitForTimeout(randomDelay(2000, 3500));
 
                 const confirmBtn = await this.page.$('button:has-text("Confirm"), button:has-text("List"), button[type="submit"]');
                 if (confirmBtn) {
-                    await confirmBtn.click();
-                    await this.page.waitForTimeout(randomDelay(2000, 3500));
+                    await humanClick(this.page, confirmBtn);
+                    await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
                     this.stats.relists++;
+                    writeAuditLog('relist_item', { listingUrl });
                     console.log('[MercariBot] Item relisted');
                     return true;
                 }

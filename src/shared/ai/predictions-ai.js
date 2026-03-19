@@ -10,6 +10,7 @@ import { circuitBreaker } from '../../backend/shared/circuitBreaker.js';
 
 const HAIKU_MODEL = 'claude-haiku-4-5';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const MAX_CACHE_SIZE = 500;
 
 // In-memory cache: key -> { expiresAt, data }
 const predictionCache = new Map();
@@ -25,7 +26,14 @@ function cacheGet(key) {
 }
 
 function cacheSet(key, data) {
+    if (predictionCache.size >= MAX_CACHE_SIZE) {
+        predictionCache.delete(predictionCache.keys().next().value);
+    }
     predictionCache.set(key, { expiresAt: Date.now() + CACHE_TTL_MS, data });
+}
+
+export function invalidatePredictionCache(itemId, userId) {
+    predictionCache.delete(`price:${itemId}:${userId}`);
 }
 
 function getClient() {

@@ -1,10 +1,10 @@
 // Depop Automation Bot using Playwright
 // Handles refreshing and sharing on Depop
 
-import { chromium } from 'playwright';
+import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
-import { RATE_LIMITS } from './rate-limits.js';
+import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 
 const DEPOP_URL = 'https://www.depop.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -47,18 +47,28 @@ export class DepopBot {
 
     async init() {
         console.log('[DepopBot] Initializing browser...');
-        this.browser = await chromium.launch({
-            headless: this.options.headless,
-            slowMo: this.options.slowMo
-        });
-        const context = await this.browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 800 }
-        });
-        this.page = await context.newPage();
-        await this.page.route('**/*.{png,jpg,jpeg,gif,webp}', route => route.abort());
-        await this.page.route('**/analytics/**', route => route.abort());
-        console.log('[DepopBot] Browser initialized');
+        try {
+            this.browser = await stealthChromium.launch({
+                headless: this.options.headless,
+                args: STEALTH_ARGS,
+                ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
+            });
+            const context = await this.browser.newContext({
+                userAgent: randomChromeUA(),
+                viewport: randomViewport(),
+                locale: 'en-US',
+                timezoneId: 'America/New_York',
+            });
+            this.page = await context.newPage();
+            await this.page.route('**/analytics/**', route => route.abort());
+            await this.page.route('**/tracking/**', route => route.abort());
+            console.log('[DepopBot] Browser initialized');
+        } catch (err) {
+            if (this.browser) await this.browser.close().catch(() => {});
+            this.browser = null;
+            this.page = null;
+            throw err;
+        }
     }
 
     async login() {
@@ -107,7 +117,8 @@ export class DepopBot {
         console.log('[DepopBot] Refreshing listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay(1500, 2500));
+            await mouseWiggle(this.page);
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.depop.actionDelay));
 
             // Depop has an "Edit" button on listings
             const editBtn = await this.page.$('a:has-text("Edit"), button:has-text("Edit"), [data-testid*="edit"]');
@@ -116,15 +127,16 @@ export class DepopBot {
                 return false;
             }
 
-            await editBtn.click();
+            await humanClick(this.page, editBtn);
             await this.page.waitForTimeout(randomDelay(2000, 3000));
 
             // Save without changes to bump
             const saveBtn = await this.page.$('button:has-text("Save"), button:has-text("Update"), button[type="submit"]');
             if (saveBtn) {
-                await saveBtn.click();
-                await this.page.waitForTimeout(randomDelay(2000, 3500));
+                await humanClick(this.page, saveBtn);
+                await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.depop.actionDelay));
                 this.stats.refreshes++;
+                writeAuditLog('refresh_listing', { listingUrl });
                 console.log('[DepopBot] Listing refreshed');
                 return true;
             }
@@ -141,11 +153,12 @@ export class DepopBot {
      * Refresh all listings in the seller's shop
      */
     async refreshAllListings(username, options = {}) {
-        const { maxRefresh = 50, delayBetween = 3500 } = options;
+        const { maxRefresh = 50, delayBetween = RATE_LIMITS.depop.actionDelay } = options;
         console.log(`[DepopBot] Refreshing up to ${maxRefresh} listings for @${username}`);
 
         try {
             await this.page.goto(`${DEPOP_URL}/${username}`, { waitUntil: 'networkidle' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             const listingLinks = await this.page.$$eval(
@@ -161,9 +174,10 @@ export class DepopBot {
                 const success = await this.refreshListing(link);
                 if (success) refreshed++;
                 else skipped++;
-                await this.page.waitForTimeout(delayBetween + randomDelay(500, 1500));
+                await this.page.waitForTimeout(jitteredDelay(delayBetween));
             }
 
+            writeAuditLog('refresh_all_complete', { username, refreshed, skipped, total: uniqueLinks.length });
             console.log(`[DepopBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
             return { refreshed, skipped, total: uniqueLinks.length };
         } catch (error) {
@@ -180,13 +194,15 @@ export class DepopBot {
         console.log('[DepopBot] Sharing listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay(1500, 2500));
+            await mouseWiggle(this.page);
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.depop.actionDelay));
 
             const shareBtn = await this.page.$('button[aria-label*="share" i], [data-testid*="share"], button:has-text("Share")');
             if (shareBtn) {
-                await shareBtn.click();
+                await humanClick(this.page, shareBtn);
                 await this.page.waitForTimeout(randomDelay(1000, 2000));
                 this.stats.shares++;
+                writeAuditLog('share_listing', { listingUrl });
                 console.log('[DepopBot] Listing shared');
                 return true;
             }

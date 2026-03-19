@@ -1,10 +1,10 @@
 // Facebook Marketplace Automation Bot using Playwright
 // Handles refreshing and relisting on Facebook Marketplace
 
-import { chromium } from 'playwright';
+import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
-import { RATE_LIMITS } from './rate-limits.js';
+import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 
 const FB_URL = 'https://www.facebook.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -47,17 +47,28 @@ export class FacebookBot {
 
     async init() {
         console.log('[FacebookBot] Initializing browser...');
-        this.browser = await chromium.launch({
-            headless: this.options.headless,
-            slowMo: this.options.slowMo
-        });
-        const context = await this.browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 800 }
-        });
-        this.page = await context.newPage();
-        await this.page.route('**/analytics/**', route => route.abort());
-        console.log('[FacebookBot] Browser initialized');
+        try {
+            this.browser = await stealthChromium.launch({
+                headless: this.options.headless,
+                args: STEALTH_ARGS,
+                ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
+            });
+            const context = await this.browser.newContext({
+                userAgent: randomChromeUA(),
+                viewport: randomViewport(),
+                locale: 'en-US',
+                timezoneId: 'America/New_York',
+            });
+            this.page = await context.newPage();
+            await this.page.route('**/analytics/**', route => route.abort());
+            await this.page.route('**/tracking/**', route => route.abort());
+            console.log('[FacebookBot] Browser initialized');
+        } catch (err) {
+            if (this.browser) await this.browser.close().catch(() => {});
+            this.browser = null;
+            this.page = null;
+            throw err;
+        }
     }
 
     async login() {
@@ -106,7 +117,8 @@ export class FacebookBot {
         console.log('[FacebookBot] Refreshing listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay(1500, 2500));
+            await mouseWiggle(this.page);
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.facebook.actionDelay));
 
             // Facebook Marketplace listings have a "..." menu or "Edit listing" option
             const editBtn = await this.page.$('[aria-label*="Edit" i], button:has-text("Edit listing"), [data-testid*="edit"]');
@@ -115,14 +127,15 @@ export class FacebookBot {
                 return false;
             }
 
-            await editBtn.click();
+            await humanClick(this.page, editBtn);
             await this.page.waitForTimeout(randomDelay(2000, 3000));
 
             const saveBtn = await this.page.$('button:has-text("Update"), button:has-text("Save"), [aria-label*="Publish" i]');
             if (saveBtn) {
-                await saveBtn.click();
-                await this.page.waitForTimeout(randomDelay(2000, 3500));
+                await humanClick(this.page, saveBtn);
+                await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.facebook.actionDelay));
                 this.stats.refreshes++;
+                writeAuditLog('refresh_listing', { listingUrl });
                 console.log('[FacebookBot] Listing refreshed');
                 return true;
             }
@@ -139,11 +152,12 @@ export class FacebookBot {
      * Refresh all Marketplace listings
      */
     async refreshAllListings(options = {}) {
-        const { maxRefresh = 50, delayBetween = 5000 } = options;
+        const { maxRefresh = 50, delayBetween = RATE_LIMITS.facebook.actionDelay } = options;
         console.log(`[FacebookBot] Refreshing up to ${maxRefresh} listings`);
 
         try {
             await this.page.goto(`${FB_URL}/marketplace/you/selling`, { waitUntil: 'networkidle' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             const listingLinks = await this.page.$$eval(
@@ -159,9 +173,10 @@ export class FacebookBot {
                 const success = await this.refreshListing(link);
                 if (success) refreshed++;
                 else skipped++;
-                await this.page.waitForTimeout(delayBetween + randomDelay(500, 1500));
+                await this.page.waitForTimeout(jitteredDelay(delayBetween));
             }
 
+            writeAuditLog('refresh_all_complete', { refreshed, skipped, total: uniqueLinks.length });
             console.log(`[FacebookBot] Refresh complete: ${refreshed} refreshed, ${skipped} skipped`);
             return { refreshed, skipped, total: uniqueLinks.length };
         } catch (error) {
@@ -178,19 +193,21 @@ export class FacebookBot {
         console.log('[FacebookBot] Relisting item:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay(1500, 2500));
+            await mouseWiggle(this.page);
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.facebook.actionDelay));
 
             // Look for "Renew" or relist option in the listing actions menu
             const renewBtn = await this.page.$('button:has-text("Renew"), [aria-label*="Renew" i], [data-testid*="renew"]');
             if (renewBtn) {
-                await renewBtn.click();
+                await humanClick(this.page, renewBtn);
                 await this.page.waitForTimeout(randomDelay(2000, 3500));
 
                 const confirmBtn = await this.page.$('button:has-text("Confirm"), button:has-text("Publish"), button[type="submit"]');
                 if (confirmBtn) {
-                    await confirmBtn.click();
-                    await this.page.waitForTimeout(randomDelay(2000, 3500));
+                    await humanClick(this.page, confirmBtn);
+                    await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.facebook.actionDelay));
                     this.stats.relists++;
+                    writeAuditLog('relist_item', { listingUrl });
                     console.log('[FacebookBot] Item relisted');
                     return true;
                 }

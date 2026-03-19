@@ -1,10 +1,10 @@
 // Grailed Automation Bot using Playwright
 // Handles bumping/refreshing listings on Grailed
 
-import { chromium } from 'playwright';
+import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
-import { RATE_LIMITS } from './rate-limits.js';
+import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 
 const GRAILED_URL = 'https://www.grailed.com';
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
@@ -47,18 +47,28 @@ export class GrailedBot {
 
     async init() {
         console.log('[GrailedBot] Initializing browser...');
-        this.browser = await chromium.launch({
-            headless: this.options.headless,
-            slowMo: this.options.slowMo
-        });
-        const context = await this.browser.newContext({
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport: { width: 1280, height: 800 }
-        });
-        this.page = await context.newPage();
-        await this.page.route('**/*.{png,jpg,jpeg,gif,webp}', route => route.abort());
-        await this.page.route('**/analytics/**', route => route.abort());
-        console.log('[GrailedBot] Browser initialized');
+        try {
+            this.browser = await stealthChromium.launch({
+                headless: this.options.headless,
+                args: STEALTH_ARGS,
+                ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
+            });
+            const context = await this.browser.newContext({
+                userAgent: randomChromeUA(),
+                viewport: randomViewport(),
+                locale: 'en-US',
+                timezoneId: 'America/New_York',
+            });
+            this.page = await context.newPage();
+            await this.page.route('**/analytics/**', route => route.abort());
+            await this.page.route('**/tracking/**', route => route.abort());
+            console.log('[GrailedBot] Browser initialized');
+        } catch (err) {
+            if (this.browser) await this.browser.close().catch(() => {});
+            this.browser = null;
+            this.page = null;
+            throw err;
+        }
     }
 
     async login() {
@@ -107,14 +117,16 @@ export class GrailedBot {
         console.log('[GrailedBot] Bumping listing:', listingUrl);
         try {
             await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await this.page.waitForTimeout(randomDelay(1500, 2500));
+            await mouseWiggle(this.page);
+            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.grailed.actionDelay));
 
             // Grailed has a "Bump" button on seller's own listings
             const bumpBtn = await this.page.$('button:has-text("Bump"), [data-testid*="bump"], button[aria-label*="bump" i]');
             if (bumpBtn) {
-                await bumpBtn.click();
-                await this.page.waitForTimeout(randomDelay(2000, 3500));
+                await humanClick(this.page, bumpBtn);
+                await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.grailed.actionDelay));
                 this.stats.bumps++;
+                writeAuditLog('bump_listing', { listingUrl });
                 console.log('[GrailedBot] Listing bumped');
                 return true;
             }
@@ -122,13 +134,14 @@ export class GrailedBot {
             // Fallback: edit + save
             const editBtn = await this.page.$('a:has-text("Edit"), button:has-text("Edit"), [data-testid*="edit"]');
             if (editBtn) {
-                await editBtn.click();
+                await humanClick(this.page, editBtn);
                 await this.page.waitForTimeout(randomDelay(2000, 3000));
                 const saveBtn = await this.page.$('button:has-text("Save"), button:has-text("Update"), button[type="submit"]');
                 if (saveBtn) {
-                    await saveBtn.click();
-                    await this.page.waitForTimeout(randomDelay(2000, 3500));
+                    await humanClick(this.page, saveBtn);
+                    await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.grailed.actionDelay));
                     this.stats.bumps++;
+                    writeAuditLog('bump_listing_via_edit', { listingUrl });
                     console.log('[GrailedBot] Listing bumped via edit');
                     return true;
                 }
@@ -147,11 +160,12 @@ export class GrailedBot {
      * Bump all listings in the seller's wardrobe
      */
     async bumpAllListings(options = {}) {
-        const { maxBumps = 50, delayBetween = 4000 } = options;
+        const { maxBumps = 50, delayBetween = RATE_LIMITS.grailed.actionDelay } = options;
         console.log(`[GrailedBot] Bumping up to ${maxBumps} listings`);
 
         try {
             await this.page.goto(`${GRAILED_URL}/users/myitems`, { waitUntil: 'networkidle' });
+            await mouseWiggle(this.page);
             await this.page.waitForTimeout(randomDelay(2000, 3500));
 
             const listingLinks = await this.page.$$eval(
@@ -167,9 +181,10 @@ export class GrailedBot {
                 const success = await this.bumpListing(link);
                 if (success) bumped++;
                 else skipped++;
-                await this.page.waitForTimeout(delayBetween + randomDelay(500, 1500));
+                await this.page.waitForTimeout(jitteredDelay(delayBetween));
             }
 
+            writeAuditLog('bump_all_complete', { bumped, skipped, total: uniqueLinks.length });
             console.log(`[GrailedBot] Bump complete: ${bumped} bumped, ${skipped} skipped`);
             return { bumped, skipped, total: uniqueLinks.length };
         } catch (error) {
