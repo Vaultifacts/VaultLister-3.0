@@ -776,6 +776,218 @@ export async function inventoryRouter(ctx) {
         return { status: 200, data: { message: `Cleaned up ${result.changes || 0} expired items`, count: result.changes || 0 } };
     }
 
+    // POST /api/inventory/import/platform - Import items from a connected marketplace
+    if (method === 'POST' && path === '/import/platform') {
+        const { platform, maxItems } = body;
+
+        const allowedPlatforms = ['poshmark', 'ebay'];
+        if (!platform) {
+            return { status: 400, data: { error: 'platform is required' } };
+        }
+
+        if (!allowedPlatforms.includes(platform)) {
+            return {
+                status: 400,
+                data: {
+                    error: `Import from ${platform} requires manual CSV export. Use Import → CSV.`
+                }
+            };
+        }
+
+        const cap = Math.min(parseInt(maxItems) || 100, 500);
+
+        // ── Poshmark ──────────────────────────────────────────────────────────
+        if (platform === 'poshmark') {
+            const { getPoshmarkBot, closePoshmarkBot } = await import('../../shared/automations/poshmark-bot.js');
+            const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
+
+            // Resolve username: connected shop first, then env fallback
+            const shop = query.get(
+                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+                [user.id, 'poshmark']
+            );
+            const username = shop?.platform_username || process.env.POSHMARK_USERNAME;
+
+            if (!username) {
+                return {
+                    status: 400,
+                    data: { error: 'No connected Poshmark account. Connect your shop under Settings → Marketplaces.' }
+                };
+            }
+
+            let bot;
+            try {
+                auditLog('poshmark', 'platform_import_start', { userId: user.id, username, maxItems: cap });
+
+                bot = await getPoshmarkBot({ headless: true });
+                const listings = await bot.getClosetListings(username, cap);
+
+                let imported = 0;
+                let skipped = 0;
+                const now = new Date().toISOString();
+
+                for (const item of listings) {
+                    try {
+                        // Deduplicate: same pattern as poshmark_inventory_sync task
+                        const existing = query.get(
+                            'SELECT id FROM inventory WHERE user_id = ? AND title = ? AND notes LIKE ?',
+                            [user.id, item.title || '', '%poshmark.com%']
+                        );
+                        if (existing) { skipped++; continue; }
+
+                        // Parse price string ($25.00 → 25.00)
+                        const listPrice = parseFloat(String(item.price || '0').replace(/[^0-9.]/g, '')) || 0;
+                        const images = item.imageUrl ? JSON.stringify([item.imageUrl]) : '[]';
+                        const notes = item.listingUrl ? `Imported from Poshmark: ${item.listingUrl}` : 'Imported from Poshmark';
+
+                        query.run(`
+                            INSERT INTO inventory (
+                                id, user_id, title, list_price, images, notes,
+                                status, source, condition, created_at, updated_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, 'active', 'poshmark', 'good', ?, ?)
+                        `, [uuidv4(), user.id, item.title || 'Imported Item', listPrice, images, notes, now, now]);
+
+                        imported++;
+                    } catch (itemErr) {
+                        logger.error('[Inventory] Poshmark platform import item error', user.id, { detail: itemErr?.message });
+                        skipped++;
+                    }
+                }
+
+                auditLog('poshmark', 'platform_import_complete', { userId: user.id, imported, skipped, total: listings.length });
+                logger.info('[Inventory] Poshmark platform import complete', user.id, { imported, skipped, total: listings.length });
+
+                return { status: 200, data: { imported, skipped, total: listings.length } };
+
+            } catch (err) {
+                logger.error('[Inventory] Poshmark platform import failed', user.id, { detail: err?.message });
+                return { status: 500, data: { error: `Poshmark import failed: ${err.message}` } };
+            } finally {
+                if (bot) await closePoshmarkBot();
+            }
+        }
+
+        // ── eBay ──────────────────────────────────────────────────────────────
+        if (platform === 'ebay') {
+            const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
+            const { decryptToken } = await import('../utils/encryption.js');
+            const { fetchWithTimeout } = await import('../shared/fetchWithTimeout.js');
+
+            const shop = query.get(
+                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+                [user.id, 'ebay']
+            );
+            if (!shop || !shop.oauth_token) {
+                return {
+                    status: 400,
+                    data: { error: 'No connected eBay account. Connect your shop under Settings → Marketplaces.' }
+                };
+            }
+
+            try {
+                const accessToken = decryptToken(shop.oauth_token);
+                const oauthMode = process.env.OAUTH_MODE || 'mock';
+                const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'sandbox';
+                const apiBase = ebayEnvironment === 'production'
+                    ? 'https://api.ebay.com'
+                    : 'https://api.sandbox.ebay.com';
+
+                auditLog('ebay', 'platform_import_start', { userId: user.id, shopId: shop.id });
+
+                let ebayItems = [];
+                if (oauthMode === 'mock') {
+                    ebayItems = [
+                        { sku: 'MOCK-SKU-001', title: 'Mock eBay Item 1', price: { value: '29.99' }, quantity: 1, condition: 'USED_EXCELLENT', product: { imageUrls: [] } },
+                        { sku: 'MOCK-SKU-002', title: 'Mock eBay Item 2', price: { value: '49.99' }, quantity: 3, condition: 'NEW', product: { imageUrls: [] } }
+                    ];
+                } else {
+                    const response = await fetchWithTimeout(
+                        `${apiBase}/sell/inventory/v1/inventory_item?limit=${cap}`,
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${accessToken}`,
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`eBay API error: ${response.status} - ${errorText}`);
+                    }
+                    const data = await response.json();
+                    ebayItems = data.inventoryItems || [];
+                }
+
+                const ebayConditionMap = {
+                    'NEW': 'new',
+                    'LIKE_NEW': 'like_new',
+                    'USED_EXCELLENT': 'like_new',
+                    'USED_VERY_GOOD': 'good',
+                    'USED_GOOD': 'good',
+                    'USED_ACCEPTABLE': 'fair',
+                    'FOR_PARTS_OR_NOT_WORKING': 'poor'
+                };
+
+                let imported = 0;
+                let skipped = 0;
+                const now = new Date().toISOString();
+
+                for (const ebayItem of ebayItems) {
+                    try {
+                        const sku = ebayItem.sku || null;
+
+                        // Deduplicate by SKU
+                        if (sku) {
+                            const existing = query.get(
+                                'SELECT id FROM inventory WHERE user_id = ? AND sku = ?',
+                                [user.id, sku]
+                            );
+                            if (existing) { skipped++; continue; }
+                        }
+
+                        const title = ebayItem.title || ebayItem.product?.title || 'Imported eBay Item';
+                        const listPrice = parseFloat(
+                            ebayItem.price?.value ||
+                            ebayItem.offers?.[0]?.price?.value ||
+                            0
+                        ) || 0;
+                        const quantity = parseInt(
+                            ebayItem.availability?.shipToLocationAvailability?.quantity ||
+                            ebayItem.quantity ||
+                            1
+                        );
+                        const condition = ebayConditionMap[ebayItem.condition] || 'good';
+                        const imageUrls = ebayItem.product?.imageUrls || [];
+                        const images = JSON.stringify(imageUrls);
+                        const description = ebayItem.product?.description || null;
+
+                        query.run(`
+                            INSERT INTO inventory (
+                                id, user_id, sku, title, description, list_price, quantity,
+                                condition, images, status, source, created_at, updated_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'ebay', ?, ?)
+                        `, [uuidv4(), user.id, sku, title, description, listPrice, quantity, condition, images, now, now]);
+
+                        imported++;
+                    } catch (itemErr) {
+                        logger.error('[Inventory] eBay platform import item error', user.id, { detail: itemErr?.message });
+                        skipped++;
+                    }
+                }
+
+                auditLog('ebay', 'platform_import_complete', { userId: user.id, imported, skipped, total: ebayItems.length });
+                logger.info('[Inventory] eBay platform import complete', user.id, { imported, skipped, total: ebayItems.length });
+
+                return { status: 200, data: { imported, skipped, total: ebayItems.length } };
+
+            } catch (err) {
+                logger.error('[Inventory] eBay platform import failed', user.id, { detail: err?.message });
+                return { status: 500, data: { error: `eBay import failed: ${err.message}` } };
+            }
+        }
+    }
+
     // POST /api/inventory/import/csv - Import items from CSV
     if (method === 'POST' && path === '/import/csv') {
         const { items } = body;

@@ -2320,7 +2320,7 @@ Object.assign(handlers, {
                 </div>
 
                 <div style="margin-bottom: 24px;">
-                    <label for="marketplace-url" class="form-label">Listing URL</label>
+                    <label for="marketplace-url" class="form-label">Single Listing URL</label>
                     <input type="url"
                            id="marketplace-url"
                            class="form-control"
@@ -2330,6 +2330,38 @@ Object.assign(handlers, {
                         Paste the URL of the listing you want to import
                     </small>
                 </div>
+
+                ${(selectedMarketplace === 'poshmark' || selectedMarketplace === 'ebay') ? `
+                <div style="border-top: 1px solid var(--gray-200); padding-top: 20px; margin-bottom: 24px;">
+                    <label class="form-label">Bulk Import</label>
+                    <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px; margin-bottom: 2px;">
+                                ${selectedMarketplace === 'poshmark' ? 'Import Entire Closet' : 'Import All Active Listings'}
+                            </div>
+                            <div style="font-size: 12px; color: var(--gray-500);">
+                                ${selectedMarketplace === 'poshmark' ? 'Imports up to 200 listings from your connected Poshmark closet' : 'Imports up to 200 active listings from your connected eBay account'}
+                            </div>
+                        </div>
+                        <button id="import-${selectedMarketplace}-closet-btn"
+                                class="btn btn-outline"
+                                onclick="handlers.importFromPlatformCloset('${selectedMarketplace}')"
+                                style="white-space: nowrap; flex-shrink: 0;">
+                            Import from ${selectedMarketplace === 'poshmark' ? 'Poshmark' : 'eBay'}
+                        </button>
+                    </div>
+                </div>
+                ` : `
+                <div style="border-top: 1px solid var(--gray-200); padding-top: 20px; margin-bottom: 24px;">
+                    <label class="form-label">Bulk Import</label>
+                    <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 16px; display: flex; align-items: center; gap: 12px;">
+                        <div style="font-size: 18px;">📄</div>
+                        <div style="font-size: 13px; color: var(--gray-600);">
+                            Bulk import is not available for this platform. Use <a href="#" onclick="event.preventDefault(); modals.close(); handlers.showCSVImport()" style="color: var(--primary);">CSV Import</a> instead.
+                        </div>
+                    </div>
+                </div>
+                `}
 
                 <div style="display: flex; justify-content: flex-end; gap: 12px;">
                     <button class="btn btn-outline" onclick="modals.close()">Cancel</button>
@@ -2370,6 +2402,23 @@ Object.assign(handlers, {
         } catch (error) {
             console.error('Error fetching marketplace listing:', error);
             toast.error('Failed to fetch listing. Please check the URL and try again.');
+        }
+    },
+
+
+    importFromPlatformCloset: async function(platform) {
+        const btn = document.getElementById(`import-${platform}-closet-btn`);
+        if (btn) { btn.disabled = true; btn.textContent = 'Importing...'; }
+
+        try {
+            const result = await api.post('/inventory/import/platform', { platform, maxItems: 200 });
+            modals.close();
+            toast.success(`Imported ${result.imported} items from ${platform} (${result.skipped} skipped)`);
+            await handlers.loadInventory();
+        } catch (err) {
+            toast.error(err.message || `Failed to import from ${platform}`);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = `Import from ${platform.charAt(0).toUpperCase() + platform.slice(1)}`; }
         }
     },
 
