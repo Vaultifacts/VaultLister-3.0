@@ -1,6 +1,11 @@
 -- VaultLister Database Schema
 -- SQLite optimized for performance
 
+-- TIMESTAMP CONVENTION
+-- All timestamp columns (created_at, updated_at, etc.) use SQLite DATETIME type
+-- SQLite stores DATETIME as TEXT in ISO 8601 format (YYYY-MM-DD HH:MM:SS)
+-- This provides human-readability, timezone consistency, and enables lexicographic sorting
+
 -- SOFT DELETE PATTERN
 -- Tables using soft delete: inventory (status='deleted' + deleted_at timestamp)
 -- Rationale: Allows 30-day recovery window for Recently Deleted feature

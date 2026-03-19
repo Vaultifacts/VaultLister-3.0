@@ -182,7 +182,8 @@ function runMigrations() {
             '103_add_google_integrations.sql',
             '104_fix_listings_folders_user_id.sql',
             '105_add_composite_indexes.sql',
-            '106_fix_purchase_number_unique.sql'
+            '106_fix_purchase_number_unique.sql',
+            '107_document_security_logs_id_design.sql'
         ];
 
         for (const migrationFile of migrationFiles) {
