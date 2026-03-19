@@ -12,11 +12,15 @@ import { requireFeature } from '../middleware/featureFlags.js';
 import { sanitizeForAI } from '../../shared/ai/sanitize-input.js';
 import { withTimeout } from '../shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../shared/circuitBreaker.js';
+import { RateLimiter } from '../middleware/rateLimiter.js';
 
 function safeJsonParse(str, fallback = null) {
     if (str == null) return fallback;
     try { return JSON.parse(str); } catch { return fallback; }
 }
+
+// Rate limiter for expensive AI API calls (per-user, 10 requests per minute)
+const aiRateLimiter = new RateLimiter();
 
 // Configurable AI thresholds — override via environment variables
 const AI_CONFIG = {
@@ -43,6 +47,13 @@ export async function aiRouter(ctx) {
 
     // POST /api/ai/analyze-listing-image - Advanced AI image analysis with Claude Vision
     if (method === 'POST' && path === '/analyze-listing-image') {
+        // Rate limit: 10 API calls per minute per user
+        const rateLimitKey = aiRateLimiter.getKey('claude-api', user?.id);
+        const rateLimitResult = aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
+        if (!rateLimitResult.allowed) {
+            return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
+        }
+
         const { imageBase64, imageMimeType, platform = 'poshmark' } = body;
 
         if (!imageBase64) {
@@ -203,6 +214,13 @@ Important:
 
     // POST /api/ai/generate-listing - Generate listing from image/details or an existing inventory item
     if (method === 'POST' && path === '/generate-listing') {
+        // Rate limit: 10 API calls per minute per user
+        const rateLimitKey = aiRateLimiter.getKey('claude-api', user?.id);
+        const rateLimitResult = aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
+        if (!rateLimitResult.allowed) {
+            return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
+        }
+
         const { imageUrl, imageBase64, category, brand, condition, keywords, inventoryId, platform = 'poshmark', notes: extraNotes } = body;
 
         const platformGuidelines = {
@@ -577,6 +595,13 @@ Important:
 
     // POST /api/ai/bulk-generate - Bulk generate for multiple items
     if (method === 'POST' && path === '/bulk-generate') {
+        // Rate limit: 10 API calls per minute per user (bulk operations consume more allowance)
+        const rateLimitKey = aiRateLimiter.getKey('claude-api', user?.id);
+        const rateLimitResult = aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
+        if (!rateLimitResult.allowed) {
+            return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
+        }
+
         try {
             const { inventoryIds, fields = ['title', 'description', 'tags'] } = body;
 

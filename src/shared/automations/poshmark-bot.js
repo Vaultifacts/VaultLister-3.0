@@ -57,6 +57,33 @@ export class PoshmarkBot {
             offers: 0,
             errors: 0
         };
+        // Session-level rate limit tracking — persists across all actions in a single bot session
+        this.sessionStartTime = Date.now();
+        this.lastActionTime = {
+            share: 0,
+            follow: 0,
+            offer: 0
+        };
+    }
+
+    /**
+     * Enforce rate limit for an action type within the session
+     * Checks time elapsed since last action of that type; waits if needed
+     * @param {string} actionType - 'share', 'follow', or 'offer'
+     * @param {number} minDelay - Minimum milliseconds between actions (from RATE_LIMITS)
+     */
+    async enforceRateLimit(actionType, minDelay) {
+        const now = Date.now();
+        const lastTime = this.lastActionTime[actionType] || 0;
+        const elapsed = now - lastTime;
+
+        if (elapsed < minDelay) {
+            const waitTime = minDelay - elapsed;
+            logger.info(`[PoshmarkBot] Rate limit: waiting ${waitTime}ms before next ${actionType}`);
+            await this.page.waitForTimeout(waitTime);
+        }
+
+        this.lastActionTime[actionType] = Date.now();
     }
 
     /**
@@ -210,7 +237,8 @@ export class PoshmarkBot {
             const toFollowersOption = await this.page.$('[data-test="share-to-followers"]');
             if (toFollowersOption) {
                 await humanClick(this.page, toFollowersOption);
-                await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
+                // Enforce session-level rate limit before next share
+                await this.enforceRateLimit('share', jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
                 this.stats.shares++;
                 writeAuditLog('share_item', { listingUrl });
                 logger.info('[PoshmarkBot] Item shared successfully');
@@ -264,7 +292,8 @@ export class PoshmarkBot {
 
                         // Occasional idle wiggle between shares (every ~5 items)
                         if (shared % 5 === 0) await mouseWiggle(this.page);
-                        await this.page.waitForTimeout(jitteredDelay(delayBetween));
+                        // Enforce session-level rate limit for next share
+                        await this.enforceRateLimit('share', jitteredDelay(delayBetween));
                     }
                 } catch (e) {
                     logger.info('[PoshmarkBot] Error sharing item', { error: e.message });
@@ -290,13 +319,14 @@ export class PoshmarkBot {
         try {
             await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
-            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.followDelay));
 
             // Find follow button
             const followBtn = await this.page.$('[data-test="follow-button"]:not([data-test-value="following"])');
 
             if (followBtn) {
                 await humanClick(this.page, followBtn);
+                // Enforce session-level rate limit for next follow
+                await this.enforceRateLimit('follow', jitteredDelay(RATE_LIMITS.poshmark.followDelay));
                 this.stats.follows++;
                 writeAuditLog('follow_user', { username });
                 logger.info('[PoshmarkBot] Followed user successfully');
@@ -339,7 +369,8 @@ export class PoshmarkBot {
                     writeAuditLog('follow_back', { followed, maxFollows });
                     logger.info(`[PoshmarkBot] Followed back ${followed}/${maxFollows}`);
                     if (followed % 5 === 0) await mouseWiggle(this.page);
-                    await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.followDelay));
+                    // Enforce session-level rate limit for next follow
+                    await this.enforceRateLimit('follow', jitteredDelay(RATE_LIMITS.poshmark.followDelay));
                 }
             }
 
@@ -390,7 +421,6 @@ export class PoshmarkBot {
         try {
             await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
-            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
 
@@ -404,6 +434,8 @@ export class PoshmarkBot {
                     const confirmBtn = await this.page.$('[data-test="confirm-accept"]');
                     if (confirmBtn) {
                         await humanClick(this.page, confirmBtn);
+                        // Enforce session-level rate limit for next offer action
+                        await this.enforceRateLimit('offer', jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
                         this.stats.offers++;
                         writeAuditLog('accept_offer', { offerIndex });
                         logger.info('[PoshmarkBot] Offer accepted');
@@ -429,7 +461,6 @@ export class PoshmarkBot {
         try {
             await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
-            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
 
@@ -448,6 +479,8 @@ export class PoshmarkBot {
                     const submitBtn = await this.page.$('[data-test="submit-counter"]');
                     if (submitBtn) {
                         await humanClick(this.page, submitBtn);
+                        // Enforce session-level rate limit for next offer action
+                        await this.enforceRateLimit('offer', jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
                         this.stats.offers++;
                         writeAuditLog('counter_offer', { offerIndex, counterAmount });
                         logger.info('[PoshmarkBot] Counter offer sent');
@@ -473,7 +506,6 @@ export class PoshmarkBot {
         try {
             await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
-            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             const offerCards = await this.page.$$('[data-test="offer-card"]');
 
@@ -487,6 +519,8 @@ export class PoshmarkBot {
                     const confirmBtn = await this.page.$('[data-test="confirm-decline"]');
                     if (confirmBtn) {
                         await humanClick(this.page, confirmBtn);
+                        // Enforce session-level rate limit for next offer action
+                        await this.enforceRateLimit('offer', jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
                         writeAuditLog('decline_offer', { offerIndex });
                         logger.info('[PoshmarkBot] Offer declined');
                         return true;
@@ -514,7 +548,6 @@ export class PoshmarkBot {
         try {
             await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
             await mouseWiggle(this.page);
-            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
 
             // Find the "Offer/Price Drop" or "Send Offer to Likers" button
             const otlBtn = await this.page.$(
@@ -564,7 +597,8 @@ export class PoshmarkBot {
             );
             if (submitBtn) {
                 await humanClick(this.page, submitBtn);
-                await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
+                // Enforce session-level rate limit for next offer action
+                await this.enforceRateLimit('offer', jitteredDelay(RATE_LIMITS.poshmark.offerDelay));
                 this.stats.offers++;
                 writeAuditLog('send_otl', { listingUrl, discountPercent, shippingDiscount });
                 logger.info('[PoshmarkBot] OTL sent successfully');
@@ -616,6 +650,7 @@ export class PoshmarkBot {
                 } else {
                     skipped++;
                 }
+                // Rate limit already enforced by sendOfferToLikers, but add jitter between campaigns
                 await this.page.waitForTimeout(jitteredDelay(delayBetween));
             }
 

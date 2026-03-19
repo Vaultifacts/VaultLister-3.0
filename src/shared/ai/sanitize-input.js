@@ -17,10 +17,11 @@ export function sanitizeForAI(text, maxLength = 500) {
     // Strip XML/HTML-like tags that could manipulate prompt structure
     sanitized = sanitized.replace(/<\/?[a-zA-Z][^>]*>/g, '');
 
-    // Strip common prompt injection patterns
-    sanitized = sanitized.replace(/\b(ignore|disregard|forget)\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|rules?|prompts?|context)/gi, '');
-    sanitized = sanitized.replace(/\b(you\s+are\s+now|act\s+as|pretend\s+to\s+be|roleplay\s+as|switch\s+to)\b/gi, '');
-    sanitized = sanitized.replace(/\b(system\s*prompt|system\s*message|instructions?\s*:)/gi, '');
+    // Strip common prompt injection patterns (expanded blocklist)
+    sanitized = sanitized.replace(/\b(ignore|disregard|forget|override|bypass|disregard)\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|rules?|prompts?|context)/gi, '');
+    sanitized = sanitized.replace(/\b(you\s+are\s+now|act\s+as|pretend\s+to\s+be|roleplay\s+as|switch\s+to|behave\s+as|become|simulate)\b/gi, '');
+    sanitized = sanitized.replace(/\b(system\s*prompt|system\s*message|instructions?\s*:|hidden\s+instructions?|admin\s+commands?|developer\s+mode)\b/gi, '');
+    sanitized = sanitized.replace(/\b(new\s+instructions?|additional\s+instructions?|ignore\s+previous|forget\s+everything|disregard\s+everything)\b/gi, '');
     sanitized = sanitized.replace(/```[\s\S]*?```/g, '');
 
     // Collapse excessive whitespace
