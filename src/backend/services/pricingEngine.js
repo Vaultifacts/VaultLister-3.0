@@ -1,9 +1,10 @@
 // Pricing Engine Service for VaultLister
-// Generates price predictions and recommendations using comparable sales analysis
+// Generates price predictions and recommendations using Claude Haiku + statistical fallback
 
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { claudePricePrediction, claudeDemandForecast } from '../../shared/ai/predictions-ai.js';
 
 // Cryptographically secure random helpers (replaces Math.random())
 function secureRandomFloat() {
@@ -50,54 +51,46 @@ export async function generatePricePrediction(inventoryId, userId, options = {})
         throw new Error('Inventory item not found');
     }
 
-    // Find comparable sales
+    // Fetch real comparable sales from DB
     const comparables = await findComparableSales(item, options);
 
-    // Calculate base price from comparables
-    const basePrice = calculateBasePrice(comparables, item);
+    // Get AI-powered prediction (falls back to statistical if API unavailable)
+    const aiResult = await claudePricePrediction(item, comparables);
 
-    // Apply adjustments
-    const conditionMultiplier = getConditionMultiplier(item.condition);
+    const predictedPrice = aiResult.predicted_price;
+    const demandScore = aiResult.demand_score;
     const seasonalityFactor = getSeasonalityFactor(item.category);
-    const demandScore = calculateDemandScore(item, comparables);
 
-    // Calculate predicted price
-    const adjustedPrice = basePrice * conditionMultiplier * seasonalityFactor;
-    const predictedPrice = Math.round(adjustedPrice * 100) / 100;
-
-    // Calculate confidence based on comparable count and variance
-    const confidence = calculateConfidence(comparables, item);
-
-    // Generate recommendation
-    const recommendation = getRecommendation(item, predictedPrice, demandScore);
-
-    // Calculate price range
+    // Calculate price range from variance in comparables
     const variance = calculateVariance(comparables);
     const priceRangeLow = Math.max(predictedPrice - variance, item.cost_price || 0);
     const priceRangeHigh = predictedPrice + variance;
-
-    // Estimate days to sell
-    const avgDaysToSell = calculateAvgDaysToSell(comparables);
 
     const prediction = {
         id: uuidv4(),
         user_id: userId,
         inventory_id: inventoryId,
         predicted_price: predictedPrice,
-        confidence: confidence,
+        confidence: aiResult.confidence / 100,
         price_range_low: priceRangeLow,
         price_range_high: priceRangeHigh,
         demand_score: demandScore,
-        recommendation: recommendation.action,
-        recommendation_reason: recommendation.reason,
+        recommendation: aiResult.recommendation,
+        recommendation_reason: aiResult.recommendation_reason,
         comparable_count: comparables.length,
-        avg_days_to_sell: avgDaysToSell,
+        avg_days_to_sell: aiResult.avg_days_to_sell,
         seasonality_factor: seasonalityFactor,
         platform: options.platform || null,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
     };
+
+    logger.info('[PricingEngine] Prediction generated', userId, {
+        inventory_id: inventoryId,
+        source: aiResult.source,
+        comparable_count: comparables.length
+    });
 
     // Store prediction
     try {
@@ -127,33 +120,56 @@ export async function generatePricePrediction(inventoryId, userId, options = {})
 }
 
 /**
- * Find comparable sales for an item
+ * Find comparable sales for an item from the user's own sales history (last 90 days).
+ * Matches on category first, then falls back to all user sales.
  */
 async function findComparableSales(item, options = {}) {
-    // In a real implementation, this would query sold listings
-    // For now, generate mock comparables based on item data
-    const baseSales = [];
-    const basePrice = item.list_price || 50;
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Generate 5-15 mock comparables
-    const count = 5 + secureRandomInt(10);
+    try {
+        // Try category-matched sales first
+        let sales = query.all(`
+            SELECT s.sale_price, s.platform, s.created_at,
+                   i.category, i.condition,
+                   CAST((julianday(s.created_at) - julianday(s.created_at)) AS INTEGER) AS daysToSell
+            FROM sales s
+            LEFT JOIN inventory i ON s.inventory_id = i.id
+            WHERE s.user_id = ?
+              AND s.status IN ('confirmed', 'delivered')
+              AND s.created_at >= ?
+              AND (i.category = ? OR i.category IS NULL)
+            ORDER BY s.created_at DESC
+            LIMIT 25
+        `, [item.user_id, ninetyDaysAgo, item.category || '']);
 
-    for (let i = 0; i < count; i++) {
-        const variance = (secureRandomFloat() - 0.5) * 0.4; // +/- 20%
-        const price = basePrice * (1 + variance);
-        const daysAgo = secureRandomInt(60) + 1;
+        if (sales.length < 3) {
+            sales = query.all(`
+                SELECT s.sale_price, s.platform, s.created_at,
+                       i.category, i.condition
+                FROM sales s
+                LEFT JOIN inventory i ON s.inventory_id = i.id
+                WHERE s.user_id = ?
+                  AND s.status IN ('confirmed', 'delivered')
+                  AND s.created_at >= ?
+                ORDER BY s.created_at DESC
+                LIMIT 25
+            `, [item.user_id, ninetyDaysAgo]);
+        }
 
-        baseSales.push({
-            title: item.title,
-            price: Math.round(price * 100) / 100,
-            soldDate: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000),
-            daysToSell: secureRandomInt(30) + 1,
-            platform: ['poshmark', 'ebay', 'mercari'][secureRandomInt(3)],
-            condition: item.condition || 'good'
-        });
+        return sales.map(s => ({
+            price: Number(s.sale_price) || 0,
+            soldDate: new Date(s.created_at || Date.now()),
+            daysToSell: 14,
+            platform: s.platform || 'unknown',
+            condition: s.condition || item.condition || 'good',
+            sale_price: Number(s.sale_price) || 0,
+            category: s.category || item.category,
+            created_at: s.created_at
+        }));
+    } catch (err) {
+        logger.warn('[PricingEngine] Could not fetch comparable sales', null, { detail: err.message });
+        return [];
     }
-
-    return baseSales;
 }
 
 /**
@@ -367,27 +383,62 @@ export async function generateBatchPredictions(inventoryIds, userId, options = {
 }
 
 /**
- * Get demand forecast for a category
+ * Get demand forecast for a category.
+ * When userId is provided, queries the user's 90-day sales and calls Claude Haiku.
+ * Falls back to seasonality-based calculation when userId is absent or API is unavailable.
  */
-export function getDemandForecast(category, platform = null) {
+export async function getDemandForecast(category, platform = null, userId = null) {
     const now = new Date();
     const month = now.getMonth();
     const seasonFactor = getSeasonalityFactor(category);
 
+    if (userId) {
+        try {
+            const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+            const salesData = query.all(`
+                SELECT s.sale_price, s.platform, s.created_at, i.category
+                FROM sales s
+                LEFT JOIN inventory i ON s.inventory_id = i.id
+                WHERE s.user_id = ?
+                  AND s.status IN ('confirmed', 'delivered')
+                  AND s.created_at >= ?
+                ORDER BY s.created_at DESC
+                LIMIT 200
+            `, [userId, ninetyDaysAgo]);
+
+            if (salesData.length > 0) {
+                const forecasts = await claudeDemandForecast(userId, salesData);
+                const match = forecasts.find(f =>
+                    f.category.toLowerCase() === (category || '').toLowerCase()
+                ) || forecasts[0];
+
+                if (match) {
+                    return {
+                        category: match.category,
+                        platform,
+                        forecast_date: now.toISOString().split('T')[0],
+                        demand_level: match.demand_level,
+                        price_trend: match.price_trend,
+                        seasonality_index: match.seasonality_index,
+                        notes: match.notes,
+                        source: match.source
+                    };
+                }
+            }
+        } catch (err) {
+            logger.warn('[PricingEngine] getDemandForecast AI call failed, using seasonal fallback', null, {
+                detail: err.message
+            });
+        }
+    }
+
+    // Seasonal fallback
     let demandLevel = 'medium';
     let priceTrend = 'stable';
 
-    if (seasonFactor >= 1.15) {
-        demandLevel = 'high';
-        priceTrend = 'rising';
-    } else if (seasonFactor >= 1.05) {
-        demandLevel = 'high';
-    } else if (seasonFactor <= 0.85) {
-        demandLevel = 'low';
-        priceTrend = 'falling';
-    } else if (seasonFactor <= 0.95) {
-        demandLevel = 'medium';
-    }
+    if (seasonFactor >= 1.15) { demandLevel = 'high'; priceTrend = 'rising'; }
+    else if (seasonFactor >= 1.05) { demandLevel = 'high'; }
+    else if (seasonFactor <= 0.85) { demandLevel = 'low'; priceTrend = 'falling'; }
 
     return {
         category,
@@ -396,7 +447,8 @@ export function getDemandForecast(category, platform = null) {
         demand_level: demandLevel,
         price_trend: priceTrend,
         seasonality_index: seasonFactor,
-        notes: generateForecastNotes(category, seasonFactor, month)
+        notes: generateForecastNotes(category, seasonFactor, month),
+        source: 'statistical'
     };
 }
 

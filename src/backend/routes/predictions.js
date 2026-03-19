@@ -234,16 +234,16 @@ export async function predictionsRouter(ctx) {
             const forecasts = query.all(sql, params);
 
             if (forecasts.length === 0 && category) {
-                // Generate on-the-fly forecast
-                const forecast = getDemandForecast(category, platform);
+                const forecast = await getDemandForecast(category, platform, user.id);
                 return { status: 200, data: [forecast] };
             }
 
             return { status: 200, data: forecasts };
         } catch (error) {
-            // Generate default forecasts
             const categories = ['Clothing', 'Shoes', 'Bags', 'Accessories', 'Electronics', 'Vintage'];
-            const forecasts = categories.map(cat => getDemandForecast(cat, platform));
+            const forecasts = await Promise.all(
+                categories.map(cat => getDemandForecast(cat, platform, user.id))
+            );
             return { status: 200, data: forecasts };
         }
     }
@@ -257,7 +257,7 @@ export async function predictionsRouter(ctx) {
         const category = decodeURIComponent(demandCatMatch[1]);
         const { platform } = body;
 
-        const forecast = getDemandForecast(category, platform);
+        const forecast = await getDemandForecast(category, platform, user.id);
 
         // Store forecast
         try {
