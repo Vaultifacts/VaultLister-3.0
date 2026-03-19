@@ -5214,18 +5214,48 @@ Object.assign(handlers, {
     },
 
 
-    addPhotosToBank() {
-        toast.info('Adding photos to bank...');
+    async addPhotosToBank() {
+        const photos = window._quickPhotos || [];
+        if (photos.length === 0) { toast.warning('No photos to add'); return; }
+        let added = 0;
+        for (const photo of photos) {
+            try {
+                const blob = await fetch(photo.url || photo).then(r => r.blob());
+                const formData = new FormData();
+                formData.append('image', blob, `quick-photo-${Date.now()}.jpg`);
+                await api.post('/image-bank/upload', formData);
+                added++;
+            } catch (err) { toast.error('Failed to upload photo: ' + err.message); }
+        }
+        if (added > 0) {
+            toast.success(`${added} photo(s) added to Image Bank`);
+            window._quickPhotos = [];
+        }
     },
-
 
     removeQuickPhoto(index) {
-        toast.info('Photo removed');
+        const photos = window._quickPhotos || [];
+        if (index >= 0 && index < photos.length) {
+            photos.splice(index, 1);
+            window._quickPhotos = photos;
+            toast.success('Photo removed');
+            if (store.state.currentPage === 'tools') renderApp(pages.tools());
+        }
     },
 
-
-    enhanceQuickPhoto(index) {
-        toast.info('Enhancing photo...');
+    async enhanceQuickPhoto(index) {
+        const photos = window._quickPhotos || [];
+        if (!photos[index]) return;
+        try {
+            const result = await api.post('/image-bank/enhance', { imageUrl: photos[index].url || photos[index] });
+            if (result.enhanced_url) {
+                photos[index] = { ...photos[index], url: result.enhanced_url, enhanced: true };
+                window._quickPhotos = photos;
+                toast.success('Photo enhanced');
+            }
+        } catch {
+            toast.info('Photo enhancement requires a Claude Vision API key — configure in Settings');
+        }
     },
 
     // Reports,
