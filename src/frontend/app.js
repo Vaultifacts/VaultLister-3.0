@@ -15108,6 +15108,16 @@ const router = {
             store.setState({ batchPhotoActivePollInterval: null });
         }
 
+        // Clear countdown timers on navigation (F-14)
+        if (typeof countdown !== 'undefined') countdown.stopAll();
+        if (typeof countdownTimer !== 'undefined') countdownTimer.stopUpdates();
+
+        // Clear login ban countdown on navigation (F-22)
+        if (window._loginBanCountdown) {
+            clearInterval(window._loginBanCountdown);
+            window._loginBanCountdown = null;
+        }
+
         // Save sidebar scroll position before navigating
         const sidebar = document.querySelector('.sidebar-nav');
         if (sidebar) {

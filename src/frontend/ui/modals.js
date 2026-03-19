@@ -93,7 +93,7 @@ const modals = {
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title">${escapeHtml(title)}</h2>
-                            <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); document.getElementById('modal-container').innerHTML='';">${components.icon('close')}</button>
+                            <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); modals.close();">${components.icon('close')}</button>
                         </div>
                         <div class="modal-body">
                             <p style="margin-bottom: 20px; line-height: 1.5;">${escapeHtml(message)}</p>

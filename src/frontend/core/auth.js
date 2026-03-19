@@ -67,6 +67,10 @@ const auth = {
             if (window.VaultListerSocket) {
                 window.VaultListerSocket.connect(data.token).catch(() => {});
             }
+            if (window._loginBanCountdown) {
+                clearInterval(window._loginBanCountdown);
+                window._loginBanCountdown = null;
+            }
             router.navigate('dashboard');
             toast.success('Welcome back!');
         } catch (error) {

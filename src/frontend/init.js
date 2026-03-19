@@ -1626,11 +1626,10 @@ handlers.downloadLegalPDF = function(type) {
 // Reading progress indicator for legal pages
 document.addEventListener('scroll', function() {
     const progressBar = document.querySelector('.legal-progress .progress-fill');
-    if (progressBar) {
-        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const scrollPercent = (window.scrollY / scrollHeight) * 100;
-        progressBar.style.width = `${Math.min(scrollPercent, 100)}%`;
-    }
+    if (!progressBar) return;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = (window.scrollY / scrollHeight) * 100;
+    progressBar.style.width = `${Math.min(scrollPercent, 100)}%`;
 });
 
 // Checklist keyboard shortcuts

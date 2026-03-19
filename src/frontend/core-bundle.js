@@ -1493,6 +1493,11 @@ const countdown = {
             clearInterval(this.timers.get(id));
             this.timers.delete(id);
         }
+    },
+
+    stopAll() {
+        this.timers.forEach((intervalId) => clearInterval(intervalId));
+        this.timers.clear();
     }
 };
 
@@ -12235,6 +12240,13 @@ const countdownTimer = {
                 el.innerHTML = this.render(target);
             });
         }, 60000);
+    },
+
+    stopUpdates() {
+        if (this._intervalId) {
+            clearInterval(this._intervalId);
+            this._intervalId = null;
+        }
     }
 };
 
@@ -15222,7 +15234,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '23beeb2b';
+    const v = '113ca702';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -20869,6 +20881,10 @@ const auth = {
             if (window.VaultListerSocket) {
                 window.VaultListerSocket.connect(data.token).catch(() => {});
             }
+            if (window._loginBanCountdown) {
+                clearInterval(window._loginBanCountdown);
+                window._loginBanCountdown = null;
+            }
             router.navigate('dashboard');
             toast.success('Welcome back!');
         } catch (error) {
@@ -21183,7 +21199,7 @@ const modals = {
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title">${escapeHtml(title)}</h2>
-                            <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); document.getElementById('modal-container').innerHTML='';">${components.icon('close')}</button>
+                            <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); modals.close();">${components.icon('close')}</button>
                         </div>
                         <div class="modal-body">
                             <p style="margin-bottom: 20px; line-height: 1.5;">${escapeHtml(message)}</p>
@@ -27993,11 +28009,10 @@ handlers.downloadLegalPDF = function(type) {
 // Reading progress indicator for legal pages
 document.addEventListener('scroll', function() {
     const progressBar = document.querySelector('.legal-progress .progress-fill');
-    if (progressBar) {
-        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const scrollPercent = (window.scrollY / scrollHeight) * 100;
-        progressBar.style.width = `${Math.min(scrollPercent, 100)}%`;
-    }
+    if (!progressBar) return;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = (window.scrollY / scrollHeight) * 100;
+    progressBar.style.width = `${Math.min(scrollPercent, 100)}%`;
 });
 
 // Checklist keyboard shortcuts

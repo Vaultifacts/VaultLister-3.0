@@ -3502,6 +3502,13 @@ const countdownTimer = {
                 el.innerHTML = this.render(target);
             });
         }, 60000);
+    },
+
+    stopUpdates() {
+        if (this._intervalId) {
+            clearInterval(this._intervalId);
+            this._intervalId = null;
+        }
     }
 };
 

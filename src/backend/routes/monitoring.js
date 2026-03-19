@@ -5,6 +5,7 @@ import { monitor, healthChecker, securityMonitor } from '../services/monitoring.
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import websocketService from '../services/websocket.js';
+import { applyRateLimit } from '../middleware/rateLimiter.js';
 
 function safeJsonParse(str, fallback = null) {
     if (str == null) return fallback;
@@ -233,6 +234,9 @@ export async function monitoringRouter(ctx) {
 
     // POST /api/monitoring/rum - Receive batched RUM metrics (public)
     if (method === 'POST' && path === '/rum') {
+        const rateLimitError = applyRateLimit(ctx, 'default');
+        if (rateLimitError) return rateLimitError;
+
         try {
             const { metrics: clientMetrics, sessionId } = ctx.body || {};
             if (!sessionId || typeof sessionId !== 'string') {

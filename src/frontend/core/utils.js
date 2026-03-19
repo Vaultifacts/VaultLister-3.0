@@ -1492,6 +1492,11 @@ const countdown = {
             clearInterval(this.timers.get(id));
             this.timers.delete(id);
         }
+    },
+
+    stopAll() {
+        this.timers.forEach((intervalId) => clearInterval(intervalId));
+        this.timers.clear();
     }
 };
 
