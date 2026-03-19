@@ -3,7 +3,7 @@
 # Usage: ./scripts/smoke-test-staging.sh [BASE_URL]
 # Exit 0 if all tests pass, exit 1 if any fail.
 
-BASE_URL="${1:-https://vaultlister.com}"
+BASE_URL="${1:-${SMOKE_TEST_URL:-http://localhost:3001}}"
 PASS=0
 FAIL=0
 
