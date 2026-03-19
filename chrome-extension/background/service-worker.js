@@ -4,6 +4,9 @@
 import '../lib/api.js';
 import '../lib/logger.js';
 
+// Mutex flag to prevent concurrent badge updates
+let badgeUpdateInProgress = false;
+
 // Resolve app URL from the same base the API client uses
 async function getAppUrl() {
     await api.loadToken();
@@ -43,6 +46,24 @@ chrome.runtime.onInstalled.addListener(() => {
         periodInMinutes: 1
     });
 });
+
+// Check and request notification permission on startup
+async function ensureNotificationPermission() {
+    const permission = Notification.permission;
+    if (permission === 'default') {
+        try {
+            const result = await Notification.requestPermission();
+            if (result === 'granted') {
+                logger.infoSync('Notification permission granted');
+            }
+        } catch (error) {
+            logger.error('Failed to request notification permission:', error);
+        }
+    }
+}
+
+// Request notification permission when service worker starts
+ensureNotificationPermission();
 
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
@@ -206,6 +227,10 @@ async function scrapePrice(url) {
 
 // Update extension badge
 async function updateBadge() {
+    // Prevent concurrent updates via simple mutex flag
+    if (badgeUpdateInProgress) return;
+
+    badgeUpdateInProgress = true;
     try {
         const result = await api.getSyncQueue();
         const count = result.items?.length || 0;
@@ -218,6 +243,8 @@ async function updateBadge() {
         }
     } catch (error) {
         logger.error('Failed to update badge:', error);
+    } finally {
+        badgeUpdateInProgress = false;
     }
 }
 

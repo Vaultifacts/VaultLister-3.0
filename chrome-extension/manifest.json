@@ -5,7 +5,6 @@
   "description": "Quick product capture, price tracking, and cross-listing helper for VaultLister",
   "permissions": [
     "storage",
-    "activeTab",
     "contextMenus",
     "alarms",
     "notifications"
