@@ -1,27 +1,27 @@
-// VaultLister Service Worker v4.2.3
+// VaultLister Service Worker v4.3
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v4.2.3';
+const CACHE_VERSION = 'v4.3';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
 // Phase 1 files to pre-cache (app shell)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=3e7afc1b',
-    '/styles/main.css?v=3e7afc1b',
+    '/core-bundle.js?v=e1970eab',
+    '/styles/main.css?v=e1970eab',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/favicon.svg',
     '/components/photoEditor.js',
     '/components/chatWidget.js',
     // Phase 2: route-group chunks (pre-cached for offline use)
-    '/chunk-inventory.js?v=3e7afc1b',
-    '/chunk-sales.js?v=3e7afc1b',
-    '/chunk-tools.js?v=3e7afc1b',
-    '/chunk-intelligence.js?v=3e7afc1b',
-    '/chunk-settings.js?v=3e7afc1b',
-    '/chunk-community.js?v=3e7afc1b',
+    '/chunk-inventory.js?v=e1970eab',
+    '/chunk-sales.js?v=e1970eab',
+    '/chunk-tools.js?v=e1970eab',
+    '/chunk-intelligence.js?v=e1970eab',
+    '/chunk-settings.js?v=e1970eab',
+    '/chunk-community.js?v=e1970eab',
 ];
 
 // ─── Install: pre-cache app shell ────────────────────────────────────────────

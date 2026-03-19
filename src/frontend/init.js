@@ -1620,7 +1620,7 @@ handlers.downloadLegalPDF = function(type) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    app.toast(`${title} downloaded`, 'success');
+    toast.success(`${title} downloaded`);
 };
 
 // Reading progress indicator for legal pages

@@ -8,6 +8,7 @@
  */
 
 import { resolve, dirname } from 'path';
+import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -15,7 +16,7 @@ const envPath = resolve(__dirname, '..', '..', '.env');
 
 export function loadEnv() {
   try {
-    const envText = require('fs').readFileSync(envPath, 'utf8');
+    const envText = readFileSync(envPath, 'utf8');
     for (const line of envText.split('\n')) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;

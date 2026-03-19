@@ -593,7 +593,10 @@ const protectedPrefixes = [
     '/api/auth/password',
     '/api/auth/sessions',
     '/api/auth/me',
-    '/api/auth/profile'
+    '/api/auth/profile',
+    '/api/integrations',
+    '/api/monitoring',
+    '/api/settings'
 ];
 
 // Parse JSON body
@@ -924,8 +927,8 @@ const server = Bun.serve({
             return new Response(null, { status: 204, headers: dynamicCorsHeaders });
         }
 
-        // Handle /mock-oauth routes (for OAuth demo) - supports both /mock-oauth and /api/mock-oauth
-        if (pathname.startsWith('/mock-oauth/') || pathname.startsWith('/api/mock-oauth/')) {
+        // Handle /mock-oauth routes (dev/demo only — disabled in production)
+        if (process.env.NODE_ENV !== 'production' && (pathname.startsWith('/mock-oauth/') || pathname.startsWith('/api/mock-oauth/'))) {
             const context = {
                 method,
                 path: pathname.replace('/api/mock-oauth', '').replace('/mock-oauth', ''),

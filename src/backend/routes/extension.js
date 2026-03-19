@@ -745,7 +745,7 @@ export async function extensionRouter(ctx) {
     }
 
     // POST /api/extension/sync/:id/process - Process sync item
-    if (method === 'POST' && path.match(/^\/sync\/[a-f0-9-]+\/process$/)) {
+    if (method === 'POST' && path.match(/^\/sync\/[a-zA-Z0-9_-]+\/process$/)) {
         const syncId = path.split('/')[2];
 
         try {

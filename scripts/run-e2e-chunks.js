@@ -124,6 +124,11 @@ const CHUNKS = [
             'monitoring-routes.spec.js',
             'qa-guardian.spec.js',
             'screenshot.spec.js',
+            'ai.spec.js',
+            'billing.spec.js',
+            'oauth.spec.js',
+            'onboarding.spec.js',
+            'reports.spec.js',
         ]
     },
 ];
