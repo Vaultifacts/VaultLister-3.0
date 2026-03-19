@@ -1,4 +1,4 @@
-// VaultLister Service Worker v4.3
+﻿// VaultLister Service Worker v4.3
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
 const CACHE_VERSION = 'v4.3';
@@ -8,23 +8,23 @@ const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 // Phase 1 files to pre-cache (app shell)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=cf3924ab',
-    '/styles/main.css?v=cf3924ab',
+    '/core-bundle.js?v=350159a7',
+    '/styles/main.css?v=350159a7',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/favicon.svg',
     '/components/photoEditor.js',
     '/components/chatWidget.js',
     // Phase 2: route-group chunks (pre-cached for offline use)
-    '/chunk-inventory.js?v=cf3924ab',
-    '/chunk-sales.js?v=cf3924ab',
-    '/chunk-tools.js?v=cf3924ab',
-    '/chunk-intelligence.js?v=cf3924ab',
-    '/chunk-settings.js?v=cf3924ab',
-    '/chunk-community.js?v=cf3924ab',
+    '/chunk-inventory.js?v=350159a7',
+    '/chunk-sales.js?v=350159a7',
+    '/chunk-tools.js?v=350159a7',
+    '/chunk-intelligence.js?v=350159a7',
+    '/chunk-settings.js?v=350159a7',
+    '/chunk-community.js?v=350159a7',
 ];
 
-// ─── Install: pre-cache app shell ────────────────────────────────────────────
+// â”€â”€â”€ Install: pre-cache app shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -34,7 +34,7 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// ─── Activate: clean old caches, claim clients ──────────────────────────────
+// â”€â”€â”€ Activate: clean old caches, claim clients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener('activate', (event) => {
     const currentCaches = [STATIC_CACHE, RUNTIME_CACHE];
@@ -48,7 +48,7 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// ─── Message handler ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Message handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -61,7 +61,7 @@ self.addEventListener('message', (event) => {
     }
 });
 
-// ─── Fetch strategies ────────────────────────────────────────────────────────
+// â”€â”€â”€ Fetch strategies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener('fetch', (event) => {
     const { request } = event;
@@ -73,7 +73,7 @@ self.addEventListener('fetch', (event) => {
     // Stable GET-only API endpoints: stale-while-revalidate (SWR)
     // These routes return the same data for all users and change infrequently.
     // SWR serves the cached response instantly while fetching a fresh copy in the
-    // background — eliminating perceived latency on repeat visits without risking
+    // background â€” eliminating perceived latency on repeat visits without risking
     // stale user-specific or real-time data.
     // Max age: 60 s in cache; SWR window: 5 min; entries evicted after 10 min.
     const SWR_API_ROUTES = [
@@ -206,7 +206,7 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// ─── Auth helper: request token from active client via MessageChannel ────────
+// â”€â”€â”€ Auth helper: request token from active client via MessageChannel â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function getAuthToken() {
     const allClients = await self.clients.matchAll({ type: 'window' });
@@ -225,10 +225,10 @@ async function getAuthToken() {
     });
 }
 
-// ─── Push notification event ─────────────────────────────────────────────────
+// â”€â”€â”€ Push notification event â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener('push', (event) => {
-    console.log('[SW] Push notification received');
+    // console.log('[SW] Push notification received');
 
     let data = {
         title: 'VaultLister',
@@ -266,10 +266,10 @@ self.addEventListener('push', (event) => {
     );
 });
 
-// ─── Notification click event ────────────────────────────────────────────────
+// â”€â”€â”€ Notification click event â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener('notificationclick', (event) => {
-    console.log('[SW] Notification clicked:', event.action);
+    // console.log('[SW] Notification clicked:', event.action);
 
     event.notification.close();
 
@@ -304,10 +304,10 @@ self.addEventListener('notificationclick', (event) => {
     );
 });
 
-// ─── Background sync ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Background sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener('sync', (event) => {
-    console.log('[SW] Background sync:', event.tag);
+    // console.log('[SW] Background sync:', event.tag);
 
     if (event.tag === 'sync-inventory') {
         event.waitUntil(syncInventory());
@@ -334,7 +334,7 @@ async function syncInventory() {
             await db.delete('pendingInventoryChanges', change.id);
         }
 
-        console.log('[SW] Inventory synced successfully');
+        // console.log('[SW] Inventory synced successfully');
     } catch (error) {
         console.error('[SW] Inventory sync failed:', error);
         throw error;
@@ -349,14 +349,14 @@ async function syncSales() {
 
         const response = await fetch('/api/sales/sync', { method: 'POST', headers });
         if (!response.ok) throw new Error('Sync failed');
-        console.log('[SW] Sales synced successfully');
+        // console.log('[SW] Sales synced successfully');
     } catch (error) {
         console.error('[SW] Sales sync failed:', error);
         throw error;
     }
 }
 
-// ─── IndexedDB helper ────────────────────────────────────────────────────────
+// â”€â”€â”€ IndexedDB helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function openIndexedDB() {
     return new Promise((resolve, reject) => {
@@ -390,7 +390,7 @@ function openIndexedDB() {
     });
 }
 
-// ─── Periodic sync ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Periodic sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener('periodicsync', (event) => {
     if (event.tag === 'sync-data') {
@@ -403,4 +403,6 @@ async function syncAllData() {
     await syncSales();
 }
 
-console.log(`[SW] Service worker ${CACHE_VERSION} loaded`);
+// console.log(`[SW] Service worker ${CACHE_VERSION} loaded`);
+
+
