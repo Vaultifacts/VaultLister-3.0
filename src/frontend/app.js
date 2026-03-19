@@ -69782,7 +69782,7 @@ const handlers = {
     async showReportTemplates() {
         try {
             const data = await api.get('/reports/templates');
-            const templates = data.templates || [];
+            const templates = Array.isArray(data) ? data : (data.templates || data.data || []);
 
             const html = `
                 <div class="modal-header">

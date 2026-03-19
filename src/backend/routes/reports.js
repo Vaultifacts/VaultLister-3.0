@@ -1121,6 +1121,33 @@ export async function reportsRouter(ctx) {
       return { status: 200, data: REPORT_TEMPLATES };
     }
 
+    // POST /api/reports/from-template - Create a saved report from a template
+    if (method === 'POST' && path === '/from-template') {
+      const { template_id } = body;
+      if (!template_id) {
+        return { status: 400, data: { error: 'template_id is required' } };
+      }
+
+      const template = REPORT_TEMPLATES.find(t => t.id === template_id);
+      if (!template) {
+        return { status: 404, data: { error: `Template '${template_id}' not found` } };
+      }
+
+      const id = nanoid();
+      const now = new Date().toISOString();
+
+      await query.run(
+        `INSERT INTO saved_reports (id, user_id, name, report_type, config, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [id, user.id, template.name, template.report_type, JSON.stringify(template.config), now, now]
+      );
+
+      const row = await query.get('SELECT * FROM saved_reports WHERE id = ?', [id]);
+      const report = parseReport(row);
+
+      return { status: 201, data: { report, message: `Report created from template: ${template.name}` } };
+    }
+
     // No matching route
     return { status: 404, data: { error: 'Route not found' } };
 
