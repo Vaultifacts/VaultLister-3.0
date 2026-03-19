@@ -70269,7 +70269,8 @@ const handlers = {
         handlers.openCameraModal({ context: 'quick' });
     },
     processQuickPhotos() {
-        toast.info('Processing photos...');
+        // TODO: Implement full Quick Photo processing with camera API integration
+        toast.info('Quick Photo — Coming Soon');
     },
     captureFromCamera() {
         handlers.openCameraModal({ context: 'bank' });

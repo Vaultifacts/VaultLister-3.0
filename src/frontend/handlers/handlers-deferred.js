@@ -18504,7 +18504,7 @@ Object.assign(handlers, {
             name: templateName,
             description: `Template from listing: ${title}`,
             category: category || null,
-            titlePattern: title.replace(brand, '{Brand}').replace(category, '{Category}') || null,
+            titlePattern: title.replace(brand, '{Brand}').replace(category || '', '{Category}') || null,
             descriptionTemplate: description || null,
             tags: [],
             platforms: platforms.length > 0 ? platforms : null,
@@ -20969,7 +20969,12 @@ Object.assign(handlers, {
     // Close batch photo modal,
 
     closeBatchPhotoModal: function() {
-        store.setState({ batchPhotoModalOpen: false, batchPhotoProgress: null });
+        store.setState({
+            batchPhotoModalOpen: false,
+            batchPhotoProgress: null,
+            batchPhotoTransformations: {},
+            selectedImages: []
+        });
         modals.close();
     },
 
