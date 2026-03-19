@@ -27,7 +27,7 @@ COPY . .
 RUN bun run build
 
 # Prune to production dependencies
-RUN rm -rf node_modules && bun install --production
+RUN rm -rf node_modules && bun install
 
 # ============================================
 # Stage 2: Production
