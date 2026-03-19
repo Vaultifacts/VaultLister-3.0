@@ -19,6 +19,12 @@
 import { execSync } from 'child_process';
 import { readFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PROJECT = process.cwd();
+const HOME = process.env.HOME || process.env.USERPROFILE || '';
 
 const LOG_DIR = './data/logs';
 const HISTORY_FILE = join(LOG_DIR, 'test-history.jsonl');
@@ -105,7 +111,10 @@ function runUnit() {
 
 function runE2E() {
     console.log('Running E2E tests (Chromium)...');
-    const cmd = `DISPLAY=:99 NODE_ENV=test npx playwright test --project=chromium --reporter=line 2>&1`;
+    // Only set DISPLAY on Linux; Windows/macOS don't need it
+    const isLinux = process.platform === 'linux';
+    const displayEnv = isLinux ? 'DISPLAY=:99 ' : '';
+    const cmd = `${displayEnv}NODE_ENV=test npx playwright test --project=chromium --reporter=line 2>&1`;
     try {
         const output = execSync(cmd, {
             cwd: PROJECT,

@@ -62,8 +62,18 @@ async function main() {
       if (res.ok) {
         const data = await res.json();
         serverStatus = `RUNNING on port 3000 (db: ${data.database?.status || 'unknown'})`;
+      } else {
+        serverStatus = `ERROR: Server returned ${res.status}`;
       }
-    } catch {}
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        serverStatus = 'NOT RUNNING (timeout)';
+      } else if (err.code === 'ECONNREFUSED') {
+        serverStatus = 'NOT RUNNING (connection refused)';
+      } else {
+        serverStatus = `NOT RUNNING (${err.message})`;
+      }
+    }
 
     console.log(`  Server Status: ${serverStatus}`);
     if (serverStatus === 'NOT RUNNING') {
