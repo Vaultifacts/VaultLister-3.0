@@ -226,6 +226,19 @@ function shouldCompress(contentType) {
     );
 }
 
+// Module-level caches — computed once at startup
+let _APP_VERSION = '1.0.0';
+try {
+    const pkg = JSON.parse(readFileSync(join(ROOT_DIR, 'package.json'), 'utf8'));
+    _APP_VERSION = pkg.version || _APP_VERSION;
+} catch {}
+
+const _landingHtmlPath = join(PUBLIC_DIR, 'landing.html');
+const _landingHtml = existsSync(_landingHtmlPath) ? readFileSync(_landingHtmlPath, 'utf-8') : null;
+
+const _indexHtmlPath = join(FRONTEND_DIR, 'index.html');
+const _indexHtml = existsSync(_indexHtmlPath) ? readFileSync(_indexHtmlPath, 'utf-8') : null;
+
 // Route handlers
 const apiRoutes = {
     '/api/auth': authRouter,
@@ -444,11 +457,7 @@ const apiRoutes = {
         };
     },
     '/api/status': async () => {
-        let appVersion = '1.0.0';
-        try {
-            const pkg = JSON.parse(readFileSync(join(ROOT_DIR, 'package.json'), 'utf8'));
-            appVersion = pkg.version || appVersion;
-        } catch {}
+        const appVersion = _APP_VERSION;
 
         const monMetrics = monitoring.getMetrics();
 
@@ -530,6 +539,9 @@ const apiRoutes = {
     },
     '/mock-oauth': mockOAuthRouter
 };
+
+// Sorted once at startup — longest prefix first so most-specific routes match first
+const _sortedApiRoutes = Object.entries(apiRoutes).sort((a, b) => b[0].length - a[0].length);
 
 // Protected routes that require authentication
 const protectedPrefixes = [
@@ -1269,9 +1281,8 @@ const server = Bun.serve({
                 }
             }
 
-            // Find matching router (sort by length to match most specific first)
-            const sortedRoutes = Object.entries(apiRoutes).sort((a, b) => b[0].length - a[0].length);
-            for (const [prefix, router] of sortedRoutes) {
+            // Find matching router (pre-sorted at startup by prefix length, most specific first)
+            for (const [prefix, router] of _sortedApiRoutes) {
                 if (effectivePath === prefix || effectivePath.startsWith(prefix + '/')) {
                     const subPath = effectivePath.slice(prefix.length) || '/';
                     context.path = subPath;
@@ -1381,9 +1392,8 @@ const server = Bun.serve({
             const cookieHeader = request.headers.get('Cookie') || '';
             const hasAuthCookie = /(?:^|;\s*)vl_access=/.test(cookieHeader);
             if (!hasAuthCookie && !url.searchParams.has('app')) {
-                const landingPath = join(PUBLIC_DIR, 'landing.html');
-                if (existsSync(landingPath)) {
-                    return new Response(readFileSync(landingPath, 'utf-8'), {
+                if (_landingHtml !== null) {
+                    return new Response(_landingHtml, {
                         headers: {
                             'Content-Type': 'text/html',
                             'Cache-Control': 'no-cache, must-revalidate',
@@ -1417,9 +1427,8 @@ const server = Bun.serve({
                 ? html.replace(/<script(\b[^>]*)>/gi, (_, attrs) => `<script${attrs} nonce="${cspNonce}">`)
                 : html;
 
-        const indexPath = join(FRONTEND_DIR, 'index.html');
-        if (existsSync(indexPath)) {
-            const content = injectNonce(readFileSync(indexPath, 'utf-8'));
+        if (_indexHtml !== null) {
+            const content = injectNonce(_indexHtml);
             const htmlHeaders = {
                 'Content-Type': 'text/html',
                 'Cache-Control': 'no-cache, must-revalidate',
