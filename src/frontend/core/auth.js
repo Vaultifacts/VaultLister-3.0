@@ -55,7 +55,7 @@ const auth = {
             // Remember me: use sessionStorage if unchecked
             const rememberMe = document.getElementById('remember-me')?.checked;
             if (!rememberMe) {
-                store.state.useSessionStorage = true;
+                store.setState({ useSessionStorage: true });
             }
 
             store.setState({

@@ -16608,7 +16608,7 @@ Object.assign(handlers, {
             document.body.classList.remove('dark-mode');
         }
         // Store in temporary state, don't persist to localStorage yet
-        store.state.darkModePreview = enabled;
+        store.setState({ darkModePreview: enabled });
     },
 
     // Show account management modal,
@@ -17511,11 +17511,11 @@ Object.assign(handlers, {
                         <span class="keyboard-key">Esc</span>
                     </div>
                 </div>
-                <div class="global-search-results" id="global-search-results">
+                <div class="global-search-results" id="global-search-results" role="listbox">
                     <div class="global-search-section">
                         <div class="global-search-section-title">Quick Actions</div>
                         ${searchItems.map((item, idx) => `
-                            <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})">
+                            <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                                 <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                                 <div class="global-search-item-content">
                                     <div class="global-search-item-title">${escapeHtml(item.title)}</div>
@@ -17536,8 +17536,7 @@ Object.assign(handlers, {
         document.body.appendChild(overlay);
 
         // Store search items in state for filtering
-        store.state.globalSearchItems = searchItems;
-        store.state.globalSearchIndex = 0;
+        store.setState({ globalSearchItems: searchItems, globalSearchIndex: 0 });
 
         // Handle keyboard navigation
         const input = overlay.querySelector('.global-search-input');
@@ -17550,12 +17549,12 @@ Object.assign(handlers, {
             } else if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 currentIdx = (currentIdx + 1) % items.length;
-                store.state.globalSearchIndex = currentIdx;
+                store.setState({ globalSearchIndex: currentIdx });
                 items.forEach((item, i) => item.classList.toggle('selected', i === currentIdx));
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 currentIdx = (currentIdx - 1 + items.length) % items.length;
-                store.state.globalSearchIndex = currentIdx;
+                store.setState({ globalSearchIndex: currentIdx });
                 items.forEach((item, i) => item.classList.toggle('selected', i === currentIdx));
             } else if (e.key === 'Enter') {
                 e.preventDefault();
@@ -17578,7 +17577,7 @@ Object.assign(handlers, {
             <div class="global-search-section">
                 <div class="global-search-section-title">${query ? 'Results' : 'Quick Actions'}</div>
                 ${filtered.length > 0 ? filtered.map((item, idx) => `
-                    <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})">
+                    <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                         <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                         <div class="global-search-item-content">
                             <div class="global-search-item-title">${item.title}</div>
@@ -17589,8 +17588,7 @@ Object.assign(handlers, {
             </div>
         `;
 
-        store.state.globalSearchFiltered = filtered;
-        store.state.globalSearchIndex = 0;
+        store.setState({ globalSearchFiltered: filtered, globalSearchIndex: 0 });
     },
 
     executeGlobalSearchItem: function(index) {
