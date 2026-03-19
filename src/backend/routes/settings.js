@@ -25,7 +25,10 @@ export async function settingsRouter(ctx) {
 
     // PUT /api/settings/announcement - Admin only: set or clear announcement
     if (method === 'PUT' && path === '/announcement') {
-        if (!user || !user.is_admin) {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
+        if (!user.is_admin) {
             return { status: 403, data: { error: 'Admin access required' } };
         }
         const { text, color } = body || {};
