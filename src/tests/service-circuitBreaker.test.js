@@ -50,17 +50,15 @@ describe('Circuit Breaker', () => {
         expect(result).toBe('fallback-value');
     });
 
-    test('throws when circuit is open and no fallback provided', async () => {
+    test('returns error object when circuit is open and no fallback provided', async () => {
         for (let i = 0; i < 3; i++) {
             try {
                 await circuitBreaker('test-no-fallback', () => Promise.reject(new Error('fail')), { failureThreshold: 3, cooldownMs: 60000 });
             } catch {}
         }
-        let caught;
-        try {
-            await circuitBreaker('test-no-fallback', () => Promise.resolve('nope'), { cooldownMs: 60000 });
-        } catch (e) { caught = e; }
-        expect(caught.message).toContain('Circuit breaker OPEN');
+        const result = await circuitBreaker('test-no-fallback', () => Promise.resolve('nope'), { cooldownMs: 60000 });
+        expect(result.error).toBeDefined();
+        expect(result.error).toContain('Service temporarily unavailable');
     });
 
     test('resets to CLOSED on success after failures', async () => {

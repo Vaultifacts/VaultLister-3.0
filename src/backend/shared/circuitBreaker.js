@@ -51,13 +51,15 @@ export async function circuitBreaker(name, fn, opts = {}) {
         } else {
             logger.debug(`[CircuitBreaker] ${name}: OPEN — returning fallback (${Math.round((circuit.cooldownMs - elapsed) / 1000)}s remaining)`);
             if (opts.fallback) return opts.fallback();
-            throw new Error(`Circuit breaker OPEN for ${name}`);
+            // A-04 fix: Return user-friendly fallback when circuit is open and no fallback provided
+            return { error: `Service temporarily unavailable (${name}). Please try again in ${Math.round((circuit.cooldownMs - elapsed) / 1000)}s.` };
         }
     }
 
     if (circuit.state === STATES.HALF_OPEN && circuit.halfOpenAttempts >= circuit.halfOpenMaxAttempts) {
         if (opts.fallback) return opts.fallback();
-        throw new Error(`Circuit breaker HALF_OPEN limit reached for ${name}`);
+        // A-04 fix: Return user-friendly fallback when half-open test requests exhausted
+        return { error: `Service recovery test in progress (${name}). Please try again shortly.` };
     }
 
     try {
@@ -77,6 +79,7 @@ export async function circuitBreaker(name, fn, opts = {}) {
 
         if (circuit.state === STATES.HALF_OPEN) {
             circuit.state = STATES.OPEN;
+            circuit.halfOpenAttempts = 0; // A-05 fix: Reset half-open attempts when recovery test fails
             logger.warn(`[CircuitBreaker] ${name}: HALF_OPEN → OPEN (test request failed: ${error.message})`);
         } else if (circuit.failures >= circuit.failureThreshold) {
             circuit.state = STATES.OPEN;
