@@ -270,6 +270,56 @@ export class AutomationRunner {
                     }
                     break;
 
+                case 'mercari': {
+                    const { getMercariBot } = await import('./mercari-bot.js');
+                    this.bots[key] = await getMercariBot({ headless: true });
+                    if (shop.credentials) {
+                        const creds = JSON.parse(shop.credentials);
+                        await this.bots[key].login(creds.username, creds.password);
+                    }
+                    break;
+                }
+
+                case 'depop': {
+                    const { getDepopBot } = await import('./depop-bot.js');
+                    this.bots[key] = await getDepopBot({ headless: true });
+                    if (shop.credentials) {
+                        const creds = JSON.parse(shop.credentials);
+                        await this.bots[key].login(creds.username, creds.password);
+                    }
+                    break;
+                }
+
+                case 'grailed': {
+                    const { getGrailedBot } = await import('./grailed-bot.js');
+                    this.bots[key] = await getGrailedBot({ headless: true });
+                    if (shop.credentials) {
+                        const creds = JSON.parse(shop.credentials);
+                        await this.bots[key].login(creds.username, creds.password);
+                    }
+                    break;
+                }
+
+                case 'facebook': {
+                    const { getFacebookBot } = await import('./facebook-bot.js');
+                    this.bots[key] = await getFacebookBot({ headless: true });
+                    if (shop.credentials) {
+                        const creds = JSON.parse(shop.credentials);
+                        await this.bots[key].login(creds.username, creds.password);
+                    }
+                    break;
+                }
+
+                case 'whatnot': {
+                    const { getWhatnotBot } = await import('./whatnot-bot.js');
+                    this.bots[key] = await getWhatnotBot({ headless: true });
+                    if (shop.credentials) {
+                        const creds = JSON.parse(shop.credentials);
+                        await this.bots[key].login(creds.username, creds.password);
+                    }
+                    break;
+                }
+
                 default:
                     throw new Error(`Bot not implemented for platform: ${platform}`);
             }
