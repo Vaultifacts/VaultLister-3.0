@@ -267,3 +267,24 @@ These jobs run on the server via crontab. Install with `crontab -e` as the servi
 ```
 
 For staging, replace `/opt/vaultlister/` with `/opt/vaultlister-staging/`.
+
+
+---
+
+## Secret Rotation
+
+Secrets are currently stored in `.env` on each server (staging and production). Rotation is **manual** and must follow the schedule documented in [SECRETS-MANAGEMENT.md](./SECRETS-MANAGEMENT.md):
+
+| Secret | Rotation Interval | Procedure |
+|--------|-------------------|-----------|
+| `JWT_SECRET` + `REFRESH_TOKEN_SECRET` | **Quarterly** | Generate new secrets with `openssl rand -hex 32`; update `.env` on both servers; restart containers |
+| `ANTHROPIC_API_KEY` | **Annually** | Regenerate at api.anthropic.com; update `.env` |
+| Marketplace OAuth tokens | **Annually** | Refresh via each marketplace's API; update encrypted tokens in `.env` |
+| `GITHUB_TOKEN` | **Annually** | Regenerate on GitHub Settings; update `.env` |
+
+**For production deployment, migrate to a secrets manager (HashiCorp Vault, AWS Secrets Manager, or 1Password).** See [SECRETS-MANAGEMENT.md](./SECRETS-MANAGEMENT.md) for migration guidance.
+
+After rotating any secret, verify:
+1. Health check passes: `curl https://api.vaultlister.com/api/health`
+2. No auth errors in logs: `docker logs vaultlister-app 2>&1 | grep -i "auth|error"`
+3. Marketplace integrations still work (test a sample listing)
