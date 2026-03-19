@@ -185,32 +185,30 @@ export async function saveImage(fileData, userId, originalFilename, mimeType = '
 }
 
 /**
- * Generate thumbnail (400x400)
- * Note: This is a simplified version. For production, use sharp or jimp for actual resizing.
- * For now, we'll just copy the original as a placeholder.
+ * Generate thumbnail (max 300px wide, JPEG 80% quality)
  */
 export async function generateThumbnail(originalPath, userId, imageId, extension) {
+    const userThumbDir = join(UPLOADS_DIR, 'thumbnails', userId);
+    if (!existsSync(userThumbDir)) {
+        mkdirSync(userThumbDir, { recursive: true });
+    }
+
+    const thumbnailFilename = `${imageId}_thumb.jpg`;
+    const thumbnailPath = join(userThumbDir, thumbnailFilename);
+
     try {
-        // Create thumbnail directory for user
-        const userThumbDir = join(UPLOADS_DIR, 'thumbnails', userId);
-        if (!existsSync(userThumbDir)) {
-            mkdirSync(userThumbDir, { recursive: true });
-        }
-
-        const thumbnailFilename = `${imageId}_thumb.${extension}`;
-        const thumbnailPath = join(userThumbDir, thumbnailFilename);
-
-        // Thumbnail generation: copies the original as a placeholder.
-        // Actual resizing requires adding sharp or jimp as a dependency,
-        // which is deferred until image-heavy usage justifies the ~30MB install.
+        const sharp = (await import('sharp')).default;
+        await sharp(originalPath)
+            .resize(300, null, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 80 })
+            .toFile(thumbnailPath);
+    } catch (err) {
+        logger.error('[ImageStorage] sharp resize failed, falling back to copy', null, { detail: err.message });
         const originalBuffer = readFileSync(originalPath);
         writeFileSync(thumbnailPath, originalBuffer);
-
-        return `/uploads/images/thumbnails/${userId}/${thumbnailFilename}`;
-    } catch (error) {
-        logger.error('[ImageStorage] Error generating thumbnail', null, { detail: error.message });
-        return null; // Non-critical, can return null
     }
+
+    return `/uploads/images/thumbnails/${userId}/${thumbnailFilename}`;
 }
 
 /**

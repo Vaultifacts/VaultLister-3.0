@@ -397,7 +397,7 @@ export async function inventoryRouter(ctx) {
         }
 
         const id = uuidv4();
-        const blockchainHash = generateBlockchainHash({ title, description, images });
+        const blockchainHash = await generateBlockchainHash({ title, description, images });
         const sustainabilityScore = calculateSustainability(category, condition);
 
         // Auto-generate SKU using default rule if no SKU provided

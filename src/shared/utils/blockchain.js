@@ -5,7 +5,7 @@
  * Generate a blockchain-style hash for item verification
  * Uses SHA-256 for cryptographic hashing
  */
-export function generateBlockchainHash(data) {
+export async function generateBlockchainHash(data) {
     const stringData = JSON.stringify({
         title: data.title,
         description: data.description,
@@ -13,47 +13,45 @@ export function generateBlockchainHash(data) {
         timestamp: Date.now()
     });
 
-    // Simple hash function for local use (Bun has crypto built-in)
     return hashString(stringData);
 }
 
 /**
- * Hash a string using SHA-256
+ * Hash a string using SHA-256.
+ * Server-side: uses Bun.CryptoHasher (synchronous).
+ * Browser: uses SubtleCrypto (async, returns a Promise).
  */
-function hashString(str) {
-    // Use Bun's built-in crypto
+async function hashString(str) {
+    // Use Bun's built-in crypto (server-side)
     if (typeof Bun !== 'undefined') {
         const hasher = new Bun.CryptoHasher('sha256');
         hasher.update(str);
         return hasher.digest('hex');
     }
 
-    // Fallback for browser/Node
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    return Math.abs(hash).toString(16).padStart(16, '0');
+    // Browser fallback: SubtleCrypto SHA-256
+    const encoded = new TextEncoder().encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 /**
  * Verify an item's hash matches its data
  */
-export function verifyBlockchainHash(data, storedHash) {
-    const currentHash = generateBlockchainHash(data);
+export async function verifyBlockchainHash(data, storedHash) {
+    const currentHash = await generateBlockchainHash(data);
     return currentHash === storedHash;
 }
 
 /**
  * Create a verification certificate for an item
  */
-export function createVerificationCertificate(item) {
+export async function createVerificationCertificate(item) {
     return {
         itemId: item.id,
         title: item.title,
-        hash: item.blockchain_hash || generateBlockchainHash(item),
+        hash: item.blockchain_hash || await generateBlockchainHash(item),
         timestamp: Date.now(),
         version: '1.0',
         algorithm: 'SHA-256'
@@ -63,7 +61,7 @@ export function createVerificationCertificate(item) {
 /**
  * Generate a chain of hashes for item history
  */
-export function generateHistoryChain(items) {
+export async function generateHistoryChain(items) {
     const chain = [];
     let previousHash = '0000000000000000';
 
@@ -79,7 +77,7 @@ export function generateHistoryChain(items) {
             previousHash
         };
 
-        const hash = hashString(JSON.stringify(blockData));
+        const hash = await hashString(JSON.stringify(blockData));
 
         chain.push({
             ...blockData,
@@ -95,7 +93,7 @@ export function generateHistoryChain(items) {
 /**
  * Validate a history chain
  */
-export function validateChain(chain) {
+export async function validateChain(chain) {
     for (let i = 1; i < chain.length; i++) {
         const current = chain[i];
         const previous = chain[i - 1];
@@ -111,7 +109,7 @@ export function validateChain(chain) {
 
         // Verify block hash
         const { hash, ...blockData } = current;
-        const calculatedHash = hashString(JSON.stringify(blockData));
+        const calculatedHash = await hashString(JSON.stringify(blockData));
 
         if (hash !== calculatedHash) {
             return {
