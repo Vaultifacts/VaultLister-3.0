@@ -3,6 +3,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 export async function shippingProfilesRouter(ctx) {
     const { method, path, body, user, query: queryParams } = ctx;
 
@@ -17,7 +22,7 @@ export async function shippingProfilesRouter(ctx) {
             // Parse platforms JSON for each profile
             const parsedProfiles = profiles.map(p => ({
                 ...p,
-                platforms: JSON.parse(p.platforms || '[]')
+                platforms: safeJsonParse(p.platforms, [])
             }));
 
             return { status: 200, data: { profiles: parsedProfiles } };
@@ -45,7 +50,7 @@ export async function shippingProfilesRouter(ctx) {
                 data: {
                     profile: {
                         ...profile,
-                        platforms: JSON.parse(profile.platforms || '[]')
+                        platforms: safeJsonParse(profile.platforms, [])
                     }
                 }
             };

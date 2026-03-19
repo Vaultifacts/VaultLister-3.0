@@ -3,6 +3,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 export async function tasksRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
 
@@ -30,8 +35,8 @@ export async function tasksRouter(ctx) {
             const tasks = query.all(sql, params);
 
             tasks.forEach(task => {
-                task.payload = JSON.parse(task.payload || '{}');
-                task.result = task.result ? JSON.parse(task.result) : null;
+                task.payload = safeJsonParse(task.payload, {});
+                task.result = safeJsonParse(task.result, null);
             });
 
             const total = query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ?', [user.id])?.count || 0;
@@ -55,8 +60,8 @@ export async function tasksRouter(ctx) {
                 return { status: 404, data: { error: 'Task not found' } };
             }
 
-            task.payload = JSON.parse(task.payload || '{}');
-            task.result = task.result ? JSON.parse(task.result) : null;
+            task.payload = safeJsonParse(task.payload, {});
+            task.result = safeJsonParse(task.result, null);
 
             return { status: 200, data: { task } };
         } catch (error) {

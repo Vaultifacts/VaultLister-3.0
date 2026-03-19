@@ -10,6 +10,11 @@ const ALLOWED_SYNC_COLUMNS = {
     orders: ['id', 'order_number', 'platform', 'status', 'buyer_username', 'buyer_email', 'buyer_address', 'item_id', 'item_title', 'item_sku', 'sale_price', 'shipping_cost', 'platform_fee', 'tracking_number', 'shipping_provider', 'shipping_label_url', 'expected_delivery', 'actual_delivery', 'notes', 'shipped_at', 'delivered_at']
 };
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 function sanitizeSyncPayload(payload, table) {
     const allowed = ALLOWED_SYNC_COLUMNS[table];
     if (!allowed) return {};
@@ -43,7 +48,7 @@ export async function offlineSyncRouter(ctx) {
             // Parse payload JSON for each item
             const enrichedQueue = queue.map(item => ({
                 ...item,
-                payload: item.payload ? JSON.parse(item.payload) : null
+                payload: safeJsonParse(item.payload, null)
             }));
 
             return { status: 200, data: enrichedQueue };
@@ -86,7 +91,7 @@ export async function offlineSyncRouter(ctx) {
                 status: 201,
                 data: {
                     ...queueItem,
-                    payload: queueItem.payload ? JSON.parse(queueItem.payload) : null
+                    payload: safeJsonParse(queueItem.payload, null)
                 }
             };
         } catch (error) {

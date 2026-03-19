@@ -357,7 +357,7 @@ export async function inventoryImportRouter(ctx) {
                 return { status: 404, data: { error: 'Import job not found' } };
             }
 
-            const fieldMapping = job.field_mapping ? JSON.parse(job.field_mapping) : null;
+            const fieldMapping = safeJsonParse(job.field_mapping, null);
             if (!fieldMapping) {
                 return { status: 400, data: { error: 'Field mapping must be set before validation' } };
             }
@@ -372,7 +372,7 @@ export async function inventoryImportRouter(ctx) {
             let errorCount = 0;
 
             for (const row of rows) {
-                const rawData = row.raw_data ? JSON.parse(row.raw_data) : {};
+                const rawData = safeJsonParse(row.raw_data, {});
                 const parsed = {};
                 const rowErrors = [];
 
@@ -477,7 +477,7 @@ export async function inventoryImportRouter(ctx) {
 
         for (const row of rows) {
             try {
-                const parsed = row.parsed_data ? JSON.parse(row.parsed_data) : {};
+                const parsed = safeJsonParse(row.parsed_data, {});
 
                 if (!parsed.title) {
                     query.run("UPDATE import_rows SET status = 'skipped' WHERE id = ?", [row.id]);
@@ -666,7 +666,7 @@ export async function inventoryImportRouter(ctx) {
                 data: {
                     mappings: mappings.map(m => ({
                         ...m,
-                        field_mapping: m.field_mapping ? JSON.parse(m.field_mapping) : {}
+                        field_mapping: safeJsonParse(m.field_mapping, {})
                     }))
                 }
             };

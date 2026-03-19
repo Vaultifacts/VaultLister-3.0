@@ -3,6 +3,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 // Detection type confidence scores
 const CONFIDENCE_SCORES = {
     sku_match: 0.95,
@@ -61,8 +66,8 @@ export async function duplicatesRouter(ctx) {
                 data: {
                     duplicates: duplicates.map(d => ({
                         ...d,
-                        primary_images: d.primary_images ? JSON.parse(d.primary_images) : [],
-                        duplicate_images: d.duplicate_images ? JSON.parse(d.duplicate_images) : []
+                        primary_images: safeJsonParse(d.primary_images, []),
+                        duplicate_images: safeJsonParse(d.duplicate_images, [])
                     })),
                     pagination: {
                         total: count,

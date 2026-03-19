@@ -13,6 +13,11 @@ import {
 import { queueTask } from '../workers/taskWorker.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 export async function marketIntelRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
 
@@ -262,7 +267,7 @@ export async function marketIntelRouter(ctx) {
                     status: 200,
                     data: insights.map(i => ({
                         ...i,
-                        insights_json: i.insights_json ? JSON.parse(i.insights_json) : null
+                        insights_json: safeJsonParse(i.insights_json, null)
                     }))
                 };
             }

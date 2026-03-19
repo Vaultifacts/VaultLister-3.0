@@ -4,6 +4,11 @@
 import * as notionService from '../services/notionService.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 /**
  * Notion API Router
  * Handles all /api/notion/* endpoints
@@ -754,9 +759,9 @@ async function handleGetConflicts(user) {
         // Parse JSON fields
         const parsed = conflicts.map(c => ({
             ...c,
-            local_data: JSON.parse(c.local_data || '{}'),
-            notion_data: JSON.parse(c.notion_data || '{}'),
-            conflicting_fields: JSON.parse(c.conflicting_fields || '[]')
+            local_data: safeJsonParse(c.local_data, {}),
+            notion_data: safeJsonParse(c.notion_data, {}),
+            conflicting_fields: safeJsonParse(c.conflicting_fields, [])
         }));
 
         return {

@@ -13,6 +13,11 @@ import { sanitizeForAI } from '../../shared/ai/sanitize-input.js';
 import { withTimeout } from '../shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../shared/circuitBreaker.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 // Configurable AI thresholds — override via environment variables
 const AI_CONFIG = {
     fallbackConfidence: parseFloat(process.env.AI_FALLBACK_CONFIDENCE) || 0.65,
@@ -238,7 +243,7 @@ Important:
                 material: itemData.material,
                 originalPrice: itemData.cost_price,
                 notes: [extraNotes, itemData.notes].filter(Boolean).join('. ') || undefined,
-                keywords: (Array.isArray(keywords) ? keywords : keywords ? [keywords] : null) || (itemData.tags ? (typeof itemData.tags === 'string' ? JSON.parse(itemData.tags) : itemData.tags) : []) || imageAnalysis.tags || [],
+                keywords: (Array.isArray(keywords) ? keywords : keywords ? [keywords] : null) || (itemData.tags ? (typeof itemData.tags === 'string' ? safeJsonParse(itemData.tags, []) : itemData.tags) : []) || imageAnalysis.tags || [],
                 colors: imageAnalysis.colors || [],
                 style: imageAnalysis.style
             };
@@ -525,7 +530,7 @@ Important:
                 brand: item.brand,
                 category: item.category,
                 condition: item.condition,
-                keywords: JSON.parse(item.tags || '[]')
+                keywords: safeJsonParse(item.tags, [])
             };
 
             const optimizedTitle = generateTitle(context);
@@ -552,7 +557,7 @@ Important:
                 });
             }
 
-            const currentTags = JSON.parse(item.tags || '[]');
+            const currentTags = safeJsonParse(item.tags, []);
             const newTags = optimizedTags.filter(t => !currentTags.includes(t));
             if (newTags.length > 0) {
                 suggestions.push({
@@ -607,7 +612,7 @@ Important:
                     condition: item.condition,
                     size: item.size,
                     color: item.color,
-                    keywords: JSON.parse(item.tags || '[]')
+                    keywords: safeJsonParse(item.tags, [])
                 };
 
                 const generated = {};

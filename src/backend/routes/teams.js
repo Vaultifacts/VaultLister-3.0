@@ -4,6 +4,11 @@ import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 // Role hierarchy and permissions
 const ROLE_HIERARCHY = ['viewer', 'member', 'manager', 'admin', 'owner'];
 
@@ -692,7 +697,7 @@ export async function teamsRouter(ctx) {
                 data: {
                     activities: activities.map(a => ({
                         ...a,
-                        details: a.details ? JSON.parse(a.details) : null
+                        details: safeJsonParse(a.details, null)
                     }))
                 }
             };
