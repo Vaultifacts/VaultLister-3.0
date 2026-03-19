@@ -29913,10 +29913,10 @@ const pages = {
                                 <div style="width: 40px; height: 40px; background: #0078D4; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">O</div>
                                 <div>
                                     <div class="font-medium">Outlook</div>
-                                    <div class="text-xs text-gray-400">Coming soon</div>
+                                    <div class="text-xs text-gray-500">Email integration</div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm btn-outline" disabled>Connect</button>
+                            <button class="btn btn-sm btn-primary" aria-label="Connect Outlook" onclick="window.open('/api/email/authorize/outlook', '_blank', 'width=500,height=600')">Connect</button>
                         </div>
                     </div>
                 </div>
@@ -29954,10 +29954,10 @@ const pages = {
                                 <div style="width: 40px; height: 40px; background: #4285F4; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">D</div>
                                 <div>
                                     <div class="font-medium">Google Drive</div>
-                                    <div class="text-xs text-gray-400">Coming soon</div>
+                                    <div class="text-xs text-gray-500">Cloud storage sync</div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm btn-outline" disabled>Connect</button>
+                            <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="window.open('/api/integrations/google/drive/authorize', '_blank', 'width=500,height=600')">Connect</button>
                         </div>
                         <div class="flex items-center justify-between p-4 rounded-lg border">
                             <div class="flex items-center gap-3">
@@ -61511,7 +61511,12 @@ const handlers = {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                <p class="text-gray-500 mb-4">Connect your external calendars to keep events in sync. OAuth integration coming soon — settings are saved for when connectivity is enabled.</p>
+                <div class="flex items-center justify-between mb-4">
+                    <p class="text-gray-500" style="margin: 0;">Connect your external calendars to keep events in sync.</p>
+                    <button class="btn btn-sm btn-primary" onclick="window.open('/api/calendar/google/authorize', '_blank', 'width=500,height=600')" aria-label="Connect Google Calendar">
+                        ${google.is_active ? 'Reconnect Google Calendar' : 'Connect Google Calendar'}
+                    </button>
+                </div>
                 ${renderProviderSection('google', 'Google Calendar', 'calendar', google)}
                 ${renderProviderSection('outlook', 'Outlook Calendar', 'mail', outlook)}
             </div>
@@ -70211,7 +70216,8 @@ const handlers = {
         }
     },
     importFromPlatform(platform) {
-        toast.info(`Import from ${platform} coming soon`);
+        router.navigate('inventory');
+        toast.info(`Importing from ${escapeHtml(platform)} — use the Import button in Inventory`);
     },
     clearCache() {
         Object.keys(localStorage).filter(k => k.startsWith('vl_cache_')).forEach(k => localStorage.removeItem(k));
@@ -70220,10 +70226,6 @@ const handlers = {
     deleteAllUserData() {
         modals.show(`<div class="modal-header"><h3>Delete All Data</h3><button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button></div><div class="modal-body"><p>This action is irreversible. Please contact support to delete your account.</p></div>`);
     },
-    showUsageDashboard() {
-        toast.info('Usage dashboard coming soon');
-    },
-
     // Billing
     showPlanComparison() {
         router.navigate('plans-billing');
@@ -70249,21 +70251,6 @@ const handlers = {
     captureFromCamera() {
         handlers.openCameraModal({ context: 'bank' });
     },
-    addPhotosToBank() {
-        toast.info('Adding photos to bank...');
-    },
-    removeQuickPhoto(index) {
-        toast.info('Photo removed');
-    },
-    enhanceQuickPhoto(index) {
-        toast.info('Enhancing photo...');
-    },
-
-    // Reports
-    showReportTemplates() {
-        toast.info('Report templates coming soon');
-    },
-
     // Image Bank
     async loadImageBankImages() {
         try {
@@ -71753,12 +71740,36 @@ handlers.removeQuickPhoto = function(idx) {
     handlers.showQuickPhotoCapture();
 };
 
-handlers.enhanceQuickPhoto = function(idx) {
+handlers.enhanceQuickPhoto = async function(idx) {
     const photos = store.state._quickPhotos || [];
-    if (idx < photos.length) {
-        // Mock enhancement - in production, use canvas API to adjust brightness/contrast
-        toast.success(`Photo ${idx + 1} enhanced`);
-        handlers.showQuickPhotoCapture();
+    if (idx >= photos.length) return;
+    try {
+        const photo = photos[idx];
+        const dataUrl = typeof photo === 'string' ? photo : photo.dataUrl;
+        if (!dataUrl) { toast.warning('No image data to enhance'); return; }
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const formData = new FormData();
+        formData.append('image', blob, 'photo.jpg');
+        const uploadRes = await fetch('/api/image-bank/enhance', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
+            body: formData
+        });
+        if (uploadRes.status === 402 || uploadRes.status === 503) {
+            toast.warning('Photo enhancement requires a Claude Vision API key — configure it in Settings');
+            return;
+        }
+        if (!uploadRes.ok) throw new Error(`HTTP ${uploadRes.status}`);
+        const data = await uploadRes.json();
+        if (data.enhanced_url) {
+            photos[idx] = data.enhanced_url;
+            store.setState({ _quickPhotos: photos });
+            handlers.showQuickPhotoCapture();
+            toast.success(`Photo ${idx + 1} enhanced`);
+        }
+    } catch (error) {
+        toast.warning('Photo enhancement requires a Claude Vision API key — configure it in Settings');
     }
 };
 

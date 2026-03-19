@@ -2455,7 +2455,12 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                <p class="text-gray-500 mb-4">Connect your external calendars to keep events in sync. OAuth integration coming soon — settings are saved for when connectivity is enabled.</p>
+                <div class="flex items-center justify-between mb-4">
+                    <p class="text-gray-500" style="margin: 0;">Connect your external calendars to keep events in sync.</p>
+                    <button class="btn btn-sm btn-primary" onclick="window.open('/api/calendar/google/authorize', '_blank', 'width=500,height=600')" aria-label="Connect Google Calendar">
+                        ${google.is_active ? 'Reconnect Google Calendar' : 'Connect Google Calendar'}
+                    </button>
+                </div>
                 ${renderProviderSection('google', 'Google Calendar', 'calendar', google)}
                 ${renderProviderSection('outlook', 'Outlook Calendar', 'mail', outlook)}
             </div>

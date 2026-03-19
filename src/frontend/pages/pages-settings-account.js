@@ -2965,10 +2965,10 @@ Object.assign(pages, {
                                 <div style="width: 40px; height: 40px; background: #0078D4; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">O</div>
                                 <div>
                                     <div class="font-medium">Outlook</div>
-                                    <div class="text-xs text-gray-400">Coming soon</div>
+                                    <div class="text-xs text-gray-500">Email integration</div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm btn-outline" disabled>Connect</button>
+                            <button class="btn btn-sm btn-primary" aria-label="Connect Outlook" onclick="window.open('/api/email/authorize/outlook', '_blank', 'width=500,height=600')">Connect</button>
                         </div>
                     </div>
                 </div>
@@ -3006,10 +3006,10 @@ Object.assign(pages, {
                                 <div style="width: 40px; height: 40px; background: #4285F4; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">D</div>
                                 <div>
                                     <div class="font-medium">Google Drive</div>
-                                    <div class="text-xs text-gray-400">Coming soon</div>
+                                    <div class="text-xs text-gray-500">Cloud storage sync</div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm btn-outline" disabled>Connect</button>
+                            <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="window.open('/api/integrations/google/drive/authorize', '_blank', 'width=500,height=600')">Connect</button>
                         </div>
                         <div class="flex items-center justify-between p-4 rounded-lg border">
                             <div class="flex items-center gap-3">
