@@ -3,7 +3,7 @@
 
 ## Current State
 - **Branch:** master
-- **Last commit:** ae7cc12 — feat: upgrade AI template endpoints to Claude Haiku
+- **Last commit:** 3b0bbad — feat: cross-listing automation — fix 6 gaps for production-ready publishing
 - **Production URL:** https://vaultlister.com — LIVE ✅
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **SSH access:** `ssh -i ssh-key-2026-03-15.key ubuntu@204.216.105.105` (user is `ubuntu`, NOT `openclawuser`)
@@ -16,10 +16,21 @@
 - **E2E baseline:** 674/688 passing (100% non-skipped), 0 failed, 14 skipped — 2026-03-18
 - **As of:** 2026-03-18
 
-## In Progress
-- Cross-listing automation — all 6 gaps fixed, building + testing
-
 ## Last Completed Work (2026-03-18)
+
+### Cross-Listing Automation — 6 Gaps Fixed (commit 3b0bbad)
+Made cross-listing production-ready by fixing all identified gaps:
+
+1. **Deleted dead stub** `submitAdvancedCrosslist` (fake IDs, no API) and old modal (lines 1088-1285)
+2. **Advanced crosslist now publishes** — after creating drafts via `/listings/batch`, iterates each and calls `POST /listings/{id}/publish-{platform}` (reuses existing publish infrastructure)
+3. **All 9 platforms in modal** — added Mercari, Grailed, Etsy to advanced crosslist (was 6, now 9), 3x3 grid
+4. **Targeted retry** — new `retryFailedPublishes` handler only retries specific failed listingId+platform pairs (not full re-run)
+5. **Failure tracking** — `store.state.lastPublishFailures` stores `[{ listingId, platform }]` for retry
+6. **WebSocket events** — `listing.published` and `listing.publish_failed` broadcast in generic publish route
+
+**Net -350 lines** — removed dead code, consolidated duplicate implementations.
+
+### Previous: E2E Test Suite + Chrome Extension + AI Upgrade (2026-03-18)
 
 ### E2E Test Suite Overhaul (3 commits: 446dbfe, e6275f6, 102e2bc)
 Fixed ~156 E2E test failures across the entire suite:

@@ -890,6 +890,18 @@ Object.assign(handlers, {
         renderApp(pages.automations());
     },
 
+    refreshSchedulerStatus: async function() {
+        try {
+            const data = await api.get('/automations/scheduler-status');
+            store.setState({ schedulerStatus: data });
+            if (store.state.currentPage === 'automations') {
+                renderApp(pages.automations());
+            }
+        } catch (err) {
+            toast.error('Failed to refresh scheduler status');
+        }
+    },
+
 
     showAutomationWizard: function() {
         automationWizard.currentStep = 1;

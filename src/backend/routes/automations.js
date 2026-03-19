@@ -1475,5 +1475,62 @@ export async function automationsRouter(ctx) {
         }
     }
 
+    // GET /api/automations/scheduler-status - Live scheduler health check
+    if (method === 'GET' && path === '/scheduler-status') {
+        try {
+            const { getTaskWorkerStatus } = await import('../workers/taskWorker.js');
+            const workerStatus = getTaskWorkerStatus();
+
+            const pending = query.get('SELECT COUNT(*) as count FROM task_queue WHERE status = ?', ['pending']);
+            const processing = query.get('SELECT COUNT(*) as count FROM task_queue WHERE status = ?', ['processing']);
+            const failed = query.get("SELECT COUNT(*) as count FROM task_queue WHERE status = 'failed' AND datetime(created_at) > datetime('now', '-24 hours')");
+
+            const recentRuns = query.get(`
+                SELECT
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as succeeded,
+                    SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+                    SUM(CASE WHEN status = 'partial' THEN 1 ELSE 0 END) as partial
+                FROM automation_runs
+                WHERE user_id = ? AND datetime(started_at) > datetime('now', '-24 hours')
+            `, [user.id]);
+
+            const enabledRules = query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = 1', [user.id]);
+
+            const nextScheduled = query.get(`
+                SELECT name, schedule, last_run_at FROM automation_rules
+                WHERE user_id = ? AND is_enabled = 1 AND schedule IS NOT NULL
+                ORDER BY last_run_at ASC LIMIT 1
+            `, [user.id]);
+
+            const isHealthy = workerStatus.running &&
+                (Date.now() - new Date(workerStatus.lastRun).getTime() < 30000);
+
+            return { status: 200, data: {
+                healthy: isHealthy,
+                worker: workerStatus,
+                queue: {
+                    pending: pending?.count || 0,
+                    processing: processing?.count || 0,
+                    failedLast24h: failed?.count || 0
+                },
+                runs24h: {
+                    total: recentRuns?.total || 0,
+                    succeeded: recentRuns?.succeeded || 0,
+                    failed: recentRuns?.failed || 0,
+                    partial: recentRuns?.partial || 0,
+                    successRate: recentRuns?.total > 0
+                        ? Math.round((recentRuns.succeeded / recentRuns.total) * 100)
+                        : 100
+                },
+                enabledRules: enabledRules?.count || 0,
+                nextScheduled: nextScheduled || null
+            }};
+        } catch (error) {
+            logger.error('[Automations] scheduler status failed', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to get scheduler status' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

@@ -1552,6 +1552,62 @@ Object.assign(pages, {
             }
         });
 
+        // Load scheduler status if not cached (non-blocking)
+        if (!store.state.schedulerStatus) {
+            api.get('/automations/scheduler-status').then(data => {
+                store.setState({ schedulerStatus: data });
+                const widget = document.getElementById('scheduler-health-widget');
+                if (widget) {
+                    widget.innerHTML = renderSchedulerWidget(data);
+                }
+            }).catch(() => {});
+        }
+
+        function renderSchedulerWidget(status) {
+            if (!status) return '<p class="text-sm text-gray-500">Loading scheduler status...</p>';
+
+            const healthColor = status.healthy ? 'text-success-600' : 'text-error-600';
+            const healthIcon = status.healthy ? 'check-circle' : 'alert-triangle';
+            const healthLabel = status.healthy ? 'Healthy' : 'Unhealthy';
+
+            const successRate = status.runs24h?.successRate ?? 100;
+            const rateColor = successRate >= 90 ? 'text-success-600' : successRate >= 70 ? 'text-warning-600' : 'text-error-600';
+
+            const lastRun = status.worker?.lastRun
+                ? new Date(status.worker.lastRun).toLocaleTimeString()
+                : 'Never';
+
+            return `
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <div class="${healthColor} text-lg font-bold">${components.icon(healthIcon, 18)} ${healthLabel}</div>
+                        <div class="text-xs text-gray-500 mt-1">Worker Status</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="${rateColor} text-lg font-bold">${successRate}%</div>
+                        <div class="text-xs text-gray-500 mt-1">Success Rate (24h)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold">${status.runs24h?.total || 0}</div>
+                        <div class="text-xs text-gray-500 mt-1">Runs (24h)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold">${status.queue?.pending || 0}</div>
+                        <div class="text-xs text-gray-500 mt-1">Queued Tasks</div>
+                    </div>
+                </div>
+                ${status.runs24h?.failed > 0 ? `
+                    <div class="mt-3 p-2 bg-error-50 border border-error-200 rounded text-sm text-error-700">
+                        ${components.icon('alert-triangle', 14)} ${status.runs24h.failed} failed run(s) in the last 24 hours
+                    </div>
+                ` : ''}
+                <div class="mt-3 text-xs text-gray-400 flex justify-between">
+                    <span>Last poll: ${lastRun}</span>
+                    <span>${status.enabledRules || 0} active rules</span>
+                </div>
+            `;
+        }
+
         // Group automations by category for breakdown
         const categoryStats = {};
         automations.forEach(a => {
@@ -1622,6 +1678,19 @@ Object.assign(pages, {
                 </button>
             </div>
             ` : ''}
+
+            <!-- Scheduler Health Widget -->
+            <div class="card mb-6" id="scheduler-health-widget-card">
+                <div class="card-header flex justify-between items-center">
+                    <h3 class="font-semibold">${components.icon('activity', 18)} Scheduler Health</h3>
+                    <button class="btn btn-ghost btn-sm" onclick="handlers.refreshSchedulerStatus()">
+                        ${components.icon('refresh-cw', 14)} Refresh
+                    </button>
+                </div>
+                <div class="card-body" id="scheduler-health-widget">
+                    ${renderSchedulerWidget(store.state.schedulerStatus)}
+                </div>
+            </div>
 
             <!-- Automations Hero Section -->
             <div class="automations-hero mb-6">

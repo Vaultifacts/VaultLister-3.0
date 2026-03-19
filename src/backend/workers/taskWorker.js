@@ -355,6 +355,9 @@ async function executeTask(type, payload) {
         case 'publish_listing':
             return await executePoshmarkPublishTask(payload);
 
+        case 'poshmark_inventory_sync':
+            return await executePoshmarkInventorySyncTask(payload);
+
         default:
             throw new Error(`Unknown task type: ${type}`);
     }
@@ -1314,6 +1317,62 @@ async function executePoshmarkPublishTask(payload) {
         }
     } finally {
         await bot.close().catch(() => {});
+    }
+}
+
+async function executePoshmarkInventorySyncTask(payload) {
+    const { userId, username, maxItems = 100 } = payload;
+    if (!userId || !username) {
+        throw new Error('Missing userId or username in payload');
+    }
+
+    logger.info('[TaskWorker] Starting Poshmark inventory sync', userId, { username, maxItems });
+
+    const { getPoshmarkBot, closePoshmarkBot } = await import('../../shared/automations/poshmark-bot.js');
+    const bot = await getPoshmarkBot();
+
+    try {
+        const listings = await bot.getClosetListings(username, maxItems);
+
+        let synced = 0;
+        let skipped = 0;
+
+        for (const item of listings) {
+            try {
+                // Deduplicate by matching title + user (Poshmark URL stored in notes)
+                const existing = query.get(
+                    'SELECT id FROM inventory WHERE user_id = ? AND title = ? AND notes LIKE ?',
+                    [userId, item.title || '', '%poshmark.com%']
+                );
+
+                if (existing) {
+                    skipped++;
+                    continue;
+                }
+
+                const itemId = uuidv4();
+                query.run(
+                    `INSERT INTO inventory (id, user_id, title, description, list_price, brand, category, condition, images, notes, status, created_at, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'), datetime('now'))`,
+                    [itemId, userId, item.title || '', item.description || '', item.price || 0, item.brand || '', item.category || '', item.condition || 'good', JSON.stringify(item.images || []), `Synced from Poshmark: ${item.url || ''}`]
+                );
+                synced++;
+            } catch (itemErr) {
+                logger.warn('[TaskWorker] Poshmark sync item error', userId, { url: item.url, detail: itemErr.message });
+                skipped++;
+            }
+        }
+
+        logger.info('[TaskWorker] Poshmark inventory sync complete', userId, { synced, skipped, total: listings.length });
+
+        createOAuthNotification(userId, 'poshmark', NotificationTypes.SYNC_COMPLETED, {
+            listingsSynced: synced,
+            listingsSkipped: skipped
+        });
+
+        return { synced, skipped, total: listings.length };
+    } finally {
+        await closePoshmarkBot();
     }
 }
 
