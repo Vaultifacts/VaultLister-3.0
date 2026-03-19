@@ -215,3 +215,187 @@ describe('Mock OAuth - Error Handling', () => {
         }
     });
 });
+
+// ===== Unit tests — call mockOAuthRouter directly (no HTTP server required) =====
+
+import { mockOAuthRouter } from '../backend/routes/mock-oauth.js';
+
+describe('mockOAuthRouter unit - Authorize endpoint', () => {
+    test('should return HTML form when required params are present', async () => {
+        const result = await mockOAuthRouter({
+            method: 'GET',
+            path: '/poshmark/authorize',
+            query: { client_id: 'test-client', redirect_uri: 'http://localhost:3000/callback', state: 'state123' },
+            body: {}
+        });
+        expect(result.status).toBe(200);
+        expect(result.headers['Content-Type']).toBe('text/html');
+        expect(result.body).toContain('Poshmark');
+        expect(result.body).toContain('VaultLister');
+        expect(result.body).toContain('Authorize');
+    });
+
+    test('should return 400 when client_id is missing', async () => {
+        const result = await mockOAuthRouter({
+            method: 'GET',
+            path: '/poshmark/authorize',
+            query: { redirect_uri: 'http://localhost:3000/callback', state: 'state123' },
+            body: {}
+        });
+        expect(result.status).toBe(400);
+        expect(result.data.error).toBe('Missing required parameters');
+    });
+
+    test('should return 400 when redirect_uri is missing', async () => {
+        const result = await mockOAuthRouter({
+            method: 'GET',
+            path: '/poshmark/authorize',
+            query: { client_id: 'test-client', state: 'state123' },
+            body: {}
+        });
+        expect(result.status).toBe(400);
+        expect(result.data.error).toBe('Missing required parameters');
+    });
+
+    test('should return 400 when state is missing', async () => {
+        const result = await mockOAuthRouter({
+            method: 'GET',
+            path: '/poshmark/authorize',
+            query: { client_id: 'test-client', redirect_uri: 'http://localhost:3000/callback' },
+            body: {}
+        });
+        expect(result.status).toBe(400);
+        expect(result.data.error).toBe('Missing required parameters');
+    });
+
+    test('should embed platform name in HTML for each known platform', async () => {
+        const platforms = [
+            { id: 'ebay', name: 'eBay' },
+            { id: 'mercari', name: 'Mercari' },
+            { id: 'depop', name: 'Depop' }
+        ];
+        for (const { id, name } of platforms) {
+            const result = await mockOAuthRouter({
+                method: 'GET',
+                path: `/${id}/authorize`,
+                query: { client_id: 'test-client', redirect_uri: 'http://localhost:3000/callback', state: 'abc' },
+                body: {}
+            });
+            expect(result.status).toBe(200);
+            expect(result.body).toContain(name);
+        }
+    });
+});
+
+describe('mockOAuthRouter unit - Token exchange endpoint', () => {
+    test('should return access_token and refresh_token on POST /token', async () => {
+        const result = await mockOAuthRouter({
+            method: 'POST',
+            path: '/poshmark/token',
+            query: {},
+            body: { code: 'mock_auth_code_abc123', grant_type: 'authorization_code' }
+        });
+        expect(result.status).toBe(200);
+        expect(result.data.access_token).toContain('mock_access_poshmark');
+        expect(result.data.refresh_token).toContain('mock_refresh_poshmark');
+        expect(result.data.token_type).toBe('Bearer');
+        expect(result.data.expires_in).toBe(3600);
+        expect(result.data.scope).toBe('read write listings profile');
+    });
+
+    test('should return 404 for unrecognised grant_type path', async () => {
+        // The mock router matches path pattern /[a-z]+/token; any POST to token returns 200
+        // Sending grant_type=invalid_grant to the token endpoint — the mock always succeeds
+        // (the router is intentionally permissive). Verify 404 is only raised on wrong path.
+        const result = await mockOAuthRouter({
+            method: 'POST',
+            path: '/poshmark/invalidgrant',
+            query: {},
+            body: { grant_type: 'invalid_grant' }
+        });
+        expect(result.status).toBe(404);
+        expect(result.data.error).toBe('Mock OAuth route not found');
+    });
+
+    test('should include platform name in access_token prefix', async () => {
+        const result = await mockOAuthRouter({
+            method: 'POST',
+            path: '/ebay/token',
+            query: {},
+            body: { code: 'code-123', grant_type: 'authorization_code' }
+        });
+        expect(result.status).toBe(200);
+        expect(result.data.access_token).toContain('mock_access_ebay');
+    });
+});
+
+describe('mockOAuthRouter unit - User info endpoint', () => {
+    test('should return profile data on GET /user', async () => {
+        const result = await mockOAuthRouter({
+            method: 'GET',
+            path: '/poshmark/user',
+            query: {},
+            body: {}
+        });
+        expect(result.status).toBe(200);
+        expect(result.data.id).toContain('demo_poshmark_user');
+        expect(result.data.username).toBe('demo_poshmark_seller');
+        expect(result.data.email).toBe('demo@poshmark.example.com');
+        expect(result.data.display_name).toBe('Demo Poshmark Seller');
+        expect(result.data.verified).toBe(true);
+        expect(result.data.created_at).toBeDefined();
+    });
+
+    test('should return platform-specific identifiers for each platform', async () => {
+        const platforms = ['ebay', 'mercari', 'depop'];
+        for (const platform of platforms) {
+            const result = await mockOAuthRouter({
+                method: 'GET',
+                path: `/${platform}/user`,
+                query: {},
+                body: {}
+            });
+            expect(result.status).toBe(200);
+            expect(result.data.id).toContain(`demo_${platform}_user`);
+            expect(result.data.username).toBe(`demo_${platform}_seller`);
+        }
+    });
+});
+
+describe('mockOAuthRouter unit - Revoke endpoint', () => {
+    test('should return success: true on POST /revoke', async () => {
+        const result = await mockOAuthRouter({
+            method: 'POST',
+            path: '/poshmark/revoke',
+            query: {},
+            body: { token: 'mock_access_poshmark_abc' }
+        });
+        expect(result.status).toBe(200);
+        expect(result.data.success).toBe(true);
+        expect(result.data.message).toBe('Token revoked successfully');
+    });
+});
+
+describe('mockOAuthRouter unit - 404 fallthrough', () => {
+    test('should return 404 for completely unmatched routes', async () => {
+        const result = await mockOAuthRouter({
+            method: 'GET',
+            path: '/poshmark/unknown-action',
+            query: {},
+            body: {}
+        });
+        expect(result.status).toBe(404);
+        expect(result.data.error).toBe('Mock OAuth route not found');
+    });
+
+    test('should return 404 for wrong HTTP method on known paths', async () => {
+        // PUT is not handled by any route in the mock router
+        const result = await mockOAuthRouter({
+            method: 'PUT',
+            path: '/poshmark/token',
+            query: {},
+            body: {}
+        });
+        expect(result.status).toBe(404);
+    });
+});
