@@ -3,7 +3,7 @@
 
 ## Current State
 - **Branch:** master
-- **Last commit:** 32f30f2 — [AUTO] fix: circuit breaker fallback + state reset (A-04, A-05)
+- **Last commit:** 038c8e4 — [AUTO] fix: audit items F-17, F-18, F-09 — modal focus trap, image layout shift, stock status a11y
 - **Production URL:** https://vaultlister.com — LIVE ✅
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **SSH access:** `ssh -i ssh-key-2026-03-15.key ubuntu@204.216.105.105` (user is `ubuntu`, NOT `openclawuser`)
@@ -18,7 +18,16 @@
 
 ## Last Completed Work (2026-03-19)
 
-### Session Summary — Circuit Breaker Audit Fixes (1 commit)
+### Session Summary — Frontend Accessibility Audit Fixes (1 commit)
+
+**Commit 038c8e4 — Audit Items F-17, F-18, F-09 (3 targeted fixes)**
+- F-17 fix: Modal focus trap now filters to only visible elements (offsetParent check + visibility check)
+- F-18 fix: Duplicate item images now have width/height attributes + object-fit to prevent layout shift on load
+- F-09 fix: Stock status badges now have aria-label with "Stock status: {status}" for screen readers
+- Applied to: `src/frontend/ui/modals.js`, `src/frontend/handlers/handlers-deferred.js`, `src/frontend/app.js`, `src/frontend/core-bundle.js`
+- All tests passing ✅
+
+### Previous: Circuit Breaker Audit Fixes (1 commit)
 
 **Commit 32f30f2 — Circuit Breaker Fallback + State Reset (A-04, A-05)**
 - A-04 fix: When circuit is OPEN and no fallback provided, return user-friendly error object instead of throwing
