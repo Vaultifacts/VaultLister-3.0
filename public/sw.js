@@ -8,20 +8,20 @@ const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 // Phase 1 files to pre-cache (app shell)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=dd26a217',
-    '/styles/main.css?v=dd26a217',
+    '/core-bundle.js?v=e023082c',
+    '/styles/main.css?v=e023082c',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/favicon.svg',
     '/components/photoEditor.js',
     '/components/chatWidget.js',
     // Phase 2: route-group chunks (pre-cached for offline use)
-    '/chunk-inventory.js?v=dd26a217',
-    '/chunk-sales.js?v=dd26a217',
-    '/chunk-tools.js?v=dd26a217',
-    '/chunk-intelligence.js?v=dd26a217',
-    '/chunk-settings.js?v=dd26a217',
-    '/chunk-community.js?v=dd26a217',
+    '/chunk-inventory.js?v=e023082c',
+    '/chunk-sales.js?v=e023082c',
+    '/chunk-tools.js?v=e023082c',
+    '/chunk-intelligence.js?v=e023082c',
+    '/chunk-settings.js?v=e023082c',
+    '/chunk-community.js?v=e023082c',
 ];
 
 // ─── Install: pre-cache app shell ────────────────────────────────────────────

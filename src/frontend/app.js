@@ -45296,9 +45296,6 @@ const handlers = {
     },
 
     exportTransactions: function(format) {
-        if (format !== 'csv') {
-            toast.info(`${format.toUpperCase()} export coming soon — exporting as CSV instead`);
-        }
         const activeTab = store.state.transactionsTab || 'purchases';
         let purchases = store.state.purchases || [];
         let sales = store.state.sales || [];
@@ -45352,14 +45349,49 @@ const handlers = {
             filename = `sales_export_${sales.length}.csv`;
         }
 
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-        toast.success(`Exported ${activeTab === 'purchases' ? purchases.length : sales.length} ${activeTab} to ${filename}`);
+        const rowCount = activeTab === 'purchases' ? purchases.length : sales.length;
+
+        if (format === 'pdf') {
+            // Generate styled HTML and open print dialog for PDF save
+            const title = activeTab === 'purchases' ? 'Purchases Export' : 'Sales Export';
+            const tableRows = csv.split('\n').filter(Boolean).map((row, i) => {
+                const cells = row.replace(/^"|"$/g, '').split('","').map(c => c.replace(/""/g, '"'));
+                const tag = i === 0 ? 'th' : 'td';
+                return '<tr>' + cells.map(c => `<${tag} style="border:1px solid #ddd;padding:8px;text-align:left">${c}</${tag}>`).join('') + '</tr>';
+            }).join('');
+            const html = `<!DOCTYPE html><html><head><title>${title}</title><style>body{font-family:sans-serif;padding:20px}table{border-collapse:collapse;width:100%}th{background:#f3f4f6}h1{font-size:18px;margin-bottom:4px}p{color:#666;margin-bottom:16px;font-size:13px}</style></head><body><h1>${title}</h1><p>${rowCount} records — exported ${new Date().toLocaleDateString()}</p><table>${tableRows}</table></body></html>`;
+            const w = window.open('', '_blank');
+            w.document.write(html);
+            w.document.close();
+            w.print();
+            toast.success(`PDF export opened for ${rowCount} ${activeTab}`);
+        } else if (format === 'excel') {
+            // Generate HTML table downloadable as .xls
+            const tableRows = csv.split('\n').filter(Boolean).map((row, i) => {
+                const cells = row.replace(/^"|"$/g, '').split('","').map(c => c.replace(/""/g, '"'));
+                const tag = i === 0 ? 'th' : 'td';
+                return '<tr>' + cells.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
+            }).join('');
+            const xls = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table>${tableRows}</table></body></html>`;
+            const blob = new Blob([xls], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename.replace('.csv', '.xls');
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success(`Exported ${rowCount} ${activeTab} to Excel`);
+        } else {
+            // CSV download (default)
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success(`Exported ${rowCount} ${activeTab} to ${filename}`);
+        }
     },
 
     // Split Transaction Modal

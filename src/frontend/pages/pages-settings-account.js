@@ -3053,26 +3053,6 @@ Object.assign(pages, {
     // Terms of Service page,
 
 
-    shippingProfiles() {
-        return `
-            <div class="page-header">
-                <h1 class="page-title">Shipping Profiles</h1>
-                <p class="page-description">Manage shipping settings for each marketplace</p>
-            </div>
-
-            <div class="card">
-                <div class="card-body text-center py-12">
-                    <div class="text-6xl mb-4">📦</div>
-                    <h3 class="text-xl font-bold mb-2">Coming Soon!</h3>
-                    <p class="text-gray-600">Create and manage custom shipping profiles for different platforms.</p>
-                </div>
-            </div>
-        `;
-    },
-
-    // SKU Rules page,
-
-
     webhooks() {
         const endpoints = store.state.webhookEndpoints || [];
         const events = store.state.webhookEvents || [];
