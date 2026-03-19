@@ -22,7 +22,7 @@ const ALLOWED_COLUMNS = {
               'created_at', 'updated_at'],
   sales:     ['id', 'user_id', 'platform', 'sale_price', 'shipping_cost', 'platform_fee',
               'net_profit', 'status', 'created_at', 'updated_at'],
-  orders:    ['id', 'user_id', 'platform', 'status', 'total_amount', 'created_at', 'updated_at'],
+  orders:    ['id', 'user_id', 'platform', 'status', 'sale_price', 'shipping_cost', 'platform_fee', 'created_at', 'updated_at'],
   offers:    ['id', 'user_id', 'platform', 'status', 'amount', 'created_at', 'updated_at'],
   checklists: ['id', 'user_id', 'name', 'status', 'created_at', 'updated_at'],
   suppliers: ['id', 'user_id', 'name', 'status', 'created_at', 'updated_at'],
