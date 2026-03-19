@@ -740,7 +740,7 @@ Object.assign(handlers, {
         // Reset theme to light
         document.body.classList.remove('dark-mode');
         store.setState({ darkMode: false });
-        localStorage.setItem('vaultlister_darkmode', 'false');
+        localStorage.setItem('vaultlister_dark_mode', 'false');
 
         // Reset accent color to blue (default)
         localStorage.setItem('vaultlister_accent', 'blue');

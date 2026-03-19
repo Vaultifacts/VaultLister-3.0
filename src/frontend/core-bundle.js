@@ -4599,7 +4599,7 @@ const richTooltip = {
         const tooltip = document.createElement('div');
         tooltip.className = `rich-tooltip rich-tooltip-${position}`;
         tooltip.style.width = width;
-        tooltip.innerHTML = content;
+        tooltip.textContent = content;
         document.body.appendChild(tooltip);
 
         // Position
@@ -8669,6 +8669,7 @@ const toast = {
         toastEl.className = `toast toast-${type}`;
         toastEl.setAttribute('role', type === 'error' ? 'alert' : 'status');
         toastEl.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+        toastEl.setAttribute('aria-atomic', 'true');
 
         toastEl.innerHTML = `
             <span class="toast-icon">${this.getIcon(type)}</span>
@@ -14869,7 +14870,7 @@ const supplierCardEnhanced = {
                             <span class="metric-label">Avg Price</span>
                         </div>
                         <div class="supplier-metric">
-                            <span class="badge badge-${stockColor}" aria-label="Stock status: ${escapeHtml(stockStatus)}">${stockStatus}</span>
+                            <span class="badge badge-${stockColor}">${stockStatus}</span>
                         </div>
                     </div>
                     <div class="supplier-sparkline-container">
@@ -15234,7 +15235,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '113ca702';
+    const v = 'cf3924ab';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -21144,8 +21145,13 @@ const modals = {
                 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
             );
             if (focusableElements.length === 0) return;
-            const firstElement = focusableElements[0];
-            const lastElement = focusableElements[focusableElements.length - 1];
+            // Filter to only visible focusable elements
+            const visibleFocusable = Array.from(focusableElements).filter(el => {
+                return el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden';
+            });
+            if (visibleFocusable.length === 0) return;
+            const firstElement = visibleFocusable[0];
+            const lastElement = visibleFocusable[visibleFocusable.length - 1];
             if (e.shiftKey && document.activeElement === firstElement) {
                 e.preventDefault();
                 lastElement.focus();
@@ -25246,17 +25252,17 @@ const handlers = {
         if (mode === 'dark') {
             document.body.classList.add('dark-mode');
             store.setState({ darkMode: true });
-            localStorage.setItem('vaultlister_darkmode', 'true');
+            localStorage.setItem('vaultlister_dark_mode', 'true');
         } else if (mode === 'light') {
             document.body.classList.remove('dark-mode');
             store.setState({ darkMode: false });
-            localStorage.setItem('vaultlister_darkmode', 'false');
+            localStorage.setItem('vaultlister_dark_mode', 'false');
         } else {
             // System preference
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             document.body.classList.toggle('dark-mode', prefersDark);
             store.setState({ darkMode: prefersDark });
-            localStorage.removeItem('vaultlister_darkmode');
+            localStorage.removeItem('vaultlister_dark_mode');
         }
         if (store.state.user) {
             const currentPrefs = (() => { try { return JSON.parse(store.state.user.preferences || '{}'); } catch { return {}; } })();
@@ -27923,9 +27929,8 @@ handlers.addPhotosToBank = async function() {
                 const blob = await response.blob();
                 formData.append('image', blob, photo.name || 'photo.jpg');
             }
-            const uploadRes = await fetch('/api/image-bank/upload', {
+            const uploadRes = await api.request('/image-bank/upload', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
                 body: formData
             });
             if (!uploadRes.ok) {

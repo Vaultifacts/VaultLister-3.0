@@ -4603,7 +4603,7 @@ const richTooltip = {
         const tooltip = document.createElement('div');
         tooltip.className = `rich-tooltip rich-tooltip-${position}`;
         tooltip.style.width = width;
-        tooltip.innerHTML = content;
+        tooltip.textContent = content;
         document.body.appendChild(tooltip);
 
         // Position
@@ -44611,13 +44611,8 @@ const handlers = {
         }
 
         try {
-            const res = await fetch('/api/size-charts/recommend', {
+            const res = await api.request('/size-charts/recommend', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${store.state.token}`,
-                    'x-csrf-token': store.state.csrfToken
-                },
                 body: JSON.stringify({
                     measurements: { chest, waist, hips },
                     garment_type: garment
@@ -44645,9 +44640,7 @@ const handlers = {
 
     showBrandGuides: async function() {
         try {
-            const res = await fetch('/api/size-charts/brands', {
-                headers: { 'Authorization': `Bearer ${store.state.token}` }
-            });
+            const res = await api.request('/size-charts/brands');
             const data = await res.json();
             const brands = data.brands || data || [];
             modals.show(`
@@ -44671,9 +44664,7 @@ const handlers = {
 
     viewBrandGuide: async function(brand) {
         try {
-            const res = await fetch(`/api/size-charts/brands/${encodeURIComponent(brand)}`, {
-                headers: { 'Authorization': `Bearer ${store.state.token}` }
-            });
+            const res = await api.request(`/size-charts/brands/${encodeURIComponent(brand)}`);
             const data = await res.json();
             const guides = data.guides || data || [];
             modals.show(`
@@ -47835,17 +47826,17 @@ const handlers = {
         if (mode === 'dark') {
             document.body.classList.add('dark-mode');
             store.setState({ darkMode: true });
-            localStorage.setItem('vaultlister_darkmode', 'true');
+            localStorage.setItem('vaultlister_dark_mode', 'true');
         } else if (mode === 'light') {
             document.body.classList.remove('dark-mode');
             store.setState({ darkMode: false });
-            localStorage.setItem('vaultlister_darkmode', 'false');
+            localStorage.setItem('vaultlister_dark_mode', 'false');
         } else {
             // System preference
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             document.body.classList.toggle('dark-mode', prefersDark);
             store.setState({ darkMode: prefersDark });
-            localStorage.removeItem('vaultlister_darkmode');
+            localStorage.removeItem('vaultlister_dark_mode');
         }
         renderApp(pages.settings());
     },
@@ -47859,7 +47850,7 @@ const handlers = {
         // Reset theme to light
         document.body.classList.remove('dark-mode');
         store.setState({ darkMode: false });
-        localStorage.setItem('vaultlister_darkmode', 'false');
+        localStorage.setItem('vaultlister_dark_mode', 'false');
 
         // Reset accent color to blue (default)
         localStorage.setItem('vaultlister_accent', 'blue');
@@ -51479,9 +51470,7 @@ const handlers = {
         store.setState({ dashboardPeriod: period });
         try {
             toast.show('Updating metrics...', 'info');
-            const res = await fetch(`/api/analytics/dashboard?period=${period}`, {
-                headers: { 'Authorization': `Bearer ${store.state.token}` }
-            });
+            const res = await api.request(`/analytics/dashboard?period=${period}`);
             if (res.ok) {
                 const data = await res.json();
                 store.setState({ dashboardStats: data.stats, dashboardLastRefresh: Date.now() });
@@ -69080,7 +69069,7 @@ const handlers = {
     // Prediction Model Configuration
     showPredictionModelConfig: async function() {
         try {
-            const res = await fetch('/api/predictions/models', { headers: { 'Authorization': `Bearer ${store.state.token}` } });
+            const res = await api.request('/predictions/models');
             if (!res.ok) throw new Error('Failed to load prediction models');
             const data = await res.json();
             const models = data.models || data || [];
@@ -69127,9 +69116,8 @@ const handlers = {
         const model_type = document.getElementById('model-type')?.value;
         if (!name) return toast.error('Name is required');
         try {
-            const res = await fetch('/api/predictions/models', {
+            const res = await api.request('/predictions/models', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
                 body: JSON.stringify({ name, model_type })
             });
             if (res.ok) { toast.success('Model created'); handlers.showPredictionModelConfig(); }
@@ -69138,7 +69126,7 @@ const handlers = {
 
     deletePredictionModel: async function(id) {
         try {
-            await fetch(`/api/predictions/models/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken } });
+            await api.request(`/predictions/models/${id}`, { method: 'DELETE' });
             toast.success('Model deleted');
             handlers.showPredictionModelConfig();
         } catch (err) { toast.error('Failed to delete'); }
@@ -69175,9 +69163,8 @@ const handlers = {
         const volume_change = parseFloat(document.getElementById('scenario-volume')?.value) || 0;
         const season = document.getElementById('scenario-season')?.value || 'normal';
         try {
-            const res = await fetch('/api/predictions/scenarios', {
+            const res = await api.request('/predictions/scenarios', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'x-csrf-token': store.state.csrfToken },
                 body: JSON.stringify({ name, base_data: {}, adjustments: { price_change, volume_change, season } })
             });
             if (!res.ok) throw new Error('Failed to run scenario');
@@ -69232,9 +69219,7 @@ const handlers = {
     downloadDataExport: async function() {
         try {
             toast.info('Preparing your data export...');
-            const res = await fetch('/api/legal/privacy/data-export', {
-                headers: { 'Authorization': `Bearer ${store.state.token}` }
-            });
+            const res = await api.request('/legal/privacy/data-export');
             if (!res.ok) { toast.error('Failed to export data'); return; }
             const data = await res.json();
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -69251,9 +69236,7 @@ const handlers = {
     // Show Cookie Consent Modal
     showCookieConsent: async function() {
         try {
-            const res = await fetch('/api/legal/privacy/cookie-consent', {
-                headers: { 'Authorization': `Bearer ${store.state.token}` }
-            });
+            const res = await api.request('/legal/privacy/cookie-consent');
             if (!res.ok) throw new Error(res.statusText);
             const settings = await res.json();
             modals.show(`
@@ -69302,9 +69285,8 @@ const handlers = {
         const analytics = document.getElementById('analytics-cookies')?.checked || false;
         const marketing = document.getElementById('marketing-cookies')?.checked || false;
         try {
-            const res = await fetch('/api/legal/privacy/cookie-consent', {
+            const res = await api.request('/legal/privacy/cookie-consent', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
                 body: JSON.stringify({ analytics_enabled: analytics, marketing_enabled: marketing })
             });
             if (res.ok) { toast.success('Cookie preferences saved'); modals.close(); }
@@ -69314,9 +69296,7 @@ const handlers = {
     // Show Data Audit Modal
     showDataAudit: async function() {
         try {
-            const res = await fetch('/api/legal/privacy/data-audit', {
-                headers: { 'Authorization': `Bearer ${store.state.token}` }
-            });
+            const res = await api.request('/legal/privacy/data-audit');
             if (!res.ok) throw new Error(res.statusText);
             const audit = await res.json();
             const html = `
@@ -69609,9 +69589,8 @@ const handlers = {
     deleteLandingPage: async function(pageId) {
         if (!await modals.confirm('Delete this landing page?', { title: 'Delete Landing Page', confirmText: 'Delete', danger: true })) return;
         try {
-            const res = await fetch(`/api/affiliate/landing-pages/${pageId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' }
+            const res = await api.request(`/affiliate/landing-pages/${pageId}`, {
+                method: 'DELETE'
             });
             if (!res.ok) throw new Error('Failed to delete landing page');
             toast.success('Landing page deleted');
@@ -70298,7 +70277,7 @@ const handlers = {
     // Image Bank
     async loadImageBankImages() {
         try {
-            const res = await fetch('/api/image-bank', { headers: { 'Authorization': `Bearer ${store.state.token}` } });
+            const res = await api.request('/image-bank');
             if (!res.ok) {
                 throw new Error(`HTTP ${res.status}`);
             }
@@ -71795,9 +71774,8 @@ handlers.enhanceQuickPhoto = async function(idx) {
         const blob = await res.blob();
         const formData = new FormData();
         formData.append('image', blob, 'photo.jpg');
-        const uploadRes = await fetch('/api/image-bank/enhance', {
+        const uploadRes = await api.request('/image-bank/enhance', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
             body: formData
         });
         if (uploadRes.status === 402 || uploadRes.status === 503) {
@@ -71835,9 +71813,8 @@ handlers.addPhotosToBank = async function() {
                 const blob = await response.blob();
                 formData.append('image', blob, photo.name || 'photo.jpg');
             }
-            const uploadRes = await fetch('/api/image-bank/upload', {
+            const uploadRes = await api.request('/image-bank/upload', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
                 body: formData
             });
             if (!uploadRes.ok) {

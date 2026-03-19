@@ -407,17 +407,17 @@ const handlers = {
         if (mode === 'dark') {
             document.body.classList.add('dark-mode');
             store.setState({ darkMode: true });
-            localStorage.setItem('vaultlister_darkmode', 'true');
+            localStorage.setItem('vaultlister_dark_mode', 'true');
         } else if (mode === 'light') {
             document.body.classList.remove('dark-mode');
             store.setState({ darkMode: false });
-            localStorage.setItem('vaultlister_darkmode', 'false');
+            localStorage.setItem('vaultlister_dark_mode', 'false');
         } else {
             // System preference
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             document.body.classList.toggle('dark-mode', prefersDark);
             store.setState({ darkMode: prefersDark });
-            localStorage.removeItem('vaultlister_darkmode');
+            localStorage.removeItem('vaultlister_dark_mode');
         }
         if (store.state.user) {
             const currentPrefs = (() => { try { return JSON.parse(store.state.user.preferences || '{}'); } catch { return {}; } })();

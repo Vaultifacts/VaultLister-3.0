@@ -3,7 +3,7 @@
 
 ## Current State
 - **Branch:** master
-- **Last commit:** 038c8e4 — [AUTO] fix: audit items F-17, F-18, F-09 — modal focus trap, image layout shift, stock status a11y
+- **Last commit:** 9a81f1d — [AUTO] fix: Chrome extension EXT-03 — add JWT token refresh on 401
 - **Production URL:** https://vaultlister.com — LIVE ✅
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **SSH access:** `ssh -i ssh-key-2026-03-15.key ubuntu@204.216.105.105` (user is `ubuntu`, NOT `openclawuser`)
@@ -18,7 +18,19 @@
 
 ## Last Completed Work (2026-03-19)
 
-### Session Summary — Frontend Accessibility Audit Fixes (1 commit)
+### Session Summary — Chrome Extension Token Refresh Fix (1 commit)
+
+**Commit 9a81f1d — EXT-03: JWT token refresh on 401**
+- Added `refreshToken` storage alongside `auth_token` in VaultListerAPI
+- Implemented `refreshAccessToken()` method matching main app pattern
+- Added 401 retry logic: when token expires, automatically refresh via refresh token
+- Updated `login()` to store refresh token from login response
+- Updated `saveToken()` to accept optional refreshToken parameter
+- Updated `clearToken()` to remove both tokens from Chrome storage
+- Fixes silent logout issue where popup would fail after 15 minutes
+- File modified: `chrome-extension/lib/api.js`
+
+### Previous: Frontend Accessibility Audit Fixes (1 commit)
 
 **Commit 038c8e4 — Audit Items F-17, F-18, F-09 (3 targeted fixes)**
 - F-17 fix: Modal focus trap now filters to only visible elements (offsetParent check + visibility check)

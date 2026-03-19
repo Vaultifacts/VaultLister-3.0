@@ -4598,7 +4598,7 @@ const richTooltip = {
         const tooltip = document.createElement('div');
         tooltip.className = `rich-tooltip rich-tooltip-${position}`;
         tooltip.style.width = width;
-        tooltip.innerHTML = content;
+        tooltip.textContent = content;
         document.body.appendChild(tooltip);
 
         // Position
