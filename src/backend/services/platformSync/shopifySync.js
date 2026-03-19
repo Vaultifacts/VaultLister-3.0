@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
+import { logger } from '../../shared/logger.js';
 
 export async function syncShopifyShop(shop) {
     const results = {
@@ -16,6 +17,13 @@ export async function syncShopifyShop(shop) {
     try {
         const accessToken = decryptToken(shop.oauth_token);
         const oauthMode = process.env.OAUTH_MODE || 'mock';
+
+        if (oauthMode === 'mock') {
+            logger.warn('[PlatformSync] Shopify sync in mock mode — returning empty data');
+            results.message = 'Shopify sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.completedAt = new Date().toISOString();
+            return results;
+        }
 
         const listingsResult = await syncShopifyListings(shop, accessToken, oauthMode);
         results.listings = listingsResult;
@@ -142,44 +150,6 @@ async function syncShopifyOrders(shop, accessToken, mode) {
 }
 
 async function fetchShopifyProducts(shop, accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'shopify-prod-001',
-                title: 'Custom Embroidered Hoodie',
-                status: 'active',
-                variants: [{ price: '65.00', inventory_quantity: 5 }],
-                product_type: 'Hoodie',
-                vendor: 'VaultLister Store',
-                tags: 'custom, embroidered, streetwear',
-                handle: 'custom-embroidered-hoodie',
-                created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'shopify-prod-002',
-                title: 'Vintage Band Tee Collection',
-                status: 'active',
-                variants: [{ price: '35.00', inventory_quantity: 12 }],
-                product_type: 'T-Shirt',
-                vendor: 'VaultLister Store',
-                tags: 'vintage, band, music',
-                handle: 'vintage-band-tee-collection',
-                created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'shopify-prod-003',
-                title: 'Designer Sneaker Bundle',
-                status: 'draft',
-                variants: [{ price: '150.00', inventory_quantity: 0 }],
-                product_type: 'Sneakers',
-                vendor: 'VaultLister Store',
-                tags: 'designer, sneakers, bundle',
-                handle: 'designer-sneaker-bundle',
-                created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Shopify Admin REST API: GET /admin/api/2024-01/products.json
     const storeUrl = process.env.SHOPIFY_STORE_URL;
     if (!storeUrl) return [];
@@ -197,21 +167,6 @@ async function fetchShopifyProducts(shop, accessToken, mode) {
 }
 
 async function fetchShopifyOrders(shop, accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'shopify-order-001',
-                name: '#1001',
-                email: 'buyer@example.com',
-                total_price: '65.00',
-                total_shipping_price_set: { shop_money: { amount: '7.99' } },
-                financial_status: 'paid',
-                fulfillment_status: 'fulfilled',
-                created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     const storeUrl = process.env.SHOPIFY_STORE_URL;
     if (!storeUrl) return [];
 

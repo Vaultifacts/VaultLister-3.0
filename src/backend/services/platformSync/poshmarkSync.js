@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
+import { logger } from '../../shared/logger.js';
 
 /**
  * Sync all data from Poshmark for a shop
@@ -21,6 +22,13 @@ export async function syncPoshmarkShop(shop) {
     try {
         const accessToken = decryptToken(shop.oauth_token);
         const oauthMode = process.env.OAUTH_MODE || 'mock';
+
+        if (oauthMode === 'mock') {
+            logger.warn('[PlatformSync] Poshmark sync in mock mode — returning empty data');
+            results.message = 'Poshmark sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.completedAt = new Date().toISOString();
+            return results;
+        }
 
         // Sync listings
         const listingsResult = await syncPoshmarkListings(shop, accessToken, oauthMode);
@@ -196,52 +204,8 @@ async function syncPoshmarkOrders(shop, accessToken, mode) {
  * Fetch listings from Poshmark API (mock)
  */
 async function fetchPoshmarkListings(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'posh-listing-001',
-                title: 'Vintage Coach Handbag',
-                price: 125.00,
-                originalPrice: 150.00,
-                size: 'Medium',
-                brand: 'Coach',
-                category: 'Bags',
-                status: 'available',
-                shares: 45,
-                likes: 12,
-                createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'posh-listing-002',
-                title: 'Lululemon Align Leggings',
-                price: 68.00,
-                originalPrice: 98.00,
-                size: '6',
-                brand: 'Lululemon',
-                category: 'Activewear',
-                status: 'available',
-                shares: 120,
-                likes: 34,
-                createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'posh-listing-003',
-                title: 'Free People Dress',
-                price: 55.00,
-                originalPrice: 85.00,
-                size: 'S',
-                brand: 'Free People',
-                category: 'Dresses',
-                status: 'sold',
-                shares: 89,
-                likes: 28,
-                createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Poshmark does not provide a public API. Live sync requires Playwright scraping
-    // (available via the Automations tab). Return empty so sync completes gracefully.
+    // (available via the Automations tab).
     return [];
 }
 
@@ -249,20 +213,6 @@ async function fetchPoshmarkListings(accessToken, mode) {
  * Fetch orders from Poshmark API (mock)
  */
 async function fetchPoshmarkOrders(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'posh-order-001',
-                buyerUsername: 'fashionista_sarah',
-                listingId: 'posh-listing-003',
-                price: 55.00,
-                shippingCost: 7.97,
-                status: 'shipped',
-                createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Poshmark does not provide a public API. Return empty so sync completes gracefully.
     return [];
 }

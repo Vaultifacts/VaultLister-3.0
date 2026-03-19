@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
+import { logger } from '../../shared/logger.js';
 
 export async function syncFacebookShop(shop) {
     const results = {
@@ -16,6 +17,13 @@ export async function syncFacebookShop(shop) {
     try {
         const accessToken = decryptToken(shop.oauth_token);
         const oauthMode = process.env.OAUTH_MODE || 'mock';
+
+        if (oauthMode === 'mock') {
+            logger.warn('[PlatformSync] Facebook sync in mock mode — returning empty data');
+            results.message = 'Facebook sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.completedAt = new Date().toISOString();
+            return results;
+        }
 
         const listingsResult = await syncFacebookListings(shop, accessToken, oauthMode);
         results.listings = listingsResult;
@@ -142,61 +150,12 @@ async function syncFacebookOrders(shop, accessToken, mode) {
 }
 
 async function fetchFacebookListings(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'fb-listing-001',
-                title: 'Vintage Nike Windbreaker',
-                price: 55.00,
-                condition: 'used_good',
-                category: 'Clothing & Shoes',
-                location: 'Local Pickup',
-                status: 'LISTED',
-                createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'fb-listing-002',
-                title: 'Levi\'s 501 Original Fit Jeans',
-                price: 35.00,
-                condition: 'used_like_new',
-                category: 'Clothing & Shoes',
-                location: 'Shipping',
-                status: 'LISTED',
-                createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'fb-listing-003',
-                title: 'Retro Adidas Track Jacket',
-                price: 42.00,
-                condition: 'used_good',
-                category: 'Clothing & Shoes',
-                location: 'Shipping',
-                status: 'SOLD',
-                createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Facebook Commerce API requires approved Commerce account.
     // Live sync via Graph API v18.0 when credentials are configured.
     return [];
 }
 
 async function fetchFacebookOrders(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'fb-order-001',
-                buyerName: 'marketplace_buyer',
-                listingId: 'fb-listing-003',
-                price: 42.00,
-                shippingCost: 5.99,
-                status: 'shipped',
-                createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     return [];
 }
 

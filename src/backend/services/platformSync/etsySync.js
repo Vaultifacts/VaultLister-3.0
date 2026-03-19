@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
 import { fetchWithTimeout } from '../../shared/fetchWithTimeout.js';
+import { logger } from '../../shared/logger.js';
 
 /**
  * Sync all data from Etsy for a shop
@@ -22,6 +23,13 @@ export async function syncEtsyShop(shop) {
     try {
         const accessToken = decryptToken(shop.oauth_token);
         const oauthMode = process.env.OAUTH_MODE || 'mock';
+
+        if (oauthMode === 'mock') {
+            logger.warn('[PlatformSync] Etsy sync in mock mode — returning empty data');
+            results.message = 'Etsy sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.completedAt = new Date().toISOString();
+            return results;
+        }
 
         // Sync listings
         const listingsResult = await syncEtsyListings(shop, accessToken, oauthMode);
@@ -222,28 +230,6 @@ async function syncEtsyOrders(shop, accessToken, mode) {
  * In production: GET /v3/application/shops/{shop_id}/listings
  */
 async function fetchEtsyListings(accessToken, mode, shop) {
-    if (mode === 'mock') {
-        // Return mock listings for testing
-        return [
-            {
-                listing_id: 'etsy-' + Date.now(),
-                title: 'Vintage Handmade Item',
-                price: { amount: 2500, divisor: 100 },
-                quantity: 1,
-                state: 'active',
-                url: 'https://www.etsy.com/listing/mock'
-            },
-            {
-                listing_id: 'etsy-' + (Date.now() + 1),
-                title: 'Custom Craft Piece',
-                price: { amount: 4500, divisor: 100 },
-                quantity: 2,
-                state: 'active',
-                url: 'https://www.etsy.com/listing/mock2'
-            }
-        ];
-    }
-
     // Real Etsy API call
     // Extract shop_id from platform_user_id or use a separate field
     const shopId = shop.platform_user_id || 'shop_id';
@@ -273,19 +259,6 @@ async function fetchEtsyListings(accessToken, mode, shop) {
  * In production: GET /v3/application/shops/{shop_id}/receipts
  */
 async function fetchEtsyOrders(accessToken, mode, shop) {
-    if (mode === 'mock') {
-        // Return mock orders for testing
-        return [
-            {
-                receipt_id: 'etsy-ord-' + Date.now(),
-                buyer_email: 'buyer@example.com',
-                grandtotal: { amount: 2500, divisor: 100 },
-                status: 'paid',
-                create_timestamp: Math.floor(Date.now() / 1000)
-            }
-        ];
-    }
-
     // Real Etsy API call
     const shopId = shop.platform_user_id || 'shop_id';
 
@@ -414,17 +387,12 @@ function mapEtsyOrderStatus(etsyStatus) {
  * In production: POST /v3/application/shops/{shop_id}/listings
  */
 export async function createEtsyListing(accessToken, listingData) {
-    // In mock mode, return success immediately
     if (process.env.OAUTH_MODE === 'mock') {
-        return {
-            success: true,
-            listing_id: 'etsy-new-' + Date.now(),
-            url: 'https://www.etsy.com/listing/new-mock',
-            title: listingData.title
-        };
+        logger.warn('[PlatformSync] createEtsyListing called in mock mode — no-op');
+        return { success: false, message: 'Etsy sync requires connected account with valid credentials. Use Automations to sync via browser automation.' };
     }
 
-    // Real Etsy API call would go here
+    // Real Etsy API call
     const shopId = listingData.shopId || 'shop_id';
 
     const response = await fetchWithTimeout(
@@ -468,12 +436,12 @@ export async function createEtsyListing(accessToken, listingData) {
  * In production: PUT /v3/application/shops/{shop_id}/listings/{listing_id}
  */
 export async function updateEtsyListing(accessToken, listingId, updates) {
-    // In mock mode, return success immediately
     if (process.env.OAUTH_MODE === 'mock') {
-        return { success: true, listing_id: listingId };
+        logger.warn('[PlatformSync] updateEtsyListing called in mock mode — no-op');
+        return { success: false, message: 'Etsy sync requires connected account with valid credentials. Use Automations to sync via browser automation.' };
     }
 
-    // Real Etsy API call would go here
+    // Real Etsy API call
     const shopId = updates.shopId || 'shop_id';
 
     const response = await fetchWithTimeout(
@@ -503,12 +471,12 @@ export async function updateEtsyListing(accessToken, listingId, updates) {
  * In production: DELETE /v3/application/shops/{shop_id}/listings/{listing_id}
  */
 export async function deleteEtsyListing(accessToken, listingId) {
-    // In mock mode, return success immediately
     if (process.env.OAUTH_MODE === 'mock') {
-        return { success: true };
+        logger.warn('[PlatformSync] deleteEtsyListing called in mock mode — no-op');
+        return { success: false, message: 'Etsy sync requires connected account with valid credentials. Use Automations to sync via browser automation.' };
     }
 
-    // Real Etsy API call would go here
+    // Real Etsy API call
     const shopId = 'shop_id'; // Would need to be passed in or retrieved
 
     const response = await fetchWithTimeout(

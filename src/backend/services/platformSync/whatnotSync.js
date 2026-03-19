@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
+import { logger } from '../../shared/logger.js';
 
 export async function syncWhatnotShop(shop) {
     const results = {
@@ -16,6 +17,13 @@ export async function syncWhatnotShop(shop) {
     try {
         const accessToken = decryptToken(shop.oauth_token);
         const oauthMode = process.env.OAUTH_MODE || 'mock';
+
+        if (oauthMode === 'mock') {
+            logger.warn('[PlatformSync] Whatnot sync in mock mode — returning empty data');
+            results.message = 'Whatnot sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.completedAt = new Date().toISOString();
+            return results;
+        }
 
         const listingsResult = await syncWhatnotListings(shop, accessToken, oauthMode);
         results.listings = listingsResult;
@@ -142,61 +150,12 @@ async function syncWhatnotOrders(shop, accessToken, mode) {
 }
 
 async function fetchWhatnotListings(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'wn-listing-001',
-                title: 'Pokemon Base Set Booster Pack',
-                price: 120.00,
-                condition: 'new_sealed',
-                category: 'Trading Cards',
-                listingType: 'buy_now',
-                status: 'active',
-                createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'wn-listing-002',
-                title: 'Vintage Star Wars Action Figure Lot',
-                price: 85.00,
-                condition: 'used_good',
-                category: 'Collectibles',
-                listingType: 'buy_now',
-                status: 'active',
-                createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'wn-listing-003',
-                title: 'Funko Pop Grail Bundle',
-                price: 200.00,
-                condition: 'new_in_box',
-                category: 'Funko',
-                listingType: 'live_auction',
-                status: 'sold',
-                createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Whatnot API requires approved seller account.
     // Live sync available when API credentials are configured.
     return [];
 }
 
 async function fetchWhatnotOrders(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'wn-order-001',
-                buyerUsername: 'card_collector_99',
-                listingId: 'wn-listing-003',
-                price: 200.00,
-                shippingCost: 8.99,
-                status: 'shipped',
-                createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     return [];
 }
 

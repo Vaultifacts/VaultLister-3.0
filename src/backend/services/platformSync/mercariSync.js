@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
+import { logger } from '../../shared/logger.js';
 
 /**
  * Sync all data from Mercari for a shop
@@ -21,6 +22,13 @@ export async function syncMercariShop(shop) {
     try {
         const accessToken = decryptToken(shop.oauth_token);
         const oauthMode = process.env.OAUTH_MODE || 'mock';
+
+        if (oauthMode === 'mock') {
+            logger.warn('[PlatformSync] Mercari sync in mock mode — returning empty data');
+            results.message = 'Mercari sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.completedAt = new Date().toISOString();
+            return results;
+        }
 
         const listingsResult = await syncMercariListings(shop, accessToken, oauthMode);
         results.listings = listingsResult;
@@ -151,53 +159,12 @@ async function syncMercariOrders(shop, accessToken, mode) {
 }
 
 async function fetchMercariListings(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'merc-listing-001',
-                title: 'Nintendo Switch Console',
-                price: 245.00,
-                condition: 'Like New',
-                category: 'Electronics',
-                status: 'on_sale',
-                likes: 23,
-                views: 156,
-                createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'merc-listing-002',
-                title: 'Kate Spade Wallet',
-                price: 42.00,
-                condition: 'Good',
-                category: 'Accessories',
-                status: 'on_sale',
-                likes: 8,
-                views: 67,
-                createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Mercari does not provide a public API. Live sync requires Playwright scraping
-    // (available via the Automations tab). Return empty so sync completes gracefully.
+    // (available via the Automations tab).
     return [];
 }
 
 async function fetchMercariOrders(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'merc-order-001',
-                buyerUsername: 'deal_finder',
-                listingId: 'merc-listing-002',
-                price: 42.00,
-                shippingCost: 5.99,
-                status: 'completed',
-                createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Mercari does not provide a public API. Return empty so sync completes gracefully.
     return [];
 }

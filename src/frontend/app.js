@@ -70241,13 +70241,13 @@ const handlers = {
 
     // Quick Photo
     showQuickPhotoCapture() {
-        toast.info('Quick photo capture coming soon');
+        handlers.openCameraModal({ context: 'quick' });
     },
     processQuickPhotos() {
         toast.info('Processing photos...');
     },
     captureFromCamera() {
-        toast.info('Camera capture coming soon');
+        handlers.openCameraModal({ context: 'bank' });
     },
     addPhotosToBank() {
         toast.info('Adding photos to bank...');

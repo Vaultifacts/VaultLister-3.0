@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
+import { logger } from '../../shared/logger.js';
 
 /**
  * Sync all data from Depop for a shop
@@ -21,6 +22,13 @@ export async function syncDepopShop(shop) {
     try {
         const accessToken = decryptToken(shop.oauth_token);
         const oauthMode = process.env.OAUTH_MODE || 'mock';
+
+        if (oauthMode === 'mock') {
+            logger.warn('[PlatformSync] Depop sync in mock mode — returning empty data');
+            results.message = 'Depop sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.completedAt = new Date().toISOString();
+            return results;
+        }
 
         const listingsResult = await syncDepopListings(shop, accessToken, oauthMode);
         results.listings = listingsResult;
@@ -147,64 +155,12 @@ async function syncDepopOrders(shop, accessToken, mode) {
 }
 
 async function fetchDepopListings(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'depop-listing-001',
-                description: 'Y2K Baby Tee Pink',
-                price: 28.00,
-                size: 'S',
-                brand: 'Vintage',
-                category: 'Tops',
-                status: 'available',
-                likes: 67,
-                createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'depop-listing-002',
-                description: 'Low Rise Flare Jeans 90s',
-                price: 45.00,
-                size: '26',
-                brand: 'Vintage',
-                category: 'Bottoms',
-                status: 'available',
-                likes: 89,
-                createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'depop-listing-003',
-                description: 'Butterfly Crop Top',
-                price: 22.00,
-                size: 'M',
-                brand: 'Handmade',
-                category: 'Tops',
-                status: 'sold',
-                likes: 134,
-                createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Depop does not provide a public API. Live sync requires Playwright scraping
-    // (available via the Automations tab). Return empty so sync completes gracefully.
+    // (available via the Automations tab).
     return [];
 }
 
 async function fetchDepopOrders(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'depop-order-001',
-                buyerUsername: 'y2k_vibes',
-                listingId: 'depop-listing-003',
-                price: 22.00,
-                shippingCost: 4.50,
-                status: 'shipped',
-                createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Depop does not provide a public API. Return empty so sync completes gracefully.
     return [];
 }

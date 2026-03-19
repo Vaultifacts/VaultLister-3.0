@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../db/database.js';
 import { decryptToken } from '../../utils/encryption.js';
+import { logger } from '../../shared/logger.js';
 
 /**
  * Sync all data from Grailed for a shop
@@ -21,6 +22,13 @@ export async function syncGrailedShop(shop) {
     try {
         const accessToken = decryptToken(shop.oauth_token);
         const oauthMode = process.env.OAUTH_MODE || 'mock';
+
+        if (oauthMode === 'mock') {
+            logger.warn('[PlatformSync] Grailed sync in mock mode — returning empty data');
+            results.message = 'Grailed sync requires connected account with valid credentials. Use Automations to sync via browser automation.';
+            results.completedAt = new Date().toISOString();
+            return results;
+        }
 
         const listingsResult = await syncGrailedListings(shop, accessToken, oauthMode);
         results.listings = listingsResult;
@@ -147,67 +155,12 @@ async function syncGrailedOrders(shop, accessToken, mode) {
 }
 
 async function fetchGrailedListings(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'grailed-listing-001',
-                title: 'Rick Owens Geobasket Sneakers',
-                price: 485.00,
-                size: '43',
-                designer: 'Rick Owens',
-                category: 'Footwear',
-                condition: 'Gently Used',
-                status: 'for_sale',
-                followers: 156,
-                createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'grailed-listing-002',
-                title: 'Raf Simons Redux Bomber Jacket',
-                price: 890.00,
-                size: '48',
-                designer: 'Raf Simons',
-                category: 'Outerwear',
-                condition: 'New with Tags',
-                status: 'for_sale',
-                followers: 234,
-                createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-            },
-            {
-                id: 'grailed-listing-003',
-                title: 'Helmut Lang Vintage Bondage Pants',
-                price: 350.00,
-                size: '32',
-                designer: 'Helmut Lang',
-                category: 'Bottoms',
-                condition: 'Good',
-                status: 'sold',
-                followers: 89,
-                createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Grailed does not provide a public API. Live sync requires Playwright scraping
-    // (available via the Automations tab). Return empty so sync completes gracefully.
+    // (available via the Automations tab).
     return [];
 }
 
 async function fetchGrailedOrders(accessToken, mode) {
-    if (mode === 'mock') {
-        return [
-            {
-                id: 'grailed-order-001',
-                buyerUsername: 'archive_collector',
-                listingId: 'grailed-listing-003',
-                price: 350.00,
-                shippingCost: 15.00,
-                status: 'delivered',
-                createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-            }
-        ];
-    }
-
     // Grailed does not provide a public API. Return empty so sync completes gracefully.
     return [];
 }
