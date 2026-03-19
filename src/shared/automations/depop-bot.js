@@ -39,6 +39,7 @@ async function humanType(page, selector, text) {
 export class DepopBot {
     constructor(options = {}) {
         this.browser = null;
+        this.context = null;
         this.page = null;
         this.isLoggedIn = false;
         this.options = { headless: true, slowMo: 50, ...options };
@@ -53,13 +54,13 @@ export class DepopBot {
                 args: STEALTH_ARGS,
                 ignoreDefaultArgs: STEALTH_IGNORE_DEFAULTS
             });
-            const context = await this.browser.newContext({
+            this.context = await this.browser.newContext({
                 userAgent: randomChromeUA(),
                 viewport: randomViewport(),
                 locale: 'en-US',
                 timezoneId: 'America/New_York',
             });
-            this.page = await context.newPage();
+            this.page = await this.context.newPage();
             await this.page.route('**/analytics/**', route => route.abort());
             await this.page.route('**/tracking/**', route => route.abort());
             console.log('[DepopBot] Browser initialized');
@@ -222,11 +223,19 @@ export class DepopBot {
 
     async close() {
         console.log('[DepopBot] Closing browser...');
-        if (this.browser) {
-            await this.browser.close();
-            this.browser = null;
+        if (this.page) {
+            await this.page.close().catch(() => {});
             this.page = null;
         }
+        if (this.context) {
+            await this.context.close().catch(() => {});
+            this.context = null;
+        }
+        if (this.browser) {
+            await this.browser.close().catch(() => {});
+            this.browser = null;
+        }
+        writeAuditLog('session_closed');
         console.log('[DepopBot] Browser closed');
     }
 }

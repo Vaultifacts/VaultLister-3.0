@@ -115,37 +115,45 @@ export class MercariBot {
      */
     async refreshListing(listingUrl) {
         console.log('[MercariBot] Refreshing listing:', listingUrl);
-        try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await mouseWiggle(this.page);
-            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
-
-            const editBtn = await this.page.$('button:has-text("Edit"), a:has-text("Edit"), [data-testid*="edit"]');
-            if (!editBtn) {
-                console.log('[MercariBot] Edit button not found');
-                return false;
-            }
-
-            await humanClick(this.page, editBtn);
-            await this.page.waitForTimeout(randomDelay(2000, 3000));
-
-            // Find and click save/update without changing anything
-            const saveBtn = await this.page.$('button:has-text("Update"), button:has-text("Save"), button[type="submit"]');
-            if (saveBtn) {
-                await humanClick(this.page, saveBtn);
+        let lastError;
+        for (let attempt = 1; attempt <= 2; attempt++) {
+            try {
+                await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+                await mouseWiggle(this.page);
                 await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
-                this.stats.shares++;
-                writeAuditLog('refresh_listing', { listingUrl });
-                console.log('[MercariBot] Listing refreshed');
-                return true;
-            }
 
-            return false;
-        } catch (error) {
-            console.error('[MercariBot] Refresh error:', error.message);
-            this.stats.errors++;
-            return false;
+                const editBtn = await this.page.$('button:has-text("Edit"), a:has-text("Edit"), [data-testid*="edit"]');
+                if (!editBtn) {
+                    console.log('[MercariBot] Edit button not found');
+                    return false;
+                }
+
+                await humanClick(this.page, editBtn);
+                await this.page.waitForTimeout(randomDelay(2000, 3000));
+
+                // Find and click save/update without changing anything
+                const saveBtn = await this.page.$('button:has-text("Update"), button:has-text("Save"), button[type="submit"]');
+                if (saveBtn) {
+                    await humanClick(this.page, saveBtn);
+                    await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
+                    this.stats.shares++;
+                    writeAuditLog('refresh_listing', { listingUrl });
+                    console.log('[MercariBot] Listing refreshed');
+                    return true;
+                }
+
+                return false;
+            } catch (error) {
+                lastError = error;
+                console.error(`[MercariBot] Refresh error (attempt ${attempt}/2):`, error.message);
+                if (attempt < 2) {
+                    await this.page.waitForTimeout(randomDelay(1000, 2000));
+                }
+            }
         }
+        this.stats.errors++;
+        writeAuditLog('refresh_listing_failed', { listingUrl, error: lastError.message });
+        return false;
     }
 
     /**
@@ -191,34 +199,42 @@ export class MercariBot {
      */
     async relistItem(listingUrl) {
         console.log('[MercariBot] Relisting item:', listingUrl);
-        try {
-            await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
-            await mouseWiggle(this.page);
-            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
+        let lastError;
+        for (let attempt = 1; attempt <= 2; attempt++) {
+            try {
+                await this.page.goto(listingUrl, { waitUntil: 'networkidle' });
+                await mouseWiggle(this.page);
+                await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
 
-            // Look for relist/re-list button (Mercari sometimes has this)
-            const relistBtn = await this.page.$('button:has-text("Relist"), button:has-text("Re-list"), [data-testid*="relist"]');
-            if (relistBtn) {
-                await humanClick(this.page, relistBtn);
-                await this.page.waitForTimeout(randomDelay(2000, 3500));
+                // Look for relist/re-list button (Mercari sometimes has this)
+                const relistBtn = await this.page.$('button:has-text("Relist"), button:has-text("Re-list"), [data-testid*="relist"]');
+                if (relistBtn) {
+                    await humanClick(this.page, relistBtn);
+                    await this.page.waitForTimeout(randomDelay(2000, 3500));
 
-                const confirmBtn = await this.page.$('button:has-text("Confirm"), button:has-text("List"), button[type="submit"]');
-                if (confirmBtn) {
-                    await humanClick(this.page, confirmBtn);
-                    await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
-                    this.stats.relists++;
-                    writeAuditLog('relist_item', { listingUrl });
-                    console.log('[MercariBot] Item relisted');
-                    return true;
+                    const confirmBtn = await this.page.$('button:has-text("Confirm"), button:has-text("List"), button[type="submit"]');
+                    if (confirmBtn) {
+                        await humanClick(this.page, confirmBtn);
+                        await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.mercari.actionDelay));
+                        this.stats.relists++;
+                        writeAuditLog('relist_item', { listingUrl });
+                        console.log('[MercariBot] Item relisted');
+                        return true;
+                    }
+                }
+
+                return false;
+            } catch (error) {
+                lastError = error;
+                console.error(`[MercariBot] Relist error (attempt ${attempt}/2):`, error.message);
+                if (attempt < 2) {
+                    await this.page.waitForTimeout(randomDelay(1000, 2000));
                 }
             }
-
-            return false;
-        } catch (error) {
-            console.error('[MercariBot] Relist error:', error.message);
-            this.stats.errors++;
-            return false;
         }
+        this.stats.errors++;
+        writeAuditLog('relist_item_failed', { listingUrl, error: lastError.message });
+        return false;
     }
 
     getStats() {
