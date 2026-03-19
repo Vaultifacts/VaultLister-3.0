@@ -28105,6 +28105,114 @@ Object.assign(handlers, {
             const tags = (() => { try { return JSON.parse(t.tags); } catch { return []; } })();
             return '<div class="card"><div class="card-body"><div class="flex justify-between items-start mb-2"><h4 class="font-semibold text-sm">' + escapeHtml(t.name) + '</h4><span class="badge badge-sm">' + escapeHtml(t.platform || 'all') + '</span></div><p class="text-xs text-gray-500 mb-2">' + escapeHtml(t.description || '') + '</p><div class="flex items-center gap-2 mb-2"><span class="text-xs text-gray-400">' + components.icon('user', 10) + ' ' + escapeHtml(t.author_name || 'Unknown') + '</span><span class="text-xs text-gray-400">' + components.icon('download', 10) + ' ' + (t.install_count || 0) + '</span></div>' + (tags.length > 0 ? '<div class="flex gap-1 mb-2">' + tags.slice(0, 3).map(tag => '<span class="badge badge-sm" style="font-size:10px;">' + escapeHtml(tag) + '</span>').join('') + '</div>' : '') + '<button class="btn btn-xs btn-primary" onclick="handlers.installTemplate(\'' + t.id + '\', \'' + escapeHtml(t.name).replace(/'/g, "\\'") + '\')">' + components.icon('download', 12) + ' Install</button></div></div>';
         }).join('') + '</div>';
+    },
+
+    async openARPreview(itemId) {
+        const item = (store.state.inventory || []).find(i => i.id === itemId);
+        if (!item) {
+            toast.error('Item not found');
+            return;
+        }
+
+        const imgs = (() => { try { return JSON.parse(item.images || '[]'); } catch { return []; } })();
+        const imageSrc = item.primary_image || (imgs[0] && (typeof imgs[0] === 'string' ? imgs[0] : imgs[0].url)) || '';
+
+        if (!imageSrc) {
+            toast.error('This item has no images for AR preview');
+            return;
+        }
+
+        const arSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        const containerId = 'ar-preview-viewport';
+
+        modals.show(`
+            <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between;">
+                <h2 class="modal-title" style="display:flex;align-items:center;gap:0.5rem;">
+                    ${components.icon('eye', 18)} AR Preview — ${escapeHtml(item.title || 'Item')}
+                </h2>
+                <button class="modal-close" aria-label="Close AR preview" onclick="handlers._closeARPreview()">
+                    ${components.icon('x', 18)}
+                </button>
+            </div>
+            <div class="modal-body" style="padding:0;">
+                <div id="${containerId}" style="width:100%;height:420px;background:#111;position:relative;overflow:hidden;border-radius:0 0 var(--radius) var(--radius);">
+                    <div id="ar-preview-loading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:0.5rem;z-index:10;">
+                        <div class="loading-spinner" style="border-color:#fff;border-top-color:transparent;"></div>
+                        <p class="text-sm" style="color:#ccc;">${arSupported ? 'Starting camera…' : 'Loading preview…'}</p>
+                    </div>
+                </div>
+                <div style="padding:0.75rem 1rem;background:var(--gray-50);border-top:1px solid var(--gray-200);display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+                    <span class="text-xs text-gray-500">${arSupported ? 'Drag to reposition · Scroll/pinch to resize' : 'Camera not available — static overlay mode'}</span>
+                    <div style="margin-left:auto;display:flex;gap:0.5rem;">
+                        <button class="btn btn-sm btn-secondary" aria-label="Reset item position" onclick="handlers._arResetPosition()" style="min-height:44px;">
+                            ${components.icon('refresh-cw', 14)} Reset
+                        </button>
+                        ${arSupported ? `<button class="btn btn-sm btn-secondary" aria-label="Take snapshot" onclick="handlers._arTakeSnapshot()" style="min-height:44px;">
+                            ${components.icon('camera', 14)} Snapshot
+                        </button>` : ''}
+                        <button class="btn btn-sm btn-ghost" onclick="handlers._closeARPreview()" style="min-height:44px;">Close</button>
+                    </div>
+                </div>
+            </div>
+        `, 'modal-lg');
+
+        // Initialize AR after modal renders
+        requestAnimationFrame(async () => {
+            try {
+                if (arSupported) {
+                    const { ARPreview } = await import('/shared/utils/ar-preview.js');
+                    const ar = new ARPreview();
+                    store.setState({ _arInstance: ar });
+                    await ar.init(containerId);
+                    await ar.loadImage(imageSrc);
+                    await ar.start();
+                } else {
+                    const { SimpleAROverlay } = await import('/shared/utils/ar-preview.js');
+                    const overlay = new SimpleAROverlay(containerId);
+                    store.setState({ _arInstance: overlay });
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.style.background = 'repeating-conic-gradient(#ccc 0% 25%, #e5e5e5 0% 50%) 0 0 / 32px 32px';
+                        overlay.addOverlay(imageSrc, { x: 50, y: 50, scale: 0.5 });
+                    }
+                }
+                const loadingEl = document.getElementById('ar-preview-loading');
+                if (loadingEl) loadingEl.style.display = 'none';
+            } catch (err) {
+                const loadingEl = document.getElementById('ar-preview-loading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = `<div style="text-align:center;padding:1rem;color:#fca5a5;">${components.icon('alert-circle', 24)}<p class="text-sm mt-2">Could not start preview</p><p class="text-xs mt-1" style="color:#9ca3af;">${escapeHtml(err.message || 'Unknown error')}</p></div>`;
+                }
+                console.error('[AR] Preview error:', err);
+            }
+        });
+    },
+
+    _closeARPreview() {
+        const ar = store.state._arInstance;
+        if (ar && typeof ar.stop === 'function') ar.stop();
+        store.setState({ _arInstance: null });
+        modals.close();
+    },
+
+    _arResetPosition() {
+        const ar = store.state._arInstance;
+        if (ar && typeof ar.reset === 'function') ar.reset();
+    },
+
+    _arTakeSnapshot() {
+        const ar = store.state._arInstance;
+        if (!ar || typeof ar.takeSnapshot !== 'function') return;
+        try {
+            const dataUrl = ar.takeSnapshot();
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = 'ar-preview-snapshot.png';
+            a.click();
+            toast.success('Snapshot saved');
+        } catch (e) {
+            toast.error('Failed to take snapshot');
+        }
     }
 });
 

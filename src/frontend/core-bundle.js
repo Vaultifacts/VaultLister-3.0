@@ -15203,6 +15203,9 @@ const pageChunkMap = {
 
     // admin
     'admin-metrics': 'admin',
+
+    // AR Preview — no separate chunk (lives in core deferred scripts)
+    'ar-preview': null,
 };
 
 // Track which chunks are loaded
@@ -15217,7 +15220,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '6fc9c929';
+    const v = '07630b8f';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -26694,6 +26697,14 @@ async function initApp() {
         renderApp(pages.reports());
         await handlers.loadReportsData();
         renderApp(pages.reports());
+    });
+
+    // AR Preview
+    router.register('ar-preview', async () => {
+        if (!store.state.inventory || store.state.inventory.length === 0) {
+            await handlers.loadInventory().catch(() => {});
+        }
+        renderApp(pages.arPreview());
     });
 
     // Company section pages

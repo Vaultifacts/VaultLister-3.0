@@ -334,6 +334,14 @@ async function initApp() {
         renderApp(pages.reports());
     });
 
+    // AR Preview
+    router.register('ar-preview', async () => {
+        if (!store.state.inventory || store.state.inventory.length === 0) {
+            await handlers.loadInventory().catch(() => {});
+        }
+        renderApp(pages.arPreview());
+    });
+
     // Company section pages
     router.register('about', () => renderApp(pages.about()));
     router.register('terms', () => renderApp(pages.terms()));

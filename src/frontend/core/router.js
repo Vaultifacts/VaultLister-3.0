@@ -86,6 +86,9 @@ const pageChunkMap = {
 
     // admin
     'admin-metrics': 'admin',
+
+    // AR Preview — no separate chunk (lives in core deferred scripts)
+    'ar-preview': null,
 };
 
 // Track which chunks are loaded

@@ -17285,6 +17285,68 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             </div>
         `;
     },
+
+    arPreview() {
+        const items = (store.state.inventory || []).filter(i => {
+            const imgs = (() => { try { return JSON.parse(i.images || '[]'); } catch { return []; } })();
+            return imgs.length > 0 || i.primary_image;
+        });
+        const arSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+        return `
+            <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+                <div>
+                    <h1 class="page-title" style="display:flex;align-items:center;gap:0.5rem;">
+                        ${components.icon('eye', 22)} AR Preview
+                    </h1>
+                    <p class="page-subtitle text-gray-500 text-sm mt-1">Visualize inventory items in your environment using your camera</p>
+                </div>
+                ${!arSupported ? `<span class="badge badge-warning" style="font-size:12px;">${components.icon('alert-triangle', 14)} Camera not available</span>` : ''}
+            </div>
+
+            ${!arSupported ? `
+            <div class="card mb-4" style="border-left:4px solid var(--warning-500);">
+                <div class="card-body" style="display:flex;align-items:center;gap:0.75rem;">
+                    ${components.icon('camera-off', 20)}
+                    <div>
+                        <p class="font-semibold text-sm">AR preview requires camera access</p>
+                        <p class="text-xs text-gray-500 mt-1">Your browser or device does not support camera access (getUserMedia). You can still view items in the static overlay mode.</p>
+                    </div>
+                </div>
+            </div>` : ''}
+
+            ${items.length === 0 ? `
+            <div class="card">
+                <div class="card-body text-center py-12">
+                    ${components.icon('image', 40)}
+                    <p class="mt-3 font-semibold text-gray-600">No items with images</p>
+                    <p class="text-sm text-gray-400 mt-1">Add images to your inventory items to use AR Preview.</p>
+                    <button class="btn btn-primary mt-4" onclick="router.navigate('inventory')">Go to Inventory</button>
+                </div>
+            </div>` : `
+            <div class="grid grid-cols-3 gap-4" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                ${items.map(item => {
+                    const imgs = (() => { try { return JSON.parse(item.images || '[]'); } catch { return []; } })();
+                    const thumb = item.primary_image || (imgs[0] && (typeof imgs[0] === 'string' ? imgs[0] : imgs[0].url)) || '';
+                    return `
+                    <div class="card" style="overflow:hidden;">
+                        <div style="aspect-ratio:1;background:var(--gray-100);overflow:hidden;position:relative;">
+                            ${thumb ? `<img src="${escapeHtml(thumb)}" alt="${escapeHtml(item.title || '')}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray-400);">${components.icon('image', 32)}</div>`}
+                        </div>
+                        <div class="card-body" style="padding:0.75rem;">
+                            <p class="font-semibold text-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(item.title || '')}">${escapeHtml(item.title || 'Untitled')}</p>
+                            <p class="text-xs text-gray-500 mt-0.5">${escapeHtml(item.category || '')}</p>
+                            <button class="btn btn-primary btn-sm mt-2 w-full" style="min-height:44px;"
+                                aria-label="Open AR preview for ${escapeHtml(item.title || 'this item')}"
+                                onclick="handlers.openARPreview('${escapeHtml(item.id)}')">
+                                ${components.icon('eye', 14)} AR Preview
+                            </button>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>`}
+        `;
+    },
 });
 
 window.__pagesDeferredLoaded = true;

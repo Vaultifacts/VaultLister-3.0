@@ -396,14 +396,168 @@ async function syncSales(userId, settings, direction) {
 }
 
 /**
- * Sync notes (placeholder - notes table may need to be created)
+ * Sync inventory notes (inventory.notes column) with a Notion notes database.
+ * Each inventory item that has a non-empty notes value gets its own Notion page.
+ * On pull, only the notes column of the matched inventory item is updated.
  */
 async function syncNotes(userId, settings, direction) {
     const results = { pushed: 0, pulled: 0, conflicts: 0, errors: [] };
+    const databaseId = settings.notes_database_id;
+    const conflictStrategy = settings.conflict_strategy || 'manual';
 
-    // Notes sync would follow similar pattern
-    // For now, return empty results as notes table may not exist
+    // No notes database configured — nothing to sync
+    if (!databaseId) {
+        logger.info(`Notion notes sync skipped for user ${userId}: no notes_database_id configured`);
+        return { ...results, message: 'Notes sync: no notes_database_id configured — skipping' };
+    }
+
+    try {
+        // PUSH: VaultLister -> Notion
+        if (direction === 'push' || direction === 'bidirectional') {
+            const localItems = query.all(
+                `SELECT id, title, notes, updated_at FROM inventory
+                 WHERE user_id = ? AND deleted_at IS NULL AND notes IS NOT NULL AND notes != ''`,
+                [userId]
+            );
+
+            for (const item of localItems) {
+                try {
+                    const syncMap = notionService.getSyncMap(userId, 'note', item.id);
+
+                    if (syncMap) {
+                        if (direction === 'bidirectional') {
+                            const conflict = await checkForConflict(
+                                userId,
+                                'note',
+                                item,
+                                syncMap,
+                                conflictStrategy
+                            );
+                            if (conflict) {
+                                results.conflicts++;
+                                continue;
+                            }
+                        }
+
+                        await notionService.updatePage(userId, syncMap.notion_page_id, mapNoteToNotion(item));
+
+                        notionService.upsertSyncMap(userId, 'note', item.id, syncMap.notion_page_id, {
+                            local_updated_at: item.updated_at,
+                            sync_status: 'synced'
+                        });
+                    } else {
+                        const page = await notionService.createPage(userId, databaseId, mapNoteToNotion(item));
+
+                        notionService.upsertSyncMap(userId, 'note', item.id, page.id, {
+                            local_updated_at: item.updated_at,
+                            notion_updated_at: page.last_edited_time,
+                            sync_status: 'synced'
+                        });
+                    }
+
+                    results.pushed++;
+                } catch (error) {
+                    results.errors.push({ inventory_id: item.id, error: error.message });
+                }
+            }
+        }
+
+        // PULL: Notion -> VaultLister (updates the notes column only)
+        if (direction === 'pull' || direction === 'bidirectional') {
+            let cursor = undefined;
+
+            do {
+                const response = await notionService.queryDatabase(userId, databaseId, {
+                    start_cursor: cursor,
+                    page_size: 100
+                });
+
+                for (const notionPage of response.results) {
+                    try {
+                        const notionData = mapNotionToNote(notionPage);
+                        const syncMap = notionService.getSyncMapByNotionId(userId, 'note', notionPage.id);
+
+                        if (!syncMap) {
+                            // Only import Notion-originated notes when a VaultLister ID is present
+                            // (avoids creating orphan inventory rows from arbitrary Notion pages)
+                            continue;
+                        }
+
+                        if (direction === 'bidirectional') {
+                            const localItem = query.get(
+                                'SELECT id, notes, updated_at FROM inventory WHERE id = ? AND deleted_at IS NULL',
+                                [syncMap.local_id]
+                            );
+
+                            if (localItem) {
+                                const conflict = await checkForConflict(
+                                    userId,
+                                    'note',
+                                    localItem,
+                                    syncMap,
+                                    conflictStrategy,
+                                    notionPage
+                                );
+
+                                if (conflict) {
+                                    results.conflicts++;
+                                    continue;
+                                }
+                            }
+                        }
+
+                        const now = new Date().toISOString();
+                        query.run(
+                            `UPDATE inventory SET notes = ?, updated_at = ? WHERE id = ? AND user_id = ?`,
+                            [notionData.notes, now, syncMap.local_id, userId]
+                        );
+
+                        notionService.upsertSyncMap(userId, 'note', syncMap.local_id, notionPage.id, {
+                            notion_updated_at: notionPage.last_edited_time,
+                            sync_status: 'synced'
+                        });
+
+                        results.pulled++;
+                    } catch (error) {
+                        results.errors.push({ notion_page_id: notionPage.id, error: error.message });
+                    }
+                }
+
+                cursor = response.has_more ? response.next_cursor : undefined;
+            } while (cursor);
+        }
+
+    } catch (error) {
+        results.errors.push({ error: error.message });
+    }
+
     return results;
+}
+
+/**
+ * Map a VaultLister inventory item (notes field) to Notion page properties.
+ */
+function mapNoteToNotion(item) {
+    return {
+        'Title': { title: [{ text: { content: item.title || 'Untitled' } }] },
+        'VaultLister Inventory ID': { rich_text: [{ text: { content: item.id } }] },
+        'Notes': { rich_text: [{ text: { content: (item.notes || '').substring(0, 2000) } }] }
+    };
+}
+
+/**
+ * Map a Notion page back to a VaultLister note object.
+ */
+function mapNotionToNote(notionPage) {
+    const props = notionPage.properties || {};
+    const richText = (key) => {
+        const arr = props[key]?.rich_text;
+        return Array.isArray(arr) && arr.length > 0 ? arr.map(r => r.plain_text || '').join('') : null;
+    };
+    return {
+        notes: richText('Notes'),
+        vaultlister_inventory_id: richText('VaultLister Inventory ID')
+    };
 }
 
 /**
