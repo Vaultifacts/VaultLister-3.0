@@ -267,3 +267,17 @@ Commits: d003af4 (infra) → 1e7e2eb (SW v4.1.0) → 1b1c85d (Dockerfile fix) �
 Post-deploy: 7/7 checks pass; auth+security tests: 43/58 pass (15 pre-existing, not our changes)
 Dockerfile: groupadd/useradd (Debian); python3+make+g++ in builder for better-sqlite3
 Tests must run against local bun server (PORT=3100 via start-test-bg.ps1), NOT Docker (rate limiting enabled in prod)
+
+## Frontend Accessibility Fixes (2026-03-19) — commit b8bf0b0
+Fixed 4 audit items (F-12, F-13, F-16, F-20):
+- **F-12: Keyboard navigation in dropdowns** — date range picker now supports ArrowUp/ArrowDown/Escape; date-range-input changed from div to button with aria-haspopup/aria-expanded
+- **F-13: Visual aria-expanded indicator** — added CSS `button[aria-expanded="true"] svg { transform: rotate(90deg); }` to rotate carets when expanded
+- **F-16: Missing alt attributes** — added `alt="Listing preview image ${idx + 1}"` to img at line 62152
+- **F-20: Toast announcements** — added `aria-atomic="true"` to individual toast elements for proper screen reader announcement
+
+Changes:
+- src/frontend/app.js: date-range-input button with ARIA attrs, keyboard handlers for presets, alt text for image
+- src/frontend/core/toast.js: aria-atomic attribute on toasts
+- src/frontend/styles/main.css: CSS rule for rotated chevrons on aria-expanded="true"
+
+All tests passing (auth.test.js 26/26, security.test.js 32/32, E2E 620+ tests pass)
