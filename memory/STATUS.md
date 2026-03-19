@@ -3,7 +3,7 @@
 
 ## Current State
 - **Branch:** master
-- **Last commit:** 2d9490e — feat: Google Drive + Calendar OAuth + Outlook integration plumbing
+- **Last commit:** 32f30f2 — [AUTO] fix: circuit breaker fallback + state reset (A-04, A-05)
 - **Production URL:** https://vaultlister.com — LIVE ✅
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **SSH access:** `ssh -i ssh-key-2026-03-15.key ubuntu@204.216.105.105` (user is `ubuntu`, NOT `openclawuser`)
@@ -14,11 +14,21 @@
 - **Stripe:** Checkout + webhooks configured (keys in .env on server, not local)
 - **Poshmark:** Stealth bot operational ✅ — handle: `@raverealm`, country: `ca`
 - **E2E baseline:** 674/688 passing (100% non-skipped), 0 failed, 14 skipped — 2026-03-18
-- **As of:** 2026-03-18
+- **As of:** 2026-03-19
 
 ## Last Completed Work (2026-03-19)
 
-### Session Summary — 4 commits, all deployed to production
+### Session Summary — Circuit Breaker Audit Fixes (1 commit)
+
+**Commit 32f30f2 — Circuit Breaker Fallback + State Reset (A-04, A-05)**
+- A-04 fix: When circuit is OPEN and no fallback provided, return user-friendly error object instead of throwing
+- A-04 fix: When HALF_OPEN test request limit reached, return user-friendly error object instead of throwing
+- A-05 fix: Reset halfOpenAttempts counter when recovery test fails in HALF_OPEN state
+- Updated test to verify new fallback behavior (no longer throws)
+- All 12 circuit breaker tests passing ✅
+- All 33 AI tests passing ✅
+
+### Previous: Cross-Listing Automation (4 commits)
 
 **Commit 3b0bbad — Cross-Listing Automation (6 gaps fixed)**
 - Deleted dead stub `submitAdvancedCrosslist` + old modal
