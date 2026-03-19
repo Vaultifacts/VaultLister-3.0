@@ -3,7 +3,7 @@
 
 ## Current State
 - **Branch:** master
-- **Last commit:** 6e6ac72 — [AUTO] fix: frontend audit items F-03, F-04, F-07, F-08 — add JWT token refresh on 401
+- **Last commit:** 76bb10e — [AUTO] fix: F-02 & F-19 — store mutations via setState + search listbox accessibility
 - **Production URL:** https://vaultlister.com — LIVE ✅
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **SSH access:** `ssh -i ssh-key-2026-03-15.key ubuntu@204.216.105.105` (user is `ubuntu`, NOT `openclawuser`)
@@ -18,7 +18,20 @@
 
 ## Last Completed Work (2026-03-19)
 
-### Session Summary — Frontend Audit Fixes (1 commit)
+### Session Summary — Frontend Audit Fixes: Store Mutations & Accessibility (1 commit)
+
+**Commit 76bb10e — Frontend Audit Items F-02 & F-19 (2 targeted fixes)**
+- **F-02 fix:** Replace direct `store.state` mutations with `store.setState()`:
+  - `src/frontend/core/auth.js` — useSessionStorage bypass
+  - `src/frontend/handlers/handlers-deferred.js` — darkModePreview, globalSearchItems, globalSearchIndex, globalSearchFiltered
+  - `src/frontend/handlers/handlers-settings-account.js` — darkModePreview, globalSearchItems, globalSearchIndex, globalSearchFiltered
+- **F-19 fix:** Global search box keyboard accessibility:
+  - Added `role="listbox"` to results container
+  - Added `role="option"` + `aria-selected` to individual items
+  - Arrow key & Enter navigation already working; now fully accessible
+- Auth tests: 26/26 pass ✅
+
+### Previous: Frontend Audit Fixes (1 commit)
 
 **Commit 6e6ac72 — Frontend Audit Items F-03, F-04, F-07, F-08 (4 targeted fixes)**
 - F-03 fix: Bulk photo modal state now clears batchPhotoTransformations and selectedImages on close
