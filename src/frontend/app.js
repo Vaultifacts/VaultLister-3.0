@@ -2200,11 +2200,11 @@ const dateRangePicker = {
 
         return `
             <div class="date-range-picker" id="${id}">
-                <div class="date-range-input" onclick="dateRangePicker.toggle('${id}')">
+                <button type="button" class="date-range-input" onclick="dateRangePicker.toggle('${id}')" aria-haspopup="true" aria-expanded="false">
                     ${components.icon('calendar', 16)}
                     <span class="date-range-text">${displayText}</span>
                     ${components.icon('chevron-down', 16)}
-                </div>
+                </button>
                 <div class="date-range-dropdown">
                     ${presets ? `
                         <div class="date-range-presets">
@@ -2228,7 +2228,16 @@ const dateRangePicker = {
     toggle(id) {
         const picker = document.getElementById(id);
         const dropdown = picker.querySelector('.date-range-dropdown');
+        const button = picker.querySelector('.date-range-input');
         dropdown.classList.toggle('show');
+        button.setAttribute('aria-expanded', dropdown.classList.contains('show'));
+
+        if (dropdown.classList.contains('show')) {
+            const presetButtons = dropdown.querySelectorAll('.date-range-preset');
+            if (presetButtons.length > 0) {
+                presetButtons[0].focus();
+            }
+        }
     },
 
     setPreset(id, preset) {
@@ -7715,6 +7724,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 requestAnimationFrame(() => {
                     trigger.setAttribute('aria-expanded', dropdown.classList.contains('open'));
                 });
+            }
+        }
+    });
+
+    // Keyboard navigation for date range picker presets
+    document.addEventListener('keydown', (e) => {
+        const presetButton = e.target.closest('.date-range-preset');
+        if (presetButton && (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Escape')) {
+            e.preventDefault();
+            const presetsContainer = presetButton.closest('.date-range-presets');
+            const allButtons = presetsContainer.querySelectorAll('.date-range-preset');
+            const currentIndex = Array.from(allButtons).indexOf(presetButton);
+
+            if (e.key === 'ArrowDown') {
+                const nextButton = allButtons[(currentIndex + 1) % allButtons.length];
+                nextButton.focus();
+            } else if (e.key === 'ArrowUp') {
+                const prevButton = allButtons[(currentIndex - 1 + allButtons.length) % allButtons.length];
+                prevButton.focus();
+            } else if (e.key === 'Escape') {
+                const picker = presetButton.closest('.date-range-picker');
+                const triggerButton = picker.querySelector('.date-range-input');
+                triggerButton.focus();
+                picker.querySelector('.date-range-dropdown').classList.remove('show');
+                triggerButton.setAttribute('aria-expanded', 'false');
             }
         }
     });
@@ -62149,7 +62183,7 @@ const handlers = {
             reader.onload = (e) => {
                 const img = document.createElement('div');
                 img.style.cssText = 'width:64px;height:64px;border-radius:6px;overflow:hidden;position:relative;border:2px solid var(--gray-200);';
-                img.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">
+                img.innerHTML = `<img src="${e.target.result}" alt="Listing preview image ${idx + 1}" style="width:100%;height:100%;object-fit:cover;">
                     <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:10px;text-align:center;padding:1px;">${idx + 1}</span>`;
                 container.appendChild(img);
 

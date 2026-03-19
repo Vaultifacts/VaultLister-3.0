@@ -25,6 +25,7 @@ const toast = {
         toastEl.className = `toast toast-${type}`;
         toastEl.setAttribute('role', type === 'error' ? 'alert' : 'status');
         toastEl.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+        toastEl.setAttribute('aria-atomic', 'true');
 
         toastEl.innerHTML = `
             <span class="toast-icon">${this.getIcon(type)}</span>

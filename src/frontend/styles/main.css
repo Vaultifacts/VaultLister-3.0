@@ -2536,6 +2536,12 @@ html.desktop-lock .flex {
     background: var(--primary-700);
 }
 
+/* aria-expanded state indicator for dropdowns and collapsible buttons */
+button[aria-expanded="true"] svg,
+button[aria-expanded="true"] .chevron {
+    transform: rotate(90deg);
+}
+
 /* ============================================
    Components - Forms
    ============================================ */
