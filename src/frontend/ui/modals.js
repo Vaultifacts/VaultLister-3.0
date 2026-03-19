@@ -1085,205 +1085,6 @@ const modals = {
         `, 'modal-lg');
     },
 
-    advancedCrosslist(itemIds) {
-        // Get selected items from inventory
-        const items = itemIds.map(id => store.state.inventory.find(i => i.id === id)).filter(Boolean);
-        const firstItem = items[0] || {};
-
-        this.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">Advanced Cross-List: ${items.length} Item(s)</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                <form id="advanced-crosslist-form" onsubmit="handlers.submitAdvancedCrosslist(event, '${itemIds.join(',')}')">
-                    <!-- Platform Selection -->
-                    <div style="margin-bottom: 24px;">
-                        <h3 style="font-weight: 600; margin-bottom: 12px;">Select Platforms</h3>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                            ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(platform => `
-                                <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid var(--gray-200); border-radius: 8px; cursor: pointer;" class="platform-select-label">
-                                    <input type="checkbox" name="platforms" value="${platform}" class="platform-checkbox" onchange="handlers.togglePlatformPanel('${platform}', this.checked)">
-                                    ${components.platformBadge(platform)}
-                                </label>
-                            `).join('')}
-                        </div>
-                    </div>
-
-                    <!-- Platform-Specific Settings -->
-                    <div id="platform-settings-container">
-                        ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(platform => `
-                            <div id="panel-${platform}" class="platform-panel hidden" style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-                                    ${components.platformBadge(platform)}
-                                    <h4 style="font-weight: 600; margin: 0;">${platform.charAt(0).toUpperCase() + platform.slice(1)} Settings</h4>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Title</label>
-                                        <input type="text" name="${platform}_title" class="form-input" value="${escapeHtml(firstItem.title || '')}" placeholder="Platform-specific title">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Price ($)</label>
-                                        <input type="number" name="${platform}_price" class="form-input" value="${firstItem.listing_price || ''}" step="0.01" min="0">
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Description</label>
-                                    <textarea name="${platform}_description" class="form-input" rows="3" placeholder="Platform-specific description">${escapeHtml(firstItem.description || '')}</textarea>
-                                </div>
-
-                                ${platform === 'poshmark' ? `
-                                    <div class="grid grid-cols-3 gap-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Category</label>
-                                            <select name="${platform}_category" class="form-select">
-                                                <option value="">Select...</option>
-                                                <option value="Women">Women</option>
-                                                <option value="Men">Men</option>
-                                                <option value="Kids">Kids</option>
-                                                <option value="Home">Home</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Size</label>
-                                            <input type="text" name="${platform}_size" class="form-input" value="${escapeHtml(firstItem.size || '')}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Original Price</label>
-                                            <input type="number" name="${platform}_original_price" class="form-input" step="0.01">
-                                        </div>
-                                    </div>
-                                ` : ''}
-
-                                ${platform === 'ebay' ? `
-                                    <div class="grid grid-cols-3 gap-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Listing Type</label>
-                                            <select name="${platform}_listing_type" class="form-select">
-                                                <option value="fixed">Fixed Price</option>
-                                                <option value="auction">Auction</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Condition</label>
-                                            <select name="${platform}_condition" class="form-select">
-                                                <option value="new">New</option>
-                                                <option value="open_box">Open Box</option>
-                                                <option value="used">Pre-owned</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Duration</label>
-                                            <select name="${platform}_duration" class="form-select">
-                                                <option value="GTC">Good 'Til Cancelled</option>
-                                                <option value="7">7 Days</option>
-                                                <option value="30">30 Days</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                ` : ''}
-
-                                ${platform === 'whatnot' ? `
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Shipping</label>
-                                            <select name="${platform}_shipping" class="form-select">
-                                                <option value="seller">Seller Pays</option>
-                                                <option value="buyer">Buyer Pays</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Smart Pricing</label>
-                                            <label class="flex items-center gap-2">
-                                                <input type="checkbox" name="${platform}_smart_pricing">
-                                                <span class="text-sm">Enable Smart Pricing</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                ` : ''}
-
-                                ${platform === 'depop' ? `
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Style Tags</label>
-                                            <input type="text" name="${platform}_tags" class="form-input" placeholder="vintage, y2k, streetwear">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Brand</label>
-                                            <input type="text" name="${platform}_brand" class="form-input" value="${escapeHtml(firstItem.brand || '')}">
-                                        </div>
-                                    </div>
-                                ` : ''}
-
-                                ${platform === 'shopify' ? `
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Category</label>
-                                            <select name="${platform}_category" class="form-select">
-                                                <option value="tops">Tops</option>
-                                                <option value="bottoms">Bottoms</option>
-                                                <option value="outerwear">Outerwear</option>
-                                                <option value="footwear">Footwear</option>
-                                                <option value="tailoring">Tailoring</option>
-                                                <option value="accessories">Accessories</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Designer</label>
-                                            <input type="text" name="${platform}_designer" class="form-input" value="${escapeHtml(firstItem.brand || '')}">
-                                        </div>
-                                    </div>
-                                ` : ''}
-
-                                ${platform === 'facebook' ? `
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div class="form-group">
-                                            <label class="form-label">Location</label>
-                                            <input type="text" name="${platform}_location" class="form-input" placeholder="City, State">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Availability</label>
-                                            <select name="${platform}_availability" class="form-select">
-                                                <option value="in_stock">In Stock</option>
-                                                <option value="available_for_order">Available for Order</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                ` : ''}
-
-                                <!-- Platform Images Section -->
-                                <div class="form-group" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gray-200);">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <label class="form-label" style="margin-bottom: 0;">Additional Images</label>
-                                        <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.openImageBankPickerForPlatform('${platform}')">
-                                            ${components.icon('folder', 14)} Browse Image Bank
-                                        </button>
-                                    </div>
-                                    <p class="text-xs text-gray-500 mb-2">Add platform-specific images from your Image Bank</p>
-                                    <div id="${platform}-selected-images" class="flex flex-wrap gap-2"></div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <!-- No platforms selected message -->
-                    <div id="no-platforms-message" class="text-center py-8 text-gray-500">
-                        <p>Select platforms above to customize listing settings</p>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                <button class="btn btn-primary" onclick="document.getElementById('advanced-crosslist-form').requestSubmit()">
-                    ${components.icon('list', 16)} Cross-List to Selected Platforms
-                </button>
-            </div>
-        `);
-    },
-
     chooseListingMode() {
         this.show(`
             <div class="modal-header">
@@ -1904,8 +1705,8 @@ const modals = {
                     <!-- Platform Selection -->
                     <div class="mb-6">
                         <label class="form-label">Select Platforms</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(platform => `
+                        <div class="grid grid-cols-3 gap-3">
+                            ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'whatnot', 'shopify', 'facebook'].map(platform => `
                                 <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style="border-color: var(--gray-200)">
                                     <input type="checkbox" class="platform-checkbox" name="platforms" value="${platform}">
                                     ${components.platformBadge(platform)}
@@ -1966,7 +1767,7 @@ const modals = {
                         </div>
 
                         <div id="platform-customization-container">
-                            ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(platform => `
+                            ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'whatnot', 'shopify', 'facebook'].map(platform => `
                                 <div class="platform-customization-panel hidden" data-platform="${platform}">
                                     <div class="flex items-center gap-3 mb-4 pb-3 border-b" style="border-color: var(--gray-200)">
                                         ${components.platformBadge(platform)}

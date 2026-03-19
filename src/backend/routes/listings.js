@@ -1401,9 +1401,32 @@ export async function listingsRouter(ctx) {
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), id, user.id]
             );
+            try {
+                const { websocketService } = await import('../services/websocket.js');
+                websocketService.sendToUser(user.id, {
+                    type: 'listing.published',
+                    listingId: id,
+                    platform: listing.platform,
+                    platformListingId: result.listingId,
+                    platformUrl: result.listingUrl
+                });
+            } catch (wsErr) {
+                logger.warn('[Listings] WebSocket notify failed', user?.id, { detail: wsErr.message });
+            }
             return { status: 200, data: { success: true, listingId: result.listingId, listingUrl: result.listingUrl } };
         } catch (error) {
             logger.error('[Listings] Publish error', user?.id, { platform: listing.platform, detail: error.message });
+            try {
+                const { websocketService } = await import('../services/websocket.js');
+                websocketService.sendToUser(user.id, {
+                    type: 'listing.publish_failed',
+                    listingId: id,
+                    platform: listing.platform,
+                    error: error.message
+                });
+            } catch (wsErr) {
+                // Silent — WS failure shouldn't block error response
+            }
             return { status: 500, data: { error: error.message } };
         }
     }

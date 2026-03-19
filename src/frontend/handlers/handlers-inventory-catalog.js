@@ -7084,6 +7084,8 @@ Object.assign(handlers, {
         const summary = {};
         for (const p of PLATFORMS) summary[p] = { success: 0, fail: 0, lastError: null };
 
+        const failedItems = [];
+
         try {
             await api.ensureCSRFToken();
 
@@ -7092,17 +7094,19 @@ Object.assign(handlers, {
                     try {
                         const crosslistResp = await api.post('/listings/crosslist', { itemIds: [inventoryId], platforms: [platform] });
                         const listingId = crosslistResp?.created?.[0]?.id || crosslistResp?.skipped?.[0]?.existingId;
-                        if (!listingId) { summary[platform].fail++; summary[platform].lastError = 'Could not create listing'; continue; }
+                        if (!listingId) { summary[platform].fail++; summary[platform].lastError = 'Could not create listing'; failedItems.push({ listingId: null, platform }); continue; }
                         await api.post(`/listings/${listingId}/${PUBLISH_ROUTES[platform]}`, {});
                         summary[platform].success++;
                     } catch (err) {
                         summary[platform].fail++;
                         summary[platform].lastError = err.message || 'Unknown error';
+                        failedItems.push({ listingId: null, platform });
                     }
                 }
             }
 
             await handlers.loadListings();
+            store.setState({ lastPublishFailures: failedItems });
             if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
 
             handlers.showPublishAllResultsModal(summary, selectedItemIds.length);
@@ -7142,7 +7146,7 @@ Object.assign(handlers, {
         }).join('');
 
         const retryBtn = failedPlatforms.length > 0
-            ? `<button class="btn btn-outline-error btn-sm" onclick="document.getElementById('publish-all-results-modal').remove(); handlers.publishSelectedToAll();">
+            ? `<button class="btn btn-outline-error btn-sm" onclick="document.getElementById('publish-all-results-modal').remove(); handlers.retryFailedPublishes();">
                    ${components.icon('refresh-cw', 14)} Retry Failed Platforms
                </button>`
             : '';
@@ -7176,6 +7180,53 @@ Object.assign(handlers, {
                 </div>
             </div>`;
         document.body.appendChild(modal);
+    },
+
+    retryFailedPublishes: async function() {
+        const failures = store.state.lastPublishFailures || [];
+        if (failures.length === 0) {
+            toast.info('No failed publishes to retry');
+            return;
+        }
+
+        const PUBLISH_ROUTES = {
+            ebay: 'publish-ebay', etsy: 'publish-etsy', poshmark: 'publish-poshmark',
+            mercari: 'publish-mercari', depop: 'publish-depop', grailed: 'publish-grailed',
+            facebook: 'publish-facebook', whatnot: 'publish-whatnot', shopify: 'publish-shopify'
+        };
+
+        toast.info(`Retrying ${failures.length} failed publish(es)...`);
+
+        const summary = {};
+        const stillFailed = [];
+
+        for (const { listingId, platform } of failures) {
+            if (!summary[platform]) summary[platform] = { success: 0, fail: 0, lastError: '' };
+
+            const publishRoute = PUBLISH_ROUTES[platform];
+            if (!publishRoute || !listingId) {
+                summary[platform].fail++;
+                summary[platform].lastError = listingId ? `Unknown platform: ${platform}` : 'No listing ID available';
+                stillFailed.push({ listingId, platform });
+                continue;
+            }
+
+            try {
+                await api.post(`/listings/${listingId}/${publishRoute}`);
+                summary[platform].success++;
+            } catch (err) {
+                summary[platform].fail++;
+                summary[platform].lastError = err.message || 'Publish failed';
+                stillFailed.push({ listingId, platform });
+            }
+        }
+
+        store.setState({ lastPublishFailures: stillFailed });
+        await handlers.loadListings();
+
+        if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
+
+        handlers.showPublishAllResultsModal(summary, failures.length);
     },
 
 
@@ -7311,94 +7362,6 @@ Object.assign(handlers, {
     },
 
 
-    submitAdvancedCrosslist: async function(event, itemIds) {
-        event.preventDefault();
-
-        const form = event.target;
-        const formData = new FormData(form);
-
-        // Get selected platforms
-        const platforms = formData.getAll('platforms');
-        if (platforms.length === 0) {
-            return toast.warning('Please select at least one platform');
-        }
-
-        // Collect platform-specific data
-        const platformData = {};
-        platforms.forEach(platform => {
-            platformData[platform] = {
-                title: formData.get(`${platform}_title`),
-                price: parseFloat(formData.get(`${platform}_price`)) || 0,
-                description: formData.get(`${platform}_description`),
-                // Platform-specific fields
-                ...(platform === 'poshmark' && {
-                    category: formData.get(`${platform}_category`),
-                    size: formData.get(`${platform}_size`),
-                    original_price: formData.get(`${platform}_original_price`)
-                }),
-                ...(platform === 'ebay' && {
-                    listing_type: formData.get(`${platform}_listing_type`),
-                    condition: formData.get(`${platform}_condition`),
-                    duration: formData.get(`${platform}_duration`)
-                }),
-                ...(platform === 'whatnot' && {
-                    shipping: formData.get(`${platform}_shipping`),
-                    smart_pricing: formData.get(`${platform}_smart_pricing`) === 'on'
-                }),
-                ...(platform === 'depop' && {
-                    tags: formData.get(`${platform}_tags`),
-                    brand: formData.get(`${platform}_brand`)
-                }),
-                ...(platform === 'shopify' && {
-                    category: formData.get(`${platform}_category`),
-                    designer: formData.get(`${platform}_designer`)
-                }),
-                ...(platform === 'facebook' && {
-                    location: formData.get(`${platform}_location`),
-                    availability: formData.get(`${platform}_availability`)
-                })
-            };
-        });
-
-        try {
-            // Show loading
-            toast.info(`Cross-listing to ${platforms.length} platform(s)...`);
-
-            // In a real implementation, this would call the backend API
-            // For now, we'll simulate creating listings
-            const itemIdArray = itemIds.split(',');
-
-            for (const itemId of itemIdArray) {
-                for (const platform of platforms) {
-                    const data = platformData[platform];
-                    const newListing = {
-                        id: `lst-${Date.now()}-${platform}`,
-                        inventory_id: itemId,
-                        platform: platform,
-                        title: data.title,
-                        price: data.price,
-                        description: data.description,
-                        status: 'active',
-                        listed_at: new Date().toISOString(),
-                        views: 0,
-                        likes: 0
-                    };
-
-                    // Add to state
-                    const currentListings = store.state.listings || [];
-                    store.setState({ listings: [...currentListings, newListing] });
-                }
-            }
-
-            modals.close();
-            toast.success(`Successfully cross-listed ${itemIdArray.length} item(s) to ${platforms.length} platform(s)!`);
-
-            // Refresh the page
-            renderApp(pages.crosslist());
-        } catch (error) {
-            toast.error('Failed to cross-list: ' + error.message);
-        }
-    },
 
 
     previewListingImages: function(input, platform) {
@@ -8041,36 +8004,71 @@ Object.assign(handlers, {
                 }
             }
 
-            // Submit batch listing creation
-            await api.post('/listings/batch', { listings });
-
-            toast.success(`Created ${listings.length} listings across ${selectedPlatforms.length} platform(s)!`);
-            modals.close();
-            await handlers.loadListings();
-
-            // Clear selection
-            store.setState({ crosslistSelectedItems: [] });
-
-            // Navigate to listings page
-            router.navigate('listings');
-        } catch (error) {
-            // Retry once if CSRF error
-            if (error.message && error.message.includes('CSRF')) {
-                try {
-                    await api.ensureCSRFToken(true); // Force refresh token
-                    await api.post('/listings/batch', { listings });
-
-                    toast.success(`Created ${listings.length} listings across ${selectedPlatforms.length} platform(s)!`);
-                    modals.close();
-                    await handlers.loadListings();
-                    store.setState({ crosslistSelectedItems: [] });
-                    router.navigate('listings');
-                } catch (retryError) {
-                    toast.error('CSRF validation failed. Please refresh the page and try again.');
+            // Submit batch listing creation (creates drafts)
+            let batchResult;
+            try {
+                batchResult = await api.post('/listings/batch', { listings });
+            } catch (batchError) {
+                if (batchError.message && batchError.message.includes('CSRF')) {
+                    await api.ensureCSRFToken(true);
+                    batchResult = await api.post('/listings/batch', { listings });
+                } else {
+                    throw batchError;
                 }
-            } else {
-                toast.error(error.message);
             }
+
+            const createdListings = batchResult.created || batchResult.listings || [];
+
+            modals.close();
+
+            if (createdListings.length === 0) {
+                toast.success(`Created ${listings.length} draft listings across ${selectedPlatforms.length} platform(s)`);
+                await handlers.loadListings();
+                store.setState({ crosslistSelectedItems: [] });
+                router.navigate('listings');
+                return;
+            }
+
+            toast.info(`Publishing ${createdListings.length} listings to marketplaces...`);
+
+            const PUBLISH_ROUTES = {
+                ebay: 'publish-ebay', etsy: 'publish-etsy', poshmark: 'publish-poshmark',
+                mercari: 'publish-mercari', depop: 'publish-depop', grailed: 'publish-grailed',
+                facebook: 'publish-facebook', whatnot: 'publish-whatnot', shopify: 'publish-shopify'
+            };
+
+            const summary = {};
+            const failedItems = [];
+
+            for (const created of createdListings) {
+                const listingId = created.id || created.listingId;
+                const platform = created.platform;
+                if (!summary[platform]) summary[platform] = { success: 0, fail: 0, lastError: '' };
+
+                const publishRoute = PUBLISH_ROUTES[platform];
+                if (!publishRoute) {
+                    summary[platform].fail++;
+                    summary[platform].lastError = `Unknown platform: ${platform}`;
+                    failedItems.push({ listingId, platform });
+                    continue;
+                }
+
+                try {
+                    await api.post(`/listings/${listingId}/${publishRoute}`);
+                    summary[platform].success++;
+                } catch (err) {
+                    summary[platform].fail++;
+                    summary[platform].lastError = err.message || 'Publish failed';
+                    failedItems.push({ listingId, platform });
+                }
+            }
+
+            await handlers.loadListings();
+            store.setState({ crosslistSelectedItems: [], lastPublishFailures: failedItems });
+
+            handlers.showPublishAllResultsModal(summary, ids.length);
+        } catch (error) {
+            toast.error('Cross-listing failed: ' + error.message);
         }
     },
 

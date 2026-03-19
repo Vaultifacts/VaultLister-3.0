@@ -38,6 +38,8 @@ const MESSAGE_TYPES = {
     LISTING_UPDATED: 'listing.updated',
     LISTING_SOLD: 'listing.sold',
     LISTING_VIEW: 'listing.view',
+    LISTING_PUBLISHED: 'listing.published',
+    LISTING_PUBLISH_FAILED: 'listing.publish_failed',
 
     // Sales
     SALE_CREATED: 'sale.created',
