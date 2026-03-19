@@ -3,7 +3,7 @@
 
 ## Current State
 - **Branch:** master
-- **Last commit:** 76bb10e — [AUTO] fix: F-02 & F-19 — store mutations via setState + search listbox accessibility
+- **Last commit:** e34196b — [AUTO] fix: Poshmark rate limit (AU-04), prompt injection sanitizer (A-06), Claude API rate limit (A-07)
 - **Production URL:** https://vaultlister.com — LIVE ✅
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **SSH access:** `ssh -i ssh-key-2026-03-15.key ubuntu@204.216.105.105` (user is `ubuntu`, NOT `openclawuser`)
@@ -18,7 +18,20 @@
 
 ## Last Completed Work (2026-03-19)
 
-### Session Summary — Frontend Audit Fixes: Store Mutations & Accessibility (1 commit)
+### Session Summary — Automation & AI Security Audit Fixes (1 commit)
+
+**Commit e34196b — Audit Fixes AU-04, A-06, A-07 (3 targeted fixes)**
+- **AU-04 fix:** PoshmarkBot now tracks session-level rate limit counter via lastActionTime map
+  - enforceRateLimit() method ensures rate limit delays persist across all actions in a session
+  - Applied to all action methods: shareItem, shareCloset, followUser, followBackFollowers, acceptOffer, counterOffer, declineOffer, sendOfferToLikers
+- **A-06 fix:** Prompt injection sanitizer expanded with 10+ additional blocking patterns
+  - Extended patterns: override, bypass, behave as, become, simulate, hidden instructions, admin commands, developer mode, new instructions, forget everything, disregard everything
+- **A-07 fix:** Added per-user rate limiting to expensive Claude API routes
+  - 10 requests per minute per user on: analyze-listing-image, generate-listing, bulk-generate
+  - Returns 429 Too Many Requests when limit exceeded
+- All 33 AI tests passing ✅
+
+### Previous Session Summary — Frontend Audit Fixes: Store Mutations & Accessibility (1 commit)
 
 **Commit 76bb10e — Frontend Audit Items F-02 & F-19 (2 targeted fixes)**
 - **F-02 fix:** Replace direct `store.state` mutations with `store.setState()`:
