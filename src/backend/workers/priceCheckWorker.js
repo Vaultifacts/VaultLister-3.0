@@ -202,49 +202,66 @@ async function checkItemPrice(item) {
 }
 
 /**
- * Simulate fetching price from supplier
- * In production, this would scrape the URL or use an API
- * @param {Object} item - Supplier item
+ * Fetch real price from supplier URL via OG metadata / JSON-LD Product schema
+ * Falls back to null if URL is missing or unparseable
+ * @param {Object} item - Supplier item with source_url
  * @returns {number|null} New price or null
  */
 async function simulatePriceFetch(item) {
-    // Simulate network delay
-    const secureFloat = () => crypto.getRandomValues(new Uint32Array(1))[0] / 4294967295;
-    await sleep(100 + secureFloat() * 200);
+    const url = item.source_url || item.url;
+    if (!url) return null;
 
-    // 5% chance of failing to get price
-    if (secureFloat() < 0.05) {
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VaultLister/3.0; +https://vaultlister.com)' },
+            signal: controller.signal,
+            redirect: 'follow'
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) return null;
+
+        const html = await response.text();
+
+        // Try JSON-LD Product schema first
+        const jsonLdMatch = html.match(/<script[^>]*type\s*=\s*"application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi);
+        if (jsonLdMatch) {
+            for (const match of jsonLdMatch) {
+                try {
+                    const jsonStr = match.replace(/<\/?script[^>]*>/gi, '');
+                    const data = JSON.parse(jsonStr);
+                    const product = data['@type'] === 'Product' ? data : (Array.isArray(data['@graph']) ? data['@graph'].find(i => i['@type'] === 'Product') : null);
+                    if (product?.offers) {
+                        const offer = Array.isArray(product.offers) ? product.offers[0] : product.offers;
+                        const price = parseFloat(offer.price || offer.lowPrice);
+                        if (!isNaN(price) && price > 0) return Math.round(price * 100) / 100;
+                    }
+                } catch {}
+            }
+        }
+
+        // Fall back to OG meta tags
+        const ogPriceMatch = html.match(/<meta[^>]*property\s*=\s*"product:price:amount"[^>]*content\s*=\s*"([^"]+)"/i);
+        if (ogPriceMatch) {
+            const price = parseFloat(ogPriceMatch[1]);
+            if (!isNaN(price) && price > 0) return Math.round(price * 100) / 100;
+        }
+
+        // Fall back to generic price pattern in meta
+        const priceMetaMatch = html.match(/<meta[^>]*(?:name|property)\s*=\s*"(?:og:)?price"[^>]*content\s*=\s*"([^"]+)"/i);
+        if (priceMetaMatch) {
+            const price = parseFloat(priceMetaMatch[1].replace(/[^0-9.]/g, ''));
+            if (!isNaN(price) && price > 0) return Math.round(price * 100) / 100;
+        }
+
+        return null;
+    } catch (err) {
+        logger.warn('[PriceCheckWorker] Price fetch failed for ' + url + ': ' + err.message);
         return null;
     }
-
-    const currentPrice = item.current_price || 50;
-
-    // Simulate price fluctuation
-    // 70% - no change
-    // 15% - small drop (1-5%)
-    // 10% - small increase (1-5%)
-    // 4% - significant drop (5-15%)
-    // 1% - significant drop (15-30%)
-    const random = secureFloat();
-
-    let multiplier = 1.0;
-    if (random < 0.01) {
-        // Significant drop
-        multiplier = 0.70 + secureFloat() * 0.15; // 15-30% off
-    } else if (random < 0.05) {
-        // Medium drop
-        multiplier = 0.85 + secureFloat() * 0.10; // 5-15% off
-    } else if (random < 0.20) {
-        // Small drop
-        multiplier = 0.95 + secureFloat() * 0.04; // 1-5% off
-    } else if (random < 0.30) {
-        // Small increase
-        multiplier = 1.01 + secureFloat() * 0.04; // 1-5% up
-    }
-    // else: no change (multiplier stays 1.0)
-
-    const newPrice = currentPrice * multiplier;
-    return Math.round(newPrice * 100) / 100;
 }
 
 /**
