@@ -1343,7 +1343,7 @@ const server = Bun.serve({
                 }
             }
 
-            return new Response(JSON.stringify({ error: 'Not Found', path: pathname, status: 404 }), {
+            return new Response(JSON.stringify({ error: 'Not found' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json', ...dynamicCorsHeaders }
             });

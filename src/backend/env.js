@@ -49,4 +49,10 @@ if (!result.success) {
     process.exit(1);
 }
 
+if (result.data.NODE_ENV === 'production' &&
+    (result.data.JWT_SECRET.includes('change-this') || result.data.JWT_SECRET === 'your-super-secret-jwt-key-change-this-in-production')) {
+    console.error('\n[FATAL] JWT_SECRET contains the default placeholder value. Set a strong secret before running in production.\n');
+    process.exit(1);
+}
+
 export const env = result.data;

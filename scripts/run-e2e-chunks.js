@@ -147,7 +147,14 @@ const args = process.argv.slice(2);
 const LIST_ONLY = args.includes('--list');
 const SUMMARY = args.includes('--summary');
 const chunkIdx = args.indexOf('--chunk');
-const SINGLE_CHUNK = chunkIdx !== -1 ? parseInt(args[chunkIdx + 1]) : null;
+let SINGLE_CHUNK = chunkIdx !== -1 ? parseInt(args[chunkIdx + 1]) : null;
+
+if (SINGLE_CHUNK !== null) {
+    if (isNaN(SINGLE_CHUNK) || SINGLE_CHUNK < 1 || SINGLE_CHUNK > CHUNKS.length) {
+        console.error(`Error: --chunk must be a number between 1 and ${CHUNKS.length} (got: ${args[chunkIdx + 1]})`);
+        process.exit(1);
+    }
+}
 
 // List mode
 if (LIST_ONLY) {
@@ -215,8 +222,11 @@ for (let i = 0; i < chunksToRun.length; i++) {
         const report = JSON.parse(readFileSync(jsonReport, 'utf8'));
         for (const suite of report.suites || []) {
             for (const spec of suite.specs || []) {
-                if (spec.ok) passed++;
-                else failed++;
+                for (const test of spec.tests || []) {
+                    const lastResult = test.results?.[test.results.length - 1];
+                    if (lastResult?.status === 'passed') passed++;
+                    else failed++;
+                }
             }
         }
     } catch {
