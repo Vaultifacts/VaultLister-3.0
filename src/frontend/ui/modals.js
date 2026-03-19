@@ -38,8 +38,13 @@ const modals = {
                 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
             );
             if (focusableElements.length === 0) return;
-            const firstElement = focusableElements[0];
-            const lastElement = focusableElements[focusableElements.length - 1];
+            // Filter to only visible focusable elements
+            const visibleFocusable = Array.from(focusableElements).filter(el => {
+                return el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden';
+            });
+            if (visibleFocusable.length === 0) return;
+            const firstElement = visibleFocusable[0];
+            const lastElement = visibleFocusable[visibleFocusable.length - 1];
             if (e.shiftKey && document.activeElement === firstElement) {
                 e.preventDefault();
                 lastElement.focus();

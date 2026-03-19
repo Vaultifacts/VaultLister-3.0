@@ -22508,12 +22508,12 @@ Object.assign(handlers, {
             <div class="duplicate-card" data-id="${d.id}">
                 <div class="duplicate-card-items">
                     <div class="duplicate-item-preview">
-                        ${d.primary_images?.length ? `<img src="${d.primary_images[0]}" alt="${escapeHtml(d.primary_title || 'Duplicate item')}">` : '<div style="width:60px;height:60px;background:var(--gray-200);border-radius:8px;"></div>'}
+                        ${d.primary_images?.length ? `<img src="${d.primary_images[0]}" alt="${escapeHtml(d.primary_title || 'Duplicate item')}" width="60" height="60" style="object-fit: cover;">` : '<div style="width:60px;height:60px;background:var(--gray-200);border-radius:8px;"></div>'}
                         <span>${escapeHtml(d.primary_title || 'Item 1')}</span>
                     </div>
                     <div class="duplicate-arrow">${components.icon('arrow-right', 24)}</div>
                     <div class="duplicate-item-preview">
-                        ${d.duplicate_images?.length ? `<img src="${d.duplicate_images[0]}" alt="${escapeHtml(d.duplicate_title || 'Duplicate item')}">` : '<div style="width:60px;height:60px;background:var(--gray-200);border-radius:8px;"></div>'}
+                        ${d.duplicate_images?.length ? `<img src="${d.duplicate_images[0]}" alt="${escapeHtml(d.duplicate_title || 'Duplicate item')}" width="60" height="60" style="object-fit: cover;">` : '<div style="width:60px;height:60px;background:var(--gray-200);border-radius:8px;"></div>'}
                         <span>${escapeHtml(d.duplicate_title || 'Item 2')}</span>
                     </div>
                 </div>

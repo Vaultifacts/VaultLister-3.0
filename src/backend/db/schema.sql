@@ -1,6 +1,13 @@
 -- VaultLister Database Schema
 -- SQLite optimized for performance
 
+-- SOFT DELETE PATTERN
+-- Tables using soft delete: inventory (status='deleted' + deleted_at timestamp)
+-- Rationale: Allows 30-day recovery window for Recently Deleted feature
+-- Query pattern: WHERE status != 'deleted' to exclude soft-deleted rows
+-- Tables NOT using soft delete: listings, sales (hard delete via cascade)
+-- Cleanup: Manual deletion of items older than 30 days via cleanup-deleted endpoint
+
 -- Enable foreign keys
 PRAGMA foreign_keys = ON;
 PRAGMA journal_mode = WAL;

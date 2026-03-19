@@ -14869,7 +14869,7 @@ const supplierCardEnhanced = {
                             <span class="metric-label">Avg Price</span>
                         </div>
                         <div class="supplier-metric">
-                            <span class="badge badge-${stockColor}">${stockStatus}</span>
+                            <span class="badge badge-${stockColor}" aria-label="Stock status: ${escapeHtml(stockStatus)}">${stockStatus}</span>
                         </div>
                     </div>
                     <div class="supplier-sparkline-container">

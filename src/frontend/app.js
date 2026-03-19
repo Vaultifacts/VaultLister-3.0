@@ -14854,7 +14854,7 @@ const supplierCardEnhanced = {
                             <span class="metric-label">Avg Price</span>
                         </div>
                         <div class="supplier-metric">
-                            <span class="badge badge-${stockColor}">${stockStatus}</span>
+                            <span class="badge badge-${stockColor}" aria-label="Stock status: ${escapeHtml(stockStatus)}">${stockStatus}</span>
                         </div>
                     </div>
                     <div class="supplier-sparkline-container">
@@ -33742,7 +33742,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                             <td class="font-medium">${s.item_count || 0}</td>
                                             <td class="font-medium">$${(s.avg_price || 0).toFixed(2)}</td>
                                             <td>
-                                                <span class="badge badge-${s.stock_status === 'In Stock' ? 'success' : s.stock_status === 'Low Stock' ? 'warning' : 'error'}">
+                                                <span class="badge badge-${s.stock_status === 'In Stock' ? 'success' : s.stock_status === 'Low Stock' ? 'warning' : 'error'}" aria-label="Stock status: ${escapeHtml(s.stock_status || 'Unknown')}">
                                                     ${s.stock_status || 'Unknown'}
                                                 </span>
                                             </td>
