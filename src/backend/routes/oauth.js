@@ -23,6 +23,11 @@ export async function oauthRouter(ctx) {
             return { status: 400, data: { error: 'Platform required' } };
         }
 
+        // Playwright-only platforms have no public OAuth API
+        if (PLAYWRIGHT_ONLY_PLATFORMS.includes(platform)) {
+            return { status: 400, data: { error: `${platform} does not support OAuth. Connect via Settings → My Shops using your ${platform} credentials. VaultLister uses browser automation for this platform.` } };
+        }
+
         // Generate state token for CSRF protection (include platform prefix for callback routing)
         const stateToken = platform + '_' + generateStateToken();
         const stateId = uuidv4();
@@ -520,17 +525,15 @@ function getOAuthConfig(platform, mode) {
         };
     }
 
-    // Real platform configurations (to be filled in when switching from mock)
+    // Platforms that use Playwright automation instead of OAuth (no public OAuth API exists)
+    const PLAYWRIGHT_ONLY_PLATFORMS = ['poshmark', 'mercari', 'depop', 'grailed', 'whatnot'];
+
+    // Real platform configurations
     const configs = {
         poshmark: {
-            authorizationUrl: process.env.POSHMARK_OAUTH_URL || 'https://poshmark.com/oauth/authorize',
-            tokenUrl: process.env.POSHMARK_TOKEN_URL || 'https://poshmark.com/oauth/token',
-            userInfoUrl: process.env.POSHMARK_USER_URL || 'https://api.poshmark.com/v1/user',
-            revokeUrl: process.env.POSHMARK_REVOKE_URL || 'https://api.poshmark.com/v1/oauth/revoke',
+            playwrightOnly: true,
             clientId: process.env.POSHMARK_CLIENT_ID,
             clientSecret: process.env.POSHMARK_CLIENT_SECRET,
-            redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['listings.read', 'listings.write', 'profile']
         },
         ebay: (() => {
             const env = process.env.EBAY_ENVIRONMENT || 'sandbox';
@@ -560,34 +563,19 @@ function getOAuthConfig(platform, mode) {
             };
         })(),
         mercari: {
-            authorizationUrl: 'https://www.mercari.com/oauth/authorize',
-            tokenUrl: 'https://www.mercari.com/oauth/token',
-            userInfoUrl: 'https://api.mercari.com/v1/user',
-            revokeUrl: 'https://api.mercari.com/v1/oauth/revoke',
+            playwrightOnly: true,
             clientId: process.env.MERCARI_CLIENT_ID,
             clientSecret: process.env.MERCARI_CLIENT_SECRET,
-            redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['read', 'write']
         },
         depop: {
-            authorizationUrl: 'https://www.depop.com/oauth/authorize',
-            tokenUrl: 'https://www.depop.com/oauth/token',
-            userInfoUrl: 'https://api.depop.com/v1/user',
-            revokeUrl: 'https://api.depop.com/v1/oauth/revoke',
+            playwrightOnly: true,
             clientId: process.env.DEPOP_CLIENT_ID,
             clientSecret: process.env.DEPOP_CLIENT_SECRET,
-            redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['read', 'write', 'listings']
         },
         grailed: {
-            authorizationUrl: 'https://www.grailed.com/oauth/authorize',
-            tokenUrl: 'https://www.grailed.com/oauth/token',
-            userInfoUrl: 'https://api.grailed.com/v1/user',
-            revokeUrl: 'https://api.grailed.com/v1/oauth/revoke',
+            playwrightOnly: true,
             clientId: process.env.GRAILED_CLIENT_ID,
             clientSecret: process.env.GRAILED_CLIENT_SECRET,
-            redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['read', 'write', 'listings']
         },
         facebook: {
             authorizationUrl: 'https://www.facebook.com/v18.0/dialog/oauth',
@@ -600,14 +588,9 @@ function getOAuthConfig(platform, mode) {
             scopes: ['commerce_account.read', 'commerce_account.write']
         },
         whatnot: {
-            authorizationUrl: 'https://www.whatnot.com/oauth/authorize',
-            tokenUrl: 'https://api.whatnot.com/oauth/token',
-            userInfoUrl: 'https://api.whatnot.com/v1/user',
-            revokeUrl: 'https://api.whatnot.com/v1/oauth/revoke',
+            playwrightOnly: true,
             clientId: process.env.WHATNOT_CLIENT_ID,
             clientSecret: process.env.WHATNOT_CLIENT_SECRET,
-            redirectUri: process.env.OAUTH_REDIRECT_URI,
-            scopes: ['read', 'write', 'listings', 'live']
         },
         shopify: {
             authorizationUrl: 'https://accounts.shopify.com/oauth/authorize',
