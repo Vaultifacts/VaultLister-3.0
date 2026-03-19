@@ -84,8 +84,15 @@ null
 # npm lockfile (project uses bun)
 package-lock.json
 
-# Screenshot baselines (regenerated locally)
-screenshots/baselines/
+# Screenshot baselines and generated screenshots
+screenshots/
+
+# SSH keys
+*.key
+*.key.pub
+
+# Test reports (generated)
+TEST_REPORT_*.md
 
 # Notion AI control system — runtime artifacts
 generated/
