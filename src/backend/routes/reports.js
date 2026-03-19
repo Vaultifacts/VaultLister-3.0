@@ -899,7 +899,7 @@ export async function reportsRouter(ctx) {
         return { status: 404, data: { error: 'Report not found' } };
       }
 
-      await query.transaction(() => {
+      query.transaction(() => {
         query.run(
           'DELETE FROM report_schedules WHERE report_id = ? AND user_id = ?',
           [reportId, user.id]
