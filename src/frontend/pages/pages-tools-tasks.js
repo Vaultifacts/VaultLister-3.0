@@ -637,10 +637,16 @@ Object.assign(pages, {
                 } else {
                     const dayEvents = getEventsForDay(dayCounter);
                     const today = isToday(dayCounter);
+                    const dayRevenue = getDayRevenue(dayCounter);
+                    const maxRevenue = Math.max(...Object.values(revenueByDate), 1);
+                    const intensity = dayRevenue > 0 ? Math.min(0.35, 0.08 + 0.27 * (dayRevenue / maxRevenue)) : 0;
+                    const heatStyle = dayRevenue > 0 ? ` background: rgba(16,185,129,${intensity.toFixed(3)});` : '';
 
                     calendarHtml += `
                         <div onclick="handlers.viewCalendarDay(${dayCounter})"
-                             class="calendar-day ${today ? 'calendar-day-today' : ''}">
+                             class="calendar-day ${today ? 'calendar-day-today' : ''}"
+                             style="${heatStyle}"
+                             title="${dayRevenue > 0 ? '$' + dayRevenue.toFixed(2) + ' revenue' : ''}">
                             <div class="calendar-day-number ${today ? 'today' : ''}">
                                 ${dayCounter}
                             </div>
@@ -678,11 +684,18 @@ Object.assign(pages, {
         const selectedDate = store.state.selectedCalendarDate ? new Date(store.state.selectedCalendarDate) : new Date();
         const calendarView = store.state.calendarView || 'month';
 
-        // Calculate revenue by day for heatmap (mock data)
+        // Build revenue-by-date map from store.state.sales for heatmap
+        const salesData = store.state.sales || [];
+        const revenueByDate = {};
+        salesData.forEach(s => {
+            const raw = s.sold_at || s.created_at;
+            if (!raw) return;
+            const dateStr = raw.slice(0, 10);
+            revenueByDate[dateStr] = (revenueByDate[dateStr] || 0) + (s.sale_price || 0);
+        });
         const getDayRevenue = (day) => {
-            const dayEvents = getEventsForDay(day);
-            const sales = dayEvents.filter(e => e.type === 'sale');
-            return sales.reduce((sum, e) => sum + (e.revenue || 0), 0);
+            const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            return revenueByDate[dateStr] || 0;
         };
 
         // Calculate month statistics

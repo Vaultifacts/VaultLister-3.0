@@ -4119,7 +4119,50 @@ Object.assign(handlers, {
 
 
     showUsageDashboard() {
-        toast.info('Usage dashboard coming soon');
+        const inventory = store.state.inventory || [];
+        const listings = store.state.listings || [];
+        const sales = store.state.sales || [];
+        const images = store.state.imageBankImages || [];
+        const automations = (store.state.automations || []).filter(a => a.enabled || a.is_active);
+        const shops = (store.state.shops || []).filter(s => s.is_connected);
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('bar-chart-2', 20)} Usage Dashboard</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
+                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Inventory Items</div>
+                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${inventory.length}</div>
+                    </div>
+                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
+                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Active Listings</div>
+                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${listings.length}</div>
+                    </div>
+                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
+                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Total Sales</div>
+                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${sales.length}</div>
+                    </div>
+                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
+                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Images Stored</div>
+                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${images.length}</div>
+                    </div>
+                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
+                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Active Automations</div>
+                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${automations.length}</div>
+                    </div>
+                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
+                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Connected Shops</div>
+                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${shops.length}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close();">Close</button>
+            </div>
+        `);
     },
 
     // Billing,
@@ -4294,6 +4337,75 @@ Object.assign(handlers, {
         } catch (err) {
             toast.error(err.message || 'Failed to disable 2FA');
         }
+    },
+
+    showInstallExtensionModal: function() {
+        const extensionPath = window.location.origin.startsWith('http://localhost')
+            ? window.location.origin.replace(/:\d+$/, '') + '/chrome-extension'
+            : 'chrome-extension/';
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Install VaultLister Extension</h2>
+                <button class="modal-close" onclick="modals.close()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info" style="margin-bottom: 1.25rem;">
+                    <strong>Beta / Local Install</strong> — The extension is not yet on the Chrome Web Store.
+                    Load it directly from the <code>chrome-extension/</code> folder using Developer Mode.
+                </div>
+                <ol style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem;">
+                    <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                        <span style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--primary-600); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;">1</span>
+                        <div>
+                            <div class="font-medium">Open Chrome Extensions</div>
+                            <div class="text-sm text-gray-500">In Chrome, navigate to <code>chrome://extensions</code></div>
+                        </div>
+                    </li>
+                    <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                        <span style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--primary-600); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;">2</span>
+                        <div>
+                            <div class="font-medium">Enable Developer Mode</div>
+                            <div class="text-sm text-gray-500">Toggle <strong>Developer mode</strong> in the top-right corner of the Extensions page</div>
+                        </div>
+                    </li>
+                    <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                        <span style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--primary-600); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;">3</span>
+                        <div>
+                            <div class="font-medium">Click "Load unpacked"</div>
+                            <div class="text-sm text-gray-500">A button labeled <strong>Load unpacked</strong> will appear after enabling Developer mode</div>
+                        </div>
+                    </li>
+                    <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                        <span style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--primary-600); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;">4</span>
+                        <div>
+                            <div class="font-medium">Select the extension folder</div>
+                            <div class="text-sm text-gray-500">Navigate to and select the <code>chrome-extension/</code> folder inside your VaultLister 3.0 project directory</div>
+                        </div>
+                    </li>
+                </ol>
+                <div style="margin-top: 1.25rem; padding: 0.75rem 1rem; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;">
+                    <code id="ext-path-display" style="flex: 1; font-size: 0.8rem; color: var(--gray-600); word-break: break-all;">&lt;your-project-root&gt;/chrome-extension</code>
+                    <button class="btn btn-sm btn-secondary" onclick="handlers._copyExtensionPath()" aria-label="Copy extension path to clipboard" style="min-width: 44px; min-height: 44px; white-space: nowrap;">
+                        Copy Path
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Close</button>
+                <a class="btn btn-primary" href="chrome://extensions" target="_blank" rel="noopener" onclick="modals.close()">Open chrome://extensions</a>
+            </div>
+        `);
+    },
+
+    _copyExtensionPath: function() {
+        const text = document.getElementById('ext-path-display');
+        const path = text ? text.textContent : 'chrome-extension/';
+        navigator.clipboard.writeText(path).then(() => {
+            toast.success('Extension path copied to clipboard');
+        }).catch(() => {
+            toast.error('Could not copy — please copy the path manually');
+        });
     },
 
 });

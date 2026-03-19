@@ -3041,7 +3041,7 @@ Object.assign(pages, {
                                 <div class="text-sm text-gray-500">Capture products, track prices, and auto-fill listings from your browser</div>
                             </div>
                         </div>
-                        <button class="btn btn-primary" onclick="toast.info('Chrome extension installation coming soon!')">
+                        <button class="btn btn-primary" onclick="handlers.showInstallExtensionModal()" aria-label="Install VaultLister Chrome Extension">
                             ${components.icon('download', 16)} Install Extension
                         </button>
                     </div>

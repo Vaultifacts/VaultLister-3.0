@@ -687,23 +687,78 @@ export async function analyticsRouter(ctx) {
         return { status: 200, data: { listings: listingEngagement, ...(listingEngagementError && { partial: true, warning: 'Engagement data unavailable' }) } };
     }
 
-    // GET /api/analytics/heatmap/geography - Geographic engagement data
+    // GET /api/analytics/heatmap/geography - Geographic sales data
     if (method === 'GET' && path === '/heatmap/geography') {
-        // Mock geographic data since we don't have real geo tracking yet
-        const geoData = [
-            { region: 'California', state: 'CA', views: 2450, sales: 89, revenue: 5230.00 },
-            { region: 'New York', state: 'NY', views: 1980, sales: 72, revenue: 4180.00 },
-            { region: 'Texas', state: 'TX', views: 1520, sales: 55, revenue: 3100.00 },
-            { region: 'Florida', state: 'FL', views: 1340, sales: 48, revenue: 2850.00 },
-            { region: 'Illinois', state: 'IL', views: 980, sales: 35, revenue: 2100.00 },
-            { region: 'Washington', state: 'WA', views: 870, sales: 31, revenue: 1920.00 },
-            { region: 'Pennsylvania', state: 'PA', views: 750, sales: 27, revenue: 1650.00 },
-            { region: 'Ohio', state: 'OH', views: 680, sales: 24, revenue: 1440.00 },
-            { region: 'Georgia', state: 'GA', views: 620, sales: 22, revenue: 1280.00 },
-            { region: 'Michigan', state: 'MI', views: 540, sales: 19, revenue: 1100.00 }
-        ];
+        // The sales table stores buyer_address as unstructured text and has no dedicated
+        // state column. We attempt a best-effort US state extraction from buyer_address
+        // (pattern: ", XX 12345" at the end of the address string). Rows that do not match
+        // are grouped under their platform name so all real data is still surfaced.
+        const STATE_NAMES = {
+            AL:'Alabama', AK:'Alaska', AZ:'Arizona', AR:'Arkansas', CA:'California',
+            CO:'Colorado', CT:'Connecticut', DE:'Delaware', FL:'Florida', GA:'Georgia',
+            HI:'Hawaii', ID:'Idaho', IL:'Illinois', IN:'Indiana', IA:'Iowa',
+            KS:'Kansas', KY:'Kentucky', LA:'Louisiana', ME:'Maine', MD:'Maryland',
+            MA:'Massachusetts', MI:'Michigan', MN:'Minnesota', MS:'Mississippi',
+            MO:'Missouri', MT:'Montana', NE:'Nebraska', NV:'Nevada', NH:'New Hampshire',
+            NJ:'New Jersey', NM:'New Mexico', NY:'New York', NC:'North Carolina',
+            ND:'North Dakota', OH:'Ohio', OK:'Oklahoma', OR:'Oregon', PA:'Pennsylvania',
+            RI:'Rhode Island', SC:'South Carolina', SD:'South Dakota', TN:'Tennessee',
+            TX:'Texas', UT:'Utah', VT:'Vermont', VA:'Virginia', WA:'Washington',
+            WV:'West Virginia', WI:'Wisconsin', WY:'Wyoming', DC:'District of Columbia'
+        };
 
-        return { status: 200, data: { geography: geoData, note: 'Geographic data is currently estimated based on platform analytics' } };
+        // Matches ", XX " or ", XX\n" before a zip code anywhere in the address string
+        const STATE_RE = /,\s+([A-Z]{2})\s+\d{5}/;
+
+        let rows;
+        try {
+            rows = query.all(
+                `SELECT buyer_address, platform, sale_price, net_profit
+                 FROM sales
+                 WHERE user_id = ? AND status != 'cancelled'`,
+                [user.id]
+            );
+        } catch (err) {
+            return { status: 500, data: { error: 'Failed to load geography data' } };
+        }
+
+        // Aggregate into a map keyed by state code or platform fallback key
+        const buckets = new Map();
+
+        for (const row of rows) {
+            const match = row.buyer_address ? STATE_RE.exec(row.buyer_address) : null;
+            let key, region, state;
+
+            if (match && STATE_NAMES[match[1]]) {
+                state = match[1];
+                region = STATE_NAMES[state];
+                key = state;
+            } else {
+                // No parseable state — group under platform label
+                const platform = row.platform || 'Unknown';
+                key = `platform:${platform}`;
+                state = null;
+                region = platform;
+            }
+
+            if (!buckets.has(key)) {
+                buckets.set(key, { region, state, views: 0, sales: 0, revenue: 0 });
+            }
+            const b = buckets.get(key);
+            b.sales += 1;
+            b.revenue = Math.round((b.revenue + (row.net_profit ?? row.sale_price ?? 0)) * 100) / 100;
+        }
+
+        const geoData = Array.from(buckets.values())
+            .sort((a, b) => b.revenue - a.revenue);
+
+        return {
+            status: 200,
+            data: {
+                geography: geoData,
+                note: 'State data parsed from buyer_address where available; remaining sales grouped by platform'
+            }
+        };
     }
 
     // GET /api/analytics/custom-metrics - List custom metrics
