@@ -5,12 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import {
     getCompetitorsForPlatform,
-    generateCompetitorListings,
     getMarketInsight,
     findOpportunities,
     comparePricesWithCompetitors,
     getTrendingCategories
 } from '../services/marketDataService.js';
+import { queueTask } from '../workers/taskWorker.js';
 import { logger } from '../shared/logger.js';
 
 export async function marketIntelRouter(ctx) {
@@ -184,46 +184,44 @@ export async function marketIntelRouter(ctx) {
 
         const competitorId = refreshMatch[1];
 
-        // Verify ownership
-        const ownerCheck = query.get(
-            'SELECT id FROM competitors WHERE id = ? AND user_id = ?',
+        const competitor = query.get(
+            'SELECT id, platform, username FROM competitors WHERE id = ? AND user_id = ?',
             [competitorId, user.id]
         );
-        if (!ownerCheck) {
+        if (!competitor) {
             return { status: 404, data: { error: 'Competitor not found' } };
         }
 
-        // Update last_checked_at
+        if (competitor.platform !== 'poshmark') {
+            return {
+                status: 200,
+                data: {
+                    queued: false,
+                    message: `Scraping is not yet supported for ${competitor.platform}. Only Poshmark closets can be refreshed automatically.`
+                }
+            };
+        }
+
+        // Queue an async scrape task — do not block the API response
+        const task = queueTask('scrape_competitor_closet', {
+            competitorId,
+            userId: user.id,
+            platform: competitor.platform,
+            username: competitor.username
+        });
+
+        // Stamp last_checked_at so the UI knows a refresh was triggered
         query.run(`
             UPDATE competitors SET last_checked_at = datetime('now'), updated_at = datetime('now')
             WHERE id = ? AND user_id = ?
         `, [competitorId, user.id]);
 
-        // Generate new mock listings
-        const listings = generateCompetitorListings(competitorId, 5);
-
-        // Insert new listings in a single transaction
-        try {
-            query.transaction(() => {
-                for (const listing of listings) {
-                    query.run(`
-                        INSERT OR REPLACE INTO competitor_listings (id, competitor_id, external_id, title,
-                            price, original_price, category, brand, condition, listed_at, sold_at, url, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-                    `, [listing.id, competitorId, listing.external_id, listing.title, listing.price,
-                        listing.original_price, listing.category, listing.brand, listing.condition,
-                        listing.listed_at, listing.sold_at, listing.url]);
-                }
-            });
-        } catch (error) {
-            logger.error('[MarketIntel] Competitor listing insert failed', user?.id, { competitorId, detail: error?.message });
-        }
-
         return {
             status: 200,
             data: {
-                refreshed: true,
-                new_listings: listings.length
+                queued: true,
+                task_id: task.id,
+                message: `Closet scrape queued for @${competitor.username}. Results will appear in listings within a few minutes.`
             }
         };
     }
@@ -344,9 +342,18 @@ export async function marketIntelRouter(ctx) {
             return { status: 404, data: { error: 'Item not found' } };
         }
 
-        const comparison = comparePricesWithCompetitors(item, platform || 'ebay');
+        const comparison = comparePricesWithCompetitors(item, platform || null);
 
-        return { status: 200, data: comparison };
+        // Alias for frontend backward compatibility
+        return {
+            status: 200,
+            data: {
+                ...comparison,
+                avg_competitor_price: comparison.avg_comparable_price,
+                min_competitor_price: comparison.min_comparable_price,
+                max_competitor_price: comparison.max_comparable_price
+            }
+        };
     }
 
     // GET /market-intel/trending - Get trending categories

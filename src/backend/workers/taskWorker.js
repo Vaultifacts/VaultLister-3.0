@@ -369,6 +369,9 @@ async function executeTask(type, payload) {
         case 'poshmark_inventory_sync':
             return await executePoshmarkInventorySyncTask(payload);
 
+        case 'scrape_competitor_closet':
+            return await executeScrapeCompetitorClosetTask(payload);
+
         default:
             throw new Error(`Unknown task type: ${type}`);
     }
@@ -1382,6 +1385,63 @@ async function executePoshmarkInventorySyncTask(payload) {
         });
 
         return { synced, skipped, total: listings.length };
+    } finally {
+        await closePoshmarkBot();
+    }
+}
+
+async function executeScrapeCompetitorClosetTask(payload) {
+    const { competitorId, userId, username } = payload;
+    if (!competitorId || !userId || !username) {
+        throw new Error('Missing competitorId, userId, or username in scrape_competitor_closet payload');
+    }
+
+    logger.info('[TaskWorker] Scraping competitor closet', userId, { username, competitorId });
+
+    const { getPoshmarkBot, closePoshmarkBot } = await import('../../shared/automations/poshmark-bot.js');
+    const { normalizeScrapedListings } = await import('../services/marketDataService.js');
+    const bot = await getPoshmarkBot();
+
+    try {
+        const scraped = await bot.getClosetListings(username, 100);
+        const listings = normalizeScrapedListings(competitorId, scraped);
+
+        let inserted = 0;
+        try {
+            query.transaction(() => {
+                for (const listing of listings) {
+                    query.run(`
+                        INSERT OR REPLACE INTO competitor_listings
+                            (id, competitor_id, external_id, title, price, original_price,
+                             category, brand, condition, listed_at, sold_at, url, image_url, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+                    `, [
+                        listing.id, competitorId, listing.external_id, listing.title, listing.price,
+                        listing.original_price, listing.category, listing.brand, listing.condition,
+                        listing.listed_at, listing.sold_at, listing.url, listing.image_url
+                    ]);
+                    inserted++;
+                }
+            });
+        } catch (dbErr) {
+            logger.error('[TaskWorker] Competitor listing insert failed', userId, { competitorId, detail: dbErr.message });
+        }
+
+        // Update aggregate stats on the competitor record
+        if (listings.length > 0) {
+            const prices = listings.map(l => l.price).filter(p => p > 0);
+            const avgPrice = prices.length > 0
+                ? Math.round((prices.reduce((a, b) => a + b, 0) / prices.length) * 100) / 100
+                : null;
+            query.run(`
+                UPDATE competitors
+                SET listing_count = ?, avg_price = COALESCE(?, avg_price), last_checked_at = datetime('now'), updated_at = datetime('now')
+                WHERE id = ?
+            `, [listings.length, avgPrice, competitorId]);
+        }
+
+        logger.info('[TaskWorker] Competitor closet scrape complete', userId, { username, inserted, total: scraped.length });
+        return { inserted, total: scraped.length };
     } finally {
         await closePoshmarkBot();
     }

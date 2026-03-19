@@ -3,7 +3,7 @@
 
 ## Current State
 - **Branch:** master
-- **Last commit:** 0afb2cf — chore: upgrade GitHub Actions to Node.js 24
+- **Last commit:** e98034e — feat: camera capture + platform sync mock cleanup
 - **Production URL:** https://vaultlister.com — LIVE ✅
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **SSH access:** `ssh -i ssh-key-2026-03-15.key ubuntu@204.216.105.105` (user is `ubuntu`, NOT `openclawuser`)
@@ -133,9 +133,11 @@ Reduced sidebar from 30→14 items. See git log for full details.
 - `bun run build` now runs both `build-dev-bundle.js` AND `build-frontend.js`
 
 ## Next Tasks
-1. **AR Previews** — augmented reality item previews (V2 feature, needs design planning)
-2. **Etsy OAuth** — DEFERRED indefinitely. App approval timeline unknown. Treat as "Coming Soon" feature.
-3. **Production monitoring** — set up uptime monitoring / alerting for vaultlister.com
+1. **E2E test coverage** — 44 backend routes have no test files (billing, AI, OAuth, chatbot, etc.)
+2. **Real competitor intelligence** — replace mock competitor data with real scraping (#3, #21)
+3. **Real AI predictions** — replace mock forecast data with Claude-powered predictions (#20)
+4. **Integrations** — Outlook (#15), Google Drive (#16), Calendar OAuth sync (#17)
+5. **Etsy OAuth** — DEFERRED indefinitely. App approval timeline unknown.
 
 ## Messages
 - SSH user on Oracle VM is `ubuntu` (NOT `openclawuser` — that was wrong in previous sessions)

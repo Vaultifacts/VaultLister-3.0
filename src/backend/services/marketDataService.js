@@ -12,31 +12,6 @@ function secureRandomInt(max) {
     return crypto.getRandomValues(new Uint32Array(1))[0] % max;
 }
 
-// Mock competitor data for demo purposes
-const MOCK_COMPETITORS = {
-    poshmark: [
-        { username: 'vintage_queen_shop', displayName: 'Vintage Queen', avgPrice: 48, listingCount: 234, sellThrough: 0.42 },
-        { username: 'designer_deals_daily', displayName: 'Designer Deals', avgPrice: 125, listingCount: 156, sellThrough: 0.38 },
-        { username: 'thrift_flip_pro', displayName: 'Thrift Flip Pro', avgPrice: 35, listingCount: 412, sellThrough: 0.55 }
-    ],
-    ebay: [
-        { username: 'sneaker_vault_usa', displayName: 'Sneaker Vault', avgPrice: 145, listingCount: 89, sellThrough: 0.48 },
-        { username: 'collectibles_corner', displayName: 'Collectibles Corner', avgPrice: 67, listingCount: 523, sellThrough: 0.35 },
-        { username: 'tech_resale_hub', displayName: 'Tech Resale Hub', avgPrice: 189, listingCount: 178, sellThrough: 0.41 }
-    ],
-    mercari: [
-        { username: 'everyday_deals', displayName: 'Everyday Deals', avgPrice: 28, listingCount: 345, sellThrough: 0.52 },
-        { username: 'home_finds_shop', displayName: 'Home Finds', avgPrice: 42, listingCount: 267, sellThrough: 0.44 }
-    ],
-    depop: [
-        { username: 'y2k_aesthetic', displayName: 'Y2K Aesthetic', avgPrice: 32, listingCount: 189, sellThrough: 0.58 },
-        { username: 'vintage_streetwear', displayName: 'Vintage Streetwear', avgPrice: 55, listingCount: 134, sellThrough: 0.51 }
-    ],
-    grailed: [
-        { username: 'archive_menswear', displayName: 'Archive Menswear', avgPrice: 285, listingCount: 67, sellThrough: 0.35 },
-        { username: 'designer_archive', displayName: 'Designer Archive', avgPrice: 445, listingCount: 45, sellThrough: 0.28 }
-    ]
-};
 
 // Category market data
 const CATEGORY_DATA = {
@@ -51,65 +26,56 @@ const CATEGORY_DATA = {
 };
 
 /**
- * Get competitors for a platform
+ * Get competitors for a platform from the database
  * @param {string} platform - Platform name
- * @param {string} userId - User ID for personalization
- * @returns {Array} Competitor data
+ * @param {string} userId - User ID
+ * @returns {Array} Competitor rows
  */
-export function getCompetitorsForPlatform(platform, userId = null) {
-    const mockData = MOCK_COMPETITORS[platform.toLowerCase()] || [];
-
-    return mockData.map(comp => ({
-        id: uuidv4(),
-        platform,
-        username: comp.username,
-        displayName: comp.displayName,
-        profile_url: `https://${platform.toLowerCase()}.com/closet/${comp.username}`,
-        avg_price: comp.avgPrice,
-        listing_count: comp.listingCount,
-        sell_through_rate: comp.sellThrough,
-        category_focus: inferCategoryFocus(comp.username),
-        last_checked_at: new Date().toISOString()
-    }));
+export function getCompetitorsForPlatform(platform, userId) {
+    if (!userId) return [];
+    try {
+        return query.all(
+            'SELECT * FROM competitors WHERE user_id = ? AND platform = ? AND is_active = 1 ORDER BY listing_count DESC',
+            [userId, platform.toLowerCase()]
+        );
+    } catch {
+        return [];
+    }
 }
 
 /**
- * Generate competitor listings (mock data)
- * @param {string} competitorId - Competitor ID
- * @param {number} count - Number of listings to generate
- * @returns {Array} Competitor listings
+ * Convert scraped Poshmark closet listings into competitor_listings DB rows.
+ * Returns normalized listing objects ready to INSERT — does not write to DB itself.
+ * @param {string} competitorId
+ * @param {Array} scrapedListings - Raw results from PoshmarkBot.getClosetListings()
+ * @returns {Array}
  */
-export function generateCompetitorListings(competitorId, count = 10) {
-    const listings = [];
-    const categories = ['Clothing', 'Shoes', 'Bags', 'Accessories', 'Vintage'];
-    const brands = ['Nike', 'Coach', 'Free People', 'Levi\'s', 'Supreme', 'Vintage', 'Anthropologie'];
-    const conditions = ['New', 'Like New', 'Good', 'Fair'];
-
-    for (let i = 0; i < count; i++) {
-        const basePrice = 20 + secureRandomFloat() * 180;
-        const isSold = secureRandomFloat() > 0.6;
-        const daysAgo = secureRandomInt(60) + 1;
-        const category = categories[secureRandomInt(categories.length)];
-        const brand = brands[secureRandomInt(brands.length)];
-
-        listings.push({
-            id: uuidv4(),
-            competitor_id: competitorId,
-            external_id: `listing-${Date.now()}-${i}`,
-            title: `${brand} ${category} Item`,
-            price: Math.round(basePrice * 100) / 100,
-            original_price: Math.round(basePrice * 1.2 * 100) / 100,
-            category,
-            brand,
-            condition: conditions[secureRandomInt(conditions.length)],
-            listed_at: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString(),
-            sold_at: isSold ? new Date(Date.now() - Math.floor(daysAgo / 2) * 24 * 60 * 60 * 1000).toISOString() : null,
-            days_to_sell: isSold ? Math.floor(daysAgo / 2) : null,
-            created_at: new Date().toISOString()
+export function normalizeScrapedListings(competitorId, scrapedListings) {
+    return scrapedListings
+        .filter(l => l.title)
+        .map((l, i) => {
+            const rawPrice = parseFloat((l.price || '').replace(/[^0-9.]/g, '')) || 0;
+            // Derive a stable external_id from the listing URL path; fall back to index
+            const urlPath = l.listingUrl ? l.listingUrl.replace(/.*\/listing\//, '') : null;
+            const externalId = urlPath || `closet-${competitorId}-${i}`;
+            return {
+                id: uuidv4(),
+                competitor_id: competitorId,
+                external_id: externalId,
+                title: l.title,
+                price: rawPrice,
+                original_price: null,
+                category: null,
+                brand: null,
+                condition: null,
+                listed_at: new Date().toISOString(),
+                sold_at: null,
+                days_to_sell: null,
+                url: l.listingUrl || null,
+                image_url: l.imageUrl || null,
+                created_at: new Date().toISOString()
+            };
         });
-    }
-
-    return listings;
 }
 
 /**
@@ -192,42 +158,101 @@ export function findOpportunities(userId, options = {}) {
 }
 
 /**
- * Compare prices with competitors
- * @param {Object} item - Inventory item
- * @param {string} platform - Platform to compare on
+ * Compare item price against the user's own sale history for the same category/brand.
+ * Falls back to competitor_listings prices if personal history is thin (<3 data points).
+ * @param {Object} item - Inventory row (must include user_id, category, brand, list_price)
+ * @param {string} platform - Platform filter (optional)
  * @returns {Object} Price comparison data
  */
 export function comparePricesWithCompetitors(item, platform) {
-    const category = item.category || 'Clothing';
-    const baseData = CATEGORY_DATA[category] || CATEGORY_DATA['Clothing'];
+    const yourPrice = item.list_price || 0;
+    const category = item.category || null;
+    const brand = item.brand || null;
+    const userId = item.user_id;
 
-    // Generate mock competitor prices
-    const competitorPrices = [];
-    const count = 5 + secureRandomInt(10);
+    // Build a query against sold items in the user's own history with matching category/brand
+    let historyRows = [];
+    try {
+        const params = [userId];
+        let whereClauses = "s.user_id = ? AND s.sale_price > 0";
 
-    for (let i = 0; i < count; i++) {
-        const variance = (secureRandomFloat() - 0.5) * 0.5;
-        competitorPrices.push(Math.round(baseData.avgPrice * (1 + variance) * 100) / 100);
+        if (category) {
+            whereClauses += ' AND LOWER(i.category) = LOWER(?)';
+            params.push(category);
+        }
+        if (brand) {
+            whereClauses += ' AND LOWER(i.brand) = LOWER(?)';
+            params.push(brand);
+        }
+        if (platform) {
+            whereClauses += ' AND LOWER(s.platform) = LOWER(?)';
+            params.push(platform);
+        }
+
+        historyRows = query.all(`
+            SELECT s.sale_price
+            FROM sales s
+            JOIN inventory i ON i.id = s.inventory_id
+            WHERE ${whereClauses}
+            ORDER BY s.created_at DESC
+            LIMIT 50
+        `, params);
+    } catch {
+        historyRows = [];
     }
 
-    competitorPrices.sort((a, b) => a - b);
-    const yourPrice = item.list_price || baseData.avgPrice;
-    const avgCompetitorPrice = competitorPrices.reduce((a, b) => a + b, 0) / competitorPrices.length;
+    // If personal history is thin, fall back to competitor_listings for the user's tracked competitors
+    if (historyRows.length < 3) {
+        try {
+            const params = [userId];
+            let extra = '';
+            if (platform) {
+                extra = ' AND LOWER(c.platform) = LOWER(?)';
+                params.push(platform);
+            }
+            const competitorRows = query.all(`
+                SELECT cl.price as sale_price
+                FROM competitor_listings cl
+                JOIN competitors c ON c.id = cl.competitor_id
+                WHERE c.user_id = ?${extra} AND cl.price > 0
+                ORDER BY cl.created_at DESC
+                LIMIT 50
+            `, params);
+            historyRows = historyRows.concat(competitorRows);
+        } catch {
+            // no competitor data either
+        }
+    }
+
+    if (historyRows.length === 0) {
+        return {
+            your_price: yourPrice,
+            avg_comparable_price: null,
+            min_comparable_price: null,
+            max_comparable_price: null,
+            price_position: 'unknown',
+            percent_difference: null,
+            data_points: 0,
+            recommendation: 'No sale history found for this category/brand. Price based on your own judgment.'
+        };
+    }
+
+    const prices = historyRows.map(r => r.sale_price).sort((a, b) => a - b);
+    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+    const percentDiff = avg > 0 ? ((yourPrice - avg) / avg) * 100 : 0;
 
     let position = 'competitive';
-    let percentDiff = ((yourPrice - avgCompetitorPrice) / avgCompetitorPrice) * 100;
-
     if (percentDiff > 20) position = 'above_market';
     else if (percentDiff < -20) position = 'below_market';
 
     return {
         your_price: yourPrice,
-        avg_competitor_price: Math.round(avgCompetitorPrice * 100) / 100,
-        min_competitor_price: Math.min(...competitorPrices),
-        max_competitor_price: Math.max(...competitorPrices),
+        avg_comparable_price: Math.round(avg * 100) / 100,
+        min_comparable_price: prices[0],
+        max_comparable_price: prices[prices.length - 1],
         price_position: position,
         percent_difference: Math.round(percentDiff * 10) / 10,
-        competitor_count: competitorPrices.length,
+        data_points: prices.length,
         recommendation: position === 'above_market'
             ? 'Consider lowering price for faster sale'
             : position === 'below_market'
@@ -308,7 +333,7 @@ function generateHotKeywords(category) {
 
 export default {
     getCompetitorsForPlatform,
-    generateCompetitorListings,
+    normalizeScrapedListings,
     getMarketInsight,
     findOpportunities,
     comparePricesWithCompetitors,
