@@ -204,21 +204,21 @@ function mapWhatnotOrderToSale(wnOrder, shop) {
 function mapWhatnotStatus(status) {
     const statusMap = {
         'active': 'active',
-        'pending': 'reserved',
+        'pending': 'pending',
         'sold': 'sold',
-        'ended': 'inactive',
-        'cancelled': 'inactive'
+        'ended': 'ended',
+        'cancelled': 'ended'
     };
-    return statusMap[status] || 'unknown';
+    return statusMap[status] || 'draft';
 }
 
 function mapWhatnotOrderStatus(status) {
     const statusMap = {
         'pending': 'pending',
         'shipped': 'shipped',
-        'delivered': 'completed',
+        'delivered': 'delivered',
         'cancelled': 'cancelled',
-        'refunded': 'cancelled'
+        'refunded': 'returned'
     };
     return statusMap[status] || 'pending';
 }

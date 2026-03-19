@@ -215,18 +215,18 @@ function mapGrailedOrderToSale(grailedOrder, shop) {
 function mapGrailedStatus(status) {
     const statusMap = {
         'for_sale': 'active',
-        'reserved': 'reserved',
+        'reserved': 'pending',
         'sold': 'sold',
-        'deleted': 'deleted'
+        'deleted': 'ended'
     };
-    return statusMap[status] || 'unknown';
+    return statusMap[status] || 'draft';
 }
 
 function mapGrailedOrderStatus(status) {
     const statusMap = {
         'pending': 'pending',
         'shipped': 'shipped',
-        'delivered': 'completed',
+        'delivered': 'delivered',
         'cancelled': 'cancelled'
     };
     return statusMap[status] || 'pending';

@@ -204,21 +204,21 @@ function mapFacebookOrderToSale(fbOrder, shop) {
 function mapFacebookStatus(status) {
     const statusMap = {
         'LISTED': 'active',
-        'PENDING': 'reserved',
+        'PENDING': 'pending',
         'SOLD': 'sold',
-        'EXPIRED': 'inactive',
-        'DELETED': 'inactive'
+        'EXPIRED': 'ended',
+        'DELETED': 'ended'
     };
-    return statusMap[status] || 'unknown';
+    return statusMap[status] || 'draft';
 }
 
 function mapFacebookOrderStatus(status) {
     const statusMap = {
         'pending': 'pending',
         'shipped': 'shipped',
-        'delivered': 'completed',
+        'delivered': 'delivered',
         'cancelled': 'cancelled',
-        'refunded': 'cancelled'
+        'refunded': 'returned'
     };
     return statusMap[status] || 'pending';
 }

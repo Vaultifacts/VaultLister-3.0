@@ -185,7 +185,8 @@ function runMigrations() {
             '106_fix_purchase_number_unique.sql',
             '107_document_security_logs_id_design.sql',
             '108_add_offers_soft_delete.sql',
-            '109_document_mfa_events_id_design.sql'
+            '109_document_mfa_events_id_design.sql',
+            '110_add_sync_error_to_shops.sql'
         ];
 
         for (const migrationFile of migrationFiles) {

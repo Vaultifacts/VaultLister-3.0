@@ -349,12 +349,12 @@ function mapEbayOrderToSale(ebayOrder, shop) {
 function mapEbayStatus(ebayStatus) {
     const statusMap = {
         'ACTIVE': 'active',
-        'INACTIVE': 'inactive',
-        'OUT_OF_STOCK': 'out_of_stock',
+        'INACTIVE': 'ended',
+        'OUT_OF_STOCK': 'ended',
         'ENDED': 'ended',
         'SOLD': 'sold'
     };
-    return statusMap[ebayStatus] || 'unknown';
+    return statusMap[ebayStatus] || 'draft';
 }
 
 /**
@@ -363,8 +363,8 @@ function mapEbayStatus(ebayStatus) {
 function mapEbayOrderStatus(ebayStatus) {
     const statusMap = {
         'NOT_STARTED': 'pending',
-        'IN_PROGRESS': 'processing',
-        'FULFILLED': 'completed',
+        'IN_PROGRESS': 'pending',
+        'FULFILLED': 'delivered',
         'CANCELLED': 'cancelled'
     };
     return statusMap[ebayStatus] || 'pending';

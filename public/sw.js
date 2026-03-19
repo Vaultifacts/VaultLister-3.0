@@ -1,11 +1,11 @@
-﻿// VaultLister Service Worker v4.3
+﻿// VaultLister Service Worker v4.4
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v4.3';
+const CACHE_VERSION = 'v4.4';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
-// Phase 1 files to pre-cache (app shell)
+// Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
     '/core-bundle.js?v=350159a7',
@@ -15,8 +15,11 @@ const PRECACHE_URLS = [
     '/assets/favicon.svg',
     '/components/photoEditor.js',
     '/components/chatWidget.js',
-    // Phase 2: route-group chunks (pre-cached for offline use)
     '/chunk-inventory.js?v=350159a7',
+];
+
+// Secondary chunks — fetched in the background during activate
+const BACKGROUND_CACHE_URLS = [
     '/chunk-sales.js?v=350159a7',
     '/chunk-tools.js?v=350159a7',
     '/chunk-intelligence.js?v=350159a7',
@@ -45,6 +48,14 @@ self.addEventListener('activate', (event) => {
                     .map((key) => caches.delete(key))
             ))
             .then(() => self.clients.claim())
+            .then(() => {
+                // Background-fetch secondary chunks — non-blocking; failures are silent
+                caches.open(STATIC_CACHE).then((cache) => {
+                    for (const url of BACKGROUND_CACHE_URLS) {
+                        fetch(url).then((r) => { if (r.ok) cache.put(url, r); }).catch(() => null);
+                    }
+                });
+            })
     );
 });
 
@@ -86,6 +97,9 @@ self.addEventListener('fetch', (event) => {
         '/api/shipping-profiles',
         '/api/templates',
         '/api/checklist',
+        '/api/inventory',
+        '/api/analytics',
+        '/api/notifications',
     ];
     const isSWRRoute = SWR_API_ROUTES.includes(url.pathname) ||
         SWR_API_PREFIXES.some(p => url.pathname.startsWith(p));
@@ -93,6 +107,8 @@ self.addEventListener('fetch', (event) => {
     if (url.pathname.startsWith('/api/') && isSWRRoute) {
         const SWR_CACHE = 'vaultlister-swr-api';
         const MAX_AGE_MS = 10 * 60 * 1000; // evict entries older than 10 minutes
+
+        const SWR_WINDOW_MS = 30 * 1000; // serve from cache without waiting if < 30s old
 
         event.respondWith((async () => {
             const cache = await caches.open(SWR_CACHE);
@@ -107,7 +123,7 @@ self.addEventListener('fetch', (event) => {
                 }
             }
 
-            const fresh = cached && (Date.now() - new Date(cached.headers.get('date') || 0).getTime()) <= MAX_AGE_MS;
+            const fresh = cached && (Date.now() - new Date(cached.headers.get('date') || 0).getTime()) <= SWR_WINDOW_MS;
 
             // Background revalidation (always, even on cache hit)
             const revalidate = fetch(request).then(response => {

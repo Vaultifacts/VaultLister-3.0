@@ -271,18 +271,18 @@ function mapPoshmarkOrderToSale(poshOrder, shop) {
 function mapPoshmarkStatus(status) {
     const statusMap = {
         'available': 'active',
-        'reserved': 'reserved',
+        'reserved': 'pending',
         'sold': 'sold',
-        'not_for_sale': 'inactive'
+        'not_for_sale': 'ended'
     };
-    return statusMap[status] || 'unknown';
+    return statusMap[status] || 'draft';
 }
 
 function mapPoshmarkOrderStatus(status) {
     const statusMap = {
         'pending': 'pending',
         'shipped': 'shipped',
-        'delivered': 'completed',
+        'delivered': 'delivered',
         'cancelled': 'cancelled'
     };
     return statusMap[status] || 'pending';

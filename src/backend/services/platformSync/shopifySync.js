@@ -233,15 +233,15 @@ function mapShopifyOrderToSale(order, shop) {
 function mapShopifyStatus(status) {
     const statusMap = {
         'active': 'active',
-        'archived': 'inactive',
+        'archived': 'archived',
         'draft': 'draft'
     };
-    return statusMap[status] || 'unknown';
+    return statusMap[status] || 'draft';
 }
 
 function mapShopifyOrderStatus(status) {
     const statusMap = {
-        'fulfilled': 'completed',
+        'fulfilled': 'delivered',
         'partial': 'shipped',
         null: 'pending',
         'restocked': 'cancelled'

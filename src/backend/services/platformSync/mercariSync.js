@@ -218,18 +218,18 @@ function mapMercariOrderToSale(mercariOrder, shop) {
 function mapMercariStatus(status) {
     const statusMap = {
         'on_sale': 'active',
-        'trading': 'reserved',
+        'trading': 'pending',
         'sold': 'sold',
-        'inactive': 'inactive'
+        'inactive': 'ended'
     };
-    return statusMap[status] || 'unknown';
+    return statusMap[status] || 'draft';
 }
 
 function mapMercariOrderStatus(status) {
     const statusMap = {
         'pending': 'pending',
         'shipped': 'shipped',
-        'completed': 'completed',
+        'completed': 'delivered',
         'cancelled': 'cancelled'
     };
     return statusMap[status] || 'pending';

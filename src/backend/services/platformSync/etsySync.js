@@ -358,13 +358,13 @@ function mapEtsyOrderToSale(etsyOrder, shop) {
 function mapEtsyStatus(etsyState) {
     const statusMap = {
         'active': 'active',
-        'inactive': 'inactive',
-        'sold_out': 'out_of_stock',
+        'inactive': 'ended',
+        'sold_out': 'ended',
         'draft': 'draft',
         'expired': 'ended',
         'removed': 'ended'
     };
-    return statusMap[etsyState] || 'unknown';
+    return statusMap[etsyState] || 'draft';
 }
 
 /**
@@ -372,12 +372,12 @@ function mapEtsyStatus(etsyState) {
  */
 function mapEtsyOrderStatus(etsyStatus) {
     const statusMap = {
-        'paid': 'completed',
-        'shipped': 'completed',
-        'completed': 'completed',
-        'processing': 'processing',
+        'paid': 'confirmed',
+        'shipped': 'shipped',
+        'completed': 'delivered',
+        'processing': 'pending',
         'canceled': 'cancelled',
-        'refunded': 'refunded'
+        'refunded': 'returned'
     };
     return statusMap[etsyStatus] || 'pending';
 }

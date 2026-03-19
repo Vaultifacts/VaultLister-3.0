@@ -214,18 +214,18 @@ function mapDepopOrderToSale(depopOrder, shop) {
 function mapDepopStatus(status) {
     const statusMap = {
         'available': 'active',
-        'reserved': 'reserved',
+        'reserved': 'pending',
         'sold': 'sold',
-        'inactive': 'inactive'
+        'inactive': 'ended'
     };
-    return statusMap[status] || 'unknown';
+    return statusMap[status] || 'draft';
 }
 
 function mapDepopOrderStatus(status) {
     const statusMap = {
         'pending': 'pending',
         'shipped': 'shipped',
-        'delivered': 'completed',
+        'delivered': 'delivered',
         'cancelled': 'cancelled'
     };
     return statusMap[status] || 'pending';
