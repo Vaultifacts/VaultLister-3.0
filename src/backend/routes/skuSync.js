@@ -155,23 +155,50 @@ export async function skuSyncRouter(ctx) {
         };
       }
 
-      // In a real implementation, this would sync with external platforms
-      // For now, we'll just mark them as synced
+      // Sync SKU to each linked platform's listing
+      let synced = 0;
+      let failed = 0;
       for (const link of pending) {
-        await query.run(
-          `UPDATE sku_platform_links
-           SET sync_status = 'synced', last_synced_at = CURRENT_TIMESTAMP
-           WHERE id = ?`,
-          [link.id]
-        );
+        try {
+          // Update the corresponding listing's SKU/title/price from inventory
+          const inventory = query.get(
+            'SELECT sku, title, list_price FROM inventory WHERE id = ? AND user_id = ?',
+            [link.inventory_id, user.id]
+          );
+          if (inventory) {
+            const listing = query.get(
+              'SELECT id FROM listings WHERE inventory_id = ? AND platform = ?',
+              [link.inventory_id, link.platform]
+            );
+            if (listing) {
+              query.run(
+                `UPDATE listings SET title = ?, price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                [inventory.title, inventory.list_price, listing.id]
+              );
+            }
+          }
+          query.run(
+            `UPDATE sku_platform_links SET sync_status = 'synced', last_synced_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            [link.id]
+          );
+          synced++;
+        } catch (err) {
+          query.run(
+            `UPDATE sku_platform_links SET sync_status = 'error', last_synced_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            [link.id]
+          );
+          failed++;
+          logger.warn('[SKUSync] Sync failed for link ' + link.id + ': ' + err.message);
+        }
       }
 
       return {
         status: 200,
         data: {
           success: true,
-          synced: pending.length,
-          message: `Synced ${pending.length} SKU links`
+          synced,
+          failed,
+          message: `Synced ${synced} SKU links${failed > 0 ? `, ${failed} failed` : ''}`
         }
       };
     }
@@ -216,7 +243,7 @@ export async function skuSyncRouter(ctx) {
         data: {
           barcode,
           sku_links: skuLinks,
-          inventory_items: inventoryItems,
+          inventory: inventoryItems,
           bin_locations: binLocations,
           total_results: skuLinks.length + inventoryItems.length + binLocations.length
         }
