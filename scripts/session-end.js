@@ -103,6 +103,16 @@ function ask(rl, question) {
 }
 
 async function main() {
+  // Validate required environment variables before proceeding
+  const requiredEnvVars = ['DB_PATH', 'DATA_DIR', 'NOTION_TOKEN'];
+  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+  if (missingVars.length > 0) {
+    console.error(`Error: Missing required environment variables: ${missingVars.join(', ')}`);
+    console.error('Cannot proceed with cleanup operations without proper configuration.');
+    process.exit(1);
+  }
+
   console.log('╔════════════════════════════════════════════════════════════╗');
   console.log('║          SESSION END - Add Completed Features              ║');
   console.log('╚════════════════════════════════════════════════════════════╝\n');
