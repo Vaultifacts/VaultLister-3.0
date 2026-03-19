@@ -70,16 +70,30 @@ async function createBackup(type = 'daily') {
         process.exit(1);
     }
 
-    if (CONFIG.compress) {
-        // Compress backup
-        await pipeline(
-            createReadStream(DB_FILE),
-            createGzip(),
-            createWriteStream(backupPath)
-        );
-    } else {
-        // Simple copy
-        copyFileSync(DB_FILE, backupPath);
+    // Use SQLite online backup API (safe for WAL mode — includes uncommitted WAL frames)
+    const Database = (await import('bun:sqlite')).default;
+    const sourceDb = new Database(DB_FILE, { readonly: true });
+    const tempPath = backupPath + '.tmp';
+
+    try {
+        sourceDb.exec(`VACUUM INTO '${tempPath.replace(/'/g, "''")}'`);
+        sourceDb.close();
+
+        if (CONFIG.compress) {
+            await pipeline(
+                createReadStream(tempPath),
+                createGzip(),
+                createWriteStream(backupPath)
+            );
+            unlinkSync(tempPath);
+        } else {
+            const { renameSync } = await import('fs');
+            renameSync(tempPath, backupPath);
+        }
+    } catch (err) {
+        sourceDb.close();
+        try { unlinkSync(tempPath); } catch {}
+        throw err;
     }
 
     const stats = statSync(backupPath);
