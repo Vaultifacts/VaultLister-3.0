@@ -60,12 +60,8 @@ export const test = base.extend({
 
     // Provides a page that's already authenticated via localStorage injection
     authedPage: async ({ page, authData }, use) => {
-        // Clear cookies and localStorage from previous tests
+        // Clear cookies from previous tests
         await page.context().clearCookies();
-        await page.evaluate(() => {
-            localStorage.clear();
-            sessionStorage.clear();
-        });
         // Set vl_access cookie so all navigations bypass the landing page and reach the SPA
         const url = new URL(BASE);
         await page.context().addCookies([{
@@ -75,9 +71,12 @@ export const test = base.extend({
             path: '/',
         }]);
 
-        // Navigate to SPA and inject auth tokens into localStorage before SPA init
+        // Navigate to SPA, clear stale storage, then inject fresh auth tokens
         await page.goto(`${BASE}/#login`);
         await page.waitForLoadState('domcontentloaded');
+        await page.evaluate(() => {
+            try { localStorage.clear(); sessionStorage.clear(); } catch {}
+        });
         await injectAuth(page, authData);
 
         // Navigate to dashboard — SPA hydrates from localStorage on DOMContentLoaded
