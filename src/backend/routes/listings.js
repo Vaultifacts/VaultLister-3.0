@@ -359,8 +359,16 @@ export async function listingsRouter(ctx) {
 
         const results = { created: [], skipped: [], errors: [] };
 
+        // Batch-fetch all inventory items in one query instead of N+1
+        const placeholders = inventoryIds.map(() => '?').join(',');
+        const allItems = query.all(
+            `SELECT * FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`,
+            [...inventoryIds, user.id]
+        );
+        const itemMap = new Map(allItems.map(item => [item.id, item]));
+
         for (const invId of inventoryIds) {
-            const item = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [invId, user.id]);
+            const item = itemMap.get(invId);
             if (!item) {
                 results.errors.push({ inventoryId: invId, error: 'Inventory item not found' });
                 continue;
