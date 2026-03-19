@@ -11756,11 +11756,12 @@ body.dark-mode .autocomplete-item.selected {
 }
 
 body.dark-mode .help-tooltip[data-tooltip]:hover::after {
-    background: #374151;
+    background: #1f2937;
+    color: #f9fafb;
 }
 
 body.dark-mode .help-tooltip[data-tooltip]:hover::before {
-    border-top-color: #374151;
+    border-top-color: #1f2937;
 }
 
 /* ============================================
@@ -35405,6 +35406,7 @@ body.dark-mode .import-preview-table td {
 
 .tooltip-primary .tooltip-content {
     background: var(--primary-500);
+    color: white;
 }
 
 .tooltip-primary.tooltip-top .tooltip-content::before {
@@ -45425,11 +45427,12 @@ body.dark-mode .breadcrumb-separator {
 }
 
 body.dark-mode [data-tooltip]::before {
-    background: var(--gray-700);
+    background: #1f2937;
+    color: #f9fafb;
 }
 
 body.dark-mode [data-tooltip]::after {
-    border-top-color: var(--gray-700);
+    border-top-color: #1f2937;
 }
 
 body.dark-mode .quick-action-card {
@@ -52041,7 +52044,7 @@ body.dark-mode .radar-axis-label { fill: var(--gray-400); }
 
 body.dark-mode .scatter-grid-line { stroke: var(--gray-700); }
 body.dark-mode .scatter-axis { stroke: var(--gray-600); }
-body.dark-mode .scatter-tooltip { background: var(--gray-700); }
+body.dark-mode .scatter-tooltip { background: #1f2937; color: #f9fafb; }
 
 body.dark-mode .gantt-header { background: var(--gray-800); border-color: var(--gray-700); }
 body.dark-mode .gantt-header-cell { border-color: var(--gray-700); color: var(--gray-400); }
