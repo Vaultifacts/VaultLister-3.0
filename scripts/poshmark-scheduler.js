@@ -19,7 +19,7 @@
 
 import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from '../src/shared/automations/stealth.js';
 import { RATE_LIMITS, jitteredDelay } from '../src/shared/automations/rate-limits.js';
-import { existsSync, readFileSync, writeFileSync, appendFileSync, mkdirSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, appendFileSync, mkdirSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -29,6 +29,7 @@ const PROFILE_DIR = join(ROOT, 'data', 'poshmark-profile');
 const COOKIE_FILE = join(ROOT, 'data', 'poshmark-cookies.json');
 const AUDIT_LOG = join(ROOT, 'data', 'automation-audit.log');
 const SCHEDULER_LOG = join(ROOT, 'logs', 'poshmark-scheduler.log');
+const LOCK_FILE = join(ROOT, 'data', 'poshmark-scheduler.lock');
 
 // Intervals in milliseconds
 const SHARE_INTERVAL   = 8 * 60 * 60 * 1000;  // 8 hours
@@ -323,6 +324,46 @@ async function runAll() {
     if (!SHARE_ONLY) await taskOfferSync();
 }
 
+// ─── Lock File (prevent collision with in-app taskWorker) ────────────────
+function acquireLock() {
+    try {
+        if (existsSync(LOCK_FILE)) {
+            const lockData = JSON.parse(readFileSync(LOCK_FILE, 'utf8'));
+            const age = Date.now() - new Date(lockData.ts).getTime();
+            if (age < 30 * 60 * 1000) { // Lock valid for 30 min
+                log(`ERROR: Another scheduler is running (PID ${lockData.pid}, started ${lockData.ts})`);
+                log('If the in-app taskWorker handles Poshmark automations, this standalone script is not needed.');
+                log('To force: delete data/poshmark-scheduler.lock');
+                process.exit(1);
+            }
+            log('Stale lock found (>30min) — overwriting');
+        }
+        mkdirSync(join(ROOT, 'data'), { recursive: true });
+        writeFileSync(LOCK_FILE, JSON.stringify({ pid: process.pid, ts: new Date().toISOString(), source: 'standalone' }));
+    } catch (e) {
+        log(`Lock warning: ${e.message}`);
+    }
+}
+
+function releaseLock() {
+    try {
+        if (existsSync(LOCK_FILE)) {
+            const lockData = JSON.parse(readFileSync(LOCK_FILE, 'utf8'));
+            if (lockData.pid === process.pid) {
+                unlinkSync(LOCK_FILE);
+            }
+        }
+    } catch {}
+}
+
+process.on('SIGINT', () => { releaseLock(); process.exit(0); });
+process.on('SIGTERM', () => { releaseLock(); process.exit(0); });
+
+log('');
+log('NOTE: This standalone scheduler is DEPRECATED. The in-app taskWorker handles');
+log('Poshmark automations automatically. Use this only for manual/one-off runs.');
+log('');
+acquireLock();
 log('Poshmark Scheduler starting');
 log(`Mode: ${ONCE ? 'once' : 'loop'} | Target: ${BASE_URL}`);
 log(`Schedule: share every ${SHARE_INTERVAL/3600000}h, keepalive every ${KEEPALIVE_INTERVAL/3600000}h, offers every ${OFFER_INTERVAL/3600000}h`);

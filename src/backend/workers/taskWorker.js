@@ -7,6 +7,8 @@ import { syncShop } from '../services/platformSync/index.js';
 import { createOAuthNotification, NotificationTypes } from '../services/notificationService.js';
 import { logger } from '../shared/logger.js';
 import { auditLog } from '../services/platformSync/platformAuditLog.js';
+import { writeFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
 
 // Configuration
 const POLL_INTERVAL_MS = 10 * 1000; // 10 seconds
@@ -36,6 +38,15 @@ export function startTaskWorker() {
 
     logger.info('[TaskWorker] Starting task worker...');
     logger.info(`[TaskWorker] Poll interval: ${POLL_INTERVAL_MS / 1000}s, Max concurrent: ${MAX_CONCURRENT_TASKS}`);
+
+    // Write lock file to prevent standalone poshmark-scheduler.js from colliding
+    try {
+        const lockPath = join(process.cwd(), 'data', 'poshmark-scheduler.lock');
+        mkdirSync(join(process.cwd(), 'data'), { recursive: true });
+        writeFileSync(lockPath, JSON.stringify({ pid: process.pid, ts: new Date().toISOString(), source: 'taskWorker' }));
+    } catch (lockErr) {
+        logger.warn('[TaskWorker] Could not write scheduler lock file', null, { detail: lockErr.message });
+    }
 
     // Run immediately on start
     processQueue();
