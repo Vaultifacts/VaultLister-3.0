@@ -268,7 +268,7 @@ export async function webhooksRouter(ctx) {
             // All registered endpoints must have a secret — reject misconfigured ones
             if (!webhookConfig.secret) {
                 logger.error(`[Webhooks] Endpoint for source "${source}" has no secret configured`);
-                return { status: 500, data: { error: 'Webhook endpoint misconfigured' } };
+                return { status: 403, data: { error: 'Webhook endpoint misconfigured — no secret' } };
             }
 
             // Verify the HMAC signature

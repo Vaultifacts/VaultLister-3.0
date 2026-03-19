@@ -452,6 +452,18 @@ const apiRoutes = {
 
         const monMetrics = monitoring.getMetrics();
 
+        // In production, only return minimal safe information
+        if (IS_PROD) {
+            return {
+                status: 200,
+                data: {
+                    status: 'ok',
+                    timestamp: new Date().toISOString()
+                }
+            };
+        }
+
+        // In development, return full details
         return {
             status: 200,
             data: {
