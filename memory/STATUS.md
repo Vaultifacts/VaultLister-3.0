@@ -3,7 +3,7 @@
 
 ## Current State
 - **Branch:** master
-- **Last commit:** e98034e — feat: camera capture + platform sync mock cleanup
+- **Last commit:** 2d9490e — feat: Google Drive + Calendar OAuth + Outlook integration plumbing
 - **Production URL:** https://vaultlister.com — LIVE ✅
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **SSH access:** `ssh -i ssh-key-2026-03-15.key ubuntu@204.216.105.105` (user is `ubuntu`, NOT `openclawuser`)
