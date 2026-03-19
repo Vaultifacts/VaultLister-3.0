@@ -47,23 +47,8 @@ chrome.runtime.onInstalled.addListener(() => {
     });
 });
 
-// Check and request notification permission on startup
-async function ensureNotificationPermission() {
-    const permission = Notification.permission;
-    if (permission === 'default') {
-        try {
-            const result = await Notification.requestPermission();
-            if (result === 'granted') {
-                logger.infoSync('Notification permission granted');
-            }
-        } catch (error) {
-            logger.error('Failed to request notification permission:', error);
-        }
-    }
-}
-
-// Request notification permission when service worker starts
-ensureNotificationPermission();
+// Notification permission cannot be requested from a service worker in MV3.
+// chrome.notifications is used directly (no permission prompt needed — covered by "notifications" in manifest).
 
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
