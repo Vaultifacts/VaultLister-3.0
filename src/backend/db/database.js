@@ -180,7 +180,8 @@ function runMigrations() {
             '101_add_auto_sync.sql',
             '102_add_stripe_columns.sql',
             '103_add_google_integrations.sql',
-            '104_fix_listings_folders_user_id.sql'
+            '104_fix_listings_folders_user_id.sql',
+            '105_add_composite_indexes.sql'
         ];
 
         for (const migrationFile of migrationFiles) {
