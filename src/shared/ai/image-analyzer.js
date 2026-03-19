@@ -232,16 +232,35 @@ export function generateTagsFromAnalysis(analysis) {
 
 /**
  * Estimate image quality
+ * @param {Object} imageInfo - { width, height, fileSize }
+ * @param {Object} [aiAnalysis] - Optional AI analysis from Claude Vision (photoQuality field)
  */
-export function estimateImageQuality(imageInfo) {
-    // Simplified quality estimation
-    // Real implementation would analyze actual image properties
-
+export function estimateImageQuality(imageInfo, aiAnalysis) {
     const quality = {
         score: 0,
         issues: [],
         suggestions: []
     };
+
+    // If AI analysis with photoQuality is available, use it directly
+    if (aiAnalysis?.photoQuality) {
+        const pq = aiAnalysis.photoQuality;
+        quality.score = Math.round((pq.score || 5) * 10); // Convert 1-10 to 0-100
+        quality.issues = pq.issues || [];
+        quality.suggestions = pq.suggestions || [];
+        quality.source = 'claude-vision';
+        quality.score = Math.min(100, quality.score);
+
+        if (quality.score >= 80) quality.assessment = 'Excellent';
+        else if (quality.score >= 60) quality.assessment = 'Good';
+        else if (quality.score >= 40) quality.assessment = 'Fair';
+        else quality.assessment = 'Needs improvement';
+
+        return quality;
+    }
+
+    // Fallback: metadata-based estimation
+    quality.source = 'metadata';
 
     // Check dimensions (if available)
     if (imageInfo.width && imageInfo.height) {
@@ -260,12 +279,12 @@ export function estimateImageQuality(imageInfo) {
         // Check aspect ratio
         const ratio = imageInfo.width / imageInfo.height;
         if (ratio >= 0.8 && ratio <= 1.2) {
-            quality.score += 20; // Square-ish images are good for most platforms
+            quality.score += 20;
         } else {
             quality.suggestions.push('Square images work best on most platforms');
         }
     } else {
-        quality.score += 30; // Default score if dimensions unknown
+        quality.score += 30;
     }
 
     // Check file size (if available)
@@ -281,8 +300,14 @@ export function estimateImageQuality(imageInfo) {
         quality.score += 15;
     }
 
-    // Background check (placeholder)
-    quality.score += 20; // Assume good background
+    // Background check — without AI, award partial points based on resolution
+    // (high-res images are more likely to have intentional backgrounds)
+    if (imageInfo.width && imageInfo.height && Math.min(imageInfo.width, imageInfo.height) >= 800) {
+        quality.score += 15;
+    } else {
+        quality.score += 10;
+        quality.suggestions.push('Use a clean, well-lit background for better listings');
+    }
 
     // Normalize score to 0-100
     quality.score = Math.min(100, quality.score);
