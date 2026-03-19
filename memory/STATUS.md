@@ -3,22 +3,51 @@
 
 ## Current State
 - **Branch:** master
-- **Last commit:** 3b0bbad — feat: cross-listing automation — fix 6 gaps for production-ready publishing
+- **Last commit:** 0afb2cf — chore: upgrade GitHub Actions to Node.js 24
 - **Production URL:** https://vaultlister.com — LIVE ✅
 - **Staging server:** Oracle Cloud Free Tier VM (204.216.105.105, ca-montreal-1, Ubuntu 22.04)
 - **SSH access:** `ssh -i ssh-key-2026-03-15.key ubuntu@204.216.105.105` (user is `ubuntu`, NOT `openclawuser`)
 - **Domain:** vaultlister.com (Namecheap)
 - **SSL:** Let's Encrypt, auto-renewal via Certbot
-- **Deploy workflow:** Push to `staging` branch triggers `deploy-staging.yml` → Docker image → GHCR → manual `docker compose up -d --force-recreate --pull always` on server
+- **Deploy workflow:** Push to `staging` branch triggers `deploy-staging.yml` → Docker image → GHCR → `ssh ubuntu@server "bash /opt/vaultlister-staging/deploy.sh"` (auto-logins to GHCR via CR_PAT in .env)
 - **eBay OAuth:** Production keyset LIVE ✅
 - **Stripe:** Checkout + webhooks configured (keys in .env on server, not local)
 - **Poshmark:** Stealth bot operational ✅ — handle: `@raverealm`, country: `ca`
 - **E2E baseline:** 674/688 passing (100% non-skipped), 0 failed, 14 skipped — 2026-03-18
 - **As of:** 2026-03-18
 
-## Last Completed Work (2026-03-18)
+## Last Completed Work (2026-03-19)
 
-### Cross-Listing Automation — 6 Gaps Fixed (commit 3b0bbad)
+### Session Summary — 4 commits, all deployed to production
+
+**Commit 3b0bbad — Cross-Listing Automation (6 gaps fixed)**
+- Deleted dead stub `submitAdvancedCrosslist` + old modal
+- Advanced crosslist now publishes after creating drafts (draft→publish flow)
+- All 9 platforms in modal (added Mercari, Grailed, Etsy)
+- Targeted retry via `retryFailedPublishes` handler
+- WebSocket events `listing.published` / `listing.publish_failed`
+- Net -350 lines removed
+
+**Commit 40d4314 — Poshmark Scheduler Monitoring**
+- Fixed dead `poshmark_inventory_sync` task type (was throwing Unknown task type)
+- Added `GET /api/automations/scheduler-status` endpoint
+- Added Scheduler Health widget to automations page
+- Added `handlers.refreshSchedulerStatus()` for manual refresh
+
+**Commit a78179d — Scheduler Lock File**
+- Standalone `poshmark-scheduler.js` checks lock before starting
+- TaskWorker writes lock on startup
+- Deprecation notice in standalone script
+- 30-min lock expiry for stale locks
+
+**Commit 0afb2cf — GitHub Actions Upgrade**
+- All 5 workflows updated to Node.js 24 compatible versions
+- actions/checkout v6.0.2, setup-node v6.3.0, docker actions v4-7, github-script v8
+- All pinned to commit SHAs
+
+**E2E Baseline: 674/688 (100% non-skipped), 0 failed, 14 skipped — unchanged**
+
+### Previous: Cross-Listing Automation — 6 Gaps Fixed (commit 3b0bbad)
 Made cross-listing production-ready by fixing all identified gaps:
 
 1. **Deleted dead stub** `submitAdvancedCrosslist` (fake IDs, no API) and old modal (lines 1088-1285)
@@ -104,10 +133,9 @@ Reduced sidebar from 30→14 items. See git log for full details.
 - `bun run build` now runs both `build-dev-bundle.js` AND `build-frontend.js`
 
 ## Next Tasks
-1. **Etsy OAuth** — DEFERRED indefinitely. App approval timeline unknown. Treat as "Coming Soon" feature.
-2. **Chrome Extension** — build/polish the Chrome extension for scraping listings from marketplace pages
-3. **AI Listing Generation** — Claude-powered listing descriptions from photos
-4. **AR Previews** — augmented reality item previews (V2 feature)
+1. **AR Previews** — augmented reality item previews (V2 feature, needs design planning)
+2. **Etsy OAuth** — DEFERRED indefinitely. App approval timeline unknown. Treat as "Coming Soon" feature.
+3. **Production monitoring** — set up uptime monitoring / alerting for vaultlister.com
 
 ## Messages
 - SSH user on Oracle VM is `ubuntu` (NOT `openclawuser` — that was wrong in previous sessions)
