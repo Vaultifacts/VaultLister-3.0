@@ -627,55 +627,44 @@ export async function ordersRouter(ctx) {
         }
     }
 
-    // POST /api/orders/sync-all - Sync orders from all platforms
+    // POST /api/orders/sync-all - Sync orders from all connected platforms
     if (method === 'POST' && path === '/sync-all') {
         try {
-            // In production, this would call each platform's API
-            // For now, simulate syncing with mock data
-            const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
-            let totalSynced = 0;
-            let newOrders = 0;
+            // Find all connected shops for this user
+            const shops = query.all(
+                'SELECT id, platform FROM shops WHERE user_id = ? AND is_connected = 1',
+                [user.id]
+            );
 
-            for (const platform of platforms) {
-                // Simulate finding new orders (in production, call platform APIs)
-                const mockNewOrders = secureRandomInt(3);
-                newOrders += mockNewOrders;
+            if (shops.length === 0) {
+                return {
+                    status: 200,
+                    data: {
+                        message: 'No connected platforms found. Connect a marketplace in My Shops to sync orders.',
+                        platformsSynced: 0,
+                        newOrders: 0
+                    }
+                };
+            }
 
-                // Create mock orders for demonstration
-                const mockItemTitles = [
-                    "Vintage Levi's 501 Jeans", "Nike Air Max 90 Sneakers", "Coach Leather Crossbody",
-                    "Patagonia Fleece Jacket", "Ray-Ban Wayfarer Sunglasses", "Lululemon Align Leggings",
-                    "The North Face Puffer Vest", "Vans Old Skool Shoes", "Free People Floral Dress",
-                    "Carhartt WIP Work Jacket", "Adidas Ultraboost Running Shoes", "Anthropologie Sweater"
-                ];
-                const mockBuyers = [
-                    'vintage_finds', 'style_maven', 'thrift_queen', 'sneaker_head', 'bargain_betty',
-                    'trendy_teen', 'savvy_shopper', 'fashion_forward', 'deals_hunter', 'closet_lover'
-                ];
-                for (let i = 0; i < mockNewOrders; i++) {
-                    const orderId = uuidv4();
-                    query.run(`
-                        INSERT INTO orders (id, user_id, platform, order_number, buyer_username, item_title, sale_price, status, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
-                    `, [
-                        orderId,
-                        user.id,
-                        platform,
-                        'ORD-' + Date.now() + '-' + i,
-                        mockBuyers[secureRandomInt(mockBuyers.length)],
-                        mockItemTitles[secureRandomInt(mockItemTitles.length)],
-                        (secureRandomFloat() * 100 + 10).toFixed(2)
-                    ]);
-                }
-                totalSynced++;
+            // Queue a sync task for each connected shop
+            const { queueTask } = await import('../workers/taskWorker.js');
+            const queuedTasks = [];
+
+            for (const shop of shops) {
+                const task = queueTask('sync_shop', {
+                    shopId: shop.id,
+                    userId: user.id
+                });
+                queuedTasks.push({ platform: shop.platform, taskId: task.id });
             }
 
             return {
                 status: 200,
                 data: {
-                    message: `Synced ${platforms.length} platforms, found ${newOrders} new orders`,
-                    platformsSynced: totalSynced,
-                    newOrders: newOrders
+                    message: `Queued order sync for ${shops.length} connected platform(s). Results will appear shortly.`,
+                    platformsSynced: shops.length,
+                    tasks: queuedTasks
                 }
             };
         } catch (error) {
