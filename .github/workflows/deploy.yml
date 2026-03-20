@@ -80,56 +80,7 @@ jobs:
           script: |
             set -e
             cd /opt/vaultlister-staging
-
-            # Tag current running image for rollback (REM-08)
-            CURRENT_IMAGE=$(docker compose images app --format json 2>/dev/null | jq -r '.[0].Repository + ":" + .[0].Tag' 2>/dev/null || echo "")
-            if [ -n "$CURRENT_IMAGE" ] && [ "$CURRENT_IMAGE" != ":" ] && [ "$CURRENT_IMAGE" != "null:null" ]; then
-              docker tag "$CURRENT_IMAGE" "${CURRENT_IMAGE%%:*}:rollback" 2>/dev/null || true
-              echo "Tagged rollback image: $CURRENT_IMAGE"
-            fi
-
-            # Pull latest image from GHCR
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker compose pull app
-
-            # Rolling restart — zero downtime
-            docker compose up -d --no-deps app
-
-            # Wait for health check to pass (up to 60s)
-            HEALTHY=false
-            for i in $(seq 1 12); do
-              STATUS=$(docker compose exec -T app curl -sf http://localhost:3000/api/health | jq -r '.status' 2>/dev/null || echo "")
-              if [ "$STATUS" = "healthy" ]; then
-                echo "Health check passed"
-                HEALTHY=true
-                break
-              fi
-              echo "Waiting for health check... ($i/12)"
-              sleep 5
-            done
-
-            # Rollback if health check failed (REM-08)
-            if [ "$HEALTHY" != "true" ]; then
-              echo "ERROR: Health check failed after 60s — rolling back"
-              ROLLBACK_IMAGE="${CURRENT_IMAGE%%:*}:rollback"
-              if docker image inspect "$ROLLBACK_IMAGE" >/dev/null 2>&1; then
-                docker compose down app 2>/dev/null || true
-                docker tag "$ROLLBACK_IMAGE" "$CURRENT_IMAGE" 2>/dev/null || true
-                docker compose up -d --no-deps app
-                echo "Rolled back to previous image"
-                sleep 10
-                docker compose exec -T app curl -sf http://localhost:3000/api/health | jq . || echo "WARNING: Rollback health check also failed"
-              else
-                echo "WARNING: No rollback image available — manual intervention required"
-              fi
-              exit 1
-            fi
-
-            # Verify healthy
-            docker compose exec -T app curl -sf http://localhost:3000/api/health | jq .
-
-            # Prune old images (keep rollback tag)
-            docker image prune -f
+            bash deploy.sh
 
   deploy-production:
     name: Deploy to Production
