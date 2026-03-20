@@ -221,6 +221,15 @@ const api = {
         }
     },
 
+    // VAPID public key cache — fetched once, reused for all push subscriptions
+    _vapidPublicKey: null,
+    async getVapidPublicKey() {
+        if (this._vapidPublicKey) return this._vapidPublicKey;
+        const data = await this.get('/push-subscriptions/vapid-public-key');
+        this._vapidPublicKey = data.publicKey;
+        return this._vapidPublicKey;
+    },
+
     // Helper to wrap API calls with loading state
     async withLoading(key, apiCall) {
         loadingState.start(key);

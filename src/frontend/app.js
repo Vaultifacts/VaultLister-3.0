@@ -68275,9 +68275,10 @@ const handlers = {
             }
 
             const registration = await navigator.serviceWorker.ready;
+            const vapidKey = await api.getVapidPublicKey();
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY'
+                applicationServerKey: vapidKey
             });
 
             await api.post('/push/subscribe', { subscription });
