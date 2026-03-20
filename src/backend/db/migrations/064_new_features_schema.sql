@@ -185,5 +185,9 @@ INSERT OR IGNORE INTO affiliate_tiers (id, name, min_referrals, commission_rate)
     ('tier-gold', 'Gold', 25, 0.20);
 
 -- Seed initial ToS version
+-- Full text lives at /terms.html (the canonical static page). The content field stores
+-- the plain-text version for acceptance records and API consumers.
 INSERT OR IGNORE INTO tos_versions (id, version, title, content, effective_date) VALUES
-    ('tos-v1', '1.0', 'Terms of Service v1.0', 'Welcome to VaultLister. By using our service, you agree to these terms...', '2024-01-01');
+    ('tos-v1', '1.0', 'Terms of Service v1.0',
+     'By creating an account or using VaultLister (the "Service"), you agree to be bound by these Terms of Service. The full Terms of Service are available at /terms.html and are incorporated here by reference. Key provisions: (1) You must be 18 or older to use the Service. (2) You are responsible for maintaining account security and all activity under your account. (3) Automation features may violate certain marketplace terms; you use them at your own risk. (4) VaultLister is not affiliated with or endorsed by any third-party marketplace. (5) AI-generated content is provided as-is; you are responsible for reviewing it before publishing. (6) Liability is limited to the greater of fees paid in the prior 12 months or $100. (7) The Service is provided "as is" without warranties. Full terms: https://vaultlister.com/terms.html — contact: legal@vaultlister.com',
+     '2026-03-01');
