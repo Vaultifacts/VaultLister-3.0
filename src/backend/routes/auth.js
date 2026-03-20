@@ -906,8 +906,11 @@ export async function authRouter(ctx) {
                     VALUES (?, ?, ?, datetime('now'))
                 `, [user.id, resetToken, expiresAt]);
 
-                // In production, send email here. For demo, log it.
-                logger.info(`[auth] Password reset requested for ${maskEmail(email)} — token: ${resetToken.slice(0, 8)}...`);
+                // Send password reset email (falls back to console.log if SMTP not configured)
+                logger.info(`[auth] Password reset requested for ${maskEmail(email)}`);
+                emailService.sendPasswordResetEmail(user, resetToken).catch(err =>
+                    logger.error('[auth] Failed to send password reset email', null, { detail: err.message })
+                );
             }
         } catch (e) {
             logger.error('[auth] Password reset error', null, { detail: e.message });
