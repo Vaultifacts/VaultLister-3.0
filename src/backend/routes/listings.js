@@ -11,6 +11,7 @@ import { publishListingToGrailed } from '../services/platformSync/grailedPublish
 import { publishListingToFacebook } from '../services/platformSync/facebookPublish.js';
 import { publishListingToWhatnot } from '../services/platformSync/whatnotPublish.js';
 import { publishListingToShopify } from '../services/platformSync/shopifyPublish.js';
+import websocketService from '../services/websocket.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
@@ -1410,11 +1411,11 @@ export async function listingsRouter(ctx) {
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), id, user.id]
             );
             try {
-                const { websocketService } = await import('../services/websocket.js');
                 websocketService.sendToUser(user.id, {
                     type: 'listing.published',
-                    listingId: id,
                     platform: listing.platform,
+                    listingId: id,
+                    status: 'success',
                     platformListingId: result.listingId,
                     platformUrl: result.listingUrl
                 });
@@ -1425,11 +1426,11 @@ export async function listingsRouter(ctx) {
         } catch (error) {
             logger.error('[Listings] Publish error', user?.id, { platform: listing.platform, detail: error.message });
             try {
-                const { websocketService } = await import('../services/websocket.js');
                 websocketService.sendToUser(user.id, {
-                    type: 'listing.publish_failed',
-                    listingId: id,
+                    type: 'listing.published',
                     platform: listing.platform,
+                    listingId: id,
+                    status: 'error',
                     error: error.message
                 });
             } catch (wsErr) {
