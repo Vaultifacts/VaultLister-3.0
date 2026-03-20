@@ -21,10 +21,11 @@
 ## Security Rules (Non-Negotiable)
 - Always escape user content with `escapeHtml()` before rendering in the DOM
 - Never store raw tokens in localStorage without the existing `store.persist()` / `store.hydrate()` pattern
-- All POST/PUT/PATCH/DELETE routes must validate CSRF token via `validateCsrf()` middleware
+- CSRF is enforced globally in server.js via `applyCSRFProtection()` — do not add per-route CSRF checks
 - Parameterized queries only — never string-interpolate user input into SQL
 - Rate limiting via `rateLimiter()` middleware is required on all auth and public-facing routes
 - OAuth tokens from marketplace APIs must be encrypted with AES-256-CBC before SQLite storage
+- Never use bare `JSON.parse()` in route handlers — always use `safeJsonParse(str, fallback)` to prevent crashes on malformed data. The helper is defined in each route file that needs it.
 
 ## Automation Safety Rules
 - Playwright bots must read credentials from `.env` only — never accept credentials as function arguments

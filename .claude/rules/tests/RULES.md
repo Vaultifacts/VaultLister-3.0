@@ -10,6 +10,7 @@
 ## Test Scope
 - Unit tests: test one function or module in isolation; mock all external dependencies (DB, Playwright, Anthropic SDK)
 - Integration tests: test one complete API flow (e.g., inventory create → cross-list → analytics update)
+- Test port must always be `process.env.PORT || 3000` — never hardcode 3001 or 3100
 - E2E tests: test one complete user workflow end-to-end; use Playwright test fixtures
 - Do not write tests for code you did not write or modify in this session
 

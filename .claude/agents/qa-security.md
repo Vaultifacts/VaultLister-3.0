@@ -32,3 +32,12 @@ Common failure modes to look for:
 - rounding drift
 - migrations that work only on clean data
 - historical records breaking current logic
+
+## Mandatory Cross-Agent Rules
+- When editing app.js, ALSO edit core-bundle.js with the same change (and vice versa) — these are duplicates that must stay in sync
+- Never use bare JSON.parse() in route handlers — always use safeJsonParse(str, fallback)
+- Every new .sql migration file MUST be added to the migrationFiles array in src/backend/db/database.js
+- New environment variables MUST be added to .env.example
+- New frontend pages MUST be added to pageChunkMap in src/frontend/core/router.js
+- Commit messages must accurately describe ALL changes in the diff
+- After making changes, run bun test src/tests/auth.test.js and report the actual result

@@ -52,7 +52,8 @@ esac
 echo "Running unit tests (named baseline: $(echo "$KNOWN_FAIL_NAMES" | grep -c . || echo 0) known failures)..."
 PORT="${PORT:-3001}"
 if curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
-    TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true /home/openclawuser/.bun/bin/bun test src/tests/ 2>&1) || true
+    BUN_BIN=$(command -v bun 2>/dev/null || echo "/home/openclawuser/.bun/bin/bun")
+    TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true "$BUN_BIN" test src/tests/ 2>&1) || true
     FAIL_COUNT=$(echo "$TEST_OUTPUT" | grep -oP '^\s*\K\d+(?=\s+fail)' | tail -1)
     FAIL_COUNT="${FAIL_COUNT:-0}"
     case "$FAIL_COUNT" in

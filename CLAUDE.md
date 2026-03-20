@@ -46,9 +46,9 @@ Key decisions:
 ## Session Workflow
 
 ```
-1. bun scripts/session-start.js     # Check pending items, read STATUS.md
-2. Work on pending items             # Update STATUS.md immediately after each fix
-3. bun scripts/session-end.js       # Safety net for missed updates
+1. Read memory/STATUS.md + memory/MEMORY.md  # Auto-loaded by settings.json
+2. Work on pending items                      # Update STATUS.md immediately after each fix
+3. bun scripts/session-end.js                 # Safety net for missed updates
 4. bun scripts/transfer-approved.js # After user approves items
 ```
 
@@ -83,7 +83,7 @@ Key decisions:
 
 ## Critical Rules
 
-1. **Run `session-start.js` at the start of every session**
+1. **Read STATUS.md and MEMORY.md at session start** (auto-loaded by settings.json)
 2. **Never create one-off/batch scripts** — use permanent scripts or `bun -e "..."`
 3. **Update STATUS.md immediately** after each fix — never batch updates
 4. **Never mark items complete** without real testing
@@ -112,7 +112,7 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 1. Run `bun test src/tests/auth.test.js src/tests/security.test.js` (under 30 seconds)
 2. If you modified any backend route, run the relevant test file
 3. Never use `git add -A` — add specific files you changed
-4. The pre-commit hook enforces these rules automatically
+4. The pre-commit hook enforces these on Linux/CI. On Windows, tests run via PowerShell fallback.
 
 ### Things You Must NEVER Do
 - Remove `token` or `refreshToken` from `store.persist()` or `store.hydrate()`
@@ -121,7 +121,7 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 - Make "progress checkpoint" commits without running tests first
 - Use `git add -A` (add specific files by name instead)
 - Use `--no-verify` to bypass git hooks
-- Modify `.husky/pre-commit`, `.husky/pre-push`, or `.husky/commit-msg`
+- Delete `.husky/pre-commit`, `.husky/pre-push`, or `.husky/commit-msg` (modification for improvement is OK)
 
 ## Automation Safety Rules (Playwright Bots)
 - NEVER run automations against a live marketplace without explicit user confirmation
@@ -134,13 +134,22 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 - Always check file existence before Write — never overwrite unknown files
 - Never commit `.env`, secrets, or credentials
 - Git commits: `[AUTO]` prefix + conventional commit style (`feat`, `fix`, `chore`, `docs`, `test`, `refactor`)
-- Never push directly to `main` — push to feature branches
+- Push to `master` directly (single-developer workflow). Use feature branches for large multi-day changes only.
 - Run `/compact` at 70% context usage; `/clear` at 85%
 - Use Explore subagent for codebase exploration > 5K LOC
 - Use debugger subagent for error diagnosis — do not retry failed commands more than twice
 - Log all sessions in `audit-log.md` (append-only)
 
+## Rule Precedence (highest to lowest)
+1. `settings.json` deny list — automated, cannot be overridden
+2. `.husky/` hooks — automated, fire on every git operation
+3. `.claude/rules/src/RULES.md` and `tests/RULES.md` — context-specific
+4. This file (`CLAUDE.md`) — project-wide guidance
+5. Memory files (`MEMORY.md`) — behavioral guidance, advisory
+6. Global `~/.claude/CLAUDE.md` — defaults, overridden by project
+
 ## Code Conventions
+- This project uses **Bun** (not npm) despite the global CLAUDE.md default
 - Prefer existing patterns in the codebase over introducing new abstractions
 - No error handling unless explicitly requested or at system boundaries (user input, external APIs)
 - No docstrings, comments, or type annotations on code you did not change

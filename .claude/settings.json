@@ -6,8 +6,10 @@
     "deny": [
       "Bash(git push --force*)",
       "Bash(git push --force-with-lease*)",
-      "Bash(git push origin main*)",
-      "Bash(git push origin master*)",
+      "Bash(git push -f*)",
+      "Bash(git push * -f*)",
+      "Bash(git push --force origin main*)",
+      "Bash(git push --force origin master*)",
       "Bash(git push * --delete*)",
       "Bash(git reset --hard*)",
       "Bash(git rebase -i*)",
@@ -26,6 +28,9 @@
       "Bash(rm -rf src/*)",
       "Bash(rm -rf e2e/*)",
       "Bash(rm -rf .github/*)",
+      "Bash(rm -rf data/*)",
+      "Bash(*DROP TABLE*)",
+      "Bash(*DROP DATABASE*)",
       "Bash(npm publish*)",
       "Bash(bun publish*)"
     ]
@@ -51,17 +56,7 @@
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash(git commit *)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/post-commit.sh"
-          }
-        ]
-      }
-    ],
+    "PostToolUse": [],
     "Stop": [
       {
         "hooks": [

@@ -195,7 +195,17 @@ if [ -n "$CRITICAL_CHANGED" ]; then
         PORT="${PORT:-3001}"
         # Skip test gate on Windows (bun test hangs in Git Bash due to process handling)
         if [ "$(uname -o 2>/dev/null)" = "Msys" ] || [ -n "$MSYSTEM" ]; then
-            echo "Windows detected — skipping test gate (run manually: bun test src/tests/auth.test.js src/tests/security.test.js)"
+            echo "Windows detected — running tests via PowerShell..."
+            if command -v powershell >/dev/null 2>&1; then
+                powershell -NoProfile -ExecutionPolicy Bypass -Command "bun test src/tests/auth.test.js src/tests/security.test.js" || {
+                    echo "ERROR: Auth/security tests FAILED on Windows! Commit blocked."
+                    exit 1
+                }
+                echo "Auth/security tests passed (Windows/PowerShell)."
+            else
+                echo "WARNING: PowerShell not found — test gate skipped."
+                echo "REMINDER: Run manually: bun test src/tests/auth.test.js src/tests/security.test.js"
+            fi
         elif curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
             DISABLE_CSRF=true DISABLE_RATE_LIMIT=true bun test src/tests/auth.test.js src/tests/security.test.js 2>&1 || {
                 echo ""
@@ -211,6 +221,42 @@ if [ -n "$CRITICAL_CHANGED" ]; then
             exit 1
         fi
     fi
+fi
+
+# === Core-bundle sync check ===
+APP_STAGED=$(git diff --cached --name-only | grep "^src/frontend/app\.js$" || true)
+BUNDLE_STAGED=$(git diff --cached --name-only | grep "^src/frontend/core-bundle\.js$" || true)
+if [ -n "$APP_STAGED" ] && [ -z "$BUNDLE_STAGED" ]; then
+    echo "ERROR: app.js is staged but core-bundle.js is NOT. These files must stay in sync."
+    exit 1
+fi
+if [ -z "$APP_STAGED" ] && [ -n "$BUNDLE_STAGED" ]; then
+    echo "ERROR: core-bundle.js is staged but app.js is NOT. These files must stay in sync."
+    exit 1
+fi
+
+# === Migration registration check ===
+NEW_MIGRATIONS=$(git diff --cached --name-only | grep "^src/backend/db/migrations/.*\.sql$" || true)
+DB_JS_STAGED=$(git diff --cached --name-only | grep "^src/backend/db/database\.js$" || true)
+if [ -n "$NEW_MIGRATIONS" ] && [ -z "$DB_JS_STAGED" ]; then
+    echo "ERROR: New migration file(s) staged but database.js is NOT staged."
+    echo "  New migrations must be registered in the migrationFiles array."
+    exit 1
+fi
+
+# === Bare JSON.parse check in route files ===
+echo "Checking for new bare JSON.parse in routes..."
+ROUTE_DIFFS=$(git diff --cached -- src/backend/routes/*.js | grep "^+" | grep -v "^+++" | grep "JSON\.parse(" | grep -v "safeJsonParse" || true)
+if [ -n "$ROUTE_DIFFS" ]; then
+    echo "WARNING: New bare JSON.parse() found in staged route files. Use safeJsonParse() instead:"
+    echo "$ROUTE_DIFFS" | head -5
+fi
+
+# === SW cache version check ===
+STATIC_CHANGED=$(git diff --cached --name-only | grep -E "^public/.*\.(js|css|html)$" | grep -v "sw\.js" || true)
+SW_STAGED=$(git diff --cached --name-only | grep "^public/sw\.js$" || true)
+if [ -n "$STATIC_CHANGED" ] && [ -z "$SW_STAGED" ]; then
+    echo "WARNING: Static assets changed but sw.js not staged. Consider bumping CACHE_VERSION."
 fi
 
 echo "Pre-commit checks passed!"
