@@ -27,11 +27,9 @@ staged_test_files() {
 # Check for console.log statements (warn only)
 echo "Checking for debug statements..."
 CONSOLE_LOGS=""
-while IFS= read -r f; do
-    [ -f "$f" ] && grep -ql "console.log" "$f" 2>/dev/null && echo "$f" | grep -v "test" | grep -v "scripts" && CONSOLE_LOGS="$CONSOLE_LOGS $f"
-done <<EOF
-$(git diff --cached --name-only --diff-filter=ACM)
-EOF
+for f in $(git diff --cached --name-only --diff-filter=ACM 2>/dev/null); do
+    [ -f "$f" ] && grep -ql "console.log" "$f" 2>/dev/null && echo "$f" | grep -qv "test" && echo "$f" | grep -qv "scripts" && CONSOLE_LOGS="$CONSOLE_LOGS $f" || true
+done
 if [ -n "$CONSOLE_LOGS" ]; then
     echo "Warning: Found console.log statements. Consider removing before production."
 fi
@@ -39,16 +37,14 @@ fi
 # Check for hardcoded secrets (skip test files — they legitimately reference tokens)
 echo "Checking for potential secrets..."
 SECRET_FOUND=""
-while IFS= read -r f; do
+for f in $(staged_src_files 2>/dev/null); do
     [ -f "$f" ] || continue
     MATCH=$(grep -IE "(password|secret|api_key|apikey|token)\s*[:=]\s*['\"][^'\"]{8,}" "$f" 2>/dev/null | grep -vE "_(at|by|id|type|count|name|status|expires|created|updated)\b" | grep -v "test" | grep -v "example" | grep -v "demo" | grep -v "process.env" | grep -v "data-" | grep -v "placeholder" | grep -v "aria-" || true)
     if [ -n "$MATCH" ]; then
         echo "$f: $MATCH"
         SECRET_FOUND="1"
     fi
-done <<EOF
-$(staged_src_files)
-EOF
+done
 if [ -n "$SECRET_FOUND" ]; then
     echo "Error: Potential hardcoded secrets detected!"
     exit 1
@@ -78,16 +74,14 @@ fi
 # Note: .skip() is allowed — it's used for conditional test skipping
 echo "Checking for .only in tests..."
 ONLY_FOUND=""
-while IFS= read -r f; do
+for f in $(staged_test_files 2>/dev/null); do
     [ -f "$f" ] || continue
     MATCH=$(grep -InE "\.only\s*\(" "$f" 2>/dev/null || true)
     if [ -n "$MATCH" ]; then
         echo "$f:$MATCH"
         ONLY_FOUND="1"
     fi
-done <<EOF
-$(staged_test_files)
-EOF
+done
 if [ -n "$ONLY_FOUND" ]; then
     echo "Error: Found .only in test files — this would skip other tests in CI"
     exit 1
@@ -96,43 +90,36 @@ fi
 # Check for debugger statements
 echo "Checking for debugger statements..."
 DEBUGGER=""
-while IFS= read -r f; do
+for f in $(staged_js_files 2>/dev/null); do
     [ -f "$f" ] || continue
     MATCH=$(grep -In "^\s*debugger" "$f" 2>/dev/null || true)
     if [ -n "$MATCH" ]; then
         echo "$f:$MATCH"
         DEBUGGER="1"
     fi
-done <<EOF
-$(staged_js_files)
-EOF
+done
 if [ -n "$DEBUGGER" ]; then
     echo "Error: Found debugger statements (above)"
     exit 1
 fi
 
 # Check for large files (>5MB)
-# Note: uses a temp file + for loop instead of pipe to avoid wc -c deadlock on Windows Git Bash
+# Uses for loop over git output directly — avoids mktemp and pipe-to-while deadlocks on Windows Git Bash
 echo "Checking for large files..."
-LARGE_FILE_LIST=$(mktemp 2>/dev/null || echo "/tmp/pre-commit-large-$$")
-STAGED_FILES_TMP=$(mktemp 2>/dev/null || echo "/tmp/pre-commit-staged-$$")
-git diff --cached --name-only --diff-filter=ACM > "$STAGED_FILES_TMP"
-while IFS= read -r f; do
+LARGE_FILES=""
+for f in $(git diff --cached --name-only --diff-filter=ACM 2>/dev/null); do
     if [ -f "$f" ]; then
         size=$(stat -c%s "$f" 2>/dev/null || stat -f%z "$f" 2>/dev/null || echo 0)
         if [ "$size" -gt 5242880 ]; then
-            echo "  $f ($((size/1048576))MB)" >> "$LARGE_FILE_LIST"
+            LARGE_FILES="$LARGE_FILES\n  $f ($((size/1048576))MB)"
         fi
     fi
-done < "$STAGED_FILES_TMP"
-rm -f "$STAGED_FILES_TMP"
-if [ -s "$LARGE_FILE_LIST" ]; then
+done
+if [ -n "$LARGE_FILES" ]; then
     echo "Error: Files over 5MB detected:"
-    cat "$LARGE_FILE_LIST"
-    rm -f "$LARGE_FILE_LIST"
+    printf "%b\n" "$LARGE_FILES"
     exit 1
 fi
-rm -f "$LARGE_FILE_LIST"
 
 # Syntax validation skipped — node --check hangs on ESM files, and Bun validates at runtime.
 # If you need syntax checking, use: bun build --no-bundle --outdir /dev/null <file>
@@ -192,7 +179,7 @@ if [ -n "$CRITICAL_CHANGED" ]; then
         echo "Critical files modified:$CRITICAL_CHANGED"
         echo "Running auth and security tests..."
 
-        PORT="${PORT:-3001}"
+        PORT="${PORT:-3000}"
         # Skip test gate on Windows (bun test hangs in Git Bash due to process handling)
         if [ "$(uname -o 2>/dev/null)" = "Msys" ] || [ -n "$MSYSTEM" ]; then
             echo "Windows detected — running tests via PowerShell..."
