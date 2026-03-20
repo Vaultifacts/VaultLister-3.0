@@ -75,11 +75,11 @@ jobs:
         with:
           host: ${{ secrets.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.STAGING_SSH_PORT || 22 }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          port: 22
           script: |
             set -e
-            cd /opt/vaultlister
+            cd /opt/vaultlister-staging
 
             # Tag current running image for rollback (REM-08)
             CURRENT_IMAGE=$(docker compose images app --format json 2>/dev/null | jq -r '.[0].Repository + ":" + .[0].Tag' 2>/dev/null || echo "")
