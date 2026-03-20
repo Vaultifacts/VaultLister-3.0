@@ -355,7 +355,9 @@ function getMockResponse(userMessage, userContext = {}) {
                     content: response,
                     quickActions: config.quickActions || [],
                     source: 'mock',
-                    category
+                    category,
+                    _source: 'mock',
+                    _warning: 'AI service not configured. Set ANTHROPIC_API_KEY in .env for real responses.'
                 };
             }
         }
@@ -367,7 +369,9 @@ function getMockResponse(userMessage, userContext = {}) {
         content: defaultResponse,
         quickActions: CANNED_RESPONSES.default.quickActions || [],
         source: 'mock',
-        category: 'default'
+        category: 'default',
+        _source: 'mock',
+        _warning: 'AI service not configured. Set ANTHROPIC_API_KEY in .env for real responses.'
     };
 }
 

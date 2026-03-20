@@ -5,6 +5,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import { logger } from '../shared/logger.js';
 import { validateBase64Image } from '../services/imageStorage.js';
 
+
+function safeJsonParse(str, fallback = null) { try { return JSON.parse(str); } catch { return fallback; } }
+
 // Per-user rate limiting for receipt uploads (5 per minute)
 const receiptUploadLimiter = new Map();
 
@@ -132,7 +135,7 @@ Return ONLY valid JSON with no additional text or markdown formatting.`;
         // Try to find JSON in the response
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-            parsed = JSON.parse(jsonMatch[0]);
+            parsed = safeJsonParse(jsonMatch[0], {});
         } else {
             throw new Error('Failed to parse AI response as JSON');
         }
@@ -257,7 +260,7 @@ export async function receiptParserRouter(ctx) {
 
         // Parse JSON fields
         receipts.forEach(r => {
-            r.parsed_data = JSON.parse(r.parsed_data || '{}');
+            r.parsed_data = safeJsonParse(r.parsed_data || '{}', {});
         });
 
         // Get counts by status
@@ -290,7 +293,7 @@ export async function receiptParserRouter(ctx) {
             return { status: 404, data: { error: 'Receipt not found' } };
         }
 
-        receipt.parsed_data = JSON.parse(receipt.parsed_data || '{}');
+        receipt.parsed_data = safeJsonParse(receipt.parsed_data || '{}', {});
 
         return { status: 200, data: { receipt } };
     }
@@ -321,7 +324,7 @@ export async function receiptParserRouter(ctx) {
         ]);
 
         const updated = query.get('SELECT * FROM email_parse_queue WHERE id = ?', [id]);
-        updated.parsed_data = JSON.parse(updated.parsed_data || '{}');
+        updated.parsed_data = safeJsonParse(updated.parsed_data || '{}', {});
 
         return { status: 200, data: { receipt: updated } };
     }
@@ -339,7 +342,7 @@ export async function receiptParserRouter(ctx) {
             return { status: 404, data: { error: 'Receipt not found' } };
         }
 
-        const parsedData = JSON.parse(receipt.parsed_data || '{}');
+        const parsedData = safeJsonParse(receipt.parsed_data || '{}', {});
         const receiptType = receipt.receipt_type || parsedData.receiptType || 'purchase';
 
         try {
@@ -551,7 +554,7 @@ export async function receiptParserRouter(ctx) {
         );
 
         vendors.forEach(v => {
-            v.aliases = JSON.parse(v.aliases || '[]');
+            v.aliases = safeJsonParse(v.aliases || '[]', []);
         });
 
         return { status: 200, data: { vendors } };
@@ -584,7 +587,7 @@ export async function receiptParserRouter(ctx) {
         ]);
 
         const vendor = query.get('SELECT * FROM receipt_vendors WHERE id = ?', [id]);
-        vendor.aliases = JSON.parse(vendor.aliases || '[]');
+        vendor.aliases = safeJsonParse(vendor.aliases || '[]', []);
 
         return { status: 201, data: { vendor } };
     }
@@ -625,7 +628,7 @@ export async function receiptParserRouter(ctx) {
         ]);
 
         const vendor = query.get('SELECT * FROM receipt_vendors WHERE id = ?', [id]);
-        vendor.aliases = JSON.parse(vendor.aliases || '[]');
+        vendor.aliases = safeJsonParse(vendor.aliases || '[]', []);
 
         return { status: 200, data: { vendor } };
     }

@@ -50,7 +50,17 @@ export async function pushSubscriptionsRouter(ctx) {
 
     // GET /push/vapid-public-key - Get VAPID public key
     if (method === 'GET' && path === '/vapid-public-key') {
-        const publicKey = process.env.VAPID_PUBLIC_KEY || 'mock_vapid_public_key_for_development';
+        const publicKey = process.env.VAPID_PUBLIC_KEY;
+
+        if (!publicKey) {
+            return {
+                status: 503,
+                data: {
+                    error: 'Push notifications not configured',
+                    message: 'VAPID keys not set. Run npx web-push generate-vapid-keys'
+                }
+            };
+        }
 
         return {
             status: 200,
