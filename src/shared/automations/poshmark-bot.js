@@ -1004,6 +1004,79 @@ export class PoshmarkBot {
     }
 
     /**
+     * Scrape high-level closet statistics from the user's own closet and offers pages.
+     * Returns { totalListings, totalShares, totalLikes, activeOffers, recentSales, closetValue }.
+     * Requires the bot to already be logged in.
+     */
+    async getClosetStats() {
+        const username = process.env.POSHMARK_USERNAME;
+        if (!username) {
+            throw new Error('[PoshmarkBot] POSHMARK_USERNAME must be set in .env for getClosetStats');
+        }
+
+        logger.info(`[PoshmarkBot] Fetching closet stats for @${username}`);
+
+        try {
+            await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
+            await mouseWiggle(this.page);
+            await this.page.waitForTimeout(randomDelay(2000, 3000));
+
+            // Listing count — tile cards in the closet grid
+            const tileHandles = await this.page.$$('[data-test="tile"], .card--small');
+            const totalListings = tileHandles.length;
+
+            // Aggregate share and like counts from visible tiles
+            let totalShares = 0;
+            let totalLikes = 0;
+            let closetValue = 0;
+
+            const tileData = await this.page.$$eval(
+                '[data-test="tile"], .card--small',
+                cards => cards.map(c => ({
+                    shares: parseInt(c.querySelector('[data-test="tile-share-count"], .social-action-bar__share-count')?.textContent?.replace(/[^0-9]/g, '') || '0', 10),
+                    likes: parseInt(c.querySelector('[data-test="tile-like-count"], .social-action-bar__like-count, [data-et="like_count"]')?.textContent?.replace(/[^0-9]/g, '') || '0', 10),
+                    price: parseFloat(c.querySelector('[data-test="tile-price"], .price')?.textContent?.replace(/[^0-9.]/g, '') || '0')
+                }))
+            );
+
+            for (const t of tileData) {
+                totalShares += isNaN(t.shares) ? 0 : t.shares;
+                totalLikes += isNaN(t.likes) ? 0 : t.likes;
+                closetValue += isNaN(t.price) ? 0 : t.price;
+            }
+
+            // Active offers — navigate to /offers and count pending cards
+            await this.page.goto(`${POSHMARK_URL}/offers`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(randomDelay(1500, 2500));
+            const offerCards = await this.page.$$('[data-test="offer-card"]');
+            const activeOffers = offerCards.length;
+
+            // Recent sales — navigate to /sold and count items in last 30 days
+            await this.page.goto(`${POSHMARK_URL}/sold`, { waitUntil: 'domcontentloaded' });
+            await this.page.waitForTimeout(randomDelay(1500, 2500));
+            const soldCards = await this.page.$$('[data-test="sold-listing"], .sold-listing, [class*="sold"]');
+            const recentSales = soldCards.length;
+
+            const stats = {
+                totalListings,
+                totalShares,
+                totalLikes,
+                activeOffers,
+                recentSales,
+                closetValue: Math.round(closetValue * 100) / 100
+            };
+
+            writeAuditLog('get_closet_stats', { username, ...stats });
+            logger.info('[PoshmarkBot] Closet stats fetched', stats);
+            return stats;
+        } catch (error) {
+            logger.error('[PoshmarkBot] getClosetStats error', error);
+            this.stats.errors++;
+            throw error;
+        }
+    }
+
+    /**
      * Get stats
      */
     getStats() {

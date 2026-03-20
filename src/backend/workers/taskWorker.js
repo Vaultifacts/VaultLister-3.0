@@ -372,6 +372,9 @@ async function executeTask(type, payload) {
         case 'scrape_competitor_closet':
             return await executeScrapeCompetitorClosetTask(payload);
 
+        case 'poshmark_monitoring':
+            return await executePoshmarkMonitoringTask(payload);
+
         default:
             throw new Error(`Unknown task type: ${type}`);
     }
@@ -1442,6 +1445,34 @@ async function executeScrapeCompetitorClosetTask(payload) {
 
         logger.info('[TaskWorker] Competitor closet scrape complete', userId, { username, inserted, total: scraped.length });
         return { inserted, total: scraped.length };
+    } finally {
+        await closePoshmarkBot();
+    }
+}
+
+async function executePoshmarkMonitoringTask(payload) {
+    const { userId } = payload;
+    if (!userId) throw new Error('Missing userId in poshmark_monitoring payload');
+
+    logger.info('[TaskWorker] Starting Poshmark monitoring check', userId);
+
+    const { getPoshmarkBot, closePoshmarkBot } = await import('../../shared/automations/poshmark-bot.js');
+    const bot = await getPoshmarkBot();
+
+    try {
+        await bot.login();
+        const stats = await bot.getClosetStats();
+
+        const id = uuidv4();
+        query.run(
+            `INSERT INTO poshmark_monitoring_log
+                (id, user_id, total_listings, total_shares, total_likes, active_offers, recent_sales, closet_value, checked_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+            [id, userId, stats.totalListings, stats.totalShares, stats.totalLikes, stats.activeOffers, stats.recentSales, stats.closetValue]
+        );
+
+        logger.info('[TaskWorker] Poshmark monitoring saved', userId, { logId: id, ...stats });
+        return { message: 'Poshmark monitoring snapshot saved', logId: id, ...stats };
     } finally {
         await closePoshmarkBot();
     }

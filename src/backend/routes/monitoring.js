@@ -361,5 +361,76 @@ export async function monitoringRouter(ctx) {
         }
     }
 
+    // GET /api/monitoring/poshmark - Latest Poshmark closet activity snapshot
+    if (method === 'GET' && path === '/poshmark') {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
+
+        try {
+            const latest = query.get(
+                `SELECT * FROM poshmark_monitoring_log
+                 WHERE user_id = ?
+                 ORDER BY checked_at DESC
+                 LIMIT 1`,
+                [user.id]
+            );
+
+            const history = query.all(
+                `SELECT id, total_listings, total_shares, total_likes, active_offers, recent_sales, closet_value, checked_at
+                 FROM poshmark_monitoring_log
+                 WHERE user_id = ?
+                 ORDER BY checked_at DESC
+                 LIMIT 48`,
+                [user.id]
+            );
+
+            return {
+                status: 200,
+                data: {
+                    latest: latest || null,
+                    history,
+                    hasData: !!latest
+                }
+            };
+        } catch (error) {
+            if (error.message?.includes('no such table')) {
+                return { status: 200, data: { latest: null, history: [], hasData: false } };
+            }
+            logger.error('[Monitoring] GET /poshmark error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Failed to fetch Poshmark monitoring data' } };
+        }
+    }
+
+    // POST /api/monitoring/poshmark/check - Queue an on-demand monitoring check
+    if (method === 'POST' && path === '/poshmark/check') {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
+
+        try {
+            const { queueTask } = await import('../workers/taskWorker.js');
+
+            // Throttle: one manual check per 5 minutes
+            const recent = query.get(
+                `SELECT id FROM task_queue
+                 WHERE type = 'poshmark_monitoring'
+                   AND json_extract(payload, '$.userId') = ?
+                   AND created_at > datetime('now', '-5 minutes')
+                 LIMIT 1`,
+                [user.id]
+            );
+            if (recent) {
+                return { status: 429, data: { error: 'Please wait 5 minutes between manual checks' } };
+            }
+
+            const task = queueTask('poshmark_monitoring', { userId: user.id }, { priority: 1 });
+            return { status: 202, data: { taskId: task.id, status: 'queued', message: 'Monitoring check queued' } };
+        } catch (error) {
+            logger.error('[Monitoring] POST /poshmark/check error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Failed to queue monitoring check' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }
