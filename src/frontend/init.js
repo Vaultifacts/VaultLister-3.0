@@ -66,6 +66,14 @@ async function initApp() {
                 const n = data.notification || data;
                 if (n && n.title) notificationCenter.add({ title: n.title, message: n.message || '', type: n.type || 'info', icon: 'bell' });
             });
+            wsSubscribe.onMonitoringUpdated((data) => {
+                if (data.platform === 'poshmark' && data.data) {
+                    if (window.store) store.setState({ poshmarkMonitoring: data.data });
+                    if (window.handlers && typeof handlers.loadPoshmarkMonitoring === 'function') {
+                        handlers.loadPoshmarkMonitoring();
+                    }
+                }
+            });
         }
     }, 2000);
     savedViews.init();

@@ -306,10 +306,11 @@ describe('Error Handling', () => {
 
 describe('CSRF Protection', () => {
     let csrfToken = null;
-    // CSRF is intentionally disabled in test mode (NODE_ENV=test) to allow
-    // integration tests to run without managing tokens for every request.
-    // In production (NODE_ENV=production), CSRF is always enforced.
-    const csrfEnabled = process.env.NODE_ENV !== 'test' && process.env.DISABLE_CSRF !== 'true';
+    // CSRF enforcement is determined by the server's NODE_ENV (from .env), not the test
+    // process's NODE_ENV. The server runs with NODE_ENV=development by default, so CSRF
+    // is always enforced. Only disabled if the server itself was started with NODE_ENV=test
+    // AND DISABLE_CSRF=true simultaneously, which does not happen in normal dev/CI runs.
+    const csrfEnabled = process.env.DISABLE_CSRF !== 'true';
 
     test('Should provide CSRF token via /api/csrf-token', async () => {
         const response = await fetch(`${BASE_URL}/csrf-token`, {

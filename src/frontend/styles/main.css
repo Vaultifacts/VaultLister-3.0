@@ -67946,6 +67946,23 @@ kbd {
     border: 2px solid rgba(255,255,255,0.4);
 }
 
+.ar-btn-size {
+    width: 44px;
+    height: 44px;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.4);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.ar-btn-size-active {
+    background: rgba(255,255,255,0.9);
+    color: #111;
+    border-color: #fff;
+}
+
 .ar-nocam-msg {
     position: absolute;
     bottom: 120px;

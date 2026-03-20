@@ -3537,6 +3537,9 @@ const modals = {
                     <button class="ar-btn ar-btn-share" id="ar-share-btn" title="Share photo" aria-label="Share AR photo" style="display:none;">
                         ${components.icon('share', 22)}
                     </button>
+                    <button class="ar-btn ar-btn-size" id="ar-size-s" title="Small (0.5×) — accessories, shoes" aria-label="Small size preset" aria-pressed="false">S</button>
+                    <button class="ar-btn ar-btn-size ar-btn-size-active" id="ar-size-m" title="Medium (1.0×) — t-shirts, bags" aria-label="Medium size preset" aria-pressed="true">M</button>
+                    <button class="ar-btn ar-btn-size" id="ar-size-l" title="Large (1.5×) — coats, dresses" aria-label="Large size preset" aria-pressed="false">L</button>
                     <button class="ar-btn ar-btn-close" id="ar-close-btn" title="Close" aria-label="Close AR preview">
                         ${components.icon('close', 22)}
                     </button>
@@ -3553,6 +3556,21 @@ const modals = {
         const captureBtn = document.getElementById('ar-capture-btn');
         const shareBtn = document.getElementById('ar-share-btn');
         const closeBtn = document.getElementById('ar-close-btn');
+        const sizeBtns = [
+            { el: document.getElementById('ar-size-s'), scale: 0.5 },
+            { el: document.getElementById('ar-size-m'), scale: 1.0 },
+            { el: document.getElementById('ar-size-l'), scale: 1.5 },
+        ];
+        const setPresetScale = (targetScale) => {
+            overlayScale = targetScale;
+            overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
+            sizeBtns.forEach(({ el, scale }) => {
+                const active = scale === targetScale;
+                el.classList.toggle('ar-btn-size-active', active);
+                el.setAttribute('aria-pressed', String(active));
+            });
+        };
+        sizeBtns.forEach(({ el, scale }) => el.addEventListener('click', () => setPresetScale(scale)));
 
         // Hide Share button if Web Share API or file sharing is not supported
         const canShare = typeof navigator.share === 'function' && typeof navigator.canShare === 'function';

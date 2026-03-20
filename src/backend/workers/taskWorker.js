@@ -1472,6 +1472,16 @@ async function executePoshmarkMonitoringTask(payload) {
         );
 
         logger.info('[TaskWorker] Poshmark monitoring saved', userId, { logId: id, ...stats });
+
+        try {
+            const { websocketService } = await import('../services/websocket.js');
+            websocketService.sendToUser(userId, {
+                type: 'monitoring.updated',
+                platform: 'poshmark',
+                data: stats
+            });
+        } catch (_) { /* WS not available */ }
+
         return { message: 'Poshmark monitoring snapshot saved', logId: id, ...stats };
     } finally {
         await closePoshmarkBot();

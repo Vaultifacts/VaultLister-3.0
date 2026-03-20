@@ -311,6 +311,9 @@ window.wsSubscribe = {
     onOfferReceived: (handler) => wsClient.on('offer.received', handler),
     onOfferAccepted: (handler) => wsClient.on('offer.accepted', handler),
 
+    // Monitoring updates
+    onMonitoringUpdated: (handler) => wsClient.on('monitoring.updated', handler),
+
     // Generic notifications
     onNotification: (handler) => wsClient.on('notification', handler),
 

@@ -54,6 +54,9 @@ const MESSAGE_TYPES = {
     // Notifications
     NOTIFICATION: 'notification',
 
+    // Monitoring
+    MONITORING_UPDATED: 'monitoring.updated',
+
     // Chat/Support
     CHAT_MESSAGE: 'chat.message',
 
