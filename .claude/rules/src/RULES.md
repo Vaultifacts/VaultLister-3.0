@@ -24,7 +24,7 @@
 - CSRF is enforced globally in server.js via `applyCSRFProtection()` — do not add per-route CSRF checks
 - Parameterized queries only — never string-interpolate user input into SQL
 - Rate limiting via `rateLimiter()` middleware is required on all auth and public-facing routes
-- OAuth tokens from marketplace APIs must be encrypted with AES-256-CBC before SQLite storage
+- OAuth tokens from marketplace APIs must be encrypted with AES-256-GCM (authenticated encryption) before SQLite storage
 - Never use bare `JSON.parse()` in route handlers — always use `safeJsonParse(str, fallback)` to prevent crashes on malformed data. The helper is defined in each route file that needs it.
 
 ## Automation Safety Rules

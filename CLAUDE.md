@@ -26,7 +26,7 @@ All design artifacts live in `./design/`. Before any architectural decision, rea
 ## Architecture
 - **Stack:** Bun.js 1.3+ + Vanilla JS SPA (route-based chunking) + SQLite 3 (WAL mode, FTS5) + Playwright + @anthropic-ai/sdk
 - **Auth:** JWT (15-min access + 7-day refresh) + bcryptjs (12 rounds) + TOTP MFA + OAuth 2.0 (eBay, Etsy, Shopify, Poshmark, Mercari)
-- **Database:** SQLite 3 (WAL mode, FTS5 full-text search, better-sqlite3)
+- **Database:** SQLite 3 (WAL mode, FTS5 full-text search, bun:sqlite (Bun's native SQLite driver))
 - **Real-time:** WebSocket (built into Bun HTTP server)
 - **Deploy target:** Docker + Nginx (self-hosted) + GitHub Actions CI/CD
 
@@ -54,7 +54,7 @@ Key decisions:
 
 ## Specialized Agents
 
-8 agents in `.claude/agents/` — each has strict scope boundaries:
+14 agents in `.claude/agents/` — each has strict scope boundaries:
 
 | Agent | Use For | Never For |
 |-------|---------|-----------|
@@ -66,6 +66,12 @@ Key decisions:
 | **Testing** | Bun:test, Playwright E2E, visual tests, coverage | Application code |
 | **DevOps-Deployment** | Docker, CI/CD, .env, backups, scaling, logging | Application code |
 | **NoCode-Workflow** | n8n, webhooks, JSON exports, external triggers | JavaScript code |
+| **qa-core-product** | UI flows, validation, state, auth | Writing code |
+| **qa-data-systems** | Database, migrations, data integrity, search | Writing code |
+| **qa-environment-quality** | Env config, build reproducibility, hooks | Writing code |
+| **qa-infrastructure-delivery** | CI/CD, deployment, build, backup | Writing code |
+| **qa-reliability** | Retries, timeouts, idempotency, recovery | Writing code |
+| **qa-security** | OWASP, auth flows, CSRF, XSS, injection | Writing code |
 
 ## Key Commands
 
@@ -109,7 +115,7 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 - `api.refreshAccessToken()` — reads `store.state.refreshToken`
 
 ### Before Every Commit
-1. Run `bun test src/tests/auth.test.js src/tests/security.test.js` (under 30 seconds)
+1. Auth+security tests (`bun test src/tests/auth.test.js src/tests/security.test.js`) run automatically via pre-commit hook ONLY when `app.js` or `securityHeaders.js` are staged with real code changes. For all other commits, tests run at pre-push time.
 2. If you modified any backend route, run the relevant test file
 3. Never use `git add -A` — add specific files you changed
 4. The pre-commit hook enforces these on Linux/CI. On Windows, tests run via PowerShell fallback.
