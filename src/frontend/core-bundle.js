@@ -26559,7 +26559,7 @@ async function initApp() {
     router.register('settings', () => renderApp(pages.settings()));
     router.register('account', () => renderApp(pages.account()));
     router.register('community', () => renderApp(pages.community()));
-    router.register('help', () => renderApp(pages.help()));
+    router.register('help', () => renderApp(pages.helpSupport()));
 
     // Main section pages
     router.register('orders', async () => {
