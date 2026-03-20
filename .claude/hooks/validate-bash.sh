@@ -36,6 +36,10 @@ BLOCKED_PATTERNS=(
   "git clean -f"
   "rm -rf .husky"
   "rm -rf .claude"
+  "rm -rf .git"
+  "HUSKY=0"
+  "git config core.hookspath"
+  "git config core.hooksPath"
   "git push.*--delete"
   "git push --force-with-lease"
 )

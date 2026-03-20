@@ -32,7 +32,13 @@
       "Bash(*DROP TABLE*)",
       "Bash(*DROP DATABASE*)",
       "Bash(npm publish*)",
-      "Bash(bun publish*)"
+      "Bash(bun publish*)",
+      "Bash(rm -rf .git*)",
+      "Bash(rm -rf .husky*)",
+      "Bash(rm -rf .claude*)",
+      "Bash(*HUSKY=0*)",
+      "Bash(git config core.hookspath*)",
+      "Bash(git config core.hooksPath*)"
     ]
   },
   "hooks": {
