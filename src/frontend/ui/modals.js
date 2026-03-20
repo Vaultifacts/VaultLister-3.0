@@ -3493,5 +3493,196 @@ const modals = {
                 <button class="btn btn-primary" onclick="handlers.downloadReport('${report.id || 'report'}')">Download</button>
             </div>
         `, 'modal-xl');
+    },
+
+    // AR Preview modal — camera overlay with draggable/pinch-scalable item image
+    arPreview(itemId) {
+        // Resolve item from store state
+        const inventory = store.state.inventory || [];
+        const item = inventory.find(i => i.id === itemId);
+        if (!item) {
+            toast.error('Item not found');
+            return;
+        }
+        let images = [];
+        try { images = JSON.parse(item.images || '[]'); } catch { images = []; }
+        const imageUrl = images[0] || '';
+        const itemTitle = item.title || 'Item';
+
+        if (!imageUrl) {
+            toast.error('This item has no image to preview');
+            return;
+        }
+
+        const container = document.getElementById('modal-container');
+        container.innerHTML = `
+            <div class="ar-preview-backdrop" id="ar-backdrop" role="dialog" aria-modal="true" aria-label="AR Preview">
+                <video id="ar-video" class="ar-video" autoplay playsinline muted aria-hidden="true"></video>
+                <canvas id="ar-canvas" class="ar-canvas" style="display:none;" aria-hidden="true"></canvas>
+                <img id="ar-overlay-img"
+                     class="ar-overlay-img"
+                     src="${escapeHtml(imageUrl)}"
+                     alt="${escapeHtml(itemTitle)}"
+                     draggable="false"
+                     style="left:50%;top:50%;transform:translate(-50%,-50%) scale(1);"
+                />
+                <div class="ar-hud">
+                    <span class="ar-hud-title">${escapeHtml(itemTitle)}</span>
+                    <span class="ar-hud-hint">Drag to position &bull; Pinch to resize</span>
+                </div>
+                <div class="ar-controls">
+                    <button class="ar-btn ar-btn-capture" id="ar-capture-btn" title="Capture photo" aria-label="Capture AR photo">
+                        ${components.icon('camera', 22)}
+                    </button>
+                    <button class="ar-btn ar-btn-close" id="ar-close-btn" title="Close" aria-label="Close AR preview">
+                        ${components.icon('close', 22)}
+                    </button>
+                </div>
+                <div id="ar-nocam-msg" class="ar-nocam-msg" style="display:none;">
+                    Camera not available. Point your device at the scene and use the overlay below.
+                </div>
+            </div>
+        `;
+
+        let stream = null;
+        const video = document.getElementById('ar-video');
+        const overlay = document.getElementById('ar-overlay-img');
+        const captureBtn = document.getElementById('ar-capture-btn');
+        const closeBtn = document.getElementById('ar-close-btn');
+
+        // Start rear camera
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = s;
+                })
+                .catch(() => {
+                    // Fallback: hide video, show warning
+                    video.style.display = 'none';
+                    document.getElementById('ar-nocam-msg').style.display = 'flex';
+                });
+        } else {
+            video.style.display = 'none';
+            document.getElementById('ar-nocam-msg').style.display = 'flex';
+        }
+
+        // Close handler — stop camera tracks
+        const cleanup = () => {
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            container.innerHTML = '';
+            document.removeEventListener('keydown', escHandler);
+        };
+        const escHandler = (e) => { if (e.key === 'Escape') cleanup(); };
+        document.addEventListener('keydown', escHandler);
+        closeBtn.addEventListener('click', cleanup);
+
+        // Capture: composite video + overlay onto canvas, then trigger download
+        captureBtn.addEventListener('click', () => {
+            const cvs = document.getElementById('ar-canvas');
+            const w = video.videoWidth || window.innerWidth;
+            const h = video.videoHeight || window.innerHeight;
+            cvs.width = w;
+            cvs.height = h;
+            const ctx = cvs.getContext('2d');
+
+            // Draw video frame (blank rect if no camera)
+            if (video.readyState >= 2 && video.videoWidth > 0) {
+                ctx.drawImage(video, 0, 0, w, h);
+            } else {
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(0, 0, w, h);
+            }
+
+            // Draw overlay image at its current position/scale
+            const rect = overlay.getBoundingClientRect();
+            const videoRect = video.getBoundingClientRect();
+            const scaleX = w / (videoRect.width || window.innerWidth);
+            const scaleY = h / (videoRect.height || window.innerHeight);
+            const overlayImg = new Image();
+            overlayImg.crossOrigin = 'anonymous';
+            overlayImg.onload = () => {
+                ctx.drawImage(
+                    overlayImg,
+                    (rect.left - videoRect.left) * scaleX,
+                    (rect.top - videoRect.top) * scaleY,
+                    rect.width * scaleX,
+                    rect.height * scaleY
+                );
+                const link = document.createElement('a');
+                link.download = `ar-preview-${escapeHtml(itemId)}.png`;
+                link.href = cvs.toDataURL('image/png');
+                link.click();
+                toast.success('AR photo saved');
+            };
+            overlayImg.onerror = () => toast.error('Could not capture image');
+            overlayImg.src = imageUrl;
+        });
+
+        // Drag-to-position (mouse + touch)
+        let isDragging = false;
+        let dragStartX = 0, dragStartY = 0;
+        let overlayLeft = window.innerWidth / 2;
+        let overlayTop = window.innerHeight / 2;
+        let overlayScale = 1;
+
+        const getPos = (e) => e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+
+        overlay.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            const pos = getPos(e);
+            dragStartX = pos.x - overlayLeft;
+            dragStartY = pos.y - overlayTop;
+            e.preventDefault();
+        });
+        overlay.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                dragStartX = e.touches[0].clientX - overlayLeft;
+                dragStartY = e.touches[0].clientY - overlayTop;
+            }
+        }, { passive: true });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            overlayLeft = e.clientX - dragStartX;
+            overlayTop = e.clientY - dragStartY;
+            overlay.style.left = overlayLeft + 'px';
+            overlay.style.top = overlayTop + 'px';
+            overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
+        });
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && isDragging) {
+                overlayLeft = e.touches[0].clientX - dragStartX;
+                overlayTop = e.touches[0].clientY - dragStartY;
+                overlay.style.left = overlayLeft + 'px';
+                overlay.style.top = overlayTop + 'px';
+                overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
+            }
+        }, { passive: true });
+        document.addEventListener('mouseup', () => { isDragging = false; });
+        document.addEventListener('touchend', () => { isDragging = false; });
+
+        // Pinch-to-zoom
+        let lastPinchDist = null;
+        overlay.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                lastPinchDist = Math.sqrt(dx * dx + dy * dy);
+                isDragging = false;
+            }
+        }, { passive: true });
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && lastPinchDist !== null) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                overlayScale = Math.min(5, Math.max(0.2, overlayScale * (dist / lastPinchDist)));
+                overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
+                lastPinchDist = dist;
+            }
+        }, { passive: true });
+        document.addEventListener('touchend', (e) => { if (e.touches.length < 2) lastPinchDist = null; });
     }
 };

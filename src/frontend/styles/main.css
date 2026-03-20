@@ -67820,3 +67820,143 @@ kbd {
         gap: var(--space-2);
     }
 }
+
+/* ===================================================
+   AR Preview Modal
+   =================================================== */
+.ar-preview-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.ar-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ar-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.ar-overlay-img {
+    position: absolute;
+    max-width: 40vw;
+    max-height: 40vh;
+    object-fit: contain;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.6));
+    border-radius: 4px;
+    transform-origin: center center;
+    z-index: 2;
+}
+
+.ar-overlay-img:active {
+    cursor: grabbing;
+}
+
+.ar-hud {
+    position: absolute;
+    top: env(safe-area-inset-top, 16px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 24px;
+    padding: 8px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    z-index: 3;
+    pointer-events: none;
+    max-width: 80vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ar-hud-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60vw;
+}
+
+.ar-hud-hint {
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+}
+
+.ar-controls {
+    position: absolute;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 28px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    z-index: 4;
+}
+
+.ar-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    transition: transform 0.15s, opacity 0.15s;
+}
+
+.ar-btn:active {
+    transform: scale(0.92);
+    opacity: 0.85;
+}
+
+.ar-btn-capture {
+    background: #fff;
+    color: #111;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+
+.ar-btn-close {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.4);
+}
+
+.ar-nocam-msg {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,80,80,0.85);
+    color: #fff;
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    max-width: 80vw;
+    text-align: center;
+    z-index: 3;
+}

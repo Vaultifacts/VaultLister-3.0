@@ -450,6 +450,9 @@ Object.assign(pages, {
                                             <button class="btn btn-danger btn-sm" data-testid="delete-item-${item.id}" onclick="handlers.deleteItem('${item.id}')" title="Delete item">
                                                 ${components.icon('trash', 14)}
                                             </button>
+                                            <button class="btn btn-ghost btn-sm" data-testid="ar-preview-item-${item.id}" onclick="event.stopPropagation(); modals.arPreview('${item.id}')" title="AR Preview — see item in your space">
+                                                ${components.icon('camera', 14)} AR
+                                            </button>
                                         </td>
                                     </tr>
                                     `;
