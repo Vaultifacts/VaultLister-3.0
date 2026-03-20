@@ -889,8 +889,8 @@ export async function financialsRouter(ctx) {
 
     // ========== EMAIL PARSING (Phase 2 Infrastructure) ==========
 
-    // POST /api/financials/email-parse - Email parsing webhook (Phase 2)
-    if (method === 'POST' && path === '/email-parse') {
+    // POST /api/financials/email-parse - Email parsing webhook (Phase 2, non-production only)
+    if (process.env.NODE_ENV !== 'production' && method === 'POST' && path === '/email-parse') {
         try {
             return {
                 status: 501,

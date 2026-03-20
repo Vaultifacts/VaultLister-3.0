@@ -447,8 +447,8 @@ export async function authRouter(ctx) {
         }
     }
 
-    // POST /api/auth/demo-login - Demo login without exposing credentials in frontend
-    if (method === 'POST' && path === '/demo-login') {
+    // POST /api/auth/demo-login - Demo login without exposing credentials in frontend (non-production only)
+    if (process.env.NODE_ENV !== 'production' && method === 'POST' && path === '/demo-login') {
         try {
             // SECURITY: Apply auth-tier rate limiting to prevent bcrypt DoS attacks
             const demoRateError = applyRateLimit(ctx, 'auth');

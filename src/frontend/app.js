@@ -3871,6 +3871,7 @@ const progressiveImage = {
 
     observeAll() {
         if (this._observer) this._observer.disconnect();
+        if (!('IntersectionObserver' in window)) { document.querySelectorAll('[data-lazy-src]').forEach(el => this.load(el)); return; }
         this._observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -5731,6 +5732,7 @@ const stickySectionObserver = {
 
     init(selector = '.sticky-section-header') {
         if (this._observer) this._observer.disconnect();
+        if (!('IntersectionObserver' in window)) return;
         const headers = document.querySelectorAll(selector);
 
         this._observer = new IntersectionObserver(
@@ -10360,6 +10362,11 @@ const virtualScroll = {
         container.appendChild(sentinel);
 
         let isLoading = false;
+        if (!('IntersectionObserver' in window)) {
+            // Fallback: load immediately for browsers without IntersectionObserver support
+            if (loadMore) loadMore();
+            return;
+        }
         const observer = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting && loadMore && !isLoading) {
                 isLoading = true;
@@ -15731,10 +15738,15 @@ const components = {
                         `).join('')}
                     </div>
                 ` : '';
+                const isMock = msg.role === 'assistant' && msg.metadata?.source === 'mock';
+                const mockIndicatorHtml = isMock ? `
+                    <div class="vault-buddy-mock-indicator" style="font-size:11px;color:var(--gray-400);margin-top:4px;font-style:italic;">(demo mode — configure AI key for real responses)</div>
+                ` : '';
                 return `
                     <div class="vault-buddy-message ${msg.role}">
                         <div class="vault-buddy-message-content">${formatChatMessage(msg.content)}</div>
                         ${msg.role === 'assistant' ? quickActionsHtml : ''}
+                        ${mockIndicatorHtml}
                         <div class="vault-buddy-message-time">${formatMessageTime(msg.created_at)}</div>
                     </div>
                 `;
@@ -18487,7 +18499,27 @@ const pages = {
             return sum + (Number.isFinite(days) && days >= 0 ? days : 0);
         }, 0) / items.length)) : 0;
 
+        // Onboarding welcome banner — shown only to new users with 0 items and 0 connected shops
+        const connectedShopsCount = (store.state.shops || []).filter(s => s.is_connected).length;
+        const onboardingDismissed = localStorage.getItem('vl_onboarding_dismissed') === '1';
+        const showOnboarding = !onboardingDismissed && (store.state.inventory || []).length === 0 && connectedShopsCount === 0;
+        const onboardingBanner = showOnboarding ? `
+            <div id="onboarding-welcome-banner" style="background:linear-gradient(135deg,var(--primary-50,#eff6ff) 0%,var(--primary-100,#dbeafe) 100%);border:1px solid var(--primary-200,#bfdbfe);border-radius:var(--radius-lg,12px);padding:20px 24px;margin-bottom:20px;display:flex;gap:20px;align-items:flex-start;">
+                <div style="font-size:32px;line-height:1;flex-shrink:0;">👋</div>
+                <div style="flex:1;">
+                    <h3 style="margin:0 0 4px;font-size:16px;font-weight:600;color:var(--gray-900);">Welcome to VaultLister! Here's how to get started:</h3>
+                    <ol style="margin:10px 0 0;padding-left:20px;line-height:2;color:var(--gray-700);font-size:14px;">
+                        <li><strong>Add your first item</strong> — click <em>Add Item</em> above to create your first inventory listing</li>
+                        <li><strong>Connect a marketplace</strong> — go to <a href="#" onclick="router.navigate('settings'); return false;" style="color:var(--primary-600);">Settings &rsaquo; Integrations</a> to link eBay, Poshmark, or another platform</li>
+                        <li><strong>Start cross-listing</strong> — once connected, use <a href="#" onclick="router.navigate('cross-list'); return false;" style="color:var(--primary-600);">Cross-Lister</a> to publish items to multiple marketplaces at once</li>
+                    </ol>
+                </div>
+                <button aria-label="Dismiss welcome banner" onclick="localStorage.setItem('vl_onboarding_dismissed','1'); document.getElementById('onboarding-welcome-banner').style.display='none';" style="background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:20px;line-height:1;flex-shrink:0;padding:0;">&#xD7;</button>
+            </div>
+        ` : '';
+
         return `
+            ${onboardingBanner}
             <!-- Inventory Hero Section -->
             <div class="inventory-hero">
                 <div class="inventory-hero-main">
@@ -29920,6 +29952,26 @@ const pages = {
                                 </div>
                             </div>
                             <button class="btn btn-sm btn-outline" disabled>Connect</button>
+                        </div>
+                        <div class="flex items-center justify-between p-4 rounded-lg border">
+                            <div class="flex items-center gap-3">
+                                <div style="width: 40px; height: 40px; background: #4285F4; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">G</div>
+                                <div>
+                                    <div class="font-medium">Google Calendar</div>
+                                    <div class="text-xs text-gray-500">Sync listings &amp; events</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-primary" aria-label="Connect Google Calendar" onclick="window.open('/api/calendar/google/authorize', '_blank', 'width=500,height=600')">Connect</button>
+                        </div>
+                        <div class="flex items-center justify-between p-4 rounded-lg border">
+                            <div class="flex items-center gap-3">
+                                <div style="width: 40px; height: 40px; background: #0078D4; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">O</div>
+                                <div>
+                                    <div class="font-medium">Outlook Calendar</div>
+                                    <div class="text-xs text-gray-400">Not yet available</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline" disabled title="Outlook Calendar sync is not yet available">Unavailable</button>
                         </div>
                     </div>
                 </div>
@@ -70164,8 +70216,7 @@ const handlers = {
         }
     },
     importFromPlatform(platform) {
-        router.navigate('inventory');
-        toast.info(`Importing from ${escapeHtml(platform)} — use the Import button in Inventory`);
+        router.navigate('inventory-import');
     },
     clearCache() {
         Object.keys(localStorage).filter(k => k.startsWith('vl_cache_')).forEach(k => localStorage.removeItem(k));
@@ -70192,10 +70243,6 @@ const handlers = {
     // Quick Photo
     showQuickPhotoCapture() {
         handlers.openCameraModal({ context: 'quick' });
-    },
-    processQuickPhotos() {
-        // TODO: Implement full Quick Photo processing with camera API integration
-        toast.info('Quick Photo — Coming Soon');
     },
     captureFromCamera() {
         handlers.openCameraModal({ context: 'bank' });

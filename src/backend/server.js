@@ -20,7 +20,9 @@ import { aiRouter } from './routes/ai.js';
 import { tasksRouter } from './routes/tasks.js';
 import { templatesRouter } from './routes/templates.js';
 import { oauthRouter } from './routes/oauth.js';
-import { mockOAuthRouter } from './routes/mock-oauth.js';
+const { mockOAuthRouter } = process.env.NODE_ENV !== 'production'
+    ? await import('./routes/mock-oauth.js')
+    : { mockOAuthRouter: null };
 import { imageBankRouter } from './routes/imageBank.js';
 import { chatbotRouter } from './routes/chatbot.js';
 import { communityRouter } from './routes/community.js';
@@ -190,8 +192,8 @@ const MIME_TYPES = {
 // CORS configuration
 const frontendUrl = process.env.FRONTEND_URL;
 const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:5173',
+    // Localhost origins only allowed in non-production environments
+    ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:3000', 'http://localhost:5173'] : []),
     // Only allow FRONTEND_URL if it's a valid HTTP(S) URL (reject wildcards)
     ...(frontendUrl && frontendUrl !== '*' && /^https?:\/\//.test(frontendUrl) ? [frontendUrl] : []),
     // Additional origins from CORS_ORIGINS env var (comma-separated)
@@ -537,7 +539,7 @@ const apiRoutes = {
         });
         return { status: 204, data: null };
     },
-    '/mock-oauth': mockOAuthRouter
+    ...(process.env.NODE_ENV !== 'production' ? { '/mock-oauth': mockOAuthRouter } : {})
 };
 
 // Sorted once at startup — longest prefix first so most-specific routes match first
