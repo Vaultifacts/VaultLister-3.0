@@ -3,7 +3,8 @@
 echo "Running pre-commit checks..."
 
 # === .env Protection ===
-if git diff --cached --name-only | grep -qE '^\.(env|env\..*)$'; then
+# Blocks .env and .env.local/.env.production/etc. but allows .env.example
+if git diff --cached --name-only | grep -qE '^\.(env|env\.(local|production|development|test|staging))$'; then
     echo "ERROR: Attempting to commit .env file!"
     echo "The .env file should never be committed."
     exit 1
