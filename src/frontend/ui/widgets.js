@@ -6215,12 +6215,7 @@ const marketTrendsRadar = {
 // Competitor Activity Feed
 const competitorActivityFeed = {
     render(activities) {
-        const mockActivities = activities.length > 0 ? activities : [
-            { type: 'new_listing', competitor: 'VintageVault', item: 'Levi\'s 501 Jeans', time: '2h ago' },
-            { type: 'price_drop', competitor: 'RetroFinds', item: 'Nike Air Max', price: '$85', time: '4h ago' },
-            { type: 'sold', competitor: 'ThriftKing', item: 'Coach Purse', time: '6h ago' },
-            { type: 'new_listing', competitor: 'StyleSeller', item: 'Vintage Dress', time: '8h ago' }
-        ];
+        const mockActivities = activities || [];
 
         const icons = {
             new_listing: { icon: 'plus-circle', color: 'var(--primary)' },
