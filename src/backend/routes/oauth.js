@@ -8,6 +8,16 @@ import { createHash, randomBytes } from 'crypto';
 import { queueTask } from '../workers/taskWorker.js';
 import { logger } from '../shared/logger.js';
 
+// Startup warnings — log once at module load time so misconfiguration is visible immediately
+if (!process.env.OAUTH_MODE) {
+    logger.warn('[OAuth] WARNING: OAUTH_MODE not set — using mock OAuth. Set OAUTH_MODE=real for production.');
+} else if (process.env.OAUTH_MODE === 'mock') {
+    logger.warn('[OAuth] WARNING: OAUTH_MODE=mock — OAuth returns fake tokens. Set OAUTH_MODE=real for production.');
+}
+if (!process.env.EBAY_ENVIRONMENT || process.env.EBAY_ENVIRONMENT === 'sandbox') {
+    logger.warn('[OAuth] WARNING: EBAY_ENVIRONMENT=sandbox — eBay API calls go to sandbox, not production. Set EBAY_ENVIRONMENT=production for live listings.');
+}
+
 export async function oauthRouter(ctx) {
     const { method, path, body, user, query: queryParams } = ctx;
 
