@@ -125,15 +125,17 @@ fi
 # If you need syntax checking, use: bun build --no-bundle --outdir /dev/null <file>
 
 # === Auth Infrastructure Integrity Check ===
+# Reads from the staged index (git show :file) to check what will actually be committed,
+# not the working-tree version which may differ.
 if git diff --cached --name-only | grep -q "^src/frontend/app.js$"; then
     echo "Checking auth infrastructure integrity in app.js..."
-    if ! grep -v '^\s*//' src/frontend/app.js | grep -q 'token: this.state.token'; then
+    if ! git show :src/frontend/app.js | grep -v '^\s*//' | grep -q 'token: this.state.token'; then
         echo ""
         echo "ERROR: store.persist() no longer saves the auth token!"
         echo "This breaks Remember Me. The line 'token: this.state.token' must exist in persist()."
         exit 1
     fi
-    if ! grep -v '^\s*//' src/frontend/app.js | grep -q 'refreshToken: this.state.refreshToken'; then
+    if ! git show :src/frontend/app.js | grep -v '^\s*//' | grep -q 'refreshToken: this.state.refreshToken'; then
         echo ""
         echo "ERROR: store.persist() no longer saves the refresh token!"
         echo "This breaks Remember Me. The line 'refreshToken: this.state.refreshToken' must exist in persist()."
@@ -142,9 +144,11 @@ if git diff --cached --name-only | grep -q "^src/frontend/app.js$"; then
 fi
 
 # === CSP Integrity Check ===
+# Reads from the staged index (git show :file) to check what will actually be committed,
+# not the working-tree version which may differ.
 if git diff --cached --name-only | grep -q "^src/backend/middleware/securityHeaders.js$"; then
     echo "Checking CSP integrity in securityHeaders.js..."
-    if ! grep -v '^\s*//' src/backend/middleware/securityHeaders.js | grep -q "'unsafe-inline'"; then
+    if ! git show :src/backend/middleware/securityHeaders.js | grep -v '^\s*//' | grep -q "'unsafe-inline'"; then
         echo ""
         echo "ERROR: CSP script-src missing 'unsafe-inline'!"
         echo "The SPA architecture requires unsafe-inline. Do not remove it."
