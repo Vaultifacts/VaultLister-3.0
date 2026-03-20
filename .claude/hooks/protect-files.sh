@@ -1,6 +1,7 @@
 #!/bin/bash
 # protect-files.sh — Block writes to safety-critical files
 # Invoked by: PreToolUse (Write, Edit) hook
+# Advisory only (exit 0) — actual blocking is done by husky pre-commit hooks.
 
 PROTECTED_FILES=(
   "src/frontend/app.js"

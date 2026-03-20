@@ -1,10 +1,9 @@
 #!/bin/bash
-# validate-bash.sh — Pre-command safety gate
+# validate-bash.sh -- Pre-command safety gate
 # Rejects dangerous shell patterns before execution
 
 COMMAND="${CLAUDE_TOOL_INPUT:-}"
 
-# No input to validate — allow (don't block on missing context)
 if [ -z "$COMMAND" ]; then
     exit 0
 fi
@@ -17,16 +16,29 @@ BLOCKED_PATTERNS=(
   "git reset --hard"
   "rm -rf /"
   "rm -rf data"
+  "rm -rf src"
+  "rm -rf e2e"
+  "rm -rf .github"
   "DROP TABLE"
   "DROP DATABASE"
   "curl.*|.*bash"
   "wget.*|.*sh"
   "\-\-no-verify"
+  "bun run db:drop"
+  "bun run db:reset"
+  "docker compose down -v"
+  "npm publish"
+  "bun publish"
+  "git branch -D"
+  "git tag -d"
+  "git rebase -i"
+  "git checkout \."
+  "git clean -f"
 )
 
 for pattern in "${BLOCKED_PATTERNS[@]}"; do
   if echo "$COMMAND" | grep -qE "$pattern"; then
-    echo "⛔ BLOCKED by validate-bash.sh: dangerous pattern detected — $pattern"
+    echo "BLOCKED by validate-bash.sh: dangerous pattern -- $pattern"
     exit 1
   fi
 done

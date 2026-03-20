@@ -1,6 +1,6 @@
 KNOWN_FAILURES=264
 # Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
-# Local Windows: 2050 pass / 262 fail (named below — baselined 2026-03-20)
+# Local Windows: 2050 pass / 264 fail (named below — baselined 2026-03-20)
 # CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
 # E2E baseline (Playwright, full suite): 620 pass / 0 fail
 #
@@ -19,8 +19,8 @@ KNOWN_FAILURES=264
 #   3. Any failure NOT in this list → regression → build fails.
 #   4. If fewer failures than expected (a fix landed) → remove the entry.
 #
-# Baselined 2026-03-20: 262 named failures recorded from local run with server on port 3000.
-# Integration tests (require live server) are validated by KNOWN_FAILURES=262.
+# Baselined 2026-03-20: 264 named failures recorded from local run with server on port 3000.
+# Integration tests (require live server) are validated by KNOWN_FAILURES=264.
 #
 # ─── Server-required tests that fail without a running server ─────────────────
 # The test below is an integration test misplaced in a middleware file.
@@ -94,7 +94,7 @@ KNOWN_FAILURES=264
 #   service-notificationTypes.test.js: (2 tests) — isValidNotificationTypes guard added (truthy+key check)
 #   service-notificationTypes-expanded.test.js: (1 test) — contamination guard added (object+key check)
 #
-# ─── Named failures baselined 2026-03-20 (262 entries) ──────────────────────
+# ─── Named failures baselined 2026-03-20 (264 entries) ──────────────────────
 KNOWN_FAIL: Account Deletion Lifecycle (H12) > should schedule deletion with 30-day grace period (no-password user)
 KNOWN_FAIL: Account Deletion Lifecycle (H12) > should send confirmation email on deletion schedule
 KNOWN_FAIL: Audit Log Router — Admin Gating (H34) > enterprise user should be treated as admin

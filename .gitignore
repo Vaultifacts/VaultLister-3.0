@@ -10,6 +10,7 @@ __pycache__/
 .env.*
 !.env.example
 CLAUDE.local.md
+.claude/settings.local.json
 
 # Database
 data/*.db
@@ -19,6 +20,7 @@ data/automation-audit.log
 
 # Debug artifacts in data/
 data/*.png
+data/*.lock
 data/poshmark-profile/
 data/poshmark-cookies.json
 
