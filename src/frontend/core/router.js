@@ -245,7 +245,7 @@ const router = {
         }
 
         // Auth guard: redirect unauthenticated users to login for protected routes
-        const publicRoutes = ['login', 'register', 'forgot-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
+        const publicRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
         if (!publicRoutes.includes(path) && !auth.isAuthenticated()) {
             store.setState({ currentPage: 'login' });
             window.location.hash = '#login';

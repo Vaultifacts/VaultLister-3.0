@@ -8376,6 +8376,15 @@ const api = {
             loadingState.stop(key);
             throw error;
         }
+    },
+
+    // VAPID public key cache — fetched once, reused for all push subscriptions
+    _vapidPublicKey: null,
+    async getVapidPublicKey() {
+        if (this._vapidPublicKey) return this._vapidPublicKey;
+        const data = await this.get('/push-subscriptions/vapid-public-key');
+        this._vapidPublicKey = data.publicKey;
+        return this._vapidPublicKey;
     }
 };
 
@@ -25807,6 +25816,24 @@ const pages = {
                             <div class="data-management-options">
                                 <div class="data-option">
                                     <div class="data-option-info">
+                                        <h5>Terms of Service</h5>
+                                        <p>Read the full Terms of Service (last updated March 2026)</p>
+                                    </div>
+                                    <a href="/terms.html" target="_blank" rel="noopener" class="btn btn-secondary">
+                                        ${components.icon('external-link', 16)} View Terms
+                                    </a>
+                                </div>
+                                <div class="data-option">
+                                    <div class="data-option-info">
+                                        <h5>Privacy Policy</h5>
+                                        <p>Read the full Privacy Policy (last updated March 2026)</p>
+                                    </div>
+                                    <a href="/privacy.html" target="_blank" rel="noopener" class="btn btn-secondary">
+                                        ${components.icon('external-link', 16)} View Policy
+                                    </a>
+                                </div>
+                                <div class="data-option">
+                                    <div class="data-option-info">
                                         <h5>Download My Data</h5>
                                         <p>Export all your personal data as JSON</p>
                                     </div>
@@ -30047,8 +30074,11 @@ const pages = {
         return `
             <div class="page-header">
                 <h1 class="page-title">Terms of Service</h1>
-                <p class="page-description">Last updated: January 2026</p>
+                <p class="page-description">Last updated: March 2026</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <a href="/terms.html" target="_blank" rel="noopener" class="btn btn-sm btn-primary">
+                        ${components.icon('external-link', 14)} View Full Terms
+                    </a>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.showTermsOfService()">
                         ${components.icon('eye', 14)} View in Modal
                     </button>
@@ -30108,8 +30138,11 @@ const pages = {
         return `
             <div class="page-header">
                 <h1 class="page-title">Privacy Policy</h1>
-                <p class="page-description">Last updated: January 2026</p>
+                <p class="page-description">Last updated: March 2026</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <a href="/privacy.html" target="_blank" rel="noopener" class="btn btn-sm btn-primary">
+                        ${components.icon('external-link', 14)} View Full Policy
+                    </a>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.showPrivacyDataExport()">
                         ${components.icon('download', 14)} Download My Data
                     </button>
@@ -30189,7 +30222,7 @@ const pages = {
                         </ul>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">8. Children's Privacy</h2>
-                        <p style="margin-bottom: 1rem;">VaultLister is not intended for use by children under 13 years of age. We do not knowingly collect personal information from children under 13.</p>
+                        <p style="margin-bottom: 1rem;">VaultLister is not intended for use by persons under 18 years of age. We do not knowingly collect personal information from minors. If you believe a minor has provided us with personal data, please contact us immediately.</p>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">9. Changes to This Policy</h2>
                         <p style="margin-bottom: 1rem;">We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.</p>
@@ -32184,6 +32217,14 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         </div>
                     </div>
                     <div class="legal-actions">
+                        <a href="/terms.html" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                            View Full Terms
+                        </a>
                         <button class="btn btn-secondary btn-sm" onclick="handlers.printLegalDocument()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="6 9 6 2 18 2 18 9"></polyline>
@@ -32291,7 +32332,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             { id: 'security', icon: '🔒', title: 'Data Security', content: 'We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. However, no internet or email transmission is ever fully secure or error free.' },
             { id: 'rights', icon: '⚖️', title: 'Your Rights', content: 'You have the right to:', list: ['Access and receive a copy of your personal data', 'Rectify or update your personal information', 'Delete your account and personal data', 'Object to or restrict certain processing of your data', 'Data portability'] },
             { id: 'cookies', icon: '🍪', title: 'Cookies and Tracking', content: 'We use cookies and similar tracking technologies to track activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.' },
-            { id: 'children', icon: '👶', title: "Children's Privacy", content: 'Our service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13.' },
+            { id: 'children', icon: '👶', title: "Children's Privacy", content: 'The Service is not directed to or intended for use by persons under the age of 18. We do not knowingly collect personal data from minors. If you believe a minor has provided us with personal data, please contact us immediately and we will delete it.' },
             { id: 'changes', icon: '🔄', title: 'Changes to Privacy Policy', content: 'We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.' },
             { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about this Privacy Policy, please contact us at privacy@vaultlister.com' }
         ];
@@ -32326,6 +32367,14 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         </div>
                     </div>
                     <div class="legal-actions">
+                        <a href="/privacy.html" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                            View Full Policy
+                        </a>
                         <button class="btn btn-secondary btn-sm" onclick="handlers.printLegalDocument()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="6 9 6 2 18 2 18 9"></polyline>
@@ -55154,10 +55203,10 @@ const handlers = {
                 return;
             }
             const registration = await navigator.serviceWorker.ready;
-            const keyResponse = await api.get('/push-subscriptions/vapid-public-key');
+            const vapidKey = await api.getVapidPublicKey();
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: keyResponse.publicKey
+                applicationServerKey: vapidKey
             });
             await api.post('/push-subscriptions/subscribe', {
                 subscription: subscription.toJSON(),

@@ -920,6 +920,58 @@ export async function authRouter(ctx) {
         return { status: 200, data: { message: 'If an account exists with that email, a password reset link has been sent.' } };
     }
 
+    // POST /api/auth/password-reset/confirm - Consume token and set new password
+    if (method === 'POST' && path === '/password-reset/confirm') {
+        const resetRateError = applyRateLimit(ctx, 'mutation');
+        if (resetRateError) return resetRateError;
+
+        const { token, password } = body;
+
+        if (!token || !password) {
+            return { status: 400, data: { error: 'Token and new password are required.' } };
+        }
+
+        const passwordErrors = validatePassword(password);
+        if (passwordErrors.length > 0) {
+            return { status: 400, data: { error: passwordErrors[0], errors: passwordErrors } };
+        }
+
+        try {
+            const record = query.get(
+                `SELECT pr.id, pr.user_id, pr.expires_at, pr.used_at, u.email, u.username
+                 FROM password_resets pr
+                 JOIN users u ON u.id = pr.user_id
+                 WHERE pr.token = ?`,
+                [token]
+            );
+
+            if (!record) {
+                return { status: 400, data: { error: 'Invalid or expired password reset link.' } };
+            }
+            if (record.used_at) {
+                return { status: 400, data: { error: 'This password reset link has already been used.' } };
+            }
+            if (new Date(record.expires_at) < new Date()) {
+                return { status: 400, data: { error: 'This password reset link has expired. Please request a new one.' } };
+            }
+
+            const newHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
+            query.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, record.user_id]);
+            query.run('UPDATE password_resets SET used_at = datetime(\'now\') WHERE token = ?', [token]);
+
+            // Invalidate all existing sessions for security
+            query.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ?', [record.user_id]);
+
+            logger.info(`[auth] Password reset completed for ${maskEmail(record.email)}`);
+
+            return { status: 200, data: { message: 'Password reset successfully. You can now log in with your new password.' } };
+        } catch (e) {
+            logger.error('[auth] Password reset confirm error', null, { detail: e.message });
+            return { status: 500, data: { error: 'Password reset failed. Please try again.' } };
+        }
+    }
+
     // GET /api/auth/verify-email?token=... - Verify email address
     if (method === 'GET' && path === '/verify-email') {
         const token = ctx.query?.token;

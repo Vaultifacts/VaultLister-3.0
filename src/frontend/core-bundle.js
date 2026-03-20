@@ -8399,6 +8399,15 @@ const api = {
         }
     },
 
+    // VAPID public key cache — fetched once, reused for all push subscriptions
+    _vapidPublicKey: null,
+    async getVapidPublicKey() {
+        if (this._vapidPublicKey) return this._vapidPublicKey;
+        const data = await this.get('/push-subscriptions/vapid-public-key');
+        this._vapidPublicKey = data.publicKey;
+        return this._vapidPublicKey;
+    },
+
     // Helper to wrap API calls with loading state
     async withLoading(key, apiCall) {
         loadingState.start(key);
@@ -9804,7 +9813,8 @@ const widgetManager = {
         { id: 'upcoming-events', label: 'Upcoming Events', width: 33, height: null, visible: false, collapsed: true, order: 18 },
         { id: 'recent-items', label: 'Recent Items', width: 100, height: null, visible: false, collapsed: true, order: 19 },
         { id: 'mini-pnl', label: 'Mini P&L', width: 33, height: null, visible: false, collapsed: true, order: 20 },
-        { id: 'pending-offers', label: 'Pending Offers', width: 33, height: null, visible: false, collapsed: true, order: 21 }
+        { id: 'pending-offers', label: 'Pending Offers', width: 33, height: null, visible: false, collapsed: true, order: 21 },
+        { id: 'poshmark-closet', label: 'Poshmark Closet', width: 50, height: null, visible: true, collapsed: false, order: 22 }
     ],
 
     getWidgets() {
@@ -15148,6 +15158,7 @@ const pageChunkMap = {
     // inventory chunk
     'inventory': 'inventory',
     'listings': 'inventory',
+    'my-listings': 'inventory',
     'crosslist': 'inventory',
     'templates': 'inventory',
     'automations': 'inventory',
@@ -15235,7 +15246,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'cf3924ab';
+    const v = 'af480d55';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15300,6 +15311,7 @@ const router = {
 
     // Route aliases for sidebar consolidation — old routes redirect to new parent pages
     routeAliases: {
+        'my-listings': { target: 'listings', tab: null },
         'orders': { target: 'orders-sales', tab: 'orders' },
         'sales': { target: 'orders-sales', tab: 'sales-summary' },
         'transactions': { target: 'financials', tab: 'transactions' },
@@ -15375,7 +15387,7 @@ const router = {
         }
 
         // Auth guard: redirect unauthenticated users to login for protected routes
-        const publicRoutes = ['login', 'register', 'forgot-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
+        const publicRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
         if (!publicRoutes.includes(path) && !auth.isAuthenticated()) {
             store.setState({ currentPage: 'login' });
             window.location.hash = '#login';
@@ -18766,6 +18778,70 @@ const pages = {
                     `;
                 }, 'Pending Offers')}
 
+                ${safeWidget(() => {
+                    if (!widgetManager.getWidgets().find(w => w.id === 'poshmark-closet')?.visible) return '';
+                    const pm = store.state.poshmarkMonitoring || null;
+                    const checkedAt = pm?.checked_at ? new Date(pm.checked_at) : null;
+                    const minutesAgo = checkedAt ? Math.floor((Date.now() - checkedAt.getTime()) / 60000) : null;
+                    const history = Array.isArray(pm?.closet_value_history) ? pm.closet_value_history : [];
+
+                    const sparkline = history.length >= 2 ? (() => {
+                        const max = Math.max(...history.map(h => h.value || 0)) || 1;
+                        return `<div class="poshmark-sparkline" role="img" aria-label="Closet value trend" style="display:flex;align-items:flex-end;gap:3px;height:32px;margin-top:8px;">
+                            ${history.slice(-12).map(h => {
+                                const pct = Math.max(4, Math.round(((h.value || 0) / max) * 100));
+                                return `<div style="flex:1;background:var(--primary-400);border-radius:2px 2px 0 0;height:${pct}%;min-height:4px;" title="$${(h.value||0).toLocaleString()} on ${escapeHtml(h.date||'')}"></div>`;
+                            }).join('')}
+                        </div>`;
+                    })() : '';
+
+                    return `
+                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('poshmark-closet') ? 'collapsed' : ''}" data-widget-id="poshmark-closet" style="${widgetManager.getWidgetStyle('poshmark-closet', 50)}">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title">Poshmark Closet</h3>
+                            <div class="flex items-center gap-2">
+                                <button class="btn btn-sm btn-primary" onclick="handlers.checkPoshmarkMonitoring()" aria-label="Check Poshmark closet now" style="min-height:44px;min-width:44px;">Check Now</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('poshmark-closet')" title="Collapse/Expand" aria-label="Collapse or expand Poshmark Closet widget">${widgetManager.isCollapsed('poshmark-closet') ? '▼' : '▲'}</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            ${pm ? `
+                                <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;">
+                                    <div class="stat-item" style="text-align:center;">
+                                        <div class="text-2xl font-bold">${escapeHtml(String(pm.total_listings ?? '—'))}</div>
+                                        <div class="text-xs text-gray-500">Total Listings</div>
+                                    </div>
+                                    <div class="stat-item" style="text-align:center;">
+                                        <div class="text-2xl font-bold">${escapeHtml(String(pm.total_shares ?? '—'))}</div>
+                                        <div class="text-xs text-gray-500">Total Shares</div>
+                                    </div>
+                                    <div class="stat-item" style="text-align:center;">
+                                        <div class="text-2xl font-bold">${escapeHtml(String(pm.active_offers ?? '—'))}</div>
+                                        <div class="text-xs text-gray-500">Active Offers</div>
+                                    </div>
+                                    <div class="stat-item" style="text-align:center;">
+                                        <div class="text-2xl font-bold">${escapeHtml(String(pm.recent_sales ?? '—'))}</div>
+                                        <div class="text-xs text-gray-500">Recent Sales</div>
+                                    </div>
+                                    <div class="stat-item" style="text-align:center;grid-column:span 2;">
+                                        <div class="text-2xl font-bold">$${pm.closet_value != null ? Number(pm.closet_value).toLocaleString() : '—'}</div>
+                                        <div class="text-xs text-gray-500">Closet Value</div>
+                                        ${sparkline}
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-2" style="text-align:right;">
+                                    Last checked: ${minutesAgo === 0 ? 'just now' : minutesAgo === 1 ? '1 minute ago' : minutesAgo != null ? escapeHtml(String(minutesAgo)) + ' minutes ago' : 'unknown'}
+                                </div>
+                            ` : `
+                                <div class="text-gray-500 text-sm text-center py-6">
+                                    No monitoring data — click Check Now to start
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                    `;
+                }, 'Poshmark Closet')}
+
             </div><!-- End dashboard-widgets-container -->
         `;
     },
@@ -20766,6 +20842,67 @@ const pages = {
         `;
     },
 
+    resetPassword(state) {
+        // state: null (loading), 'form' (show form), 'success', 'error'
+        const { mode = 'form', message = '' } = state || {};
+        if (mode === 'success') {
+            return `
+                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+                    <div class="card" style="width: 400px; max-width: 90%">
+                        <div class="card-body text-center">
+                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, #16a34a)">&#10003;</div>
+                            <h1 class="text-2xl font-bold mb-2">Password Reset!</h1>
+                            <p class="text-gray-600 mb-6">${escapeHtml(message || 'Your password has been reset successfully.')}</p>
+                            <a href="#login" class="btn btn-primary w-full" style="display: block; text-decoration: none; text-align: center;">Sign In</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        if (mode === 'error') {
+            return `
+                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+                    <div class="card" style="width: 400px; max-width: 90%">
+                        <div class="card-body text-center">
+                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, #dc2626)">&#10007;</div>
+                            <h1 class="text-2xl font-bold mb-2">Link Invalid</h1>
+                            <p class="text-gray-600 mb-6">${escapeHtml(message || 'This reset link is invalid or has expired.')}</p>
+                            <a href="#forgot-password" class="btn btn-primary w-full" style="display: block; text-decoration: none; text-align: center;">Request New Link</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        return `
+            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+                <div class="card" style="width: 400px; max-width: 90%">
+                    <div class="card-body">
+                        <div class="text-center mb-6">
+                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
+                            <h1 class="text-2xl font-bold">Set New Password</h1>
+                            <p class="text-gray-600">Enter your new password below</p>
+                        </div>
+                        <form id="reset-password-form" onsubmit="handlers.confirmPasswordReset(event)">
+                            <div class="form-group">
+                                <label for="reset-password-input" class="form-label">New Password</label>
+                                <input id="reset-password-input" type="password" class="form-input" name="password" required placeholder="Minimum 12 characters" autocomplete="new-password" aria-label="New password" data-testid="reset-password-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="reset-password-confirm" class="form-label">Confirm New Password</label>
+                                <input id="reset-password-confirm" type="password" class="form-input" name="password_confirm" required placeholder="Repeat new password" autocomplete="new-password" aria-label="Confirm new password" data-testid="reset-password-confirm">
+                            </div>
+                            <div id="reset-password-error" class="text-sm mb-3" style="color: var(--danger, #dc2626); display: none;"></div>
+                            <button type="submit" class="btn btn-primary w-full mb-4" data-testid="reset-password-submit">Set New Password</button>
+                            <div class="text-center">
+                                <a href="#login" class="text-sm" style="color: var(--primary-600);" tabindex="0">Back to Sign In</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
     // Email Verification page (shown after registration),
 
     verifyEmail(success, message) {
@@ -20870,7 +21007,7 @@ const auth = {
             // Remember me: use sessionStorage if unchecked
             const rememberMe = document.getElementById('remember-me')?.checked;
             if (!rememberMe) {
-                store.state.useSessionStorage = true;
+                store.setState({ useSessionStorage: true });
             }
 
             store.setState({
@@ -22213,7 +22350,7 @@ const modals = {
                         <h3 class="font-semibold text-lg mb-2">Quick Cross List</h3>
                         <p class="text-sm text-gray-500">Create a single listing and optionally list on multiple platforms. Same details for all platforms. Best for simple, fast listings.</p>
                     </div>
-                    <div class="listing-mode-card" onclick="modals.close(); modals.advancedNewListing()">
+                    <div class="listing-mode-card" onclick="modals.close(); router.navigate('crosslist')">
                         <div class="listing-mode-card-icon">
                             ${components.icon('settings', 32)}
                         </div>
@@ -22223,313 +22360,6 @@ const modals = {
                 </div>
             </div>
         `, 'modal-xl');
-    },
-
-    advancedNewListing() {
-        const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
-
-        this.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">Advanced New Listing</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                <form id="advanced-new-listing-form" onsubmit="handlers.submitAdvancedNewListing(event)">
-                    <!-- Platform Selection -->
-                    <div style="margin-bottom: 24px;">
-                        <h3 style="font-weight: 600; margin-bottom: 12px;">Select Platforms</h3>
-                        <div class="platform-select-grid">
-                            ${platforms.map(platform => `
-                                <label class="platform-select-label" style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid var(--gray-200); border-radius: 8px; cursor: pointer;">
-                                    <input type="checkbox" name="platforms" value="${platform}" class="adv-new-platform-checkbox" onchange="window.toggleAdvancedNewPlatform('${platform}', this.checked)">
-                                    ${components.platformBadge(platform)}
-                                </label>
-                            `).join('')}
-                        </div>
-                    </div>
-
-                    <!-- Platform Tabs -->
-                    <div class="advanced-platform-tabs" id="adv-new-tabs" style="display: none;">
-                        ${platforms.map(platform => `
-                            <button type="button" class="advanced-platform-tab" data-platform="${platform}" style="display: none;" onclick="window.switchAdvancedNewTab('${platform}')">
-                                ${components.platformBadge(platform)}
-                            </button>
-                        `).join('')}
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="window.applyToAllNewPlatforms()" style="margin-left: auto;" title="Copy common fields from current tab to all platforms">
-                            ${components.icon('copy', 14)} Apply to All
-                        </button>
-                    </div>
-
-                    <!-- Platform Panels -->
-                    ${platforms.map(platform => `
-                        <div class="advanced-platform-panel" id="adv-new-panel-${platform}" style="display: none;">
-                            <div class="form-group">
-                                <label class="form-label">Title *</label>
-                                <input type="text" name="${platform}_title" class="form-input" maxlength="80" placeholder="Listing title for ${platform}">
-                                <p class="text-xs text-gray-500 mt-1">Optimize for ${platform} search</p>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Description *</label>
-                                <textarea name="${platform}_description" class="form-input" rows="4" placeholder="Listing description for ${platform}"></textarea>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="form-group">
-                                    <label class="form-label">Price *</label>
-                                    <input type="number" name="${platform}_price" class="form-input" step="0.01" min="0" placeholder="0.00">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Condition</label>
-                                    <select name="${platform}_condition" class="form-select">
-                                        <option value="new_with_tags">New with Tags</option>
-                                        <option value="new_without_tags">New without Tags</option>
-                                        <option value="good">Good</option>
-                                        <option value="fair">Fair</option>
-                                        <option value="poor">Poor</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="form-group">
-                                    <label class="form-label">Category</label>
-                                    <input type="text" name="${platform}_category" class="form-input" placeholder="e.g., Tops, Shoes">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Tags</label>
-                                    <input type="text" name="${platform}_tags" class="form-input" placeholder="Comma-separated tags">
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="form-label" style="margin-bottom: 0;">Images</label>
-                                    <button type="button" class="btn btn-secondary btn-sm" onclick="handlers.openImageBankPickerForPlatform('${platform}')">
-                                        ${components.icon('folder', 14)} Browse Image Bank
-                                    </button>
-                                </div>
-                                <input type="file" name="${platform}_images" class="form-input" multiple accept="image/*" onchange="handlers.previewListingImages(this, '${platform}')">
-                                <div id="${platform}-image-progress" style="display: none; margin-top: 8px;">
-                                    <div style="background: var(--gray-200); border-radius: 4px; height: 4px; overflow: hidden;">
-                                        <div id="${platform}-progress-bar" style="height: 100%; background: var(--primary-500); width: 0%; transition: width 0.3s;"></div>
-                                    </div>
-                                    <span id="${platform}-progress-text" style="font-size: 11px; color: var(--text-secondary);">Processing images...</span>
-                                </div>
-                                <div id="${platform}-selected-images" class="mt-2 flex flex-wrap gap-2"></div>
-                            </div>
-
-                            ${platform === 'poshmark' ? `
-                                <div class="grid grid-cols-3 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Department</label>
-                                        <select name="${platform}_department" class="form-select">
-                                            <option value="">Select...</option>
-                                            <option value="Women">Women</option>
-                                            <option value="Men">Men</option>
-                                            <option value="Kids">Kids</option>
-                                            <option value="Home">Home</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Size</label>
-                                        <input type="text" name="${platform}_size" class="form-input" placeholder="e.g., M, 8, OS">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Original Price</label>
-                                        <input type="number" name="${platform}_original_price" class="form-input" step="0.01" min="0">
-                                    </div>
-                                </div>
-                            ` : ''}
-
-                            ${platform === 'ebay' ? `
-                                <div class="grid grid-cols-3 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Listing Type</label>
-                                        <select name="${platform}_listing_type" class="form-select">
-                                            <option value="fixed">Fixed Price (BIN)</option>
-                                            <option value="auction">Auction</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Condition Detail</label>
-                                        <select name="${platform}_condition_detail" class="form-select">
-                                            <option value="new">New</option>
-                                            <option value="open_box">Open Box</option>
-                                            <option value="used">Pre-owned</option>
-                                            <option value="refurbished">Refurbished</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Duration</label>
-                                        <select name="${platform}_duration" class="form-select">
-                                            <option value="GTC">Good 'Til Cancelled</option>
-                                            <option value="7">7 Days</option>
-                                            <option value="30">30 Days</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            ` : ''}
-
-                            ${platform === 'whatnot' ? `
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Shipping Method</label>
-                                        <select name="${platform}_shipping" class="form-select">
-                                            <option value="seller">Seller Pays</option>
-                                            <option value="buyer">Buyer Pays</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Weight</label>
-                                        <select name="${platform}_weight" class="form-select">
-                                            <option value="up_to_1lb">Up to 1 lb</option>
-                                            <option value="1_to_3lb">1-3 lbs</option>
-                                            <option value="3_to_5lb">3-5 lbs</option>
-                                            <option value="5_to_10lb">5-10 lbs</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="flex items-center gap-2">
-                                        <input type="checkbox" name="${platform}_smart_pricing">
-                                        <span class="text-sm">Enable Smart Pricing</span>
-                                    </label>
-                                </div>
-                            ` : ''}
-
-                            ${platform === 'depop' ? `
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Style Tags</label>
-                                        <input type="text" name="${platform}_style_tags" class="form-input" placeholder="vintage, y2k, streetwear">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Subcategory</label>
-                                        <input type="text" name="${platform}_subcategory" class="form-input" placeholder="e.g., Tops, Dresses">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Source</label>
-                                    <select name="${platform}_source" class="form-select">
-                                        <option value="">Select...</option>
-                                        <option value="thrifted">Thrifted</option>
-                                        <option value="vintage">Vintage</option>
-                                        <option value="handmade">Handmade</option>
-                                        <option value="brand_new">Brand New</option>
-                                    </select>
-                                </div>
-                            ` : ''}
-
-                            ${platform === 'shopify' ? `
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Category</label>
-                                        <select name="${platform}_grailed_category" class="form-select">
-                                            <option value="tops">Tops</option>
-                                            <option value="bottoms">Bottoms</option>
-                                            <option value="outerwear">Outerwear</option>
-                                            <option value="footwear">Footwear</option>
-                                            <option value="tailoring">Tailoring</option>
-                                            <option value="accessories">Accessories</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Designer</label>
-                                        <input type="text" name="${platform}_designer" class="form-input" placeholder="Brand/Designer name">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Condition Rating</label>
-                                    <select name="${platform}_condition_rating" class="form-select">
-                                        <option value="10">10/10 - New</option>
-                                        <option value="9">9/10 - Like New</option>
-                                        <option value="8">8/10 - Gently Used</option>
-                                        <option value="7">7/10 - Good</option>
-                                        <option value="6">6/10 - Fair</option>
-                                    </select>
-                                </div>
-                            ` : ''}
-
-                            ${platform === 'facebook' ? `
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="form-label">Location</label>
-                                        <input type="text" name="${platform}_location" class="form-input" placeholder="City, State">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Availability</label>
-                                        <select name="${platform}_availability" class="form-select">
-                                            <option value="in_stock">In Stock</option>
-                                            <option value="available_for_order">Available for Order</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="form-group">
-                                        <label class="flex items-center gap-2">
-                                            <input type="checkbox" name="${platform}_local_pickup">
-                                            <span class="text-sm">Local Pickup Available</span>
-                                        </label>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="flex items-center gap-2">
-                                            <input type="checkbox" name="${platform}_shipping_available" checked>
-                                            <span class="text-sm">Shipping Available</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `).join('')}
-
-                    <!-- No platforms selected message -->
-                    <div id="adv-new-no-platforms" class="text-center py-8 text-gray-500">
-                        <p>Select platforms above to start creating listings</p>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
-                <span id="listing-autosave-status" style="font-size: 12px; color: var(--text-secondary);"></span>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                    <button class="btn btn-primary" onclick="document.getElementById('advanced-new-listing-form').requestSubmit()">
-                        ${components.icon('list', 16)} Create Listings
-                    </button>
-                </div>
-            </div>
-        `, 'modal-xl');
-
-        // Auto-save draft every 30 seconds
-        const draftKey = 'vl_listing_draft';
-        const saved = localStorage.getItem(draftKey);
-        if (saved) {
-            try {
-                const draft = JSON.parse(saved);
-                const form = document.getElementById('advanced-new-listing-form');
-                if (form) {
-                    Object.entries(draft).forEach(([name, value]) => {
-                        const el = form.querySelector('[name="' + name + '"]');
-                        if (el && el.type !== 'file' && el.type !== 'checkbox') el.value = value;
-                    });
-                    const statusEl = document.getElementById('listing-autosave-status');
-                    if (statusEl) statusEl.textContent = 'Draft restored';
-                }
-            } catch (e) { /* ignore */ }
-        }
-
-        if (window._listingAutoSaveTimer) clearInterval(window._listingAutoSaveTimer);
-        window._listingAutoSaveTimer = setInterval(() => {
-            const form = document.getElementById('advanced-new-listing-form');
-            if (!form) { clearInterval(window._listingAutoSaveTimer); return; }
-            const data = {};
-            new FormData(form).forEach((v, k) => { if (typeof v === 'string' && v) data[k] = v; });
-            if (Object.keys(data).length > 0) {
-                localStorage.setItem(draftKey, JSON.stringify(data));
-                const statusEl = document.getElementById('listing-autosave-status');
-                if (statusEl) statusEl.textContent = 'Draft saved ' + new Date().toLocaleTimeString();
-            }
-        }, 30000);
     },
 
     createTemplate(fromCurrentItem = null) {
@@ -22919,6 +22749,75 @@ const modals = {
                                         <label class="form-label">Tags</label>
                                         <input type="text" name="${platform}Tags" class="form-input platform-tags-input" value="${escapeHtml(tagsString)}">
                                     </div>
+
+                                    ${platform === 'mercari' ? `
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="form-group">
+                                            <label class="form-label" for="mercariCondition">Condition</label>
+                                            <select id="mercariCondition" name="mercariCondition" class="form-select" aria-label="Mercari item condition">
+                                                <option value="new">New</option>
+                                                <option value="like_new">Like New</option>
+                                                <option value="good" selected>Good</option>
+                                                <option value="fair">Fair</option>
+                                                <option value="poor">Poor</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="mercariShippingMethod">Shipping Method</label>
+                                            <select id="mercariShippingMethod" name="mercariShippingMethod" class="form-select" aria-label="Mercari shipping method">
+                                                <option value="ship_own">Ship on your own</option>
+                                                <option value="mercari_prepaid">Mercari prepaid</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    ` : ''}
+
+                                    ${platform === 'grailed' ? `
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="form-group">
+                                            <label class="form-label" for="grailedDesigner">Designer</label>
+                                            <input type="text" id="grailedDesigner" name="grailedDesigner" class="form-input" placeholder="e.g. Supreme, Off-White" aria-label="Grailed designer name">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="grailedCategory">Category</label>
+                                            <select id="grailedCategory" name="grailedCategory" class="form-select" aria-label="Grailed listing category">
+                                                <option value="tops">Tops</option>
+                                                <option value="bottoms">Bottoms</option>
+                                                <option value="outerwear">Outerwear</option>
+                                                <option value="footwear">Footwear</option>
+                                                <option value="accessories">Accessories</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    ` : ''}
+
+                                    ${platform === 'etsy' ? `
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="form-group">
+                                            <label class="form-label" for="etsyWhoMade">Who Made It</label>
+                                            <select id="etsyWhoMade" name="etsyWhoMade" class="form-select" aria-label="Etsy who made the item">
+                                                <option value="i_did">I did</option>
+                                                <option value="collective">A member of my shop</option>
+                                                <option value="someone_else">Another company or person</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="etsyWhenMade">When Was It Made</label>
+                                            <select id="etsyWhenMade" name="etsyWhenMade" class="form-select" aria-label="Etsy when the item was made">
+                                                <option value="made_to_order">Made to order</option>
+                                                <option value="2020_2025">2020–2025</option>
+                                                <option value="2010_2019">2010–2019</option>
+                                                <option value="before_2010">Before 2010</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="flex items-center gap-2 cursor-pointer" style="min-height: 44px;">
+                                            <input type="checkbox" name="etsyIsSupply" value="1" aria-label="Etsy: item is a craft supply or tool">
+                                            <span class="form-label mb-0">This is a craft supply or tool</span>
+                                        </label>
+                                    </div>
+                                    ` : ''}
                                 </div>
                             `).join('')}
                         </div>
@@ -24838,6 +24737,248 @@ const modals = {
                 <button class="btn btn-primary" onclick="handlers.downloadReport('${report.id || 'report'}')">Download</button>
             </div>
         `, 'modal-xl');
+    },
+
+    // AR Preview modal — camera overlay with draggable/pinch-scalable item image
+    arPreview(itemId) {
+        // Resolve item from store state
+        const inventory = store.state.inventory || [];
+        const item = inventory.find(i => i.id === itemId);
+        if (!item) {
+            toast.error('Item not found');
+            return;
+        }
+        let images = [];
+        try { images = JSON.parse(item.images || '[]'); } catch { images = []; }
+        const imageUrl = images[0] || '';
+        const itemTitle = item.title || 'Item';
+
+        if (!imageUrl) {
+            toast.error('This item has no image to preview');
+            return;
+        }
+
+        const container = document.getElementById('modal-container');
+        container.innerHTML = `
+            <div class="ar-preview-backdrop" id="ar-backdrop" role="dialog" aria-modal="true" aria-label="AR Preview">
+                <video id="ar-video" class="ar-video" autoplay playsinline muted aria-hidden="true"></video>
+                <canvas id="ar-canvas" class="ar-canvas" style="display:none;" aria-hidden="true"></canvas>
+                <img id="ar-overlay-img"
+                     class="ar-overlay-img"
+                     src="${escapeHtml(imageUrl)}"
+                     alt="${escapeHtml(itemTitle)}"
+                     draggable="false"
+                     style="left:50%;top:50%;transform:translate(-50%,-50%) scale(1);"
+                />
+                <div class="ar-hud">
+                    <span class="ar-hud-title">${escapeHtml(itemTitle)}</span>
+                    <span class="ar-hud-hint">Drag to position &bull; Pinch to resize</span>
+                </div>
+                <div class="ar-controls">
+                    <button class="ar-btn ar-btn-capture" id="ar-capture-btn" title="Capture photo" aria-label="Capture AR photo">
+                        ${components.icon('camera', 22)}
+                    </button>
+                    <button class="ar-btn ar-btn-share" id="ar-share-btn" title="Share photo" aria-label="Share AR photo" style="display:none;">
+                        ${components.icon('share', 22)}
+                    </button>
+                    <button class="ar-btn ar-btn-size" id="ar-size-s" title="Small (0.5×) — accessories, shoes" aria-label="Small size preset" aria-pressed="false">S</button>
+                    <button class="ar-btn ar-btn-size ar-btn-size-active" id="ar-size-m" title="Medium (1.0×) — t-shirts, bags" aria-label="Medium size preset" aria-pressed="true">M</button>
+                    <button class="ar-btn ar-btn-size" id="ar-size-l" title="Large (1.5×) — coats, dresses" aria-label="Large size preset" aria-pressed="false">L</button>
+                    <button class="ar-btn ar-btn-close" id="ar-close-btn" title="Close" aria-label="Close AR preview">
+                        ${components.icon('close', 22)}
+                    </button>
+                </div>
+                <div id="ar-nocam-msg" class="ar-nocam-msg" style="display:none;">
+                    Camera not available. Point your device at the scene and use the overlay below.
+                </div>
+            </div>
+        `;
+
+        let stream = null;
+        const video = document.getElementById('ar-video');
+        const overlay = document.getElementById('ar-overlay-img');
+        const captureBtn = document.getElementById('ar-capture-btn');
+        const shareBtn = document.getElementById('ar-share-btn');
+        const closeBtn = document.getElementById('ar-close-btn');
+        const sizeBtns = [
+            { el: document.getElementById('ar-size-s'), scale: 0.5 },
+            { el: document.getElementById('ar-size-m'), scale: 1.0 },
+            { el: document.getElementById('ar-size-l'), scale: 1.5 },
+        ];
+        const setPresetScale = (targetScale) => {
+            overlayScale = targetScale;
+            overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
+            sizeBtns.forEach(({ el, scale }) => {
+                const active = scale === targetScale;
+                el.classList.toggle('ar-btn-size-active', active);
+                el.setAttribute('aria-pressed', String(active));
+            });
+        };
+        sizeBtns.forEach(({ el, scale }) => el.addEventListener('click', () => setPresetScale(scale)));
+
+        // Hide Share button if Web Share API or file sharing is not supported
+        const canShare = typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
+        let latestBlob = null;
+
+        // Start rear camera
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = s;
+                })
+                .catch(() => {
+                    // Fallback: hide video, show warning
+                    video.style.display = 'none';
+                    document.getElementById('ar-nocam-msg').style.display = 'flex';
+                });
+        } else {
+            video.style.display = 'none';
+            document.getElementById('ar-nocam-msg').style.display = 'flex';
+        }
+
+        // Close handler — stop camera tracks
+        const cleanup = () => {
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            container.innerHTML = '';
+            document.removeEventListener('keydown', escHandler);
+        };
+        const escHandler = (e) => { if (e.key === 'Escape') cleanup(); };
+        document.addEventListener('keydown', escHandler);
+        closeBtn.addEventListener('click', cleanup);
+
+        // Capture: composite video + overlay onto canvas, then trigger download
+        captureBtn.addEventListener('click', () => {
+            const cvs = document.getElementById('ar-canvas');
+            const w = video.videoWidth || window.innerWidth;
+            const h = video.videoHeight || window.innerHeight;
+            cvs.width = w;
+            cvs.height = h;
+            const ctx = cvs.getContext('2d');
+
+            // Draw video frame (blank rect if no camera)
+            if (video.readyState >= 2 && video.videoWidth > 0) {
+                ctx.drawImage(video, 0, 0, w, h);
+            } else {
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(0, 0, w, h);
+            }
+
+            // Draw overlay image at its current position/scale
+            const rect = overlay.getBoundingClientRect();
+            const videoRect = video.getBoundingClientRect();
+            const scaleX = w / (videoRect.width || window.innerWidth);
+            const scaleY = h / (videoRect.height || window.innerHeight);
+            const overlayImg = new Image();
+            overlayImg.crossOrigin = 'anonymous';
+            overlayImg.onload = () => {
+                ctx.drawImage(
+                    overlayImg,
+                    (rect.left - videoRect.left) * scaleX,
+                    (rect.top - videoRect.top) * scaleY,
+                    rect.width * scaleX,
+                    rect.height * scaleY
+                );
+                const link = document.createElement('a');
+                link.download = `ar-preview-${escapeHtml(itemId)}.png`;
+                link.href = cvs.toDataURL('image/png');
+                link.click();
+                toast.success('AR photo saved');
+
+                // Store blob and reveal Share button after first capture
+                cvs.toBlob((blob) => {
+                    if (!blob) return;
+                    latestBlob = blob;
+                    if (canShare) {
+                        const testFile = new File([blob], 'ar-preview.png', { type: 'image/png' });
+                        if (navigator.canShare({ files: [testFile] })) {
+                            shareBtn.style.display = '';
+                        }
+                    }
+                }, 'image/png');
+            };
+            overlayImg.onerror = () => toast.error('Could not capture image');
+            overlayImg.src = imageUrl;
+        });
+
+        // Share handler — fires only after a capture has been taken
+        shareBtn.addEventListener('click', () => {
+            if (!latestBlob) return;
+            const file = new File([latestBlob], 'ar-preview.png', { type: 'image/png' });
+            navigator.share({
+                title: 'VaultLister AR Preview',
+                text: `Check out this ${escapeHtml(item.title)}!`,
+                files: [file]
+            }).catch((err) => {
+                if (err.name !== 'AbortError') toast.error('Share failed');
+            });
+        });
+
+        // Drag-to-position (mouse + touch)
+        let isDragging = false;
+        let dragStartX = 0, dragStartY = 0;
+        let overlayLeft = window.innerWidth / 2;
+        let overlayTop = window.innerHeight / 2;
+        let overlayScale = 1;
+
+        const getPos = (e) => e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+
+        overlay.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            const pos = getPos(e);
+            dragStartX = pos.x - overlayLeft;
+            dragStartY = pos.y - overlayTop;
+            e.preventDefault();
+        });
+        overlay.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                dragStartX = e.touches[0].clientX - overlayLeft;
+                dragStartY = e.touches[0].clientY - overlayTop;
+            }
+        }, { passive: true });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            overlayLeft = e.clientX - dragStartX;
+            overlayTop = e.clientY - dragStartY;
+            overlay.style.left = overlayLeft + 'px';
+            overlay.style.top = overlayTop + 'px';
+            overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
+        });
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && isDragging) {
+                overlayLeft = e.touches[0].clientX - dragStartX;
+                overlayTop = e.touches[0].clientY - dragStartY;
+                overlay.style.left = overlayLeft + 'px';
+                overlay.style.top = overlayTop + 'px';
+                overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
+            }
+        }, { passive: true });
+        document.addEventListener('mouseup', () => { isDragging = false; });
+        document.addEventListener('touchend', () => { isDragging = false; });
+
+        // Pinch-to-zoom
+        let lastPinchDist = null;
+        overlay.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                lastPinchDist = Math.sqrt(dx * dx + dy * dy);
+                isDragging = false;
+            }
+        }, { passive: true });
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && lastPinchDist !== null) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                overlayScale = Math.min(5, Math.max(0.2, overlayScale * (dist / lastPinchDist)));
+                overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
+                lastPinchDist = dist;
+            }
+        }, { passive: true });
+        document.addEventListener('touchend', (e) => { if (e.touches.length < 2) lastPinchDist = null; });
     }
 };
 
@@ -26255,6 +26396,44 @@ const handlers = {
         if (successDiv) successDiv.style.display = 'block';
     },
 
+    async confirmPasswordReset(event) {
+        event.preventDefault();
+        const form = document.getElementById('reset-password-form');
+        const password = form ? form.querySelector('input[name="password"]')?.value : '';
+        const confirm = form ? form.querySelector('input[name="password_confirm"]')?.value : '';
+        const errorDiv = document.getElementById('reset-password-error');
+
+        if (errorDiv) errorDiv.style.display = 'none';
+
+        if (!password || !confirm) {
+            if (errorDiv) { errorDiv.textContent = 'Please fill in both password fields.'; errorDiv.style.display = 'block'; }
+            return;
+        }
+        if (password !== confirm) {
+            if (errorDiv) { errorDiv.textContent = 'Passwords do not match.'; errorDiv.style.display = 'block'; }
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+        const token = params.get('token');
+        if (!token) {
+            if (errorDiv) { errorDiv.textContent = 'No reset token found. Please use the link from your email.'; errorDiv.style.display = 'block'; }
+            return;
+        }
+
+        const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+            const data = await api.post('/auth/password-reset/confirm', { token, password });
+            render(pages.resetPassword({ mode: 'success', message: data.message }));
+        } catch (err) {
+            if (submitBtn) submitBtn.disabled = false;
+            const msg = err.message || 'Password reset failed. Please try again.';
+            if (errorDiv) { errorDiv.textContent = msg; errorDiv.style.display = 'block'; }
+        }
+    },
+
     async resendVerification() {
         try {
             const email = store.state.pendingVerificationEmail || store.state.user?.email;
@@ -26455,6 +26634,14 @@ async function initApp() {
                 const n = data.notification || data;
                 if (n && n.title) notificationCenter.add({ title: n.title, message: n.message || '', type: n.type || 'info', icon: 'bell' });
             });
+            wsSubscribe.onMonitoringUpdated((data) => {
+                if (data.platform === 'poshmark' && data.data) {
+                    if (window.store) store.setState({ poshmarkMonitoring: data.data });
+                    if (window.handlers && typeof handlers.loadPoshmarkMonitoring === 'function') {
+                        handlers.loadPoshmarkMonitoring();
+                    }
+                }
+            });
         }
     }, 2000);
     savedViews.init();
@@ -26483,6 +26670,7 @@ async function initApp() {
     router.register('login', () => render(pages.login()));
     router.register('register', () => render(pages.register()));
     router.register('forgot-password', () => render(pages.forgotPassword()));
+    router.register('reset-password', () => render(pages.resetPassword({ mode: 'form' })));
     router.register('email-verification', () => render(pages.emailVerification()));
     router.register('verify-email', async () => {
         const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
@@ -26559,7 +26747,7 @@ async function initApp() {
     router.register('settings', () => renderApp(pages.settings()));
     router.register('account', () => renderApp(pages.account()));
     router.register('community', () => renderApp(pages.community()));
-    router.register('help', () => renderApp(pages.helpSupport()));
+    router.register('help', () => renderApp(pages.help()));
 
     // Main section pages
     router.register('orders', async () => {
@@ -27929,8 +28117,9 @@ handlers.addPhotosToBank = async function() {
                 const blob = await response.blob();
                 formData.append('image', blob, photo.name || 'photo.jpg');
             }
-            const uploadRes = await api.request('/image-bank/upload', {
+            const uploadRes = await fetch('/api/image-bank/upload', {
                 method: 'POST',
+                headers: { 'Authorization': `Bearer ${store.state.token}`, 'X-CSRF-Token': api.csrfToken || '' },
                 body: formData
             });
             if (!uploadRes.ok) {

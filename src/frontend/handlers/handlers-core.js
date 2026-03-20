@@ -1410,6 +1410,44 @@ const handlers = {
         if (successDiv) successDiv.style.display = 'block';
     },
 
+    async confirmPasswordReset(event) {
+        event.preventDefault();
+        const form = document.getElementById('reset-password-form');
+        const password = form ? form.querySelector('input[name="password"]')?.value : '';
+        const confirm = form ? form.querySelector('input[name="password_confirm"]')?.value : '';
+        const errorDiv = document.getElementById('reset-password-error');
+
+        if (errorDiv) errorDiv.style.display = 'none';
+
+        if (!password || !confirm) {
+            if (errorDiv) { errorDiv.textContent = 'Please fill in both password fields.'; errorDiv.style.display = 'block'; }
+            return;
+        }
+        if (password !== confirm) {
+            if (errorDiv) { errorDiv.textContent = 'Passwords do not match.'; errorDiv.style.display = 'block'; }
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+        const token = params.get('token');
+        if (!token) {
+            if (errorDiv) { errorDiv.textContent = 'No reset token found. Please use the link from your email.'; errorDiv.style.display = 'block'; }
+            return;
+        }
+
+        const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+            const data = await api.post('/auth/password-reset/confirm', { token, password });
+            render(pages.resetPassword({ mode: 'success', message: data.message }));
+        } catch (err) {
+            if (submitBtn) submitBtn.disabled = false;
+            const msg = err.message || 'Password reset failed. Please try again.';
+            if (errorDiv) { errorDiv.textContent = msg; errorDiv.style.display = 'block'; }
+        }
+    },
+
     async resendVerification() {
         try {
             const email = store.state.pendingVerificationEmail || store.state.user?.email;

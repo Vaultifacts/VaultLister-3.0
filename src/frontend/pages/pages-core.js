@@ -3282,6 +3282,67 @@ const pages = {
         `;
     },
 
+    resetPassword(state) {
+        // state: null (loading), 'form' (show form), 'success', 'error'
+        const { mode = 'form', message = '' } = state || {};
+        if (mode === 'success') {
+            return `
+                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+                    <div class="card" style="width: 400px; max-width: 90%">
+                        <div class="card-body text-center">
+                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, #16a34a)">&#10003;</div>
+                            <h1 class="text-2xl font-bold mb-2">Password Reset!</h1>
+                            <p class="text-gray-600 mb-6">${escapeHtml(message || 'Your password has been reset successfully.')}</p>
+                            <a href="#login" class="btn btn-primary w-full" style="display: block; text-decoration: none; text-align: center;">Sign In</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        if (mode === 'error') {
+            return `
+                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+                    <div class="card" style="width: 400px; max-width: 90%">
+                        <div class="card-body text-center">
+                            <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, #dc2626)">&#10007;</div>
+                            <h1 class="text-2xl font-bold mb-2">Link Invalid</h1>
+                            <p class="text-gray-600 mb-6">${escapeHtml(message || 'This reset link is invalid or has expired.')}</p>
+                            <a href="#forgot-password" class="btn btn-primary w-full" style="display: block; text-decoration: none; text-align: center;">Request New Link</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        return `
+            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+                <div class="card" style="width: 400px; max-width: 90%">
+                    <div class="card-body">
+                        <div class="text-center mb-6">
+                            <div class="sidebar-logo mx-auto mb-4" style="width: 64px; height: 64px; font-size: 24px">V</div>
+                            <h1 class="text-2xl font-bold">Set New Password</h1>
+                            <p class="text-gray-600">Enter your new password below</p>
+                        </div>
+                        <form id="reset-password-form" onsubmit="handlers.confirmPasswordReset(event)">
+                            <div class="form-group">
+                                <label for="reset-password-input" class="form-label">New Password</label>
+                                <input id="reset-password-input" type="password" class="form-input" name="password" required placeholder="Minimum 12 characters" autocomplete="new-password" aria-label="New password" data-testid="reset-password-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="reset-password-confirm" class="form-label">Confirm New Password</label>
+                                <input id="reset-password-confirm" type="password" class="form-input" name="password_confirm" required placeholder="Repeat new password" autocomplete="new-password" aria-label="Confirm new password" data-testid="reset-password-confirm">
+                            </div>
+                            <div id="reset-password-error" class="text-sm mb-3" style="color: var(--danger, #dc2626); display: none;"></div>
+                            <button type="submit" class="btn btn-primary w-full mb-4" data-testid="reset-password-submit">Set New Password</button>
+                            <div class="text-center">
+                                <a href="#login" class="text-sm" style="color: var(--primary-600);" tabindex="0">Back to Sign In</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
     // Email Verification page (shown after registration),
 
     verifyEmail(success, message) {

@@ -102,6 +102,7 @@ async function initApp() {
     router.register('login', () => render(pages.login()));
     router.register('register', () => render(pages.register()));
     router.register('forgot-password', () => render(pages.forgotPassword()));
+    router.register('reset-password', () => render(pages.resetPassword({ mode: 'form' })));
     router.register('email-verification', () => render(pages.emailVerification()));
     router.register('verify-email', async () => {
         const params = new URLSearchParams(window.location.hash.split('?')[1] || '');

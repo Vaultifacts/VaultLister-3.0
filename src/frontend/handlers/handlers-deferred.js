@@ -12908,10 +12908,10 @@ Object.assign(handlers, {
                 return;
             }
             const registration = await navigator.serviceWorker.ready;
-            const keyResponse = await api.get('/push-subscriptions/vapid-public-key');
+            const vapidKey = await api.getVapidPublicKey();
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: keyResponse.publicKey
+                applicationServerKey: vapidKey
             });
             await api.post('/push-subscriptions/subscribe', {
                 subscription: subscription.toJSON(),
