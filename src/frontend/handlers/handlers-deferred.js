@@ -28094,6 +28094,32 @@ Object.assign(handlers, {
         } catch (e) {
             toast.error('Failed to take snapshot');
         }
+    },
+
+    loadPoshmarkMonitoring: async function() {
+        try {
+            const data = await api.request('GET', '/api/monitoring/poshmark');
+            if (data) {
+                store.setState({ poshmarkMonitoring: data });
+            }
+        } catch (e) {
+            // Silently ignore — no data yet is valid state
+        }
+    },
+
+    checkPoshmarkMonitoring: async function() {
+        try {
+            toast.show('Checking Poshmark closet...', 'info');
+            const data = await api.request('POST', '/api/monitoring/poshmark/check');
+            if (data) {
+                store.setState({ poshmarkMonitoring: data });
+                router.navigate('dashboard');
+                toast.success('Poshmark closet updated');
+            }
+        } catch (e) {
+            console.error('Poshmark monitoring check failed:', e);
+            toast.error('Check failed — try again');
+        }
     }
 });
 

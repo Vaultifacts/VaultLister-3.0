@@ -1065,7 +1065,8 @@ const widgetManager = {
         { id: 'upcoming-events', label: 'Upcoming Events', width: 33, height: null, visible: false, collapsed: true, order: 18 },
         { id: 'recent-items', label: 'Recent Items', width: 100, height: null, visible: false, collapsed: true, order: 19 },
         { id: 'mini-pnl', label: 'Mini P&L', width: 33, height: null, visible: false, collapsed: true, order: 20 },
-        { id: 'pending-offers', label: 'Pending Offers', width: 33, height: null, visible: false, collapsed: true, order: 21 }
+        { id: 'pending-offers', label: 'Pending Offers', width: 33, height: null, visible: false, collapsed: true, order: 21 },
+        { id: 'poshmark-closet', label: 'Poshmark Closet', width: 50, height: null, visible: true, collapsed: false, order: 22 }
     ],
 
     getWidgets() {

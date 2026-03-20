@@ -1218,6 +1218,70 @@ const pages = {
                     `;
                 }, 'Pending Offers')}
 
+                ${safeWidget(() => {
+                    if (!widgetManager.getWidgets().find(w => w.id === 'poshmark-closet')?.visible) return '';
+                    const pm = store.state.poshmarkMonitoring || null;
+                    const checkedAt = pm?.checked_at ? new Date(pm.checked_at) : null;
+                    const minutesAgo = checkedAt ? Math.floor((Date.now() - checkedAt.getTime()) / 60000) : null;
+                    const history = Array.isArray(pm?.closet_value_history) ? pm.closet_value_history : [];
+
+                    const sparkline = history.length >= 2 ? (() => {
+                        const max = Math.max(...history.map(h => h.value || 0)) || 1;
+                        return `<div class="poshmark-sparkline" role="img" aria-label="Closet value trend" style="display:flex;align-items:flex-end;gap:3px;height:32px;margin-top:8px;">
+                            ${history.slice(-12).map(h => {
+                                const pct = Math.max(4, Math.round(((h.value || 0) / max) * 100));
+                                return `<div style="flex:1;background:var(--primary-400);border-radius:2px 2px 0 0;height:${pct}%;min-height:4px;" title="$${(h.value||0).toLocaleString()} on ${escapeHtml(h.date||'')}"></div>`;
+                            }).join('')}
+                        </div>`;
+                    })() : '';
+
+                    return `
+                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('poshmark-closet') ? 'collapsed' : ''}" data-widget-id="poshmark-closet" style="${widgetManager.getWidgetStyle('poshmark-closet', 50)}">
+                        <div class="card-header flex justify-between items-center">
+                            <h3 class="card-title">Poshmark Closet</h3>
+                            <div class="flex items-center gap-2">
+                                <button class="btn btn-sm btn-primary" onclick="handlers.checkPoshmarkMonitoring()" aria-label="Check Poshmark closet now" style="min-height:44px;min-width:44px;">Check Now</button>
+                                <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('poshmark-closet')" title="Collapse/Expand" aria-label="Collapse or expand Poshmark Closet widget">${widgetManager.isCollapsed('poshmark-closet') ? '▼' : '▲'}</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            ${pm ? `
+                                <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;">
+                                    <div class="stat-item" style="text-align:center;">
+                                        <div class="text-2xl font-bold">${escapeHtml(String(pm.total_listings ?? '—'))}</div>
+                                        <div class="text-xs text-gray-500">Total Listings</div>
+                                    </div>
+                                    <div class="stat-item" style="text-align:center;">
+                                        <div class="text-2xl font-bold">${escapeHtml(String(pm.total_shares ?? '—'))}</div>
+                                        <div class="text-xs text-gray-500">Total Shares</div>
+                                    </div>
+                                    <div class="stat-item" style="text-align:center;">
+                                        <div class="text-2xl font-bold">${escapeHtml(String(pm.active_offers ?? '—'))}</div>
+                                        <div class="text-xs text-gray-500">Active Offers</div>
+                                    </div>
+                                    <div class="stat-item" style="text-align:center;">
+                                        <div class="text-2xl font-bold">${escapeHtml(String(pm.recent_sales ?? '—'))}</div>
+                                        <div class="text-xs text-gray-500">Recent Sales</div>
+                                    </div>
+                                    <div class="stat-item" style="text-align:center;grid-column:span 2;">
+                                        <div class="text-2xl font-bold">$${pm.closet_value != null ? Number(pm.closet_value).toLocaleString() : '—'}</div>
+                                        <div class="text-xs text-gray-500">Closet Value</div>
+                                        ${sparkline}
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-2" style="text-align:right;">
+                                    Last checked: ${minutesAgo === 0 ? 'just now' : minutesAgo === 1 ? '1 minute ago' : minutesAgo != null ? escapeHtml(String(minutesAgo)) + ' minutes ago' : 'unknown'}
+                                </div>
+                            ` : `
+                                <div class="text-gray-500 text-sm text-center py-6">
+                                    No monitoring data — click Check Now to start
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                    `;
+                }, 'Poshmark Closet')}
+
             </div><!-- End dashboard-widgets-container -->
         `;
     },
