@@ -40,7 +40,7 @@ Common failure modes to look for:
 - secrets or API keys committed to source files
 
 ## Mandatory Cross-Agent Rules
-- When editing app.js, ALSO edit core-bundle.js with the same change (and vice versa) — these are duplicates that must stay in sync
+- When editing app.js, ALSO edit core-bundle.js with the same change (and vice versa) — these files must be updated together in the same commit
 - Never use bare JSON.parse() in route handlers — always use safeJsonParse(str, fallback)
 - Every new .sql migration file MUST be added to the migrationFiles array in src/backend/db/database.js
 - New environment variables MUST be added to .env.example

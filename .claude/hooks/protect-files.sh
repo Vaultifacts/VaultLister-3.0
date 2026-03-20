@@ -10,6 +10,7 @@ PROTECTED_FILES=(
   ".husky/pre-commit"
   ".husky/pre-push"
   ".husky/commit-msg"
+  ".claude/settings.json"
 )
 
 FILE_ARG="${1:-}"
