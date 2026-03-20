@@ -50,7 +50,7 @@ case "$KNOWN_FAILURES" in
     ''|*[!0-9]*) KNOWN_FAILURES=0 ;;
 esac
 echo "Running unit tests (named baseline: $(echo "$KNOWN_FAIL_NAMES" | grep -c . || echo 0) known failures)..."
-PORT="${PORT:-3001}"
+PORT="${PORT:-3000}"
 if curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
     BUN_BIN=$(command -v bun 2>/dev/null || echo "/home/openclawuser/.bun/bin/bun")
     TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true "$BUN_BIN" test src/tests/ 2>&1) || true
