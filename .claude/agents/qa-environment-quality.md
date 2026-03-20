@@ -41,4 +41,4 @@ Common failure modes to look for:
 - New environment variables MUST be added to .env.example
 - New frontend pages MUST be added to pageChunkMap in src/frontend/core/router.js
 - Commit messages must accurately describe ALL changes in the diff
-- After making changes, run bun test src/tests/auth.test.js and report the actual result
+- After making changes, run `bun test src/tests/auth.test.js src/tests/security.test.js` and report the actual result
