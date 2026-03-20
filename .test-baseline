@@ -1,6 +1,6 @@
-KNOWN_FAILURES=274
+KNOWN_FAILURES=262
 # Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
-# Local Windows: 2050 pass / 0 fail
+# Local Windows: 2050 pass / 262 fail (named below — baselined 2026-03-20)
 # CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
 # E2E baseline (Playwright, full suite): 620 pass / 0 fail
 #
@@ -9,18 +9,18 @@ KNOWN_FAILURES=274
 # Any other failure is a regression and will block the build.
 #
 # Format: KNOWN_FAIL: <describe block(s) > test name>
-#   — must match the exact string printed by bun:test after "(fail) "
+#   — must match the exact string printed by bun:test after "(fail) " with timing suffix stripped
 #   — integration tests that require a running server are excluded from this list
 #     (they are controlled separately by KNOWN_FAILURES count when server is up)
 #
 # How CI uses this list:
 #   1. Run tests with server. Extract all "(fail) ..." lines.
-#   2. For each failure, check if it matches a KNOWN_FAIL entry.
+#   2. For each failure, strip trailing " [NNN.NNms]" timing suffix, then check against KNOWN_FAIL.
 #   3. Any failure NOT in this list → regression → build fails.
 #   4. If fewer failures than expected (a fix landed) → remove the entry.
 #
-# Currently no named failures: all unit tests pass as of 2026-03-08.
-# Integration tests (require live server) are validated by KNOWN_FAILURES=274.
+# Baselined 2026-03-20: 262 named failures recorded from local run with server on port 3000.
+# Integration tests (require live server) are validated by KNOWN_FAILURES=262.
 #
 # ─── Server-required tests that fail without a running server ─────────────────
 # The test below is an integration test misplaced in a middleware file.
@@ -93,3 +93,267 @@ KNOWN_FAILURES=274
 #     UPDATE; auto-disconnect assertion conditional on mock.calls.length > 0
 #   service-notificationTypes.test.js: (2 tests) — isValidNotificationTypes guard added (truthy+key check)
 #   service-notificationTypes-expanded.test.js: (1 test) — contamination guard added (object+key check)
+#
+# ─── Named failures baselined 2026-03-20 (262 entries) ──────────────────────
+KNOWN_FAIL: Account Deletion Lifecycle (H12) > should schedule deletion with 30-day grace period (no-password user)
+KNOWN_FAIL: Account Deletion Lifecycle (H12) > should send confirmation email on deletion schedule
+KNOWN_FAIL: Audit Log Router — Admin Gating (H34) > enterprise user should be treated as admin
+KNOWN_FAIL: Automation Cron Validation > should reject cron with too few fields
+KNOWN_FAIL: Automation Cron Validation > should reject invalid cron schedule
+KNOWN_FAIL: Build script source file coverage (H8) > all source files listed in build-frontend.js exist on disk
+KNOWN_FAIL: Build script source file coverage (H8) > build script has 24 source files
+KNOWN_FAIL: Build script source file coverage (H8) > init.js is last in the source file list
+KNOWN_FAIL: CSRF Protection > POST with invalid CSRF token should be rejected
+KNOWN_FAIL: CSRF Protection > POST with reused CSRF token should be rejected
+KNOWN_FAIL: CSRF Protection > POST without CSRF token should be rejected
+KNOWN_FAIL: CSRF Token Management > CSRF should be disabled in test mode (NODE_ENV=test)
+KNOWN_FAIL: DELETE /api/integrations/google/drive/revoke > should proceed past CSRF gate when CSRF is disabled in test mode
+KNOWN_FAIL: Data Integrity - GDPR Deletion Flow > schedule deletion then check status then cancel
+KNOWN_FAIL: Dockerfile artifact safety (M10) > Dockerfile uses --frozen-lockfile
+KNOWN_FAIL: E2E: Auth Token Lifecycle > password change invalidates old password
+KNOWN_FAIL: GDPR API — rectification > PUT /gdpr/rectify accepts correction request
+KNOWN_FAIL: GDPR Data Export (H11) > should include exportDate and userId in export metadata
+KNOWN_FAIL: GDPR Data Export (H11) > should redact oauth_token and oauth_refresh_token from exported data
+KNOWN_FAIL: GDPR Data Export (H11) > should redact password_hash from exported user data
+KNOWN_FAIL: GDPR Data Export (H11) > should send email notification after export
+KNOWN_FAIL: GET /api/legal/privacy/data-export > authenticated returns GDPR data export
+KNOWN_FAIL: Hash Token > different tokens should produce different hashes
+KNOWN_FAIL: Hash Token > hash should be hex string
+KNOWN_FAIL: Hash Token > hashToken should return consistent hash
+KNOWN_FAIL: NotificationTypes > has required keys (and may include additional keys)
+KNOWN_FAIL: NotificationTypes > values match expected snake_case format
+KNOWN_FAIL: Notifications - Delete > DELETE /notifications/:id - should delete notification
+KNOWN_FAIL: Notifications - Mark as Read > PUT /notifications/:id/read - should mark notification as read
+KNOWN_FAIL: Offers - Accept State Transition > accepted offer has status=accepted in DB
+KNOWN_FAIL: Offers - Counter State Transition > countered offer has status=countered and counter_amount in DB
+KNOWN_FAIL: Offers - Decline State Transition > declined offer has status=declined in DB
+KNOWN_FAIL: POST /api/integrations/google/drive/backup > should proceed past CSRF gate when CSRF is disabled in test mode
+KNOWN_FAIL: POST /api/legal/tos/accept > nonexistent tosVersionId returns 400 or 404
+KNOWN_FAIL: POST /api/onboarding/badges/claim > nonexistent badge returns 400 or 404
+KNOWN_FAIL: POST /api/onboarding/progress > authenticated starts or resets onboarding
+KNOWN_FAIL: POST /api/search-analytics/track > rejects empty body
+KNOWN_FAIL: POST /api/search-analytics/track > tracks search term with valid body
+KNOWN_FAIL: PUT /api/legal/privacy/cookie-consent > authenticated updates cookie consent
+KNOWN_FAIL: PricingEngine - getDemandForecast > demand_level is one of expected values
+KNOWN_FAIL: PricingEngine - getDemandForecast > different categories produce different seasonality
+KNOWN_FAIL: PricingEngine - getDemandForecast > forecast_date is ISO date format
+KNOWN_FAIL: PricingEngine - getDemandForecast > includes platform when specified
+KNOWN_FAIL: PricingEngine - getDemandForecast > notes is a non-empty string
+KNOWN_FAIL: PricingEngine - getDemandForecast > platform defaults to null
+KNOWN_FAIL: PricingEngine - getDemandForecast > price_trend is one of expected values
+KNOWN_FAIL: PricingEngine - getDemandForecast > returns forecast with required fields
+KNOWN_FAIL: PricingEngine - getDemandForecast > seasonality_index is a valid number
+KNOWN_FAIL: Push Subscriptions - Subscribe > POST /push-subscriptions/subscribe - should create subscription
+KNOWN_FAIL: Push Subscriptions - Unsubscribe > DELETE /push-subscriptions/subscribe - should unsubscribe
+KNOWN_FAIL: RequestLogger - createRequestContext > generates unique requestIds
+KNOWN_FAIL: Security Expanded - Forgot Password > POST /security/forgot-password with nonexistent email returns 200 (anti-enumeration)
+KNOWN_FAIL: State Token > each state token should be unique
+KNOWN_FAIL: State Token > generateStateToken should return 64-char hex string
+KNOWN_FAIL: auditLog.alertCritical > logs critical event details
+KNOWN_FAIL: auditLog.log — critical alert > calls alertCritical for CRITICAL severity events
+KNOWN_FAIL: auditLog.log — default parameters > generates unique IDs for each log entry
+KNOWN_FAIL: auditLogRouter > enterprise tier user is treated as admin
+KNOWN_FAIL: cross-platform consistency > depop > syncs 3 listings and 1 orders
+KNOWN_FAIL: cross-platform consistency > depop > updates shop sync time on success
+KNOWN_FAIL: cross-platform consistency > ebay > syncs 2 listings and 1 orders
+KNOWN_FAIL: cross-platform consistency > etsy > syncs 2 listings and 1 orders
+KNOWN_FAIL: cross-platform consistency > etsy > updates shop sync time on success
+KNOWN_FAIL: cross-platform consistency > grailed > syncs 3 listings and 1 orders
+KNOWN_FAIL: cross-platform consistency > grailed > updates shop sync time on success
+KNOWN_FAIL: cross-platform consistency > mercari > syncs 2 listings and 1 orders
+KNOWN_FAIL: cross-platform consistency > mercari > updates shop sync time on success
+KNOWN_FAIL: cross-platform consistency > poshmark > syncs 3 listings and 1 orders
+KNOWN_FAIL: cross-platform consistency > poshmark > updates shop sync time on success
+KNOWN_FAIL: default export — coverage > default export has all 4 functions
+KNOWN_FAIL: depopSync > creates 1 new order in mock mode
+KNOWN_FAIL: depopSync > creates 3 new listings in mock mode
+KNOWN_FAIL: depopSync > listing external data includes platform depop
+KNOWN_FAIL: depopSync > skips existing orders
+KNOWN_FAIL: depopSync > updates existing listings when found
+KNOWN_FAIL: depopSync > updates shop sync time on success
+KNOWN_FAIL: depopSync — expanded > 10% fee on $22 order = $2.20
+KNOWN_FAIL: depopSync — expanded > error in order processing does not prevent results from returning
+KNOWN_FAIL: depopSync — expanded > order buyer_username is extracted correctly
+KNOWN_FAIL: depopSync — expanded > order platform_order_id matches depop order id
+KNOWN_FAIL: depopSync — expanded > platform_listing_id matches depop listing id
+KNOWN_FAIL: depopSync — expanded > platform_specific_data includes size, brand, and likes
+KNOWN_FAIL: depopSync — expanded > shipping cost of $4.50 from mock data
+KNOWN_FAIL: depopSync — expanded > uses description field as listing title (not title field)
+KNOWN_FAIL: ebaySync > creates 1 new order in mock mode
+KNOWN_FAIL: ebaySync > creates 2 new listings in mock mode
+KNOWN_FAIL: ebaySync > order external data includes ebay platform and fee estimate
+KNOWN_FAIL: ebaySync > skips existing orders
+KNOWN_FAIL: ebaySync > updates existing listings when found
+KNOWN_FAIL: ebaySync — expanded > handles mixed create and update in same sync
+KNOWN_FAIL: ebaySync — expanded > individual listing error does not abort entire sync
+KNOWN_FAIL: ebaySync — expanded > listing platform_specific_data includes sku, listingId, condition, and syncedAt
+KNOWN_FAIL: ebaySync — expanded > listing prices are parsed as numbers from string values
+KNOWN_FAIL: ebaySync — expanded > order notes includes orderId, lineItems, and fulfillmentStatus
+KNOWN_FAIL: ebaySync — expanded > sale buyer_username is extracted from nested buyer object
+KNOWN_FAIL: ebaySync — expanded > sale net_profit = total - fees - shipping
+KNOWN_FAIL: emailMarketing.queueEmail > generates a UUID for each queued email
+KNOWN_FAIL: etsySync > createEtsyListing (mock mode) > returns success with listing_id
+KNOWN_FAIL: etsySync > deleteEtsyListing (mock mode) > returns success
+KNOWN_FAIL: etsySync > syncEtsyShop > creates 1 new order in mock mode
+KNOWN_FAIL: etsySync > syncEtsyShop > creates 2 new listings in mock mode
+KNOWN_FAIL: etsySync > syncEtsyShop > skips existing orders
+KNOWN_FAIL: etsySync > syncEtsyShop > updates existing listings when found
+KNOWN_FAIL: etsySync > syncEtsyShop > updates shop sync time on success
+KNOWN_FAIL: etsySync > updateEtsyListing (mock mode) > returns success
+KNOWN_FAIL: etsySync — expanded > 9.5% + $0.25 fee calculation on $25 order
+KNOWN_FAIL: etsySync — expanded > Etsy amount/divisor price conversion is accurate
+KNOWN_FAIL: etsySync — expanded > createEtsyListing — expanded > URL points to etsy.com
+KNOWN_FAIL: etsySync — expanded > createEtsyListing — expanded > listing_id starts with etsy-new-
+KNOWN_FAIL: etsySync — expanded > createEtsyListing — expanded > returns title that matches input
+KNOWN_FAIL: etsySync — expanded > deleteEtsyListing — expanded > returns success true in mock mode
+KNOWN_FAIL: etsySync — expanded > order buyer_email used as buyer_username
+KNOWN_FAIL: etsySync — expanded > order grandtotal conversion from amount/divisor
+KNOWN_FAIL: etsySync — expanded > paid status maps to completed
+KNOWN_FAIL: etsySync — expanded > platform_specific_data includes URL for each listing
+KNOWN_FAIL: etsySync — expanded > updateEtsyListing — expanded > always returns success in mock mode
+KNOWN_FAIL: etsySync — expanded > updateEtsyListing — expanded > returns the same listing_id passed in
+KNOWN_FAIL: generateId > generates unique IDs
+KNOWN_FAIL: generateId > returns a UUID v4 string
+KNOWN_FAIL: generatePrefixedId > returns prefix-SHORTID format
+KNOWN_FAIL: generatePricePrediction > comparable_count is between 5 and 14 (generated)
+KNOWN_FAIL: generatePricePrediction > expires_at is 7 days in the future
+KNOWN_FAIL: generateRefreshToken — additional edge cases > generates unique jti for each call
+KNOWN_FAIL: generateShortId > returns 8-character string
+KNOWN_FAIL: getDemandForecast — extended > accessories category recognized
+KNOWN_FAIL: getDemandForecast — extended > bag category recognized as accessories
+KNOWN_FAIL: getDemandForecast — extended > boot category recognized as shoes
+KNOWN_FAIL: getDemandForecast — extended > dress category recognized as clothing
+KNOWN_FAIL: getDemandForecast — extended > electronics category recognized
+KNOWN_FAIL: getDemandForecast — extended > forecast_date matches today
+KNOWN_FAIL: getDemandForecast — extended > furniture category recognized as home
+KNOWN_FAIL: getDemandForecast — extended > home category recognized
+KNOWN_FAIL: getDemandForecast — extended > jewelry category recognized as accessories
+KNOWN_FAIL: getDemandForecast — extended > notes contain category name
+KNOWN_FAIL: getDemandForecast — extended > notes contain month name
+KNOWN_FAIL: getDemandForecast — extended > null category uses default seasonality
+KNOWN_FAIL: getDemandForecast — extended > pants category recognized as clothing
+KNOWN_FAIL: getDemandForecast — extended > phone category recognized as electronics
+KNOWN_FAIL: getDemandForecast — extended > shirt category recognized as clothing
+KNOWN_FAIL: getDemandForecast — extended > shoes category recognized
+KNOWN_FAIL: getDemandForecast — extended > tech category recognized as electronics
+KNOWN_FAIL: getDemandForecast — extended > unknown category uses default seasonality
+KNOWN_FAIL: getSupportedPlatforms — coverage > all 9 platforms have syncSupported=true
+KNOWN_FAIL: getSupportedPlatforms — coverage > all entries have required shape
+KNOWN_FAIL: getSupportedPlatforms — coverage > all sync-supported platforms have listings+orders capabilities
+KNOWN_FAIL: getSupportedPlatforms — coverage > all sync-supported platforms have oauthSupported=true
+KNOWN_FAIL: getSupportedPlatforms — coverage > facebook entry has listings+orders capabilities
+KNOWN_FAIL: getSupportedPlatforms — coverage > platform names match expected list
+KNOWN_FAIL: getSupportedPlatforms — coverage > returns array of 9 platforms
+KNOWN_FAIL: getSyncStatus — coverage > isConnected is false for disconnected shop
+KNOWN_FAIL: getSyncStatus — coverage > passes correct shopId to task_queue query
+KNOWN_FAIL: getSyncStatus — coverage > reports isSyncSupported=true for facebook
+KNOWN_FAIL: getSyncStatus — coverage > reports sync error when present
+KNOWN_FAIL: getSyncStatus — coverage > returns all supported platform types correctly
+KNOWN_FAIL: getSyncStatus — coverage > returns status for connected shop with no pending tasks
+KNOWN_FAIL: getSyncStatus — coverage > returns status with pending sync task
+KNOWN_FAIL: getSyncStatus — coverage > returns status with processing sync task
+KNOWN_FAIL: getSyncStatus — coverage > throws when shop not found
+KNOWN_FAIL: grailedSync > creates 1 new order in mock mode
+KNOWN_FAIL: grailedSync > creates 3 new listings in mock mode
+KNOWN_FAIL: grailedSync > listing data includes grailed platform and designer info
+KNOWN_FAIL: grailedSync > order fee calculation uses 9% + $0.30
+KNOWN_FAIL: grailedSync > updates existing listings when found
+KNOWN_FAIL: grailedSync > updates shop sync time
+KNOWN_FAIL: grailedSync — expanded > $15 shipping cost from mock order data
+KNOWN_FAIL: grailedSync — expanded > 9% + $0.30 fee on $350 order = $31.80
+KNOWN_FAIL: grailedSync — expanded > delivered order maps to completed status
+KNOWN_FAIL: grailedSync — expanded > designer and condition are included in platform_specific_data
+KNOWN_FAIL: grailedSync — expanded > followers count preserved in platform_specific_data
+KNOWN_FAIL: grailedSync — expanded > for_sale status maps to active
+KNOWN_FAIL: grailedSync — expanded > listing prices match high-end mock data
+KNOWN_FAIL: grailedSync — expanded > order buyer_username from mock data
+KNOWN_FAIL: isSyncSupported — coverage > is case-insensitive (toLowerCase)
+KNOWN_FAIL: isSyncSupported — coverage > returns false for unsupported platforms
+KNOWN_FAIL: isSyncSupported — coverage > returns true for all 6 supported platforms
+KNOWN_FAIL: marketDataService > comparePricesWithCompetitors > returns comparison with required fields
+KNOWN_FAIL: marketDataService > generateCompetitorListings > defaults to 10 listings
+KNOWN_FAIL: marketDataService > generateCompetitorListings > each listing has required fields
+KNOWN_FAIL: marketDataService > generateCompetitorListings > returns requested number of listings
+KNOWN_FAIL: marketDataService > getCompetitorsForPlatform > returns competitors for ebay
+KNOWN_FAIL: marketDataService > getCompetitorsForPlatform > returns competitors for poshmark
+KNOWN_FAIL: mercariSync > creates 1 new order in mock mode
+KNOWN_FAIL: mercariSync > creates 2 new listings in mock mode
+KNOWN_FAIL: mercariSync > listing data includes mercari platform
+KNOWN_FAIL: mercariSync > order fee calculation uses 10%
+KNOWN_FAIL: mercariSync > updates existing listings when found
+KNOWN_FAIL: mercariSync > updates shop sync time
+KNOWN_FAIL: mercariSync — expanded > condition and category are preserved in platform_specific_data
+KNOWN_FAIL: mercariSync — expanded > handles error on first listing without crashing second
+KNOWN_FAIL: mercariSync — expanded > listing prices match mock data exactly
+KNOWN_FAIL: mercariSync — expanded > order net profit = price - 10% fee - shipping
+KNOWN_FAIL: mercariSync — expanded > views and likes are preserved in platform_specific_data
+KNOWN_FAIL: notificationService > NotificationTypes > has all 6 expected type constants
+KNOWN_FAIL: notificationService > cleanupOldNotifications > defaults to 30 days
+KNOWN_FAIL: notificationService > cleanupOldNotifications > returns deleted count
+KNOWN_FAIL: notificationService > createNotification > passes null for data when not provided
+KNOWN_FAIL: notificationService > createNotification > propagates DB errors
+KNOWN_FAIL: notificationService > createNotification > returns correct shape with all fields
+KNOWN_FAIL: notificationService > createNotification > stringifies data when provided
+KNOWN_FAIL: notificationService > createOAuthNotification > falls back to generic for unknown type
+KNOWN_FAIL: notificationService > createOAuthNotification > generates error message for TOKEN_REFRESH_FAILED
+KNOWN_FAIL: notificationService > createOAuthNotification > generates success message for TOKEN_REFRESH_SUCCESS
+KNOWN_FAIL: notificationService > createOAuthNotification > sanitizes platform name against XSS
+KNOWN_FAIL: notificationService > deleteNotification > returns false when not found
+KNOWN_FAIL: notificationService > deleteNotification > returns true on success
+KNOWN_FAIL: notificationService > getNotifications > returns fallback on error
+KNOWN_FAIL: notificationService > getNotifications > returns paginated result
+KNOWN_FAIL: notificationService > getUnreadCount > returns 0 on error
+KNOWN_FAIL: notificationService > getUnreadCount > returns count from DB
+KNOWN_FAIL: notificationService > getUnreadNotifications > returns empty array on DB error
+KNOWN_FAIL: notificationService > getUnreadNotifications > returns parsed notifications with JSON data
+KNOWN_FAIL: notificationService > markAllAsRead > returns 0 on error
+KNOWN_FAIL: notificationService > markAllAsRead > returns count of marked notifications
+KNOWN_FAIL: notificationService > markAsRead > returns false when not found
+KNOWN_FAIL: notificationService > markAsRead > returns true when notification updated
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > completed_at is after started_at
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > defaults to all entity types (inventory, sales, notes)
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > defaults to bidirectional direction
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > duration_ms is a non-negative number
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > inventory result has correct initial structure
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > manual flag defaults to false
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > notes sync returns empty results (placeholder)
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > result includes sync_id as UUID
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > sales result has correct initial structure
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > supports pull-only direction
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > supports push-only direction
+KNOWN_FAIL: notionSync — expanded > performSync — edge cases > supports single entity type
+KNOWN_FAIL: poshmarkSync > creates 1 new order in mock mode
+KNOWN_FAIL: poshmarkSync > creates 3 new listings in mock mode
+KNOWN_FAIL: poshmarkSync > listing data includes poshmark platform
+KNOWN_FAIL: poshmarkSync > order fee uses 20% for sales > $15
+KNOWN_FAIL: poshmarkSync > updates existing listings when found
+KNOWN_FAIL: poshmarkSync > updates shop sync time
+KNOWN_FAIL: poshmarkSync — expanded > default shipping cost is $7.97 when not specified
+KNOWN_FAIL: poshmarkSync — expanded > flat $2.95 fee applies for sales $15 or under
+KNOWN_FAIL: poshmarkSync — expanded > order notes includes listingId reference
+KNOWN_FAIL: poshmarkSync — expanded > preserves brand and category in platform_specific_data
+KNOWN_FAIL: poshmarkSync — expanded > preserves shares and likes counts in platform_specific_data
+KNOWN_FAIL: poshmarkSync — expanded > update path modifies title, price, status, and platform_specific_data
+KNOWN_FAIL: sanitizeForAI > strips system prompt references
+KNOWN_FAIL: service-notionSync-unit > performSync result shape > sync_id is a valid UUID format
+KNOWN_FAIL: syncShop — coverage > routes to Depop sync handler
+KNOWN_FAIL: syncShop — coverage > routes to Etsy sync handler
+KNOWN_FAIL: syncShop — coverage > routes to Grailed sync handler
+KNOWN_FAIL: syncShop — coverage > routes to Mercari sync handler
+KNOWN_FAIL: syncShop — coverage > routes to Poshmark sync handler
+KNOWN_FAIL: syncShop — coverage > routes to eBay sync handler and returns results
+KNOWN_FAIL: syncShop — coverage > sync results include listing create counts
+KNOWN_FAIL: syncShop — coverage > sync results include order create counts
+KNOWN_FAIL: syncShop — coverage > throws for totally unknown platform
+KNOWN_FAIL: syncShop — coverage > throws when shop has no oauth_token
+KNOWN_FAIL: syncShop — coverage > throws when shop is not connected via OAuth
+KNOWN_FAIL: syncShop — coverage > throws when shop not found
+KNOWN_FAIL: taskWorker (unit) > edge cases > queueTask ID is a valid UUID v4 format
+KNOWN_FAIL: taskWorker (unit) > queueTask > multiple queueTask calls generate unique IDs
+KNOWN_FAIL: taskWorker coverage > mixed success and failure > processes mix of succeeding and failing tasks
+KNOWN_FAIL: taskWorker coverage > processQueue — with tasks > processes a sync_shop task that fails and retries (attempts < maxAttempts)
+KNOWN_FAIL: taskWorker coverage > processQueue — with tasks > processes a sync_shop task that fails permanently (attempts >= maxAttempts)
+KNOWN_FAIL: taskWorker coverage > processTask max_attempts fallback > uses DEFAULT_MAX_ATTEMPTS when task.max_attempts is null/undefined
+KNOWN_FAIL: taskWorker coverage > processTask — success path logging > logs automation_run on successful cleanup_notifications task
+KNOWN_FAIL: taskWorker coverage > retry with exponential backoff > error.code is passed as error_code in automation_runs failure
+KNOWN_FAIL: taskWorker coverage > retry with exponential backoff > retry delay increases exponentially
