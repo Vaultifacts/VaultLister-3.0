@@ -16,6 +16,7 @@ const pageChunkMap = {
     // inventory chunk
     'inventory': 'inventory',
     'listings': 'inventory',
+    'my-listings': 'inventory',
     'crosslist': 'inventory',
     'templates': 'inventory',
     'automations': 'inventory',
@@ -168,6 +169,7 @@ const router = {
 
     // Route aliases for sidebar consolidation — old routes redirect to new parent pages
     routeAliases: {
+        'my-listings': { target: 'listings', tab: null },
         'orders': { target: 'orders-sales', tab: 'orders' },
         'sales': { target: 'orders-sales', tab: 'sales-summary' },
         'transactions': { target: 'financials', tab: 'transactions' },
