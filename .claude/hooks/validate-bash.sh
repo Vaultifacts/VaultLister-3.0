@@ -34,6 +34,8 @@ BLOCKED_PATTERNS=(
   "git rebase -i"
   "git checkout \."
   "git clean -f"
+  "git push.*--delete"
+  "git push --force-with-lease"
 )
 
 for pattern in "${BLOCKED_PATTERNS[@]}"; do
