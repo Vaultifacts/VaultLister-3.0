@@ -3534,6 +3534,9 @@ const modals = {
                     <button class="ar-btn ar-btn-capture" id="ar-capture-btn" title="Capture photo" aria-label="Capture AR photo">
                         ${components.icon('camera', 22)}
                     </button>
+                    <button class="ar-btn ar-btn-share" id="ar-share-btn" title="Share photo" aria-label="Share AR photo" style="display:none;">
+                        ${components.icon('share', 22)}
+                    </button>
                     <button class="ar-btn ar-btn-close" id="ar-close-btn" title="Close" aria-label="Close AR preview">
                         ${components.icon('close', 22)}
                     </button>
@@ -3548,7 +3551,12 @@ const modals = {
         const video = document.getElementById('ar-video');
         const overlay = document.getElementById('ar-overlay-img');
         const captureBtn = document.getElementById('ar-capture-btn');
+        const shareBtn = document.getElementById('ar-share-btn');
         const closeBtn = document.getElementById('ar-close-btn');
+
+        // Hide Share button if Web Share API or file sharing is not supported
+        const canShare = typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
+        let latestBlob = null;
 
         // Start rear camera
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -3614,9 +3622,34 @@ const modals = {
                 link.href = cvs.toDataURL('image/png');
                 link.click();
                 toast.success('AR photo saved');
+
+                // Store blob and reveal Share button after first capture
+                cvs.toBlob((blob) => {
+                    if (!blob) return;
+                    latestBlob = blob;
+                    if (canShare) {
+                        const testFile = new File([blob], 'ar-preview.png', { type: 'image/png' });
+                        if (navigator.canShare({ files: [testFile] })) {
+                            shareBtn.style.display = '';
+                        }
+                    }
+                }, 'image/png');
             };
             overlayImg.onerror = () => toast.error('Could not capture image');
             overlayImg.src = imageUrl;
+        });
+
+        // Share handler — fires only after a capture has been taken
+        shareBtn.addEventListener('click', () => {
+            if (!latestBlob) return;
+            const file = new File([latestBlob], 'ar-preview.png', { type: 'image/png' });
+            navigator.share({
+                title: 'VaultLister AR Preview',
+                text: `Check out this ${escapeHtml(item.title)}!`,
+                files: [file]
+            }).catch((err) => {
+                if (err.name !== 'AbortError') toast.error('Share failed');
+            });
         });
 
         // Drag-to-position (mouse + touch)
