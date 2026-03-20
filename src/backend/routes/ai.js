@@ -221,7 +221,10 @@ Important:
             return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
         }
 
-        const { imageUrl, imageBase64, category, brand, condition, keywords, inventoryId, platform = 'poshmark', notes: extraNotes } = body;
+        let { imageUrl, imageBase64, category, brand, condition, keywords, inventoryId, platform = 'poshmark', notes: extraNotes } = body;
+
+        // HIGH 16: Normalize keywords — accept comma-separated string or array
+        if (typeof keywords === 'string') keywords = keywords.split(',').map(k => k.trim()).filter(Boolean);
 
         const platformGuidelines = {
             poshmark: { titleMax: 80, descMax: 500, emphasize: 'brand, condition, style keywords' },

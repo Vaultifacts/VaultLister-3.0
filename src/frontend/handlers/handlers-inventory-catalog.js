@@ -7152,16 +7152,18 @@ Object.assign(handlers, {
 
             for (const inventoryId of selectedItemIds) {
                 for (const platform of PLATFORMS) {
+                    let resolvedListingId = null;
                     try {
                         const crosslistResp = await api.post('/listings/crosslist', { itemIds: [inventoryId], platforms: [platform] });
-                        const listingId = crosslistResp?.created?.[0]?.id || crosslistResp?.skipped?.[0]?.existingId;
-                        if (!listingId) { summary[platform].fail++; summary[platform].lastError = 'Could not create listing'; failedItems.push({ listingId: null, platform }); continue; }
-                        await api.post(`/listings/${listingId}/${PUBLISH_ROUTES[platform]}`, {});
+                        resolvedListingId = crosslistResp?.created?.[0]?.id || crosslistResp?.skipped?.[0]?.existingId;
+                        if (!resolvedListingId) { summary[platform].fail++; summary[platform].lastError = 'Could not create listing'; failedItems.push({ listingId: null, platform, inventoryId }); continue; }
+                        await api.post(`/listings/${resolvedListingId}/${PUBLISH_ROUTES[platform]}`, {});
                         summary[platform].success++;
                     } catch (err) {
                         summary[platform].fail++;
                         summary[platform].lastError = err.message || 'Unknown error';
-                        failedItems.push({ listingId: null, platform });
+                        // HIGH 21: Store the resolved listing ID so retry only retries failed items
+                        failedItems.push({ listingId: resolvedListingId, platform, inventoryId });
                     }
                 }
             }
@@ -7245,7 +7247,9 @@ Object.assign(handlers, {
 
     retryFailedPublishes: async function() {
         const failures = store.state.lastPublishFailures || [];
-        if (failures.length === 0) {
+        // HIGH 21: Only retry items that actually failed (have a defined entry in lastPublishFailures)
+        const toRetry = failures.filter(f => f && f.platform);
+        if (toRetry.length === 0) {
             toast.info('No failed publishes to retry');
             return;
         }
@@ -7256,29 +7260,38 @@ Object.assign(handlers, {
             facebook: 'publish-facebook', whatnot: 'publish-whatnot', shopify: 'publish-shopify'
         };
 
-        toast.info(`Retrying ${failures.length} failed publish(es)...`);
+        toast.info(`Retrying ${toRetry.length} failed publish(es)...`);
 
         const summary = {};
         const stillFailed = [];
 
-        for (const { listingId, platform } of failures) {
+        for (const { listingId: savedListingId, platform, inventoryId } of toRetry) {
             if (!summary[platform]) summary[platform] = { success: 0, fail: 0, lastError: '' };
 
             const publishRoute = PUBLISH_ROUTES[platform];
-            if (!publishRoute || !listingId) {
+            if (!publishRoute) {
                 summary[platform].fail++;
-                summary[platform].lastError = listingId ? `Unknown platform: ${platform}` : 'No listing ID available';
-                stillFailed.push({ listingId, platform });
+                summary[platform].lastError = `Unknown platform: ${platform}`;
+                stillFailed.push({ listingId: savedListingId, platform, inventoryId });
                 continue;
             }
 
+            let listingId = savedListingId;
+
             try {
+                // If no listing ID was captured (crosslist failed), retry crosslist first
+                if (!listingId && inventoryId) {
+                    await api.ensureCSRFToken();
+                    const crosslistResp = await api.post('/listings/crosslist', { itemIds: [inventoryId], platforms: [platform] });
+                    listingId = crosslistResp?.created?.[0]?.id || crosslistResp?.skipped?.[0]?.existingId;
+                    if (!listingId) throw new Error('Could not create listing for retry');
+                }
                 await api.post(`/listings/${listingId}/${publishRoute}`);
                 summary[platform].success++;
             } catch (err) {
                 summary[platform].fail++;
                 summary[platform].lastError = err.message || 'Publish failed';
-                stillFailed.push({ listingId, platform });
+                stillFailed.push({ listingId, platform, inventoryId });
             }
         }
 
@@ -7287,7 +7300,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'crosslist') renderApp(pages.crosslist());
 
-        handlers.showPublishAllResultsModal(summary, failures.length);
+        handlers.showPublishAllResultsModal(summary, toRetry.length);
     },
 
 

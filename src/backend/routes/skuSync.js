@@ -137,6 +137,22 @@ export async function skuSyncRouter(ctx) {
     if (method === 'POST' && path === '/sync') {
       const userId = user.id;
 
+      // HIGH 20: Check for active marketplace connections — sync only updates local DB
+      // records; without live API credentials it does not push to marketplace platforms.
+      const connectedShops = query.all(
+        `SELECT platform FROM shops WHERE user_id = ? AND is_connected = 1`,
+        [userId]
+      );
+      if (!connectedShops || connectedShops.length === 0) {
+        return {
+          status: 200,
+          data: {
+            synced: false,
+            reason: 'SKU sync requires active marketplace connections. Configure marketplace API credentials.'
+          }
+        };
+      }
+
       // Get all pending links
       const pending = await query.all(
         `SELECT * FROM sku_platform_links

@@ -236,6 +236,13 @@ export function generateTagsFromAnalysis(analysis) {
  * @param {Object} [aiAnalysis] - Optional AI analysis from Claude Vision (photoQuality field)
  */
 export function estimateImageQuality(imageInfo, aiAnalysis) {
+    // HIGH 19: Return null when no meaningful metadata is available to avoid fake scores
+    const hasDimensions = imageInfo && imageInfo.width && imageInfo.height;
+    const hasFileSize = imageInfo && imageInfo.fileSize;
+    if (!aiAnalysis?.photoQuality && !hasDimensions && !hasFileSize) {
+        return null;
+    }
+
     const quality = {
         score: 0,
         issues: [],
