@@ -8001,7 +8001,7 @@ Object.assign(handlers, {
                 if (!publishRoute) {
                     summary[platform].fail++;
                     summary[platform].lastError = `Unknown platform: ${platform}`;
-                    failedItems.push({ listingId, platform });
+                    failedItems.push({ listingId, platform, error: `Unknown platform: ${platform}` });
                     continue;
                 }
 
@@ -8011,7 +8011,7 @@ Object.assign(handlers, {
                 } catch (err) {
                     summary[platform].fail++;
                     summary[platform].lastError = err.message || 'Publish failed';
-                    failedItems.push({ listingId, platform });
+                    failedItems.push({ listingId, platform, error: err.message || 'Publish failed' });
                 }
             }
 
