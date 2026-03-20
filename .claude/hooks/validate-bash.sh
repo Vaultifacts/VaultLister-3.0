@@ -34,6 +34,8 @@ BLOCKED_PATTERNS=(
   "git rebase -i"
   "git checkout \."
   "git clean -f"
+  "git restore \."
+  "git restore --staged"
   "rm -rf .husky"
   "rm -rf .claude"
   "rm -rf .git"

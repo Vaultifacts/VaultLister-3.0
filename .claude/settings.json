@@ -38,7 +38,9 @@
       "Bash(rm -rf .claude*)",
       "Bash(*HUSKY=0*)",
       "Bash(git config core.hookspath*)",
-      "Bash(git config core.hooksPath*)"
+      "Bash(git config core.hooksPath*)",
+      "Bash(git restore .*)",
+      "Bash(git restore --staged .*)"
     ]
   },
   "hooks": {

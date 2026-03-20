@@ -39,7 +39,7 @@ fi
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 BASELINE_FILE="${REPO_ROOT}/.test-baseline"
 if [ -f "$BASELINE_FILE" ]; then
-    KNOWN_FAILURES=$(grep -v '^\s*#' "$BASELINE_FILE" | grep -oP 'KNOWN_FAILURES=\K\d+' 2>/dev/null | head -1)
+    KNOWN_FAILURES=$(grep -v '^\s*#' "$BASELINE_FILE" | sed -n 's/.*KNOWN_FAILURES=\([0-9]*\).*/\1/p' | head -1)
     KNOWN_FAIL_NAMES=$(grep -v '^\s*#' "$BASELINE_FILE" | grep '^KNOWN_FAIL: ' | sed 's/^KNOWN_FAIL: //' 2>/dev/null || true)
 else
     KNOWN_FAILURES=0
@@ -54,7 +54,7 @@ PORT="${PORT:-3000}"
 if curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
     BUN_BIN=$(command -v bun 2>/dev/null || echo "/home/openclawuser/.bun/bin/bun")
     TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true "$BUN_BIN" test src/tests/ 2>&1) || true
-    FAIL_COUNT=$(echo "$TEST_OUTPUT" | grep -oP '^\s*\K\d+(?=\s+fail)' | tail -1)
+    FAIL_COUNT=$(echo "$TEST_OUTPUT" | sed -n 's/^[[:space:]]*\([0-9]*\)[[:space:]]*fail.*/\1/p' | tail -1)
     FAIL_COUNT="${FAIL_COUNT:-0}"
     case "$FAIL_COUNT" in
         ''|*[!0-9]*) FAIL_COUNT=0 ;;
