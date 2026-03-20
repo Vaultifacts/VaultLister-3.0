@@ -193,8 +193,11 @@ Object.assign(pages, {
         return `
             <div class="page-header">
                 <h1 class="page-title">Terms of Service</h1>
-                <p class="page-description">Last updated: January 2026</p>
+                <p class="page-description">Last updated: March 2026</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <a href="/terms.html" target="_blank" rel="noopener" class="btn btn-sm btn-primary">
+                        ${components.icon('external-link', 14)} View Full Terms
+                    </a>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.showTermsOfService()">
                         ${components.icon('eye', 14)} View in Modal
                     </button>
@@ -256,8 +259,11 @@ Object.assign(pages, {
         return `
             <div class="page-header">
                 <h1 class="page-title">Privacy Policy</h1>
-                <p class="page-description">Last updated: January 2026</p>
+                <p class="page-description">Last updated: March 2026</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <a href="/privacy.html" target="_blank" rel="noopener" class="btn btn-sm btn-primary">
+                        ${components.icon('external-link', 14)} View Full Policy
+                    </a>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.showPrivacyDataExport()">
                         ${components.icon('download', 14)} Download My Data
                     </button>
@@ -337,7 +343,7 @@ Object.assign(pages, {
                         </ul>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">8. Children's Privacy</h2>
-                        <p style="margin-bottom: 1rem;">VaultLister is not intended for use by children under 13 years of age. We do not knowingly collect personal information from children under 13.</p>
+                        <p style="margin-bottom: 1rem;">VaultLister is not intended for use by persons under 18 years of age. We do not knowingly collect personal information from minors. If you believe a minor has provided us with personal data, please contact us immediately.</p>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">9. Changes to This Policy</h2>
                         <p style="margin-bottom: 1rem;">We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.</p>
@@ -2461,7 +2467,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             { id: 'security', icon: '🔒', title: 'Data Security', content: 'We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. However, no internet or email transmission is ever fully secure or error free.' },
             { id: 'rights', icon: '⚖️', title: 'Your Rights', content: 'You have the right to:', list: ['Access and receive a copy of your personal data', 'Rectify or update your personal information', 'Delete your account and personal data', 'Object to or restrict certain processing of your data', 'Data portability'] },
             { id: 'cookies', icon: '🍪', title: 'Cookies and Tracking', content: 'We use cookies and similar tracking technologies to track activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.' },
-            { id: 'children', icon: '👶', title: "Children's Privacy", content: 'Our service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13.' },
+            { id: 'children', icon: '👶', title: "Children's Privacy", content: 'The Service is not directed to or intended for use by persons under the age of 18. We do not knowingly collect personal data from minors. If you believe a minor has provided us with personal data, please contact us immediately and we will delete it.' },
             { id: 'changes', icon: '🔄', title: 'Changes to Privacy Policy', content: 'We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.' },
             { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about this Privacy Policy, please contact us at privacy@vaultlister.com' }
         ];
