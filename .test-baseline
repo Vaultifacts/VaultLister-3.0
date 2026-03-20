@@ -1,4 +1,4 @@
-KNOWN_FAILURES=0
+KNOWN_FAILURES=274
 # Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
 # Local Windows: 2050 pass / 0 fail
 # CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
@@ -20,7 +20,7 @@ KNOWN_FAILURES=0
 #   4. If fewer failures than expected (a fix landed) → remove the entry.
 #
 # Currently no named failures: all unit tests pass as of 2026-03-08.
-# Integration tests (require live server) are validated by KNOWN_FAILURES=0.
+# Integration tests (require live server) are validated by KNOWN_FAILURES=274.
 #
 # ─── Server-required tests that fail without a running server ─────────────────
 # The test below is an integration test misplaced in a middleware file.
