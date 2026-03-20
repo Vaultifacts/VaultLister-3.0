@@ -127,12 +127,11 @@ async function processJob(jobId) {
     let processed = 0;
     let failed = 0;
 
+    // Read cancellation status once before the loop; re-check only after each async operation
+    let cancelled = false;
+
     for (const item of items) {
-        // Check if job was cancelled
-        const currentJob = query.get('SELECT status FROM batch_photo_jobs WHERE id = ?', [jobId]);
-        if (currentJob.status === 'cancelled') {
-            break;
-        }
+        if (cancelled) break;
 
         try {
             // Mark item as processing (verified via job ownership check above)
@@ -140,21 +139,26 @@ async function processJob(jobId) {
 
             const result = await processJobItem(item, transformations, job.user_id);
 
-            // Mark item complete
-            query.run(`
-                UPDATE batch_photo_items
-                SET status = 'completed', result_url = ?, cloudinary_public_id = ?,
-                    processing_time_ms = ?, processed_at = ?
-                WHERE id = ?
-            `, [result.resultUrl, result.publicId, result.processingTime, now(), item.id]);
+            // Check for cancellation and commit item results in one transaction
+            query.transaction(() => {
+                const currentJob = query.get('SELECT status FROM batch_photo_jobs WHERE id = ?', [jobId]);
+                if (currentJob.status === 'cancelled') {
+                    cancelled = true;
+                    return;
+                }
+                query.run(`
+                    UPDATE batch_photo_items
+                    SET status = 'completed', result_url = ?, cloudinary_public_id = ?,
+                        processing_time_ms = ?, processed_at = ?
+                    WHERE id = ?
+                `, [result.resultUrl, result.publicId, result.processingTime, now(), item.id]);
+                query.run(`
+                    INSERT INTO image_edit_history (id, image_id, user_id, edit_type, parameters, cloudinary_public_id, created_at)
+                    VALUES (?, ?, ?, 'batch_transform', ?, ?, ?)
+                `, [generateId(), item.image_id, job.user_id, job.transformations, result.publicId, now()]);
+            });
 
-            // Log edit history
-            query.run(`
-                INSERT INTO image_edit_history (id, image_id, user_id, edit_type, parameters, cloudinary_public_id, created_at)
-                VALUES (?, ?, ?, 'batch_transform', ?, ?, ?)
-            `, [generateId(), item.image_id, job.user_id, job.transformations, result.publicId, now()]);
-
-            processed++;
+            if (!cancelled) processed++;
         } catch (error) {
             // Mark item failed
             query.run(`
@@ -164,14 +168,14 @@ async function processJob(jobId) {
             `, [error.message, now(), item.id]);
             failed++;
         }
-
-        // Update job progress
-        query.run(`
-            UPDATE batch_photo_jobs
-            SET processed_images = ?, failed_images = ?
-            WHERE id = ?
-        `, [processed, failed, jobId]);
     }
+
+    // Write final progress count once after the loop instead of after every item
+    query.run(`
+        UPDATE batch_photo_jobs
+        SET processed_images = ?, failed_images = ?
+        WHERE id = ?
+    `, [processed, failed, jobId]);
 
     // Mark job complete
     const finalStatus = failed === items.length ? 'failed' : 'completed';
@@ -234,14 +238,22 @@ export async function batchPhotoRouter(context) {
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `, [jobId, user.id, name || null, imageIds.length, JSON.stringify(transformations), presetId || null, now()]);
 
-            // Create job items
-            for (const imageId of imageIds) {
-                const image = query.get('SELECT file_path FROM image_bank WHERE id = ?', [imageId]);
-                query.run(`
-                    INSERT INTO batch_photo_items (id, job_id, image_id, original_url, created_at)
-                    VALUES (?, ?, ?, ?, ?)
-                `, [generateId(), jobId, imageId, image?.file_path || null, now()]);
-            }
+            // Batch-fetch file_path for all images in one query, then insert items in a transaction
+            const filePathPlaceholders = imageIds.map(() => '?').join(',');
+            const imageFilePaths = query.all(
+                `SELECT id, file_path FROM image_bank WHERE id IN (${filePathPlaceholders})`,
+                imageIds
+            );
+            const filePathMap = Object.fromEntries(imageFilePaths.map(r => [r.id, r.file_path]));
+
+            query.transaction(() => {
+                for (const imageId of imageIds) {
+                    query.run(`
+                        INSERT INTO batch_photo_items (id, job_id, image_id, original_url, created_at)
+                        VALUES (?, ?, ?, ?, ?)
+                    `, [generateId(), jobId, imageId, filePathMap[imageId] || null, now()]);
+                }
+            });
 
             // Increment preset usage if used
             if (presetId) {
