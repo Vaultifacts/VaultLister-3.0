@@ -75,7 +75,8 @@ if curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
         # Remove optional trailing " [NNN.NNms]" suffix
         fail_name_stripped=$(printf '%s' "$fail_name" | sed 's/ \[[0-9][0-9.]*ms\]$//')
         if ! printf '%s\n' "$KNOWN_FAIL_NAMES" | grep -qxF "$fail_name_stripped"; then
-            REGRESSIONS="${REGRESSIONS}  ${fail_name}"$'\n'
+            REGRESSIONS="${REGRESSIONS}  ${fail_name}
+"
         fi
         IFS='
 '
