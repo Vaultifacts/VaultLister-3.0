@@ -7930,13 +7930,27 @@ Object.assign(handlers, {
                         const price = parseFloat(formData.get(`${platform}Price`));
                         const tags = formData.get(`${platform}Tags`) ? formData.get(`${platform}Tags`).split(',').map(t => t.trim()).filter(Boolean) : [];
 
+                        const platformFields = {};
+                        if (platform === 'mercari') {
+                            platformFields.condition = formData.get('mercariCondition') || 'good';
+                            platformFields.shipping_method = formData.get('mercariShippingMethod') || 'ship_own';
+                        } else if (platform === 'grailed') {
+                            platformFields.designer = formData.get('grailedDesigner') || '';
+                            platformFields.category = formData.get('grailedCategory') || 'tops';
+                        } else if (platform === 'etsy') {
+                            platformFields.who_made = formData.get('etsyWhoMade') || 'i_did';
+                            platformFields.when_made = formData.get('etsyWhenMade') || 'made_to_order';
+                            platformFields.is_supply = formData.get('etsyIsSupply') === '1';
+                        }
+
                         listings.push({
                             inventory_id: itemId,
                             platform,
                             title,
                             description,
                             price,
-                            tags
+                            tags,
+                            ...(Object.keys(platformFields).length > 0 ? { platform_fields: platformFields } : {})
                         });
                     }
                 }

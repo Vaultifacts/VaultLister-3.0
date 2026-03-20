@@ -1505,6 +1505,75 @@ const modals = {
                                         <label class="form-label">Tags</label>
                                         <input type="text" name="${platform}Tags" class="form-input platform-tags-input" value="${escapeHtml(tagsString)}">
                                     </div>
+
+                                    ${platform === 'mercari' ? `
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="form-group">
+                                            <label class="form-label" for="mercariCondition">Condition</label>
+                                            <select id="mercariCondition" name="mercariCondition" class="form-select" aria-label="Mercari item condition">
+                                                <option value="new">New</option>
+                                                <option value="like_new">Like New</option>
+                                                <option value="good" selected>Good</option>
+                                                <option value="fair">Fair</option>
+                                                <option value="poor">Poor</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="mercariShippingMethod">Shipping Method</label>
+                                            <select id="mercariShippingMethod" name="mercariShippingMethod" class="form-select" aria-label="Mercari shipping method">
+                                                <option value="ship_own">Ship on your own</option>
+                                                <option value="mercari_prepaid">Mercari prepaid</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    ` : ''}
+
+                                    ${platform === 'grailed' ? `
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="form-group">
+                                            <label class="form-label" for="grailedDesigner">Designer</label>
+                                            <input type="text" id="grailedDesigner" name="grailedDesigner" class="form-input" placeholder="e.g. Supreme, Off-White" aria-label="Grailed designer name">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="grailedCategory">Category</label>
+                                            <select id="grailedCategory" name="grailedCategory" class="form-select" aria-label="Grailed listing category">
+                                                <option value="tops">Tops</option>
+                                                <option value="bottoms">Bottoms</option>
+                                                <option value="outerwear">Outerwear</option>
+                                                <option value="footwear">Footwear</option>
+                                                <option value="accessories">Accessories</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    ` : ''}
+
+                                    ${platform === 'etsy' ? `
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="form-group">
+                                            <label class="form-label" for="etsyWhoMade">Who Made It</label>
+                                            <select id="etsyWhoMade" name="etsyWhoMade" class="form-select" aria-label="Etsy who made the item">
+                                                <option value="i_did">I did</option>
+                                                <option value="collective">A member of my shop</option>
+                                                <option value="someone_else">Another company or person</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="etsyWhenMade">When Was It Made</label>
+                                            <select id="etsyWhenMade" name="etsyWhenMade" class="form-select" aria-label="Etsy when the item was made">
+                                                <option value="made_to_order">Made to order</option>
+                                                <option value="2020_2025">2020–2025</option>
+                                                <option value="2010_2019">2010–2019</option>
+                                                <option value="before_2010">Before 2010</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="flex items-center gap-2 cursor-pointer" style="min-height: 44px;">
+                                            <input type="checkbox" name="etsyIsSupply" value="1" aria-label="Etsy: item is a craft supply or tool">
+                                            <span class="form-label mb-0">This is a craft supply or tool</span>
+                                        </label>
+                                    </div>
+                                    ` : ''}
                                 </div>
                             `).join('')}
                         </div>
