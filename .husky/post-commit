@@ -76,5 +76,5 @@ fi
 
 # Notion sync — runs in background so it never blocks commits (P2-1 fix)
 if [ -n "$NOTION_INTEGRATION_TOKEN" ] && command -v python >/dev/null 2>&1; then
-  PYTHONIOENCODING=utf-8 python tools/notion_sync.py 2>&1 || true &
+  [ -f tools/notion_sync.py ] && PYTHONIOENCODING=utf-8 python tools/notion_sync.py 2>&1 || true &
 fi

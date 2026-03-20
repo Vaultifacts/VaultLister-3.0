@@ -65,14 +65,22 @@ if curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
     # Strip trailing timing suffix (e.g. " [203.00ms]") before comparison so entries
     # in .test-baseline do not need timing values (which vary between runs).
     REGRESSIONS=""
-    while IFS= read -r fail_name; do
+    _FAIL_NAMES_TMP=$(echo "$TEST_OUTPUT" | grep '^(fail) ' | sed 's/^(fail) //')
+    IFS_BAK="$IFS"
+    IFS='
+'
+    for fail_name in $_FAIL_NAMES_TMP; do
+        IFS="$IFS_BAK"
         [ -z "$fail_name" ] && continue
         # Remove optional trailing " [NNN.NNms]" suffix
         fail_name_stripped=$(printf '%s' "$fail_name" | sed 's/ \[[0-9][0-9.]*ms\]$//')
         if ! printf '%s\n' "$KNOWN_FAIL_NAMES" | grep -qxF "$fail_name_stripped"; then
             REGRESSIONS="${REGRESSIONS}  ${fail_name}"$'\n'
         fi
-    done < <(echo "$TEST_OUTPUT" | grep '^(fail) ' | sed 's/^(fail) //')
+        IFS='
+'
+    done
+    IFS="$IFS_BAK"
 
     if [ -n "$REGRESSIONS" ]; then
         echo ""
