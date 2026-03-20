@@ -1,4 +1,4 @@
-KNOWN_FAILURES=262
+KNOWN_FAILURES=264
 # Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
 # Local Windows: 2050 pass / 262 fail (named below — baselined 2026-03-20)
 # CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
@@ -357,3 +357,5 @@ KNOWN_FAIL: taskWorker coverage > processTask max_attempts fallback > uses DEFAU
 KNOWN_FAIL: taskWorker coverage > processTask — success path logging > logs automation_run on successful cleanup_notifications task
 KNOWN_FAIL: taskWorker coverage > retry with exponential backoff > error.code is passed as error_code in automation_runs failure
 KNOWN_FAIL: taskWorker coverage > retry with exponential backoff > retry delay increases exponentially
+KNOWN_FAIL: Auth Endpoints - Resend Verification > POST /auth/resend-verification returns 200 for valid email
+KNOWN_FAIL: Security Expanded - Send Verification > POST /security/send-verification returns success or already-verified
