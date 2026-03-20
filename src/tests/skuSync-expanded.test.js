@@ -12,7 +12,7 @@ beforeAll(async () => {
 
 describe('SKU Sync - Auth Guard', () => {
     test('POST /sku-sync/link without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/sku-sync/link`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/sku-sync/link`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ master_sku: 'TEST-001', platform: 'ebay' })

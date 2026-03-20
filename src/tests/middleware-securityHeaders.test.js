@@ -2,7 +2,7 @@
 // Verifies CSP, HSTS, X-Frame-Options, and other OWASP-recommended headers
 import { describe, expect, test, beforeAll } from 'bun:test';
 
-const BASE = `http://localhost:${process.env.PORT || 3001}`;
+const BASE = `http://localhost:${process.env.PORT || 3000}`;
 let headers = {};
 
 beforeAll(async () => {

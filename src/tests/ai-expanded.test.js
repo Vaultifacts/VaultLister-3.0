@@ -159,14 +159,14 @@ describe('AI - Profit & SEO & Categorize', () => {
 
 describe('AI - Auth Guards', () => {
     test('POST /ai/generate-title without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/ai/generate-title`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/ai/generate-title`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ itemDetails: { name: 'Test' } })
         });
         expect(res.status).toBe(401);
     });
     test('GET /ai/sourcing-suggestions without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/ai/sourcing-suggestions`);
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/ai/sourcing-suggestions`);
         expect(res.status).toBe(401);
     });
 });

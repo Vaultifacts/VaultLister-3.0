@@ -101,12 +101,12 @@ describe('Templates - Delete', () => {
 
 describe('Templates - Auth Guards', () => {
     test('GET /templates without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/templates`);
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/templates`);
         expect(res.status).toBe(401);
     });
 
     test('POST /templates without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/templates`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/templates`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: 'Test' })
         });

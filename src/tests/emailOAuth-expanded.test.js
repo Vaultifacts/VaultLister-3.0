@@ -65,17 +65,17 @@ describe('Email OAuth - Sync', () => {
 
 describe('Email OAuth - Auth Guards', () => {
     test('GET /email/accounts without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/email/accounts`);
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/email/accounts`);
         expect(res.status).toBe(401);
     });
 
     test('GET /email/authorize/gmail without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/email/authorize/gmail`);
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/email/authorize/gmail`);
         expect(res.status).toBe(401);
     });
 
     test('DELETE /email/accounts/test without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/email/accounts/test`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/email/accounts/test`, {
             method: 'DELETE'
         });
         expect(res.status).toBe(401);

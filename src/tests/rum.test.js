@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeAll } from 'bun:test';
 
-const BASE = process.env.TEST_BASE_URL || 'http://localhost:3001';
+const BASE = process.env.TEST_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
 
 // Helper: create authenticated user
 async function createTestUserWithToken() {

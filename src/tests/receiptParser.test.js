@@ -1,7 +1,7 @@
 // Receipt Parser API Tests
 import { describe, expect, test, beforeAll } from 'bun:test';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3001}/api`;
+const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
 let authToken = null;
 let testReceiptId = null;
 let testVendorId = null;

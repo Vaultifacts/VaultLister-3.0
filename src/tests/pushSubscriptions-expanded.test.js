@@ -110,12 +110,12 @@ describe('Push Subscriptions - Delete Specific', () => {
 
 describe('Push Subscriptions - Auth Guards', () => {
     test('GET /push-subscriptions/status without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/push-subscriptions/status`);
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/push-subscriptions/status`);
         expect(res.status).toBe(401);
     });
 
     test('POST /push-subscriptions/subscribe without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/push-subscriptions/subscribe`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/push-subscriptions/subscribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ endpoint: 'test', keys: { p256dh: 'x', auth: 'y' } })
@@ -124,7 +124,7 @@ describe('Push Subscriptions - Auth Guards', () => {
     });
 
     test('PUT /push-subscriptions/settings without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/push-subscriptions/settings`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/push-subscriptions/settings`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sales: true })

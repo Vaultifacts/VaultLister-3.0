@@ -250,7 +250,7 @@ describe('Inventory Validation - Input Sanitization', () => {
 // ============================================================
 describe('Inventory Validation - Auth Guard', () => {
     test('POST /inventory without token returns 401', async () => {
-        const response = await fetch(`http://localhost:${process.env.PORT || 3001}/api/inventory`, {
+        const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/inventory`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: 'Unauthed Item', listPrice: 10 })

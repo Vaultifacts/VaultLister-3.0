@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeAll } from 'bun:test';
 
-const BASE = `http://localhost:${process.env.PORT || 3001}`;
+const BASE = `http://localhost:${process.env.PORT || 3000}`;
 let authToken = null;
 
 beforeAll(async () => {

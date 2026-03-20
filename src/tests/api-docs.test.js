@@ -2,7 +2,7 @@ import { describe, test, expect } from 'bun:test';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
-const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3001';
+const BASE_URL = process.env.TEST_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
 const DOCS_DIR = join(import.meta.dir, '..', '..', 'public', 'api-docs');
 
 describe('API Documentation', () => {

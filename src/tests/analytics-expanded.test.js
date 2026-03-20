@@ -123,17 +123,17 @@ describe('Analytics - Digest & Export', () => {
 
 describe('Analytics - Auth Guards', { timeout: 15000 }, () => {
     test('GET /analytics/dashboard without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/analytics/dashboard`);
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/analytics/dashboard`);
         expect(res.status).toBe(401);
     });
 
     test('GET /analytics/sales without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/analytics/sales`);
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/analytics/sales`);
         expect(res.status).toBe(401);
     });
 
     test('POST /analytics/export without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/analytics/export`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/analytics/export`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ type: 'inventory' })
         });

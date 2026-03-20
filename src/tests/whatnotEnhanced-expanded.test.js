@@ -12,7 +12,7 @@ beforeAll(async () => {
 
 describe('Whatnot Enhanced - Auth Guard', () => {
     test('POST /whatnot-enhanced/cohosts without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/whatnot-enhanced/cohosts`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/whatnot-enhanced/cohosts`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ event_id: 'e1', cohost_name: 'test' })

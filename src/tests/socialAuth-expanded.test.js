@@ -32,14 +32,14 @@ describe('Social Auth - Providers List', () => {
 
 describe('Social Auth - Auth Guard (OAuth Flows)', () => {
     test('GET /social-auth/google without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/social-auth/google`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/social-auth/google`, {
             redirect: 'manual'
         });
         expect(res.status).toBe(401);
     });
 
     test('GET /social-auth/google/callback without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/social-auth/google/callback`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/social-auth/google/callback`, {
             redirect: 'manual'
         });
         // 401 if auth-gated, 302 if redirect-based auth, 200 after redirect follows
@@ -47,14 +47,14 @@ describe('Social Auth - Auth Guard (OAuth Flows)', () => {
     });
 
     test('GET /social-auth/apple without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/social-auth/apple`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/social-auth/apple`, {
             redirect: 'manual'
         });
         expect([200, 302, 401, 403]).toContain(res.status);
     });
 
     test('POST /social-auth/apple/callback without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/social-auth/apple/callback`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/social-auth/apple/callback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({})
@@ -92,7 +92,7 @@ describe('Social Auth - Apple OAuth Flow (Authenticated)', () => {
 
 describe('Social Auth - Unlink Provider', () => {
     test('DELETE /social-auth/google without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/social-auth/google`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/social-auth/google`, {
             method: 'DELETE'
         });
         expect(res.status).toBe(401);

@@ -1,7 +1,7 @@
 // CSRF Middleware Unit Tests
 import { describe, expect, test, beforeAll, beforeEach } from 'bun:test';
 
-const BASE = `http://localhost:${process.env.PORT || 3001}/api`;
+const BASE = `http://localhost:${process.env.PORT || 3000}/api`;
 let token = null;
 let csrfToken = null;
 

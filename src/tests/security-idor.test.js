@@ -4,7 +4,7 @@ import { describe, expect, test, beforeAll } from 'bun:test';
 import { createTestUserWithToken } from './helpers/auth.helper.js';
 import { fixtures } from './helpers/fixtures.js';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3001}/api`;
+const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
 
 let userA = null; // { token, user }
 let userB = null;

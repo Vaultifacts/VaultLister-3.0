@@ -12,7 +12,7 @@ beforeAll(async () => {
 
 describe('Billing - Auth Guard', () => {
     test('POST /billing/change-plan without auth returns 401', async () => {
-        const res = await fetch(`http://localhost:${process.env.PORT || 3001}/api/billing/change-plan`, {
+        const res = await fetch(`http://localhost:${process.env.PORT || 3000}/api/billing/change-plan`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ planId: 'pro' })
