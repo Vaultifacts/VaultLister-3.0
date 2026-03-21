@@ -92,3 +92,29 @@ if echo "$FULL_MSG" | grep -qE "^Notion-Skip:"; then
         exit 1
     fi
 fi
+
+# BLOCK fix:/feat: commits without Verified: trailer
+# Forces explicit statement of what was tested — not just "built it"
+if echo "$COMMIT_MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
+    HAS_VERIFIED=$(echo "$FULL_MSG" | grep -cE "^Verified:" || true)
+    if [ "$HAS_VERIFIED" -eq 0 ]; then
+        echo ""
+        echo "  BLOCKED: fix/feat commits MUST include a Verified: trailer."
+        echo ""
+        echo "  State what you tested. Examples:"
+        echo "    Verified: tests pass, failure case tested (commit without trailer blocked)"
+        echo "    Verified: bun test auth+security pass, curl API returns 200"
+        echo "    Verified: browser walkthrough — dashboard loads, zero console errors"
+        echo ""
+        echo "  This prevents declaring work done without actually verifying it."
+        echo ""
+        exit 1
+    fi
+    # Verify the Verified: trailer has actual content
+    VERIFIED_CONTENT=$(echo "$FULL_MSG" | grep "^Verified:" | sed 's/^Verified:[[:space:]]*//')
+    if [ -z "$VERIFIED_CONTENT" ] || echo "$VERIFIED_CONTENT" | grep -qE "^[[:space:]]*$"; then
+        echo "BLOCKED: Verified: trailer cannot be empty."
+        echo "  State specifically what you tested."
+        exit 1
+    fi
+fi
