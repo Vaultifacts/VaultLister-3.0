@@ -38,17 +38,30 @@ if echo "$COMMIT_MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
     HAS_SKIP=$(echo "$FULL_MSG" | grep -cE "^Notion-Skip:" || true)
     if [ "$HAS_DONE" -eq 0 ] && [ "$HAS_SKIP" -eq 0 ]; then
         echo ""
+        # Auto-search Sprint Board for matching items
+        LOOKUP_SCRIPT="scripts/notion-sprint-lookup.py"
+        SUGGESTED_ID=""
+        if command -v python >/dev/null 2>&1 && [ -f "$LOOKUP_SCRIPT" ]; then
+            SUGGESTED_ID=$(PYTHONIOENCODING=utf-8 python "$LOOKUP_SCRIPT" auto "$COMMIT_MSG" 2>/dev/null || true)
+        fi
+
+        echo ""
         echo "  BLOCKED: fix/feat commits MUST include a Notion trailer."
         echo ""
+        if [ -n "$SUGGESTED_ID" ]; then
+            echo "  SUGGESTED match from Sprint Board:"
+            echo "    Notion-Done: $SUGGESTED_ID"
+            echo ""
+            echo "  To use this, amend your commit message to include the line above."
+            echo ""
+        fi
         echo "  If this resolves a Sprint Board item:"
         echo "    Notion-Done: <page-id>"
         echo ""
         echo "  If this does NOT relate to any Sprint Board item:"
         echo "    Notion-Skip: <reason>"
         echo ""
-        echo "  Examples:"
-        echo "    Notion-Done: 3299f0c81de68178ba56c341364b0f06"
-        echo "    Notion-Skip: infra-only change, no Sprint Board item"
+        echo "  Find page IDs: python scripts/notion-sprint-lookup.py match \"your commit msg\""
         echo ""
         exit 1
     fi
