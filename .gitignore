@@ -101,3 +101,4 @@ generated/
 memory/*.lock
 .notion-sprint-cache.json
 .notion-errors.log
+.notion-drift-acknowledged

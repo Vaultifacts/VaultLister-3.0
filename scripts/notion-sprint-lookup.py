@@ -238,6 +238,16 @@ def main():
 
         print(f"Scanning {len(commits)} recent commits against {len(items)} non-Done Sprint Board items...\n")
 
+        # Load acknowledged drift (items reviewed and confirmed still open)
+        ack_file = os.path.join(PROJECT_ROOT, ".notion-drift-acknowledged")
+        acknowledged = set()
+        if os.path.exists(ack_file):
+            with open(ack_file, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        acknowledged.add(line.split()[0])  # first word is the page ID
+
         found = []
         for item in items:
             item_tokens = set(tokenize(item["title"]))
@@ -248,9 +258,8 @@ def main():
                 overlap = item_tokens & commit_tokens
                 match_pct = (len(overlap) / len(item_tokens)) * 100 if item_tokens else 0
                 if match_pct >= 50:  # 50% threshold to reduce false positives
-                    # Skip items already marked Blocked (code done, waiting on external action)
-                    if item.get("status") == "Blocked":
-                        continue
+                    if item["id"] in acknowledged:
+                        continue  # reviewed and confirmed still open
                     found.append((match_pct, item, commit_line))
                     break  # one match per item is enough
 
@@ -263,8 +272,14 @@ def main():
                 print(f"       Matching commit: {commit}")
                 print(f"       Mark Done: Notion-Done: {item['id']}")
                 print()
+            print("To acknowledge an item as legitimately still open (e.g. Blocked on server config):")
+            print("  Add its ID to .notion-drift-acknowledged:")
+            for _, item, _ in found:
+                print(f"    echo '{item['id']} # {item['title'][:50]}' >> .notion-drift-acknowledged")
         else:
-            print("No drift detected — all non-Done items appear unresolved in recent commits.")
+            ack_count = len(acknowledged)
+            ack_msg = f" ({ack_count} acknowledged)" if ack_count else ""
+            print(f"No drift detected — all non-Done items appear unresolved in recent commits.{ack_msg}")
 
     elif cmd == "sync":
         sync_cache()

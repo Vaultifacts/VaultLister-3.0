@@ -134,7 +134,15 @@ if [ -f "$NOTION_ERR_LOG" ] && [ -s "$NOTION_ERR_LOG" ]; then
 fi
 
 # Sprint Board drift detection: block if commits resolved items that aren't marked Done
-if command -v python >/dev/null 2>&1 && [ -f scripts/notion-sprint-lookup.py ] && [ -f .notion-sprint-cache.json ]; then
+# Refresh cache first so drift check uses current Notion state
+if command -v python >/dev/null 2>&1 && [ -f scripts/notion-sprint-lookup.py ]; then
+    NOTION_TK_PUSH=""
+    if [ -f .env ]; then
+        NOTION_TK_PUSH=$(grep "^NOTION_INTEGRATION_TOKEN=" .env 2>/dev/null | cut -d'=' -f2 || echo "")
+    fi
+    if [ -n "${NOTION_TK_PUSH:-}" ]; then
+        PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_TK_PUSH" python scripts/notion-sprint-lookup.py sync >/dev/null 2>&1 || true
+    fi
     DRIFT=$(PYTHONIOENCODING=utf-8 python scripts/notion-sprint-lookup.py drift 2>/dev/null || true)
     if echo "$DRIFT" | grep -q "DRIFT DETECTED"; then
         echo ""
