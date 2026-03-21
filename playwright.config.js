@@ -22,7 +22,7 @@ process.env.PORT = String(APP_PORT);
 
 export default defineConfig({
     testDir: './e2e/tests',
-    testMatch: '*.spec.js',
+    testMatch: ['*.spec.js', '*.e2e.js'],
     globalSetup: './e2e/global-setup.js',
     globalTeardown: './e2e/global-teardown.js',
     fullyParallel: true,
