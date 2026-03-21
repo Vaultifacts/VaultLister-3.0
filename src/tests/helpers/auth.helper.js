@@ -10,7 +10,7 @@ import { query } from '../../backend/db/database.js';
 const TEST_BASE_URL = process.env.TEST_BASE_URL || '';
 const BASE_ROOT = TEST_BASE_URL
     ? TEST_BASE_URL.replace(/\/+$/, '')
-    : `http://localhost:${process.env.PORT || 3001}`;
+    : `http://localhost:${process.env.PORT || 3000}`;
 const BASE_URL = BASE_ROOT.endsWith('/api') ? BASE_ROOT : `${BASE_ROOT}/api`;
 const IS_TEST_MODE = process.env.NODE_ENV === 'test' || Boolean(TEST_BASE_URL);
 const isLocalTestUrl = !TEST_BASE_URL || /localhost|127\.0\.0\.1/.test(TEST_BASE_URL);

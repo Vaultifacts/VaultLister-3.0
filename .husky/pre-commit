@@ -12,7 +12,7 @@ fi
 
 # Helper: get staged source files (excludes tests, e2e, assets, app.js)
 staged_src_files() {
-    git diff --cached --name-only --diff-filter=ACM | grep -v "app\.js" | grep -vE "\.(css|html|md|svg)$" | grep -vE "\.(test|spec)\.(js|ts)$" | grep -v "e2e/" | grep -v "node_modules"
+    git diff --cached --name-only --diff-filter=ACM | grep -v "app\.js" | grep -vE "\.(css|html|md|svg)$" | grep -vE "\.(test|spec)\.(js|ts)$" | grep -v "e2e/" | grep -v "node_modules" | grep -v "src/tests/"
 }
 
 # Helper: get all staged JS files
