@@ -185,6 +185,22 @@ else
 fi
 echo ""
 
+# --- Drift detection: commits that may have fixed Sprint Board items without marking Done ---
+echo "  --- Sprint Board Drift Detection ---"
+if command -v python >/dev/null 2>&1 && [ -f scripts/notion-sprint-lookup.py ] && [ -f .notion-sprint-cache.json ]; then
+    DRIFT_OUTPUT=$(PYTHONIOENCODING=utf-8 python scripts/notion-sprint-lookup.py drift 2>&1 || true)
+    if echo "$DRIFT_OUTPUT" | grep -q "DRIFT DETECTED"; then
+        echo "$DRIFT_OUTPUT" | sed 's/^/  /'
+        echo ""
+        echo "  ACTION REQUIRED: Mark these items Done in Notion or verify they are still open."
+    else
+        echo "  OK — no drift detected between commits and Sprint Board."
+    fi
+else
+    echo "  SKIP: cache or python not available"
+fi
+echo ""
+
 echo "  REMINDER: Verify Sprint Board statuses match reality."
 echo "  Notion Sprint Board: https://www.notion.so/VaultLister-3-0-2799f0c81de682f49f9e81d8cb0f8aaf"
 echo ""

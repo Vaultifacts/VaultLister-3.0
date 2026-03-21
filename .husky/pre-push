@@ -133,6 +133,21 @@ if [ -f "$NOTION_ERR_LOG" ] && [ -s "$NOTION_ERR_LOG" ]; then
     fi
 fi
 
+# Sprint Board drift detection: block if commits resolved items that aren't marked Done
+if command -v python >/dev/null 2>&1 && [ -f scripts/notion-sprint-lookup.py ] && [ -f .notion-sprint-cache.json ]; then
+    DRIFT=$(PYTHONIOENCODING=utf-8 python scripts/notion-sprint-lookup.py drift 2>/dev/null || true)
+    if echo "$DRIFT" | grep -q "DRIFT DETECTED"; then
+        echo ""
+        echo "$DRIFT"
+        echo ""
+        echo "BLOCKED: Sprint Board items appear to be fixed in code but not marked Done in Notion."
+        echo "Either mark them Done or verify they are genuinely still open."
+        echo "To mark Done: use Notion-Done: trailers or update Notion directly, then refresh cache:"
+        echo "  python scripts/notion-sprint-lookup.py sync"
+        exit 1
+    fi
+fi
+
 # Notion-Done audit: block push if fix/feat commits lack Sprint Board trailers
 REMOTE_HEAD=$(git rev-parse "@{u}" 2>/dev/null || echo "")
 if [ -n "$REMOTE_HEAD" ]; then

@@ -19,6 +19,7 @@ Cache file: .notion-sprint-cache.json (gitignored)
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -28,7 +29,8 @@ TOKEN = os.environ.get("NOTION_TOKEN") or os.environ.get("NOTION_INTEGRATION_TOK
 # To find this ID: open Sprint Board in Notion → Share → copy link → extract UUID
 # The integration must be connected to this database (Share → Invite → select integration)
 SPRINT_DB_ID = os.environ.get("NOTION_SPRINT_DB_ID", "5ce9f0c81de68361a52981b74ee61e84")
-CACHE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".notion-sprint-cache.json")
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CACHE_FILE = os.path.join(PROJECT_ROOT, ".notion-sprint-cache.json")
 
 # Stop words to ignore during matching
 STOP_WORDS = frozenset([
@@ -203,6 +205,66 @@ def main():
             print("Fix: ensure NOTION_INTEGRATION_TOKEN in .env belongs to an integration", file=sys.stderr)
             print("     that is connected to the Sprint Board page in Notion.", file=sys.stderr)
             sys.exit(1)
+
+    elif cmd == "drift":
+        # Cross-reference recent commits against Sprint Board to find items that were
+        # fixed in code but never marked Done in Notion.
+        items = load_cache()
+        if not items:
+            if TOKEN:
+                try:
+                    items = fetch_sprint_items()
+                except Exception:
+                    pass
+            if not items:
+                print("No Sprint Board data available. Run: notion-sprint-lookup.py sync")
+                sys.exit(1)
+
+        # Get recent commit messages (last 50)
+        try:
+            result = subprocess.run(
+                ["git", "log", "--oneline", "-50"],
+                capture_output=True, text=True, encoding="utf-8", errors="replace",
+                cwd=PROJECT_ROOT
+            )
+            commits = result.stdout.strip().split("\n") if result.returncode == 0 and result.stdout.strip() else []
+        except Exception as e:
+            commits = []
+            print(f"Git error: {e}", file=sys.stderr)
+
+        if not commits:
+            print("No commits found.")
+            sys.exit(0)
+
+        print(f"Scanning {len(commits)} recent commits against {len(items)} non-Done Sprint Board items...\n")
+
+        found = []
+        for item in items:
+            item_tokens = set(tokenize(item["title"]))
+            if len(item_tokens) < 2:
+                continue
+            for commit_line in commits:
+                commit_tokens = set(tokenize(commit_line))
+                overlap = item_tokens & commit_tokens
+                match_pct = (len(overlap) / len(item_tokens)) * 100 if item_tokens else 0
+                if match_pct >= 50:  # 50% threshold to reduce false positives
+                    # Skip items already marked Blocked (code done, waiting on external action)
+                    if item.get("status") == "Blocked":
+                        continue
+                    found.append((match_pct, item, commit_line))
+                    break  # one match per item is enough
+
+        if found:
+            found.sort(key=lambda x: -x[0])
+            print(f"DRIFT DETECTED: {len(found)} Sprint Board item(s) may already be fixed:\n")
+            for pct, item, commit in found:
+                print(f"  [{pct:.0f}%] {item['title']}")
+                print(f"       Status: {item['status']}  Priority: {item['priority']}")
+                print(f"       Matching commit: {commit}")
+                print(f"       Mark Done: Notion-Done: {item['id']}")
+                print()
+        else:
+            print("No drift detected — all non-Done items appear unresolved in recent commits.")
 
     elif cmd == "sync":
         sync_cache()
