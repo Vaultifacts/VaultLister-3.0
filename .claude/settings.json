@@ -71,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'echo \"\" && echo \"SESSION END CHECKLIST:\" && echo \"  1. Did you update Notion for every fix/feat commit?\" && echo \"  2. Run: bash scripts/reconcile-notion.sh\" && echo \"  3. Any bugs found? Add them to Sprint Board.\" && echo \"\"'"
+            "command": "bash -c 'SPRINT_COUNT=$(python -c \"import json; d=json.load(open(\\\".notion-sprint-cache.json\\\")); print(len(d.get(\\\"items\\\",[])))\" 2>/dev/null || echo \"?\"); echo \"\" && echo \"SESSION END CHECKLIST:\" && echo \"  1. Did you update Notion for every fix/feat commit?\" && echo \"  2. Sprint Board non-Done items: $SPRINT_COUNT \u2014 did you report ALL of them?\" && echo \"  3. Run: bash scripts/reconcile-notion.sh\" && echo \"  4. Any bugs found? Add them to Sprint Board.\" && echo \"  5. Were you asked to fix N items? Did you fix ALL N?\" && echo \"\"'"
           }
         ]
       }

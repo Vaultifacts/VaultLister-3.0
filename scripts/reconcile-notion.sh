@@ -163,6 +163,18 @@ else
 fi
 echo ""
 
+# --- Sprint Board item count (prevents reporting filtered lists) ---
+echo "  --- Sprint Board Status Count ---"
+if [ -f .notion-sprint-cache.json ]; then
+    SPRINT_TOTAL=$(python -c "import json; d=json.load(open('.notion-sprint-cache.json')); print(len(d.get('items',[])))" 2>/dev/null || echo "?")
+    echo "  Non-Done items in Sprint Board: $SPRINT_TOTAL"
+    echo "  When reporting remaining items to the user, this number MUST match."
+    echo "  If you report fewer items, you are filtering. Show ALL $SPRINT_TOTAL."
+else
+    echo "  SKIP: .notion-sprint-cache.json not found. Run: python scripts/notion-sprint-lookup.py sync"
+fi
+echo ""
+
 echo "  REMINDER: Verify Sprint Board statuses match reality."
 echo "  Notion Sprint Board: https://www.notion.so/VaultLister-3-0-2799f0c81de682f49f9e81d8cb0f8aaf"
 echo ""
