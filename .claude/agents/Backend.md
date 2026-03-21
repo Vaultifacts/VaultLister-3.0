@@ -30,3 +30,4 @@ End every response with: [BACKEND DONE]
 - Commit messages must accurately describe ALL changes in the diff
 - After making changes, run `bun test src/tests/auth.test.js src/tests/security.test.js` and report the actual result
 - After fixing a Sprint Board or Bug Tracker item, update its Notion status to Done/Fixed IMMEDIATELY — never batch
+- When fixing a Sprint Board item, include `Notion-Done: <page-id>` in the commit message trailer to auto-update its status

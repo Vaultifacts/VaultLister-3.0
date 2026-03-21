@@ -28,3 +28,27 @@ if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
     echo "  Your message: $COMMIT_MSG"
     exit 1
 fi
+
+# Validate Notion-Done trailer IDs (warning only — does not block commit)
+FULL_MSG=$(cat "$1")
+if echo "$FULL_MSG" | grep -qE "^Notion-Done:"; then
+    BAD_IDS=""
+    while IFS= read -r line; do
+        case "$line" in
+            Notion-Done:*)
+                raw_id=$(echo "$line" | sed 's/^Notion-Done:[[:space:]]*//')
+                # Accept 32 hex chars with or without standard UUID dashes
+                if ! echo "$raw_id" | grep -qiE "^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$|^[0-9a-f]{32}$"; then
+                    BAD_IDS="$BAD_IDS\n  '$raw_id'"
+                fi
+                ;;
+        esac
+    done <<EOF
+$(echo "$FULL_MSG")
+EOF
+    if [ -n "$BAD_IDS" ]; then
+        echo "Warning: Notion-Done trailer contains malformed ID(s):$BAD_IDS"
+        echo "  Expected: 32 hex chars (with or without dashes), e.g. Notion-Done: abc123def456abc123def456abc123de"
+        # Warning only — do not exit 1
+    fi
+fi
