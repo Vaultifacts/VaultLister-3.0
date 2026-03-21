@@ -98,3 +98,4 @@ TEST_REPORT_*.md
 
 # Notion AI control system — runtime artifacts
 generated/
+memory/*.lock
