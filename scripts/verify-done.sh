@@ -117,7 +117,7 @@ if [ -n "$REMOTE_HEAD" ]; then
     for hash in $(git log "$REMOTE_HEAD..HEAD" --pretty=%H -- 2>/dev/null); do
         MSG=$(git log -1 --pretty=%s "$hash")
         BODY=$(git log -1 --pretty=%B "$hash")
-        if echo "$MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
+        if echo "$MSG" | grep -qE "^(\[AUTO\] )?(feat|fix|chore|refactor|perf|test|build|revert):"; then
             if ! echo "$BODY" | grep -qE "^Notion-Done:|^Notion-Skip:"; then
                 SHORT=$(git log -1 --pretty=%h "$hash")
                 echo "    MISSING: $SHORT $MSG"

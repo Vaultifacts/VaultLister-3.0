@@ -13,6 +13,11 @@ if echo "$COMMIT_MSG" | grep -qE "^Merge "; then
     exit 0
 fi
 
+# All commit types that produce functional changes require trailers.
+# Only docs/style/ci are exempt (no functional impact).
+TRAILER_REQUIRED_TYPES="feat|fix|chore|refactor|perf|test|build|revert"
+TRAILER_EXEMPT_TYPES="docs|style|ci"
+
 PATTERN="^(\[AUTO\] )?(feat|fix|chore|docs|style|refactor|perf|test|ci|build|revert)(\(.+\))?: .{3,}"
 
 if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
@@ -33,7 +38,7 @@ fi
 # Every fix/feat commit either resolves a Sprint Board item (Notion-Done: <id>)
 # or explicitly declares it doesn't (Notion-Skip: <reason>). No third option.
 FULL_MSG=$(cat "$1")
-if echo "$COMMIT_MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
+if echo "$COMMIT_MSG" | grep -qE "^(\[AUTO\] )?($TRAILER_REQUIRED_TYPES):"; then
     HAS_DONE=$(echo "$FULL_MSG" | grep -cE "^Notion-Done:" || true)
     HAS_SKIP=$(echo "$FULL_MSG" | grep -cE "^Notion-Skip:" || true)
     if [ "$HAS_DONE" -eq 0 ] && [ "$HAS_SKIP" -eq 0 ]; then
@@ -95,7 +100,7 @@ fi
 
 # BLOCK fix:/feat: commits without Verified: trailer
 # Forces explicit statement of what was tested — not just "built it"
-if echo "$COMMIT_MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
+if echo "$COMMIT_MSG" | grep -qE "^(\[AUTO\] )?($TRAILER_REQUIRED_TYPES):"; then
     HAS_VERIFIED=$(echo "$FULL_MSG" | grep -cE "^Verified:" || true)
     if [ "$HAS_VERIFIED" -eq 0 ]; then
         echo ""
