@@ -29,3 +29,4 @@ End every response with: [FRONTEND DONE]
 - New frontend pages MUST be added to pageChunkMap in src/frontend/core/router.js
 - Commit messages must accurately describe ALL changes in the diff
 - After making changes, run `bun test src/tests/auth.test.js src/tests/security.test.js` and report the actual result
+- After fixing a Sprint Board or Bug Tracker item, update its Notion status to Done/Fixed IMMEDIATELY — never batch
