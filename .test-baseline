@@ -7,7 +7,7 @@ KNOWN_FAILURES=289
 # ─── Named failure baseline (Q22) ────────────────────────────────────────────
 # Tests listed below are KNOWN pre-existing failures permitted to fail in CI.
 # Any other failure is a regression and will block the build.
-(unnamed)
+KNOWN_FAIL: (unnamed)
 #
 # Format: KNOWN_FAIL: <describe block(s) > test name>
 #   — must match the exact string printed by bun:test after "(fail) " with timing suffix stripped
