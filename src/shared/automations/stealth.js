@@ -6,6 +6,16 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 // Apply stealth plugin once — patches navigator.webdriver, chrome.runtime,
 // WebGL vendor, canvas fingerprint, codec enumeration, etc.
+//
+// Known limitation: chrome.runtime check scores 1/16 in fingerprint tests.
+// puppeteer-extra-plugin-stealth cannot fully emulate chrome.runtime in a
+// Playwright context because Playwright does not expose the Chrome extension
+// runtime. This is a known upstream limitation — see:
+// https://github.com/berstend/puppeteer-extra/issues/188
+// The chrome.runtime stub is partial and will be detected by strict fingerprint
+// tests (e.g. CreepJS). For most real-world marketplace bot detection (Poshmark,
+// Mercari, Depop), this does not trigger a block. If it does, mitigate by
+// injecting a more complete chrome.runtime mock via page.addInitScript().
 chromiumBase.use(StealthPlugin());
 
 export const stealthChromium = chromiumBase;
