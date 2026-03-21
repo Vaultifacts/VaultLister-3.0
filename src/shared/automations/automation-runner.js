@@ -6,6 +6,10 @@ import { logger } from '../../backend/shared/logger.js';
 import { auditLog } from '../../backend/services/platformSync/platformAuditLog.js';
 import RATE_LIMITS from './rate-limits.js';
 
+// Platform-level mutex: prevents two automations running against the same platform simultaneously.
+// Maps platformName -> boolean (true = running).
+const platformLocks = new Map();
+
 /**
  * AutomationRunner class
  * Manages and executes automation rules
@@ -91,6 +95,17 @@ export class AutomationRunner {
 
         const payload = JSON.parse(task.payload || '{}');
         let result = null;
+        const taskPlatform = payload.platform || null;
+
+        // Acquire platform mutex for bot-based tasks before any execution
+        if (taskPlatform) {
+            if (!this.acquirePlatformLock(taskPlatform)) {
+                // Release processing state — let the task retry later
+                query.run('UPDATE tasks SET status = ? WHERE id = ?', ['pending', task.id]);
+                this.currentTask = null;
+                throw new Error(`Automation already running for this platform: ${taskPlatform}`);
+            }
+        }
 
         try {
             switch (task.type) {
@@ -158,6 +173,7 @@ export class AutomationRunner {
             throw error;
         } finally {
             this.currentTask = null;
+            if (taskPlatform) this.releasePlatformLock(taskPlatform);
         }
 
         return result;
@@ -241,6 +257,22 @@ export class AutomationRunner {
         const next = new Date();
         next.setHours(next.getHours() + 1);
         return next.toISOString();
+    }
+
+    /**
+     * Acquire the platform mutex. Returns true if acquired, false if already locked.
+     */
+    acquirePlatformLock(platform) {
+        if (platformLocks.get(platform)) return false;
+        platformLocks.set(platform, true);
+        return true;
+    }
+
+    /**
+     * Release the platform mutex.
+     */
+    releasePlatformLock(platform) {
+        platformLocks.delete(platform);
     }
 
     /**

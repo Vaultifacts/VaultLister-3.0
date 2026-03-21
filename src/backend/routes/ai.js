@@ -5,7 +5,7 @@ import { checkTierPermission } from '../middleware/auth.js';
 import { generateTitle, generateDescription, generateTags, analyzeImage, generateListing } from '../../shared/ai/listing-generator.js';
 import { predictPrice, getPriceRange } from '../../shared/ai/price-predictor.js';
 import { detectBrand, detectCategory } from '../../shared/ai/image-analyzer.js';
-import Anthropic from '@anthropic-ai/sdk';
+import { getAnthropicClient } from '../../shared/ai/claude-client.js';
 import { logger } from '../shared/logger.js';
 import { validateBase64Image } from '../services/imageStorage.js';
 import { requireFeature } from '../middleware/featureFlags.js';
@@ -101,7 +101,7 @@ export async function aiRouter(ctx) {
         }
 
         try {
-            const anthropic = new Anthropic({ apiKey });
+            const anthropic = getAnthropicClient();
 
             // Platform-specific character limits and guidelines
             const platformGuidelines = {
@@ -272,7 +272,7 @@ Important:
             // Use Claude Sonnet for platform-specific generation when API key is available
             if (process.env.ANTHROPIC_API_KEY) {
                 try {
-                    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+                    const anthropic = getAnthropicClient();
 
                     const safeBrand = sanitizeForAI(context.brand || 'Unknown', 100);
                     const safeCategory = sanitizeForAI(context.category || 'Clothing', 100);
@@ -366,7 +366,7 @@ Important:
 
             if (process.env.ANTHROPIC_API_KEY) {
                 try {
-                    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+                    const anthropic = getAnthropicClient();
                     const safeBrand = sanitizeForAI(brand || 'Unknown', 100);
                     const safeCategory = sanitizeForAI(category || 'Clothing', 100);
                     const safeKeywords = sanitizeForAI((keywords || []).join(', ') || 'N/A', 200);
@@ -407,7 +407,7 @@ Important:
 
             if (process.env.ANTHROPIC_API_KEY) {
                 try {
-                    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+                    const anthropic = getAnthropicClient();
                     const userContent = `Title: ${sanitizeForAI(title, 100)}\nBrand: ${sanitizeForAI(brand || 'Unknown', 100)}\nCategory: ${sanitizeForAI(category || 'Clothing', 100)}\nCondition: ${sanitizeForAI(condition || 'good', 50)}\nSize: ${sanitizeForAI(size || 'N/A', 20)}\nColor: ${sanitizeForAI(color || 'N/A', 50)}\nMaterial: ${sanitizeForAI(material || 'N/A', 100)}\nKeywords: ${sanitizeForAI((keywords || []).join(', ') || 'N/A', 200)}`;
                     const response = await circuitBreaker('anthropic-description', () =>
                         withTimeout(anthropic.messages.create({
@@ -444,7 +444,7 @@ Important:
 
             if (process.env.ANTHROPIC_API_KEY) {
                 try {
-                    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+                    const anthropic = getAnthropicClient();
                     const userContent = `Title: ${sanitizeForAI(title || 'N/A', 100)}\nDescription: ${sanitizeForAI(description || 'N/A', 300)}\nBrand: ${sanitizeForAI(brand || 'Unknown', 100)}\nCategory: ${sanitizeForAI(category || 'Clothing', 100)}`;
                     const response = await circuitBreaker('anthropic-tags', () =>
                         withTimeout(anthropic.messages.create({
@@ -785,7 +785,7 @@ Important:
         }
 
         try {
-            const anthropic = new Anthropic({ apiKey });
+            const anthropic = getAnthropicClient();
 
             const languageNames = {
                 es: 'Spanish', fr: 'French', de: 'German', it: 'Italian',
@@ -1113,7 +1113,7 @@ Return ONLY valid JSON with this structure:
         const apiKey = process.env.ANTHROPIC_API_KEY;
         if (apiKey && imageBase64) {
             try {
-                const anthropic = new Anthropic({ apiKey });
+                const anthropic = getAnthropicClient();
 
                 const prompt = `Analyze this product photo for an e-commerce listing. Provide specific, actionable feedback in JSON format:
 

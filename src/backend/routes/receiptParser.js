@@ -1,7 +1,7 @@
 // Receipt Parser Routes - AI-powered receipt parsing with Claude Vision
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
-import Anthropic from '@anthropic-ai/sdk';
+import { getAnthropicClient } from '../../shared/ai/claude-client.js';
 import { logger } from '../shared/logger.js';
 import { validateBase64Image } from '../services/imageStorage.js';
 
@@ -42,12 +42,10 @@ function checkReceiptRateLimit(userId) {
 
 // Helper function to parse receipt with Claude AI
 async function parseReceiptWithAI(imageBase64, mimeType) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    const anthropic = getAnthropicClient();
+    if (!anthropic) {
         throw new Error('AI service not configured. Please set ANTHROPIC_API_KEY environment variable.');
     }
-
-    const anthropic = new Anthropic({ apiKey });
 
     const prompt = `You are an expert at reading and extracting data from receipts. Analyze this receipt image and extract ALL information in the following JSON format:
 

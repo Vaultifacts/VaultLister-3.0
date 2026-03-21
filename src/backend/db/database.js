@@ -269,6 +269,9 @@ export function getStatementCacheStats() {
 }
 
 export const query = {
+    // Expose raw db instance for advanced use (e.g. direct transaction API)
+    db,
+
     // Get single row
     get(sql, params = []) {
         try {

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import Anthropic from '@anthropic-ai/sdk';
+import { getAnthropicClient } from '../../shared/ai/claude-client.js';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { saveImage, deleteImage, getImageUrl, importFromInventory, validateImage } from '../services/imageStorage.js';
@@ -424,7 +424,7 @@ export async function imageBankRouter(ctx) {
 Be specific and accurate. Only include what you can confidently detect from the image.`;
 
         try {
-            const anthropic = new Anthropic({ apiKey });
+            const anthropic = getAnthropicClient();
             const response = await anthropic.messages.create({
                 model: 'claude-sonnet-4-6',
                 max_tokens: 1000,
