@@ -4102,7 +4102,7 @@ Object.assign(handlers, {
 
 
     importFromPlatform(platform) {
-        toast.info(`Import from ${platform} coming soon`);
+        router.navigate('inventory-import');
     },
 
 
