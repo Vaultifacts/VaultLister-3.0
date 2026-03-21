@@ -65,7 +65,17 @@
       }
     ],
     "PostToolUse": [],
-    "Stop": []
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'echo \"\" && echo \"SESSION END CHECKLIST:\" && echo \"  1. Did you update Notion for every fix/feat commit?\" && echo \"  2. Run: bash scripts/reconcile-notion.sh\" && echo \"  3. Any bugs found? Add them to Sprint Board.\" && echo \"\"'"
+          }
+        ]
+      }
+    ]
   },
   "statusLine": ".claude/statusline.sh",
   "memory": [

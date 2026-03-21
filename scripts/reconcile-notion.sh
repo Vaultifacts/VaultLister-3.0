@@ -92,7 +92,64 @@ else
     echo ""
 fi
 
+# --- Notion-Done trailer audit ---
+echo ""
+echo "  ============================================================"
+echo "  Notion-Done Trailer Audit (unpushed commits)"
+echo "  ============================================================"
+
+REMOTE_HEAD=$(git rev-parse "@{u}" 2>/dev/null || echo "")
+if [ -n "$REMOTE_HEAD" ]; then
+    MISSING=0
+    for hash in $(git log "$REMOTE_HEAD..HEAD" --pretty=%H -- 2>/dev/null); do
+        MSG=$(git log -1 --pretty=%s "$hash")
+        BODY=$(git log -1 --pretty=%B "$hash")
+        if echo "$MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
+            if ! echo "$BODY" | grep -qE "^Notion-Done:"; then
+                SHORT=$(git log -1 --pretty=%h "$hash")
+                printf "    MISSING: %s %s\n" "$SHORT" "$MSG"
+                MISSING=$((MISSING + 1))
+            fi
+        fi
+    done
+    if [ "$MISSING" -eq 0 ]; then
+        echo "    All fix/feat commits have Notion-Done trailers. OK"
+    else
+        echo ""
+        echo "    $MISSING commit(s) may need Notion Sprint Board updates."
+        echo "    Either amend with Notion-Done: trailers, or update Notion manually."
+    fi
+else
+    echo "    (no remote tracking branch — skipping)"
+fi
+
+# --- Fix/feat commits in last 24h without trailers (already pushed) ---
+echo ""
+echo "  Recent pushed commits without Notion-Done (last 24h):"
+RECENT_MISSING=0
+for hash in $(git log --since="24 hours ago" --pretty=%H -- 2>/dev/null); do
+    MSG=$(git log -1 --pretty=%s "$hash")
+    BODY=$(git log -1 --pretty=%B "$hash")
+    if echo "$MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
+        if ! echo "$BODY" | grep -qE "^Notion-Done:"; then
+            SHORT=$(git log -1 --pretty=%h "$hash")
+            printf "    %s %s\n" "$SHORT" "$MSG"
+            RECENT_MISSING=$((RECENT_MISSING + 1))
+        fi
+    fi
+done
+if [ "$RECENT_MISSING" -eq 0 ]; then
+    echo "    None — all recent fix/feat commits have trailers. OK"
+else
+    echo ""
+    echo "    $RECENT_MISSING pushed commit(s) need manual Notion updates."
+fi
+
+echo ""
+echo "  ============================================================"
+echo ""
+
 # --- Sprint Board reminder (always shown) ---
-echo "  REMINDER: Run Sprint Board reconciliation before ending session."
+echo "  REMINDER: Verify Sprint Board statuses match reality."
 echo "  Notion Sprint Board: https://www.notion.so/VaultLister-3-0-2799f0c81de682f49f9e81d8cb0f8aaf"
 echo ""

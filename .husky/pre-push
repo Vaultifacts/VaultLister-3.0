@@ -116,4 +116,31 @@ else
     exit 1
 fi
 
+# Notion-Done audit: warn about fix/feat commits without Sprint Board trailers
+REMOTE_HEAD=$(git rev-parse "@{u}" 2>/dev/null || echo "")
+if [ -n "$REMOTE_HEAD" ]; then
+    MISSING_TRAILER=0
+    MISSING_COMMITS=""
+    for hash in $(git log "$REMOTE_HEAD..HEAD" --pretty=%H -- 2>/dev/null); do
+        MSG=$(git log -1 --pretty=%s "$hash")
+        BODY=$(git log -1 --pretty=%B "$hash")
+        if echo "$MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
+            if ! echo "$BODY" | grep -qE "^Notion-Done:"; then
+                MISSING_TRAILER=$((MISSING_TRAILER + 1))
+                SHORT=$(git log -1 --pretty=%h "$hash")
+                MISSING_COMMITS="${MISSING_COMMITS}  ${SHORT} ${MSG}
+"
+            fi
+        fi
+    done
+    if [ "$MISSING_TRAILER" -gt 0 ]; then
+        echo ""
+        echo "NOTION AUDIT: ${MISSING_TRAILER} fix/feat commit(s) have no Notion-Done trailer:"
+        echo "$MISSING_COMMITS"
+        echo "If these resolve Sprint Board items, update Notion manually now."
+        echo "(This is a warning — push is NOT blocked.)"
+        echo ""
+    fi
+fi
+
 echo "Pre-push checks passed!"

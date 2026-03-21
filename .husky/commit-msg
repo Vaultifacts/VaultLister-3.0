@@ -29,8 +29,21 @@ if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
     exit 1
 fi
 
-# Validate Notion-Done trailer IDs (warning only — does not block commit)
+# Warn when fix:/feat: commits lack Notion-Done trailer
+# These commits likely resolve Sprint Board items and should mark them Done.
 FULL_MSG=$(cat "$1")
+if echo "$COMMIT_MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
+    if ! echo "$FULL_MSG" | grep -qE "^Notion-Done:"; then
+        echo ""
+        echo "  WARNING: This fix/feat commit has no Notion-Done: trailer."
+        echo "  If this resolves a Sprint Board item, add a trailer line:"
+        echo "    Notion-Done: <page-id-from-notion>"
+        echo "  (amend the commit to add it, or update Notion manually)"
+        echo ""
+    fi
+fi
+
+# Validate Notion-Done trailer IDs (warning only — does not block commit)
 if echo "$FULL_MSG" | grep -qE "^Notion-Done:"; then
     BAD_IDS=""
     while IFS= read -r line; do
