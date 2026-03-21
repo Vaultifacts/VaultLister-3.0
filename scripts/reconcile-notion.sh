@@ -150,6 +150,19 @@ echo "  ============================================================"
 echo ""
 
 # --- Sprint Board reminder (always shown) ---
+echo "  --- Notion API Access Verification ---"
+NOTION_TK=""
+if [ -f .env ]; then
+    NOTION_TK=$(grep "^NOTION_INTEGRATION_TOKEN=" .env 2>/dev/null | cut -d'=' -f2 || echo "")
+fi
+if [ -n "${NOTION_TK:-}" ] && command -v python >/dev/null 2>&1; then
+    VERIFY_RESULT=$(PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_TK" python scripts/notion-sprint-lookup.py verify 2>&1 || true)
+    echo "  $VERIFY_RESULT"
+else
+    echo "  SKIP: NOTION_INTEGRATION_TOKEN not set or python not available"
+fi
+echo ""
+
 echo "  REMINDER: Verify Sprint Board statuses match reality."
 echo "  Notion Sprint Board: https://www.notion.so/VaultLister-3-0-2799f0c81de682f49f9e81d8cb0f8aaf"
 echo ""

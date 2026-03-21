@@ -190,7 +190,21 @@ def main():
 
     cmd = sys.argv[1]
 
-    if cmd == "sync":
+    if cmd == "verify":
+        # Verify integration can access Sprint Board — use in pre-push or session start
+        if not TOKEN:
+            print("FAIL: NOTION_TOKEN not set", file=sys.stderr)
+            sys.exit(1)
+        try:
+            items = fetch_sprint_items()
+            print(f"OK: integration can access Sprint Board ({len(items)} non-Done items)")
+        except Exception as e:
+            print(f"FAIL: Cannot access Sprint Board — {e}", file=sys.stderr)
+            print("Fix: ensure NOTION_INTEGRATION_TOKEN in .env belongs to an integration", file=sys.stderr)
+            print("     that is connected to the Sprint Board page in Notion.", file=sys.stderr)
+            sys.exit(1)
+
+    elif cmd == "sync":
         sync_cache()
 
     elif cmd == "match":
