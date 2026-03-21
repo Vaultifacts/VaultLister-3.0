@@ -125,7 +125,7 @@ if [ -n "$REMOTE_HEAD" ]; then
         MSG=$(git log -1 --pretty=%s "$hash")
         BODY=$(git log -1 --pretty=%B "$hash")
         if echo "$MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
-            if ! echo "$BODY" | grep -qE "^Notion-Done:"; then
+            if ! echo "$BODY" | grep -qE "^Notion-Done:|^Notion-Skip:"; then
                 MISSING_TRAILER=$((MISSING_TRAILER + 1))
                 SHORT=$(git log -1 --pretty=%h "$hash")
                 MISSING_COMMITS="${MISSING_COMMITS}  ${SHORT} ${MSG}
@@ -135,11 +135,14 @@ if [ -n "$REMOTE_HEAD" ]; then
     done
     if [ "$MISSING_TRAILER" -gt 0 ]; then
         echo ""
-        echo "NOTION AUDIT: ${MISSING_TRAILER} fix/feat commit(s) have no Notion-Done trailer:"
+        echo "BLOCKED: ${MISSING_TRAILER} fix/feat commit(s) have no Notion-Done or Notion-Skip trailer:"
         echo "$MISSING_COMMITS"
-        echo "If these resolve Sprint Board items, update Notion manually now."
-        echo "(This is a warning — push is NOT blocked.)"
+        echo "Every fix/feat commit must have either:"
+        echo "  Notion-Done: <page-id>    (resolves a Sprint Board item)"
+        echo "  Notion-Skip: <reason>     (does not relate to Sprint Board)"
         echo ""
+        echo "Amend the commit(s) to add trailers, then push again."
+        exit 1
     fi
 fi
 
