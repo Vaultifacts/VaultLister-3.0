@@ -1,6 +1,6 @@
 // VaultLister Frontend Application
 // Lightweight SPA with vanilla JS
-//
+// Bundle sync: a656c7cf
 // ⚠️  NOT SERVED — this file is a legacy monolith and is NOT loaded by the browser.
 // The actual source files are in src/frontend/core/, handlers/, pages/, ui/, services/.
 // They are concatenated into src/frontend/core-bundle.js which IS served.

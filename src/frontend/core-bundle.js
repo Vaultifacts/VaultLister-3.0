@@ -10351,11 +10351,6 @@ const virtualScroll = {
         container.appendChild(sentinel);
 
         let isLoading = false;
-        if (!('IntersectionObserver' in window)) {
-            // Fallback: load immediately for browsers without IntersectionObserver support
-            if (loadMore) loadMore();
-            return;
-        }
         const observer = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting && loadMore && !isLoading) {
                 isLoading = true;
@@ -15132,7 +15127,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'af480d55';
+    const v = 'a656c7cf';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15927,15 +15922,10 @@ const components = {
                         `).join('')}
                     </div>
                 ` : '';
-                const isMock = msg.role === 'assistant' && msg.metadata?.source === 'mock';
-                const mockIndicatorHtml = isMock ? `
-                    <div class="vault-buddy-mock-indicator" style="font-size:11px;color:var(--gray-400);margin-top:4px;font-style:italic;">(demo mode — configure AI key for real responses)</div>
-                ` : '';
                 return `
                     <div class="vault-buddy-message ${msg.role}">
                         <div class="vault-buddy-message-content">${formatChatMessage(msg.content)}</div>
                         ${msg.role === 'assistant' ? quickActionsHtml : ''}
-                        ${mockIndicatorHtml}
                         <div class="vault-buddy-message-time">${formatMessageTime(msg.created_at)}</div>
                     </div>
                 `;
