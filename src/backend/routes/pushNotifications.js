@@ -147,11 +147,7 @@ export async function pushNotificationsRouter(ctx) {
     // GET /api/notifications/preferences - Get notification preferences
     if (method === 'GET' && path === '/preferences') {
         try {
-            const prefs = query.get(`
-                SELECT * FROM notification_preferences WHERE user_id = ?
-            `, [user.id]);
-
-            // Default preferences if none exist
+            const NOTIF_PREFS_KEY = 'notification_preferences';
             const defaults = {
                 sales: true,
                 offers: true,
@@ -164,9 +160,19 @@ export async function pushNotificationsRouter(ctx) {
                 quiet_hours_end: '08:00'
             };
 
+            const row = query.get(
+                'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
+                [user.id, NOTIF_PREFS_KEY]
+            );
+
+            let preferences = defaults;
+            if (row?.settings) {
+                try { preferences = { ...defaults, ...JSON.parse(row.settings) }; } catch { /* keep defaults */ }
+            }
+
             return {
                 status: 200,
-                data: { preferences: prefs || defaults }
+                data: { preferences }
             };
         } catch (error) {
             logger.error('[PushNotifications] Error fetching notification preferences', user?.id, { detail: error.message });
@@ -177,35 +183,31 @@ export async function pushNotificationsRouter(ctx) {
     // PUT /api/notifications/preferences - Update notification preferences
     if (method === 'PUT' && path === '/preferences') {
         try {
+            const NOTIF_PREFS_KEY = 'notification_preferences';
             const {
                 sales, offers, messages, inventory_alerts, marketing,
                 weekly_digest, quiet_hours_enabled, quiet_hours_start, quiet_hours_end
             } = body;
 
-            // Upsert preferences
+            const settings = JSON.stringify({
+                sales: sales !== undefined ? Boolean(sales) : true,
+                offers: offers !== undefined ? Boolean(offers) : true,
+                messages: messages !== undefined ? Boolean(messages) : true,
+                inventory_alerts: inventory_alerts !== undefined ? Boolean(inventory_alerts) : true,
+                marketing: marketing !== undefined ? Boolean(marketing) : false,
+                weekly_digest: weekly_digest !== undefined ? Boolean(weekly_digest) : true,
+                quiet_hours_enabled: quiet_hours_enabled !== undefined ? Boolean(quiet_hours_enabled) : false,
+                quiet_hours_start: quiet_hours_start || '22:00',
+                quiet_hours_end: quiet_hours_end || '08:00'
+            });
+
             query.run(`
-                INSERT INTO notification_preferences (
-                    id, user_id, sales, offers, messages, inventory_alerts, marketing,
-                    weekly_digest, quiet_hours_enabled, quiet_hours_start, quiet_hours_end,
-                    created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-                ON CONFLICT(user_id) DO UPDATE SET
-                    sales = excluded.sales,
-                    offers = excluded.offers,
-                    messages = excluded.messages,
-                    inventory_alerts = excluded.inventory_alerts,
-                    marketing = excluded.marketing,
-                    weekly_digest = excluded.weekly_digest,
-                    quiet_hours_enabled = excluded.quiet_hours_enabled,
-                    quiet_hours_start = excluded.quiet_hours_start,
-                    quiet_hours_end = excluded.quiet_hours_end,
+                INSERT INTO user_preferences (id, user_id, key, settings, created_at, updated_at)
+                VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                ON CONFLICT(user_id, key) DO UPDATE SET
+                    settings = excluded.settings,
                     updated_at = datetime('now')
-            `, [
-                uuidv4(), user.id,
-                sales ? 1 : 0, offers ? 1 : 0, messages ? 1 : 0,
-                inventory_alerts ? 1 : 0, marketing ? 1 : 0, weekly_digest ? 1 : 0,
-                quiet_hours_enabled ? 1 : 0, quiet_hours_start, quiet_hours_end
-            ]);
+            `, [uuidv4(), user.id, NOTIF_PREFS_KEY, settings]);
 
             return { status: 200, data: { message: 'Preferences updated' } };
         } catch (error) {

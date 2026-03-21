@@ -26735,16 +26735,60 @@ Object.assign(handlers, {
         input.click();
     },
 
-    addPhotosToBank() {
-        toast.info('Adding photos to bank...');
+    async addPhotosToBank() {
+        const photos = store.state._quickPhotos || [];
+        if (photos.length === 0) {
+            toast.warning('No photos to add');
+            return;
+        }
+        try {
+            const images = photos.map((dataUrl, i) => {
+                const comma = dataUrl.indexOf(',');
+                const mimeMatch = dataUrl.match(/data:([^;]+);/);
+                return {
+                    data: comma >= 0 ? dataUrl.substring(comma + 1) : dataUrl,
+                    mimeType: mimeMatch ? mimeMatch[1] : 'image/jpeg',
+                    filename: `quick-photo-${Date.now()}-${i}.jpg`
+                };
+            });
+            await api.post('/image-bank/upload', { images });
+            toast.success(`${photos.length} photo${photos.length > 1 ? 's' : ''} added to Image Bank`);
+            store.setState({ _quickPhotos: [] });
+            modals.close();
+            router.navigate('image-bank');
+        } catch (error) {
+            toast.error('Failed to add photos to Image Bank');
+        }
     },
 
     removeQuickPhoto(index) {
-        toast.info('Photo removed');
+        const photos = [...(store.state._quickPhotos || [])];
+        if (index >= 0 && index < photos.length) {
+            photos.splice(index, 1);
+            store.setState({ _quickPhotos: photos });
+            toast.success('Photo removed');
+        }
     },
 
-    enhanceQuickPhoto(index) {
-        toast.info('Enhancing photo...');
+    async enhanceQuickPhoto(index) {
+        const photos = [...(store.state._quickPhotos || [])];
+        if (index < 0 || index >= photos.length) return;
+        try {
+            const dataUrl = photos[index];
+            const img = new Image();
+            await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = dataUrl; });
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.filter = 'brightness(1.1) contrast(1.1) saturate(1.1)';
+            ctx.drawImage(img, 0, 0);
+            photos[index] = canvas.toDataURL('image/jpeg', 0.92);
+            store.setState({ _quickPhotos: photos });
+            toast.success(`Photo ${index + 1} enhanced`);
+        } catch {
+            toast.error('Failed to enhance photo');
+        }
     },
 
     // Reports,

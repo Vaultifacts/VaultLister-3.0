@@ -117,8 +117,8 @@ async function runPriceChecks() {
 async function checkItemPrice(item) {
     const result = { priceDrop: false, targetHit: false };
 
-    // Simulate fetching new price (in production, would scrape or use API)
-    const newPrice = await simulatePriceFetch(item);
+    // Fetch current price from the item's source URL via JSON-LD / OG meta scraping
+    const { price: newPrice, source: priceSource } = await fetchPriceFromUrl(item);
 
     if (newPrice === null) {
         // Couldn't get price, update last checked time only
@@ -144,14 +144,21 @@ async function checkItemPrice(item) {
         WHERE id = ?
     `, [newPrice, priceChange, item.id]);
 
-    // Record price history
+    // Record price history — include _source so callers can distinguish live
+    // scrapes from mock/unavailable results
     try {
         query.run(`
-            INSERT INTO supplier_price_history (id, supplier_item_id, price, recorded_at)
-            VALUES (?, ?, ?, datetime('now'))
-        `, [uuidv4(), item.id, newPrice]);
+            INSERT INTO supplier_price_history (id, supplier_item_id, price, source, recorded_at)
+            VALUES (?, ?, ?, ?, datetime('now'))
+        `, [uuidv4(), item.id, newPrice, priceSource]);
     } catch (err) {
-        // Table might not exist
+        // Fallback: table may not have source column yet
+        try {
+            query.run(`
+                INSERT INTO supplier_price_history (id, supplier_item_id, price, recorded_at)
+                VALUES (?, ?, ?, datetime('now'))
+            `, [uuidv4(), item.id, newPrice]);
+        } catch (_) { /* Table might not exist */ }
     }
 
     // Check for alerts
@@ -202,14 +209,15 @@ async function checkItemPrice(item) {
 }
 
 /**
- * Fetch real price from supplier URL via OG metadata / JSON-LD Product schema
- * Falls back to null if URL is missing or unparseable
- * @param {Object} item - Supplier item with source_url
- * @returns {number|null} New price or null
+ * Fetch current price from supplier URL via JSON-LD Product schema or OG meta tags.
+ * Returns { price, source } where source is 'live' when a price was successfully
+ * scraped, or 'mock' when no URL is available or the fetch/parse failed.
+ * @param {Object} item - Supplier item with source_url or url
+ * @returns {{ price: number|null, source: 'live'|'mock' }}
  */
-async function simulatePriceFetch(item) {
+async function fetchPriceFromUrl(item) {
     const url = item.source_url || item.url;
-    if (!url) return null;
+    if (!url) return { price: null, source: 'mock' };
 
     try {
         const controller = new AbortController();
@@ -222,7 +230,7 @@ async function simulatePriceFetch(item) {
         });
         clearTimeout(timeout);
 
-        if (!response.ok) return null;
+        if (!response.ok) return { price: null, source: 'mock' };
 
         const html = await response.text();
 
@@ -237,7 +245,7 @@ async function simulatePriceFetch(item) {
                     if (product?.offers) {
                         const offer = Array.isArray(product.offers) ? product.offers[0] : product.offers;
                         const price = parseFloat(offer.price || offer.lowPrice);
-                        if (!isNaN(price) && price > 0) return Math.round(price * 100) / 100;
+                        if (!isNaN(price) && price > 0) return { price: Math.round(price * 100) / 100, source: 'live' };
                     }
                 } catch {}
             }
@@ -247,20 +255,20 @@ async function simulatePriceFetch(item) {
         const ogPriceMatch = html.match(/<meta[^>]*property\s*=\s*"product:price:amount"[^>]*content\s*=\s*"([^"]+)"/i);
         if (ogPriceMatch) {
             const price = parseFloat(ogPriceMatch[1]);
-            if (!isNaN(price) && price > 0) return Math.round(price * 100) / 100;
+            if (!isNaN(price) && price > 0) return { price: Math.round(price * 100) / 100, source: 'live' };
         }
 
         // Fall back to generic price pattern in meta
         const priceMetaMatch = html.match(/<meta[^>]*(?:name|property)\s*=\s*"(?:og:)?price"[^>]*content\s*=\s*"([^"]+)"/i);
         if (priceMetaMatch) {
             const price = parseFloat(priceMetaMatch[1].replace(/[^0-9.]/g, ''));
-            if (!isNaN(price) && price > 0) return Math.round(price * 100) / 100;
+            if (!isNaN(price) && price > 0) return { price: Math.round(price * 100) / 100, source: 'live' };
         }
 
-        return null;
+        return { price: null, source: 'mock' };
     } catch (err) {
         logger.warn('[PriceCheckWorker] Price fetch failed for ' + url + ': ' + err.message);
-        return null;
+        return { price: null, source: 'mock' };
     }
 }
 

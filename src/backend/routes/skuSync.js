@@ -1,6 +1,7 @@
 import { query } from '../db/database.js';
 import { nanoid } from 'nanoid';
 import { logger } from '../shared/logger.js';
+import { queueTask } from '../workers/taskWorker.js';
 
 export async function skuSyncRouter(ctx) {
   const { method, path, body, query: queryParams, user } = ctx;
@@ -137,22 +138,6 @@ export async function skuSyncRouter(ctx) {
     if (method === 'POST' && path === '/sync') {
       const userId = user.id;
 
-      // HIGH 20: Check for active marketplace connections — sync only updates local DB
-      // records; without live API credentials it does not push to marketplace platforms.
-      const connectedShops = query.all(
-        `SELECT platform FROM shops WHERE user_id = ? AND is_connected = 1`,
-        [userId]
-      );
-      if (!connectedShops || connectedShops.length === 0) {
-        return {
-          status: 200,
-          data: {
-            synced: false,
-            reason: 'SKU sync requires active marketplace connections. Configure marketplace API credentials.'
-          }
-        };
-      }
-
       // Get all pending links
       const pending = await query.all(
         `SELECT * FROM sku_platform_links
@@ -171,7 +156,10 @@ export async function skuSyncRouter(ctx) {
         };
       }
 
-      // Sync SKU to each linked platform's listing
+      // Collect the distinct platforms represented in the pending links
+      const platformsToSync = [...new Set(pending.map(l => l.platform))];
+
+      // Sync SKU to each linked platform's listing (local DB update)
       let synced = 0;
       let failed = 0;
       for (const link of pending) {
@@ -208,13 +196,36 @@ export async function skuSyncRouter(ctx) {
         }
       }
 
+      // Queue a platform sync task for each connected OAuth shop whose platform
+      // appears in the pending links, so the task worker pushes changes to the
+      // live marketplace APIs (not just the local DB).
+      const tasksQueued = [];
+      for (const platform of platformsToSync) {
+        try {
+          const shop = query.get(
+            `SELECT id FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1 AND connection_type = 'oauth'`,
+            [userId, platform]
+          );
+          if (shop) {
+            const task = queueTask('sync_shop', { shopId: shop.id, userId }, { priority: 1 });
+            tasksQueued.push({ platform, taskId: task.id });
+            logger.info(`[SKUSync] Queued sync_shop task for ${platform} (shop: ${shop.id})`);
+          } else {
+            logger.info(`[SKUSync] No connected OAuth shop for platform ${platform} — local DB updated only`);
+          }
+        } catch (queueErr) {
+          logger.warn(`[SKUSync] Could not queue sync task for ${platform}: ${queueErr.message}`);
+        }
+      }
+
       return {
         status: 200,
         data: {
           success: true,
           synced,
           failed,
-          message: `Synced ${synced} SKU links${failed > 0 ? `, ${failed} failed` : ''}`
+          tasksQueued: tasksQueued.length,
+          message: `Synced ${synced} SKU links${failed > 0 ? `, ${failed} failed` : ''}${tasksQueued.length > 0 ? `; queued ${tasksQueued.length} platform sync task(s)` : ''}`
         }
       };
     }

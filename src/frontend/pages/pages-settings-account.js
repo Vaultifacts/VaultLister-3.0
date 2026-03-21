@@ -1267,6 +1267,30 @@ Object.assign(pages, {
                                         ${components.icon('external-link', 14)} Open
                                     </button>
                                 </div>
+                                <div class="integration-card">
+                                    <div class="integration-icon" style="background: #4285F4;">
+                                        ${components.icon('calendar', 20)}
+                                    </div>
+                                    <div class="integration-info">
+                                        <h5>Google Calendar</h5>
+                                        <span class="integration-status">Sync listing &amp; sale events</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" aria-label="Connect Google Calendar" onclick="handlers.connectGoogleCalendar()">
+                                        Connect
+                                    </button>
+                                </div>
+                                <div class="integration-card">
+                                    <div class="integration-icon" style="background: #4285F4;">
+                                        ${components.icon('hard-drive', 20)}
+                                    </div>
+                                    <div class="integration-info">
+                                        <h5>Google Drive</h5>
+                                        <span class="integration-status">Cloud storage sync</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="window.open('/api/integrations/google/drive/authorize', '_blank', 'width=500,height=600')">
+                                        Connect
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -3010,6 +3034,16 @@ Object.assign(pages, {
                                 </div>
                             </div>
                             <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="window.open('/api/integrations/google/drive/authorize', '_blank', 'width=500,height=600')">Connect</button>
+                        </div>
+                        <div class="flex items-center justify-between p-4 rounded-lg border">
+                            <div class="flex items-center gap-3">
+                                <div style="width: 40px; height: 40px; background: #4285F4; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">Cal</div>
+                                <div>
+                                    <div class="font-medium">Google Calendar</div>
+                                    <div class="text-xs text-gray-500">Sync listing &amp; sale events</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-primary" aria-label="Connect Google Calendar" onclick="handlers.connectGoogleCalendar()">Connect</button>
                         </div>
                         <div class="flex items-center justify-between p-4 rounded-lg border">
                             <div class="flex items-center gap-3">
