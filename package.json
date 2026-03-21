@@ -64,7 +64,7 @@
     "audit": "bun pm scan || true"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
+    "@anthropic-ai/sdk": "^0.80.0",
     "@notionhq/client": "^5.9.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^12.6.2",
