@@ -22158,7 +22158,14 @@ const modals = {
                                 <span style="flex: 1; font-weight: 500;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
                             </label>
                         `).join('')}
-                        ${['mercari', 'depop', 'grailed', 'facebook', 'whatnot', 'shopify'].map(platform => `
+                        ${['mercari', 'depop', 'grailed', 'facebook', 'whatnot'].map(platform => `
+                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" name="platforms" value="${platform}">
+                                ${components.platformBadge(platform)}
+                                <span style="flex: 1; font-weight: 500;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
+                            </label>
+                        `).join('')}
+                        ${['shopify'].map(platform => `
                             <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; cursor: not-allowed; opacity: 0.55;" title="Coming soon">
                                 <input type="checkbox" name="platforms" value="${platform}" disabled>
                                 ${components.platformBadge(platform)}

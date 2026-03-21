@@ -231,8 +231,7 @@ export class FacebookBot {
      * 5. Return success/failure status
      */
     async shareListing(listingUrl) {
-        console.log('[FacebookBot] Share action not yet implemented');
-        return { implemented: false, message: 'Share action is a TODO — not yet available' };
+        throw new Error('Facebook Marketplace does not support share actions — use relist instead');
     }
 
     getStats() {
