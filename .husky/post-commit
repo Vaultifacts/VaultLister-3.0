@@ -80,22 +80,33 @@ fi
 NOTION_ERR_LOG=".notion-errors.log"
 
 if [ -n "${NOTION_INTEGRATION_TOKEN:-}" ] && command -v python >/dev/null 2>&1; then
-    # Auto-mark Sprint Board items Done from commit message trailers (FOREGROUND — must complete)
+    # Auto-mark Sprint Board items Done from commit message trailers
+    # Runs with a 30s timeout to prevent hanging commits (Notion API can be slow)
     if [ -f scripts/notion-auto-done.py ]; then
-        PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/notion-auto-done.py 2>>"$NOTION_ERR_LOG" || echo "[$(date -Iseconds)] notion-auto-done.py failed" >> "$NOTION_ERR_LOG"
+        if command -v timeout >/dev/null 2>&1; then
+            timeout 30 env PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/notion-auto-done.py 2>>"$NOTION_ERR_LOG" || echo "[$(date -Iseconds)] notion-auto-done.py failed or timed out" >> "$NOTION_ERR_LOG"
+        else
+            # Windows Git Bash: no timeout command — run in background with manual kill
+            PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/notion-auto-done.py 2>>"$NOTION_ERR_LOG" &
+            DONE_PID=$!
+            ( sleep 30 && kill $DONE_PID 2>/dev/null ) &
+            WATCHDOG_PID=$!
+            wait $DONE_PID 2>/dev/null || echo "[$(date -Iseconds)] notion-auto-done.py failed or timed out" >> "$NOTION_ERR_LOG"
+            kill $WATCHDOG_PID 2>/dev/null || true
+        fi
     fi
 
-    # Refresh Sprint Board cache (background)
+    # Refresh Sprint Board cache (background, non-blocking)
     if [ -f scripts/notion-sprint-lookup.py ]; then
         (PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/notion-sprint-lookup.py sync >/dev/null 2>>"$NOTION_ERR_LOG" || echo "[$(date -Iseconds)] sprint cache sync failed" >> "$NOTION_ERR_LOG") &
     fi
 
-    # Consistency check (background)
+    # Consistency check (background, non-blocking)
     if [ -f scripts/check-notion-consistency.py ]; then
         (PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/check-notion-consistency.py 2>>"$NOTION_ERR_LOG" || echo "[$(date -Iseconds)] consistency check failed" >> "$NOTION_ERR_LOG") &
     fi
 
-    # Legacy sync (background)
+    # Legacy sync (background, non-blocking)
     if [ -f tools/notion_sync.py ]; then
         (PYTHONIOENCODING=utf-8 python tools/notion_sync.py 2>>"$NOTION_ERR_LOG" || echo "[$(date -Iseconds)] notion_sync.py failed" >> "$NOTION_ERR_LOG") &
     fi

@@ -216,15 +216,25 @@ if [ -n "$CRITICAL_CHANGED" ]; then
 fi
 
 # === Core-bundle sync check ===
+# The bundle is built from app.js + handler/page files. If ONLY handler/page files
+# changed, core-bundle changes but app.js does not — this is legitimate.
+# Rule: app.js staged without bundle = always error (forgot to rebuild).
+#       bundle staged without app.js = error ONLY if app.js has working-tree changes
+#       (forgot to stage), otherwise OK (handler/page-only change).
 APP_STAGED=$(git diff --cached --name-only | grep "^src/frontend/app\.js$" || true)
 BUNDLE_STAGED=$(git diff --cached --name-only | grep "^src/frontend/core-bundle\.js$" || true)
 if [ -n "$APP_STAGED" ] && [ -z "$BUNDLE_STAGED" ]; then
-    echo "ERROR: app.js is staged but core-bundle.js is NOT. These files must stay in sync."
+    echo "ERROR: app.js is staged but core-bundle.js is NOT. Run: bun scripts/build-dev-bundle.js"
     exit 1
 fi
 if [ -z "$APP_STAGED" ] && [ -n "$BUNDLE_STAGED" ]; then
-    echo "ERROR: core-bundle.js is staged but app.js is NOT. These files must stay in sync."
-    exit 1
+    # Check if app.js has unstaged changes (forgot to git add)
+    APP_DIRTY=$(git diff --name-only -- src/frontend/app.js 2>/dev/null || true)
+    if [ -n "$APP_DIRTY" ]; then
+        echo "ERROR: core-bundle.js is staged but app.js has unstaged changes. Stage app.js too."
+        exit 1
+    fi
+    # app.js is clean — bundle changed due to handler/page files only. This is fine.
 fi
 
 # === Migration registration check ===

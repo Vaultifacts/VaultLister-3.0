@@ -73,17 +73,24 @@ if echo "$COMMIT_MSG" | grep -qE "^(\[AUTO\] )?($TRAILER_REQUIRED_TYPES):"; then
 fi
 
 # Validate Notion-Done trailer IDs — BLOCK on malformed IDs
+# Supports: one ID per line, or comma/space-separated IDs on one line
 if echo "$FULL_MSG" | grep -qE "^Notion-Done:"; then
     BAD_IDS=""
-    for raw_id in $(echo "$FULL_MSG" | grep "^Notion-Done:" | sed 's/^Notion-Done:[[:space:]]*//'); do
-        if ! echo "$raw_id" | grep -qiE "^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$|^[0-9a-f]{32}$"; then
-            BAD_IDS="$BAD_IDS  '$raw_id'\n"
+    # Extract all Notion-Done lines, strip prefix, split on commas and spaces
+    ALL_RAW=$(echo "$FULL_MSG" | grep "^Notion-Done:" | sed 's/^Notion-Done:[[:space:]]*//' | tr ',' ' ')
+    for raw_id in $ALL_RAW; do
+        # Skip empty tokens from extra whitespace
+        clean_id=$(echo "$raw_id" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        [ -z "$clean_id" ] && continue
+        if ! echo "$clean_id" | grep -qiE "^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$|^[0-9a-f]{32}$"; then
+            BAD_IDS="$BAD_IDS  '$clean_id'\n"
         fi
     done
     if [ -n "$BAD_IDS" ]; then
         echo "BLOCKED: Notion-Done trailer contains malformed ID(s):"
         printf "$BAD_IDS"
         echo "  Expected: 32 hex chars (with or without dashes)"
+        echo "  Format: one ID per 'Notion-Done:' line, or comma-separated on one line"
         exit 1
     fi
 fi

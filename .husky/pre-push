@@ -58,6 +58,17 @@ if [ -z "$KNOWN_FAIL_NAMES" ] && [ "$KNOWN_FAILURES" -eq 0 ]; then
     echo "WARNING: .test-baseline missing or empty — skipping name-based regression check"
 fi
 
+# Validate .test-baseline format — catch entries missing the KNOWN_FAIL: prefix
+if [ -f "$BASELINE_FILE" ]; then
+    BAD_ENTRIES=$(grep -v '^\s*#' "$BASELINE_FILE" | grep -v '^\s*$' | grep -v '^KNOWN_FAIL' | grep -v '^#' | grep -v '^$' || true)
+    if [ -n "$BAD_ENTRIES" ]; then
+        echo "WARNING: .test-baseline has entries without KNOWN_FAIL: prefix:"
+        echo "$BAD_ENTRIES" | head -5
+        echo "  These entries will be IGNORED by the regression checker."
+        echo "  Fix: prefix each with 'KNOWN_FAIL: '"
+    fi
+fi
+
 echo "Running unit tests (named baseline: $(echo "$KNOWN_FAIL_NAMES" | grep -c . || echo 0) known failures)..."
 PORT="${PORT:-3000}"
 if curl -s "http://localhost:${PORT}/api/health" > /dev/null 2>&1; then
