@@ -74,22 +74,29 @@ if [ -f "$STATUS_FILE" ]; then
     ) 200>"${STATUS_FILE}.lock"
 fi
 
-# Notion sync — runs in background so it never blocks commits (P2-1 fix)
-if [ -n "$NOTION_INTEGRATION_TOKEN" ] && command -v python >/dev/null 2>&1; then
-  [ -f tools/notion_sync.py ] && PYTHONIOENCODING=utf-8 python tools/notion_sync.py 2>&1 || true &
-fi
+# --- Notion post-commit pipeline ---
+# Errors are logged to .notion-errors.log instead of swallowed silently.
+# If this file grows, the token is broken or Notion API is down.
+NOTION_ERR_LOG=".notion-errors.log"
 
-# Consistency check — verify Notion matches manifest (non-blocking, background)
-if [ -n "$NOTION_INTEGRATION_TOKEN" ] && command -v python >/dev/null 2>&1; then
-    [ -f scripts/check-notion-consistency.py ] && PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/check-notion-consistency.py 2>&1 || true &
-fi
+if [ -n "${NOTION_INTEGRATION_TOKEN:-}" ] && command -v python >/dev/null 2>&1; then
+    # Auto-mark Sprint Board items Done from commit message trailers (FOREGROUND — must complete)
+    if [ -f scripts/notion-auto-done.py ]; then
+        PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/notion-auto-done.py 2>>"$NOTION_ERR_LOG" || echo "[$(date -Iseconds)] notion-auto-done.py failed" >> "$NOTION_ERR_LOG"
+    fi
 
-# Refresh Sprint Board cache for commit-msg auto-suggest (background, non-blocking)
-if [ -n "$NOTION_INTEGRATION_TOKEN" ] && command -v python >/dev/null 2>&1; then
-    [ -f scripts/notion-sprint-lookup.py ] && PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/notion-sprint-lookup.py sync >/dev/null 2>&1 || true &
-fi
+    # Refresh Sprint Board cache (background)
+    if [ -f scripts/notion-sprint-lookup.py ]; then
+        (PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/notion-sprint-lookup.py sync >/dev/null 2>>"$NOTION_ERR_LOG" || echo "[$(date -Iseconds)] sprint cache sync failed" >> "$NOTION_ERR_LOG") &
+    fi
 
-# Auto-mark Sprint Board items Done from commit message trailers
-if [ -n "$NOTION_INTEGRATION_TOKEN" ] && command -v python >/dev/null 2>&1; then
-    [ -f scripts/notion-auto-done.py ] && PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/notion-auto-done.py 2>&1 || true
+    # Consistency check (background)
+    if [ -f scripts/check-notion-consistency.py ]; then
+        (PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_INTEGRATION_TOKEN" python scripts/check-notion-consistency.py 2>>"$NOTION_ERR_LOG" || echo "[$(date -Iseconds)] consistency check failed" >> "$NOTION_ERR_LOG") &
+    fi
+
+    # Legacy sync (background)
+    if [ -f tools/notion_sync.py ]; then
+        (PYTHONIOENCODING=utf-8 python tools/notion_sync.py 2>>"$NOTION_ERR_LOG" || echo "[$(date -Iseconds)] notion_sync.py failed" >> "$NOTION_ERR_LOG") &
+    fi
 fi

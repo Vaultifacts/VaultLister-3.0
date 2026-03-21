@@ -100,3 +100,4 @@ TEST_REPORT_*.md
 generated/
 memory/*.lock
 .notion-sprint-cache.json
+.notion-errors.log

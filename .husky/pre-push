@@ -116,7 +116,24 @@ else
     exit 1
 fi
 
-# Notion-Done audit: warn about fix/feat commits without Sprint Board trailers
+# Notion API health check — block push if Notion errors detected
+NOTION_ERR_LOG=".notion-errors.log"
+if [ -f "$NOTION_ERR_LOG" ] && [ -s "$NOTION_ERR_LOG" ]; then
+    RECENT_ERRORS=$(find "$NOTION_ERR_LOG" -newermt "1 hour ago" 2>/dev/null)
+    if [ -n "$RECENT_ERRORS" ]; then
+        ERR_COUNT=$(wc -l < "$NOTION_ERR_LOG" | tr -d '[:space:]')
+        echo ""
+        echo "BLOCKED: Notion API errors detected ($ERR_COUNT entries in $NOTION_ERR_LOG)"
+        echo "Recent errors:"
+        tail -5 "$NOTION_ERR_LOG"
+        echo ""
+        echo "Fix: check NOTION_INTEGRATION_TOKEN in .env, run: python scripts/notion-sprint-lookup.py verify"
+        echo "Then clear the log: rm $NOTION_ERR_LOG"
+        exit 1
+    fi
+fi
+
+# Notion-Done audit: block push if fix/feat commits lack Sprint Board trailers
 REMOTE_HEAD=$(git rev-parse "@{u}" 2>/dev/null || echo "")
 if [ -n "$REMOTE_HEAD" ]; then
     MISSING_TRAILER=0
