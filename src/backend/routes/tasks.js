@@ -103,7 +103,7 @@ export async function tasksRouter(ctx) {
             ]);
 
             const task = query.get('SELECT * FROM tasks WHERE id = ?', [id]);
-            task.payload = JSON.parse(task.payload);
+            task.payload = safeJsonParse(task.payload, {});
 
             return { status: 201, data: { task } };
         } catch (error) {
@@ -285,7 +285,7 @@ export async function tasksRouter(ctx) {
             };
 
             stats.nextUp.forEach(task => {
-                task.payload = JSON.parse(task.payload || '{}');
+                task.payload = safeJsonParse(task.payload || '{}', {});
             });
 
             return { status: 200, data: { stats } };

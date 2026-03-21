@@ -8,6 +8,10 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { saveImage, deleteImage, getImageUrl, importFromInventory, validateImage } from '../services/imageStorage.js';
 
+function safeJsonParse(str, fallback = null) {
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..', '..', '..');
 import {
@@ -451,7 +455,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
             }
 
             // Persist analysis and merge suggested tags into image tags
-            const existingTags = JSON.parse(image.tags || '[]');
+            const existingTags = safeJsonParse(image.tags || '[]', []);
             const mergedTags = [...new Set([...existingTags, ...(analysis.suggestedTags || [])])];
 
             query.run(

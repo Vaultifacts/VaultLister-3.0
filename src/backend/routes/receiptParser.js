@@ -212,7 +212,7 @@ export async function receiptParserRouter(ctx) {
 
             // Fetch the created record
             const receipt = query.get('SELECT * FROM email_parse_queue WHERE id = ?', [id]);
-            receipt.parsed_data = JSON.parse(receipt.parsed_data || '{}');
+            receipt.parsed_data = safeJsonParse(receipt.parsed_data || '{}', {});
 
             return {
                 status: 201,
@@ -535,7 +535,7 @@ export async function receiptParserRouter(ctx) {
             ]);
 
             const updated = query.get('SELECT * FROM email_parse_queue WHERE id = ?', [id]);
-            updated.parsed_data = JSON.parse(updated.parsed_data || '{}');
+            updated.parsed_data = safeJsonParse(updated.parsed_data || '{}', {});
 
             return { status: 200, data: { receipt: updated } };
         } catch (error) {

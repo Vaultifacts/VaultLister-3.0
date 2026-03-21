@@ -6,6 +6,10 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
 
+function safeJsonParse(str, fallback = null) {
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 /**
  * Extension router
  */
@@ -700,7 +704,7 @@ export async function extensionRouter(ctx) {
             );
 
             if (item.payload) {
-                item.data = JSON.parse(item.payload);
+                item.data = safeJsonParse(item.payload, {});
             }
 
             return {
@@ -740,7 +744,7 @@ export async function extensionRouter(ctx) {
             // Parse JSON fields
             items.forEach(item => {
                 if (item.payload) {
-                    item.data = JSON.parse(item.payload);
+                    item.data = safeJsonParse(item.payload, {});
                 }
             });
 

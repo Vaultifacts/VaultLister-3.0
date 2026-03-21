@@ -1,12 +1,23 @@
 // Push Notification Routes
 // Device registration, sending, and management
 
+import webpush from 'web-push';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
-// In production, use Firebase Admin SDK or AWS SNS
-// For now, we'll store tokens and provide the infrastructure
+// Configure VAPID for Web Push delivery
+(function configureVapid() {
+    const publicKey = process.env.VAPID_PUBLIC_KEY;
+    const privateKey = process.env.VAPID_PRIVATE_KEY;
+    const subject = process.env.VAPID_SUBJECT || 'mailto:admin@vaultlister.app';
+
+    if (publicKey && privateKey) {
+        webpush.setVapidDetails(subject, publicKey, privateKey);
+    } else {
+        logger.warn('[PushNotifications] VAPID keys not configured — web push delivery disabled. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in .env');
+    }
+})();
 
 export async function pushNotificationsRouter(ctx) {
     const { method, path, user, body } = ctx;
@@ -203,7 +214,7 @@ export async function pushNotificationsRouter(ctx) {
         }
     }
 
-    // POST /api/notifications/send - Send notification (enterprise only)
+    // POST /api/notifications/send - Send web push notification to authenticated user
     if (method === 'POST' && path === '/send') {
         try {
             if (!user.is_admin) {
@@ -224,35 +235,62 @@ export async function pushNotificationsRouter(ctx) {
             }
 
             // SECURITY: IDOR fix — always send to the authenticated user only.
-            // Arbitrary userId targeting was removed to prevent one enterprise user from
-            // pushing notifications to another user's devices.
             const targetUserId = user.id;
 
-            // Get user's devices
-            const devices = query.all(
-                'SELECT * FROM push_devices WHERE user_id = ?',
+            const subscriptions = query.all(
+                'SELECT * FROM push_subscriptions WHERE user_id = ? AND is_active = 1',
                 [targetUserId]
             );
 
-            if (!devices || devices.length === 0) {
-                return { status: 404, data: { error: 'No devices registered for user' } };
+            if (!subscriptions || subscriptions.length === 0) {
+                return { status: 404, data: { error: 'No active push subscriptions for user' } };
             }
 
-            // In production, send via FCM/APNs
-            // For now, log and record the notification
+            const payload = JSON.stringify({
+                title,
+                body: notificationBody,
+                data: data || {},
+                timestamp: Date.now()
+            });
+
+            let sent = 0;
+            for (const sub of subscriptions) {
+                try {
+                    await webpush.sendNotification(
+                        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } },
+                        payload
+                    );
+                    query.run(
+                        'UPDATE push_subscriptions SET last_used_at = datetime(\'now\') WHERE id = ?',
+                        [sub.id]
+                    );
+                    sent++;
+                } catch (pushError) {
+                    logger.error('[PushNotifications] Delivery failed', targetUserId, { detail: pushError.message });
+                    if (pushError.statusCode === 410 || pushError.statusCode === 404) {
+                        query.run(
+                            'UPDATE push_subscriptions SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ?',
+                            [sub.id]
+                        );
+                    }
+                }
+            }
+
             const notificationId = uuidv4();
             query.run(`
                 INSERT INTO push_notification_log (id, user_id, title, body, data, channel, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, 'sent', datetime('now'))
-            `, [notificationId, targetUserId, title, notificationBody, JSON.stringify(data || {}), channel || 'general']);
+                VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            `, [notificationId, targetUserId, title, notificationBody, JSON.stringify(data || {}), channel || 'general', sent > 0 ? 'sent' : 'failed']);
 
-            logger.info(`[Push] Notification sent to ${devices.length} device(s) for user ${targetUserId}`);
+            logger.info(`[Push] Notification dispatched to ${sent}/${subscriptions.length} subscription(s) for user ${targetUserId}`);
 
             return {
                 status: 200,
                 data: {
-                    message: `Notification sent to ${devices.length} device(s)`,
-                    notificationId
+                    message: `Notification sent to ${sent} subscription(s)`,
+                    notificationId,
+                    sent,
+                    total: subscriptions.length
                 }
             };
         } catch (error) {
@@ -261,7 +299,7 @@ export async function pushNotificationsRouter(ctx) {
         }
     }
 
-    // POST /api/notifications/send-batch - Send to multiple users (enterprise only)
+    // POST /api/notifications/send-batch - Send to multiple users (admin only)
     if (method === 'POST' && path === '/send-batch') {
         try {
             if (!user.is_admin) {
@@ -280,26 +318,58 @@ export async function pushNotificationsRouter(ctx) {
                 return { status: 403, data: { error: 'Can only send notifications to your own devices' } };
             }
 
-            let sent = 0;
+            const payload = JSON.stringify({
+                title,
+                body: notificationBody,
+                data: data || {},
+                timestamp: Date.now()
+            });
+
+            let usersNotified = 0;
             for (const userId of allowedIds) {
-                const devices = query.all(
-                    'SELECT * FROM push_devices WHERE user_id = ? LIMIT 20',
+                const subscriptions = query.all(
+                    'SELECT * FROM push_subscriptions WHERE user_id = ? AND is_active = 1 LIMIT 20',
                     [userId]
                 );
 
-                if (devices && devices.length > 0) {
+                if (!subscriptions || subscriptions.length === 0) continue;
+
+                let userSent = 0;
+                for (const sub of subscriptions) {
+                    try {
+                        await webpush.sendNotification(
+                            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } },
+                            payload
+                        );
+                        query.run(
+                            'UPDATE push_subscriptions SET last_used_at = datetime(\'now\') WHERE id = ?',
+                            [sub.id]
+                        );
+                        userSent++;
+                    } catch (pushError) {
+                        logger.error('[PushNotifications] Batch delivery failed', userId, { detail: pushError.message });
+                        if (pushError.statusCode === 410 || pushError.statusCode === 404) {
+                            query.run(
+                                'UPDATE push_subscriptions SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ?',
+                                [sub.id]
+                            );
+                        }
+                    }
+                }
+
+                if (userSent > 0) {
                     const notificationId = uuidv4();
                     query.run(`
                         INSERT INTO push_notification_log (id, user_id, title, body, data, channel, status, created_at)
                         VALUES (?, ?, ?, ?, ?, ?, 'sent', datetime('now'))
                     `, [notificationId, userId, title, notificationBody, JSON.stringify(data || {}), channel || 'general']);
-                    sent++;
+                    usersNotified++;
                 }
             }
 
             return {
                 status: 200,
-                data: { message: `Notifications sent to ${sent} user(s)` }
+                data: { message: `Notifications sent to ${usersNotified} user(s)` }
             };
         } catch (error) {
             logger.error('[PushNotifications] Error sending batch push notifications', user?.id, { detail: error.message });

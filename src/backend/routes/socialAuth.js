@@ -8,6 +8,10 @@ import { query } from '../db/database.js';
 import { generateToken, generateRefreshToken } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 // Apple JWKS cache for signature verification
 let appleJwksCache = null;
 let appleJwksCacheTime = 0;
@@ -321,7 +325,7 @@ export async function socialAuthRouter(ctx) {
             }
 
             // Decode header to get kid, then verify signature with Apple's public key
-            const header = JSON.parse(Buffer.from(tokenParts[0], 'base64url').toString());
+            const header = safeJsonParse(Buffer.from(tokenParts[0], 'base64url').toString(), {});
             const publicKey = await getApplePublicKey(header.kid);
             const payload = jwt.verify(id_token, publicKey, {
                 algorithms: ['RS256'],

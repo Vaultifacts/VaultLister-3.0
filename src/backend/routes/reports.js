@@ -2,6 +2,10 @@ import { query } from '../db/database.js';
 import { nanoid } from 'nanoid';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 // Whitelist of allowed tables for custom queries
 const ALLOWED_TABLES = [
   'inventory',
@@ -926,7 +930,7 @@ export async function reportsRouter(ctx) {
         return { status: 404, data: { error: 'Report not found' } };
       }
 
-      const config = JSON.parse(report.config);
+      const config = safeJsonParse(report.config, {});
       const { sql, params } = buildReportQuery(config, user.id);
 
       const results = await query.all(sql, params);

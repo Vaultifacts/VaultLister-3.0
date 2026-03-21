@@ -6,6 +6,10 @@ import { logger } from '../shared/logger.js';
 import { encryptToken, decryptToken } from '../utils/encryption.js';
 import { cacheForUser } from '../middleware/cache.js';
 
+function safeJsonParse(str, fallback = null) {
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 export async function shopsRouter(ctx) {
     const { method, path, body, user } = ctx;
 // TECH-DEBT: Migrate error responses to AppError classes (errorHandler.js)
@@ -42,8 +46,8 @@ export async function shopsRouter(ctx) {
                 return { status: 404, data: { error: 'Shop not found' } };
             }
 
-            shop.settings = JSON.parse(shop.settings || '{}');
-            shop.stats = JSON.parse(shop.stats || '{}');
+            shop.settings = safeJsonParse(shop.settings || '{}', {});
+            shop.stats = safeJsonParse(shop.stats || '{}', {});
             delete shop.credentials;
 
             return { status: 200, data: { shop } };
@@ -173,8 +177,8 @@ export async function shopsRouter(ctx) {
             }
 
             const shop = query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ?', [user.id, platform]);
-            shop.settings = JSON.parse(shop.settings || '{}');
-            shop.stats = JSON.parse(shop.stats || '{}');
+            shop.settings = safeJsonParse(shop.settings || '{}', {});
+            shop.stats = safeJsonParse(shop.stats || '{}', {});
             delete shop.credentials;
 
             return { status: 200, data: { shop } };
