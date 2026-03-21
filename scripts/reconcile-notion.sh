@@ -164,6 +164,16 @@ fi
 echo ""
 
 # --- Sprint Board item count (prevents reporting filtered lists) ---
+# --- Refresh Sprint Board cache before counting ---
+NOTION_TK_REFRESH=""
+if [ -f .env ]; then
+    NOTION_TK_REFRESH=$(grep "^NOTION_INTEGRATION_TOKEN=" .env 2>/dev/null | cut -d'=' -f2 || echo "")
+fi
+if [ -n "${NOTION_TK_REFRESH:-}" ] && command -v python >/dev/null 2>&1 && [ -f scripts/notion-sprint-lookup.py ]; then
+    echo "  Refreshing Sprint Board cache..."
+    PYTHONIOENCODING=utf-8 NOTION_TOKEN="$NOTION_TK_REFRESH" python scripts/notion-sprint-lookup.py sync >/dev/null 2>&1 || echo "  (cache refresh failed — using stale data)"
+fi
+
 echo "  --- Sprint Board Status Count ---"
 if [ -f .notion-sprint-cache.json ]; then
     SPRINT_TOTAL=$(python -c "import json; d=json.load(open('.notion-sprint-cache.json')); print(len(d.get('items',[])))" 2>/dev/null || echo "?")
