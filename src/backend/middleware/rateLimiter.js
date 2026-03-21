@@ -291,7 +291,7 @@ export function createRateLimiter(limitType = 'default') {
         let actualLimitType = limitType;
 
         if (limitType === 'auto') {
-            if (path.startsWith('/api/auth')) {
+            if (path.startsWith('/api/auth') || path.startsWith('/api/oauth')) {
                 actualLimitType = 'auth';
             } else if (path.startsWith('/api/ai') || path.startsWith('/api/reports') || path.startsWith('/api/analytics')) {
                 actualLimitType = 'expensive';

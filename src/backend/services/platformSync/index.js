@@ -26,21 +26,36 @@ export async function syncShop(shopId, userId) {
     `, [shopId, userId]);
 
     if (!shop) {
-        throw new Error('Shop not found, not connected via OAuth, or not currently connected');
+        const err = new Error('Shop not found, not connected via OAuth, or not currently connected');
+        err.code = 'SHOP_NOT_FOUND';
+        throw err;
     }
 
     if (!shop.oauth_token) {
-        throw new Error('No OAuth token available for this shop');
+        const err = new Error('No OAuth token available for this shop');
+        err.code = 'NO_TOKEN';
+        throw err;
     }
 
     // Route to platform-specific sync handler
     const syncHandler = getSyncHandler(shop.platform);
 
     if (!syncHandler) {
-        throw new Error(`Sync not implemented for platform: ${shop.platform}`);
+        const err = new Error(`Sync not implemented for platform: ${shop.platform}`);
+        err.code = 'UNSUPPORTED_PLATFORM';
+        throw err;
     }
 
-    return await syncHandler(shop);
+    try {
+        return await syncHandler(shop);
+    } catch (err) {
+        // Update shop sync_error so the UI can surface it
+        try {
+            query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
+                [err.message, new Date().toISOString(), shop.id]);
+        } catch (_) { /* sync_error column may not exist */ }
+        throw err;
+    }
 }
 
 /**

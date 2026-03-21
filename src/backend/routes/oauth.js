@@ -792,48 +792,66 @@ async function refreshAccessToken(platform, refreshToken, config, mode) {
 
 /**
  * Revoke an access token.
- *
- * LIMITATION: This implementation uses a generic POST with Basic Auth, which
- * works for platforms that follow RFC 7009 (OAuth 2.0 Token Revocation).
- * Several platforms require platform-specific revocation flows that are not
- * yet implemented:
- *
- * TODO(ebay): eBay revocation requires a signed IAF (Identity API Framework)
- *   request with an OAuth 2.0 Bearer token in the Authorization header — NOT
- *   Basic Auth. Endpoint: POST /identity/v1/oauth2/revoke with
- *   Content-Type: application/x-www-form-urlencoded and Authorization: Bearer <token>.
- *   See: https://developer.ebay.com/api-docs/static/oauth-revoke-user-token.html
- *
- * TODO(shopify): Shopify token revocation varies by app type (public vs custom).
- *   Custom apps use DELETE /admin/api/{version}/api_permissions.json — not a
- *   standard token revocation endpoint.
- *
- * TODO(etsy): Etsy v3 does not document a token revocation endpoint. Revocation
- *   is currently a no-op for Etsy — the token TTL is relied upon for expiry.
- *
- * TODO(facebook): Facebook token revocation requires a DELETE to
- *   /me/permissions with the access_token as a query param, not in the body.
- *   The current generic POST body approach will not succeed.
+ * Platform-specific flows: eBay (Bearer), Facebook (DELETE + query param),
+ * Shopify (DELETE + X-Shopify-Access-Token), Etsy (no-op, TTL-based).
+ * All others use RFC 7009 standard POST with Basic Auth.
  */
 async function revokeToken(platform, accessToken, config) {
-    // Platform-specific revocation (to be implemented for real OAuth)
     try {
-        if (config.revokeUrl) {
+        if (!config.revokeUrl) {
+            logger.info(`[OAuth] No revoke URL for ${platform} — skipping`);
+            return;
+        }
+
+        // Platform-specific revocation flows
+        if (platform === 'ebay') {
+            // eBay requires Bearer token auth, not Basic Auth
+            await fetch(config.revokeUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: new URLSearchParams({ token: accessToken }),
+                signal: AbortSignal.timeout(30000)
+            });
+        } else if (platform === 'facebook') {
+            // Facebook requires DELETE to /me/permissions with token as query param
+            const url = new URL(config.revokeUrl);
+            url.searchParams.set('access_token', accessToken);
+            await fetch(url.toString(), {
+                method: 'DELETE',
+                signal: AbortSignal.timeout(30000)
+            });
+        } else if (platform === 'shopify') {
+            // Shopify custom apps use DELETE to revoke API permissions
+            await fetch(config.revokeUrl, {
+                method: 'DELETE',
+                headers: {
+                    'X-Shopify-Access-Token': accessToken
+                },
+                signal: AbortSignal.timeout(30000)
+            });
+        } else if (platform === 'etsy') {
+            // Etsy v3 has no revocation endpoint — rely on token TTL
+            logger.info(`[OAuth] Etsy has no revocation endpoint — token will expire naturally`);
+            return;
+        } else {
+            // RFC 7009 standard revocation (works for most platforms)
             await fetch(config.revokeUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Authorization': 'Basic ' + Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64')
                 },
-                body: new URLSearchParams({
-                    token: accessToken
-                }),
+                body: new URLSearchParams({ token: accessToken }),
                 signal: AbortSignal.timeout(30000)
             });
         }
+
         logger.info(`[OAuth] Token revoked for ${platform}`);
     } catch (error) {
-        logger.warn(`[OAuth] Failed to revoke token for ${platform}`);
+        logger.warn(`[OAuth] Failed to revoke token for ${platform}: ${error.message}`);
         // Don't throw - revocation is best-effort
     }
 }
