@@ -458,6 +458,34 @@ const apiRoutes = {
             }
         };
     },
+    '/api/health/detailed': async () => {
+        // Detailed health check — unauthenticated, safe for external uptime monitors
+        const { query: dbQuery } = await import('./db/database.js');
+        let dbConnected = false;
+        let walMode = false;
+        try {
+            dbQuery.get('SELECT 1');
+            dbConnected = true;
+            const row = dbQuery.get('PRAGMA journal_mode');
+            walMode = row && Object.values(row)[0] === 'wal';
+        } catch (_) {}
+
+        const mem = process.memoryUsage();
+        return {
+            status: dbConnected ? 200 : 503,
+            data: {
+                status: dbConnected ? 'healthy' : 'unhealthy',
+                uptime: Math.floor(process.uptime()),
+                memory: {
+                    rss: Math.round(mem.rss / (1024 * 1024)),
+                    heapUsed: Math.round(mem.heapUsed / (1024 * 1024)),
+                    heapTotal: Math.round(mem.heapTotal / (1024 * 1024))
+                },
+                db: { connected: dbConnected, walMode },
+                timestamp: new Date().toISOString()
+            }
+        };
+    },
     '/api/status': async () => {
         const appVersion = _APP_VERSION;
 

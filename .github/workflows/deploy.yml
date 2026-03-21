@@ -113,7 +113,11 @@ jobs:
             docker compose pull app
 
             # Backup database before deploying
-            cp data/vaultlister.db "data/vaultlister.db.backup.$(date +%Y%m%d_%H%M%S)" || true
+            if [ -f scripts/backup.js ]; then
+              bun scripts/backup.js --compress || cp data/vaultlister.db "data/vaultlister.db.backup.$(date +%Y%m%d_%H%M%S)" || true
+            else
+              cp data/vaultlister.db "data/vaultlister.db.backup.$(date +%Y%m%d_%H%M%S)" || true
+            fi
 
             # Rolling restart
             docker compose up -d --no-deps app

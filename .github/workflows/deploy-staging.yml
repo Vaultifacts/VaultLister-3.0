@@ -149,9 +149,14 @@ jobs:
           ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} 'mkdir -p /opt/vaultlister-staging/nginx'
           scp nginx/nginx.staging.conf ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}:/opt/vaultlister-staging/nginx/nginx.staging.conf
 
+      - name: Copy backup script to server
+        run: |
+          scp scripts/backup.sh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }}:/opt/vaultlister-staging/backup.sh
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} 'chmod +x /opt/vaultlister-staging/backup.sh'
+
       - name: Pre-deploy database backup
         run: |
-          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} '/opt/vaultlister-staging/backup.sh'
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} '/opt/vaultlister-staging/backup.sh || echo "Backup skipped (first deploy or no DB yet)"'
 
       - name: Deploy via SSH
         env:

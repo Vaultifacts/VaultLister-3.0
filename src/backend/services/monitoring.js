@@ -53,19 +53,19 @@ const monitoring = {
         }
     },
 
+    _sentryModule: null,
+
     // Initialize Sentry error tracking
     async initSentry() {
         try {
-            // Dynamic import to avoid issues if not installed
             const Sentry = await import('@sentry/node');
             Sentry.init({
                 dsn: SENTRY_DSN,
                 environment: process.env.NODE_ENV || 'development',
                 tracesSampleRate: 0.1,
-                integrations: [
-                    // Add integrations as needed
-                ]
+                integrations: []
             });
+            this._sentryModule = Sentry;
             logger.info('[Monitoring] Sentry initialized');
         } catch (e) {
             logger.info('[Monitoring] Sentry not available, using local error tracking');
@@ -126,10 +126,9 @@ const monitoring = {
         }
 
         // Report to Sentry if available
-        if (SENTRY_DSN) {
+        if (SENTRY_DSN && this._sentryModule) {
             try {
-                const Sentry = require('@sentry/node');
-                Sentry.captureException(error, { extra: context });
+                this._sentryModule.captureException(error, { extra: context });
             } catch (e) {}
         }
 
@@ -232,9 +231,10 @@ const monitoring = {
         } catch (e) {}
 
         // Send to Slack if configured
-        if (SLACK_WEBHOOK) {
+        const slackWebhook = process.env.SLACK_WEBHOOK;
+        if (slackWebhook) {
             try {
-                await fetchWithTimeout(SLACK_WEBHOOK, {
+                await fetchWithTimeout(slackWebhook, {
                     method: 'POST',
                     timeoutMs: 10000,
                     headers: { 'Content-Type': 'application/json' },

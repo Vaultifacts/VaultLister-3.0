@@ -40,17 +40,9 @@ export async function monitoringRouter(ctx) {
         }
     }
 
-    // GET /api/health/detailed - Detailed health check (authenticated)
-    if (method === 'GET' && path === '/health/detailed') {
-        if (!user) {
-            return { status: 401, data: { error: 'Authentication required' } };
-        }
-
-        const results = await healthChecker.runAll();
-        const statusCode = results.status === 'healthy' ? 200 : 503;
-
-        return { status: statusCode, data: results };
-    }
+    // NOTE: GET /api/health/detailed is handled as a static route in server.js
+    // (unauthenticated, for external uptime monitors). Do not add an auth-guarded
+    // version here — the server.js entry will always match first.
 
     // GET /api/metrics - Performance metrics (admin only)
     if (method === 'GET' && path === '/metrics') {

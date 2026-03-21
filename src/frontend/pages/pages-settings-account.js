@@ -1287,7 +1287,7 @@ Object.assign(pages, {
                                         <h5>Google Drive</h5>
                                         <span class="integration-status">Cloud storage sync</span>
                                     </div>
-                                    <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="window.open('/api/integrations/google/drive/authorize', '_blank', 'width=500,height=600')">
+                                    <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="handlers.connectGoogleDrive()">
                                         Connect
                                     </button>
                                 </div>
@@ -3033,7 +3033,7 @@ Object.assign(pages, {
                                     <div class="text-xs text-gray-500">Cloud storage sync</div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="window.open('/api/integrations/google/drive/authorize', '_blank', 'width=500,height=600')">Connect</button>
+                            <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="handlers.connectGoogleDrive()">Connect</button>
                         </div>
                         <div class="flex items-center justify-between p-4 rounded-lg border">
                             <div class="flex items-center gap-3">

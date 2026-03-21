@@ -2800,8 +2800,48 @@ Object.assign(handlers, {
         }
     },
 
-    // Disconnect email account,
+    connectGoogleDrive: async function() {
+        try {
+            const width = 600;
+            const height = 700;
+            const left = window.screen.width / 2 - width / 2;
+            const top = window.screen.height / 2 - height / 2;
 
+            const popup = window.open(
+                '/api/integrations/google/drive/authorize',
+                'google_drive_oauth_popup',
+                `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,location=no,status=no`
+            );
+
+            if (!popup) {
+                toast.error('Popup blocked - please allow popups for Google Drive connection');
+                return;
+            }
+
+            toast.info('Connecting to Google Drive...');
+
+            const handleMessage = (event) => {
+                if (event.origin !== window.location.origin) return;
+                if (event.data && event.data.type === 'google-drive-oauth-success') {
+                    window.removeEventListener('message', handleMessage);
+                    toast.success('Google Drive connected successfully');
+                } else if (event.data && event.data.type === 'google-drive-oauth-error') {
+                    window.removeEventListener('message', handleMessage);
+                    toast.error('Google Drive connection failed: ' + escapeHtml(event.data.error || 'Unknown error'));
+                }
+            };
+
+            window.addEventListener('message', handleMessage);
+
+            setTimeout(() => {
+                window.removeEventListener('message', handleMessage);
+            }, 5 * 60 * 1000);
+
+        } catch (error) {
+            console.error('Google Drive OAuth error:', error);
+            toast.error('Failed to initiate Google Drive connection');
+        }
+    },
 
     disconnectEmailAccount: async function(accountId) {
         if (!await modals.confirm('Disconnect this email account? Email syncing will stop.', { title: 'Disconnect Email', confirmText: 'Disconnect', danger: true })) return;
