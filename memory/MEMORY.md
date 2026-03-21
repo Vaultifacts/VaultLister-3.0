@@ -41,8 +41,8 @@
 InventoryItem, Listing, Sale, Offer, Automation, Platform, PriceHistory, ImageAsset, Analytics, Report, User, Session, Notification, Tag, AuditLog
 
 ## Agents
-8 specialized agents in `.claude/agents/`:
-Architect-Planner, Backend, Frontend-UI, Automations-AI, Security-Auth, Testing, DevOps-Deployment, NoCode-Workflow
+14 agents in `.claude/agents/` (8 specialized + 6 QA):
+Architect-Planner, Backend, Frontend-UI, Automations-AI, Security-Auth, Testing, DevOps-Deployment, NoCode-Workflow, qa-core-product, qa-data-systems, qa-environment-quality, qa-infrastructure-delivery, qa-reliability, qa-security
 
 ## AI Model Routing
 - claude-haiku-4-5: fast/cheap tasks (tag detection, short descriptions, price suggestions)
@@ -74,7 +74,7 @@ All originally-flagged high-priority audit items resolved.
 ## Unit Baseline Finalized (2026-03-08) — 5289/0 — commit 7df5afb on master
 - `getRefreshSchedulerStatus()` returns `isRunning`, `bufferMs`, `maxFailures` (aliases alongside existing fields)
 - `getPriceCheckWorkerStatus()` returns `interval_ms`, `interval_minutes`, `max_items_per_cycle` (aliases)
-- Tests must run via `run-bun-tests.ps1` (sets TEST_BASE_URL=http://localhost:3100, PORT=3100, NODE_ENV=test)
+- Tests use PORT=process.env.PORT||3000 (standardized 2026-03-20, commit 9186326)
 - security.test.js BASE_URL defaults to port 3000; auth.helper.js to 3001 — TEST_BASE_URL must be set
 
 ## E2E Fixes + App Defects (2026-03-08) — merged to master
@@ -266,7 +266,7 @@ Modified files:
 Commits: d003af4 (infra) → 1e7e2eb (SW v4.1.0) → 1b1c85d (Dockerfile fix) — all deployed
 Post-deploy: 7/7 checks pass; auth+security tests: 43/58 pass (15 pre-existing, not our changes)
 Dockerfile: groupadd/useradd (Debian); python3+make+g++ in builder for better-sqlite3
-Tests must run against local bun server (PORT=3100 via start-test-bg.ps1), NOT Docker (rate limiting enabled in prod)
+Tests must run against local bun server (PORT=3000), NOT Docker (rate limiting enabled in prod)
 
 ## Frontend Accessibility Fixes (2026-03-19) — commit b8bf0b0
 Fixed 4 audit items (F-12, F-13, F-16, F-20):
