@@ -104,14 +104,21 @@ export async function analyticsRouter(ctx) {
                 FROM listings WHERE user_id = ?
             `, [user.id]) || {};
 
-            const salesRow = query.get(`
+            const salesRow = periodOffset ? query.get(`
                 SELECT
-                    COUNT(CASE WHEN periodOffset IS NULL OR created_at >= datetime('now', ?) THEN 1 END) as total,
-                    COALESCE(SUM(CASE WHEN periodOffset IS NULL OR created_at >= datetime('now', ?) THEN sale_price ELSE 0 END), 0) as revenue,
-                    COALESCE(SUM(CASE WHEN periodOffset IS NULL OR created_at >= datetime('now', ?) THEN net_profit ELSE 0 END), 0) as profit,
+                    COUNT(CASE WHEN created_at >= datetime('now', ?) THEN 1 END) as total,
+                    COALESCE(SUM(CASE WHEN created_at >= datetime('now', ?) THEN sale_price ELSE 0 END), 0) as revenue,
+                    COALESCE(SUM(CASE WHEN created_at >= datetime('now', ?) THEN net_profit ELSE 0 END), 0) as profit,
                     COUNT(CASE WHEN status IN ('pending', 'confirmed') THEN 1 END) as pendingShipments
                 FROM sales WHERE user_id = ?
-            `, [user.id, periodOffset, periodOffset, periodOffset]) || {};
+            `, [periodOffset, periodOffset, periodOffset, user.id]) || {} : query.get(`
+                SELECT
+                    COUNT(*) as total,
+                    COALESCE(SUM(sale_price), 0) as revenue,
+                    COALESCE(SUM(net_profit), 0) as profit,
+                    COUNT(CASE WHEN status IN ('pending', 'confirmed') THEN 1 END) as pendingShipments
+                FROM sales WHERE user_id = ?
+            `, [user.id]) || {};
 
             const offersRow = query.get(`
                 SELECT
