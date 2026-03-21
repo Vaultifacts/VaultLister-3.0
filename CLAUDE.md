@@ -49,7 +49,8 @@ Key decisions:
 1. Read memory/STATUS.md + memory/MEMORY.md  # Auto-loaded by settings.json
 2. Work on pending items                      # Update STATUS.md immediately after each fix
 3. bun scripts/session-end.js                 # Safety net for missed updates
-4. bun scripts/transfer-approved.js # After user approves items
+4. bash scripts/reconcile-notion.sh           # Verify manifest counts + Notion reminders
+5. bun scripts/transfer-approved.js           # After user approves items
 ```
 
 ## Specialized Agents
