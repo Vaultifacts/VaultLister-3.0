@@ -28,7 +28,9 @@ mock.module('../../backend/shared/logger.js', () => ({
     logger: { info: mock(), warn: mock(), error: mock() }
 }));
 
-mock.module('./sanitize-input.js', () => ({
+// Path must be resolvable from the module under test (src/shared/ai/predictions-ai.js),
+// so use the path relative to that file as it appears in its import statement.
+mock.module('../../shared/ai/sanitize-input.js', () => ({
     sanitizeForAI: mock((val) => val)
 }));
 
@@ -173,6 +175,167 @@ describe('claudePricePrediction', () => {
             expect(['claude', 'statistical']).toContain(r.source);
         }
     });
+
+    // --- Fallback path: malformed API response (no JSON object in text) ---
+
+    test('should use statistical fallback when API response contains no JSON object', async () => {
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: 'Sorry, I cannot provide a prediction at this time.' }]
+        }));
+        invalidatePredictionCache('item-001', 'user-abc');
+
+        const result = await claudePricePrediction(baseItem, salesHistory);
+        expect(result.source).toBe('statistical');
+
+        // Restore
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: '{"predicted_price":75,"confidence":82,"recommendation":"price_up","recommendation_reason":"Sales data supports higher price.","avg_days_to_sell":10,"demand_score":78}' }]
+        }));
+    });
+
+    test('should use statistical fallback when API response contains invalid JSON inside braces', async () => {
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: '{predicted_price: not valid json}' }]
+        }));
+        invalidatePredictionCache('item-001', 'user-abc');
+
+        const result = await claudePricePrediction(baseItem, salesHistory);
+        expect(result.source).toBe('statistical');
+
+        // Restore
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: '{"predicted_price":75,"confidence":82,"recommendation":"price_up","recommendation_reason":"Sales data supports higher price.","avg_days_to_sell":10,"demand_score":78}' }]
+        }));
+    });
+
+    test('should sanitize recommendation to hold when API returns unknown recommendation value', async () => {
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: '{"predicted_price":80,"confidence":70,"recommendation":"buy_now","recommendation_reason":"Test.","avg_days_to_sell":7,"demand_score":65}' }]
+        }));
+        invalidatePredictionCache('item-001', 'user-abc');
+
+        const result = await claudePricePrediction(baseItem, salesHistory);
+        expect(result.source).toBe('claude');
+        expect(result.recommendation).toBe('hold');
+
+        // Restore
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: '{"predicted_price":75,"confidence":82,"recommendation":"price_up","recommendation_reason":"Sales data supports higher price.","avg_days_to_sell":10,"demand_score":78}' }]
+        }));
+    });
+
+    test('should clamp confidence to 100 when API returns out-of-range value', async () => {
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: '{"predicted_price":80,"confidence":999,"recommendation":"hold","recommendation_reason":"Test.","avg_days_to_sell":7,"demand_score":65}' }]
+        }));
+        invalidatePredictionCache('item-001', 'user-abc');
+
+        const result = await claudePricePrediction(baseItem, salesHistory);
+        expect(result.source).toBe('claude');
+        expect(result.confidence).toBe(100);
+
+        // Restore
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: '{"predicted_price":75,"confidence":82,"recommendation":"price_up","recommendation_reason":"Sales data supports higher price.","avg_days_to_sell":10,"demand_score":78}' }]
+        }));
+    });
+
+    test('should clamp demand_score to 100 when API returns out-of-range value', async () => {
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: '{"predicted_price":80,"confidence":60,"recommendation":"hold","recommendation_reason":"Test.","avg_days_to_sell":7,"demand_score":250}' }]
+        }));
+        invalidatePredictionCache('item-001', 'user-abc');
+
+        const result = await claudePricePrediction(baseItem, salesHistory);
+        expect(result.source).toBe('claude');
+        expect(result.demand_score).toBe(100);
+
+        // Restore
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: '{"predicted_price":75,"confidence":82,"recommendation":"price_up","recommendation_reason":"Sales data supports higher price.","avg_days_to_sell":10,"demand_score":78}' }]
+        }));
+    });
+
+    // --- Statistical fallback behavior ---
+
+    test('should keep list_price as predicted_price when fewer than 3 sales in history', async () => {
+        delete process.env.ANTHROPIC_API_KEY;
+        const twoSalesItem = { ...baseItem, id: 'item-two-sales', list_price: 50 };
+        invalidatePredictionCache('item-two-sales', 'user-abc');
+
+        const twoSales = [
+            { sale_price: 55, platform: 'ebay', category: 'Shoes', created_at: new Date().toISOString() },
+            { sale_price: 60, platform: 'poshmark', category: 'Shoes', created_at: new Date().toISOString() }
+        ];
+
+        const result = await claudePricePrediction(twoSalesItem, twoSales);
+        expect(result.source).toBe('statistical');
+        // With < 3 sales, predicted price stays at list_price (50)
+        expect(result.predicted_price).toBe(50);
+    });
+
+    test('should recommend price_up when average sale price is more than 15% above list price', async () => {
+        delete process.env.ANTHROPIC_API_KEY;
+        const cheapItem = { ...baseItem, id: 'item-cheap', list_price: 40 };
+        invalidatePredictionCache('item-cheap', 'user-abc');
+
+        // avg sale price = ~50, which is 25% above list_price 40
+        const highSales = [
+            { sale_price: 50, platform: 'ebay', category: 'Shoes', created_at: new Date().toISOString() },
+            { sale_price: 50, platform: 'poshmark', category: 'Shoes', created_at: new Date().toISOString() },
+            { sale_price: 50, platform: 'mercari', category: 'Shoes', created_at: new Date().toISOString() }
+        ];
+
+        const result = await claudePricePrediction(cheapItem, highSales);
+        expect(result.source).toBe('statistical');
+        expect(result.recommendation).toBe('price_up');
+    });
+
+    test('should recommend price_down when average sale price is more than 15% below list price', async () => {
+        delete process.env.ANTHROPIC_API_KEY;
+        const expensiveItem = { ...baseItem, id: 'item-expensive', list_price: 100 };
+        invalidatePredictionCache('item-expensive', 'user-abc');
+
+        // avg sale price = ~70, which is 30% below list_price 100
+        const lowSales = [
+            { sale_price: 70, platform: 'ebay', category: 'Shoes', created_at: new Date().toISOString() },
+            { sale_price: 70, platform: 'poshmark', category: 'Shoes', created_at: new Date().toISOString() },
+            { sale_price: 70, platform: 'mercari', category: 'Shoes', created_at: new Date().toISOString() }
+        ];
+
+        const result = await claudePricePrediction(expensiveItem, lowSales);
+        expect(result.source).toBe('statistical');
+        expect(result.recommendation).toBe('price_down');
+    });
+
+    test('should include sales-data-based demand_score of 60 when 5 or more sales in history', async () => {
+        delete process.env.ANTHROPIC_API_KEY;
+        const activeItem = { ...baseItem, id: 'item-active', list_price: 60 };
+        invalidatePredictionCache('item-active', 'user-abc');
+
+        const manySales = Array.from({ length: 5 }, (_, i) => ({
+            sale_price: 60, platform: 'ebay', category: 'Shoes',
+            created_at: new Date(Date.now() - i * 86400000).toISOString()
+        }));
+
+        const result = await claudePricePrediction(activeItem, manySales);
+        expect(result.source).toBe('statistical');
+        expect(result.demand_score).toBe(60);
+    });
+
+    test('should use lower demand_score of 40 when fewer than 5 sales in history', async () => {
+        delete process.env.ANTHROPIC_API_KEY;
+        const quietItem = { ...baseItem, id: 'item-quiet', list_price: 60 };
+        invalidatePredictionCache('item-quiet', 'user-abc');
+
+        const fewSales = [
+            { sale_price: 60, platform: 'ebay', category: 'Shoes', created_at: new Date().toISOString() }
+        ];
+
+        const result = await claudePricePrediction(quietItem, fewSales);
+        expect(result.source).toBe('statistical');
+        expect(result.demand_score).toBe(40);
+    });
 });
 
 // ===== invalidatePredictionCache =====
@@ -205,6 +368,11 @@ describe('invalidatePredictionCache', () => {
         const result = await claudePricePrediction(otherItem, salesHistory);
         expect(result.source).toBe('cache');
         expect(mockMessagesCreate.mock.calls.length).toBe(callsAfterOther);
+    });
+
+    test('should be a no-op when called for an item that was never cached', () => {
+        // Should not throw
+        expect(() => invalidatePredictionCache('item-does-not-exist', 'user-abc')).not.toThrow();
     });
 });
 
@@ -260,5 +428,147 @@ describe('claudeDemandForecast', () => {
         ]);
         expect(results[0].seasonality_index).toBeLessThanOrEqual(1.5);
         expect(results[0].seasonality_index).toBeGreaterThanOrEqual(0.5);
+    });
+
+    // --- Cache behavior ---
+
+    test('should return cached forecasts on second call without re-calling the API', async () => {
+        const salesData = [
+            { category: 'Shoes', sale_price: 70, created_at: new Date().toISOString() }
+        ];
+
+        const firstResult = await claudeDemandForecast('user-demand-cache-001', salesData);
+        expect(firstResult[0].source).toBe('claude');
+
+        const callsAfterFirst = mockMessagesCreate.mock.calls.length;
+
+        const secondResult = await claudeDemandForecast('user-demand-cache-001', salesData);
+        expect(secondResult[0].source).toBe('cache');
+        expect(mockMessagesCreate.mock.calls.length).toBe(callsAfterFirst);
+    });
+
+    // --- Fallback when API throws ---
+
+    test('should use statistical fallback when API call throws during demand forecast', async () => {
+        mockMessagesCreate = mock(() => Promise.reject(new Error('API timeout')));
+
+        const salesData = [
+            { category: 'Shoes', sale_price: 70, created_at: new Date().toISOString() },
+            { category: 'Shoes', sale_price: 75, created_at: new Date().toISOString() }
+        ];
+
+        const results = await claudeDemandForecast('user-demand-throws-001', salesData);
+        expect(Array.isArray(results)).toBe(true);
+        for (const f of results) {
+            expect(f.source).toBe('statistical');
+        }
+
+        // Restore
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: demandApiResponse }]
+        }));
+    });
+
+    // --- Fallback when salesData is empty but API key is present ---
+
+    test('should use statistical fallback when salesData is empty even if API key is set', async () => {
+        // categorySummary.length === 0 skips the API call branch
+        const callsBefore = mockMessagesCreate.mock.calls.length;
+
+        const results = await claudeDemandForecast('user-demand-empty-001', []);
+        expect(Array.isArray(results)).toBe(true);
+        // Statistical fallback for empty data returns default categories
+        for (const f of results) {
+            expect(f.source).toBe('statistical');
+        }
+        // API must not have been called
+        expect(mockMessagesCreate.mock.calls.length).toBe(callsBefore);
+    });
+
+    // --- Fallback when API returns malformed response ---
+
+    test('should use statistical fallback when API demand response contains no JSON array', async () => {
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: 'Unable to process your request.' }]
+        }));
+
+        const salesData = [
+            { category: 'Clothing', sale_price: 30, created_at: new Date().toISOString() },
+            { category: 'Clothing', sale_price: 35, created_at: new Date().toISOString() }
+        ];
+
+        const results = await claudeDemandForecast('user-demand-malformed-001', salesData);
+        expect(Array.isArray(results)).toBe(true);
+        for (const f of results) {
+            expect(f.source).toBe('statistical');
+        }
+
+        // Restore
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: demandApiResponse }]
+        }));
+    });
+
+    test('should sanitize demand_level to medium when API returns unknown value', async () => {
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: JSON.stringify([
+                { category: 'Shoes', demand_level: 'very_high', price_trend: 'stable', seasonality_index: 1.0, notes: 'Test.' }
+            ]) }]
+        }));
+
+        const results = await claudeDemandForecast('user-demand-sanitize-001', [
+            { category: 'Shoes', sale_price: 70, created_at: new Date().toISOString() }
+        ]);
+        expect(results[0].demand_level).toBe('medium');
+
+        // Restore
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: demandApiResponse }]
+        }));
+    });
+
+    test('should sanitize price_trend to stable when API returns unknown value', async () => {
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: JSON.stringify([
+                { category: 'Shoes', demand_level: 'high', price_trend: 'skyrocketing', seasonality_index: 1.0, notes: 'Test.' }
+            ]) }]
+        }));
+
+        const results = await claudeDemandForecast('user-demand-trend-001', [
+            { category: 'Shoes', sale_price: 70, created_at: new Date().toISOString() }
+        ]);
+        expect(results[0].price_trend).toBe('stable');
+
+        // Restore
+        mockMessagesCreate = mock(() => Promise.resolve({
+            content: [{ text: demandApiResponse }]
+        }));
+    });
+
+    // --- Statistical demand fallback shape ---
+
+    test('should return default category list from statistical fallback when no sales data', async () => {
+        delete process.env.ANTHROPIC_API_KEY;
+
+        const results = await claudeDemandForecast('user-demand-defaults-001', []);
+        const categories = results.map(r => r.category);
+        expect(categories).toContain('Clothing');
+        expect(categories).toContain('Shoes');
+        expect(categories).toContain('Bags');
+        expect(categories).toContain('Accessories');
+    });
+
+    test('should return one forecast per input category from statistical fallback when sales data is provided', async () => {
+        delete process.env.ANTHROPIC_API_KEY;
+
+        const salesData = [
+            { category: 'Shoes', sale_price: 70, created_at: new Date().toISOString() },
+            { category: 'Clothing', sale_price: 30, created_at: new Date().toISOString() }
+        ];
+
+        const results = await claudeDemandForecast('user-demand-percat-001', salesData);
+        const categories = results.map(r => r.category);
+        expect(categories).toContain('Shoes');
+        expect(categories).toContain('Clothing');
     });
 });
