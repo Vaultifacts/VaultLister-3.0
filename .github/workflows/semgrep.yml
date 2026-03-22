@@ -1,37 +1,26 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# This workflow file requires a free account on Semgrep.dev to
-# manage rules, file ignores, notifications, and more.
-#
-# See https://semgrep.dev/docs
-
-name: Semgrep
-
 on:
+  workflow_dispatch: {}
+  pull_request: {}
   push:
-    branches: ["master"]
-  pull_request:
-
-permissions:
-  contents: read
-  security-events: write
-
+    branches:
+    - main
+    - master
+    paths:
+    - .github/workflows/semgrep.yml
+  schedule:
+  # random HH:MM to avoid a load spike on GitHub Actions at 00:00
+  - cron: 51 8 * * *
+name: Semgrep
 jobs:
   semgrep:
-    runs-on: ubuntu-latest
+    name: semgrep/ci
+    runs-on: self-hosted
+    permissions:
+      contents: read
+    env:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     container:
       image: semgrep/semgrep
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Semgrep
-        run: semgrep scan --config auto --sarif --output semgrep.sarif
-
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: semgrep.sarif
+    - uses: actions/checkout@v4
+    - run: semgrep ci
