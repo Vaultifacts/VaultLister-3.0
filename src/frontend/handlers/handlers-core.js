@@ -1635,9 +1635,9 @@ const handlers = {
                     <div class="velocity-section">
                         <h4 class="section-title">${components.icon('award', 16)} Top Sellers (30 days)</h4>
                         <div class="velocity-list">
-                            ${topSellers.length === 0 ? \`
+                            ${topSellers.length === 0 ? `
                                 <div class="velocity-empty">No sales in the last 30 days</div>
-                            \` : topSellers.map((item, i) => \`
+                            ` : topSellers.map((item, i) => `
                                 <div class="velocity-item ${i < 3 ? 'top-performer' : ''}">
                                     <div class="velocity-rank">#${i + 1}</div>
                                     <div class="velocity-info">
@@ -1649,16 +1649,16 @@ const handlers = {
                                         <span class="velocity-rate">${item.velocity.toFixed(2)}/day</span>
                                     </div>
                                 </div>
-                            \`).join('')}
+                            `).join('')}
                         </div>
                     </div>
 
                     <!-- Slow Movers -->
-                    ${slowMovers.length > 0 ? \`
+                    ${slowMovers.length > 0 ? `
                         <div class="velocity-section">
                             <h4 class="section-title">${components.icon('alert-triangle', 16)} Slow Movers (No sales in 30d)</h4>
                             <div class="slow-movers-list">
-                                ${slowMovers.map(item => \`
+                                ${slowMovers.map(item => `
                                     <div class="slow-mover-item">
                                         <div class="slow-mover-title">${escapeHtml(item.title || item.name || 'Unknown')}</div>
                                         <div class="slow-mover-price">$${parseFloat(item.list_price || 0).toFixed(2)}</div>
@@ -1666,10 +1666,10 @@ const handlers = {
                                             Suggest Price Drop
                                         </button>
                                     </div>
-                                \`).join('')}
+                                `).join('')}
                             </div>
                         </div>
-                    \` : ''}
+                    ` : ''}
 
                     <!-- Velocity Tips -->
                     <div class="velocity-tips">
@@ -1689,10 +1689,10 @@ const handlers = {
     },
 
     showCustomMetricBuilder: function() {
-        modals.show(\`
+        modals.show(`
             <div class="modal-header">
-                <h2 class="modal-title">\${components.icon('sliders', 20)} Custom KPI Builder</h2>
-                <button class="btn btn-icon" aria-label="Close" onclick="modals.close()">\${components.icon('x', 20)}</button>
+                <h2 class="modal-title">${components.icon('sliders', 20)} Custom KPI Builder</h2>
+                <button class="btn btn-icon" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
             <div class="modal-body">
                 <p class="text-gray-600 mb-4">Create custom metrics by combining existing data points.</p>
@@ -1746,63 +1746,63 @@ const handlers = {
                     </select>
                 </div>
 
-                \${(store.state.customMetrics || []).length > 0 ? \`
+                ${(store.state.customMetrics || []).length > 0 ? `
                 <div class="mt-4">
                     <h4 class="text-sm font-medium mb-2">Existing Custom KPIs</h4>
                     <div class="flex flex-col gap-2">
-                        \${(store.state.customMetrics || []).map(m => \`
+                        ${(store.state.customMetrics || []).map(m => `
                             <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
                                 <div>
-                                    <span class="font-medium text-sm">\${escapeHtml(m.name)}</span>
-                                    <span class="text-xs text-gray-500 ml-2">\${m.metric_a} \${m.operation === 'divide' ? '&divide;' : m.operation === 'multiply' ? '&times;' : m.operation === 'add' ? '+' : '&minus;'} \${m.metric_b}</span>
+                                    <span class="font-medium text-sm">${escapeHtml(m.name)}</span>
+                                    <span class="text-xs text-gray-500 ml-2">${m.metric_a} ${m.operation === 'divide' ? '&divide;' : m.operation === 'multiply' ? '&times;' : m.operation === 'add' ? '+' : '&minus;'} ${m.metric_b}</span>
                                 </div>
-                                <button class="btn btn-icon btn-sm text-error" onclick="handlers.deleteCustomMetric('\${m.id}')">
-                                    \${components.icon('trash', 14)}
+                                <button class="btn btn-icon btn-sm text-error" onclick="handlers.deleteCustomMetric('${m.id}')">
+                                    ${components.icon('trash', 14)}
                                 </button>
                             </div>
-                        \`).join('')}
+                        `).join('')}
                     </div>
                 </div>
-                \` : ''}
+                ` : ''}
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
                 <button class="btn btn-primary" onclick="handlers.saveCustomMetric()">
-                    \${components.icon('plus', 16)} Create KPI
+                    ${components.icon('plus', 16)} Create KPI
                 </button>
             </div>
-        \`);
+        `);
     },
 
     showAnalyticsDigestSettings: function() {
         const digestSettings = store.state.digestSettings || { frequency: 'weekly', email: '', is_active: false };
-        modals.show(\`
+        modals.show(`
             <div class="modal-header">
-                <h2 class="modal-title">\${components.icon('mail', 20)} Analytics Digest Settings</h2>
-                <button class="btn btn-icon" aria-label="Close" onclick="modals.close()">\${components.icon('x', 20)}</button>
+                <h2 class="modal-title">${components.icon('mail', 20)} Analytics Digest Settings</h2>
+                <button class="btn btn-icon" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
             <div class="modal-body">
                 <p class="text-gray-600 mb-4">Receive a summary of your analytics data delivered to your inbox on a regular schedule.</p>
                 <div class="form-group">
                     <label class="form-label">Email Address</label>
-                    <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="\${escapeHtml(digestSettings.email || '')}">
+                    <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="${escapeHtml(digestSettings.email || '')}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Frequency</label>
                     <select id="digest-frequency" class="form-select">
-                        <option value="daily" \${digestSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
-                        <option value="weekly" \${digestSettings.frequency === 'weekly' ? 'selected' : ''}>Weekly (Every Monday)</option>
-                        <option value="monthly" \${digestSettings.frequency === 'monthly' ? 'selected' : ''}>Monthly (1st of month)</option>
+                        <option value="daily" ${digestSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
+                        <option value="weekly" ${digestSettings.frequency === 'weekly' ? 'selected' : ''}>Weekly (Every Monday)</option>
+                        <option value="monthly" ${digestSettings.frequency === 'monthly' ? 'selected' : ''}>Monthly (1st of month)</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="digest-active" \${digestSettings.is_active ? 'checked' : ''}>
+                        <input type="checkbox" id="digest-active" ${digestSettings.is_active ? 'checked' : ''}>
                         <span class="form-label" style="margin-bottom: 0;">Enable digest emails</span>
                     </label>
                 </div>
                 <div class="card bg-gray-50 p-4 mt-4">
-                    <h4 class="text-sm font-medium mb-2">\${components.icon('info', 14)} Digest Includes</h4>
+                    <h4 class="text-sm font-medium mb-2">${components.icon('info', 14)} Digest Includes</h4>
                     <ul class="text-sm text-gray-600" style="list-style: disc; padding-left: 20px;">
                         <li>Revenue & profit summary for the period</li>
                         <li>Top selling items and platforms</li>
@@ -1814,10 +1814,10 @@ const handlers = {
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
                 <button class="btn btn-primary" onclick="handlers.saveDigestSettings()">
-                    \${components.icon('save', 16)} Save Settings
+                    ${components.icon('save', 16)} Save Settings
                 </button>
             </div>
-        \`);
+        `);
     },
 
     // ─── Moved from deferred → core (Fix B: dashboard handlers) ────
