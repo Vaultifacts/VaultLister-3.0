@@ -101,9 +101,6 @@ Object.assign(pages, {
                                     </button>
                                 </div>
                             </div>
-                            <button class="btn btn-secondary" data-testid="hero-trash" onclick="router.navigate('recently-deleted')" title="Trash">
-                                ${components.icon('trash', 16)}${(store.state.deletedItems || []).length > 0 ? ` <span class="nav-item-badge">${(store.state.deletedItems || []).length}</span>` : ''}
-                            </button>
                             <button class="btn btn-primary" data-testid="hero-add-item" onclick="modals.addItem()">
                                 ${components.icon('plus', 16)} Add Item
                             </button>
@@ -347,30 +344,20 @@ Object.assign(pages, {
                                             })() : ''}
                                         </td>
                                         <td>
-                                            ${(() => {
-                                                const itemListings = (store.state.listings || []).filter(l => l.inventory_id === item.id);
-                                                if (itemListings.length === 0) {
-                                                    return '<span class="text-xs text-gray-500">Not listed</span>';
-                                                }
-                                                const activeCount = itemListings.filter(l => l.status === 'active').length;
-                                                const hasError = itemListings.some(l => l.status === 'error');
-                                                const badgeColor = hasError ? 'var(--error)' : activeCount > 0 ? 'var(--success)' : 'var(--gray-500)';
-                                                const uid = 'listings-' + item.id.replace(/[^a-zA-Z0-9]/g, '');
-                                                return '<div>' +
-                                                    '<span onclick="const el=document.getElementById(\'' + uid + '\');el.style.display=el.style.display===\'none\'?\'block\':\'none\';" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;background:' + badgeColor + '15;color:' + badgeColor + ';border:1px solid ' + badgeColor + '40;">' +
-                                                    '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + badgeColor + ';"></span>' +
-                                                    itemListings.length + ' listing' + (itemListings.length !== 1 ? 's' : '') +
-                                                    '</span>' +
-                                                    '<div id="' + uid + '" style="display:none;margin-top:6px;">' +
-                                                    itemListings.map(l => {
+                                            <div class="flex gap-1">
+                                                ${(() => {
+                                                    const itemListings = (store.state.listings || []).filter(l => l.inventory_id === item.id);
+                                                    if (itemListings.length === 0) {
+                                                        return '<span class="text-xs text-gray-500">Not listed</span>';
+                                                    }
+                                                    return itemListings.map(l => {
                                                         const statusColors = { active: 'var(--success)', pending: 'var(--warning-600)', draft: 'var(--gray-400)', error: 'var(--error)', ended: 'var(--error)', sold: 'var(--primary-500)', archived: 'var(--gray-400)' };
                                                         const sc = statusColors[l.status] || 'var(--gray-400)';
-                                                        const dot = '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + sc + ';"></span>';
-                                                        const price = l.price ? ' $' + parseFloat(l.price).toFixed(0) : '';
-                                                        return '<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">' + components.platformBadge(l.platform) + dot + '<span style="font-size:11px;color:var(--gray-600);">' + (l.status || '') + price + '</span></div>';
-                                                    }).join('') +
-                                                    '</div></div>';
-                                            })()}
+                                                        const dot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + sc + ';margin-left:-2px;margin-right:4px;" title="' + ((l.status || 'unknown').charAt(0).toUpperCase() + (l.status || 'unknown').slice(1)) + '"></span>';
+                                                        return components.platformBadge(l.platform) + dot;
+                                                    }).join(' ');
+                                                })()}
+                                            </div>
                                         </td>
                                         <td class="font-medium">${item.quantity != null ? item.quantity : 1}</td>
                                         <td>
@@ -441,17 +428,11 @@ Object.assign(pages, {
                                             })()}
                                         </td>
                                         <td>
-                                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); modals.generateListingFromItem('${item.id}')" title="Generate AI listing for this item">
-                                                ${components.icon('wand', 14)} Generate Listing
-                                            </button>
                                             <button class="btn btn-secondary btn-sm" data-testid="edit-item-${item.id}" onclick="handlers.editItem('${item.id}')" title="Edit item">
                                                 ${components.icon('settings', 14)} Edit
                                             </button>
                                             <button class="btn btn-danger btn-sm" data-testid="delete-item-${item.id}" onclick="handlers.deleteItem('${item.id}')" title="Delete item">
                                                 ${components.icon('trash', 14)}
-                                            </button>
-                                            <button class="btn btn-ghost btn-sm" data-testid="ar-preview-item-${item.id}" onclick="event.stopPropagation(); modals.arPreview('${item.id}')" title="AR Preview — see item in your space">
-                                                ${components.icon('camera', 14)} AR
                                             </button>
                                         </td>
                                     </tr>
@@ -523,7 +504,7 @@ Object.assign(pages, {
             return `
                 <div class="page-header flex justify-between items-start">
                     <div>
-                        <h1 class="page-title">Listings</h1>
+                        <h1 class="page-title">My Listings</h1>
                         <p class="page-description">View and manage your listings across all platforms</p>
                     </div>
                     <div class="flex gap-2">
@@ -551,10 +532,10 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="tabs mb-6" role="tablist">
-                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                    <button class="tab active" role="tab" aria-selected="true" tabindex="0" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
+                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('listings')">Listings</button>
+                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('archived')">Archived</button>
+                    <button class="tab active" role="tab" aria-selected="true" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
+                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 ${pages.templates()}
             `;
@@ -564,7 +545,7 @@ Object.assign(pages, {
             return `
                 <div class="page-header flex justify-between items-start">
                     <div>
-                        <h1 class="page-title">Listings</h1>
+                        <h1 class="page-title">My Listings</h1>
                         <p class="page-description">View and manage your listings across all platforms</p>
                     </div>
                     <div class="flex gap-2">
@@ -592,10 +573,10 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="tabs mb-6" role="tablist">
-                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                    <button class="tab active" role="tab" aria-selected="true" tabindex="0" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
+                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('listings')">Listings</button>
+                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('archived')">Archived</button>
+                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
+                    <button class="tab active" role="tab" aria-selected="true" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 ${pages.recentlyDeleted()}
             `;
@@ -607,15 +588,15 @@ Object.assign(pages, {
             return `
                 <div class="page-header flex justify-between items-start">
                     <div>
-                        <h1 class="page-title">Listings</h1>
+                        <h1 class="page-title">My Listings</h1>
                         <p class="page-description">Archived listings that have been removed from active selling</p>
                     </div>
                 </div>
                 <div class="tabs mb-6" role="tablist">
-                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                    <button class="tab active" role="tab" aria-selected="true" tabindex="0" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                    <button class="tab" role="tab" aria-selected="false" tabindex="-1" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
+                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('listings')">Listings</button>
+                    <button class="tab active" role="tab" aria-selected="true" onclick="handlers.switchListingsTab('archived')">Archived</button>
+                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
+                    <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 <div class="card">
                     ${archivedListings.length > 0 ? `
@@ -763,7 +744,7 @@ Object.assign(pages, {
                     <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
                     <li>
                         <a href="#" onclick="handlers.switchListingsTab('listings'); return false;" style="color: ${currentListingsTab === 'listings' ? 'var(--primary-600)' : 'var(--gray-500)'}; text-decoration: none; font-weight: ${currentListingsTab === 'listings' ? '600' : '400'};">
-                            Listings
+                            My Listings
                         </a>
                     </li>
                     ${currentListingsTab !== 'listings' ? `
@@ -785,7 +766,7 @@ Object.assign(pages, {
             <div class="listings-hero">
                 <div class="listings-hero-header">
                     <div class="listings-hero-title-group">
-                        <h1 class="listings-hero-title">Listings</h1>
+                        <h1 class="listings-hero-title">My Listings</h1>
                         <p class="listings-hero-subtitle">View and manage your listings across all platforms</p>
                     </div>
                     <div class="listings-hero-actions">
@@ -895,10 +876,10 @@ Object.assign(pages, {
             </div>
 
             <div class="tabs mb-6" role="tablist">
-                <button class="tab ${currentListingsTab === 'listings' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'listings' ? 'true' : 'false'}" tabindex="${currentListingsTab === 'listings' ? '0' : '-1'}" onclick="handlers.switchListingsTab('listings')">Listings</button>
-                <button class="tab ${currentListingsTab === 'archived' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'archived' ? 'true' : 'false'}" tabindex="${currentListingsTab === 'archived' ? '0' : '-1'}" onclick="handlers.switchListingsTab('archived')">Archived</button>
-                <button class="tab ${currentListingsTab === 'templates' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'templates' ? 'true' : 'false'}" tabindex="${currentListingsTab === 'templates' ? '0' : '-1'}" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
-                <button class="tab ${currentListingsTab === 'recently-deleted' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'recently-deleted' ? 'true' : 'false'}" tabindex="${currentListingsTab === 'recently-deleted' ? '0' : '-1'}" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
+                <button class="tab ${currentListingsTab === 'listings' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'listings' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('listings')">Listings</button>
+                <button class="tab ${currentListingsTab === 'archived' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'archived' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('archived')">Archived</button>
+                <button class="tab ${currentListingsTab === 'templates' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'templates' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
+                <button class="tab ${currentListingsTab === 'recently-deleted' ? 'active' : ''}" role="tab" aria-selected="${currentListingsTab === 'recently-deleted' ? 'true' : 'false'}" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
             </div>
 
             <div class="card">
@@ -932,14 +913,11 @@ Object.assign(pages, {
                                 <option value="mercari" ${platformFilter === 'mercari' ? 'selected' : ''}>Ⓜ️ Mercari</option>
                                 <option value="depop" ${platformFilter === 'depop' ? 'selected' : ''}>Ⓓ Depop</option>
                                 <option value="grailed" ${platformFilter === 'grailed' ? 'selected' : ''}>Ⓖ Grailed</option>
-                                <option value="etsy" ${platformFilter === 'etsy' ? 'selected' : ''}>Ⓔ Etsy</option>
                                 <option value="facebook" ${platformFilter === 'facebook' ? 'selected' : ''}>Ⓕ Facebook</option>
-                                <option value="whatnot" ${platformFilter === 'whatnot' ? 'selected' : ''}>Ⓦ Whatnot</option>
-                                <option value="shopify" ${platformFilter === 'shopify' ? 'selected' : ''}>Ⓢ Shopify</option>
                             </select>
                         </div>
                         <div style="margin-left: auto;">
-                            <label style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px; display: block;">Columns</label>
+                            <div style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px;">Columns</div>
                             <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                                 <button aria-haspopup="menu" class="btn btn-secondary btn-sm">
                                     ${components.icon('list', 14)} Customize
@@ -960,10 +938,8 @@ Object.assign(pages, {
                                         { id: 'views', label: 'Views' },
                                         { id: 'likes', label: 'Likes' }
                                     ].map(col => `
-                                        <label for="col-toggle-${col.id}" class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer" style="font-size: 13px;">
+                                        <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer" style="font-size: 13px;">
                                             <input type="checkbox"
-                                                   id="col-toggle-${col.id}"
-                                                   name="col-toggle-${col.id}"
                                                    ${visibleColumns.includes(col.id) ? 'checked' : ''}
                                                    onchange="handlers.toggleListingColumn('${col.id}', this.checked)"
                                                    onclick="event.stopPropagation()">
@@ -1075,7 +1051,12 @@ Object.assign(pages, {
                                         ${visibleColumns.includes('item') ? `
                                             <td>
                                                 <div class="font-medium">${escapeHtml(listing.title)}</div>
-                                                <div class="text-xs text-gray-500">${escapeHtml(inventorySku || listing.platform)}</div>
+                                                <div class="text-xs text-gray-500">
+                                                    ${listing.inventory_id}
+                                                    <span class="listing-char-count ${(listing.title || '').length < 20 ? 'short' : (listing.title || '').length > 80 ? 'long' : 'good'}" style="margin-left: 8px;">
+                                                        ${(listing.title || '').length} chars
+                                                    </span>
+                                                </div>
                                             </td>
                                         ` : ''}
                                         ${visibleColumns.includes('sku') ? `<td class="text-sm text-gray-600">${escapeHtml(inventorySku) || '-'}</td>` : ''}
@@ -1125,27 +1106,12 @@ Object.assign(pages, {
                                                     <button class="dropdown-item" onclick="handlers.viewListing('${listing.id}')">
                                                         ${components.icon('eye', 14)} View Details
                                                     </button>
-                                                    ${listing.platform_url ? `
-                                                    <a class="dropdown-item" href="${escapeHtml(listing.platform_url)}" target="_blank" rel="noopener" style="color: var(--success-700); text-decoration: none;">
-                                                        ${components.icon('external-link', 14)} View Live
-                                                    </a>
-                                                    ` : ''}
                                                     <button class="dropdown-item" onclick="handlers.editListing('${listing.id}')">
                                                         ${components.icon('edit', 14)} Edit
                                                     </button>
-                                                    ${listing.status === 'active' ? `
-                                                    <button class="dropdown-item" onclick="handlers.delistListing('${listing.id}')" style="color: var(--warning-600);">
-                                                        ${components.icon('x-circle', 14)} Delist
-                                                    </button>
-                                                    ` : ''}
-                                                    ${listing.status === 'ended' ? `
-                                                    <button class="dropdown-item" onclick="handlers.relistListing('${listing.id}')" style="color: var(--success-600);">
-                                                        ${components.icon('repeat', 14)} Relist
-                                                    </button>
-                                                    ` : ''}
                                                     ${isStale ? `
-                                                    <button class="dropdown-item" onclick="handlers.refreshListing('${listing.id}')" style="color: var(--warning-600);">
-                                                        ${components.icon('refresh-cw', 14)} Refresh (Delist + Relist)
+                                                    <button class="dropdown-item text-warning" onclick="handlers.refreshListing('${listing.id}')" style="color: var(--warning-600);">
+                                                        ${components.icon('refresh-cw', 14)} Relist Now
                                                     </button>
                                                     ` : ''}
                                                     <button class="dropdown-item" onclick="handlers.showPriceDropScheduler('${listing.id}')" style="color: var(--primary-600);">
@@ -1174,7 +1140,6 @@ Object.assign(pages, {
                                                                     ${components.platformBadge(rl.platform)}
                                                                     <span class="font-medium">$${rl.price}</span>
                                                                     <span class="badge badge-${rl.status === 'active' ? 'success' : 'gray'} text-xs">${rl.status}</span>
-                                                                    ${rl.platform_url ? `<a href="${escapeHtml(rl.platform_url)}" target="_blank" rel="noopener" class="text-xs" style="color: var(--success-700);" title="View live listing">${components.icon('external-link', 12)}</a>` : ''}
                                                                 </div>
                                                             `).join('')}
                                                         </div>
@@ -1198,12 +1163,6 @@ Object.assign(pages, {
                                                                 <span class="text-gray-500">Listed:</span>
                                                                 <span class="font-medium">${listing.listed_at ? new Date(listing.listed_at).toLocaleString() : '-'}</span>
                                                             </div>
-                                                            ${listing.platform_url ? `
-                                                            <div class="flex justify-between">
-                                                                <span class="text-gray-500">Live URL:</span>
-                                                                <a href="${escapeHtml(listing.platform_url)}" target="_blank" rel="noopener" class="font-medium text-xs" style="color: var(--success-700);">View on ${escapeHtml(listing.platform || 'platform')} ${components.icon('external-link', 11)}</a>
-                                                            </div>
-                                                            ` : ''}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1261,15 +1220,6 @@ Object.assign(pages, {
     crosslist() {
         const activeInventory = store.state.inventory.filter(i => i.status === 'active') || [];
 
-        // Build a map: inventoryId → [platforms already published to]
-        const publishedMap = {};
-        (store.state.listings || []).forEach(l => {
-            if (l.platform_listing_id) {
-                if (!publishedMap[l.inventory_id]) publishedMap[l.inventory_id] = [];
-                publishedMap[l.inventory_id].push(l.platform);
-            }
-        });
-
         return `
             <div class="page-header">
                 <h1 class="page-title">Cross-List</h1>
@@ -1302,13 +1252,6 @@ Object.assign(pages, {
                                     `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.title)}" style="width:48px;height:48px;object-fit:cover;border-radius:var(--radius-md)">` :
                                     `<div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--primary-100);color:var(--primary-600);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:20px;">${firstLetter}</div>`;
 
-                                const platforms = publishedMap[item.id] || [];
-                                const badgeHtml = platforms.length > 0
-                                    ? `<div class="flex flex-wrap gap-1 mt-1">${platforms.map(p =>
-                                        `<span style="font-size:10px;padding:1px 6px;border-radius:9999px;background:var(--success-100);color:var(--success-700);font-weight:500;">${escapeHtml(p)}</span>`
-                                      ).join('')}</div>`
-                                    : '';
-
                                 return `
                                     <label class="flex items-center gap-4 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style="border-color: var(--gray-200)">
                                         <input type="checkbox" class="crosslist-item-checkbox" value="${item.id}" onchange="handlers.updateCrosslistSelection()">
@@ -1316,7 +1259,6 @@ Object.assign(pages, {
                                         <div class="flex-1">
                                             <div class="font-medium">${escapeHtml(item.title)}</div>
                                             <div class="text-sm text-gray-500">${item.brand ? escapeHtml(item.brand) + ' · ' : ''}$${item.list_price}</div>
-                                            ${badgeHtml}
                                         </div>
                                         <div class="text-xs text-gray-500">${item.quantity || 1} in stock</div>
                                     </label>
@@ -1332,21 +1274,9 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
                         <div id="crosslist-selection-summary" class="mb-4 p-4 bg-gray-50 rounded-lg hidden">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="font-medium text-sm mb-1">Selection Summary</div>
-                                    <div class="text-sm text-gray-600">
-                                        <span id="crosslist-selected-count">0</span> item(s) selected
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button class="btn btn-ghost btn-sm" onclick="handlers.bulkAdjustCrosslistPrice()" id="bulk-price-crosslist-btn" title="Adjust prices for selected items">
-                                        ${components.icon('dollar-sign', 14)} Adjust Prices
-                                    </button>
-                                    <button class="btn btn-ghost btn-sm text-red-600" onclick="handlers.bulkDelistSelected()" id="bulk-delist-crosslist-btn" title="Remove published listings for selected items">
-                                        ${components.icon('x-circle', 14)} Delist Selected
-                                    </button>
-                                </div>
+                            <div class="font-medium text-sm mb-1">Selection Summary</div>
+                            <div class="text-sm text-gray-600">
+                                <span id="crosslist-selected-count">0</span> item(s) selected
                             </div>
                         </div>
 
@@ -1362,71 +1292,6 @@ Object.assign(pages, {
                                 <div class="text-left">
                                     <div class="font-semibold">Advanced Cross-List</div>
                                     <div class="text-xs opacity-90">Customize for each platform</div>
-                                </div>
-                            </button>
-                        </div>
-
-                        <div class="mt-3 mb-2">
-                            <button class="btn btn-success btn-lg w-full" onclick="handlers.publishSelectedToAll()" id="publish-all-crosslist-btn" disabled style="background: linear-gradient(135deg, var(--success-600), var(--primary-600)); border: none; font-size: 15px;">
-                                <div class="text-center">
-                                    <div class="font-semibold">${components.icon('zap', 18)} Publish to ALL Platforms</div>
-                                    <div class="text-xs opacity-90">eBay · Etsy · Poshmark</div>
-                                </div>
-                            </button>
-                        </div>
-                        <div class="grid grid-cols-4 gap-2">
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToEbay()" id="publish-ebay-crosslist-btn" disabled>
-                                <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} eBay</div>
-                                    <div class="text-xs opacity-90">API</div>
-                                </div>
-                            </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToEtsy()" id="publish-etsy-crosslist-btn" disabled>
-                                <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Etsy</div>
-                                    <div class="text-xs opacity-90">API</div>
-                                </div>
-                            </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToPoshmark()" id="publish-poshmark-crosslist-btn" disabled>
-                                <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Poshmark</div>
-                                    <div class="text-xs opacity-90">Auto</div>
-                                </div>
-                            </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToMercari()" id="publish-mercari-crosslist-btn" disabled>
-                                <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Mercari</div>
-                                    <div class="text-xs opacity-90">Auto</div>
-                                </div>
-                            </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToDepop()" id="publish-depop-crosslist-btn" disabled>
-                                <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Depop</div>
-                                    <div class="text-xs opacity-90">Auto</div>
-                                </div>
-                            </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToGrailed()" id="publish-grailed-crosslist-btn" disabled>
-                                <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Grailed</div>
-                                    <div class="text-xs opacity-90">Auto</div>
-                                </div>
-                            </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToFacebook()" id="publish-facebook-crosslist-btn" disabled>
-                                <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Facebook</div>
-                                    <div class="text-xs opacity-90">Auto</div>
-                                </div>
-                            </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToWhatnot()" id="publish-whatnot-crosslist-btn" disabled>
-                                <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Whatnot</div>
-                                    <div class="text-xs opacity-90">Auto</div>
-                                </div>
-                            </button>
-                            <button class="btn btn-warning" onclick="handlers.publishSelectedToShopify()" id="publish-shopify-crosslist-btn" disabled>
-                                <div class="text-left">
-                                    <div class="font-semibold text-sm">${components.icon('upload', 14)} Shopify</div>
-                                    <div class="text-xs opacity-90">API</div>
                                 </div>
                             </button>
                         </div>
@@ -1612,10 +1477,12 @@ Object.assign(pages, {
                 if (parts.length < 5) return null;
                 const [min, hour, dom, mon, dow] = parts;
                 const now = new Date();
+                // Simple case: fixed hour(s), any day (* * *)
                 if (dom === '*' && mon === '*') {
                     const hours = hour.includes(',') ? hour.split(',').map(Number) : [parseInt(hour)];
                     const mins = min.includes(',') ? min.split(',').map(Number) : [parseInt(min)];
                     if (hours.some(isNaN) || mins.some(isNaN)) return null;
+                    // Find next matching time today or tomorrow
                     for (let dayOffset = 0; dayOffset < 8; dayOffset++) {
                         for (const h of hours) {
                             for (const m of mins) {
@@ -1623,6 +1490,7 @@ Object.assign(pages, {
                                 candidate.setDate(candidate.getDate() + dayOffset);
                                 candidate.setHours(h, m, 0, 0);
                                 if (candidate > now) {
+                                    // Check day-of-week constraint
                                     if (dow !== '*') {
                                         const allowedDays = dow.split(',').map(Number);
                                         if (!allowedDays.includes(candidate.getDay())) continue;
@@ -1655,14 +1523,12 @@ Object.assign(pages, {
             .filter(a => a.is_enabled)
             .reduce((sum, a) => sum + (timeSavedPerAutomation[a.category] || 15), 0);
 
-        // Compute real daily run counts for chart
         const todayStart = new Date(); todayStart.setHours(0,0,0,0);
         const runsToday = runHistory.filter(r => {
             const ts = new Date(r.started_at || r.timestamp || r.created_at).getTime();
             return ts >= todayStart.getTime();
         }).length;
         const totalItemsProcessed = runHistory.reduce((sum, r) => sum + (r.items_processed || r.items_succeeded || 0), 0);
-        // 7-day daily breakdown for chart
         const dailyChart = Array.from({length: 7}, () => ({ success: 0, failed: 0 }));
         const nowMs = Date.now();
         const dayMs = 86400000;
@@ -1673,7 +1539,7 @@ Object.assign(pages, {
                 const idx = 6 - daysAgo;
                 if (r.status === 'success') dailyChart[idx].success++;
                 else if (r.status === 'failed' || r.status === 'failure') dailyChart[idx].failed++;
-                else dailyChart[idx].success++; // partial counts as success for chart
+                else dailyChart[idx].success++;
             }
         });
         const maxDaily = Math.max(...dailyChart.map(d => d.success + d.failed), 1);
@@ -1681,7 +1547,6 @@ Object.assign(pages, {
             const d = new Date(nowMs - (6-i) * dayMs);
             return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
         });
-        // Per-category run counts (real data)
         const categoryRunCounts = {};
         runHistory.forEach(r => {
             const ruleName = r.automation_name || r.action || '';
@@ -1690,6 +1555,62 @@ Object.assign(pages, {
                 categoryRunCounts[matchedRule.category] = (categoryRunCounts[matchedRule.category] || 0) + 1;
             }
         });
+
+        // Load scheduler status if not cached (non-blocking)
+        if (!store.state.schedulerStatus) {
+            api.get('/automations/scheduler-status').then(data => {
+                store.setState({ schedulerStatus: data });
+                const widget = document.getElementById('scheduler-health-widget');
+                if (widget) {
+                    widget.innerHTML = renderSchedulerWidget(data);
+                }
+            }).catch(() => {});
+        }
+
+        function renderSchedulerWidget(status) {
+            if (!status) return '<p class="text-sm text-gray-500">Loading scheduler status...</p>';
+
+            const healthColor = status.healthy ? 'text-success-600' : 'text-error-600';
+            const healthIcon = status.healthy ? 'check-circle' : 'alert-triangle';
+            const healthLabel = status.healthy ? 'Healthy' : 'Unhealthy';
+
+            const successRate = status.runs24h?.successRate ?? 100;
+            const rateColor = successRate >= 90 ? 'text-success-600' : successRate >= 70 ? 'text-warning-600' : 'text-error-600';
+
+            const lastRun = status.worker?.lastRun
+                ? new Date(status.worker.lastRun).toLocaleTimeString()
+                : 'Never';
+
+            return `
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <div class="${healthColor} text-lg font-bold">${components.icon(healthIcon, 18)} ${healthLabel}</div>
+                        <div class="text-xs text-gray-500 mt-1">Worker Status</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="${rateColor} text-lg font-bold">${successRate}%</div>
+                        <div class="text-xs text-gray-500 mt-1">Success Rate (24h)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold">${status.runs24h?.total || 0}</div>
+                        <div class="text-xs text-gray-500 mt-1">Runs (24h)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold">${status.queue?.pending || 0}</div>
+                        <div class="text-xs text-gray-500 mt-1">Queued Tasks</div>
+                    </div>
+                </div>
+                ${status.runs24h?.failed > 0 ? `
+                    <div class="mt-3 p-2 bg-error-50 border border-error-200 rounded text-sm text-error-700">
+                        ${components.icon('alert-triangle', 14)} ${status.runs24h.failed} failed run(s) in the last 24 hours
+                    </div>
+                ` : ''}
+                <div class="mt-3 text-xs text-gray-400 flex justify-between">
+                    <span>Last poll: ${lastRun}</span>
+                    <span>${status.enabledRules || 0} active rules</span>
+                </div>
+            `;
+        }
 
         // Group automations by category for breakdown
         const categoryStats = {};
@@ -1748,12 +1669,12 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${failedCount > 0 ? `
+            ${failedRuns > 0 ? `
             <!-- Failed Automations Alert Banner -->
             <div class="automation-failure-banner mb-4" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--error-50, #fef2f2); border: 1px solid var(--error-200, #fecaca); border-radius: var(--radius-md); color: var(--error-700, #b91c1c);">
                 ${components.icon('alert-triangle', 20)}
                 <div style="flex: 1;">
-                    <span class="font-medium">${failedCount} automation${failedCount > 1 ? 's' : ''} failed recently</span>
+                    <span class="font-medium">${failedRuns} automation${failedRuns > 1 ? 's' : ''} failed recently</span>
                     <span style="margin-left: 8px; font-size: 13px; opacity: 0.8;">Check run history for details</span>
                 </div>
                 <button class="btn btn-sm btn-error" onclick="handlers.showAutomationHistory()">
@@ -1761,6 +1682,19 @@ Object.assign(pages, {
                 </button>
             </div>
             ` : ''}
+
+            <!-- Scheduler Health Widget -->
+            <div class="card mb-6" id="scheduler-health-widget-card">
+                <div class="card-header flex justify-between items-center">
+                    <h3 class="font-semibold">${components.icon('activity', 18)} Scheduler Health</h3>
+                    <button class="btn btn-ghost btn-sm" onclick="handlers.refreshSchedulerStatus()">
+                        ${components.icon('refresh-cw', 14)} Refresh
+                    </button>
+                </div>
+                <div class="card-body" id="scheduler-health-widget">
+                    ${renderSchedulerWidget(store.state.schedulerStatus)}
+                </div>
+            </div>
 
             <!-- Automations Hero Section -->
             <div class="automations-hero mb-6">
@@ -1919,31 +1853,6 @@ Object.assign(pages, {
                             }).join('')}
                         </div>
                     </div>
-                    <!-- 7-Day Run Chart -->
-                    <div class="mt-4" style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-3">Runs Per Day (Last 7 Days)</h4>
-                        <div style="display:flex;align-items:flex-end;gap:4px;height:100px;">
-                            ${dailyChart.map((d, i) => {
-                                const total = d.success + d.failed;
-                                const h = Math.round((total / maxDaily) * 80);
-                                const sh = total > 0 ? Math.round((d.success / total) * h) : 0;
-                                const fh = h - sh;
-                                return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0;">' +
-                                    '<div style="display:flex;flex-direction:column;justify-content:flex-end;height:80px;width:100%;">' +
-                                    (fh > 0 ? '<div style="background:var(--error);border-radius:3px 3px 0 0;height:' + fh + 'px;" title="' + d.failed + ' failed"></div>' : '') +
-                                    (sh > 0 ? '<div style="background:var(--success);border-radius:' + (fh > 0 ? '0' : '3px 3px') + ' 0 0;height:' + sh + 'px;" title="' + d.success + ' succeeded"></div>' : '') +
-                                    (total === 0 ? '<div style="background:var(--gray-200);border-radius:3px;height:2px;width:100%;"></div>' : '') +
-                                    '</div>' +
-                                    '<div style="font-size:10px;color:var(--gray-500);margin-top:4px;">' + dayLabels[i] + '</div>' +
-                                    '<div style="font-size:10px;color:var(--gray-600);font-weight:600;">' + total + '</div>' +
-                                    '</div>';
-                            }).join('')}
-                        </div>
-                        <div style="display:flex;gap:12px;margin-top:8px;font-size:11px;">
-                            <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--success);display:inline-block;"></span> Success</span>
-                            <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--error);display:inline-block;"></span> Failed</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -2065,6 +1974,86 @@ Object.assign(pages, {
                 </div>
             </div>
 
+            <!-- Notification Preferences -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Notification Preferences</h3>
+                    <p class="text-sm text-gray-500">Choose which automation events trigger notifications</p>
+                </div>
+                <div class="card-body">
+                    ${(() => {
+                        const notifPrefs = store.state.automationNotifPrefs || {
+                            on_success: true,
+                            on_failure: true,
+                            on_partial: true,
+                            daily_summary: false,
+                            desktop_enabled: true,
+                            email_enabled: false
+                        };
+                        return `
+                    <div class="grid grid-cols-3 gap-6">
+                        <div>
+                            <label class="form-label mb-3">Event Types</label>
+                            <div class="flex flex-col gap-3">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.on_success ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('on_success', this.checked)"
+                                        style="accent-color: var(--success-500);">
+                                    <span class="text-sm">${components.icon('check-circle', 14)} Successful runs</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.on_failure ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('on_failure', this.checked)"
+                                        style="accent-color: var(--error-500);">
+                                    <span class="text-sm">${components.icon('alert-triangle', 14)} Failed runs</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.on_partial ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('on_partial', this.checked)"
+                                        style="accent-color: var(--warning-500);">
+                                    <span class="text-sm">${components.icon('alert-circle', 14)} Partial completions</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.daily_summary ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('daily_summary', this.checked)"
+                                        style="accent-color: var(--primary-500);">
+                                    <span class="text-sm">${components.icon('bar-chart', 14)} Daily summary digest</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label mb-3">Channels</label>
+                            <div class="flex flex-col gap-3">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('desktop_enabled', this.checked)"
+                                        style="accent-color: var(--primary-500);">
+                                    <span class="text-sm">${components.icon('monitor', 14)} Desktop notifications</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" ${notifPrefs.email_enabled ? 'checked' : ''}
+                                        onchange="handlers.updateAutomationNotifPref('email_enabled', this.checked)"
+                                        style="accent-color: var(--primary-500);">
+                                    <span class="text-sm">${components.icon('mail', 14)} Email notifications</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label mb-3">Quick Actions</label>
+                            <div class="flex flex-col gap-2">
+                                <button class="btn btn-sm btn-secondary" onclick="handlers.updateAutomationNotifPref('_mute_all', true)">
+                                    ${components.icon('bell-off', 14)} Mute All
+                                </button>
+                                <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_recommended', true)">
+                                    ${components.icon('bell', 14)} Recommended
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+                    })()}
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                     <div>
@@ -2102,17 +2091,6 @@ Object.assign(pages, {
                         })()}
                     </div>
                 </div>
-                ${(() => {
-                    const sel = store.state.selectedAutomationIds || [];
-                    if (sel.length === 0) return '';
-                    return '<div style="padding:8px 16px;background:var(--primary-50);border-bottom:1px solid var(--primary-200);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-                        '<span class="text-sm font-medium" style="color:var(--primary-700);">' + sel.length + ' selected</span>' +
-                        '<button class="btn btn-xs btn-success" onclick="handlers.bulkToggleAutomations(true)">' + components.icon('toggle-right', 12) + ' Enable</button>' +
-                        '<button class="btn btn-xs btn-secondary" onclick="handlers.bulkToggleAutomations(false)">' + components.icon('toggle-left', 12) + ' Disable</button>' +
-                        '<button class="btn btn-xs btn-primary" onclick="handlers.bulkScheduleAutomations()">' + components.icon('clock', 12) + ' Set Schedule</button>' +
-                        '<button class="btn btn-xs btn-ghost" onclick="handlers.clearAutomationSelection()">' + components.icon('x', 12) + ' Clear</button>' +
-                        '</div>';
-                })()}
                 <div class="card-body">
                     <div class="flex flex-col gap-4">
                         ${automations.filter(rule => {
@@ -2410,19 +2388,19 @@ Object.assign(pages, {
             </div>
 
             <div class="tabs mb-6" role="tablist">
-                <button class="tab ${activeTab === 'rules' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'rules' ? 'true' : 'false'}" tabindex="${activeTab === 'rules' ? '0' : '-1'}"
+                <button class="tab ${activeTab === 'rules' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'rules' ? 'true' : 'false'}"
                         onclick="store.setState({relistingTab:'rules'}); renderApp(pages.smartRelisting());">
                     Rules
                 </button>
-                <button class="tab ${activeTab === 'stale' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'stale' ? 'true' : 'false'}" tabindex="${activeTab === 'stale' ? '0' : '-1'}"
+                <button class="tab ${activeTab === 'stale' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'stale' ? 'true' : 'false'}"
                         onclick="store.setState({relistingTab:'stale'}); renderApp(pages.smartRelisting());">
                     Stale Listings
                 </button>
-                <button class="tab ${activeTab === 'queue' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'queue' ? 'true' : 'false'}" tabindex="${activeTab === 'queue' ? '0' : '-1'}"
+                <button class="tab ${activeTab === 'queue' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'queue' ? 'true' : 'false'}"
                         onclick="store.setState({relistingTab:'queue'}); renderApp(pages.smartRelisting());">
                     Queue
                 </button>
-                <button class="tab ${activeTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'performance' ? 'true' : 'false'}" tabindex="${activeTab === 'performance' ? '0' : '-1'}"
+                <button class="tab ${activeTab === 'performance' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'performance' ? 'true' : 'false'}"
                         onclick="store.setState({relistingTab:'performance'}); renderApp(pages.smartRelisting());">
                     Performance
                 </button>
@@ -2654,15 +2632,15 @@ Object.assign(pages, {
             </div>
 
             <div class="tabs mb-6" role="tablist">
-                <button class="tab ${activeTab === 'upload' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'upload' ? 'true' : 'false'}" tabindex="${activeTab === 'upload' ? '0' : '-1'}"
+                <button class="tab ${activeTab === 'upload' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'upload' ? 'true' : 'false'}"
                         onclick="store.setState({importTab:'upload'}); renderApp(pages.inventoryImport());">
                     Upload
                 </button>
-                <button class="tab ${activeTab === 'jobs' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'jobs' ? 'true' : 'false'}" tabindex="${activeTab === 'jobs' ? '0' : '-1'}"
+                <button class="tab ${activeTab === 'jobs' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'jobs' ? 'true' : 'false'}"
                         onclick="store.setState({importTab:'jobs'}); renderApp(pages.inventoryImport());">
                     Import History
                 </button>
-                <button class="tab ${activeTab === 'mappings' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'mappings' ? 'true' : 'false'}" tabindex="${activeTab === 'mappings' ? '0' : '-1'}"
+                <button class="tab ${activeTab === 'mappings' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'mappings' ? 'true' : 'false'}"
                         onclick="store.setState({importTab:'mappings'}); renderApp(pages.inventoryImport());">
                     Saved Mappings
                 </button>
@@ -3146,120 +3124,5 @@ Object.assign(pages, {
     },
 
     // Report Builder Page,
-
-    platformHealth() {
-        const healthData = store.state.platformHealth || {};
-        const platforms = healthData.platforms || [];
-        const overallHealth = healthData.overall_health || 0;
-
-        const platformColors = {
-            poshmark: '#7c3aed', ebay: '#0064d2', mercari: '#00b0a0', depop: '#ff2300',
-            grailed: '#000', etsy: '#f1641e', shopify: '#96bf48', facebook: '#1877f2', whatnot: '#ff4757'
-        };
-
-        const statusIcons = {
-            healthy: { icon: 'check-circle', color: 'var(--success)' },
-            warning: { icon: 'alert-triangle', color: 'var(--warning-600)' },
-            critical: { icon: 'x-circle', color: 'var(--error)' }
-        };
-
-        return `
-            <div class="page-header flex justify-between items-start">
-                <div>
-                    <h1 class="page-title">${components.icon('activity', 24)} Platform Health</h1>
-                    <p class="page-description">Monitor connection status across all your selling platforms</p>
-                </div>
-                <div class="flex gap-2">
-                    <button class="btn btn-secondary" onclick="handlers.refreshPlatformHealth()">
-                        ${components.icon('refresh-cw', 16)} Refresh
-                    </button>
-                </div>
-            </div>
-
-            <!-- Overall Health -->
-            <div class="card mb-6">
-                <div class="card-body flex items-center gap-6">
-                    <div style="position:relative;width:80px;height:80px;">
-                        <svg viewBox="0 0 36 36" style="width:80px;height:80px;transform:rotate(-90deg);">
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                fill="none" stroke="var(--gray-200)" stroke-width="3"/>
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                fill="none" stroke="${overallHealth >= 80 ? 'var(--success)' : overallHealth >= 50 ? 'var(--warning-600)' : 'var(--error)'}"
-                                stroke-width="3" stroke-dasharray="${overallHealth}, 100"/>
-                        </svg>
-                        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;font-weight:700;">
-                            ${overallHealth}
-                        </div>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold">Overall Health Score</h2>
-                        <p class="text-sm text-gray-500">${platforms.length} platform${platforms.length !== 1 ? 's' : ''} connected</p>
-                    </div>
-                    <div style="margin-left:auto;" class="flex gap-4">
-                        <div class="text-center">
-                            <div class="text-xl font-bold" style="color:var(--success);">${platforms.filter(p => p.status === 'healthy').length}</div>
-                            <div class="text-xs text-gray-500">Healthy</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-xl font-bold" style="color:var(--warning-600);">${platforms.filter(p => p.status === 'warning').length}</div>
-                            <div class="text-xs text-gray-500">Warning</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-xl font-bold" style="color:var(--error);">${platforms.filter(p => p.status === 'critical').length}</div>
-                            <div class="text-xs text-gray-500">Critical</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Platform Cards -->
-            <div class="grid grid-cols-2 gap-4">
-                ${platforms.length > 0 ? platforms.map(p => {
-                    const si = statusIcons[p.status] || statusIcons.warning;
-                    const color = platformColors[p.platform] || 'var(--gray-600)';
-                    const tokenExpiry = p.token_expires_at ? new Date(p.token_expires_at) : null;
-                    const tokenLabel = tokenExpiry
-                        ? (tokenExpiry < new Date() ? 'Expired' : 'Expires ' + tokenExpiry.toLocaleDateString())
-                        : 'N/A';
-                    const lastSync = p.last_sync_at ? new Date(p.last_sync_at).toLocaleString() : 'Never';
-                    return `
-                    <div class="card" style="border-left: 4px solid ${color};">
-                        <div class="card-body">
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="flex items-center gap-2">
-                                    ${components.platformBadge(p.platform)}
-                                    <div>
-                                        <span class="font-semibold">${p.platform.charAt(0).toUpperCase() + p.platform.slice(1)}</span>
-                                        ${p.username ? '<span class="text-sm text-gray-500 ml-1">@' + escapeHtml(p.username) + '</span>' : ''}
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-1" style="color:${si.color};">
-                                    ${components.icon(si.icon, 18)}
-                                    <span class="text-sm font-medium">${p.health_score}/100</span>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 text-sm mb-3">
-                                <div><span class="text-gray-500">Status:</span> <span class="${p.is_connected ? 'text-success' : 'text-error'}">${p.is_connected ? 'Connected' : 'Disconnected'}</span></div>
-                                <div><span class="text-gray-500">Type:</span> ${p.connection_type === 'oauth' ? 'OAuth' : 'Manual'}</div>
-                                <div><span class="text-gray-500">Last Sync:</span> ${lastSync}</div>
-                                <div><span class="text-gray-500">Token:</span> <span style="color:${tokenExpiry && tokenExpiry < new Date() ? 'var(--error)' : 'inherit'};">${tokenLabel}</span></div>
-                                <div><span class="text-gray-500">Active Listings:</span> ${p.listings?.active || 0}</div>
-                                <div><span class="text-gray-500">Errors:</span> <span style="color:${(p.listings?.errors || 0) > 0 ? 'var(--error)' : 'inherit'};">${p.listings?.errors || 0}</span></div>
-                            </div>
-                            ${p.issues.length > 0 ? '<div class="text-xs" style="padding:8px;background:var(--error-50, #fef2f2);border-radius:var(--radius-sm);color:var(--error-700);">' + p.issues.map(i => components.icon('alert-circle', 12) + ' ' + escapeHtml(i)).join('<br>') + '</div>' : '<div class="text-xs" style="padding:8px;background:var(--success-50, #f0fdf4);border-radius:var(--radius-sm);color:var(--success-700);">' + components.icon('check', 12) + ' All systems operational</div>'}
-                        </div>
-                    </div>
-                    `;
-                }).join('') : `
-                    <div class="card" style="grid-column: 1/-1;">
-                        <div class="card-body text-center py-8 text-gray-500">
-                            <p>No platforms connected yet.</p>
-                            <button class="btn btn-primary mt-3" onclick="router.navigate('shops')">Connect a Platform</button>
-                        </div>
-                    </div>
-                `}
-            </div>
-        `;
-    },
 
 });

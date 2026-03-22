@@ -436,55 +436,6 @@ Object.assign(pages, {
         `;
     },
 
-    // Consolidated Planner page (Phase 6 sidebar consolidation)
-    planner() {
-        const activeTab = store.state.activeTab || 'tasks';
-        const tabs = [
-            { id: 'tasks', label: 'Tasks', icon: 'list' },
-            { id: 'calendar', label: 'Calendar', icon: 'calendar' },
-            { id: 'completed', label: 'Completed', icon: 'check' },
-        ];
-
-        const renderTabContent = () => {
-            switch (activeTab) {
-                case 'calendar':
-                    return this.calendar();
-                case 'completed':
-                    // Show completed checklist items
-                    const prevTab = store.state.checklistTab;
-                    store.state.checklistTab = 'completed';
-                    const content = this.checklist();
-                    store.state.checklistTab = prevTab;
-                    return content;
-                default:
-                    return this.checklist();
-            }
-        };
-
-        const activeChecklistItems = (store.state.checklistItems || []).filter(item => !item.completed).length;
-
-        return `
-            <div class="page-header">
-                <div class="page-header-top">
-                    <h1 class="page-title">${components.icon('calendar', 24)} Planner</h1>
-                </div>
-            </div>
-            <div class="consolidated-tabs">
-                ${tabs.map(tab => `
-                    <button class="consolidated-tab ${activeTab === tab.id ? 'active' : ''}"
-                            onclick="store.setState({activeTab:'${tab.id}'});renderApp(pages.planner())">
-                        ${components.icon(tab.icon, 16)}
-                        <span>${tab.label}</span>
-                        ${tab.id === 'tasks' && activeChecklistItems > 0 ? `<span class="nav-item-badge nav-item-badge-info">${activeChecklistItems}</span>` : ''}
-                    </button>
-                `).join('')}
-            </div>
-            <div class="consolidated-tab-content">
-                ${renderTabContent()}
-            </div>
-        `;
-    },
-
     // Calendar page,
 
 
@@ -783,7 +734,7 @@ Object.assign(pages, {
                     <div class="week-preview-days">
                         ${weekDays.map(day => `
                             <div class="week-preview-day ${day.isToday ? 'today' : ''} ${day.events.length > 0 ? 'has-events' : ''}"
-                                 onclick="handlers.selectCalendarDate('${toLocalDate(day.date)}')">
+                                 onclick="handlers.selectCalendarDate('${day.toLocalDate(date)}')">
                                 <div class="week-day-name">${dayNames[day.date.getDay()]}</div>
                                 <div class="week-day-number">${day.date.getDate()}</div>
                                 ${day.events.length > 0 ? `
@@ -854,7 +805,7 @@ Object.assign(pages, {
                                                     });
                                                     return `
                                                         <div class="calendar-week-cell ${day.isToday ? 'today' : ''}"
-                                                             onclick="handlers.addCalendarEvent('${toLocalDate(day.date)}')">
+                                                             onclick="handlers.addCalendarEvent('${day.toLocalDate(date)}')">
                                                             ${hourEvents.map(e => {
                                                                 const colors = getEventColor(e);
                                                                 return `
@@ -1620,8 +1571,8 @@ Object.assign(pages, {
                         <div class="recent-uploads-label">Recent Uploads</div>
                         <div class="recent-uploads-preview">
                             ${recentUploads.map(img => `
-                                <div class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')">
-                                    <img src="${escapeHtml(img.file_path)}" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy">
+                                <div class="recent-upload-thumb" onclick="handlers.viewImage('${img.id}')" style="${img.dominant_color ? `background: ${escapeHtml(img.dominant_color)};` : ''}">
+                                    <img src="${escapeHtml(img.file_path)}" alt="${escapeHtml(img.title || img.original_filename)}" loading="lazy" onerror="this.style.display='none'">
                                 </div>
                             `).join('')}
                             ${totalImages > 5 ? `
@@ -1797,10 +1748,11 @@ Object.assign(pages, {
                                                aria-label="Select image ${image.id}"
                                                onchange="handlers.toggleImageSelection('${image.id}')">
                                     </div>
-                                    <div class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')">
+                                    <div class="image-card-thumbnail" onclick="handlers.viewImage('${image.id}')" style="${image.dominant_color ? `background: ${escapeHtml(image.dominant_color)};` : ''}">
                                         <img src="${escapeHtml(image.file_path)}"
                                              alt="${escapeHtml(image.title || image.original_filename)}"
-                                             loading="lazy">
+                                             loading="lazy"
+                                             onerror="this.style.display='none'">
                                     </div>
                                     <div class="image-card-info">
                                         <div class="image-card-title">${escapeHtml(image.title || image.original_filename)}</div>

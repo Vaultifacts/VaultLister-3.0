@@ -62,7 +62,7 @@ Object.assign(pages, {
                                             ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                                         </div>
                                         <div class="leaderboard-user">
-                                            <div class="font-semibold">${escapeHtml(user.username || (user.email ? user.email.split('@')[0] : 'Anonymous'))}</div>
+                                            <div class="font-semibold">${escapeHtml(user.email.split('@')[0])}</div>
                                             <div class="text-xs text-gray-500">
                                                 ${user.posts_count} posts • ${user.replies_count} replies • ${user.upvotes_received} upvotes
                                             </div>
@@ -91,7 +91,7 @@ Object.assign(pages, {
                                 <div>
                                     <h3 class="post-title">${escapeHtml(post.title)}</h3>
                                     <div class="post-meta">
-                                        by ${escapeHtml(post.author || (post.author_email ? post.author_email.split('@')[0] : 'Anonymous'))} •
+                                        by ${escapeHtml(post.author_email.split('@')[0])} •
                                         ${new Date(post.created_at).toLocaleDateString()}
                                     </div>
                                 </div>
@@ -193,11 +193,8 @@ Object.assign(pages, {
         return `
             <div class="page-header">
                 <h1 class="page-title">Terms of Service</h1>
-                <p class="page-description">Last updated: March 2026</p>
+                <p class="page-description">Last updated: January 2026</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
-                    <a href="/terms.html" target="_blank" rel="noopener" class="btn btn-sm btn-primary">
-                        ${components.icon('external-link', 14)} View Full Terms
-                    </a>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.showTermsOfService()">
                         ${components.icon('eye', 14)} View in Modal
                     </button>
@@ -259,11 +256,8 @@ Object.assign(pages, {
         return `
             <div class="page-header">
                 <h1 class="page-title">Privacy Policy</h1>
-                <p class="page-description">Last updated: March 2026</p>
+                <p class="page-description">Last updated: January 2026</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
-                    <a href="/privacy.html" target="_blank" rel="noopener" class="btn btn-sm btn-primary">
-                        ${components.icon('external-link', 14)} View Full Policy
-                    </a>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.showPrivacyDataExport()">
                         ${components.icon('download', 14)} Download My Data
                     </button>
@@ -310,7 +304,7 @@ Object.assign(pages, {
                         <p style="margin-bottom: 1rem;">VaultLister integrates with third-party services including:</p>
                         <ul style="margin-bottom: 1rem; padding-left: 1.5rem;">
                             <li>Marketplace APIs (Poshmark, eBay, Mercari, Depop, Grailed, Facebook)</li>
-                            <li>Cloudinary for advanced image processing (optional, requires configuration)</li>
+                            <li>Cloudinary for image processing</li>
                             <li>AI services for listing generation</li>
                         </ul>
                         <p style="margin-bottom: 1rem;">Each of these services has its own privacy policy that governs how they handle your data.</p>
@@ -343,7 +337,7 @@ Object.assign(pages, {
                         </ul>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">8. Children's Privacy</h2>
-                        <p style="margin-bottom: 1rem;">VaultLister is not intended for use by persons under 18 years of age. We do not knowingly collect personal information from minors. If you believe a minor has provided us with personal data, please contact us immediately.</p>
+                        <p style="margin-bottom: 1rem;">VaultLister is not intended for use by children under 13 years of age. We do not knowingly collect personal information from children under 13.</p>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">9. Changes to This Policy</h2>
                         <p style="margin-bottom: 1rem;">We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.</p>
@@ -420,7 +414,7 @@ Object.assign(pages, {
                             <line x1="12" y1="17" x2="12" y2="21"></line>
                         </svg>
                     </div>
-                    <div class="stat-value" data-count="9">9</div>
+                    <div class="stat-value" data-count="6">6</div>
                     <div class="stat-label">Platforms Supported</div>
                 </div>
                 <div class="about-stat-card">
@@ -2467,7 +2461,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             { id: 'security', icon: '🔒', title: 'Data Security', content: 'We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. However, no internet or email transmission is ever fully secure or error free.' },
             { id: 'rights', icon: '⚖️', title: 'Your Rights', content: 'You have the right to:', list: ['Access and receive a copy of your personal data', 'Rectify or update your personal information', 'Delete your account and personal data', 'Object to or restrict certain processing of your data', 'Data portability'] },
             { id: 'cookies', icon: '🍪', title: 'Cookies and Tracking', content: 'We use cookies and similar tracking technologies to track activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.' },
-            { id: 'children', icon: '👶', title: "Children's Privacy", content: 'The Service is not directed to or intended for use by persons under the age of 18. We do not knowingly collect personal data from minors. If you believe a minor has provided us with personal data, please contact us immediately and we will delete it.' },
+            { id: 'children', icon: '👶', title: "Children's Privacy", content: 'Our service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13.' },
             { id: 'changes', icon: '🔄', title: 'Changes to Privacy Policy', content: 'We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.' },
             { id: 'contact', icon: '📧', title: 'Contact Us', content: 'If you have any questions about this Privacy Policy, please contact us at privacy@vaultlister.com' }
         ];
@@ -2646,7 +2640,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         `;
     },
 
-    // Shipping Profiles page,
+    // SKU Rules page,
 
 
     helpSupport() {
@@ -2666,35 +2660,11 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         ];
         const completedSteps = gettingStartedSteps.filter(s => s.completed).length;
 
-        const helpActiveTab = store.state.activeTab || 'help';
-
         return `
             <div class="page-header">
-                <h1 class="page-title">${components.icon('help', 24)} Help</h1>
+                <h1 class="page-title">Help & Support</h1>
                 <p class="page-description">Get the help you need to succeed</p>
             </div>
-
-            <div class="consolidated-tabs">
-                <button class="consolidated-tab ${helpActiveTab === 'help' ? 'active' : ''}"
-                        onclick="store.setState({activeTab:'help'});renderApp(pages.helpSupport())">
-                    ${components.icon('help', 16)} <span>Help & Support</span>
-                </button>
-                <button class="consolidated-tab ${helpActiveTab === 'roadmap' ? 'active' : ''}"
-                        onclick="store.setState({activeTab:'roadmap'});renderApp(pages.helpSupport())">
-                    ${components.icon('automation', 16)} <span>Roadmap</span>
-                </button>
-                <button class="consolidated-tab ${helpActiveTab === 'feedback' ? 'active' : ''}"
-                        onclick="store.setState({activeTab:'feedback'});renderApp(pages.helpSupport())">
-                    ${components.icon('community', 16)} <span>Feedback</span>
-                </button>
-            </div>
-
-            ${helpActiveTab === 'roadmap' ? (typeof pages.roadmap === 'function' ? pages.roadmap() : '<div class="empty-state"><p>Roadmap loading...</p></div>')
-            : helpActiveTab === 'feedback' ? (typeof pages.feedbackSuggestions === 'function' ? pages.feedbackSuggestions() : '<div class="empty-state"><p>Feedback loading...</p></div>')
-            : helpActiveTab === 'about' ? (typeof pages.about === 'function' ? pages.about() : '')
-            : helpActiveTab === 'terms' ? (typeof pages.termsOfService === 'function' ? pages.termsOfService() : '')
-            : helpActiveTab === 'privacy' ? (typeof pages.privacyPolicy === 'function' ? pages.privacyPolicy() : '')
-            : `
 
             <!-- Quick Stats -->
             <div class="help-stats-row">
@@ -2957,13 +2927,6 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     </div>
                 </div>
             </div>
-
-            <div class="help-footer-links" style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--gray-200);display:flex;gap:1.5rem;font-size:0.8rem;color:var(--gray-500);">
-                <a href="#" onclick="event.preventDefault();store.setState({activeTab:'about'});renderApp(pages.helpSupport())" style="color:var(--gray-500);text-decoration:none;">About Us</a>
-                <a href="#" onclick="event.preventDefault();store.setState({activeTab:'terms'});renderApp(pages.helpSupport())" style="color:var(--gray-500);text-decoration:none;">Terms of Service</a>
-                <a href="#" onclick="event.preventDefault();store.setState({activeTab:'privacy'});renderApp(pages.helpSupport())" style="color:var(--gray-500);text-decoration:none;">Privacy Policy</a>
-            </div>
-            `}
         `;
     },
 

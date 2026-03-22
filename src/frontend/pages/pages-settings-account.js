@@ -79,8 +79,6 @@ Object.assign(pages, {
             facebook: '#1877f2'
         };
 
-        const shopsActiveTab = store.state.activeTab || 'shops';
-
         return `
             <div class="page-header">
                 <div>
@@ -95,19 +93,6 @@ Object.assign(pages, {
                     </div>
                 ` : ''}
             </div>
-
-            <div class="consolidated-tabs">
-                <button class="consolidated-tab ${shopsActiveTab === 'shops' ? 'active' : ''}"
-                        onclick="store.setState({activeTab:'shops'});renderApp(pages.shops())">
-                    ${components.icon('store', 16)} <span>My Shops</span>
-                </button>
-                <button class="consolidated-tab ${shopsActiveTab === 'health' ? 'active' : ''}"
-                        onclick="store.setState({activeTab:'health'});handlers.loadPlatformHealth();renderApp(pages.shops())">
-                    ${components.icon('activity', 16)} <span>Health</span>
-                </button>
-            </div>
-
-            ${shopsActiveTab === 'health' ? (typeof pages.platformHealth === 'function' ? pages.platformHealth() : '<div class="empty-state"><p>Platform Health data loading...</p></div>') : `
 
             <!-- My Shops Hero Section -->
             <div class="shops-hero mb-6">
@@ -369,29 +354,29 @@ Object.assign(pages, {
                                     <div class="shop-quick-stats mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
                                             <div style="font-size: 16px; font-weight: 600;">${Math.floor(Math.random() * 50) + 5}</div>
-                                            <div style="font-size: 10px; color: var(--gray-700);">Listed</div>
+                                            <div style="font-size: 10px; color: var(--gray-500);">Listed</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--gray-50); border-radius: 6px;">
                                             <div style="font-size: 16px; font-weight: 600;">${fees.salesCount || Math.floor(Math.random() * 20)}</div>
-                                            <div style="font-size: 10px; color: var(--gray-700);">Sales</div>
+                                            <div style="font-size: 10px; color: var(--gray-500);">Sales</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--success-50); border-radius: 6px;">
                                             <div style="font-size: 16px; font-weight: 600; color: var(--success);">$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : Math.floor(Math.random() * 500) + 100}</div>
-                                            <div style="font-size: 10px; color: var(--gray-700);">Revenue</div>
+                                            <div style="font-size: 10px; color: var(--gray-500);">Revenue</div>
                                         </div>
                                     </div>
                                     <!-- Platform Fee Tracking -->
                                     <div class="shop-fee-tracking mb-3" style="padding: 10px; background: linear-gradient(135deg, var(--error-50) 0%, var(--gray-50) 100%); border-radius: 8px; border: 1px solid var(--error-100);">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                                             <span style="font-size: 11px; font-weight: 600; color: var(--gray-600);">Platform Fees</span>
-                                            <span style="font-size: 10px; color: var(--gray-700);">${(fees.feeRate * 100).toFixed(0)}% rate</span>
+                                            <span style="font-size: 10px; color: var(--gray-500);">${(fees.feeRate * 100).toFixed(0)}% rate</span>
                                         </div>
                                         <div style="display: flex; justify-content: space-between; align-items: baseline;">
                                             <div>
                                                 <span style="font-size: 18px; font-weight: 700; color: var(--error);">-$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : (Math.random() * 50 + 10).toFixed(2)}</span>
                                             </div>
                                             <div style="text-align: right;">
-                                                <div style="font-size: 10px; color: var(--gray-700);">Net:</div>
+                                                <div style="font-size: 10px; color: var(--gray-500);">Net:</div>
                                                 <div style="font-size: 13px; font-weight: 600; color: var(--success);">$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : (Math.random() * 400 + 80).toFixed(2)}</div>
                                             </div>
                                         </div>
@@ -611,7 +596,6 @@ Object.assign(pages, {
 
             <!-- Business FAB -->
             ${businessFAB.render()}
-            `}
         `;
     },
 
@@ -726,13 +710,11 @@ Object.assign(pages, {
         const hasUnsavedChanges = store.state.settingsChanged || false;
         const activeTab = store.state.settingsTab || 'profile';
         const user = store.state.user || {};
-        const isMac = navigator.platform ? navigator.platform.toUpperCase().includes('MAC') : false;
-        const modKey = isMac ? '⌘' : 'Ctrl';
         const keyboardShortcuts = [
-            { keys: [modKey, 'K'], action: 'Quick search' },
-            { keys: [modKey, 'N'], action: 'New listing' },
-            { keys: [modKey, 'S'], action: 'Save changes' },
-            { keys: [modKey, '/'], action: 'Show shortcuts' },
+            { keys: ['⌘', 'K'], action: 'Quick search' },
+            { keys: ['⌘', 'N'], action: 'New listing' },
+            { keys: ['⌘', 'S'], action: 'Save changes' },
+            { keys: ['⌘', '/'], action: 'Show shortcuts' },
             { keys: ['Esc'], action: 'Close modal' }
         ];
 
@@ -756,7 +738,7 @@ Object.assign(pages, {
                             <div class="settings-profile-info">
                                 <h3>${escapeHtml(user.full_name || user.username || 'User')}</h3>
                                 <p>@${escapeHtml(user.username || 'username')}</p>
-                                ${user.subscription_tier && user.subscription_tier !== 'free' ? `<span class="badge badge-success">${user.subscription_tier.charAt(0).toUpperCase() + user.subscription_tier.slice(1)} Member</span>` : ''}
+                                <span class="badge badge-success">Pro Member</span>
                             </div>
                             <button class="btn btn-secondary" onclick="router.navigate('account')">
                                 ${components.icon('user', 16)} View Account
@@ -1193,35 +1175,67 @@ Object.assign(pages, {
                                 </button>
                             </div>
                             <div class="integrations-grid">
-                                ${(function() {
-                                    const platforms = [
-                                        { id: 'ebay', name: 'eBay', color: '#E53238', letter: 'e' },
-                                        { id: 'mercari', name: 'Mercari', color: '#4169E1', letter: 'M' },
-                                        { id: 'poshmark', name: 'Poshmark', color: '#7B2D8E', letter: 'P' },
-                                        { id: 'whatnot', name: 'Whatnot', color: '#6366F1', letter: 'W' },
-                                        { id: 'depop', name: 'Depop', color: '#FF5A5F', letter: 'D' },
-                                        { id: 'facebook', name: 'Facebook Marketplace', color: '#1877F2', letter: 'F' }
-                                    ];
-                                    const shops = store.state.shops || [];
-                                    const connectedPlatforms = new Set(shops.filter(s => s.is_connected).map(s => s.platform));
-                                    return platforms.map(p => {
-                                        const connected = connectedPlatforms.has(p.id);
-                                        return `<div class="integration-card ${connected ? 'connected' : ''}">
-                                            <div class="integration-icon" style="background: ${p.color};${connected ? ' position: relative;' : ''}">
-                                                <span style="font-weight: bold; color: white;">${p.letter}</span>
-                                                ${connected ? '<span class="service-status-dot connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: #10b981; border-radius: 50%; border: 2px solid white;"></span>' : ''}
-                                            </div>
-                                            <div class="integration-info">
-                                                <h5>${escapeHtml(p.name)}</h5>
-                                                <span class="integration-status ${connected ? 'connected' : ''}">${connected ? 'Connected' : 'Not connected'}</span>
-                                            </div>
-                                            ${connected
-                                                ? `<button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('${p.id}')">Manage</button>`
-                                                : `<button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('${p.id}')">Connect</button>`
-                                            }
-                                        </div>`;
-                                    }).join('');
-                                })()}
+                                <div class="integration-card connected">
+                                    <div class="integration-icon" style="background: #E53238; position: relative;">
+                                        <span style="font-weight: bold; color: white;">e</span>
+                                        <span class="service-status-dot connected" aria-label="Connected" style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: #10b981; border-radius: 50%; border: 2px solid white;"></span>
+                                    </div>
+                                    <div class="integration-info">
+                                        <h5>eBay</h5>
+                                        <span class="integration-status connected">Connected</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('ebay')">Manage</button>
+                                </div>
+                                <div class="integration-card connected">
+                                    <div class="integration-icon" style="background: #4169E1;">
+                                        <span style="font-weight: bold; color: white;">M</span>
+                                    </div>
+                                    <div class="integration-info">
+                                        <h5>Mercari</h5>
+                                        <span class="integration-status connected">Connected</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('mercari')">Manage</button>
+                                </div>
+                                <div class="integration-card">
+                                    <div class="integration-icon" style="background: #7B2D8E;">
+                                        <span style="font-weight: bold; color: white;">P</span>
+                                    </div>
+                                    <div class="integration-info">
+                                        <h5>Poshmark</h5>
+                                        <span class="integration-status">Not connected</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('poshmark')">Connect</button>
+                                </div>
+                                <div class="integration-card connected">
+                                    <div class="integration-icon" style="background: #6366F1;">
+                                        <span style="font-weight: bold; color: white;">W</span>
+                                    </div>
+                                    <div class="integration-info">
+                                        <h5>Whatnot</h5>
+                                        <span class="integration-status connected">Connected</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-secondary" onclick="handlers.manageIntegration('whatnot')">Manage</button>
+                                </div>
+                                <div class="integration-card">
+                                    <div class="integration-icon" style="background: #FF5A5F;">
+                                        <span style="font-weight: bold; color: white;">D</span>
+                                    </div>
+                                    <div class="integration-info">
+                                        <h5>Depop</h5>
+                                        <span class="integration-status">Not connected</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('depop')">Connect</button>
+                                </div>
+                                <div class="integration-card">
+                                    <div class="integration-icon" style="background: #1877F2;">
+                                        <span style="font-weight: bold; color: white;">F</span>
+                                    </div>
+                                    <div class="integration-info">
+                                        <h5>Facebook Marketplace</h5>
+                                        <span class="integration-status">Not connected</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" onclick="handlers.connectIntegration('facebook')">Connect</button>
+                                </div>
                             </div>
                         </div>
 
@@ -1267,61 +1281,12 @@ Object.assign(pages, {
                                         ${components.icon('external-link', 14)} Open
                                     </button>
                                 </div>
-                                <div class="integration-card">
-                                    <div class="integration-icon" style="background: #4285F4;">
-                                        ${components.icon('calendar', 20)}
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Google Calendar</h5>
-                                        <span class="integration-status">Sync listing &amp; sale events</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary" aria-label="Connect Google Calendar" onclick="handlers.connectGoogleCalendar()">
-                                        Connect
-                                    </button>
-                                </div>
-                                <div class="integration-card">
-                                    <div class="integration-icon" style="background: #4285F4;">
-                                        ${components.icon('hard-drive', 20)}
-                                    </div>
-                                    <div class="integration-info">
-                                        <h5>Google Drive</h5>
-                                        <span class="integration-status">Cloud storage sync</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="handlers.connectGoogleDrive()">
-                                        Connect
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     `;
 
                 case 'tools':
-                    const rli = store.state.rateLimitInfo || {};
-                    const rlResetLabel = rli.reset
-                        ? (() => { const secs = Math.max(0, rli.reset - Math.floor(Date.now() / 1000)); return secs > 0 ? `${secs}s` : 'now'; })()
-                        : '—';
                     return `
-                        <div class="settings-section">
-                            <h4 class="settings-section-title">API Usage</h4>
-                            <div class="card" style="padding:1rem 1.25rem;">
-                                <dl style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem 1rem;margin:0;">
-                                    <div>
-                                        <dt style="font-size:0.75rem;color:var(--text-muted,#6b7280);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Limit</dt>
-                                        <dd style="font-size:1.25rem;font-weight:700;margin:0.125rem 0 0;">${escapeHtml(String(rli.limit ?? '—'))}</dd>
-                                    </div>
-                                    <div>
-                                        <dt style="font-size:0.75rem;color:var(--text-muted,#6b7280);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Remaining</dt>
-                                        <dd style="font-size:1.25rem;font-weight:700;margin:0.125rem 0 0;">${escapeHtml(String(rli.remaining ?? '—'))}</dd>
-                                    </div>
-                                    <div>
-                                        <dt style="font-size:0.75rem;color:var(--text-muted,#6b7280);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Resets in</dt>
-                                        <dd style="font-size:1.25rem;font-weight:700;margin:0.125rem 0 0;">${escapeHtml(rlResetLabel)}</dd>
-                                    </div>
-                                </dl>
-                                <p style="font-size:0.8125rem;color:var(--text-muted,#6b7280);margin:0.75rem 0 0;">Updated automatically on each API call. Make any request to refresh.</p>
-                            </div>
-                        </div>
-
                         <div class="settings-section">
                             <h4 class="settings-section-title">Tools & Configuration</h4>
                             <div class="tools-grid">
@@ -1841,15 +1806,6 @@ Object.assign(pages, {
                         </div>
                     `;
 
-                case 'teams':
-                    return typeof pages.teams === 'function' ? pages.teams() : '<div class="empty-state"><p>Teams management loading...</p></div>';
-
-                case 'reference-data':
-                    return typeof pages.sizeCharts === 'function' ? pages.sizeCharts() : '<div class="empty-state"><p>Size Charts loading...</p></div>';
-
-                case 'admin':
-                    return typeof pages.adminMetrics === 'function' ? pages.adminMetrics() : '<div class="empty-state"><p>Admin metrics loading...</p></div>';
-
                 default:
                     return '';
             }
@@ -1861,44 +1817,44 @@ Object.assign(pages, {
                 <p class="page-description">Customize your VaultLister experience</p>
             </div>
 
-            <!-- Feature 5: Settings Changelog Banner -->
-            ${(() => {
-                const lastVisit = localStorage.getItem('vaultlister_settings_last_visit');
-                let changes = [];
-                try {
-                    changes = JSON.parse(localStorage.getItem('vaultlister_settings_changes') || '[]');
-                } catch (e) {
-                    console.error('Failed to parse settings changes:', e);
-                    changes = [];
-                }
-                if (changes.length > 0 && lastVisit) {
-                    const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
-                    const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
-                    return `
-                        <div class="settings-changelog-banner" style="background: #dbeafe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; color: #0c4a6e; margin-bottom: 4px;">Settings Updated</div>
-                                <div style="font-size: 13px; color: #0c4a6e; margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
-                            </div>
-                            <button class="btn btn-sm btn-secondary" onclick="handlers.dismissSettingsChangelog()" style="white-space: nowrap;">Dismiss</button>
-                        </div>
-                    `;
-                }
-                return '';
-            })()}
-
-            <!-- Settings Search -->
-            <div class="settings-search-wrapper" style="margin-bottom: 12px; position: relative;">
-                <input type="text" class="form-input" id="settings-search-input" placeholder="Search settings..."
-                    oninput="handlers.settingsSearch(this.value)" autocomplete="off"
-                    style="padding-left: 36px; max-width: 320px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;">
-                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <div id="settings-search-results" style="display:none; position:absolute; top:100%; left:0; width:320px; background:var(--card-bg, #fff); border:1px solid var(--gray-200); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:10; max-height:240px; overflow-y:auto; margin-top:4px;"></div>
-            </div>
-
             <div class="settings-container">
+                <!-- Feature 5: Settings Changelog Banner -->
+                ${(() => {
+                    const lastVisit = localStorage.getItem('vaultlister_settings_last_visit');
+                    let changes = [];
+                    try {
+                        changes = JSON.parse(localStorage.getItem('vaultlister_settings_changes') || '[]');
+                    } catch (e) {
+                        console.error('Failed to parse settings changes:', e);
+                        changes = [];
+                    }
+                    if (changes.length > 0 && lastVisit) {
+                        const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
+                        const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
+                        return `
+                            <div class="settings-changelog-banner" style="background: #dbeafe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; color: #0c4a6e; margin-bottom: 4px;">Settings Updated</div>
+                                    <div style="font-size: 13px; color: #0c4a6e; margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
+                                </div>
+                                <button class="btn btn-sm btn-secondary" onclick="handlers.dismissSettingsChangelog()" style="white-space: nowrap;">Dismiss</button>
+                            </div>
+                        `;
+                    }
+                    return '';
+                })()}
+
+                <!-- Settings Search -->
+                <div class="settings-search-wrapper" style="margin-bottom: 12px; position: relative;">
+                    <input type="text" class="form-input" id="settings-search-input" placeholder="Search settings..."
+                        oninput="handlers.settingsSearch(this.value)" autocomplete="off"
+                        style="padding-left: 36px; max-width: 320px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <div id="settings-search-results" style="display:none; position:absolute; top:100%; left:0; width:320px; background:var(--card-bg, #fff); border:1px solid var(--gray-200); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:10; max-height:240px; overflow-y:auto; margin-top:4px;"></div>
+                </div>
+
                 <!-- Settings Tabs -->
                 <div class="settings-tabs">
                     <button class="settings-tab ${activeTab === 'profile' ? 'active' : ''}" onclick="handlers.setSettingsTab('profile')">
@@ -1960,17 +1916,6 @@ Object.assign(pages, {
                         </svg>
                         Data
                     </button>
-                    <button class="settings-tab ${activeTab === 'teams' ? 'active' : ''}" onclick="handlers.setSettingsTab('teams')">
-                        ${components.icon('community', 18)} Teams
-                    </button>
-                    <button class="settings-tab ${activeTab === 'reference-data' ? 'active' : ''}" onclick="handlers.setSettingsTab('reference-data')">
-                        ${components.icon('tag', 18)} Reference Data
-                    </button>
-                    ${(store.state.user && store.state.user.is_admin) ? `
-                    <button class="settings-tab ${activeTab === 'admin' ? 'active' : ''}" onclick="handlers.setSettingsTab('admin')">
-                        ${components.icon('cpu', 18)} Admin
-                    </button>
-                    ` : ''}
                 </div>
 
                 <!-- Settings Content -->
@@ -2095,27 +2040,6 @@ Object.assign(pages, {
                                     Update Password
                                 </button>
                             </div>
-                        </div>
-
-                        <hr style="margin: 28px 0; border: none; border-top: 1px solid var(--gray-200);">
-
-                        <h3 class="font-semibold mb-2">Two-Factor Authentication</h3>
-                        <p class="text-sm text-gray-500 mb-4">Add an extra layer of security to your account using an authenticator app (Google Authenticator, Authy, etc.).</p>
-                        <div id="mfa-section">
-                            ${store.state.user?.mfa_enabled
-                                ? `<div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-                                    <span style="display:inline-flex; align-items:center; gap:6px; color:var(--success,#16a34a); font-weight:600; font-size:14px;">${components.icon('shield', 16)} 2FA Enabled</span>
-                                   </div>
-                                   <button class="btn btn-danger-outline" onclick="handlers.disableMFA()" style="font-size:13px;">
-                                       Disable Two-Factor Authentication
-                                   </button>`
-                                : `<div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-                                    <span style="display:inline-flex; align-items:center; gap:6px; color:var(--gray-400); font-size:14px;">${components.icon('shield-off', 16)} 2FA Not Enabled</span>
-                                   </div>
-                                   <button class="btn btn-secondary" onclick="handlers.setupMFA()">
-                                       Enable Two-Factor Authentication
-                                   </button>`
-                            }
                         </div>
                     </div>
                 </div>
@@ -2388,190 +2312,187 @@ Object.assign(pages, {
         `;
     },
 
-    // Plans & Billing page
+    // Plans & Billing page,
 
 
     plansBilling() {
         const user = store.state.user || {};
         const currentPlan = user.subscription_tier || 'free';
-        const usage = store.state.billingUsage || [];
-
-        const PLANS = [
-            {
-                id: 'free',
-                name: 'Free',
-                price: '$0',
-                period: 'forever free',
-                features: [
-                    { text: '10 listings', ok: true },
-                    { text: '50 orders / month', ok: true },
-                    { text: '5 automations', ok: true },
-                    { text: '100 MB storage', ok: true },
-                    { text: 'AI listing generator', ok: false },
-                    { text: 'Priority support', ok: false }
-                ],
-                btnLabel: 'Current Plan',
-                btnClass: 'btn-outline',
-                popular: false
-            },
-            {
-                id: 'starter',
-                name: 'Starter',
-                price: '$9.99',
-                period: 'per month',
-                features: [
-                    { text: '100 listings', ok: true },
-                    { text: '500 orders / month', ok: true },
-                    { text: '20 automations', ok: true },
-                    { text: '1 GB storage', ok: true },
-                    { text: 'Basic analytics', ok: true },
-                    { text: 'Priority support', ok: false }
-                ],
-                btnLabel: 'Upgrade to Starter',
-                btnClass: 'btn-secondary',
-                popular: false
-            },
-            {
-                id: 'pro',
-                name: 'Pro',
-                price: '$24.99',
-                period: 'per month',
-                features: [
-                    { text: '500 listings', ok: true },
-                    { text: '2,500 orders / month', ok: true },
-                    { text: '100 automations', ok: true },
-                    { text: '5 GB storage', ok: true },
-                    { text: 'AI listing generator', ok: true },
-                    { text: 'Chat support', ok: true }
-                ],
-                btnLabel: 'Upgrade to Pro',
-                btnClass: 'btn-primary',
-                popular: true
-            },
-            {
-                id: 'business',
-                name: 'Business',
-                price: '$49.99',
-                period: 'per month',
-                features: [
-                    { text: 'Unlimited listings', ok: true },
-                    { text: 'Unlimited orders', ok: true },
-                    { text: 'Unlimited automations', ok: true },
-                    { text: '25 GB storage', ok: true },
-                    { text: 'Team collaboration', ok: true },
-                    { text: 'Dedicated account manager', ok: true }
-                ],
-                btnLabel: 'Upgrade to Business',
-                btnClass: 'btn-secondary',
-                popular: false
-            }
-        ];
-
-        const planCards = PLANS.map(plan => {
-            const isActive = currentPlan === plan.id;
-            const featureList = plan.features.map(f => `
-                <li class="flex items-center gap-2 text-sm ${f.ok ? '' : 'text-gray-400'}">
-                    <span style="color: ${f.ok ? 'var(--success)' : 'currentColor'};">${components.icon(f.ok ? 'check' : 'x', 16)}</span>
-                    ${escapeHtml(f.text)}
-                </li>`).join('');
-
-            let actionBtn;
-            if (isActive) {
-                actionBtn = `<button class="btn ${plan.btnClass} w-full" disabled>Current Plan</button>`;
-            } else if (plan.id === 'free') {
-                actionBtn = `<button class="btn btn-outline w-full" onclick="handlers.stripeCancelSubscription()">Downgrade to Free</button>`;
-            } else {
-                actionBtn = `<button class="btn ${plan.btnClass} w-full" onclick="handlers.stripeCheckout('${plan.id}')">${escapeHtml(plan.btnLabel)}</button>`;
-            }
-
-            return `
-                <div class="card ${isActive ? 'ring-2 ring-primary' : ''}" style="position: relative;">
-                    ${plan.popular ? `<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--primary);color:white;padding:4px 16px;border-radius:var(--radius-full);font-size:12px;font-weight:600;">Most Popular</div>` : ''}
-                    <div class="card-body text-center">
-                        <h3 class="text-xl font-bold mb-2">${escapeHtml(plan.name)}</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">${escapeHtml(plan.price)}</div>
-                        <div class="text-sm text-gray-500 mb-4">${escapeHtml(plan.period)}</div>
-                        <ul class="text-left space-y-2 mb-6">${featureList}</ul>
-                        ${actionBtn}
-                    </div>
-                </div>`;
-        }).join('');
-
-        const usageRows = usage.length ? usage.map(u => {
-            const pct = u.plan_limit > 0 ? Math.min(100, Math.round((u.current_value / u.plan_limit) * 100)) : 0;
-            const barColor = pct >= 95 ? 'var(--error)' : pct >= 80 ? 'var(--warning)' : 'var(--primary)';
-            return `
-                <div class="mb-4">
-                    <div class="flex justify-between text-sm mb-1">
-                        <span class="text-capitalize">${escapeHtml(u.metric.replace(/_/g, ' '))}</span>
-                        <span>${u.current_value} / ${u.plan_limit < 0 ? 'Unlimited' : u.plan_limit}</span>
-                    </div>
-                    <div style="background:var(--gray-200);border-radius:4px;height:6px;">
-                        <div style="width:${pct}%;background:${barColor};height:6px;border-radius:4px;transition:width 0.3s;"></div>
-                    </div>
-                </div>`;
-        }).join('') : `<p class="text-sm text-gray-500">No usage data yet. <button class="btn btn-xs btn-ghost" onclick="handlers.refreshBillingUsage()">Refresh</button></p>`;
-
-        const manageBtn = currentPlan !== 'free' ? `
-            <button class="btn btn-secondary" onclick="handlers.stripePortal()">
-                ${components.icon('settings', 16)} Manage Subscription
-            </button>` : '';
 
         return `
             <div class="page-header">
-                <h1 class="page-title">Plans &amp; Billing</h1>
+                <h1 class="page-title">Plans & Billing</h1>
                 <p class="page-description">Manage your subscription and payment methods</p>
             </div>
 
-            <!-- Current Plan Banner -->
+            <!-- Current Plan -->
             <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">Current Plan</h3>
+                </div>
                 <div class="card-body">
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="flex items-center gap-3">
-                                <span class="badge badge-lg badge-success">${escapeHtml(currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1))}</span>
+                                <span class="badge badge-lg badge-success">${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</span>
                                 <span class="text-gray-500">Active</span>
                             </div>
-                            <p class="text-sm text-gray-600 mt-1">
-                                ${currentPlan === 'free' ? 'You are on the Free plan.' : 'Your paid plan is active. Use the Stripe portal to update your payment method or view invoices.'}
-                            </p>
+                            <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlan === 'free' ? 'Free plan with limited features' : 'Premium plan with all features unlocked'}.</p>
                         </div>
-                        <div class="flex gap-2">
-                            ${manageBtn}
-                        </div>
+                        ${currentPlan === 'free' ? `
+                            <button class="btn btn-primary" onclick="handlers.showPlanComparison()">
+                                Upgrade to Premium
+                            </button>
+                        ` : `
+                            <button class="btn btn-secondary" onclick="handlers.showProrationCalculator()">
+                                Manage Subscription
+                            </button>
+                        `}
                     </div>
                 </div>
             </div>
 
-            <!-- Plan Grid -->
-            <div class="grid grid-cols-4 gap-4 mb-6">
-                ${planCards}
+            <!-- Pricing Plans -->
+            <div class="grid grid-cols-3 gap-6 mb-6">
+                <!-- Free Plan -->
+                <div class="card ${currentPlan === 'free' ? 'ring-2 ring-primary' : ''}">
+                    <div class="card-body text-center">
+                        <h3 class="text-xl font-bold mb-2">Free</h3>
+                        <div class="text-4xl font-bold text-primary mb-1">$0</div>
+                        <div class="text-sm text-gray-500 mb-4">Forever free</div>
+                        <ul class="text-left space-y-2 mb-6">
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Up to 100 inventory items
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Cross-list to 3 platforms
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Basic analytics
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Manual cross-listing
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-gray-400">
+                                <span>${components.icon('x', 16)}</span>
+                                AI listing generator
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-gray-400">
+                                <span>${components.icon('x', 16)}</span>
+                                Automation features
+                            </li>
+                        </ul>
+                        ${currentPlan === 'free' ? `
+                            <button class="btn btn-outline w-full" disabled>Current Plan</button>
+                        ` : `
+                            <button class="btn btn-outline w-full" onclick="handlers.confirmPlanChange('free')">Downgrade to Free</button>
+                        `}
+                    </div>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="card ${currentPlan === 'pro' ? 'ring-2 ring-primary' : ''}" style="position: relative;">
+                    <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 4px 16px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600;">
+                        Most Popular
+                    </div>
+                    <div class="card-body text-center">
+                        <h3 class="text-xl font-bold mb-2">Pro</h3>
+                        <div class="text-4xl font-bold text-primary mb-1">$19</div>
+                        <div class="text-sm text-gray-500 mb-4">per month</div>
+                        <ul class="text-left space-y-2 mb-6">
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Unlimited inventory items
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Cross-list to all 6 platforms
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Advanced analytics & reports
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                AI listing generator (50/mo)
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Basic automations
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-gray-400">
+                                <span>${components.icon('x', 16)}</span>
+                                Priority support
+                            </li>
+                        </ul>
+                        ${currentPlan === 'pro' ? `
+                            <button class="btn btn-primary w-full" disabled>Current Plan</button>
+                        ` : `
+                            <button class="btn btn-primary w-full" onclick="handlers.selectPlan('pro')">
+                                ${currentPlan === 'business' ? 'Switch to Pro' : 'Upgrade to Pro'}
+                            </button>
+                        `}
+                    </div>
+                </div>
+
+                <!-- Business Plan -->
+                <div class="card ${currentPlan === 'business' ? 'ring-2 ring-primary' : ''}">
+                    <div class="card-body text-center">
+                        <h3 class="text-xl font-bold mb-2">Business</h3>
+                        <div class="text-4xl font-bold text-primary mb-1">$49</div>
+                        <div class="text-sm text-gray-500 mb-4">per month</div>
+                        <ul class="text-left space-y-2 mb-6">
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Everything in Pro
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Unlimited AI generations
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Advanced automations
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Bulk operations
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Priority support
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                API access
+                            </li>
+                        </ul>
+                        ${currentPlan === 'business' ? `
+                            <button class="btn btn-secondary w-full" disabled>Current Plan</button>
+                        ` : `
+                            <button class="btn btn-secondary w-full" onclick="handlers.selectPlan('business')">Upgrade to Business</button>
+                        `}
+                    </div>
+                </div>
             </div>
 
-            <!-- Usage Stats -->
-            <div class="card mb-6">
+            <!-- Billing History -->
+            <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Current Usage</h3>
-                    <button class="btn btn-xs btn-ghost ml-auto" onclick="handlers.refreshBillingUsage()">${components.icon('refresh', 14)} Refresh</button>
+                    <h3 class="card-title">Billing History</h3>
                 </div>
                 <div class="card-body">
-                    ${usageRows}
+                    <div class="text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-2">${components.icon('dollar', 32)}</div>
+                        <p>No billing history yet</p>
+                        <p class="text-sm">Upgrade to a paid plan to see your invoices here</p>
+                    </div>
                 </div>
             </div>
-
-            <!-- Stripe Portal Link -->
-            ${currentPlan !== 'free' ? `
-            <div class="card">
-                <div class="card-body flex items-center justify-between">
-                    <div>
-                        <div class="font-medium">Invoices &amp; Payment Methods</div>
-                        <p class="text-sm text-gray-500">View past invoices and update your card in the Stripe Customer Portal.</p>
-                    </div>
-                    <button class="btn btn-ghost" onclick="handlers.stripePortal()">
-                        Open Portal ${components.icon('external-link', 14)}
-                    </button>
-                </div>
-            </div>` : ''}
         `;
     },
 
@@ -3033,17 +2954,7 @@ Object.assign(pages, {
                                     <div class="text-xs text-gray-500">Cloud storage sync</div>
                                 </div>
                             </div>
-                            <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="handlers.connectGoogleDrive()">Connect</button>
-                        </div>
-                        <div class="flex items-center justify-between p-4 rounded-lg border">
-                            <div class="flex items-center gap-3">
-                                <div style="width: 40px; height: 40px; background: #4285F4; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">Cal</div>
-                                <div>
-                                    <div class="font-medium">Google Calendar</div>
-                                    <div class="text-xs text-gray-500">Sync listing &amp; sale events</div>
-                                </div>
-                            </div>
-                            <button class="btn btn-sm btn-primary" aria-label="Connect Google Calendar" onclick="handlers.connectGoogleCalendar()">Connect</button>
+                            <button class="btn btn-sm btn-primary" aria-label="Connect Google Drive" onclick="window.open('/api/integrations/google/drive/authorize', '_blank', 'width=500,height=600')">Connect</button>
                         </div>
                         <div class="flex items-center justify-between p-4 rounded-lg border">
                             <div class="flex items-center gap-3">

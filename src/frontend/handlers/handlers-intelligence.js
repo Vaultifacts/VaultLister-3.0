@@ -1656,4 +1656,18 @@ Object.assign(handlers, {
 
     // Set Acquired Date for Inventory Item,
 
+
+    deleteSupplier: async function(id, name) {
+        if (!confirm('Delete supplier "' + name + '"?')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.delete('/inventory/suppliers/' + id);
+            toast.success('Supplier deleted');
+            handlers.showSupplierManager();
+        } catch (e) {
+            toast.error('Failed to delete supplier');
+        }
+    },
+
+    // --- Task #128: Duration Trends Chart ---
 });

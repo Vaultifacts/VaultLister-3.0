@@ -2032,47 +2032,8 @@ Object.assign(handlers, {
         toast.success('Expenses exported');
     },
 
-    // Dashboard Refresh - re-fetches all data and re-renders,
-
-
-    refreshDashboard: async function() {
-        try {
-            toast.show('Refreshing dashboard...', 'info');
-            await Promise.all([
-                handlers.loadInventory(),
-                handlers.loadListings(),
-                handlers.loadSales(),
-                handlers.loadOffers(),
-                handlers.loadOrders()
-            ]);
-            store.setState({ dashboardLastRefresh: Date.now() });
-            router.navigate('dashboard');
-            toast.success('Dashboard refreshed');
-        } catch (error) {
-            console.error('Dashboard refresh failed:', error);
-            toast.show('Refresh failed. Try again.', 'error');
-        }
-    },
-
-    // Export Dashboard as PDF/Image,
-
-
-    exportDashboard: function(format) {
-        const container = document.querySelector('.dashboard-widgets-container');
-        if (container) {
-            container.setAttribute('data-print-date', new Date().toLocaleString());
-        }
-        if (format === 'print') {
-            document.body.classList.add('dashboard-print-mode');
-            window.print();
-            document.body.classList.remove('dashboard-print-mode');
-        } else if (format === 'screenshot') {
-            document.body.classList.add('dashboard-print-mode');
-            toast.show('Use your browser\'s print dialog → "Save as PDF" or screenshot tool (Win+Shift+S)', 'info', 5000);
-            window.print();
-            document.body.classList.remove('dashboard-print-mode');
-        }
-    },
+    // refreshDashboard: moved to handlers-core.js (Fix B)
+    // exportDashboard: moved to handlers-core.js (Fix B)
 
     // Set dashboard date range period,
 
@@ -3012,7 +2973,7 @@ Object.assign(handlers, {
         }
     },
 
-    // Sales Velocity Dashboard,
+    // showSalesVelocity: moved to handlers-core.js (Fix A)
 
 
     showWeeklyReport: function() {
@@ -3566,9 +3527,11 @@ Object.assign(handlers, {
         } else {
             store.setState({ selectedOrderIds: [] });
         }
-        document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => {
-            cb.checked = checked;
-        });
+        // Re-render checkboxes
+        if (store.state.currentPage === 'orders') {
+            const pageContent = pages.orders();
+            document.querySelector('.page-content').innerHTML = pageContent;
+        }
     },
 
 
@@ -6408,7 +6371,29 @@ Object.assign(handlers, {
 
 
     showReportTemplates() {
-        handlers.showReportTemplates();
+        const templates = [
+            { id: 'monthly-sales', label: 'Monthly Sales Summary', desc: 'Revenue, fees, and net profit by month' },
+            { id: 'platform-breakdown', label: 'Platform Breakdown', desc: 'Sales and inventory split by marketplace' },
+            { id: 'inventory-value', label: 'Inventory Value Report', desc: 'Current stock with cost and list price totals' },
+            { id: 'top-sellers', label: 'Top Selling Items', desc: 'Best performing listings by revenue' }
+        ];
+        modals.show(`
+            <div class="modal-header">
+                <h3>Report Templates</h3>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:24px;">
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    ${templates.map(t => `
+                        <button class="btn btn-outline" style="text-align:left;display:flex;flex-direction:column;align-items:flex-start;padding:16px;"
+                                onclick="modals.close();router.navigate('reports');toast.info('${t.label} template loaded')">
+                            <span style="font-weight:600;">${t.label}</span>
+                            <span style="font-size:13px;color:var(--gray-600);margin-top:4px;">${t.desc}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `);
     },
 
     // Image Bank,

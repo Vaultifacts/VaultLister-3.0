@@ -9352,45 +9352,8 @@ Object.assign(handlers, {
         toast.success('Expenses exported');
     },
 
-    // Dashboard Refresh - re-fetches all data and re-renders,
-
-    refreshDashboard: async function() {
-        try {
-            toast.show('Refreshing dashboard...', 'info');
-            await Promise.all([
-                handlers.loadInventory(),
-                handlers.loadListings(),
-                handlers.loadSales(),
-                handlers.loadOffers(),
-                handlers.loadOrders()
-            ]);
-            store.setState({ dashboardLastRefresh: Date.now() });
-            router.navigate('dashboard');
-            toast.success('Dashboard refreshed');
-        } catch (error) {
-            console.error('Dashboard refresh failed:', error);
-            toast.show('Refresh failed. Try again.', 'error');
-        }
-    },
-
-    // Export Dashboard as PDF/Image,
-
-    exportDashboard: function(format) {
-        const container = document.querySelector('.dashboard-widgets-container');
-        if (container) {
-            container.setAttribute('data-print-date', new Date().toLocaleString());
-        }
-        if (format === 'print') {
-            document.body.classList.add('dashboard-print-mode');
-            window.print();
-            document.body.classList.remove('dashboard-print-mode');
-        } else if (format === 'screenshot') {
-            document.body.classList.add('dashboard-print-mode');
-            toast.show('Use your browser\'s print dialog → "Save as PDF" or screenshot tool (Win+Shift+S)', 'info', 5000);
-            window.print();
-            document.body.classList.remove('dashboard-print-mode');
-        }
-    },
+    // refreshDashboard: moved to handlers-core.js (Fix B)
+    // exportDashboard: moved to handlers-core.js (Fix B)
 
     // Set dashboard date range period,
 
@@ -10643,121 +10606,7 @@ Object.assign(handlers, {
         }
     },
 
-    // Sales Velocity Dashboard,
-
-    showSalesVelocity: function() {
-        const sales = store.state.sales || [];
-        const inventory = store.state.inventory || [];
-        const now = new Date();
-        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-        // Calculate sales velocity for each item
-        const velocityMap = {};
-        sales.filter(s => new Date(s.sold_at || s.created_at) >= thirtyDaysAgo).forEach(sale => {
-            const itemId = sale.item_id || sale.inventory_id;
-            if (!velocityMap[itemId]) {
-                velocityMap[itemId] = { count: 0, revenue: 0, title: sale.item_title || 'Unknown' };
-            }
-            velocityMap[itemId].count++;
-            velocityMap[itemId].revenue += parseFloat(sale.sale_price) || 0;
-        });
-
-        // Sort by velocity (sales count)
-        const topSellers = Object.entries(velocityMap)
-            .map(([id, data]) => ({ id, ...data, velocity: data.count / 30 }))
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 10);
-
-        // Find slow movers (items with no sales in 30 days)
-        const soldItemIds = new Set(Object.keys(velocityMap));
-        const slowMovers = inventory
-            .filter(item => !soldItemIds.has(String(item.id)))
-            .slice(0, 5);
-
-        // Calculate overall stats
-        const totalSales30d = Object.values(velocityMap).reduce((sum, v) => sum + v.count, 0);
-        const totalRevenue30d = Object.values(velocityMap).reduce((sum, v) => sum + v.revenue, 0);
-        const avgDailySales = (totalSales30d / 30).toFixed(1);
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('trending-up', 20)} Sales Velocity</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                <div class="velocity-container">
-                    <!-- Summary Stats -->
-                    <div class="velocity-summary">
-                        <div class="velocity-stat">
-                            <div class="velocity-stat-value">${totalSales30d}</div>
-                            <div class="velocity-stat-label">Sales (30d)</div>
-                        </div>
-                        <div class="velocity-stat">
-                            <div class="velocity-stat-value">$${totalRevenue30d.toFixed(0)}</div>
-                            <div class="velocity-stat-label">Revenue (30d)</div>
-                        </div>
-                        <div class="velocity-stat">
-                            <div class="velocity-stat-value">${avgDailySales}</div>
-                            <div class="velocity-stat-label">Avg/Day</div>
-                        </div>
-                    </div>
-
-                    <!-- Top Sellers -->
-                    <div class="velocity-section">
-                        <h4 class="section-title">${components.icon('award', 16)} Top Sellers (30 days)</h4>
-                        <div class="velocity-list">
-                            ${topSellers.length === 0 ? `
-                                <div class="velocity-empty">No sales in the last 30 days</div>
-                            ` : topSellers.map((item, i) => `
-                                <div class="velocity-item ${i < 3 ? 'top-performer' : ''}">
-                                    <div class="velocity-rank">#${i + 1}</div>
-                                    <div class="velocity-info">
-                                        <div class="velocity-title">${escapeHtml(item.title)}</div>
-                                        <div class="velocity-meta">${item.count} sales • $${item.revenue.toFixed(0)} revenue</div>
-                                    </div>
-                                    <div class="velocity-speed">
-                                        <div class="velocity-bar" style="width: ${topSellers[0]?.count > 0 ? (item.count / topSellers[0].count * 100) : 0}%"></div>
-                                        <span class="velocity-rate">${item.velocity.toFixed(2)}/day</span>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-
-                    <!-- Slow Movers -->
-                    ${slowMovers.length > 0 ? `
-                        <div class="velocity-section">
-                            <h4 class="section-title">${components.icon('alert-triangle', 16)} Slow Movers (No sales in 30d)</h4>
-                            <div class="slow-movers-list">
-                                ${slowMovers.map(item => `
-                                    <div class="slow-mover-item">
-                                        <div class="slow-mover-title">${escapeHtml(item.title || item.name || 'Unknown')}</div>
-                                        <div class="slow-mover-price">$${parseFloat(item.list_price || 0).toFixed(2)}</div>
-                                        <button class="btn btn-xs btn-secondary" onclick="handlers.showPriceDropSuggestion('${item.id}')">
-                                            Suggest Price Drop
-                                        </button>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    <!-- Velocity Tips -->
-                    <div class="velocity-tips">
-                        <h4 class="section-title">${components.icon('lightbulb', 16)} Tips</h4>
-                        <ul class="tips-list">
-                            <li>Items selling >0.5/day are fast movers</li>
-                            <li>Consider restocking top sellers</li>
-                            <li>Review pricing on slow movers</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Close</button>
-            </div>
-        `, 'modal-lg');
-    },
+    // showSalesVelocity: moved to handlers-core.js (Fix A)
 
     showPriceDropSuggestion: function(itemId) {
         const item = (store.state.inventory || []).find(i => String(i.id) === String(itemId));
@@ -25109,93 +24958,7 @@ Object.assign(handlers, {
         }
     },
 
-    // Custom Metric Builder,
-
-    showCustomMetricBuilder: function() {
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('sliders', 20)} Custom KPI Builder</h2>
-                <button class="btn btn-icon" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
-            </div>
-            <div class="modal-body">
-                <p class="text-gray-600 mb-4">Create custom metrics by combining existing data points.</p>
-                <div class="form-group">
-                    <label class="form-label">Metric Name</label>
-                    <input type="text" id="custom-metric-name" class="form-input" placeholder="e.g., Revenue per Item, Profit Ratio">
-                </div>
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="form-group">
-                        <label class="form-label">First Metric</label>
-                        <select id="custom-metric-a" class="form-select">
-                            <option value="revenue">Revenue</option>
-                            <option value="profit">Profit</option>
-                            <option value="orders">Orders</option>
-                            <option value="inventory_value">Inventory Value</option>
-                            <option value="items_sold">Items Sold</option>
-                            <option value="active_listings">Active Listings</option>
-                            <option value="avg_sale">Avg Sale Price</option>
-                            <option value="total_views">Total Views</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Operation</label>
-                        <select id="custom-metric-op" class="form-select">
-                            <option value="divide">&divide; Divide</option>
-                            <option value="multiply">&times; Multiply</option>
-                            <option value="add">+ Add</option>
-                            <option value="subtract">&minus; Subtract</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Second Metric</label>
-                        <select id="custom-metric-b" class="form-select">
-                            <option value="orders">Orders</option>
-                            <option value="revenue">Revenue</option>
-                            <option value="profit">Profit</option>
-                            <option value="inventory_value">Inventory Value</option>
-                            <option value="items_sold">Items Sold</option>
-                            <option value="active_listings">Active Listings</option>
-                            <option value="avg_sale">Avg Sale Price</option>
-                            <option value="total_views">Total Views</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Display Format</label>
-                    <select id="custom-metric-format" class="form-select">
-                        <option value="currency">Currency ($)</option>
-                        <option value="percentage">Percentage (%)</option>
-                        <option value="number">Number (#)</option>
-                    </select>
-                </div>
-
-                ${(store.state.customMetrics || []).length > 0 ? `
-                <div class="mt-4">
-                    <h4 class="text-sm font-medium mb-2">Existing Custom KPIs</h4>
-                    <div class="flex flex-col gap-2">
-                        ${(store.state.customMetrics || []).map(m => `
-                            <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
-                                <div>
-                                    <span class="font-medium text-sm">${escapeHtml(m.name)}</span>
-                                    <span class="text-xs text-gray-500 ml-2">${m.metric_a} ${m.operation === 'divide' ? '&divide;' : m.operation === 'multiply' ? '&times;' : m.operation === 'add' ? '+' : '&minus;'} ${m.metric_b}</span>
-                                </div>
-                                <button class="btn btn-icon btn-sm text-error" onclick="handlers.deleteCustomMetric('${m.id}')">
-                                    ${components.icon('trash', 14)}
-                                </button>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : ''}
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                <button class="btn btn-primary" onclick="handlers.saveCustomMetric()">
-                    ${components.icon('plus', 16)} Create KPI
-                </button>
-            </div>
-        `);
-    },
+    // showCustomMetricBuilder: moved to handlers-core.js (Fix A)
 
     saveCustomMetric: async function() {
         const name = document.getElementById('custom-metric-name')?.value?.trim();
@@ -25234,53 +24997,7 @@ Object.assign(handlers, {
         }
     },
 
-    // Analytics Email Digest Settings,
-
-    showAnalyticsDigestSettings: function() {
-        const digestSettings = store.state.digestSettings || { frequency: 'weekly', email: '', is_active: false };
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('mail', 20)} Analytics Digest Settings</h2>
-                <button class="btn btn-icon" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
-            </div>
-            <div class="modal-body">
-                <p class="text-gray-600 mb-4">Receive a summary of your analytics data delivered to your inbox on a regular schedule.</p>
-                <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="${escapeHtml(digestSettings.email || '')}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Frequency</label>
-                    <select id="digest-frequency" class="form-select">
-                        <option value="daily" ${digestSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
-                        <option value="weekly" ${digestSettings.frequency === 'weekly' ? 'selected' : ''}>Weekly (Every Monday)</option>
-                        <option value="monthly" ${digestSettings.frequency === 'monthly' ? 'selected' : ''}>Monthly (1st of month)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="digest-active" ${digestSettings.is_active ? 'checked' : ''}>
-                        <span class="form-label" style="margin-bottom: 0;">Enable digest emails</span>
-                    </label>
-                </div>
-                <div class="card bg-gray-50 p-4 mt-4">
-                    <h4 class="text-sm font-medium mb-2">${components.icon('info', 14)} Digest Includes</h4>
-                    <ul class="text-sm text-gray-600" style="list-style: disc; padding-left: 20px;">
-                        <li>Revenue & profit summary for the period</li>
-                        <li>Top selling items and platforms</li>
-                        <li>Inventory status changes</li>
-                        <li>Performance trends vs. previous period</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                <button class="btn btn-primary" onclick="handlers.saveDigestSettings()">
-                    ${components.icon('save', 16)} Save Settings
-                </button>
-            </div>
-        `);
-    },
+    // showAnalyticsDigestSettings: moved to handlers-core.js (Fix A)
 
     saveDigestSettings: async function() {
         const email = document.getElementById('digest-email')?.value?.trim();

@@ -2455,12 +2455,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                <div class="flex items-center justify-between mb-4">
-                    <p class="text-gray-500" style="margin: 0;">Connect your external calendars to keep events in sync.</p>
-                    <button class="btn btn-sm btn-primary" onclick="window.open('/api/calendar/google/authorize', '_blank', 'width=500,height=600')" aria-label="Connect Google Calendar">
-                        ${google.is_active ? 'Reconnect Google Calendar' : 'Connect Google Calendar'}
-                    </button>
-                </div>
+                <p class="text-gray-500 mb-4">Connect your external calendars to keep events in sync. Calendar OAuth requires <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> in your <code>.env</code> — configure these to enable calendar connectivity.</p>
                 ${renderProviderSection('google', 'Google Calendar', 'calendar', google)}
                 ${renderProviderSection('outlook', 'Outlook Calendar', 'mail', outlook)}
             </div>
@@ -3661,7 +3656,12 @@ Object.assign(handlers, {
 
 
     closeBatchPhotoModal: function() {
-        store.setState({ batchPhotoModalOpen: false, batchPhotoProgress: null });
+        store.setState({
+            batchPhotoModalOpen: false,
+            batchPhotoProgress: null,
+            batchPhotoTransformations: {},
+            selectedImages: []
+        });
         modals.close();
     },
 
@@ -4396,7 +4396,7 @@ Object.assign(handlers, {
             const data = await api.get('/duplicates?status=pending');
             handlers.renderDuplicatesList(data.duplicates || []);
         } catch (error) {
-            listEl.innerHTML = `<p style="color: var(--error);">Error: ${escapeHtml(error.message)}</p>`;
+            listEl.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
         }
     },
 
@@ -4861,7 +4861,7 @@ Object.assign(handlers, {
         }
     },
 
-    // Custom Metric Builder,
+    // showCustomMetricBuilder: moved to handlers-core.js (Fix A)
 
 
     saveCustomMetric: async function() {
@@ -4902,7 +4902,7 @@ Object.assign(handlers, {
         }
     },
 
-    // Analytics Email Digest Settings,
+    // showAnalyticsDigestSettings: moved to handlers-core.js (Fix A)
 
 
     saveDigestSettings: async function() {
@@ -5004,7 +5004,18 @@ Object.assign(handlers, {
 
 
     showQuickPhotoCapture() {
-        handlers.openCameraModal({ context: 'quick' });
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.multiple = true;
+        input.onchange = (e) => {
+            const files = Array.from(e.target.files || []);
+            if (files.length) {
+                toast.success(`${files.length} photo${files.length > 1 ? 's' : ''} selected — upload via Image Bank`);
+                router.navigate('image-bank');
+            }
+        };
+        input.click();
     },
 
 
@@ -5014,247 +5025,76 @@ Object.assign(handlers, {
 
 
     captureFromCamera() {
-        handlers.openCameraModal({ context: 'bank' });
-    },
-
-
-    openCameraModal({ context = 'bank' } = {}) {
-        const supportsCamera = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-
-        const fallbackHtml = `
-            <div class="camera-fallback" style="text-align:center;padding:24px 0">
-                <p class="text-gray-400 mb-4" style="margin-bottom:16px">Camera access is not available.<br>Select a photo from your device instead.</p>
-                <label class="btn btn-primary" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 20px">
-                    ${components.icon('image')}
-                    Choose Photo
-                    <input type="file" accept="image/*" capture="environment" style="display:none" onchange="handlers._handleCameraFallbackFile(this, '${context}')">
-                </label>
-            </div>`;
-
-        const cameraHtml = `
-            <div id="camera-preview-wrap" style="position:relative;background:#000;border-radius:8px;overflow:hidden;min-height:240px;display:flex;align-items:center;justify-content:center">
-                <video id="camera-video" autoplay playsinline muted style="width:100%;max-height:400px;display:block" aria-label="Camera preview"></video>
-                <canvas id="camera-canvas" style="display:none;width:100%;max-height:400px"></canvas>
-                <div id="camera-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:14px">
-                    Starting camera...
-                </div>
-            </div>
-            <div id="camera-capture-actions" style="display:flex;gap:12px;justify-content:center;padding:16px 0 0">
-                <button class="btn btn-primary" style="min-height:44px;padding:0 24px;min-width:120px" onclick="handlers._cameraCaptureSnapshot()" id="camera-capture-btn" disabled>
-                    ${components.icon('camera')} Capture
-                </button>
-                <button class="btn btn-secondary" style="min-height:44px;padding:0 20px" onclick="handlers._cameraSwitchFacing()" id="camera-switch-btn" aria-label="Switch camera">
-                    ${components.icon('refresh')} Switch
-                </button>
-            </div>
-            <div id="camera-retake-actions" style="display:none;flex-direction:column;gap:12px;align-items:center;padding:16px 0 0">
-                <div style="display:flex;gap:12px">
-                    <button class="btn btn-secondary" style="min-height:44px;padding:0 20px" onclick="handlers._cameraRetake()">
-                        ${components.icon('refresh')} Retake
-                    </button>
-                    <button class="btn btn-primary" style="min-height:44px;padding:0 24px" onclick="handlers._cameraUsePhoto('${context}')">
-                        ${components.icon('check')} Use Photo
-                    </button>
-                </div>
-            </div>`;
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('camera')} Camera Capture</h2>
-                <button class="modal-close" aria-label="Close" onclick="handlers._cameraCleanup();modals.close()">${components.icon('close')}</button>
-            </div>
-            <div class="modal-body">
-                ${supportsCamera ? cameraHtml : fallbackHtml}
-            </div>
-        `);
-
-        if (supportsCamera) {
-            window._cameraFacingMode = 'environment';
-            handlers._cameraStart();
-        }
-    },
-
-
-    async _cameraStart() {
-        const video = document.getElementById('camera-video');
-        const loading = document.getElementById('camera-loading');
-        const captureBtn = document.getElementById('camera-capture-btn');
-        if (!video) return;
-
-        handlers._cameraCleanup();
-
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: window._cameraFacingMode || 'environment' },
-                audio: false
-            });
-            window._cameraStream = stream;
-            video.srcObject = stream;
-            video.onloadedmetadata = () => {
-                if (loading) loading.style.display = 'none';
-                if (captureBtn) captureBtn.disabled = false;
-            };
-        } catch (err) {
-            const wrap = document.getElementById('camera-preview-wrap');
-            const actions = document.getElementById('camera-capture-actions');
-            if (loading) loading.style.display = 'none';
-            if (actions) actions.style.display = 'none';
-            if (wrap) {
-                wrap.innerHTML = `
-                    <div style="padding:32px;text-align:center;color:#9ca3af">
-                        <p style="margin-bottom:16px">Camera access denied or unavailable.</p>
-                        <label class="btn btn-secondary" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 20px">
-                            ${components.icon('image')} Choose File
-                            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="handlers._handleCameraFallbackFile(this, '${window._cameraContext || 'bank'}')">
-                        </label>
-                    </div>`;
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+        input.onchange = (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+                toast.success('Photo captured — upload via Image Bank');
+                router.navigate('image-bank');
             }
-        }
-    },
-
-
-    _cameraCaptureSnapshot() {
-        const video = document.getElementById('camera-video');
-        const canvas = document.getElementById('camera-canvas');
-        if (!video || !canvas) return;
-
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        video.style.display = 'none';
-        canvas.style.display = 'block';
-
-        const captureActions = document.getElementById('camera-capture-actions');
-        const retakeActions = document.getElementById('camera-retake-actions');
-        if (captureActions) captureActions.style.display = 'none';
-        if (retakeActions) retakeActions.style.display = 'flex';
-
-        handlers._cameraStopStream();
-    },
-
-
-    _cameraRetake() {
-        const video = document.getElementById('camera-video');
-        const canvas = document.getElementById('camera-canvas');
-        if (video) video.style.display = 'block';
-        if (canvas) canvas.style.display = 'none';
-
-        const captureActions = document.getElementById('camera-capture-actions');
-        const retakeActions = document.getElementById('camera-retake-actions');
-        if (captureActions) { captureActions.style.display = 'flex'; }
-        if (retakeActions) retakeActions.style.display = 'none';
-
-        const captureBtn = document.getElementById('camera-capture-btn');
-        if (captureBtn) captureBtn.disabled = true;
-
-        handlers._cameraStart();
-    },
-
-
-    _cameraUsePhoto(context) {
-        const canvas = document.getElementById('camera-canvas');
-        if (!canvas) return;
-
-        canvas.toBlob(blob => {
-            if (!blob) return toast.error('Failed to capture photo');
-
-            const filename = `photo-${Date.now()}.jpg`;
-            const file = new File([blob], filename, { type: 'image/jpeg' });
-
-            const url = URL.createObjectURL(blob);
-            const images = store.state.imageBankImages || [];
-            store.setState({
-                imageBankImages: [...images, { id: `cam-${Date.now()}`, url, name: filename, source: 'camera', createdAt: new Date().toISOString() }]
-            });
-
-            toast.success('Photo added to Image Bank');
-            handlers._cameraCleanup();
-            modals.close();
-        }, 'image/jpeg', 0.92);
-    },
-
-
-    async _cameraSwitchFacing() {
-        window._cameraFacingMode = (window._cameraFacingMode === 'environment') ? 'user' : 'environment';
-        const captureBtn = document.getElementById('camera-capture-btn');
-        if (captureBtn) captureBtn.disabled = true;
-        handlers._cameraStopStream();
-        handlers._cameraStart();
-    },
-
-
-    _cameraStopStream() {
-        if (window._cameraStream) {
-            window._cameraStream.getTracks().forEach(t => t.stop());
-            window._cameraStream = null;
-        }
-    },
-
-
-    _cameraCleanup() {
-        handlers._cameraStopStream();
-        window._cameraFacingMode = 'environment';
-    },
-
-
-    _handleCameraFallbackFile(input, context) {
-        const file = input.files && input.files[0];
-        if (!file) return;
-
-        const url = URL.createObjectURL(file);
-        const images = store.state.imageBankImages || [];
-        store.setState({
-            imageBankImages: [...images, { id: `file-${Date.now()}`, url, name: file.name, source: 'upload', createdAt: new Date().toISOString() }]
-        });
-
-        toast.success('Photo added to Image Bank');
-        modals.close();
+        };
+        input.click();
     },
 
 
     async addPhotosToBank() {
-        const photos = window._quickPhotos || [];
-        if (photos.length === 0) { toast.warning('No photos to add'); return; }
-        let added = 0;
-        for (const photo of photos) {
-            try {
-                const blob = await fetch(photo.url || photo).then(r => r.blob());
-                const formData = new FormData();
-                formData.append('image', blob, `quick-photo-${Date.now()}.jpg`);
-                await api.post('/image-bank/upload', formData);
-                added++;
-            } catch (err) { toast.error('Failed to upload photo: ' + err.message); }
+        const photos = store.state._quickPhotos || [];
+        if (photos.length === 0) {
+            toast.warning('No photos to add');
+            return;
         }
-        if (added > 0) {
-            toast.success(`${added} photo(s) added to Image Bank`);
-            window._quickPhotos = [];
+        try {
+            const images = photos.map((dataUrl, i) => {
+                const comma = dataUrl.indexOf(',');
+                const mimeMatch = dataUrl.match(/data:([^;]+);/);
+                return {
+                    data: comma >= 0 ? dataUrl.substring(comma + 1) : dataUrl,
+                    mimeType: mimeMatch ? mimeMatch[1] : 'image/jpeg',
+                    filename: `quick-photo-${Date.now()}-${i}.jpg`
+                };
+            });
+            await api.post('/image-bank/upload', { images });
+            toast.success(`${photos.length} photo${photos.length > 1 ? 's' : ''} added to Image Bank`);
+            store.setState({ _quickPhotos: [] });
+            modals.close();
+            router.navigate('image-bank');
+        } catch (error) {
+            toast.error('Failed to add photos to Image Bank');
         }
     },
+
 
     removeQuickPhoto(index) {
-        const photos = window._quickPhotos || [];
+        const photos = [...(store.state._quickPhotos || [])];
         if (index >= 0 && index < photos.length) {
             photos.splice(index, 1);
-            window._quickPhotos = photos;
+            store.setState({ _quickPhotos: photos });
             toast.success('Photo removed');
-            if (store.state.currentPage === 'tools') renderApp(pages.tools());
         }
     },
 
+
     async enhanceQuickPhoto(index) {
-        const photos = window._quickPhotos || [];
-        if (!photos[index]) return;
+        const photos = [...(store.state._quickPhotos || [])];
+        if (index < 0 || index >= photos.length) return;
         try {
-            const result = await api.post('/image-bank/enhance', { imageUrl: photos[index].url || photos[index] });
-            if (result.enhanced_url) {
-                photos[index] = { ...photos[index], url: result.enhanced_url, enhanced: true };
-                window._quickPhotos = photos;
-                toast.success('Photo enhanced');
-            }
+            const dataUrl = photos[index];
+            const img = new Image();
+            await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = dataUrl; });
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.filter = 'brightness(1.1) contrast(1.1) saturate(1.1)';
+            ctx.drawImage(img, 0, 0);
+            photos[index] = canvas.toDataURL('image/jpeg', 0.92);
+            store.setState({ _quickPhotos: photos });
+            toast.success(`Photo ${index + 1} enhanced`);
         } catch {
-            toast.info('Photo enhancement requires a Claude Vision API key — configure in Settings');
+            toast.error('Failed to enhance photo');
         }
     },
 
@@ -5273,5 +5113,10 @@ Object.assign(handlers, {
             console.error('Failed to load images:', e);
             toast.error('Failed to load images');
         }
-    }
+    },
+
+    // ============================================
+    // Automation Templates/Presets Editor
+    // ============================================
+
 });

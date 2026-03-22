@@ -231,7 +231,7 @@ Object.assign(pages, {
                 <div style="flex: 1;">
                     <div style="font-weight: 700; font-size: 15px; color: var(--gray-800);">Best Offer: $${(pendingOffers.find(o => o.id === bestOfferId)?.amount || 0).toFixed(2)}</div>
                     <div style="font-size: 13px; color: var(--gray-600);">
-                        ${escapeHtml(pendingOffers.find(o => o.id === bestOfferId)?.buyer_name || pendingOffers.find(o => o.id === bestOfferId)?.buyer_username || 'Anonymous')} •
+                        ${escapeHtml(pendingOffers.find(o => o.id === bestOfferId)?.buyer_name || 'Anonymous')} •
                         ${Math.round(bestOfferPercent)}% of listed price •
                         Deal Quality: <span style="color: ${bestOfferPercent >= 90 ? 'var(--success)' : bestOfferPercent >= 75 ? 'var(--warning-600)' : 'var(--error)'}; font-weight: 600;">${bestOfferPercent >= 90 ? 'Excellent' : bestOfferPercent >= 75 ? 'Good' : 'Fair'}</span>
                     </div>
@@ -364,8 +364,8 @@ Object.assign(pages, {
                                         const listing = store.state.listings.find(l => l.id === offer.listing_id);
                                         return `
                                             <tr>
-                                                <td>${escapeHtml(listing?.title || offer.listing_title || 'Unknown')}</td>
-                                                <td>${escapeHtml(offer.buyer_name || offer.buyer_username || 'Anonymous')}</td>
+                                                <td>${escapeHtml(listing?.title || 'Unknown')}</td>
+                                                <td>${escapeHtml(offer.buyer_name || 'Anonymous')}</td>
                                                 <td>$${offer.amount.toFixed(2)}</td>
                                                 <td><span class="badge badge-${offer.status === 'accepted' ? 'success' : offer.status === 'countered' ? 'primary' : 'error'}">${offer.status}</span></td>
                                                 <td class="text-sm text-gray-500">${new Date(offer.created_at).toLocaleDateString()}</td>
@@ -1629,10 +1629,9 @@ Object.assign(pages, {
                 <button class="tab ${currentTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'accounts' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('accounts')">Chart of Accounts</button>
                 <button class="tab ${currentTab === 'statements' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'statements' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('statements')">Financial Statements</button>
                 <button class="tab ${currentTab === 'pnl' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'pnl' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('pnl')">Profit &amp; Loss (P&amp;L)</button>
-                <button class="tab ${currentTab === 'transactions' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'transactions' ? 'true' : 'false'}" onclick="handlers.switchFinancialsTab('transactions')">Transactions</button>
             </div>
 
-            ${currentTab === 'transactions' ? this.transactions() : (tabContent[currentTab] || tabContent.accounts)}
+            ${tabContent[currentTab] || tabContent.accounts}
 
             <!-- Tax Estimate Calculator -->
             <div class="card mb-6">
@@ -1959,46 +1958,6 @@ Object.assign(pages, {
     // Sustainability page
     // Shops page,
 
-    // Consolidated Orders & Sales page (Phase 2 sidebar consolidation)
-    ordersSales() {
-        const activeTab = store.state.activeTab || 'orders';
-        const tabs = [
-            { id: 'orders', label: 'Orders & Fulfillment', icon: 'sales' },
-            { id: 'sales-summary', label: 'Sales Summary', icon: 'analytics' },
-            { id: 'shipping', label: 'Shipping', icon: 'truck' },
-        ];
-
-        const renderTabContent = () => {
-            switch (activeTab) {
-                case 'sales-summary':
-                    return this.sales();
-                case 'shipping':
-                    return this.shippingLabelsPage();
-                default:
-                    return this.orders();
-            }
-        };
-
-        return `
-            <div class="page-header">
-                <div class="page-header-top">
-                    <h1 class="page-title">${components.icon('sales', 24)} Orders & Sales</h1>
-                </div>
-            </div>
-            <div class="consolidated-tabs">
-                ${tabs.map(tab => `
-                    <button class="consolidated-tab ${activeTab === tab.id ? 'active' : ''}"
-                            onclick="store.setState({activeTab:'${tab.id}'});renderApp(pages.ordersSales())">
-                        ${components.icon(tab.icon, 16)}
-                        <span>${tab.label}</span>
-                    </button>
-                `).join('')}
-            </div>
-            <div class="consolidated-tab-content">
-                ${renderTabContent()}
-            </div>
-        `;
-    },
 
     orders() {
         let orders = store.state.orders || [];
@@ -3509,4 +3468,5 @@ Object.assign(pages, {
     },
 
     // Forgot Password page
+
 });

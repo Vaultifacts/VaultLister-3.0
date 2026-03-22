@@ -1465,6 +1465,369 @@ Object.assign(handlers, {
     },
 
 
+    bulkTogglePlatform: async function(platform, enable) {
+        try {
+            const allPresets = store.state.automations || [];
+            const presets = allPresets.filter(a => a.platform === platform || (a.platform === 'all' && platform !== 'all'));
+            let count = 0;
+            await api.ensureCSRFToken();
+            for (const preset of presets) {
+                const isEnabled = !!preset.is_enabled;
+                if (enable && !isEnabled) {
+                    await api.post(`/automations/${preset.id}/toggle`);
+                    count++;
+                } else if (!enable && isEnabled) {
+                    await api.post(`/automations/${preset.id}/toggle`);
+                    count++;
+                }
+            }
+            toast.success(`${count} ${platform} automation${count !== 1 ? 's' : ''} ${enable ? 'enabled' : 'disabled'}`);
+            await handlers.loadAutomations();
+            if (store.state.currentPage === 'automations') {
+                const pageContent = pages.automations();
+                document.querySelector('.page-content').innerHTML = pageContent;
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    },
+
+
+    filterAutomationPlatform: function(platform) {
+        store.setState({ automationPlatformFilter: platform });
+        try { localStorage.setItem('vaultlister_automation_platform_filter', platform); } catch (e) { console.warn('Failed to save filter preference:', e); }
+        if (store.state.currentPage === 'automations') {
+            const pageContent = pages.automations();
+            document.querySelector('.page-content').innerHTML = pageContent;
+        }
+    },
+
+
+    toggleAutomationSelect: function(ruleId, checked) {
+        const selected = [...(store.state.selectedAutomationIds || [])];
+        if (checked && !selected.includes(ruleId)) selected.push(ruleId);
+        else if (!checked) { const idx = selected.indexOf(ruleId); if (idx > -1) selected.splice(idx, 1); }
+        store.setState({ selectedAutomationIds: selected });
+        if (store.state.currentPage === 'automations') {
+            document.querySelector('.page-content').innerHTML = pages.automations();
+        }
+    },
+
+
+    clearAutomationSelection: function() {
+        store.setState({ selectedAutomationIds: [] });
+        if (store.state.currentPage === 'automations') {
+            document.querySelector('.page-content').innerHTML = pages.automations();
+        }
+    },
+
+
+    bulkToggleAutomations: async function(enable) {
+        const selected = store.state.selectedAutomationIds || [];
+        if (selected.length === 0) return;
+        try {
+            await api.ensureCSRFToken();
+            for (const id of selected) {
+                await api.put('/automations/' + id, { isEnabled: enable });
+            }
+            showToast((enable ? 'Enabled' : 'Disabled') + ' ' + selected.length + ' automations', 'success');
+            store.setState({ selectedAutomationIds: [] });
+            const rulesRes = await api.get('/automations');
+            if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
+            if (store.state.currentPage === 'automations') {
+                document.querySelector('.page-content').innerHTML = pages.automations();
+            }
+        } catch (e) {
+            showToast('Bulk action failed: ' + (e.message || e), 'error');
+        }
+    },
+
+
+    bulkScheduleAutomations: function() {
+        const selected = store.state.selectedAutomationIds || [];
+        if (selected.length === 0) return;
+        const presets = [
+            { label: 'Every Hour', cron: '0 * * * *' },
+            { label: 'Every 4 Hours', cron: '0 */4 * * *' },
+            { label: 'Twice Daily', cron: '0 8,20 * * *' },
+            { label: 'Three Times Daily', cron: '0 8,14,20 * * *' },
+            { label: 'Daily (9am)', cron: '0 9 * * *' },
+            { label: 'Weekly (Sunday)', cron: '0 9 * * 0' }
+        ];
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('clock', 20)} Bulk Schedule (${selected.length} rules)</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label">Apply schedule to all ${selected.length} selected automations:</label>
+                <select class="form-select" id="bulk-schedule-select">
+                    ${presets.map(p => '<option value="' + p.cron + '">' + p.label + '</option>').join('')}
+                </select>
+            </div>
+            <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.applyBulkSchedule()">Apply</button>
+            </div>
+        `);
+    },
+
+
+    applyBulkSchedule: async function() {
+        const selected = store.state.selectedAutomationIds || [];
+        const schedule = document.getElementById('bulk-schedule-select')?.value;
+        if (!schedule || selected.length === 0) return;
+        try {
+            await api.ensureCSRFToken();
+            for (const id of selected) {
+                await api.put('/automations/' + id, { schedule });
+            }
+            showToast('Schedule applied to ' + selected.length + ' automations', 'success');
+            modals.close();
+            store.setState({ selectedAutomationIds: [] });
+            const rulesRes = await api.get('/automations');
+            if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
+            if (store.state.currentPage === 'automations') {
+                document.querySelector('.page-content').innerHTML = pages.automations();
+            }
+        } catch (e) {
+            showToast('Failed to apply schedule: ' + (e.message || e), 'error');
+        }
+    },
+
+
+    sortAutomations: function(value) {
+        store.setState({ automationSortBy: value });
+        try { localStorage.setItem('vaultlister_automation_sort', value); } catch (_) {}
+        if (store.state.currentPage === 'automations') {
+            const pageContent = pages.automations();
+            document.querySelector('.page-content').innerHTML = pageContent;
+        }
+    },
+
+
+    editRuleSchedule: function(ruleId, ruleName, currentSchedule) {
+        const presets = [
+            { label: 'Every Hour', cron: '0 * * * *' },
+            { label: 'Every 4 Hours', cron: '0 */4 * * *' },
+            { label: 'Twice Daily (8am & 8pm)', cron: '0 8,20 * * *' },
+            { label: 'Three Times Daily', cron: '0 8,14,20 * * *' },
+            { label: 'Daily (9am)', cron: '0 9 * * *' },
+            { label: 'Weekly (Sunday 9am)', cron: '0 9 * * 0' },
+            { label: 'Custom', cron: '' }
+        ];
+        const currentMatch = presets.find(p => p.cron && p.cron === currentSchedule);
+        const isCustom = currentSchedule && !currentMatch;
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('clock', 20)} Schedule: ${escapeHtml(ruleName)}</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <label class="form-label">Frequency</label>
+                    <select class="form-select" id="schedule-preset" onchange="(() => { const c = document.getElementById('schedule-custom-row'); const ci = document.getElementById('schedule-cron-custom'); if (this.value === 'custom') { c.style.display = 'block'; } else { c.style.display = 'none'; ci.value = this.value; } })()">
+                        ${presets.map(p => `<option value="${p.cron || 'custom'}" ${(currentMatch && currentMatch.cron === p.cron) || (isCustom && p.label === 'Custom') ? 'selected' : ''}>${p.label}</option>`).join('')}
+                    </select>
+                </div>
+                <div id="schedule-custom-row" style="display: ${isCustom ? 'block' : 'none'};" class="mb-4">
+                    <label class="form-label">Cron Expression</label>
+                    <input type="text" class="form-input" id="schedule-cron-custom" value="${escapeHtml(currentSchedule || '')}" placeholder="0 */4 * * *">
+                    <p class="text-xs text-gray-400 mt-1">Format: minute hour day-of-month month day-of-week</p>
+                </div>
+                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p class="text-sm text-blue-800">
+                        <strong>Current:</strong> ${currentSchedule ? escapeHtml(currentSchedule) : 'No schedule set (uses global schedule)'}
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+                <button class="btn btn-ghost" style="color:var(--error);" onclick="handlers.saveRuleSchedule('${ruleId}', true)">${components.icon('trash-2', 14)} Remove</button>
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.saveRuleSchedule('${ruleId}')">${components.icon('check', 14)} Save</button>
+            </div>
+        `);
+    },
+
+
+    saveRuleSchedule: async function(ruleId, clear) {
+        let schedule = null;
+        if (!clear) {
+            const presetEl = document.getElementById('schedule-preset');
+            if (presetEl && presetEl.value === 'custom') {
+                schedule = (document.getElementById('schedule-cron-custom')?.value || '').trim() || null;
+            } else if (presetEl) {
+                schedule = presetEl.value || null;
+            }
+        }
+        try {
+            await api.ensureCSRFToken();
+            const res = await api.put('/automations/' + ruleId, { schedule });
+            if (res.error) throw new Error(res.error);
+            showToast(clear ? 'Schedule removed' : 'Schedule updated', 'success');
+            modals.close();
+            const rulesRes = await api.get('/automations');
+            if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
+            if (store.state.currentPage === 'automations') {
+                document.querySelector('.page-content').innerHTML = pages.automations();
+            }
+        } catch (e) {
+            showToast('Failed to save schedule: ' + (e.message || e), 'error');
+        }
+    },
+
+
+    updateAutomationNotifPref: function(key, value) {
+        const current = store.state.automationNotifPrefs || {
+            on_success: true, on_failure: true, on_partial: true,
+            daily_summary: false, desktop_enabled: true, email_enabled: false
+        };
+        if (key === '_mute_all') {
+            Object.keys(current).forEach(k => { current[k] = false; });
+        } else if (key === '_enable_recommended') {
+            current.on_failure = true;
+            current.on_partial = true;
+            current.desktop_enabled = true;
+            current.on_success = false;
+            current.daily_summary = false;
+            current.email_enabled = false;
+        } else {
+            current[key] = value;
+        }
+        store.setState({ automationNotifPrefs: { ...current } });
+        try { localStorage.setItem('vaultlister_automation_notif_prefs', JSON.stringify(current)); } catch (e) {}
+        // Persist to backend
+        api.ensureCSRFToken().then(() => api.post('/automations/notification-prefs', current)).catch(() => {});
+        if (current.desktop_enabled && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+        if (store.state.currentPage === 'automations') {
+            const pageContent = pages.automations();
+            document.querySelector('.page-content').innerHTML = pageContent;
+        }
+    },
+
+
+    showAutomationRunHistory: function(ruleName, ruleId) {
+        const runHistory = store.state.automationHistoryRuns || [];
+        const ruleRuns = runHistory.filter(r => r.automation_name === ruleName || r.automation_id === ruleId || r.action === ruleName);
+
+        const rows = ruleRuns.length === 0
+            ? '<tr><td colspan="6" style="text-align:center; padding: 24px; color: var(--gray-400);">No runs recorded yet</td></tr>'
+            : ruleRuns.slice(0, 25).map(r => {
+                const ts = r.started_at || r.timestamp || r.created_at;
+                const date = ts ? new Date(ts).toLocaleString() : '—';
+                const status = r.status || 'unknown';
+                const statusColor = status === 'success' ? 'var(--success-500)' : status === 'failed' ? 'var(--danger-500)' : 'var(--warning-500)';
+                const duration = r.duration_ms ? (r.duration_ms / 1000).toFixed(1) + 's' : '—';
+                const items = r.items_processed != null ? `${r.items_succeeded || 0}/${r.items_processed}` : '—';
+                const msg = escapeHtml(r.result_message || r.error_message || r.result || '');
+                const runId = r.id || '';
+                return `<tr style="cursor:pointer;" onclick="handlers.showRunDetail('${runId}', '${escapeHtml(ruleName).replace(/'/g, "\\'")}')">
+                    <td style="white-space:nowrap;">${date}</td>
+                    <td><span style="color:${statusColor}; font-weight:600; text-transform:capitalize;">${status}</span></td>
+                    <td>${items}</td>
+                    <td>${duration}</td>
+                    <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${msg}">${msg}</td>
+                    <td style="text-align:center;"><span style="color:var(--primary-500);font-size:12px;">${components.icon('chevron-right', 14)}</span></td>
+                </tr>`;
+            }).join('');
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${escapeHtml(ruleName)} — Run History</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--gray-200); text-align:left;">
+                            <th style="padding:8px 12px;">Time</th>
+                            <th style="padding:8px 12px;">Status</th>
+                            <th style="padding:8px 12px;">Items</th>
+                            <th style="padding:8px 12px;">Duration</th>
+                            <th style="padding:8px 12px;">Message</th>
+                            <th style="padding:8px 12px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <p class="text-xs text-gray-400 mt-3">${ruleRuns.length} total run${ruleRuns.length !== 1 ? 's' : ''}. Click a row for action-level detail.</p>
+            </div>
+        `);
+    },
+
+
+    showRunDetail: async function(runId, ruleName) {
+        if (!runId) { toast.error('No run ID'); return; }
+        try {
+            const res = await api.get('/automations/run/' + runId + '/logs');
+            const data = res.data || res;
+            const run = data.run || {};
+            const logs = data.logs || [];
+            const statusColor = run.status === 'success' ? 'var(--success)' : run.status === 'failed' ? 'var(--error)' : 'var(--warning-600)';
+            const logRows = logs.length === 0
+                ? '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--gray-400);">No action logs for this run</td></tr>'
+                : logs.map(l => {
+                    const lsc = l.status === 'success' ? 'var(--success)' : l.status === 'failure' ? 'var(--error)' : 'var(--warning-600)';
+                    return '<tr><td style="white-space:nowrap;font-size:12px;">' + new Date(l.created_at).toLocaleTimeString() + '</td>' +
+                        '<td><span style="color:' + lsc + ';font-weight:600;text-transform:capitalize;">' + (l.status || '—') + '</span></td>' +
+                        '<td>' + escapeHtml(l.action_taken || l.type || '—') + '</td>' +
+                        '<td>' + (l.duration_ms ? l.duration_ms + 'ms' : '—') + '</td>' +
+                        '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(l.details || l.error_message || '') + '">' + escapeHtml(l.details || l.error_message || '—') + '</td></tr>';
+                }).join('');
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${escapeHtml(ruleName)} — Run Detail</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body" style="max-height:65vh;overflow-y:auto;">
+                    <div class="flex gap-4 mb-4">
+                        <div class="card" style="flex:1;"><div class="card-body text-center py-2">
+                            <div class="text-lg font-bold" style="color:${statusColor};text-transform:capitalize;">${run.status || '—'}</div>
+                            <div class="text-xs text-gray-500">Status</div>
+                        </div></div>
+                        <div class="card" style="flex:1;"><div class="card-body text-center py-2">
+                            <div class="text-lg font-bold">${run.items_processed || 0}</div>
+                            <div class="text-xs text-gray-500">Processed</div>
+                        </div></div>
+                        <div class="card" style="flex:1;"><div class="card-body text-center py-2">
+                            <div class="text-lg font-bold" style="color:var(--success);">${run.items_succeeded || 0}</div>
+                            <div class="text-xs text-gray-500">Succeeded</div>
+                        </div></div>
+                        <div class="card" style="flex:1;"><div class="card-body text-center py-2">
+                            <div class="text-lg font-bold" style="color:var(--error);">${run.items_failed || 0}</div>
+                            <div class="text-xs text-gray-500">Failed</div>
+                        </div></div>
+                        <div class="card" style="flex:1;"><div class="card-body text-center py-2">
+                            <div class="text-lg font-bold">${run.duration_ms ? (run.duration_ms / 1000).toFixed(1) + 's' : '—'}</div>
+                            <div class="text-xs text-gray-500">Duration</div>
+                        </div></div>
+                    </div>
+                    ${run.error_message ? '<div class="mb-3" style="padding:8px;background:var(--error-50,#fef2f2);border-radius:var(--radius-sm);color:var(--error-700);font-size:13px;">' + components.icon('alert-circle', 14) + ' ' + escapeHtml(run.error_message) + '</div>' : ''}
+                    <h3 class="text-sm font-semibold mb-2">Action Log (${logs.length} entries)</h3>
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead><tr style="border-bottom:1px solid var(--gray-200);text-align:left;">
+                            <th style="padding:6px 8px;">Time</th>
+                            <th style="padding:6px 8px;">Status</th>
+                            <th style="padding:6px 8px;">Action</th>
+                            <th style="padding:6px 8px;">Duration</th>
+                            <th style="padding:6px 8px;">Details</th>
+                        </tr></thead>
+                        <tbody>${logRows}</tbody>
+                    </table>
+                    <p class="text-xs text-gray-400 mt-2">Started: ${run.started_at ? new Date(run.started_at).toLocaleString() : '—'} | Completed: ${run.completed_at ? new Date(run.completed_at).toLocaleString() : '—'}</p>
+                </div>
+            `);
+        } catch (e) {
+            toast.error('Failed to load run details');
+        }
+    },
+
+    // Update automation schedule settings,
+
+
     connectShop: async function(platform) {
         modals.show(`
             <div class="modal-header">
@@ -1524,7 +1887,16 @@ Object.assign(handlers, {
 
         try {
             await api.ensureCSRFToken();
-            await api.post('/shops', { platform, username: username.trim() });
+            try {
+                await api.post('/shops', { platform, username: username.trim() });
+            } catch (postErr) {
+                // Already connected — update instead
+                if (postErr.message && postErr.message.includes('already connected')) {
+                    await api.put(`/shops/${platform}`, { username: username.trim(), isConnected: true });
+                } else {
+                    throw postErr;
+                }
+            }
             toast.success(`${platform} connected successfully!`);
             modals.close();
             await handlers.loadShops();
@@ -1536,7 +1908,6 @@ Object.assign(handlers, {
             }
         } catch (error) {
             console.error('Shop connection error:', error);
-            // Provide more helpful error message
             if (error.message.includes('token') || error.message.includes('Token')) {
                 toast.error('Connection failed. Please try logging out and back in.');
             } else if (error.message.includes('network') || error.message.includes('fetch')) {
@@ -1623,33 +1994,17 @@ Object.assign(handlers, {
             // Show loading toast
             toast.info('Waiting for authorization...');
 
-            // Listen for OAuth callback — handles both same-origin (CustomEvent) and cross-origin (postMessage via ngrok)
-            const oauthHandler = async (event) => {
-                let detail;
-                if (event.type === 'oauthComplete') {
-                    if (!event.detail.platform || event.detail.platform === platform) detail = event.detail;
-                } else if (event.type === 'message') {
-                    if (event.data && event.data.type === 'oauthComplete' && (!event.data.platform || event.data.platform === platform)) detail = event.data;
-                }
-                if (!detail) return;
-                window.removeEventListener('oauthComplete', oauthHandler);
-                window.removeEventListener('message', oauthHandler);
-
-                if (detail.success) {
-                    toast.success(`${platform} connected successfully!`);
+            // Poll for popup close — when closed, refresh shops data
+            const pollTimer = setInterval(async () => {
+                if (popup.closed) {
+                    clearInterval(pollTimer);
                     await handlers.loadShops();
-
-                    // Refresh page if on shops page
                     if (store.state.currentPage === 'shops') {
                         const pageContent = pages.shops();
                         document.querySelector('.page-content').innerHTML = pageContent;
                     }
-                } else {
-                    toast.error(detail.error || 'OAuth connection failed');
                 }
-            };
-            window.addEventListener('oauthComplete', oauthHandler);
-            window.addEventListener('message', oauthHandler);
+            }, 500);
 
         } catch (error) {
             console.error('OAuth error:', error);
@@ -1690,10 +2045,6 @@ Object.assign(handlers, {
         }
         store.setState({ darkMode: enabled });
         localStorage.setItem('vaultlister_dark_mode', enabled ? 'true' : 'false');
-        if (store.state.user) {
-            const currentPrefs = (() => { try { return JSON.parse(store.state.user.preferences || '{}'); } catch { return {}; } })();
-            api.put('/auth/profile', { preferences: { ...currentPrefs, dark_mode: enabled ? 'dark' : 'light' } }).catch(() => {});
-        }
         toast.info(`Dark mode ${enabled ? 'enabled' : 'disabled'}`);
     },
 
@@ -2097,29 +2448,20 @@ Object.assign(handlers, {
     // Feature 4: Connected Services Status Indicators,
 
 
-    checkIntegrationStatus: async function() {
-        try {
-            const shops = await api.get('/shops');
-            const shopList = Array.isArray(shops) ? shops : (shops.shops || []);
-            const statuses = {
-                ebay: 'disconnected',
-                mercari: 'disconnected',
-                whatnot: 'disconnected',
-                poshmark: 'disconnected',
-                depop: 'disconnected',
-                facebook: 'disconnected'
-            };
-            for (const shop of shopList) {
-                if (shop.is_connected && statuses.hasOwnProperty(shop.platform)) {
-                    statuses[shop.platform] = 'connected';
-                }
-            }
-            store.setState({ platformConnections: statuses });
-            toast.success('Integration status refreshed');
-            renderApp(pages.settings());
-        } catch (e) {
-            toast.error('Failed to check integration status');
-        }
+    checkIntegrationStatus: function() {
+        const platforms = ['ebay', 'mercari', 'whatnot'];
+        const statuses = {
+            ebay: 'connected',
+            mercari: 'connected',
+            whatnot: 'connected',
+            poshmark: 'disconnected',
+            depop: 'disconnected',
+            facebook: 'disconnected'
+        };
+
+        store.setState({ platformConnections: statuses });
+        toast.success('Integration status refreshed');
+        renderApp(pages.settings());
     },
 
     // Feature 5: Settings Changelog (What Changed Since Last Visit),
@@ -2599,7 +2941,7 @@ Object.assign(handlers, {
                     <div class="global-search-item ${idx === 0 ? 'selected' : ''}" data-index="${idx}" onclick="handlers.executeGlobalSearchItem(${idx})" role="option" aria-selected="${idx === 0}">
                         <div class="global-search-item-icon">${components.icon(item.icon, 16)}</div>
                         <div class="global-search-item-content">
-                            <div class="global-search-item-title">${escapeHtml(item.title)}</div>
+                            <div class="global-search-item-title">${item.title}</div>
                             <div class="global-search-item-subtitle">${item.subtitle}</div>
                         </div>
                     </div>
@@ -2757,91 +3099,8 @@ Object.assign(handlers, {
         }
     },
 
-    connectGoogleCalendar: async function() {
-        try {
-            const width = 600;
-            const height = 700;
-            const left = window.screen.width / 2 - width / 2;
-            const top = window.screen.height / 2 - height / 2;
+    // Disconnect email account,
 
-            const popup = window.open(
-                '/api/calendar/google/authorize',
-                'google_calendar_oauth_popup',
-                `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,location=no,status=no`
-            );
-
-            if (!popup) {
-                toast.error('Popup blocked - please allow popups for Google Calendar connection');
-                return;
-            }
-
-            toast.info('Connecting to Google Calendar...');
-
-            const handleMessage = (event) => {
-                if (event.origin !== window.location.origin) return;
-                if (event.data && event.data.type === 'google-calendar-oauth-success') {
-                    window.removeEventListener('message', handleMessage);
-                    toast.success('Google Calendar connected successfully');
-                } else if (event.data && event.data.type === 'google-calendar-oauth-error') {
-                    window.removeEventListener('message', handleMessage);
-                    toast.error('Google Calendar connection failed: ' + escapeHtml(event.data.error || 'Unknown error'));
-                }
-            };
-
-            window.addEventListener('message', handleMessage);
-
-            setTimeout(() => {
-                window.removeEventListener('message', handleMessage);
-            }, 5 * 60 * 1000);
-
-        } catch (error) {
-            console.error('Google Calendar OAuth error:', error);
-            toast.error('Failed to initiate Google Calendar connection');
-        }
-    },
-
-    connectGoogleDrive: async function() {
-        try {
-            const width = 600;
-            const height = 700;
-            const left = window.screen.width / 2 - width / 2;
-            const top = window.screen.height / 2 - height / 2;
-
-            const popup = window.open(
-                '/api/integrations/google/drive/authorize',
-                'google_drive_oauth_popup',
-                `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,location=no,status=no`
-            );
-
-            if (!popup) {
-                toast.error('Popup blocked - please allow popups for Google Drive connection');
-                return;
-            }
-
-            toast.info('Connecting to Google Drive...');
-
-            const handleMessage = (event) => {
-                if (event.origin !== window.location.origin) return;
-                if (event.data && event.data.type === 'google-drive-oauth-success') {
-                    window.removeEventListener('message', handleMessage);
-                    toast.success('Google Drive connected successfully');
-                } else if (event.data && event.data.type === 'google-drive-oauth-error') {
-                    window.removeEventListener('message', handleMessage);
-                    toast.error('Google Drive connection failed: ' + escapeHtml(event.data.error || 'Unknown error'));
-                }
-            };
-
-            window.addEventListener('message', handleMessage);
-
-            setTimeout(() => {
-                window.removeEventListener('message', handleMessage);
-            }, 5 * 60 * 1000);
-
-        } catch (error) {
-            console.error('Google Drive OAuth error:', error);
-            toast.error('Failed to initiate Google Drive connection');
-        }
-    },
 
     disconnectEmailAccount: async function(accountId) {
         if (!await modals.confirm('Disconnect this email account? Email syncing will stop.', { title: 'Disconnect Email', confirmText: 'Disconnect', danger: true })) return;
@@ -2969,7 +3228,7 @@ Object.assign(handlers, {
                     ${teams.map(team => `
                         <div class="team-member-card" style="cursor: pointer;" onclick="handlers.viewTeam('${team.id}')">
                             <div class="team-member-avatar" style="background: var(--primary-100); color: var(--primary-600);">
-                                ${escapeHtml(team.name.substring(0, 2).toUpperCase())}
+                                ${team.name.substring(0, 2).toUpperCase()}
                             </div>
                             <div class="team-member-info">
                                 <div class="team-member-name">${escapeHtml(team.name)}</div>
@@ -2981,7 +3240,7 @@ Object.assign(handlers, {
                 </div>
             `;
         } catch (error) {
-            contentEl.innerHTML = `<p style="color: var(--error);">Error loading teams: ${escapeHtml(error.message)}</p>`;
+            contentEl.innerHTML = `<p style="color: var(--error);">Error loading teams: ${error.message}</p>`;
         }
     },
 
@@ -3013,7 +3272,7 @@ Object.assign(handlers, {
                     <div>
                         <h3 style="margin: 0;">${escapeHtml(team.name)}</h3>
                         <p style="color: var(--gray-500); font-size: 13px; margin-top: 4px;">
-                            ${escapeHtml(team.description || 'No description')}
+                            ${team.description || 'No description'}
                         </p>
                     </div>
                     ${team.permissions?.manage_team ? `
@@ -3053,7 +3312,7 @@ Object.assign(handlers, {
                 ` : ''}
             `;
         } catch (error) {
-            contentEl.innerHTML = `<p style="color: var(--error);">Error: ${escapeHtml(error.message)}</p>`;
+            contentEl.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
         }
     },
 
@@ -3376,140 +3635,6 @@ Object.assign(handlers, {
     // Offer History per Item,
 
 
-    showCustomMetricBuilder: function() {
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('sliders', 20)} Custom KPI Builder</h2>
-                <button class="btn btn-icon" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
-            </div>
-            <div class="modal-body">
-                <p class="text-gray-600 mb-4">Create custom metrics by combining existing data points.</p>
-                <div class="form-group">
-                    <label class="form-label">Metric Name</label>
-                    <input type="text" id="custom-metric-name" class="form-input" placeholder="e.g., Revenue per Item, Profit Ratio">
-                </div>
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="form-group">
-                        <label class="form-label">First Metric</label>
-                        <select id="custom-metric-a" class="form-select">
-                            <option value="revenue">Revenue</option>
-                            <option value="profit">Profit</option>
-                            <option value="orders">Orders</option>
-                            <option value="inventory_value">Inventory Value</option>
-                            <option value="items_sold">Items Sold</option>
-                            <option value="active_listings">Active Listings</option>
-                            <option value="avg_sale">Avg Sale Price</option>
-                            <option value="total_views">Total Views</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Operation</label>
-                        <select id="custom-metric-op" class="form-select">
-                            <option value="divide">&divide; Divide</option>
-                            <option value="multiply">&times; Multiply</option>
-                            <option value="add">+ Add</option>
-                            <option value="subtract">&minus; Subtract</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Second Metric</label>
-                        <select id="custom-metric-b" class="form-select">
-                            <option value="orders">Orders</option>
-                            <option value="revenue">Revenue</option>
-                            <option value="profit">Profit</option>
-                            <option value="inventory_value">Inventory Value</option>
-                            <option value="items_sold">Items Sold</option>
-                            <option value="active_listings">Active Listings</option>
-                            <option value="avg_sale">Avg Sale Price</option>
-                            <option value="total_views">Total Views</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Display Format</label>
-                    <select id="custom-metric-format" class="form-select">
-                        <option value="currency">Currency ($)</option>
-                        <option value="percentage">Percentage (%)</option>
-                        <option value="number">Number (#)</option>
-                    </select>
-                </div>
-
-                ${(store.state.customMetrics || []).length > 0 ? `
-                <div class="mt-4">
-                    <h4 class="text-sm font-medium mb-2">Existing Custom KPIs</h4>
-                    <div class="flex flex-col gap-2">
-                        ${(store.state.customMetrics || []).map(m => `
-                            <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
-                                <div>
-                                    <span class="font-medium text-sm">${escapeHtml(m.name)}</span>
-                                    <span class="text-xs text-gray-500 ml-2">${m.metric_a} ${m.operation === 'divide' ? '&divide;' : m.operation === 'multiply' ? '&times;' : m.operation === 'add' ? '+' : '&minus;'} ${m.metric_b}</span>
-                                </div>
-                                <button class="btn btn-icon btn-sm text-error" onclick="handlers.deleteCustomMetric('${m.id}')">
-                                    ${components.icon('trash', 14)}
-                                </button>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : ''}
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                <button class="btn btn-primary" onclick="handlers.saveCustomMetric()">
-                    ${components.icon('plus', 16)} Create KPI
-                </button>
-            </div>
-        `);
-    },
-
-
-    showAnalyticsDigestSettings: function() {
-        const digestSettings = store.state.digestSettings || { frequency: 'weekly', email: '', is_active: false };
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('mail', 20)} Analytics Digest Settings</h2>
-                <button class="btn btn-icon" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
-            </div>
-            <div class="modal-body">
-                <p class="text-gray-600 mb-4">Receive a summary of your analytics data delivered to your inbox on a regular schedule.</p>
-                <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="${escapeHtml(digestSettings.email || '')}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Frequency</label>
-                    <select id="digest-frequency" class="form-select">
-                        <option value="daily" ${digestSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
-                        <option value="weekly" ${digestSettings.frequency === 'weekly' ? 'selected' : ''}>Weekly (Every Monday)</option>
-                        <option value="monthly" ${digestSettings.frequency === 'monthly' ? 'selected' : ''}>Monthly (1st of month)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="digest-active" ${digestSettings.is_active ? 'checked' : ''}>
-                        <span class="form-label" style="margin-bottom: 0;">Enable digest emails</span>
-                    </label>
-                </div>
-                <div class="card bg-gray-50 p-4 mt-4">
-                    <h4 class="text-sm font-medium mb-2">${components.icon('info', 14)} Digest Includes</h4>
-                    <ul class="text-sm text-gray-600" style="list-style: disc; padding-left: 20px;">
-                        <li>Revenue & profit summary for the period</li>
-                        <li>Top selling items and platforms</li>
-                        <li>Inventory status changes</li>
-                        <li>Performance trends vs. previous period</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                <button class="btn btn-primary" onclick="handlers.saveDigestSettings()">
-                    ${components.icon('save', 16)} Save Settings
-                </button>
-            </div>
-        `);
-    },
-
-
     showAccountUsage: function() {
         const inventory = store.state.inventory || [];
         const listings = store.state.listings || [];
@@ -3828,7 +3953,7 @@ Object.assign(handlers, {
                         <strong>Effective Date:</strong> ${tos.effective_date ? new Date(tos.effective_date).toLocaleDateString() : 'N/A'}
                     </div>
                     <div style="line-height: 1.6; color: var(--text-secondary);">
-                        ${tos.content ? escapeHtml(tos.content.substring(0, 2000)) + '...' : 'Terms content loading...'}
+                        ${tos.content ? tos.content.substring(0, 2000) + '...' : 'Terms content loading...'}
                     </div>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid var(--gray-200); padding: 16px; display: flex; gap: 8px; justify-content: flex-end;">
@@ -4185,7 +4310,8 @@ Object.assign(handlers, {
 
 
     importFromPlatform(platform) {
-        router.navigate('inventory-import');
+        store.setState({ importMarketplace: platform });
+        handlers.showImportFromMarketplace();
     },
 
 
@@ -4200,51 +4326,37 @@ Object.assign(handlers, {
     },
 
 
-    showUsageDashboard() {
-        const inventory = store.state.inventory || [];
-        const listings = store.state.listings || [];
-        const sales = store.state.sales || [];
-        const images = store.state.imageBankImages || [];
-        const automations = (store.state.automations || []).filter(a => a.enabled || a.is_active);
-        const shops = (store.state.shops || []).filter(s => s.is_connected);
-
-        modals.show(`
-            <div class="modal-header">
-                <h2 class="modal-title">${components.icon('bar-chart-2', 20)} Usage Dashboard</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
-            </div>
-            <div class="modal-body">
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
-                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Inventory Items</div>
-                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${inventory.length}</div>
+    async showUsageDashboard() {
+        try {
+            const data = await api.get('/analytics/dashboard');
+            const s = data?.stats || data || {};
+            modals.show(`
+                <div class="modal-header">
+                    <h3>Usage Dashboard</h3>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                </div>
+                <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:24px;">
+                    <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
+                        <div style="font-size:28px;font-weight:700;">${s.totalInventory ?? s.inventory_count ?? '—'}</div>
+                        <div style="color:var(--gray-600);font-size:13px;">Inventory Items</div>
                     </div>
-                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
-                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Active Listings</div>
-                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${listings.length}</div>
+                    <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
+                        <div style="font-size:28px;font-weight:700;">${s.activeListings ?? s.listing_count ?? '—'}</div>
+                        <div style="color:var(--gray-600);font-size:13px;">Active Listings</div>
                     </div>
-                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
-                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Total Sales</div>
-                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${sales.length}</div>
+                    <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
+                        <div style="font-size:28px;font-weight:700;">${s.totalSales ?? s.sale_count ?? '—'}</div>
+                        <div style="color:var(--gray-600);font-size:13px;">Total Sales</div>
                     </div>
-                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
-                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Images Stored</div>
-                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${images.length}</div>
-                    </div>
-                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
-                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Active Automations</div>
-                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${automations.length}</div>
-                    </div>
-                    <div class="usage-stat-card" style="padding: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
-                        <div style="font-size: 13px; color: var(--gray-500); margin-bottom: 4px;">Connected Shops</div>
-                        <div style="font-size: 28px; font-weight: 700; color: var(--gray-900);">${shops.length}</div>
+                    <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
+                        <div style="font-size:28px;font-weight:700;">$${Number(s.totalRevenue ?? s.revenue ?? 0).toFixed(2)}</div>
+                        <div style="color:var(--gray-600);font-size:13px;">Total Revenue</div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close();">Close</button>
-            </div>
-        `);
+            `);
+        } catch {
+            toast.error('Failed to load usage data');
+        }
     },
 
     // Billing,
@@ -4261,233 +4373,1391 @@ Object.assign(handlers, {
         }
     },
 
-    async stripeCheckout(planId) {
-        try {
-            toast.info('Redirecting to Stripe Checkout…');
-            const data = await api.post('/billing/checkout', { planId });
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                toast.error(data.error || 'Failed to create checkout session');
-            }
-        } catch (error) {
-            toast.error(error.message || 'Failed to start checkout');
-        }
-    },
-
-    async stripePortal() {
-        try {
-            toast.info('Opening Stripe Customer Portal…');
-            const data = await api.post('/billing/portal', {});
-            if (data.url) {
-                window.open(data.url, '_blank', 'noopener,noreferrer');
-            } else {
-                toast.error(data.error || 'Failed to open portal');
-            }
-        } catch (error) {
-            toast.error(error.message || 'Failed to open Stripe portal');
-        }
-    },
-
-    async stripeCancelSubscription() {
-        if (!confirm('Are you sure you want to cancel your subscription and downgrade to the Free plan?')) return;
-        try {
-            const data = await api.post('/billing/cancel', {});
-            toast.success(data.message || 'Subscription cancelled');
-            const userData = await api.get('/auth/me');
-            if (userData?.user) store.setState({ user: userData.user });
-            router.navigate('plans-billing');
-        } catch (error) {
-            toast.error(error.message || 'Failed to cancel subscription');
-        }
-    },
-
-    async refreshBillingUsage() {
-        try {
-            await api.post('/billing/usage/refresh', {});
-            const data = await api.get('/billing/usage');
-            if (data.usage) store.setState({ billingUsage: data.usage });
-            router.navigate('plans-billing');
-        } catch (error) {
-            toast.error(error.message || 'Failed to refresh usage');
-        }
-    },
-
     // Quick Photo,
 
-    setupMFA: async function() {
-        const section = document.getElementById('mfa-section');
-        if (!section) return;
 
-        section.innerHTML = `<p class="text-sm text-gray-500">Loading setup…</p>`;
-
-        try {
-            const data = await api.post('/security/mfa/setup', {});
-            if (data.error) { toast.error(data.error); return; }
-
-            section.innerHTML = `
-                <div style="max-width:420px;">
-                    <p class="text-sm mb-3">Scan this QR code with your authenticator app, then enter the 6-digit code to confirm.</p>
-                    <div style="text-align:center; margin-bottom:16px;">
-                        <img src="${escapeHtml(data.qrCode)}" alt="MFA QR Code" style="width:200px; height:200px; border:1px solid var(--gray-200); border-radius:8px;">
-                    </div>
-                    <p class="text-xs text-gray-500 mb-3">Can't scan? Enter this code manually in your app:</p>
-                    <code style="display:block; padding:8px 12px; background:var(--gray-100); border-radius:6px; font-size:13px; letter-spacing:2px; margin-bottom:20px; word-break:break-all;">${escapeHtml(data.secret)}</code>
-                    <div class="form-group mb-4">
-                        <label class="form-label">6-Digit Verification Code</label>
-                        <input type="text" id="mfa-setup-code" class="form-input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code" style="letter-spacing:4px; font-size:20px; width:160px;">
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn btn-primary" onclick="handlers.verifyMFASetup('${escapeHtml(data.setupToken)}', '${escapeHtml(data.secret)}')">
-                            Verify & Enable
-                        </button>
-                        <button class="btn btn-secondary" onclick="handlers.cancelMFASetup()">Cancel</button>
-                    </div>
-                </div>`;
-        } catch (err) {
-            toast.error(err.message || 'Failed to start MFA setup');
-            handlers.cancelMFASetup();
-        }
+    showCreateCustomAutomation: function() {
+        const platforms = ['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot', 'all'];
+        const categories = ['sharing', 'engagement', 'offers', 'bundles', 'pricing', 'maintenance'];
+        const actionTypes = [
+            { value: 'share_listing', label: 'Share Listing' }, { value: 'send_offer', label: 'Send Offer' },
+            { value: 'price_drop', label: 'Price Drop' }, { value: 'relist', label: 'Relist Item' },
+            { value: 'follow_user', label: 'Follow User' }, { value: 'delist', label: 'Delist Item' },
+            { value: 'cross_list', label: 'Cross-List' }, { value: 'bump', label: 'Bump/Refresh Listing' }
+        ];
+        const conditionTypes = [
+            { value: 'days_listed', label: 'Days Listed', input: 'number', placeholder: 'e.g., 30' },
+            { value: 'price_above', label: 'Price Above ($)', input: 'number', placeholder: 'e.g., 50' },
+            { value: 'price_below', label: 'Price Below ($)', input: 'number', placeholder: 'e.g., 20' },
+            { value: 'no_likes', label: 'No Likes After (days)', input: 'number', placeholder: 'e.g., 7' },
+            { value: 'views_below', label: 'Views Below', input: 'number', placeholder: 'e.g., 10' },
+            { value: 'category_is', label: 'Category Is', input: 'text', placeholder: 'e.g., Shoes' },
+            { value: 'brand_is', label: 'Brand Is', input: 'text', placeholder: 'e.g., Nike' },
+            { value: 'has_offers', label: 'Has Pending Offers', input: 'none' }
+        ];
+        modals.show(`
+            <div class="modal-header"><h2 class="modal-title">${components.icon('plus', 20)} Create Custom Automation</h2><button class="modal-close" onclick="modals.close()" aria-label="Close">&times;</button></div>
+            <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+                <div class="form-group mb-4"><label class="form-label">Automation Name</label><input type="text" id="custom-auto-name" class="form-input" placeholder="e.g., Weekly Price Drop for Stale Items"></div>
+                <div class="flex gap-3 mb-4"><div class="form-group" style="flex:1;"><label class="form-label">Platform</label><select id="custom-auto-platform" class="form-select">${platforms.map(p => '<option value="' + p + '">' + (p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1)) + '</option>').join('')}</select></div><div class="form-group" style="flex:1;"><label class="form-label">Category</label><select id="custom-auto-category" class="form-select">${categories.map(c => '<option value="' + c + '">' + c.charAt(0).toUpperCase() + c.slice(1) + '</option>').join('')}</select></div></div>
+                <div class="form-group mb-4"><label class="form-label">Description</label><textarea id="custom-auto-desc" class="form-input" rows="2" placeholder="What does this automation do?"></textarea></div>
+                <div class="form-group mb-4"><label class="form-label">Schedule</label><select id="custom-auto-schedule" class="form-select" onchange="document.getElementById('custom-auto-cron-input').style.display = this.value === 'custom' ? 'block' : 'none'"><option value="0 */6 * * *">Every 6 hours</option><option value="0 9 * * *">Daily at 9 AM</option><option value="0 9,21 * * *">Twice daily</option><option value="0 9 * * 1">Weekly</option><option value="custom">Custom Cron...</option></select><input type="text" id="custom-auto-cron-input" class="form-input mt-2" style="display:none;" placeholder="e.g., 0 */4 * * *"></div>
+                <h3 class="text-md font-semibold mb-2">Conditions</h3>
+                <div id="custom-auto-conditions" class="mb-4"><div class="flex gap-2 mb-2 condition-row"><select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select condition...</option>${conditionTypes.map(c => '<option value="' + c.value + '" data-input="' + c.input + '" data-placeholder="' + (c.placeholder || '') + '">' + c.label + '</option>').join('')}</select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"></div></div>
+                <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addConditionRow()">+ Add Condition</button>
+                <h3 class="text-md font-semibold mb-2">Actions</h3>
+                <div id="custom-auto-actions" class="mb-4"><div class="flex gap-2 mb-2 action-row"><select class="form-select action-type" style="flex:1;"><option value="">Select action...</option>${actionTypes.map(a => '<option value="' + a.value + '">' + a.label + '</option>').join('')}</select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"></div></div>
+                <button class="btn btn-ghost btn-sm mb-4" onclick="handlers._addActionRow()">+ Add Action</button>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveCustomAutomation()">${components.icon('save', 16)} Create Automation</button></div>
+        `, 'modal-lg');
     },
 
-    verifyMFASetup: async function(setupToken, secret) {
-        const code = document.getElementById('mfa-setup-code')?.value?.trim();
-        if (!code || code.length !== 6) {
-            toast.error('Enter the 6-digit code from your authenticator app');
-            return;
-        }
 
-        try {
-            const data = await api.post('/security/mfa/verify-setup', { setupToken, code, secret });
-            if (data.error) { toast.error(data.error); return; }
-
-            // Update local user state
-            store.setState({ user: { ...store.state.user, mfa_enabled: 1 } });
-
-            const backupList = (data.backupCodes || []).map(c => `<li style="font-family:monospace; letter-spacing:1px;">${escapeHtml(c)}</li>`).join('');
-            const section = document.getElementById('mfa-section');
-            if (section) {
-                section.innerHTML = `
-                    <div style="max-width:420px;">
-                        <div style="display:flex; align-items:center; gap:8px; color:var(--success,#16a34a); font-weight:600; margin-bottom:16px;">
-                            ${components.icon('check-circle', 18)} Two-factor authentication is now enabled!
-                        </div>
-                        <p class="text-sm mb-2"><strong>Save your backup codes.</strong> You will not see them again. Each can be used once if you lose access to your authenticator app.</p>
-                        <ul style="list-style:none; padding:12px 16px; background:var(--gray-100); border-radius:8px; margin-bottom:16px;">${backupList}</ul>
-                        <button class="btn btn-danger-outline" onclick="handlers.disableMFA()" style="font-size:13px;">
-                            Disable Two-Factor Authentication
-                        </button>
-                    </div>`;
-            }
-            toast.success('Two-factor authentication enabled!');
-        } catch (err) {
-            toast.error(err.message || 'Verification failed — check your code and try again');
-        }
+    _updateConditionInput: function(selectEl) {
+        const opt = selectEl.options[selectEl.selectedIndex];
+        const input = selectEl.closest('.condition-row').querySelector('.condition-value');
+        const inputType = opt.dataset.input || 'text';
+        if (inputType === 'none') { input.style.display = 'none'; } else { input.style.display = ''; input.type = inputType; input.placeholder = opt.dataset.placeholder || 'Value'; }
     },
 
-    cancelMFASetup: function() {
-        const section = document.getElementById('mfa-section');
-        if (!section) return;
-        const enabled = store.state.user?.mfa_enabled;
-        section.innerHTML = enabled
-            ? `<div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-                   <span style="display:inline-flex; align-items:center; gap:6px; color:var(--success,#16a34a); font-weight:600; font-size:14px;">${components.icon('shield', 16)} 2FA Enabled</span>
-               </div>
-               <button class="btn btn-danger-outline" onclick="handlers.disableMFA()" style="font-size:13px;">Disable Two-Factor Authentication</button>`
-            : `<div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-                   <span style="display:inline-flex; align-items:center; gap:6px; color:var(--gray-400); font-size:14px;">${components.icon('shield-off', 16)} 2FA Not Enabled</span>
-               </div>
-               <button class="btn btn-secondary" onclick="handlers.setupMFA()">Enable Two-Factor Authentication</button>`;
+
+    _addConditionRow: function() {
+        const container = document.getElementById('custom-auto-conditions');
+        const row = document.createElement('div');
+        row.className = 'flex gap-2 mb-2 condition-row';
+        row.innerHTML = '<select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>';
+        container.appendChild(row);
     },
 
-    disableMFA: async function() {
-        const password = await modals.prompt('Enter your current password to disable two-factor authentication.', {
-            title: 'Disable Two-Factor Authentication',
-            inputType: 'password',
-            placeholder: 'Current password',
-            submitText: 'Disable 2FA'
+
+    _addActionRow: function() {
+        const container = document.getElementById('custom-auto-actions');
+        const row = document.createElement('div');
+        row.className = 'flex gap-2 mb-2 action-row';
+        row.innerHTML = '<select class="form-select action-type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>';
+        container.appendChild(row);
+    },
+
+
+    saveCustomAutomation: async function() {
+        const name = document.getElementById('custom-auto-name')?.value?.trim();
+        const platform = document.getElementById('custom-auto-platform')?.value;
+        const category = document.getElementById('custom-auto-category')?.value;
+        const description = document.getElementById('custom-auto-desc')?.value?.trim();
+        const scheduleSelect = document.getElementById('custom-auto-schedule')?.value;
+        const customCron = document.getElementById('custom-auto-cron-input')?.value?.trim();
+        const schedule = scheduleSelect === 'custom' ? customCron : scheduleSelect;
+        if (!name) { toast.error('Please enter a name'); return; }
+        if (!schedule) { toast.error('Please select a schedule'); return; }
+        const conditions = [];
+        document.querySelectorAll('#custom-auto-conditions .condition-row').forEach(row => {
+            const type = row.querySelector('.condition-type')?.value;
+            const value = row.querySelector('.condition-value')?.value;
+            if (type) conditions.push({ type, value: value || true });
         });
-        if (!password) return;
-
+        const actions = [];
+        document.querySelectorAll('#custom-auto-actions .action-row').forEach(row => {
+            const type = row.querySelector('.action-type')?.value;
+            const param = row.querySelector('.action-param')?.value;
+            if (type) actions.push({ type, param: param || null });
+        });
+        if (actions.length === 0) { toast.error('Add at least one action'); return; }
         try {
-            const data = await api.post('/security/mfa/disable', { password });
-            if (data.error) { toast.error(data.error); return; }
+            await api.post('/automations', { name, platform, category, description, schedule, type: 'custom', conditions: JSON.stringify(conditions), actions: JSON.stringify(actions), is_enabled: 1 });
+            modals.close();
+            toast.success('Custom automation created');
+            await handlers.loadAutomations();
+            renderApp(pages.automations());
+        } catch (err) { toast.error('Failed to create automation: ' + (err.message || 'Unknown error')); }
+    },
 
-            store.setState({ user: { ...store.state.user, mfa_enabled: 0 } });
-            handlers.cancelMFASetup();
-            toast.success('Two-factor authentication disabled.');
-        } catch (err) {
-            toast.error(err.message || 'Failed to disable 2FA');
+
+    exportAutomationHistoryCSV: function() {
+        const runs = store.state.automationHistoryRuns || [];
+        if (runs.length === 0) { toast.error('No run history to export'); return; }
+        const escCSV = (v) => { const s = String(v ?? ''); if (/[,"\n\r]/.test(s) || /^[=+\-@]/.test(s)) return '"' + s.replace(/"/g, '""') + '"'; return s; };
+        const headers = ['Date', 'Automation', 'Type', 'Status', 'Duration (ms)', 'Items Processed', 'Items Succeeded', 'Items Failed', 'Result', 'Error'];
+        const rows = [headers.join(',')];
+        runs.forEach(r => { rows.push([escCSV(r.started_at || r.timestamp), escCSV(r.automation_name || r.action), escCSV(r.automation_type || r.type), escCSV(r.status), escCSV(r.duration_ms), escCSV(r.items_processed), escCSV(r.items_succeeded), escCSV(r.items_failed), escCSV(r.result_message || r.result), escCSV(r.error_message)].join(',')); });
+        const csv = rows.join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'automation-history-' + new Date().toISOString().split('T')[0] + '.csv';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        toast.success('Exported ' + runs.length + ' run(s) to CSV');
+    },
+
+
+    loadPlatformHealth: async function() {
+        try { const res = await api.get('/shops/health'); store.setState({ platformHealth: res.data || res }); return res.data || res; }
+        catch (err) { toast.error('Failed to load platform health'); return null; }
+    },
+
+
+    refreshPlatformHealth: async function() {
+        toast.info('Refreshing platform health...');
+        await handlers.loadPlatformHealth();
+        renderApp(pages.platformHealth());
+    },
+
+
+    loadInventoryAnalytics: async function() {
+        try { const res = await api.get('/analytics/inventory-deep'); store.setState({ inventoryAnalytics: res.data || res }); return res.data || res; }
+        catch (err) { toast.error('Failed to load inventory analytics'); return null; }
+    },
+
+
+    switchInventoryTab: function(tabName) {
+        document.querySelectorAll('.inv-tab-btn').forEach(btn => {
+            if (btn.dataset.tab === tabName) { btn.classList.add('active'); btn.style.borderBottom = '2px solid var(--primary-600)'; btn.style.color = 'var(--primary-600)'; }
+            else { btn.classList.remove('active'); btn.style.borderBottom = '2px solid transparent'; btn.style.color = 'var(--gray-600)'; }
+        });
+        document.querySelectorAll('.inv-tab-pane').forEach(pane => { pane.style.display = pane.dataset.tab === tabName ? 'block' : 'none'; });
+        if (tabName === 'analytics' && !store.state.inventoryAnalytics) {
+            handlers.loadInventoryAnalytics().then(() => {
+                const pane = document.querySelector('.inv-tab-pane[data-tab="analytics"]');
+                if (pane) pane.innerHTML = handlers._renderInventoryAnalyticsContent();
+            });
         }
     },
 
-    showInstallExtensionModal: function() {
-        const extensionPath = window.location.origin.startsWith('http://localhost')
-            ? window.location.origin.replace(/:\d+$/, '') + '/chrome-extension'
-            : 'chrome-extension/';
+
+    _renderInventoryAnalyticsContent: function() {
+        const data = store.state.inventoryAnalytics;
+        if (!data) return '<div class="text-center py-8 text-gray-500">Loading analytics...</div>';
+        const overall = data.overall || {};
+        const agingBuckets = data.agingBuckets || [];
+        const sellThrough = data.sellThrough || [];
+        const margins = data.margins || [];
+        const deadStock = data.deadStock || [];
+        const maxBucket = Math.max(...agingBuckets.map(b => b.count), 1);
+        return '<div class="flex justify-between items-center mb-4"><h3 class="text-lg font-semibold">' + components.icon('bar-chart-2', 20) + ' Inventory Analytics</h3><div class="flex gap-2"><button class="btn btn-ghost btn-sm" onclick="handlers.showSupplierManager()">' + components.icon('truck', 14) + ' Suppliers</button><button class="btn btn-ghost btn-sm" onclick="handlers.showCategoryManager()">' + components.icon('folder', 14) + ' Manage Categories</button></div></div>' +
+            '<div class="grid grid-cols-4 gap-4 mb-6"><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--primary-600);">' + (overall.sell_through_rate || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Sell-Through Rate</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--success);">' + (overall.avg_days_to_sell || 0).toFixed(0) + '</div><div class="text-xs text-gray-500">Avg Days to Sell</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:var(--warning-600);">' + (overall.margin_pct || 0).toFixed(1) + '%</div><div class="text-xs text-gray-500">Avg Margin</div></div></div><div class="card"><div class="card-body text-center"><div class="text-2xl font-bold" style="color:' + ((overall.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (overall.total_profit || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div><div class="text-xs text-gray-500">Total Profit</div></div></div></div>' +
+            '<div class="card mb-6"><div class="card-body"><div class="flex justify-between items-center mb-3"><h3 class="text-md font-semibold">' + components.icon('trending-up', 18) + ' Profit & Loss Timeline</h3><button class="btn btn-ghost btn-sm" onclick="handlers.loadPLTimeline()">' + components.icon('refresh-cw', 14) + ' Load</button></div><div id="pl-timeline-chart">' + (store.state.plTimeline ? handlers._renderPLChart(store.state.plTimeline) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to fetch monthly P&L data</p>') + '</div></div></div>' +
+            '<div class="card mb-6"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('clock', 18) + ' Inventory Aging</h3><div class="flex gap-3 items-end" style="height:120px;">' + agingBuckets.map(b => { const pct = (b.count / maxBucket * 100); const color = b.min >= 91 ? 'var(--error)' : b.min >= 61 ? 'var(--warning-600)' : b.min >= 31 ? 'var(--warning-400)' : 'var(--success)'; return '<div style="flex:1;text-align:center;"><div style="background:' + color + ';height:' + Math.max(pct, 4) + '%;border-radius:4px 4px 0 0;margin:0 2px;position:relative;"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600;">' + b.count + '</span></div><div style="font-size:10px;color:var(--gray-500);margin-top:4px;">' + b.label + '</div><div style="font-size:9px;color:var(--gray-400);">$' + Math.round(b.value).toLocaleString() + '</div></div>'; }).join('') + '</div></div></div>' +
+            '<div class="grid grid-cols-2 gap-4 mb-6"><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('trending-up', 18) + ' Sell-Through by Category</h3>' + (sellThrough.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Total</th><th>Sold</th><th>Rate</th><th>Avg Days</th></tr></thead><tbody>' + sellThrough.map(s => '<tr><td>' + escapeHtml(s.category || 'Uncategorized') + '</td><td>' + s.total + '</td><td>' + s.sold + '</td><td style="color:' + (s.sell_rate >= 50 ? 'var(--success)' : s.sell_rate >= 25 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (s.sell_rate || 0).toFixed(1) + '%</td><td>' + (s.avg_days_to_sell ? s.avg_days_to_sell.toFixed(0) + 'd' : '—') + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No data yet</p>') + '</div></div><div class="card"><div class="card-body"><h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Margin by Category</h3>' + (margins.length > 0 ? '<table class="table table-sm"><thead><tr><th>Category</th><th>Sold</th><th>Avg Sale</th><th>Margin</th><th>Profit</th></tr></thead><tbody>' + margins.map(m => '<tr><td>' + escapeHtml(m.category || 'Uncategorized') + '</td><td>' + m.sold_count + '</td><td>$' + (m.avg_sale_price || 0).toFixed(0) + '</td><td style="color:' + ((m.margin_pct || 0) >= 30 ? 'var(--success)' : (m.margin_pct || 0) >= 15 ? 'var(--warning-600)' : 'var(--error)') + ';font-weight:600;">' + (m.margin_pct || 0).toFixed(1) + '%</td><td style="color:' + ((m.total_profit || 0) >= 0 ? 'var(--success)' : 'var(--error)') + ';">$' + (m.total_profit || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table>' : '<p class="text-gray-500 text-sm">No sales data yet</p>') + '</div></div></div>' +
+            (sellThrough.length > 1 ? (() => { const totalItems = sellThrough.reduce((s, c) => s + (c.total || 0), 0); const totalSold = sellThrough.reduce((s, c) => s + (c.sold || 0), 0); const catColors = ['var(--primary-500)', 'var(--success)', 'var(--warning-500)', 'var(--error)', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']; const sorted = [...sellThrough].sort((a, b) => (b.total || 0) - (a.total || 0)); const maxItems = Math.max(...sorted.map(c => c.total || 0), 1); return '<div class="grid grid-cols-2 gap-4 mb-6">' + '<div class="card"><div class="card-body">' + '<h3 class="text-md font-semibold mb-3">' + components.icon('pie-chart', 18) + ' Category Distribution (' + totalItems + ' items)</h3>' + '<div class="flex flex-col gap-1">' + sorted.slice(0, 8).map((c, i) => { const pct = totalItems > 0 ? Math.round((c.total || 0) / totalItems * 100) : 0; return '<div class="flex items-center gap-2" style="font-size:12px;">' + '<span style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(c.category || 'Uncategorized') + '</span>' + '<div style="flex:1;height:16px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' + '<div style="height:100%;width:' + pct + '%;background:' + catColors[i % catColors.length] + ';border-radius:var(--radius-sm);"></div></div>' + '<span style="width:55px;text-align:right;font-weight:600;">' + (c.total || 0) + ' (' + pct + '%)</span></div>'; }).join('') + '</div></div></div>' + '<div class="card"><div class="card-body">' + '<h3 class="text-md font-semibold mb-3">' + components.icon('dollar-sign', 18) + ' Revenue by Category</h3>' + '<div class="flex flex-col gap-1">' + [...margins].sort((a, b) => (b.total_profit || 0) - (a.total_profit || 0)).slice(0, 8).map((m, i) => { const maxProfit = Math.max(...margins.map(x => Math.abs(x.total_profit || 0)), 1); const pct = Math.round(Math.abs(m.total_profit || 0) / maxProfit * 100); const isPositive = (m.total_profit || 0) >= 0; return '<div class="flex items-center gap-2" style="font-size:12px;">' + '<span style="width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(m.category || 'Uncategorized') + '</span>' + '<div style="flex:1;height:16px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' + '<div style="height:100%;width:' + pct + '%;background:' + (isPositive ? 'var(--success)' : 'var(--error)') + ';border-radius:var(--radius-sm);"></div></div>' + '<span style="width:60px;text-align:right;font-weight:600;color:' + (isPositive ? 'var(--success)' : 'var(--error)') + ';">$' + Math.round(m.total_profit || 0).toLocaleString() + '</span></div>'; }).join('') + '</div></div></div></div>'; })() : '') +
+            (deadStock.length > 0 ? '<div class="card mb-6"><div class="card-body"><h3 class="text-md font-semibold mb-3" style="color:var(--error);">' + components.icon('alert-triangle', 18) + ' Dead Stock (' + deadStock.length + ' items)</h3><table class="table table-sm"><thead><tr><th>Title</th><th>SKU</th><th>Days</th><th>Price</th></tr></thead><tbody>' + deadStock.slice(0, 10).map(d => '<tr><td>' + escapeHtml(d.title || '') + '</td><td>' + escapeHtml(d.sku || '—') + '</td><td style="color:var(--error);">' + d.days_old + 'd</td><td>$' + (d.list_price || 0).toFixed(0) + '</td></tr>').join('') + '</tbody></table></div></div>' : '') +
+            '<div class="card mb-6"><div class="card-body"><div class="flex justify-between items-center mb-3"><h3 class="text-md font-semibold">' + components.icon('tag', 18) + ' Price Suggestions</h3><button class="btn btn-ghost btn-sm" onclick="handlers.loadPriceSuggestions()">' + components.icon('refresh-cw', 14) + ' Load</button></div><div id="price-suggestions-content">' + (store.state.priceSuggestions ? handlers._renderPriceSuggestions(store.state.priceSuggestions) : '<p class="text-gray-500 text-sm text-center py-4">Click Load to get AI-powered pricing recommendations for aging inventory</p>') + '</div></div></div>';
+    },
+
+
+    loadPLTimeline: async function() {
+        try {
+            const res = await api.get('/analytics/sales?groupBy=month&period=1y');
+            const data = res.data || res;
+            const salesData = (data.salesData || []).reverse();
+            store.setState({ plTimeline: salesData });
+            const el = document.getElementById('pl-timeline-chart');
+            if (el) el.innerHTML = handlers._renderPLChart(salesData);
+        } catch (e) {
+            toast.error('Failed to load P&L data');
+        }
+    },
+
+
+    _renderPLChart: function(salesData) {
+        if (!salesData || salesData.length === 0) {
+            return '<p class="text-gray-500 text-sm text-center py-4">No sales data available</p>';
+        }
+        const width = 600, height = 200, padL = 50, padR = 20, padT = 20, padB = 40;
+        const chartW = width - padL - padR;
+        const chartH = height - padT - padB;
+        const n = salesData.length;
+        const revenues = salesData.map(d => d.revenue || 0);
+        const profits = salesData.map(d => d.profit || 0);
+        const allVals = [...revenues, ...profits];
+        const maxVal = Math.max(...allVals, 1);
+        const minVal = Math.min(...allVals, 0);
+        const range = maxVal - minVal || 1;
+        function toX(i) { return padL + (i / Math.max(n - 1, 1)) * chartW; }
+        function toY(v) { return padT + chartH - ((v - minVal) / range) * chartH; }
+        const revPoints = salesData.map((_, i) => toX(i) + ',' + toY(revenues[i])).join(' ');
+        const profPoints = salesData.map((_, i) => toX(i) + ',' + toY(profits[i])).join(' ');
+        const zeroY = toY(0);
+        const gridLines = [0, 0.25, 0.5, 0.75, 1].map(pct => {
+            const y = padT + pct * chartH;
+            const val = maxVal - pct * range;
+            return '<line x1="' + padL + '" y1="' + y + '" x2="' + (width - padR) + '" y2="' + y + '" stroke="var(--gray-200)" stroke-dasharray="4,4"/>' +
+                '<text x="' + (padL - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--gray-400)">$' + Math.round(val) + '</text>';
+        }).join('');
+        const xLabels = salesData.map((d, i) => '<text x="' + toX(i) + '" y="' + (height - 8) + '" text-anchor="middle" font-size="10" fill="var(--gray-500)">' + (d.period || '').slice(0, 7) + '</text>').join('');
+        const totalRevenue = revenues.reduce((a, b) => a + b, 0);
+        const totalProfit = profits.reduce((a, b) => a + b, 0);
+        return '<div class="flex gap-4 mb-2"><span class="text-xs"><span style="display:inline-block;width:12px;height:3px;background:var(--primary-500);vertical-align:middle;margin-right:4px;border-radius:2px;"></span>Revenue ($' + totalRevenue.toLocaleString(undefined, {maximumFractionDigits: 0}) + ')</span><span class="text-xs"><span style="display:inline-block;width:12px;height:3px;background:var(--success);vertical-align:middle;margin-right:4px;border-radius:2px;"></span>Profit ($' + totalProfit.toLocaleString(undefined, {maximumFractionDigits: 0}) + ')</span></div>' +
+            '<svg viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;">' + gridLines +
+            (minVal < 0 ? '<line x1="' + padL + '" y1="' + zeroY + '" x2="' + (width - padR) + '" y2="' + zeroY + '" stroke="var(--gray-400)" stroke-width="1"/>' : '') +
+            '<polyline points="' + revPoints + '" fill="none" stroke="var(--primary-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<polyline points="' + profPoints + '" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+            salesData.map((d, i) => '<circle cx="' + toX(i) + '" cy="' + toY(revenues[i]) + '" r="3" fill="var(--primary-500)"/><circle cx="' + toX(i) + '" cy="' + toY(profits[i]) + '" r="3" fill="var(--success)"/>').join('') +
+            xLabels + '</svg>';
+    },
+
+
+    loadExperiments: async function() {
+        try {
+            const res = await api.get('/automations/experiments');
+            const data = res.data || res;
+            store.setState({ automationExperiments: data.experiments || data || [] });
+            const el = document.getElementById('experiments-list');
+            if (el) el.innerHTML = handlers._renderExperimentsList(store.state.automationExperiments);
+        } catch (e) {
+            toast.error('Failed to load experiments');
+        }
+    },
+
+
+    showCreateExperiment: function() {
+        const rules = store.state.automations || [];
+        const enabledRules = rules.filter(r => r.is_enabled || r.exists);
+        if (enabledRules.length === 0) { toast.warning('Enable at least one automation rule first'); return; }
+        const ruleOptions = enabledRules.map(r => '<option value="' + r.id + '">' + escapeHtml(r.name) + '</option>').join('');
+        modals.show('<div class="modal-header"><h2 class="modal-title">' + components.icon('git-branch', 20) + ' Create A/B Experiment</h2><button class="modal-close" aria-label="Close" onclick="modals.close()">' + components.icon('close') + '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Select a base rule to clone as variant B. Modify the variant\'s schedule or conditions to test different approaches.</p><div class="form-group mb-4"><label class="form-label">Base Rule (A)</label><select id="exp-base-rule" class="form-select">' + ruleOptions + '</select></div><div class="form-group mb-4"><label class="form-label">Experiment Name (optional)</label><input type="text" id="exp-name" class="form-input" placeholder="e.g., Share frequency test"></div><div class="form-group mb-4"><label class="form-label">Notes</label><textarea id="exp-notes" class="form-input" rows="2" placeholder="What are you testing?"></textarea></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.saveExperiment()">' + components.icon('git-branch', 14) + ' Create Experiment</button></div>');
+    },
+
+
+    saveExperiment: async function() {
+        const baseRuleId = document.getElementById('exp-base-rule')?.value;
+        const name = document.getElementById('exp-name')?.value?.trim();
+        const notes = document.getElementById('exp-notes')?.value?.trim();
+        if (!baseRuleId) { toast.error('Select a base rule'); return; }
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/experiments', { baseRuleId, name: name || undefined, notes: notes || undefined });
+            toast.success('Experiment created — variant rule cloned');
+            modals.close();
+            handlers.loadExperiments();
+        } catch (e) {
+            toast.error('Failed to create experiment: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+
+    completeExperiment: async function(expId, winner) {
+        if (!confirm('Complete this experiment and disable the ' + (winner === 'base' ? 'variant' : 'base') + ' rule?')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/automations/experiments/' + expId, { status: 'completed', winner });
+            toast.success('Experiment completed — ' + winner + ' wins');
+            handlers.loadExperiments();
+        } catch (e) {
+            toast.error('Failed to complete experiment');
+        }
+    },
+
+
+    pauseExperiment: async function(expId, newStatus) {
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/automations/experiments/' + expId, { status: newStatus });
+            toast.success('Experiment ' + newStatus);
+            handlers.loadExperiments();
+        } catch (e) {
+            toast.error('Failed to update experiment');
+        }
+    },
+
+
+    _renderExperimentsList: function(experiments) {
+        if (!experiments || experiments.length === 0) {
+            return '<p class="text-gray-500 text-sm text-center py-4">No experiments yet. Create one to compare two automation approaches.</p>';
+        }
+        return experiments.map(exp => {
+            const statusColor = exp.status === 'running' ? 'var(--success)' : exp.status === 'paused' ? 'var(--warning-600)' : 'var(--gray-500)';
+            const statusIcon = exp.status === 'running' ? 'play' : exp.status === 'paused' ? 'pause' : 'check-circle';
+            const bs = exp.base_stats || {};
+            const vs = exp.variant_stats || {};
+            const baseRuns = bs.runs || 0;
+            const variantRuns = vs.runs || 0;
+            const baseSuccess = baseRuns > 0 ? Math.round((bs.successes || 0) / baseRuns * 100) : '—';
+            const variantSuccess = variantRuns > 0 ? Math.round((vs.successes || 0) / variantRuns * 100) : '—';
+            return '<div class="card mb-3" style="border-left:3px solid ' + statusColor + ';"><div class="card-body">' +
+                '<div class="flex justify-between items-start mb-2"><div><h4 class="font-semibold">' + components.icon(statusIcon, 14) + ' ' + escapeHtml(exp.name || 'Experiment') + '</h4>' +
+                '<span class="text-xs text-gray-400">Started ' + (exp.started_at ? new Date(exp.started_at).toLocaleDateString() : '—') + '</span></div>' +
+                '<span class="badge" style="background:' + statusColor + '20;color:' + statusColor + ';text-transform:capitalize;">' + exp.status + '</span></div>' +
+                (exp.notes ? '<p class="text-xs text-gray-500 mb-3">' + escapeHtml(exp.notes) + '</p>' : '') +
+                '<div class="grid grid-cols-2 gap-3 mb-3">' +
+                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--primary-50,#eff6ff);"><div class="text-xs text-gray-500 mb-1">Base (A)</div><div class="text-sm font-semibold">' + baseRuns + ' runs | ' + baseSuccess + '% success</div>' + (bs.avg_items != null ? '<div class="text-xs text-gray-400">' + Math.round(bs.avg_items) + ' avg items</div>' : '') + '<div class="text-xs text-gray-400">' + escapeHtml(exp.base_name || exp.base_rule_id || '') + '</div></div>' +
+                '<div style="padding:8px;border-radius:var(--radius-sm);background:var(--warning-50,#fffbeb);"><div class="text-xs text-gray-500 mb-1">Variant (B)</div><div class="text-sm font-semibold">' + variantRuns + ' runs | ' + variantSuccess + '% success</div>' + (vs.avg_items != null ? '<div class="text-xs text-gray-400">' + Math.round(vs.avg_items) + ' avg items</div>' : '') + '<div class="text-xs text-gray-400">' + escapeHtml(exp.variant_name || exp.variant_rule_id || '') + '</div></div></div>' +
+                (exp.winner ? '<div class="text-sm mb-2" style="color:var(--success);font-weight:600;">' + components.icon('award', 14) + ' Winner: ' + exp.winner.toUpperCase() + '</div>' : '') +
+                (exp.status !== 'completed' ? '<div class="flex gap-2">' +
+                '<button class="btn btn-xs btn-success" onclick="handlers.completeExperiment(\'' + exp.id + '\', \'base\')">' + components.icon('check', 12) + ' A Wins</button>' +
+                '<button class="btn btn-xs btn-warning" onclick="handlers.completeExperiment(\'' + exp.id + '\', \'variant\')">' + components.icon('check', 12) + ' B Wins</button>' +
+                '<button class="btn btn-xs btn-ghost" onclick="handlers.completeExperiment(\'' + exp.id + '\', \'inconclusive\')">Inconclusive</button>' +
+                '<button class="btn btn-xs btn-ghost" onclick="handlers.pauseExperiment(\'' + exp.id + '\', \'' + (exp.status === 'paused' ? 'running' : 'paused') + '\')">' +
+                components.icon(exp.status === 'paused' ? 'play' : 'pause', 12) + ' ' + (exp.status === 'paused' ? 'Resume' : 'Pause') + '</button></div>' : '') +
+                '</div></div>';
+        }).join('');
+    },
+
+
+    exportAutomationRulesJSON: async function() {
+        try {
+            const res = await api.get('/automations/export');
+            const data = res.data || res;
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'automation-rules-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click(); URL.revokeObjectURL(url);
+            toast.success('Exported ' + (data.count || 0) + ' rules');
+        } catch (e) { toast.error('Export failed'); }
+    },
+
+
+    showImportAutomationRules: function() {
+        modals.show('<div class="modal-header"><h2 class="modal-title">' + components.icon('upload', 20) + ' Import Automation Rules</h2><button class="modal-close" aria-label="Close" onclick="modals.close()">' + components.icon('close') + '</button></div><div class="modal-body"><p class="text-sm text-gray-500 mb-4">Upload a JSON file exported from VaultLister. Duplicate rules (same name + platform) will be skipped.</p><div class="form-group"><input type="file" id="import-rules-file" accept=".json" class="form-input"></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="modals.close()">Cancel</button><button class="btn btn-primary" onclick="handlers.importAutomationRules()">' + components.icon('upload', 14) + ' Import</button></div>');
+    },
+
+
+    importAutomationRules: async function() {
+        const fileInput = document.getElementById('import-rules-file');
+        if (!fileInput?.files?.[0]) { toast.error('Select a file'); return; }
+        try {
+            const text = await fileInput.files[0].text();
+            const data = JSON.parse(text);
+            const rules = data.rules || data;
+            if (!Array.isArray(rules)) { toast.error('Invalid format'); return; }
+            await api.ensureCSRFToken();
+            const res = await api.post('/automations/import', { rules });
+            const result = res.data || res;
+            toast.success('Imported ' + (result.imported || 0) + ' rules, skipped ' + (result.skipped || 0));
+            modals.close();
+        } catch (e) { toast.error('Import failed: ' + (e.message || 'Invalid JSON')); }
+    },
+
+
+    loadForecast: async function() {
+        try {
+            const res = await api.get('/analytics/forecast');
+            const data = res.data || res;
+            store.setState({ inventoryForecast: data });
+            const el = document.getElementById('forecast-content');
+            if (el) el.innerHTML = handlers._renderForecastContent(data);
+        } catch (e) { toast.error('Failed to load forecast'); }
+    },
+
+
+    _renderForecastContent: function(data) {
+        if (!data || !data.forecasts) return '<p class="text-gray-500 text-sm text-center py-4">No data available</p>';
+        const forecasts = data.forecasts || [];
+        const overall = data.overall || {};
+        const healthColors = { critical: 'var(--error)', low: 'var(--warning-600)', healthy: 'var(--success)', overstocked: 'var(--primary-500)', 'no-data': 'var(--gray-400)' };
+        const healthLabels = { critical: 'Critical', low: 'Low Stock', healthy: 'Healthy', overstocked: 'Overstocked', 'no-data': 'No Data' };
+        return '<div class="grid grid-cols-4 gap-3 mb-4"><div class="card"><div class="card-body text-center py-2"><div class="text-xl font-bold">' + (overall.totalActive || 0) + '</div><div class="text-xs text-gray-500">Active Items</div></div></div><div class="card"><div class="card-body text-center py-2"><div class="text-xl font-bold">$' + Math.round(overall.totalValue || 0).toLocaleString() + '</div><div class="text-xs text-gray-500">Inventory Value</div></div></div><div class="card"><div class="card-body text-center py-2"><div class="text-xl font-bold" style="color:var(--error);">' + (overall.restockAlerts || 0) + '</div><div class="text-xs text-gray-500">Restock Alerts</div></div></div><div class="card"><div class="card-body text-center py-2"><div class="text-xl font-bold" style="color:var(--primary-500);">' + (overall.overstocked || 0) + '</div><div class="text-xs text-gray-500">Overstocked</div></div></div></div>' +
+            '<table class="table table-sm"><thead><tr><th>Category</th><th>Active</th><th>Value</th><th>Monthly Velocity</th><th>Days of Supply</th><th>Health</th><th>Projected Q</th></tr></thead><tbody>' +
+            forecasts.map(f => { const hc = healthColors[f.health] || 'var(--gray-400)'; return '<tr><td>' + escapeHtml(f.category) + '</td><td>' + f.active_count + '</td><td>$' + Math.round(f.active_value).toLocaleString() + '</td><td>' + f.monthly_velocity.toFixed(1) + '/mo</td><td style="color:' + hc + ';font-weight:600;">' + (f.days_of_supply != null ? f.days_of_supply + 'd' : '—') + '</td><td><span class="badge" style="background:' + hc + '20;color:' + hc + ';">' + (healthLabels[f.health] || f.health) + '</span></td><td>' + f.projected_quarterly_sales + '</td></tr>'; }).join('') + '</tbody></table>';
+    },
+
+
+    loadTemplateMarketplace: async function() {
+        try {
+            const res = await api.get('/automations/templates/shared');
+            const data = res.data || res;
+            store.setState({ automationTemplates: data.templates || [] });
+            const el = document.getElementById('template-marketplace');
+            if (el) el.innerHTML = handlers._renderTemplateMarketplace(store.state.automationTemplates);
+        } catch (e) { toast.error('Failed to load templates'); }
+    },
+
+
+    showTemplateMarketplace: function() {
+        modals.show('<div class="modal-header"><h2 class="modal-title">' + components.icon('shopping-bag', 20) + ' Automation Templates</h2><button class="modal-close" aria-label="Close" onclick="modals.close()">' + components.icon('close') + '</button></div><div class="modal-body" style="max-height:65vh;overflow-y:auto;"><div id="template-marketplace"><p class="text-gray-500 text-sm text-center py-4">Loading templates...</p></div></div>');
+        handlers.loadTemplateMarketplace();
+    },
+
+
+    shareAutomationAsTemplate: async function(ruleId, ruleName) {
+        const description = prompt('Description for "' + ruleName + '" template:');
+        if (description === null) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/templates/share', { ruleId, description: description || ruleName });
+            toast.success('Shared "' + ruleName + '" as template');
+        } catch (e) { toast.error('Failed to share template'); }
+    },
+
+
+    installTemplate: async function(templateId, templateName) {
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/templates/install', { templateId });
+            toast.success('Installed "' + templateName + '"');
+            handlers.loadTemplateMarketplace();
+        } catch (e) { toast.error('Failed to install template'); }
+    },
+
+    // Rule versioning
+
+    showRuleVersionHistory: async function(ruleId, ruleName) {
+        try {
+            const res = await api.get('/automations/' + ruleId + '/versions');
+            const data = res.data || res;
+            const versions = data.versions || [];
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${components.icon('git-commit', 20)} Version History — ${escapeHtml(ruleName)}</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body" style="max-height:65vh;overflow-y:auto;">
+                    ${versions.length === 0 ? '<p class="text-gray-500 text-sm text-center py-4">No version history yet. Changes are tracked automatically when you edit rules.</p>' :
+                    '<table class="table table-sm"><thead><tr><th>Ver</th><th>Name</th><th>Platform</th><th>Changes</th><th>Date</th><th></th></tr></thead><tbody>' +
+                    versions.map(v => '<tr><td><span class="badge badge-sm">v' + v.version + '</span></td>' +
+                        '<td>' + escapeHtml(v.name) + '</td>' +
+                        '<td>' + escapeHtml(v.platform || 'all') + '</td>' +
+                        '<td class="text-xs text-gray-500">' + escapeHtml(v.change_summary || '') + '</td>' +
+                        '<td class="text-xs text-gray-400">' + (v.created_at ? new Date(v.created_at).toLocaleString() : '—') + '</td>' +
+                        '<td><button class="btn btn-xs btn-ghost" onclick="handlers.rollbackRule(\'' + ruleId + '\', \'' + v.id + '\', ' + v.version + ')" title="Rollback to this version">' +
+                        components.icon('rotate-ccw', 12) + ' Rollback</button></td></tr>').join('') +
+                    '</tbody></table>'}
+                </div>
+            `, 'modal-lg');
+        } catch (e) {
+            toast.error('Failed to load version history');
+        }
+    },
+
+
+    rollbackRule: async function(ruleId, versionId, versionNum) {
+        if (!confirm('Rollback this rule to version ' + versionNum + '? Current settings will be saved as a new version.')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/' + ruleId + '/rollback', { versionId });
+            toast.success('Rolled back to version ' + versionNum);
+            modals.close();
+        } catch (e) {
+            toast.error('Rollback failed: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+    // Inventory category management
+
+    loadCategories: async function() {
+        try {
+            const res = await api.get('/inventory/categories');
+            const data = res.data || res;
+            store.setState({ inventoryCategories: data.categories || [] });
+            return data.categories || [];
+        } catch (e) {
+            toast.error('Failed to load categories');
+            return [];
+        }
+    },
+
+
+    showCategoryManager: async function() {
+        const categories = await handlers.loadCategories();
+        const renderList = (cats) => {
+            if (!cats || cats.length === 0) return '<p class="text-gray-500 text-sm text-center py-4">No categories yet. Add one below.</p>';
+            return '<div class="flex flex-col gap-2">' + cats.map(c =>
+                '<div class="flex items-center gap-3 p-2" style="border:1px solid var(--border);border-radius:var(--radius-sm);border-left:4px solid ' + (c.color || '#6366f1') + ';">' +
+                '<div class="flex-1"><span class="font-semibold text-sm">' + escapeHtml(c.name) + '</span>' +
+                '<span class="text-xs text-gray-400 ml-2">' + (c.item_count || 0) + ' items</span></div>' +
+                '<input type="color" value="' + (c.color || '#6366f1') + '" onchange="handlers.updateCategory(\'' + c.id + '\', { color: this.value })" style="width:28px;height:28px;border:none;cursor:pointer;" title="Change color">' +
+                '<button class="btn btn-xs btn-ghost" onclick="handlers.renameCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/'/g, "\\'") + '\')" title="Rename">' + components.icon('edit-2', 12) + '</button>' +
+                '<button class="btn btn-xs btn-ghost" style="color:var(--error);" onclick="handlers.deleteCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/'/g, "\\'") + '\')" title="Delete">' + components.icon('trash-2', 12) + '</button></div>'
+            ).join('') + '</div>';
+        };
 
         modals.show(`
             <div class="modal-header">
-                <h2 class="modal-title">Install VaultLister Extension</h2>
-                <button class="modal-close" onclick="modals.close()" aria-label="Close">&times;</button>
+                <h2 class="modal-title">${components.icon('folder', 20)} Manage Categories</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-info" style="margin-bottom: 1.25rem;">
-                    <strong>Beta / Local Install</strong> — The extension is not yet on the Chrome Web Store.
-                    Load it directly from the <code>chrome-extension/</code> folder using Developer Mode.
-                </div>
-                <ol style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem;">
-                    <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
-                        <span style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--primary-600); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;">1</span>
-                        <div>
-                            <div class="font-medium">Open Chrome Extensions</div>
-                            <div class="text-sm text-gray-500">In Chrome, navigate to <code>chrome://extensions</code></div>
-                        </div>
-                    </li>
-                    <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
-                        <span style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--primary-600); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;">2</span>
-                        <div>
-                            <div class="font-medium">Enable Developer Mode</div>
-                            <div class="text-sm text-gray-500">Toggle <strong>Developer mode</strong> in the top-right corner of the Extensions page</div>
-                        </div>
-                    </li>
-                    <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
-                        <span style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--primary-600); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;">3</span>
-                        <div>
-                            <div class="font-medium">Click "Load unpacked"</div>
-                            <div class="text-sm text-gray-500">A button labeled <strong>Load unpacked</strong> will appear after enabling Developer mode</div>
-                        </div>
-                    </li>
-                    <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
-                        <span style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--primary-600); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;">4</span>
-                        <div>
-                            <div class="font-medium">Select the extension folder</div>
-                            <div class="text-sm text-gray-500">Navigate to and select the <code>chrome-extension/</code> folder inside your VaultLister 3.0 project directory</div>
-                        </div>
-                    </li>
-                </ol>
-                <div style="margin-top: 1.25rem; padding: 0.75rem 1rem; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;">
-                    <code id="ext-path-display" style="flex: 1; font-size: 0.8rem; color: var(--gray-600); word-break: break-all;">&lt;your-project-root&gt;/chrome-extension</code>
-                    <button class="btn btn-sm btn-secondary" onclick="handlers._copyExtensionPath()" aria-label="Copy extension path to clipboard" style="min-width: 44px; min-height: 44px; white-space: nowrap;">
-                        Copy Path
+                <div id="category-list">${renderList(categories)}</div>
+                <div class="flex gap-2 mt-4">
+                    <input type="text" id="new-cat-name" class="form-input flex-1" placeholder="New category name...">
+                    <input type="color" id="new-cat-color" value="#6366f1" style="width:40px;height:38px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;">
+                    <button class="btn btn-primary" onclick="handlers.createCategory()">
+                        ${components.icon('plus', 14)} Add
                     </button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Close</button>
-                <a class="btn btn-primary" href="chrome://extensions" target="_blank" rel="noopener" onclick="modals.close()">Open chrome://extensions</a>
             </div>
         `);
     },
 
-    _copyExtensionPath: function() {
-        const text = document.getElementById('ext-path-display');
-        const path = text ? text.textContent : 'chrome-extension/';
-        navigator.clipboard.writeText(path).then(() => {
-            toast.success('Extension path copied to clipboard');
-        }).catch(() => {
-            toast.error('Could not copy — please copy the path manually');
+
+    createCategory: async function() {
+        const name = document.getElementById('new-cat-name')?.value?.trim();
+        const color = document.getElementById('new-cat-color')?.value;
+        if (!name) { toast.error('Enter a category name'); return; }
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/inventory/categories', { name, color });
+            toast.success('Category "' + name + '" created');
+            handlers.showCategoryManager();
+        } catch (e) {
+            toast.error(e.message || 'Failed to create category');
+        }
+    },
+
+
+    updateCategory: async function(catId, updates) {
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/inventory/categories/' + catId, updates);
+            toast.success('Category updated');
+        } catch (e) {
+            toast.error('Failed to update category');
+        }
+    },
+
+
+    renameCategory: async function(catId, currentName) {
+        const newName = prompt('Rename category:', currentName);
+        if (!newName || newName.trim() === currentName) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/inventory/categories/' + catId, { name: newName.trim() });
+            toast.success('Category renamed — inventory items updated');
+            handlers.showCategoryManager();
+        } catch (e) {
+            toast.error('Failed to rename category');
+        }
+    },
+
+
+    deleteCategory: async function(catId, catName) {
+        if (!confirm('Delete "' + catName + '"? Items in this category will become uncategorized.')) return;
+        try {
+            await api.ensureCSRFToken();
+            await api.del('/inventory/categories/' + catId);
+            toast.success('Category "' + catName + '" deleted');
+            handlers.showCategoryManager();
+        } catch (e) {
+            toast.error('Failed to delete category');
+        }
+    },
+
+    // Drag-and-drop reordering for automation cards
+
+    _draggedRuleId: null,
+
+
+    onRuleDragStart: function(e, ruleId) {
+        handlers._draggedRuleId = ruleId;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', ruleId);
+        e.currentTarget.style.opacity = '0.5';
+    },
+
+
+    onRuleDragEnd: function(e) {
+        e.currentTarget.style.opacity = '1';
+        handlers._draggedRuleId = null;
+        document.querySelectorAll('.automation-card').forEach(c => c.classList.remove('drag-over'));
+    },
+
+
+    onRuleDragOver: function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const card = e.currentTarget;
+        card.classList.add('drag-over');
+    },
+
+
+    onRuleDragLeave: function(e) {
+        e.currentTarget.classList.remove('drag-over');
+    },
+
+
+    onRuleDrop: async function(e, targetRuleId) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        const draggedId = handlers._draggedRuleId;
+        if (!draggedId || draggedId === targetRuleId) return;
+
+        const rules = store.state.automations || [];
+        const ruleIds = rules.map(r => r.id);
+        const fromIdx = ruleIds.indexOf(draggedId);
+        const toIdx = ruleIds.indexOf(targetRuleId);
+        if (fromIdx === -1 || toIdx === -1) return;
+
+        ruleIds.splice(fromIdx, 1);
+        ruleIds.splice(toIdx, 0, draggedId);
+
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/automations/reorder', { order: ruleIds });
+            toast.success('Rules reordered');
+        } catch (e) {
+            toast.error('Failed to save order');
+        }
+    },
+
+    // Scheduling calendar view
+
+    showScheduleCalendar: function() {
+        const rules = store.state.automations || [];
+        const scheduledRules = rules.filter(r => r.schedule && r.is_enabled);
+
+        if (scheduledRules.length === 0) {
+            toast.warning('No scheduled automation rules');
+            return;
+        }
+
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const hours = [0, 3, 6, 9, 12, 15, 18, 21];
+
+        const parseCron = (cron) => {
+            if (!cron) return { mins: [], hours: [], dows: [0,1,2,3,4,5,6] };
+            const parts = cron.trim().split(/\s+/);
+            if (parts.length < 5) return { mins: [0], hours: [0], dows: [0,1,2,3,4,5,6] };
+            const parseField = (f, max) => {
+                if (f === '*') return Array.from({length: max}, (_, i) => i);
+                return f.split(',').flatMap(p => {
+                    if (p.includes('/')) { const [, step] = p.split('/'); const s = parseInt(step); return Array.from({length: Math.ceil(max/s)}, (_, i) => i * s); }
+                    if (p.includes('-')) { const [a, b] = p.split('-').map(Number); return Array.from({length: b-a+1}, (_, i) => a+i); }
+                    return [parseInt(p)];
+                }).filter(n => !isNaN(n) && n >= 0 && n < max);
+            };
+            return { mins: parseField(parts[0], 60), hours: parseField(parts[1], 24), dows: parseField(parts[4], 7) };
+        };
+
+        const grid = {};
+        for (const rule of scheduledRules) {
+            const { hours: h, dows } = parseCron(rule.schedule);
+            for (const dow of dows) {
+                for (const hr of h) {
+                    const slot = Math.floor(hr / 3);
+                    const key = dow + '-' + slot;
+                    if (!grid[key]) grid[key] = [];
+                    grid[key].push({ name: rule.name, platform: rule.platform, hour: hr });
+                }
+            }
+        }
+
+        const cellContent = (dow, slotIdx) => {
+            const key = dow + '-' + slotIdx;
+            const entries = grid[key] || [];
+            if (entries.length === 0) return '<td style="padding:4px;border:1px solid var(--gray-100);"></td>';
+            return '<td style="padding:4px;border:1px solid var(--gray-100);background:var(--primary-50,#eff6ff);">' +
+                entries.slice(0, 3).map(e => '<div style="font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;" title="' + escapeHtml(e.name) + ' (' + e.hour + ':00)">' +
+                '<span style="color:var(--primary-500);">●</span> ' + escapeHtml(e.name.slice(0, 12)) + '</div>').join('') +
+                (entries.length > 3 ? '<div style="font-size:9px;color:var(--gray-400);">+' + (entries.length - 3) + ' more</div>' : '') + '</td>';
+        };
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('calendar', 20)} Schedule Calendar</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body" style="overflow-x:auto;">
+                <p class="text-xs text-gray-500 mb-3">${scheduledRules.length} scheduled rule${scheduledRules.length > 1 ? 's' : ''} shown</p>
+                <table class="table table-sm" style="table-layout:fixed;">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">Time</th>
+                            ${days.map(d => '<th style="text-align:center;width:100px;">' + d + '</th>').join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${hours.map((h, si) => '<tr><td style="font-size:11px;font-weight:600;color:var(--gray-500);padding:4px;">' + h + ':00</td>' +
+                            days.map((_, di) => cellContent(di, si)).join('') + '</tr>').join('')}
+                    </tbody>
+                </table>
+            </div>
+        `, 'modal-lg');
+    },
+
+    // Clone automation rule
+
+    cloneAutomationRule: async function(ruleId, ruleName) {
+        try {
+            await api.ensureCSRFToken();
+            const res = await api.post('/automations/' + ruleId + '/clone');
+            const data = res.data || res;
+            toast.success('Cloned "' + ruleName + '" — new rule created (disabled)');
+        } catch (e) {
+            toast.error('Failed to clone rule');
+        }
+    },
+
+    // Category filter for inventory catalog
+
+    filterByCategory: function(category) {
+        store.setState({ categoryFilter: category || '' });
+        renderApp(pages.inventory());
+    },
+
+    // Bulk category assignment
+
+    bulkSetCategory: async function() {
+        const selectedIds = store.state.selectedItems || [];
+        if (selectedIds.length === 0) { toast.warning('No items selected'); return; }
+        const categories = store.state.inventoryCategories || [];
+        const catOptions = categories.map(c => '<option value="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</option>').join('');
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('folder', 20)} Set Category</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-gray-500 mb-4">Assign a category to ${selectedIds.length} selected item${selectedIds.length > 1 ? 's' : ''}.</p>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select id="bulk-cat-select" class="form-select">
+                        <option value="">— Remove category —</option>
+                        ${catOptions}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.applyBulkCategory()">
+                    ${components.icon('check', 14)} Apply
+                </button>
+            </div>
+        `);
+    },
+
+
+    applyBulkCategory: async function() {
+        const category = document.getElementById('bulk-cat-select')?.value || null;
+        const selectedIds = store.state.selectedItems || [];
+        if (selectedIds.length === 0) return;
+        try {
+            await api.ensureCSRFToken();
+            let updated = 0;
+            for (const id of selectedIds) {
+                try {
+                    await api.put('/inventory/' + id, { category });
+                    updated++;
+                } catch { }
+            }
+            toast.success('Updated category on ' + updated + ' item' + (updated !== 1 ? 's' : ''));
+            modals.close();
+            handlers.clearSelection();
+            handlers.loadInventory();
+        } catch (e) {
+            toast.error('Failed to update categories');
+        }
+    },
+
+    // Automation performance comparison
+
+    showAutomationPerformance: function() {
+        const rules = store.state.automations || [];
+        const runHistory = store.state.automationHistory || [];
+        if (rules.length === 0) { toast.warning('No automation rules configured'); return; }
+
+        const perfData = rules.map(rule => {
+            const ruleRuns = runHistory.filter(r => r.automation_name === rule.name || r.automation_id === rule.id || r.action === rule.name);
+            const total = ruleRuns.length;
+            const successes = ruleRuns.filter(r => r.status === 'success').length;
+            const failures = ruleRuns.filter(r => r.status === 'failure').length;
+            const successRate = total > 0 ? Math.round(successes / total * 100) : 0;
+            const avgItems = total > 0 ? Math.round(ruleRuns.reduce((s, r) => s + (r.items_processed || 0), 0) / total) : 0;
+            const avgDuration = total > 0 ? Math.round(ruleRuns.reduce((s, r) => s + (r.duration_ms || 0), 0) / total / 1000) : 0;
+            return { name: rule.name, platform: rule.platform, enabled: rule.is_enabled, total, successes, failures, successRate, avgItems, avgDuration };
+        }).sort((a, b) => b.total - a.total);
+
+        const maxRuns = Math.max(...perfData.map(d => d.total), 1);
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('bar-chart', 20)} Automation Performance</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+                <div class="mb-4">
+                    <h4 class="text-sm font-semibold mb-2">Run Volume</h4>
+                    <div class="flex flex-col gap-1">
+                        ${perfData.slice(0, 15).map(d =>
+                            '<div class="flex items-center gap-2" style="font-size:12px;">' +
+                            '<span style="width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(d.name) + '">' + escapeHtml(d.name) + '</span>' +
+                            '<div style="flex:1;height:18px;background:var(--gray-100);border-radius:var(--radius-sm);overflow:hidden;">' +
+                            '<div style="height:100%;width:' + (d.total / maxRuns * 100) + '%;background:' + (d.successRate >= 80 ? 'var(--success)' : d.successRate >= 50 ? 'var(--warning-500)' : 'var(--error)') + ';border-radius:var(--radius-sm);display:flex;align-items:center;padding-left:4px;">' +
+                            '<span style="color:white;font-size:10px;font-weight:600;">' + d.total + '</span></div></div>' +
+                            '<span style="width:40px;text-align:right;font-weight:600;color:' + (d.successRate >= 80 ? 'var(--success)' : d.successRate >= 50 ? 'var(--warning-600)' : 'var(--error)') + ';">' + d.successRate + '%</span></div>'
+                        ).join('')}
+                    </div>
+                </div>
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>Rule</th><th>Platform</th><th>Status</th><th>Runs</th><th>Success</th><th>Fail</th><th>Rate</th><th>Avg Items</th><th>Avg Time</th></tr>
+                    </thead>
+                    <tbody>
+                        ${perfData.map(d =>
+                            '<tr><td class="text-sm">' + escapeHtml(d.name) + '</td>' +
+                            '<td>' + components.platformBadge(d.platform) + '</td>' +
+                            '<td><span class="badge badge-sm" style="background:' + (d.enabled ? 'var(--success)20;color:var(--success)' : 'var(--gray-400)20;color:var(--gray-500)') + ';">' + (d.enabled ? 'Active' : 'Off') + '</span></td>' +
+                            '<td>' + d.total + '</td>' +
+                            '<td style="color:var(--success);">' + d.successes + '</td>' +
+                            '<td style="color:var(--error);">' + d.failures + '</td>' +
+                            '<td style="font-weight:600;color:' + (d.successRate >= 80 ? 'var(--success)' : d.successRate >= 50 ? 'var(--warning-600)' : 'var(--error)') + ';">' + d.successRate + '%</td>' +
+                            '<td>' + d.avgItems + '</td>' +
+                            '<td>' + d.avgDuration + 's</td></tr>'
+                        ).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `, 'modal-lg');
+    },
+
+    // --- Task #126: Rule Tag Management ---
+
+    showRuleTagEditor: function(ruleId, ruleName) {
+        const rules = store.state.automations || [];
+        const rule = rules.find(r => r.id === ruleId);
+        const tags = (() => { try { return JSON.parse(rule?.tags || '[]'); } catch { return []; } })();
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('tag', 20)} Tags — ${escapeHtml(ruleName)}</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div id="rule-tags-list" class="flex flex-wrap gap-2 mb-4">
+                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
+                    ${tags.length === 0 ? '<span class="text-gray-400 text-sm">No tags yet</span>' : ''}
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="new-rule-tag" class="form-input" placeholder="Add a tag..." style="flex:1;" onkeydown="if(event.key==='Enter'){handlers.addRuleTag('${ruleId}');event.preventDefault();}">
+                    <button class="btn btn-primary btn-sm" onclick="handlers.addRuleTag('${ruleId}')">
+                        ${components.icon('plus', 14)} Add
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Press Enter or click Add. Tags help you organize and filter rules.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Close</button>
+            </div>
+        `);
+    },
+
+
+    addRuleTag: async function(ruleId) {
+        const input = document.getElementById('new-rule-tag');
+        const tag = (input?.value || '').trim();
+        if (!tag) return;
+        const rules = store.state.automations || [];
+        const rule = rules.find(r => r.id === ruleId);
+        const tags = (() => { try { return JSON.parse(rule?.tags || '[]'); } catch { return []; } })();
+        if (tags.includes(tag)) { toast.warning('Tag already exists'); return; }
+        tags.push(tag);
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/automations/' + ruleId, { tags });
+            rule.tags = JSON.stringify(tags);
+            store.setState({ automations: [...rules] });
+            toast.success('Tag added');
+            handlers.showRuleTagEditor(ruleId, rule.name);
+        } catch (e) {
+            toast.error('Failed to add tag');
+        }
+    },
+
+
+    removeRuleTag: async function(ruleId, tagToRemove) {
+        const rules = store.state.automations || [];
+        const rule = rules.find(r => r.id === ruleId);
+        const tags = (() => { try { return JSON.parse(rule?.tags || '[]'); } catch { return []; } })();
+        const updated = tags.filter(t => t !== tagToRemove);
+        try {
+            await api.ensureCSRFToken();
+            await api.put('/automations/' + ruleId, { tags: updated });
+            rule.tags = JSON.stringify(updated);
+            store.setState({ automations: [...rules] });
+            toast.success('Tag removed');
+            handlers.showRuleTagEditor(ruleId, rule.name);
+        } catch (e) {
+            toast.error('Failed to remove tag');
+        }
+    },
+
+
+    filterByRuleTag: function(tag) {
+        store.setState({ automationTagFilter: tag || '' });
+        renderApp(pages.automations());
+    },
+
+    // --- Task #127: Supplier Management ---
+
+    loadSuppliers: async function() {
+        try {
+            const res = await api.get('/inventory/suppliers');
+            const data = res.data || res;
+            store.setState({ suppliers: data.suppliers || data || [] });
+            return data.suppliers || data || [];
+        } catch (e) {
+            toast.error('Failed to load suppliers');
+            return [];
+        }
+    },
+
+
+    showSupplierManager: async function() {
+        const suppliers = await handlers.loadSuppliers();
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('truck', 20)} Supplier Manager</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="new-supplier-name" class="form-input" placeholder="Supplier name" style="flex:1;">
+                    <input type="text" id="new-supplier-contact" class="form-input" placeholder="Contact email" style="flex:1;">
+                    <button class="btn btn-primary btn-sm" onclick="handlers.addSupplier()">
+                        ${components.icon('plus', 14)} Add
+                    </button>
+                </div>
+                <div id="supplier-list">
+                    ${suppliers.length === 0 ? '<p class="text-gray-500 text-sm text-center py-4">No suppliers yet</p>' :
+                    '<table class="table table-sm"><thead><tr><th>Name</th><th>Items</th><th>Avg Price</th><th>Actions</th></tr></thead><tbody>' +
+                    suppliers.map(s => '<tr><td class="font-semibold">' + escapeHtml(s.name) + '</td><td>' + (s.item_count || 0) + '</td><td>$' + (s.avg_price || 0).toFixed(2) + '</td><td class="flex gap-1"><button class="btn btn-xs btn-ghost" onclick="handlers.showSupplierPerformance(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/'/g, "\\'") + '\')" title="Performance">' + components.icon('trending-up', 12) + '</button><button class="btn btn-xs btn-danger" onclick="handlers.deleteSupplier(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/'/g, "\\'") + '\')">' + components.icon('trash', 12) + '</button></td></tr>').join('') +
+                    '</tbody></table>'}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Close</button>
+            </div>
+        `, 'modal-lg');
+    },
+
+
+    addSupplier: async function() {
+        const name = document.getElementById('new-supplier-name')?.value?.trim();
+        const contact = document.getElementById('new-supplier-contact')?.value?.trim();
+        if (!name) { toast.error('Supplier name is required'); return; }
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/inventory/suppliers', { name, contact_email: contact || undefined });
+            toast.success('Supplier added');
+            handlers.showSupplierManager();
+        } catch (e) {
+            toast.error('Failed to add supplier: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+
+    loadDurationTrends: async function() {
+        try {
+            const res = await api.get('/automations/duration-trends');
+            const data = res.data || res;
+            const trends = data.trends || [];
+            store.setState({ durationTrends: trends });
+            const el = document.getElementById('duration-trends-chart');
+            if (el) el.innerHTML = handlers._renderDurationTrendsChart(trends);
+        } catch (e) {
+            toast.error('Failed to load duration trends');
+        }
+    },
+
+
+    _renderDurationTrendsChart: function(trends) {
+        if (!trends || trends.length === 0) {
+            return '<p class="text-gray-500 text-sm text-center py-4">No duration data yet. Run some automations first.</p>';
+        }
+
+        // Group by rule name
+        const byName = {};
+        trends.forEach(t => {
+            if (!byName[t.name]) byName[t.name] = [];
+            byName[t.name].push(t);
+        });
+        const names = Object.keys(byName).slice(0, 6);
+        const colors = ['var(--primary-500)', 'var(--success)', 'var(--warning-500)', 'var(--error)', '#8b5cf6', '#ec4899'];
+
+        // Build SVG line chart per rule
+        const width = 600, height = 200, padL = 55, padR = 20, padT = 20, padB = 40;
+        const chartW = width - padL - padR;
+        const chartH = height - padT - padB;
+
+        // Collect all days across all rules
+        const allDays = [...new Set(trends.map(t => t.day))].sort();
+        const n = allDays.length;
+        if (n === 0) return '<p class="text-gray-500 text-sm text-center py-4">No data</p>';
+
+        const allDurations = trends.map(t => t.avg_duration || 0);
+        const maxDur = Math.max(...allDurations, 1);
+
+        function toX(i) { return padL + (i / Math.max(n - 1, 1)) * chartW; }
+        function toY(v) { return padT + chartH - (v / maxDur) * chartH; }
+
+        const gridLines = [0, 0.25, 0.5, 0.75, 1].map(pct => {
+            const y = padT + pct * chartH;
+            const val = maxDur - pct * maxDur;
+            return '<line x1="' + padL + '" y1="' + y + '" x2="' + (width - padR) + '" y2="' + y + '" stroke="var(--gray-200)" stroke-dasharray="4,4"/>' +
+                '<text x="' + (padL - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--gray-400)">' + Math.round(val) + 'ms</text>';
+        }).join('');
+
+        const xLabels = allDays.map((d, i) => '<text x="' + toX(i) + '" y="' + (height - 8) + '" text-anchor="middle" font-size="9" fill="var(--gray-500)">' + d.slice(5) + '</text>').join('');
+
+        const lines = names.map((name, ci) => {
+            const pts = byName[name];
+            const points = allDays.map((day, i) => {
+                const pt = pts.find(p => p.day === day);
+                return pt ? toX(i) + ',' + toY(pt.avg_duration || 0) : null;
+            }).filter(Boolean);
+            if (points.length < 2) return '';
+            return '<polyline points="' + points.join(' ') + '" fill="none" stroke="' + colors[ci % colors.length] + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        }).join('');
+
+        const legend = '<div class="flex flex-wrap gap-3 mb-2">' + names.map((name, ci) =>
+            '<span class="text-xs"><span style="display:inline-block;width:12px;height:3px;background:' + colors[ci % colors.length] + ';vertical-align:middle;margin-right:4px;border-radius:2px;"></span>' + escapeHtml(name) + '</span>'
+        ).join('') + '</div>';
+
+        return legend +
+            '<svg viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;">' +
+            gridLines + lines + xLabels + '</svg>';
+    },
+
+    // --- Task #129: Price Suggestions ---
+
+    loadPriceSuggestions: async function() {
+        try {
+            const res = await api.get('/analytics/price-suggestions');
+            const data = res.data || res;
+            store.setState({ priceSuggestions: data.suggestions || [] });
+            const el = document.getElementById('price-suggestions-content');
+            if (el) el.innerHTML = handlers._renderPriceSuggestions(data.suggestions || []);
+        } catch (e) {
+            toast.error('Failed to load price suggestions');
+        }
+    },
+
+
+    _renderPriceSuggestions: function(suggestions) {
+        if (!suggestions || suggestions.length === 0) {
+            return '<p class="text-gray-500 text-sm text-center py-4">No price suggestions — all items are well-priced or too new to evaluate.</p>';
+        }
+
+        return '<div class="flex justify-end mb-2"><button class="btn btn-primary btn-sm" onclick="handlers.applyAllPriceSuggestions()">' +
+            components.icon('check', 14) + ' Apply All (' + suggestions.length + ')</button></div>' +
+            '<table class="table table-sm"><thead><tr><th>Item</th><th>Age</th><th>Current</th><th>Suggested</th><th>Change</th><th>Reason</th><th></th></tr></thead><tbody>' +
+            suggestions.slice(0, 20).map(s => {
+                const isDecrease = (s.price_change || 0) < 0;
+                const changeColor = isDecrease ? 'var(--error)' : 'var(--success)';
+                const changePrefix = isDecrease ? '' : '+';
+                return '<tr><td class="text-sm" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(s.title || '') + '</td>' +
+                    '<td>' + (s.days_old || 0) + 'd</td>' +
+                    '<td>$' + (s.list_price || s.current_price || 0).toFixed(2) + '</td>' +
+                    '<td style="font-weight:600;">$' + (s.suggested_price || 0).toFixed(2) + '</td>' +
+                    '<td style="color:' + changeColor + ';font-weight:600;">' + changePrefix + '$' + (s.price_change || 0).toFixed(2) + '</td>' +
+                    '<td class="text-xs text-gray-500">' + escapeHtml(s.reason || '') + '</td>' +
+                    '<td><button class="btn btn-xs btn-ghost" onclick="handlers.applySinglePriceSuggestion(\'' + s.id + '\', ' + (s.suggested_price || 0) + ', ' + (s.list_price || s.current_price || 0) + ')">' + components.icon('check', 12) + '</button></td></tr>';
+            }).join('') +
+            '</tbody></table>' +
+            (suggestions.length > 20 ? '<p class="text-xs text-gray-400 mt-2">Showing 20 of ' + suggestions.length + ' suggestions</p>' : '');
+    },
+
+    // --- Task #130: Import from URL ---
+
+    showImportFromURL: function() {
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('link', 20)} Import Rules from URL</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-gray-500 mb-4">Paste a URL to a JSON file containing automation rules. The file should have a rules array or a single rule object with name, type, platform, schedule, conditions, and actions fields.</p>
+                <div class="form-group">
+                    <label class="form-label">JSON URL</label>
+                    <input type="text" id="import-url-input" class="form-input" placeholder="https://example.com/rules.json">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.importFromURL()">
+                    ${components.icon('download', 14)} Import
+                </button>
+            </div>
+        `);
+    },
+
+
+    importFromURL: async function() {
+        const url = document.getElementById('import-url-input')?.value?.trim();
+        if (!url) { toast.error('URL is required'); return; }
+        try {
+            await api.ensureCSRFToken();
+            const res = await api.post('/automations/templates/import-url', { url });
+            const data = res.data || res;
+            toast.success('Imported ' + (data.count || 0) + ' rules');
+            modals.close();
+            const rulesRes = await api.get('/automations');
+            store.setState({ automations: (rulesRes.data || rulesRes).rules || rulesRes.data || rulesRes || [] });
+            renderApp(pages.automations());
+        } catch (e) {
+            toast.error('Import failed: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+    // --- Task #132: Batch Price Update ---
+
+    applyAllPriceSuggestions: async function() {
+        const suggestions = store.state.priceSuggestions || [];
+        if (suggestions.length === 0) { toast.warning('No suggestions to apply'); return; }
+        if (!confirm('Apply price changes to ' + suggestions.length + ' items?')) return;
+        try {
+            await api.ensureCSRFToken();
+            const items = suggestions.map(s => ({
+                id: s.id,
+                suggested_price: s.suggested_price,
+                current_price: s.list_price || s.current_price || 0
+            }));
+            const res = await api.post('/analytics/apply-price-suggestions', { items });
+            const data = res.data || res;
+            toast.success('Updated ' + (data.updated || 0) + ' item prices');
+            store.setState({ priceSuggestions: null });
+            handlers.loadPriceSuggestions();
+            // Refresh inventory
+            try {
+                const invRes = await api.get('/inventory');
+                store.setState({ inventory: (invRes.data || invRes).items || invRes.data || invRes || [] });
+            } catch (_) {}
+        } catch (e) {
+            toast.error('Failed to apply suggestions: ' + (e.message || 'Unknown error'));
+        }
+    },
+
+
+    applySinglePriceSuggestion: async function(itemId, suggestedPrice, currentPrice) {
+        try {
+            await api.ensureCSRFToken();
+            await api.post('/analytics/apply-price-suggestions', {
+                items: [{ id: itemId, suggested_price: suggestedPrice, current_price: currentPrice }]
+            });
+            toast.success('Price updated');
+            // Remove from suggestions list
+            const suggestions = (store.state.priceSuggestions || []).filter(s => s.id !== itemId);
+            store.setState({ priceSuggestions: suggestions });
+            const el = document.getElementById('price-suggestions-content');
+            if (el) el.innerHTML = handlers._renderPriceSuggestions(suggestions);
+        } catch (e) {
+            toast.error('Failed to update price');
+        }
+    },
+
+    // --- Task #133: Supplier Performance ---
+
+    showSupplierPerformance: async function(supplierId, supplierName) {
+        try {
+            const res = await api.get('/inventory/suppliers/' + supplierId + '/performance');
+            const data = res.data || res;
+            const stats = data.stats || {};
+            const trends = data.costTrends || [];
+            const recent = data.recentItems || [];
+
+            // Build cost trend mini chart
+            let trendChart = '';
+            if (trends.length > 1) {
+                const maxCost = Math.max(...trends.map(t => t.avg_cost || 0), 1);
+                const w = 300, h = 80, pad = 5;
+                const points = trends.map((t, i) => {
+                    const x = pad + (i / (trends.length - 1)) * (w - pad * 2);
+                    const y = pad + (1 - (t.avg_cost || 0) / maxCost) * (h - pad * 2);
+                    return x + ',' + y;
+                }).join(' ');
+                trendChart = '<div class="mb-3"><div class="text-xs text-gray-500 mb-1">Avg Cost Trend (6 months)</div>' +
+                    '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;height:80px;"><polyline points="' + points + '" fill="none" stroke="var(--primary-500)" stroke-width="2"/></svg>' +
+                    '<div class="flex justify-between text-xs text-gray-400"><span>' + (trends[0]?.month || '') + '</span><span>' + (trends[trends.length - 1]?.month || '') + '</span></div></div>';
+            }
+
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${components.icon('trending-up', 20)} ${escapeHtml(supplierName)} — Performance</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body">
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-xl font-bold">${stats.totalItems || 0}</div>
+                            <div class="text-xs text-gray-500">Total Items</div>
+                        </div></div>
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-xl font-bold" style="color:var(--success);">${(stats.sellThrough || 0).toFixed(1)}%</div>
+                            <div class="text-xs text-gray-500">Sell-Through</div>
+                        </div></div>
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-xl font-bold" style="color:${(stats.avgMargin || 0) >= 20 ? 'var(--success)' : 'var(--error)'};">${(stats.avgMargin || 0).toFixed(1)}%</div>
+                            <div class="text-xs text-gray-500">Avg Margin</div>
+                        </div></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-lg font-bold">$${(stats.totalCost || 0).toFixed(0)}</div>
+                            <div class="text-xs text-gray-500">Total Cost</div>
+                        </div></div>
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-lg font-bold" style="color:${(stats.totalProfit || 0) >= 0 ? 'var(--success)' : 'var(--error)'};">$${(stats.totalProfit || 0).toFixed(0)}</div>
+                            <div class="text-xs text-gray-500">Total Profit</div>
+                        </div></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-lg font-bold">${(stats.avgDaysToSell || 0).toFixed(0)}d</div>
+                            <div class="text-xs text-gray-500">Avg Days to Sell</div>
+                        </div></div>
+                        <div class="card"><div class="card-body text-center">
+                            <div class="text-lg font-bold">${stats.soldItems || 0}/${stats.totalItems || 0}</div>
+                            <div class="text-xs text-gray-500">Sold / Total</div>
+                        </div></div>
+                    </div>
+                    ${trendChart}
+                    ${recent.length > 0 ? '<h4 class="font-semibold text-sm mb-2">Recent Items</h4><table class="table table-sm"><thead><tr><th>Title</th><th>Cost</th><th>List</th><th>Status</th></tr></thead><tbody>' +
+                        recent.map(r => '<tr><td class="text-sm">' + escapeHtml(r.title || '') + '</td><td>$' + (r.cost_price || 0).toFixed(0) + '</td><td>$' + (r.list_price || 0).toFixed(0) + '</td><td><span class="badge badge-sm">' + (r.status || '—') + '</span></td></tr>').join('') + '</tbody></table>' : ''}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-ghost" onclick="modals.close()">Close</button>
+                </div>
+            `, 'modal-lg');
+        } catch (e) {
+            toast.error('Failed to load supplier performance');
+        }
+    },
+
+
+    _renderTemplateMarketplace: function(templates) {
+        if (!templates || templates.length === 0) return '<div class="text-center py-6"><p class="text-gray-500 mb-2">No shared templates yet</p><p class="text-xs text-gray-400">Share your automation rules to see them here</p></div>';
+        return '<div class="grid grid-cols-2 gap-3">' + templates.map(t => {
+            const tags = (() => { try { return JSON.parse(t.tags); } catch { return []; } })();
+            return '<div class="card"><div class="card-body"><div class="flex justify-between items-start mb-2"><h4 class="font-semibold text-sm">' + escapeHtml(t.name) + '</h4><span class="badge badge-sm">' + escapeHtml(t.platform || 'all') + '</span></div><p class="text-xs text-gray-500 mb-2">' + escapeHtml(t.description || '') + '</p><div class="flex items-center gap-2 mb-2"><span class="text-xs text-gray-400">' + components.icon('user', 10) + ' ' + escapeHtml(t.author_name || 'Unknown') + '</span><span class="text-xs text-gray-400">' + components.icon('download', 10) + ' ' + (t.install_count || 0) + '</span></div>' + (tags.length > 0 ? '<div class="flex gap-1 mb-2">' + tags.slice(0, 3).map(tag => '<span class="badge badge-sm" style="font-size:10px;">' + escapeHtml(tag) + '</span>').join('') + '</div>' : '') + '<button class="btn btn-xs btn-primary" onclick="handlers.installTemplate(\'' + t.id + '\', \'' + escapeHtml(t.name).replace(/'/g, "\\'") + '\')">' + components.icon('download', 12) + ' Install</button></div></div>';
+        }).join('') + '</div>';
+    },
+
+
+    async openARPreview(itemId) {
+        const item = (store.state.inventory || []).find(i => i.id === itemId);
+        if (!item) {
+            toast.error('Item not found');
+            return;
+        }
+
+        const imgs = (() => { try { return JSON.parse(item.images || '[]'); } catch { return []; } })();
+        const imageSrc = item.primary_image || (imgs[0] && (typeof imgs[0] === 'string' ? imgs[0] : imgs[0].url)) || '';
+
+        if (!imageSrc) {
+            toast.error('This item has no images for AR preview');
+            return;
+        }
+
+        const arSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        const containerId = 'ar-preview-viewport';
+
+        modals.show(`
+            <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between;">
+                <h2 class="modal-title" style="display:flex;align-items:center;gap:0.5rem;">
+                    ${components.icon('eye', 18)} AR Preview — ${escapeHtml(item.title || 'Item')}
+                </h2>
+                <button class="modal-close" aria-label="Close AR preview" onclick="handlers._closeARPreview()">
+                    ${components.icon('x', 18)}
+                </button>
+            </div>
+            <div class="modal-body" style="padding:0;">
+                <div id="${containerId}" style="width:100%;height:420px;background:#111;position:relative;overflow:hidden;border-radius:0 0 var(--radius) var(--radius);">
+                    <div id="ar-preview-loading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:0.5rem;z-index:10;">
+                        <div class="loading-spinner" style="border-color:#fff;border-top-color:transparent;"></div>
+                        <p class="text-sm" style="color:#ccc;">${arSupported ? 'Starting camera…' : 'Loading preview…'}</p>
+                    </div>
+                </div>
+                <div style="padding:0.75rem 1rem;background:var(--gray-50);border-top:1px solid var(--gray-200);display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+                    <span class="text-xs text-gray-500">${arSupported ? 'Drag to reposition · Scroll/pinch to resize' : 'Camera not available — static overlay mode'}</span>
+                    <div style="margin-left:auto;display:flex;gap:0.5rem;">
+                        <button class="btn btn-sm btn-secondary" aria-label="Reset item position" onclick="handlers._arResetPosition()" style="min-height:44px;">
+                            ${components.icon('refresh-cw', 14)} Reset
+                        </button>
+                        ${arSupported ? `<button class="btn btn-sm btn-secondary" aria-label="Take snapshot" onclick="handlers._arTakeSnapshot()" style="min-height:44px;">
+                            ${components.icon('camera', 14)} Snapshot
+                        </button>` : ''}
+                        <button class="btn btn-sm btn-ghost" onclick="handlers._closeARPreview()" style="min-height:44px;">Close</button>
+                    </div>
+                </div>
+            </div>
+        `, 'modal-lg');
+
+        // Initialize AR after modal renders
+        requestAnimationFrame(async () => {
+            try {
+                if (arSupported) {
+                    const { ARPreview } = await import('/shared/utils/ar-preview.js');
+                    const ar = new ARPreview();
+                    store.setState({ _arInstance: ar });
+                    await ar.init(containerId);
+                    await ar.loadImage(imageSrc);
+                    await ar.start();
+                } else {
+                    const { SimpleAROverlay } = await import('/shared/utils/ar-preview.js');
+                    const overlay = new SimpleAROverlay(containerId);
+                    store.setState({ _arInstance: overlay });
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.style.background = 'repeating-conic-gradient(#ccc 0% 25%, #e5e5e5 0% 50%) 0 0 / 32px 32px';
+                        overlay.addOverlay(imageSrc, { x: 50, y: 50, scale: 0.5 });
+                    }
+                }
+                const loadingEl = document.getElementById('ar-preview-loading');
+                if (loadingEl) loadingEl.style.display = 'none';
+            } catch (err) {
+                const loadingEl = document.getElementById('ar-preview-loading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = `<div style="text-align:center;padding:1rem;color:#fca5a5;">${components.icon('alert-circle', 24)}<p class="text-sm mt-2">Could not start preview</p><p class="text-xs mt-1" style="color:#9ca3af;">${escapeHtml(err.message || 'Unknown error')}</p></div>`;
+                }
+                console.error('[AR] Preview error:', err);
+            }
         });
     },
 
+
+    _closeARPreview() {
+        const ar = store.state._arInstance;
+        if (ar && typeof ar.stop === 'function') ar.stop();
+        store.setState({ _arInstance: null });
+        modals.close();
+    },
+
+
+    _arResetPosition() {
+        const ar = store.state._arInstance;
+        if (ar && typeof ar.reset === 'function') ar.reset();
+    },
+
+
+    _arTakeSnapshot() {
+        const ar = store.state._arInstance;
+        if (!ar || typeof ar.takeSnapshot !== 'function') return;
+        try {
+            const dataUrl = ar.takeSnapshot();
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = 'ar-preview-snapshot.png';
+            a.click();
+            toast.success('Snapshot saved');
+        } catch (e) {
+            toast.error('Failed to take snapshot');
+        }
+    },
+
+
+    loadPoshmarkMonitoring: async function() {
+        try {
+            const data = await api.request('GET', '/api/monitoring/poshmark');
+            if (data) {
+                store.setState({ poshmarkMonitoring: data });
+            }
+        } catch (e) {
+            // Silently ignore — no data yet is valid state
+        }
+    },
+
+
+    checkPoshmarkMonitoring: async function() {
+        try {
+            toast.show('Checking Poshmark closet...', 'info');
+            const data = await api.request('POST', '/api/monitoring/poshmark/check');
+            if (data) {
+                store.setState({ poshmarkMonitoring: data });
+                router.navigate('dashboard');
+                toast.success('Poshmark closet updated');
+            }
+        } catch (e) {
+            console.error('Poshmark monitoring check failed:', e);
+            toast.error('Check failed — try again');
+        }
+    }
 });

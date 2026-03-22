@@ -10028,35 +10028,31 @@ const tablePrefs = {
 
     showColumnPicker(tableId, columns, onApply) {
         const prefs = this.get(tableId) || { visibleColumns: columns.map(c => c.id) };
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal" style="max-width: 400px;">
-                <div class="modal-header">
-                    <h3 class="modal-title">Column Settings</h3>
-                    <button class="modal-close" aria-label="Close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="space-y-2">
-                        ${columns.map(col => `
-                            <label class="flex items-center gap-3 p-2 rounded hover:bg-gray-50">
-                                <input type="checkbox" data-column="${col.id}" ${prefs.visibleColumns.includes(col.id) ? 'checked' : ''} aria-label="Toggle ${col.label} column visibility">
-                                <span>${col.label}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
-                    <button class="btn btn-primary" onclick="tablePrefs.applyColumnPicker('${tableId}', this.closest('.modal'))">Apply</button>
+        modals.show(`
+            <div class="modal-header">
+                <h3 class="modal-title">Column Settings</h3>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="space-y-2">
+                    ${columns.map(col => `
+                        <label class="flex items-center gap-3 p-2 rounded hover:bg-gray-50">
+                            <input type="checkbox" data-column="${col.id}" ${prefs.visibleColumns.includes(col.id) ? 'checked' : ''} aria-label="Toggle ${col.label} column visibility">
+                            <span>${col.label}</span>
+                        </label>
+                    `).join('')}
                 </div>
             </div>
-        `;
-        document.body.appendChild(modal);
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="tablePrefs.applyColumnPicker('${tableId}')">Apply</button>
+            </div>
+        `);
     },
 
-    applyColumnPicker(tableId, modal) {
-        const checkboxes = modal.querySelectorAll('input[type="checkbox"][data-column]');
+    applyColumnPicker(tableId) {
+        const container = document.getElementById('modal-container');
+        const checkboxes = container.querySelectorAll('input[type="checkbox"][data-column]');
         const visibleColumns = [];
         checkboxes.forEach(cb => {
             if (cb.checked) visibleColumns.push(cb.dataset.column);
@@ -10064,8 +10060,7 @@ const tablePrefs = {
         const prefs = this.get(tableId) || {};
         prefs.visibleColumns = visibleColumns;
         this.save(tableId, prefs);
-        modal.closest('.modal-overlay').remove();
-        // Trigger re-render
+        modals.close();
         if (typeof renderCurrentPage === 'function') renderCurrentPage();
     }
 };
@@ -15049,6 +15044,9 @@ const pageChunkMap = {
     'recently-deleted': 'inventory',
     'platform-health': 'inventory',
 
+    // analytics → sales chunk (13/16 analytics handlers live in sales chunk)
+    'analytics': 'sales',
+
     // sales chunk
     'sales': 'sales',
     'orders': 'sales',
@@ -15127,7 +15125,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a656c7cf';
+    const v = '03c031c6';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15713,7 +15711,7 @@ const components = {
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button class="shop-switch-btn" title="Switch Shop">
+                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="true">
                                 <div class="shop-switch-current">
                                     ${activeShop ? `
                                         <span class="shop-switch-platform" style="background: ${this.getPlatformColor(activeShop.platform)}">${activeShop.platform.charAt(0).toUpperCase()}</span>
@@ -15801,7 +15799,7 @@ const components = {
                         ${this.icon('help')}
                     </button>
                     <div class="notifications-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                        <button class="header-icon-btn" aria-label="Notifications">
+                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="true">
                             ${this.icon('bell')}
                             <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>
@@ -21180,12 +21178,16 @@ const modals = {
         };
         document.addEventListener('keydown', this._escapeHandler);
         document.addEventListener('keydown', this._focusTrapHandler);
+        // Prevent screen readers from escaping modal
+        document.getElementById('main-content')?.setAttribute('inert', '');
         // Focus first focusable element
         const focusable = container.querySelector('button, input, select, textarea, a[href]');
         if (focusable) focusable.focus();
     },
 
     close() {
+        // Remove inert BEFORE focus restore (element must be interactive first)
+        document.getElementById('main-content')?.removeAttribute('inert');
         document.getElementById('modal-container').innerHTML = '';
         // Remove keyboard handlers
         if (this._escapeHandler) {
@@ -21235,16 +21237,19 @@ const modals = {
                     </div>
                 </div>
             `;
+            document.getElementById('main-content')?.setAttribute('inert', '');
             document.getElementById('confirm-cancel-btn').onclick = () => {
                 resolve(false);
                 this._confirmResolve = null;
                 this._confirmReject = null;
+                document.getElementById('main-content')?.removeAttribute('inert');
                 document.getElementById('modal-container').innerHTML = '';
             };
             document.getElementById('confirm-ok-btn').onclick = () => {
                 resolve(true);
                 this._confirmResolve = null;
                 this._confirmReject = null;
+                document.getElementById('main-content')?.removeAttribute('inert');
                 document.getElementById('modal-container').innerHTML = '';
             };
         });
@@ -25117,27 +25122,22 @@ const handlers = {
 
     setMonthlyGoal: async function() {
         const current = store.state.monthlySalesGoal || 2000;
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal" style="max-width: 400px;">
-                <div class="modal-header">
-                    <h3 class="modal-title">Set Monthly Goal</h3>
-                    <button class="modal-close" aria-label="Close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">Monthly Revenue Goal ($)</label>
-                        <input type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
-                    <button class="btn btn-primary" onclick="handlers.saveMonthlyGoal()">Save</button>
+        modals.show(`
+            <div class="modal-header">
+                <h3 class="modal-title">Set Monthly Goal</h3>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Monthly Revenue Goal ($)</label>
+                    <input type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100">
                 </div>
             </div>
-        `;
-        document.body.appendChild(modal);
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.saveMonthlyGoal()">Save</button>
+            </div>
+        `);
     },
 
     saveMonthlyGoal: function() {
@@ -25145,7 +25145,7 @@ const handlers = {
         const goal = parseInt(input?.value) || 2000;
         store.setState({ monthlySalesGoal: goal });
         localStorage.setItem('vaultlister_monthly_goal', goal);
-        document.querySelector('.modal-overlay')?.remove();
+        modals.close();
         toast.success(`Monthly goal set to $${goal.toLocaleString()}`);
         router.navigate('dashboard');
     },
@@ -26450,6 +26450,292 @@ const handlers = {
     customizeDashboard: function() {
         router.navigate('dashboard');
     },
+
+    // ─── Moved from deferred → core (Fix A: analytics cross-chunk handlers) ────
+
+    showSalesVelocity: function() {
+        const sales = store.state.sales || [];
+        const inventory = store.state.inventory || [];
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        // Calculate sales velocity for each item
+        const velocityMap = {};
+        sales.filter(s => new Date(s.sold_at || s.created_at) >= thirtyDaysAgo).forEach(sale => {
+            const itemId = sale.item_id || sale.inventory_id;
+            if (!velocityMap[itemId]) {
+                velocityMap[itemId] = { count: 0, revenue: 0, title: sale.item_title || 'Unknown' };
+            }
+            velocityMap[itemId].count++;
+            velocityMap[itemId].revenue += parseFloat(sale.sale_price) || 0;
+        });
+
+        // Sort by velocity (sales count)
+        const topSellers = Object.entries(velocityMap)
+            .map(([id, data]) => ({ id, ...data, velocity: data.count / 30 }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+
+        // Find slow movers (items with no sales in 30 days)
+        const soldItemIds = new Set(Object.keys(velocityMap));
+        const slowMovers = inventory
+            .filter(item => !soldItemIds.has(String(item.id)))
+            .slice(0, 5);
+
+        // Calculate overall stats
+        const totalSales30d = Object.values(velocityMap).reduce((sum, v) => sum + v.count, 0);
+        const totalRevenue30d = Object.values(velocityMap).reduce((sum, v) => sum + v.revenue, 0);
+        const avgDailySales = (totalSales30d / 30).toFixed(1);
+
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('trending-up', 20)} Sales Velocity</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div class="velocity-container">
+                    <!-- Summary Stats -->
+                    <div class="velocity-summary">
+                        <div class="velocity-stat">
+                            <div class="velocity-stat-value">${totalSales30d}</div>
+                            <div class="velocity-stat-label">Sales (30d)</div>
+                        </div>
+                        <div class="velocity-stat">
+                            <div class="velocity-stat-value">$${totalRevenue30d.toFixed(0)}</div>
+                            <div class="velocity-stat-label">Revenue (30d)</div>
+                        </div>
+                        <div class="velocity-stat">
+                            <div class="velocity-stat-value">${avgDailySales}</div>
+                            <div class="velocity-stat-label">Avg/Day</div>
+                        </div>
+                    </div>
+
+                    <!-- Top Sellers -->
+                    <div class="velocity-section">
+                        <h4 class="section-title">${components.icon('award', 16)} Top Sellers (30 days)</h4>
+                        <div class="velocity-list">
+                            ${topSellers.length === 0 ? \`
+                                <div class="velocity-empty">No sales in the last 30 days</div>
+                            \` : topSellers.map((item, i) => \`
+                                <div class="velocity-item ${i < 3 ? 'top-performer' : ''}">
+                                    <div class="velocity-rank">#${i + 1}</div>
+                                    <div class="velocity-info">
+                                        <div class="velocity-title">${escapeHtml(item.title)}</div>
+                                        <div class="velocity-meta">${item.count} sales • $${item.revenue.toFixed(0)} revenue</div>
+                                    </div>
+                                    <div class="velocity-speed">
+                                        <div class="velocity-bar" style="width: ${topSellers[0]?.count > 0 ? (item.count / topSellers[0].count * 100) : 0}%"></div>
+                                        <span class="velocity-rate">${item.velocity.toFixed(2)}/day</span>
+                                    </div>
+                                </div>
+                            \`).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Slow Movers -->
+                    ${slowMovers.length > 0 ? \`
+                        <div class="velocity-section">
+                            <h4 class="section-title">${components.icon('alert-triangle', 16)} Slow Movers (No sales in 30d)</h4>
+                            <div class="slow-movers-list">
+                                ${slowMovers.map(item => \`
+                                    <div class="slow-mover-item">
+                                        <div class="slow-mover-title">${escapeHtml(item.title || item.name || 'Unknown')}</div>
+                                        <div class="slow-mover-price">$${parseFloat(item.list_price || 0).toFixed(2)}</div>
+                                        <button class="btn btn-xs btn-secondary" onclick="handlers.showPriceDropSuggestion('${item.id}')">
+                                            Suggest Price Drop
+                                        </button>
+                                    </div>
+                                \`).join('')}
+                            </div>
+                        </div>
+                    \` : ''}
+
+                    <!-- Velocity Tips -->
+                    <div class="velocity-tips">
+                        <h4 class="section-title">${components.icon('lightbulb', 16)} Tips</h4>
+                        <ul class="tips-list">
+                            <li>Items selling >0.5/day are fast movers</li>
+                            <li>Consider restocking top sellers</li>
+                            <li>Review pricing on slow movers</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Close</button>
+            </div>
+        `, 'modal-lg');
+    },
+
+    showCustomMetricBuilder: function() {
+        modals.show(\`
+            <div class="modal-header">
+                <h2 class="modal-title">\${components.icon('sliders', 20)} Custom KPI Builder</h2>
+                <button class="btn btn-icon" aria-label="Close" onclick="modals.close()">\${components.icon('x', 20)}</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-gray-600 mb-4">Create custom metrics by combining existing data points.</p>
+                <div class="form-group">
+                    <label class="form-label">Metric Name</label>
+                    <input type="text" id="custom-metric-name" class="form-input" placeholder="e.g., Revenue per Item, Profit Ratio">
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">First Metric</label>
+                        <select id="custom-metric-a" class="form-select">
+                            <option value="revenue">Revenue</option>
+                            <option value="profit">Profit</option>
+                            <option value="orders">Orders</option>
+                            <option value="inventory_value">Inventory Value</option>
+                            <option value="items_sold">Items Sold</option>
+                            <option value="active_listings">Active Listings</option>
+                            <option value="avg_sale">Avg Sale Price</option>
+                            <option value="total_views">Total Views</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Operation</label>
+                        <select id="custom-metric-op" class="form-select">
+                            <option value="divide">&divide; Divide</option>
+                            <option value="multiply">&times; Multiply</option>
+                            <option value="add">+ Add</option>
+                            <option value="subtract">&minus; Subtract</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Second Metric</label>
+                        <select id="custom-metric-b" class="form-select">
+                            <option value="orders">Orders</option>
+                            <option value="revenue">Revenue</option>
+                            <option value="profit">Profit</option>
+                            <option value="inventory_value">Inventory Value</option>
+                            <option value="items_sold">Items Sold</option>
+                            <option value="active_listings">Active Listings</option>
+                            <option value="avg_sale">Avg Sale Price</option>
+                            <option value="total_views">Total Views</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Display Format</label>
+                    <select id="custom-metric-format" class="form-select">
+                        <option value="currency">Currency ($)</option>
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="number">Number (#)</option>
+                    </select>
+                </div>
+
+                \${(store.state.customMetrics || []).length > 0 ? \`
+                <div class="mt-4">
+                    <h4 class="text-sm font-medium mb-2">Existing Custom KPIs</h4>
+                    <div class="flex flex-col gap-2">
+                        \${(store.state.customMetrics || []).map(m => \`
+                            <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
+                                <div>
+                                    <span class="font-medium text-sm">\${escapeHtml(m.name)}</span>
+                                    <span class="text-xs text-gray-500 ml-2">\${m.metric_a} \${m.operation === 'divide' ? '&divide;' : m.operation === 'multiply' ? '&times;' : m.operation === 'add' ? '+' : '&minus;'} \${m.metric_b}</span>
+                                </div>
+                                <button class="btn btn-icon btn-sm text-error" onclick="handlers.deleteCustomMetric('\${m.id}')">
+                                    \${components.icon('trash', 14)}
+                                </button>
+                            </div>
+                        \`).join('')}
+                    </div>
+                </div>
+                \` : ''}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.saveCustomMetric()">
+                    \${components.icon('plus', 16)} Create KPI
+                </button>
+            </div>
+        \`);
+    },
+
+    showAnalyticsDigestSettings: function() {
+        const digestSettings = store.state.digestSettings || { frequency: 'weekly', email: '', is_active: false };
+        modals.show(\`
+            <div class="modal-header">
+                <h2 class="modal-title">\${components.icon('mail', 20)} Analytics Digest Settings</h2>
+                <button class="btn btn-icon" aria-label="Close" onclick="modals.close()">\${components.icon('x', 20)}</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-gray-600 mb-4">Receive a summary of your analytics data delivered to your inbox on a regular schedule.</p>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="digest-email" class="form-input" placeholder="you@example.com" value="\${escapeHtml(digestSettings.email || '')}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Frequency</label>
+                    <select id="digest-frequency" class="form-select">
+                        <option value="daily" \${digestSettings.frequency === 'daily' ? 'selected' : ''}>Daily</option>
+                        <option value="weekly" \${digestSettings.frequency === 'weekly' ? 'selected' : ''}>Weekly (Every Monday)</option>
+                        <option value="monthly" \${digestSettings.frequency === 'monthly' ? 'selected' : ''}>Monthly (1st of month)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="digest-active" \${digestSettings.is_active ? 'checked' : ''}>
+                        <span class="form-label" style="margin-bottom: 0;">Enable digest emails</span>
+                    </label>
+                </div>
+                <div class="card bg-gray-50 p-4 mt-4">
+                    <h4 class="text-sm font-medium mb-2">\${components.icon('info', 14)} Digest Includes</h4>
+                    <ul class="text-sm text-gray-600" style="list-style: disc; padding-left: 20px;">
+                        <li>Revenue & profit summary for the period</li>
+                        <li>Top selling items and platforms</li>
+                        <li>Inventory status changes</li>
+                        <li>Performance trends vs. previous period</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="handlers.saveDigestSettings()">
+                    \${components.icon('save', 16)} Save Settings
+                </button>
+            </div>
+        \`);
+    },
+
+    // ─── Moved from deferred → core (Fix B: dashboard handlers) ────
+
+    refreshDashboard: async function() {
+        try {
+            toast.show('Refreshing dashboard...', 'info');
+            await Promise.all([
+                handlers.loadInventory(),
+                handlers.loadListings(),
+                handlers.loadSales(),
+                handlers.loadOffers(),
+                handlers.loadOrders()
+            ]);
+            store.setState({ dashboardLastRefresh: Date.now() });
+            router.navigate('dashboard');
+            toast.success('Dashboard refreshed');
+        } catch (error) {
+            console.error('Dashboard refresh failed:', error);
+            toast.show('Refresh failed. Try again.', 'error');
+        }
+    },
+
+    exportDashboard: function(format) {
+        const container = document.querySelector('.dashboard-widgets-container');
+        if (container) {
+            container.setAttribute('data-print-date', new Date().toLocaleString());
+        }
+        if (format === 'print') {
+            document.body.classList.add('dashboard-print-mode');
+            window.print();
+            document.body.classList.remove('dashboard-print-mode');
+        } else if (format === 'screenshot') {
+            document.body.classList.add('dashboard-print-mode');
+            toast.show('Use your browser\'s print dialog → "Save as PDF" or screenshot tool (Win+Shift+S)', 'info', 5000);
+            window.print();
+            document.body.classList.remove('dashboard-print-mode');
+        }
+    },
 };
 
 
@@ -26979,6 +27265,16 @@ function renderApp(pageContent) {
                 ${components.sidebar()}
                 <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
                      onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
+                <div class="sidebar-overlay" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                <div class="mobile-header">
+                    <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
+                        ${components.icon('menu')}
+                    </button>
+                    <span class="mobile-header-title">VaultLister</span>
+                    <button class="mobile-menu-btn" onclick="document.getElementById('global-search')?.focus()" aria-label="Search">
+                        ${components.icon('search')}
+                    </button>
+                </div>
                 <div class="main-wrapper">
                     ${components.header()}
                     <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
