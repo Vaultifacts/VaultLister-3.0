@@ -8220,7 +8220,13 @@ const api = {
 
             if (!response.ok) {
                 const baseMsg = data.error || 'Request failed';
-                const msg = requestId ? `${baseMsg} (ref: ${requestId})` : baseMsg;
+                // Include field-level validation errors from 422 responses
+                let msg = baseMsg;
+                if (response.status === 422 && data.errors && Array.isArray(data.errors)) {
+                    const fieldErrors = data.errors.map(e => e.field ? `${e.field}: ${e.message}` : e.message || e).join(', ');
+                    if (fieldErrors) msg = `${baseMsg} — ${fieldErrors}`;
+                }
+                if (requestId) msg = `${msg} (ref: ${requestId})`;
                 const err = new Error(msg);
                 err.data = data;
                 err.status = response.status;
@@ -15129,7 +15135,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '24d8e3c1';
+    const v = '78c16bf8';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
