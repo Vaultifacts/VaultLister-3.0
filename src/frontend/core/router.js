@@ -26,6 +26,9 @@ const pageChunkMap = {
     'recently-deleted': 'inventory',
     'platform-health': 'inventory',
 
+    // analytics → sales chunk (13/16 analytics handlers live in sales chunk)
+    'analytics': 'sales',
+
     // sales chunk
     'sales': 'sales',
     'orders': 'sales',

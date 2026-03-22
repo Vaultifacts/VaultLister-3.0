@@ -2179,9 +2179,7 @@ html.desktop-lock .sidebar-backdrop.active {
 html.desktop-lock .main-wrapper {
     margin-left: var(--sidebar-width) !important;
 }
-html.desktop-lock .menu-button {
-    display: none !important;
-}
+/* menu-button visibility managed by @media queries, not desktop-lock */
 html.desktop-lock .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
 }
@@ -60626,7 +60624,7 @@ body.dark-mode .shimmer {
         transition: transform 0.3s ease;
     }
 
-    .sidebar.mobile-open {
+    .sidebar.open {
         transform: translateX(0);
     }
 

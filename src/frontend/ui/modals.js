@@ -55,12 +55,16 @@ const modals = {
         };
         document.addEventListener('keydown', this._escapeHandler);
         document.addEventListener('keydown', this._focusTrapHandler);
+        // Prevent screen readers from escaping modal
+        document.getElementById('main-content')?.setAttribute('inert', '');
         // Focus first focusable element
         const focusable = container.querySelector('button, input, select, textarea, a[href]');
         if (focusable) focusable.focus();
     },
 
     close() {
+        // Remove inert BEFORE focus restore (element must be interactive first)
+        document.getElementById('main-content')?.removeAttribute('inert');
         document.getElementById('modal-container').innerHTML = '';
         // Remove keyboard handlers
         if (this._escapeHandler) {
@@ -110,16 +114,19 @@ const modals = {
                     </div>
                 </div>
             `;
+            document.getElementById('main-content')?.setAttribute('inert', '');
             document.getElementById('confirm-cancel-btn').onclick = () => {
                 resolve(false);
                 this._confirmResolve = null;
                 this._confirmReject = null;
+                document.getElementById('main-content')?.removeAttribute('inert');
                 document.getElementById('modal-container').innerHTML = '';
             };
             document.getElementById('confirm-ok-btn').onclick = () => {
                 resolve(true);
                 this._confirmResolve = null;
                 this._confirmReject = null;
+                document.getElementById('main-content')?.removeAttribute('inert');
                 document.getElementById('modal-container').innerHTML = '';
             };
         });

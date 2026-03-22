@@ -523,6 +523,16 @@ function renderApp(pageContent) {
                 ${components.sidebar()}
                 <div class="sidebar-backdrop ${store.state.sidebarOpen ? 'active' : ''}"
                      onclick="store.setState({ sidebarOpen: false }); renderApp(pages[store.state.currentPage]())"></div>
+                <div class="sidebar-overlay" onclick="store.setState({sidebarOpen:false});document.querySelector('.sidebar')?.classList.remove('open');this.classList.remove('visible');"></div>
+                <div class="mobile-header">
+                    <button class="mobile-menu-btn" onclick="const _open=!store.state.sidebarOpen;store.setState({sidebarOpen:_open});document.querySelector('.sidebar')?.classList.toggle('open',_open);document.querySelector('.sidebar-overlay')?.classList.toggle('visible',_open);" aria-label="Open menu">
+                        ${components.icon('menu')}
+                    </button>
+                    <span class="mobile-header-title">VaultLister</span>
+                    <button class="mobile-menu-btn" onclick="document.getElementById('global-search')?.focus()" aria-label="Search">
+                        ${components.icon('search')}
+                    </button>
+                </div>
                 <div class="main-wrapper">
                     ${components.header()}
                     <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">

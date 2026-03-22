@@ -231,7 +231,7 @@ const components = {
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
                         <div class="shop-switch-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button class="shop-switch-btn" title="Switch Shop">
+                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="true">
                                 <div class="shop-switch-current">
                                     ${activeShop ? `
                                         <span class="shop-switch-platform" style="background: ${this.getPlatformColor(activeShop.platform)}">${activeShop.platform.charAt(0).toUpperCase()}</span>
@@ -319,7 +319,7 @@ const components = {
                         ${this.icon('help')}
                     </button>
                     <div class="notifications-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                        <button class="header-icon-btn" aria-label="Notifications">
+                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="true">
                             ${this.icon('bell')}
                             <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>

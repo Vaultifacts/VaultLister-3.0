@@ -1394,35 +1394,31 @@ const tablePrefs = {
 
     showColumnPicker(tableId, columns, onApply) {
         const prefs = this.get(tableId) || { visibleColumns: columns.map(c => c.id) };
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal" style="max-width: 400px;">
-                <div class="modal-header">
-                    <h3 class="modal-title">Column Settings</h3>
-                    <button class="modal-close" aria-label="Close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="space-y-2">
-                        ${columns.map(col => `
-                            <label class="flex items-center gap-3 p-2 rounded hover:bg-gray-50">
-                                <input type="checkbox" data-column="${col.id}" ${prefs.visibleColumns.includes(col.id) ? 'checked' : ''} aria-label="Toggle ${col.label} column visibility">
-                                <span>${col.label}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
-                    <button class="btn btn-primary" onclick="tablePrefs.applyColumnPicker('${tableId}', this.closest('.modal'))">Apply</button>
+        modals.show(`
+            <div class="modal-header">
+                <h3 class="modal-title">Column Settings</h3>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="space-y-2">
+                    ${columns.map(col => `
+                        <label class="flex items-center gap-3 p-2 rounded hover:bg-gray-50">
+                            <input type="checkbox" data-column="${col.id}" ${prefs.visibleColumns.includes(col.id) ? 'checked' : ''} aria-label="Toggle ${col.label} column visibility">
+                            <span>${col.label}</span>
+                        </label>
+                    `).join('')}
                 </div>
             </div>
-        `;
-        document.body.appendChild(modal);
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="tablePrefs.applyColumnPicker('${tableId}')">Apply</button>
+            </div>
+        `);
     },
 
-    applyColumnPicker(tableId, modal) {
-        const checkboxes = modal.querySelectorAll('input[type="checkbox"][data-column]');
+    applyColumnPicker(tableId) {
+        const container = document.getElementById('modal-container');
+        const checkboxes = container.querySelectorAll('input[type="checkbox"][data-column]');
         const visibleColumns = [];
         checkboxes.forEach(cb => {
             if (cb.checked) visibleColumns.push(cb.dataset.column);
@@ -1430,8 +1426,7 @@ const tablePrefs = {
         const prefs = this.get(tableId) || {};
         prefs.visibleColumns = visibleColumns;
         this.save(tableId, prefs);
-        modal.closest('.modal-overlay').remove();
-        // Trigger re-render
+        modals.close();
         if (typeof renderCurrentPage === 'function') renderCurrentPage();
     }
 };

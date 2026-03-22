@@ -156,7 +156,7 @@ const HANDLERS_CHUNK_MAP = {
     toggleListingColumn: 'inventory-catalog',
     showInventoryAgeAnalysis: 'inventory-catalog',
     exportAgeReport: 'inventory-catalog',
-    showSalesVelocity: 'inventory-catalog',
+    // showSalesVelocity: moved to handlers-core.js (Fix A)
     showPriceDropSuggestion: 'inventory-catalog',
     applyPriceDrop: 'inventory-catalog',
     showBulkPriceUpdate: 'inventory-catalog',
@@ -368,7 +368,7 @@ const HANDLERS_CHUNK_MAP = {
     showExpenseTracker: 'sales-orders',
     addExpense: 'sales-orders',
     exportExpenses: 'sales-orders',
-    exportDashboard: 'sales-orders',
+    // exportDashboard: moved to handlers-core.js (Fix B)
     showDailySummary: 'sales-orders',
     viewOrderDetails: 'sales-orders',
     initiateReturn: 'sales-orders',
@@ -488,7 +488,7 @@ const HANDLERS_CHUNK_MAP = {
     showTransactionAuditLog: 'sales-orders',
     deleteOrderNote: 'sales-orders',
     deleteExpense: 'sales-orders',
-    refreshDashboard: 'sales-orders',
+    // refreshDashboard: moved to handlers-core.js (Fix B)
     submitReturn: 'sales-orders',
     updateReturnStatus: 'sales-orders',
     updateOrderPriority: 'sales-orders',
@@ -859,8 +859,8 @@ const HANDLERS_CHUNK_MAP = {
     deselectTeam: 'settings-account',
     showShopAnalytics: 'settings-account',
     showCleanupSuggestions: 'settings-account',
-    showCustomMetricBuilder: 'settings-account',
-    showAnalyticsDigestSettings: 'settings-account',
+    // showCustomMetricBuilder: moved to handlers-core.js (Fix A)
+    // showAnalyticsDigestSettings: moved to handlers-core.js (Fix A)
     showAccountUsage: 'settings-account',
     markCookieChange: 'settings-account',
     clearCache: 'settings-account',
