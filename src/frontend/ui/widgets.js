@@ -1044,20 +1044,20 @@ const themeManager = {
 // ============================================
 const widgetManager = {
     defaultWidgets: [
-        { id: 'stats', label: 'Stats Overview', width: 100, height: null, visible: false, collapsed: true, order: 0 },
-        { id: 'goals', label: 'Monthly Goal', width: 33, height: null, visible: false, collapsed: true, order: 1 },
+        { id: 'stats', label: 'Stats Overview', width: 100, height: null, visible: true, collapsed: false, order: 0 },
+        { id: 'goals', label: 'Monthly Goal', width: 33, height: null, visible: true, collapsed: false, order: 1 },
         { id: 'comparison', label: 'Weekly Comparison', width: 33, height: null, visible: false, collapsed: true, order: 2 },
-        { id: 'activity', label: 'Activity Feed', width: 33, height: null, visible: false, collapsed: true, order: 3 },
+        { id: 'activity', label: 'Activity Feed', width: 33, height: null, visible: true, collapsed: false, order: 3 },
         { id: 'platform-performance', label: 'Platform Performance', width: 100, height: null, visible: false, collapsed: true, order: 4 },
         { id: 'quick-actions', label: 'Quick Actions', width: 50, height: null, visible: true, collapsed: false, order: 5 },
         { id: 'stale-listings', label: 'Stale Listings', width: 50, height: null, visible: false, collapsed: true, order: 6 },
         { id: 'recent-relisted', label: 'Recently Relisted', width: 50, height: null, visible: false, collapsed: true, order: 7 },
-        { id: 'recent-sales', label: 'Recent Sales', width: 50, height: null, visible: false, collapsed: true, order: 8 },
+        { id: 'recent-sales', label: 'Recent Sales', width: 50, height: null, visible: true, collapsed: false, order: 8 },
         { id: 'sales-forecast', label: 'Sales Forecast', width: 33, height: null, visible: false, collapsed: true, order: 9 },
         { id: 'conversion-funnel', label: 'Conversion Funnel', width: 33, height: null, visible: false, collapsed: true, order: 10 },
         { id: 'profit-margin', label: 'Profit Margin', width: 33, height: null, visible: false, collapsed: true, order: 11 },
         { id: 'cash-flow', label: 'Cash Flow', width: 33, height: null, visible: false, collapsed: true, order: 12 },
-        { id: 'todays-tasks', label: "Today's Tasks", width: 33, height: null, visible: false, collapsed: true, order: 13 },
+        { id: 'todays-tasks', label: "Today's Tasks", width: 33, height: null, visible: true, collapsed: false, order: 13 },
         { id: 'ship-today', label: 'Ship Today', width: 33, height: null, visible: false, collapsed: true, order: 14 },
         { id: 'milestones', label: 'Milestones', width: 50, height: null, visible: false, collapsed: true, order: 15 },
         { id: 'low-stock-alerts', label: 'Low Stock Alerts', width: 33, height: null, visible: false, collapsed: true, order: 16 },
@@ -1065,7 +1065,7 @@ const widgetManager = {
         { id: 'upcoming-events', label: 'Upcoming Events', width: 33, height: null, visible: false, collapsed: true, order: 18 },
         { id: 'recent-items', label: 'Recent Items', width: 100, height: null, visible: false, collapsed: true, order: 19 },
         { id: 'mini-pnl', label: 'Mini P&L', width: 33, height: null, visible: false, collapsed: true, order: 20 },
-        { id: 'pending-offers', label: 'Pending Offers', width: 33, height: null, visible: false, collapsed: true, order: 21 },
+        { id: 'pending-offers', label: 'Pending Offers', width: 33, height: null, visible: true, collapsed: false, order: 21 },
         { id: 'poshmark-closet', label: 'Poshmark Closet', width: 50, height: null, visible: true, collapsed: false, order: 22 }
     ],
 
@@ -1283,25 +1283,25 @@ const widgetManager = {
             <div class="widget-settings-panel" id="widget-settings-panel">
                 <div class="flex justify-between items-center mb-4">
                     <h4 class="font-semibold">Customize Dashboard</h4>
-                    <button class="btn btn-sm btn-secondary" onclick="document.getElementById('widget-settings-panel').remove()">Close</button>
+                    <button class="btn btn-sm btn-secondary" onclick="store.setState({_widgetPanelOpen:false}); document.getElementById('widget-settings-panel').remove()">Close</button>
                 </div>
                 <div class="flex flex-wrap gap-2 mb-4">
-                    <button class="btn btn-xs btn-secondary" onclick="widgetManager.showAll()">Show All</button>
-                    <button class="btn btn-xs btn-secondary" onclick="widgetManager.hideAll()">Hide All</button>
-                    <button class="btn btn-xs btn-secondary" onclick="widgetManager.expandAll()">Expand All</button>
-                    <button class="btn btn-xs btn-secondary" onclick="widgetManager.collapseAll()">Collapse All</button>
-                    <button class="btn btn-xs btn-secondary" onclick="widgetManager.reset()">Reset Defaults</button>
+                    <button class="btn btn-xs btn-secondary" onclick="store.setState({_widgetPanelOpen:true}); widgetManager.showAll()">Show All</button>
+                    <button class="btn btn-xs btn-secondary" onclick="store.setState({_widgetPanelOpen:true}); widgetManager.hideAll()">Hide All</button>
+                    <button class="btn btn-xs btn-secondary" onclick="store.setState({_widgetPanelOpen:true}); widgetManager.expandAll()">Expand All</button>
+                    <button class="btn btn-xs btn-secondary" onclick="store.setState({_widgetPanelOpen:true}); widgetManager.collapseAll()">Collapse All</button>
+                    <button class="btn btn-xs btn-secondary" onclick="store.setState({_widgetPanelOpen:false}); widgetManager.reset()">Reset Defaults</button>
                 </div>
                 <p class="text-xs text-gray-500 mb-3">Drag the right edge of any panel to resize it. Click to toggle visibility.</p>
                 <div class="widget-settings-list">
                     ${widgets.map(w => `
                         <div class="widget-settings-row ${!w.visible ? 'hidden-widget' : ''}">
                             <label class="widget-settings-toggle">
-                                <input type="checkbox" ${w.visible ? 'checked' : ''} aria-label="Toggle ${w.label} widget visibility" onchange="widgetManager.toggleWidget('${w.id}'); handlers.customizeDashboard()">
+                                <input type="checkbox" ${w.visible ? 'checked' : ''} aria-label="Toggle ${w.label} widget visibility" onchange="store.setState({_widgetPanelOpen:true}); widgetManager.toggleWidget('${w.id}'); handlers.customizeDashboard()">
                                 <span>${w.label}</span>
                             </label>
                             <div class="flex gap-2 items-center">
-                                <select class="form-input text-xs" style="width: 80px; padding: 2px 4px;" onchange="widgetManager.resizeWidget('${w.id}', this.value); handlers.customizeDashboard()">
+                                <select class="form-input text-xs" style="width: 80px; padding: 2px 4px;" onchange="store.setState({_widgetPanelOpen:true}); widgetManager.resizeWidget('${w.id}', this.value); handlers.customizeDashboard()">
                                     <option value="33" ${(w.width || 33) === 33 ? 'selected' : ''}>1/3</option>
                                     <option value="50" ${w.width === 50 ? 'selected' : ''}>1/2</option>
                                     <option value="66" ${w.width === 66 ? 'selected' : ''}>2/3</option>

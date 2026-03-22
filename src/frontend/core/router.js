@@ -191,7 +191,7 @@ const router = {
         'about': { target: 'help-support', tab: 'about' },
         'terms-of-service': { target: 'help-support', tab: 'terms' },
         'privacy-policy': { target: 'help-support', tab: 'privacy' },
-        'admin-metrics': { target: 'settings', tab: 'admin' },
+        // admin-metrics: standalone page (no alias — loads admin chunk directly)
     },
 
     async handleRoute(isInitialLoad = false) {

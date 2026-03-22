@@ -387,7 +387,7 @@ const pages = {
                 <button class="btn btn-secondary btn-sm" onclick="handlers.showQuickNotes()">
                     ${components.icon('edit-3', 14)} Quick Notes
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('widget-settings-panel') ? document.getElementById('widget-settings-panel').remove() : document.querySelector('.dashboard-customize-section').insertAdjacentHTML('afterend', widgetManager.showSettingsPanel())">
+                <button class="btn btn-secondary btn-sm" onclick="if(document.getElementById('widget-settings-panel')){store.setState({_widgetPanelOpen:false});document.getElementById('widget-settings-panel').remove();}else{store.setState({_widgetPanelOpen:true});document.querySelector('.dashboard-customize-section').insertAdjacentHTML('afterend',widgetManager.showSettingsPanel());}">
                     ${components.icon('settings', 14)} Customize Dashboard
                 </button>
                 <div class="dashboard-export-dropdown" style="position: relative; display: inline-block;">
@@ -413,6 +413,7 @@ const pages = {
                     ${store.state.dashboardLastRefresh ? `Updated ${components.relativeTime(new Date(store.state.dashboardLastRefresh).toISOString())}` : 'Not yet refreshed'}
                 </span>
             </div>
+            ${store.state._widgetPanelOpen ? widgetManager.showSettingsPanel() : ''}
 
             <!-- All Dashboard Widgets -->
             <div class="dashboard-widgets-container mb-6">

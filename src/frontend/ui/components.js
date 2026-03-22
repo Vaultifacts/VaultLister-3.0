@@ -212,7 +212,8 @@ const components = {
             { section: '', divider: true, items: [
                 { id: 'settings', label: 'Settings', icon: 'settings' },
                 { id: 'help-support', label: 'Help', icon: 'help' },
-                { id: 'changelog', label: 'Changelog', icon: 'list' }
+                { id: 'changelog', label: 'Changelog', icon: 'list' },
+                ...(store.state.user?.is_admin ? [{ id: 'admin-metrics', label: 'Admin', icon: 'shield' }] : [])
             ]}
         ];
 

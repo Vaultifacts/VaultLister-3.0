@@ -178,6 +178,11 @@ async function initApp() {
     });
     router.register('settings', () => renderApp(pages.settings()));
     router.register('account', () => renderApp(pages.account()));
+    router.register('admin-metrics', async () => {
+        renderApp(pages.adminMetrics());
+        await handlers.refreshAdminMetrics?.();
+        renderApp(pages.adminMetrics());
+    });
     router.register('community', () => renderApp(pages.community()));
     router.register('help', () => renderApp(pages.help()));
 

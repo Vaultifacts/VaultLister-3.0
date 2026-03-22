@@ -12,7 +12,11 @@ const store = {
         inventory: [],
         listings: [],
         sales: [],
-        offers: [],
+        offers: [
+            { id: 'demo-offer-1', status: 'pending', amount: 45.00, offer_amount: 45.00, listing_price: 60.00, listing_id: 'demo-item-1', listing_title: 'Vintage Levi 501 Jeans', buyer_name: 'sarah_styles', buyer_username: 'sarah_styles', platform: 'poshmark', expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(), created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
+            { id: 'demo-offer-2', status: 'pending', amount: 120.00, offer_amount: 120.00, listing_price: 175.00, listing_id: 'demo-item-2', listing_title: 'Nike Air Jordan 1 Retro High', buyer_name: 'sneaker_king', buyer_username: 'sneaker_king', platform: 'ebay', expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
+            { id: 'demo-offer-3', status: 'countered', amount: 30.00, offer_amount: 30.00, listing_price: 55.00, listing_id: 'demo-item-3', listing_title: 'Coach Signature Crossbody Bag', buyer_name: 'bag_collector', buyer_username: 'bag_collector', platform: 'mercari', expires_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+        ],
         orders: [],
         comparisonPeriod: 'week',
         shops: [],
