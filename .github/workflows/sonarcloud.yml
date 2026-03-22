@@ -55,7 +55,7 @@ jobs:
           args:
             # Unique keys of your project and organization. You can find them in SonarCloud > Information (bottom-left menu)
             # mandatory
-            -Dsonar.projectKey=vaultlister
+            -Dsonar.projectKey=Vaultifacts_VaultLister-3.0
             -Dsonar.organization=vaultifacts
             # Comma-separated paths to directories containing main source files.
             #-Dsonar.sources= # optional, default is project base directory
