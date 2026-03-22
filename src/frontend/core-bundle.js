@@ -15129,7 +15129,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '640ebeae';
+    const v = '42f045e2';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15203,8 +15203,7 @@ const router = {
         'market-intel': { target: 'analytics', tab: 'market-intel' },
         'suppliers': { target: 'analytics', tab: 'sourcing' },
         'platform-health': { target: 'shops', tab: 'health' },
-        'checklist': { target: 'planner', tab: 'tasks' },
-        'calendar': { target: 'planner', tab: 'calendar' },
+        // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         'roadmap': { target: 'help-support', tab: 'roadmap' },
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
         'teams': { target: 'settings', tab: 'teams' },
@@ -26950,9 +26949,9 @@ async function initApp() {
     router.register('calendar', () => renderApp(pages.calendar()));
     // Consolidated: Planner page
     router.register('planner', async () => {
-        renderApp(pages.planner());
+        renderApp(pages.checklist());
         await handlers.loadChecklistItems();
-        renderApp(pages.planner());
+        renderApp(pages.checklist());
     });
     router.register('size-charts', () => renderApp(pages.sizeCharts()));
     router.register('image-bank', async () => {

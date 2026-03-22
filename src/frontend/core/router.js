@@ -181,8 +181,7 @@ const router = {
         'market-intel': { target: 'analytics', tab: 'market-intel' },
         'suppliers': { target: 'analytics', tab: 'sourcing' },
         'platform-health': { target: 'shops', tab: 'health' },
-        'checklist': { target: 'planner', tab: 'tasks' },
-        'calendar': { target: 'planner', tab: 'calendar' },
+        // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         'roadmap': { target: 'help-support', tab: 'roadmap' },
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
         'teams': { target: 'settings', tab: 'teams' },

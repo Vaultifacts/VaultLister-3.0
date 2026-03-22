@@ -7440,6 +7440,20 @@ Object.assign(pages, {
             return day === currentDate.getDate() && viewMonth === currentDate.getMonth() && viewYear === currentDate.getFullYear();
         };
 
+        // Build revenue-by-date map for heatmap (before calendar grid that uses it)
+        const salesData = store.state.sales || [];
+        const revenueByDate = {};
+        salesData.forEach(s => {
+            const raw = s.sold_at || s.created_at;
+            if (!raw) return;
+            const dateStr = raw.slice(0, 10);
+            revenueByDate[dateStr] = (revenueByDate[dateStr] || 0) + (s.sale_price || 0);
+        });
+        const getDayRevenue = (day) => {
+            const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            return revenueByDate[dateStr] || 0;
+        };
+
         // Generate calendar grid
         let calendarHtml = '';
         let dayCounter = 1;
@@ -7502,20 +7516,6 @@ Object.assign(pages, {
         // Get selected date for timeline
         const selectedDate = store.state.selectedCalendarDate ? new Date(store.state.selectedCalendarDate) : new Date();
         const calendarView = store.state.calendarView || 'month';
-
-        // Build revenue-by-date map from store.state.sales for heatmap
-        const salesData = store.state.sales || [];
-        const revenueByDate = {};
-        salesData.forEach(s => {
-            const raw = s.sold_at || s.created_at;
-            if (!raw) return;
-            const dateStr = raw.slice(0, 10);
-            revenueByDate[dateStr] = (revenueByDate[dateStr] || 0) + (s.sale_price || 0);
-        });
-        const getDayRevenue = (day) => {
-            const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            return revenueByDate[dateStr] || 0;
-        };
 
         // Calculate month statistics
         const monthEvents = events.filter(e => {
@@ -7602,7 +7602,7 @@ Object.assign(pages, {
                     <div class="week-preview-days">
                         ${weekDays.map(day => `
                             <div class="week-preview-day ${day.isToday ? 'today' : ''} ${day.events.length > 0 ? 'has-events' : ''}"
-                                 onclick="handlers.selectCalendarDate('${day.toLocalDate(date)}')">
+                                 onclick="handlers.selectCalendarDate('${toLocalDate(day.date)}')">
                                 <div class="week-day-name">${dayNames[day.date.getDay()]}</div>
                                 <div class="week-day-number">${day.date.getDate()}</div>
                                 ${day.events.length > 0 ? `

@@ -202,9 +202,9 @@ async function initApp() {
     router.register('calendar', () => renderApp(pages.calendar()));
     // Consolidated: Planner page
     router.register('planner', async () => {
-        renderApp(pages.planner());
+        renderApp(pages.checklist());
         await handlers.loadChecklistItems();
-        renderApp(pages.planner());
+        renderApp(pages.checklist());
     });
     router.register('size-charts', () => renderApp(pages.sizeCharts()));
     router.register('image-bank', async () => {
