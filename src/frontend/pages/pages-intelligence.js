@@ -948,7 +948,7 @@ Object.assign(pages, {
                                             <td class="font-medium">$${(po.total || 0).toFixed(2)}</td>
                                             <td><span class="badge badge-${po.status === 'delivered' ? 'success' : po.status === 'shipped' ? 'primary' : po.status === 'cancelled' ? 'danger' : 'warning'}">${po.status || 'pending'}</span></td>
                                             <td class="text-sm text-gray-500">${po.created_at ? new Date(po.created_at).toLocaleDateString() : '-'}</td>
-                                            <td><button class="btn btn-sm btn-ghost" onclick="handlers.viewPurchaseOrder('${po.id}')">${components.icon('eye', 14)}</button></td>
+                                            <td><button class="btn btn-sm btn-ghost" onclick="handlers.viewPurchaseOrder('${po.id}')" aria-label="View purchase order">${components.icon('eye', 14)}</button></td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -1764,8 +1764,8 @@ Object.assign(pages, {
                                         <div style="font-size: 12px; color: var(--gray-500);">${escapeHtml(search.platform || 'All platforms')} &middot; ${search.alertsEnabled ? 'Alerts ON' : 'Alerts OFF'}</div>
                                     </div>
                                     <span class="badge ${search.newResults > 0 ? 'badge-primary' : 'badge-outline'}">${search.newResults || 0} new</span>
-                                    <button class="btn btn-sm btn-ghost" onclick="handlers.runSavedSearch('${search.id}')" title="Run search">${components.icon('search', 14)}</button>
-                                    <button class="btn btn-sm btn-ghost" onclick="handlers.removeSavedSearch('${search.id}')" title="Remove">${components.icon('x', 14)}</button>
+                                    <button class="btn btn-sm btn-ghost" onclick="handlers.runSavedSearch('${search.id}')" title="Run search" aria-label="Run search">${components.icon('search', 14)}</button>
+                                    <button class="btn btn-sm btn-ghost" onclick="handlers.removeSavedSearch('${search.id}')" title="Remove" aria-label="Remove saved search">${components.icon('x', 14)}</button>
                                 </div>
                             `).join('')}
                         </div>

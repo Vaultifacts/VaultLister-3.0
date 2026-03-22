@@ -2660,11 +2660,11 @@ const richTextEditor = {
                     <button class="rich-text-btn" onclick="richTextEditor.format('italic')" title="Italic"><i>I</i></button>
                     <button class="rich-text-btn" onclick="richTextEditor.format('underline')" title="Underline"><u>U</u></button>
                     <div class="rich-text-divider"></div>
-                    <button class="rich-text-btn" onclick="richTextEditor.format('insertUnorderedList')" title="Bullet List">${components.icon('list', 14)}</button>
+                    <button class="rich-text-btn" onclick="richTextEditor.format('insertUnorderedList')" title="Bullet List" aria-label="Bullet List">${components.icon('list', 14)}</button>
                     <button class="rich-text-btn" onclick="richTextEditor.format('insertOrderedList')" title="Numbered List">1.</button>
                     <div class="rich-text-divider"></div>
                     <button class="rich-text-btn" onclick="richTextEditor.insertEmoji()" title="Emoji">😀</button>
-                    <button class="rich-text-btn" onclick="richTextEditor.insertTemplate()" title="Insert Template">${components.icon('document', 14)}</button>
+                    <button class="rich-text-btn" onclick="richTextEditor.insertTemplate()" title="Insert Template" aria-label="Insert Template">${components.icon('document', 14)}</button>
                 </div>
                 <div class="rich-text-content" id="${containerId}-content" contenteditable="true"
                      data-placeholder="${placeholder}"
@@ -3874,7 +3874,7 @@ const automationWizard = {
                                 </select>
                                 <input type="text" class="form-input" placeholder="${fieldType === 'numeric' ? 'Enter number...' : 'Enter value...'}" value="${escapeHtml(c.value || '')}" onchange="automationWizard.updateCondition(${i}, 'value', this.value)" aria-label="Condition value">
                             </div>
-                            <button class="btn btn-ghost btn-sm" onclick="automationWizard.removeCondition(${i})" title="Remove condition">${components.icon('trash', 14)}</button>
+                            <button class="btn btn-ghost btn-sm" onclick="automationWizard.removeCondition(${i})" title="Remove condition" aria-label="Remove condition">${components.icon('trash', 14)}</button>
                         </div>
                     `;
                 }).join('')}
@@ -4022,7 +4022,7 @@ const conditionBuilder = {
                             <option value="eq" ${c.operator === 'eq' ? 'selected' : ''}>equals</option>
                         </select>
                         <input type="text" class="form-input" value="${c.value || ''}" aria-label="Condition value" onchange="conditionBuilder.updateCondition(${i}, 'value', this.value)">
-                        <button class="btn btn-ghost btn-sm" onclick="conditionBuilder.removeCondition(${i})">${components.icon('x', 14)}</button>
+                        <button class="btn btn-ghost btn-sm" onclick="conditionBuilder.removeCondition(${i})" aria-label="Remove condition">${components.icon('x', 14)}</button>
                     </div>
                 `).join('')}
                 <div class="condition-add-btn" onclick="conditionBuilder.addCondition()">

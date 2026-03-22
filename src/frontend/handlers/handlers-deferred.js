@@ -12910,7 +12910,7 @@ Object.assign(handlers, {
                                 ${handlers._addChecklistAttachments.map((a, i) => `
                                     <span class="checklist-attachment-tag">
                                         ${components.icon('paperclip', 12)} ${escapeHtml(a)}
-                                        <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('add', ${i})">${components.icon('x', 10)}</button>
+                                        <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('add', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
                                     </span>
                                 `).join('')}
                             </div>
@@ -13387,7 +13387,7 @@ Object.assign(handlers, {
                                 ${handlers._editChecklistAttachments.map((a, i) => `
                                     <span class="checklist-attachment-tag">
                                         ${components.icon('paperclip', 12)} ${escapeHtml(a)}
-                                        <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('edit', ${i})">${components.icon('x', 10)}</button>
+                                        <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('edit', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
                                     </span>
                                 `).join('')}
                             </div>
@@ -25160,7 +25160,7 @@ Object.assign(handlers, {
             listEl.innerHTML = arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
-                    <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})">${components.icon('x', 10)}</button>
+                    <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
                 </span>
             `).join('');
         }
@@ -25179,7 +25179,7 @@ Object.assign(handlers, {
             listEl.innerHTML = arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
-                    <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})">${components.icon('x', 10)}</button>
+                    <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
                 </span>
             `).join('');
         }
