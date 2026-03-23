@@ -5209,18 +5209,18 @@ Object.assign(handlers, {
                     <div>
                         <label class="form-label">Share Delay</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" class="form-input" min="1" max="30" value="5" style="width: 80px;">
+                            <input type="number" class="form-input" id="automation-share-delay" min="1" max="30" value="5" style="width: 80px;">
                             <span class="text-gray-500">seconds between shares</span>
                         </div>
                     </div>
                     <div>
                         <label class="form-label">Max Shares Per Session</label>
-                        <input type="number" class="form-input" min="10" max="500" value="100" style="width: 100px;">
+                        <input type="number" class="form-input" id="automation-max-shares" min="10" max="500" value="100" style="width: 100px;">
                     </div>
                 </div>
                 <div class="mt-4">
                     <label class="form-label">Share Order</label>
-                    <select class="form-select">
+                    <select class="form-select" id="automation-share-order">
                         <option value="newest">Newest first</option>
                         <option value="oldest">Oldest first</option>
                         <option value="random" selected>Random order</option>
@@ -5527,11 +5527,17 @@ Object.assign(handlers, {
             };
         }).filter(Boolean);
 
+        // Gather sharing config (if present)
+        const shareDelay = parseInt(document.getElementById('automation-share-delay')?.value) || 5;
+        const maxShares = parseInt(document.getElementById('automation-max-shares')?.value) || 100;
+        const shareOrder = document.getElementById('automation-share-order')?.value || 'random';
+
         // Store config in state
         const configs = store.state.automationConfigs || {};
         configs[automationId] = {
             conditions,
             errorHandling: { onFailure, maxRetries, retryDelay, failureNotify },
+            sharingConfig: { shareDelay, maxShares, shareOrder },
             updatedAt: new Date().toISOString()
         };
         store.setState({ automationConfigs: configs });
