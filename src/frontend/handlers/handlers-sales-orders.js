@@ -1010,6 +1010,10 @@ Object.assign(handlers, {
                     <p id="receipt-file-name" style="font-size: 12px; color: var(--gray-500); margin-top: 4px;"></p>
                 </div>
                 <div id="receipt-preview" style="margin-top: 8px;"></div>
+                <div class="form-group" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-200);">
+                    <label class="form-label">Or enter receipt URL</label>
+                    <input type="url" class="form-input" id="receipt-url-input" placeholder="https://example.com/receipt.pdf">
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
@@ -1020,6 +1024,19 @@ Object.assign(handlers, {
 
 
     uploadReceipt: async function(txId) {
+        const urlInput = document.getElementById('receipt-url-input');
+        const receiptUrl = urlInput?.value?.trim();
+        if (receiptUrl) {
+            try {
+                await api.post('/financials/transactions/' + txId + '/attachments', { receiptUrl, type: 'url' });
+                toast.success('Receipt URL attached');
+                modals.close();
+                return;
+            } catch (err) {
+                toast.error('Failed to attach URL: ' + err.message);
+                return;
+            }
+        }
         const fileInput = document.getElementById('receipt-file-input');
         const file = fileInput?.files?.[0];
         if (!file) {

@@ -2015,11 +2015,18 @@ Object.assign(handlers, {
             // Show loading toast
             toast.info('Waiting for authorization...');
 
-            // Poll for popup close — when closed, refresh shops data
+            // Poll for popup close — check if OAuth actually completed
             const pollTimer = setInterval(async () => {
                 if (popup.closed) {
                     clearInterval(pollTimer);
+                    const shopsBefore = (store.state.shops || []).filter(s => s.is_connected).length;
                     await handlers.loadShops();
+                    const shopsAfter = (store.state.shops || []).filter(s => s.is_connected).length;
+                    if (shopsAfter > shopsBefore) {
+                        toast.success('Shop connected successfully!');
+                    } else {
+                        toast.warning('Authorization was not completed. You can try again from My Shops.');
+                    }
                     if (store.state.currentPage === 'shops') {
                         const pageContent = pages.shops();
                         document.querySelector('.page-content').innerHTML = pageContent;

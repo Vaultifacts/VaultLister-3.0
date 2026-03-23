@@ -1041,7 +1041,7 @@ Object.assign(pages, {
                                     }
 
                                     return `
-                                    <tr class="listing-row" data-listing-id="${listing.id}">
+                                    <tr class="listing-row" data-listing-id="${listing.id}" data-context-menu="listing-item">
                                         <td>
                                             <button class="btn btn-icon btn-sm" onclick="handlers.toggleListingDetails('${listing.id}')" style="transform: rotate(${isExpanded ? '90deg' : '0deg'}); transition: transform 0.2s;" aria-label="${isExpanded ? 'Collapse' : 'Expand'} listing details" aria-expanded="${isExpanded}">
                                                 ${components.icon('chevron-right', 14)}

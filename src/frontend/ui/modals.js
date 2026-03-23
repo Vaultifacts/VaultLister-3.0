@@ -546,8 +546,9 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label for="add-item-description" class="form-label">Description</label>
-                        <textarea class="form-textarea" name="description" id="add-item-description" data-testid="add-item-description" rows="3"></textarea>
+                        <label class="form-label">Description</label>
+                        <div id="add-item-rich-editor"></div>
+                        <input type="hidden" name="description" id="add-item-description">
                     </div>
                 </form>
             </div>
@@ -582,8 +583,11 @@ const modals = {
                 </div>
             </div>
         `, 'modal-xl');
-        // Wire auto-save for Add Item form
-        setTimeout(() => autoSave.init('add-item-form', 'add-item', 1500), 100);
+        // Wire rich text editor for description field + auto-save
+        setTimeout(() => {
+            richTextEditor.init('add-item-rich-editor', { onInput: (html) => { document.getElementById('add-item-description').value = html; } });
+            autoSave.init('add-item-form', 'add-item', 1500);
+        }, 100);
     },
 
     async showItemHistory(itemId) {
