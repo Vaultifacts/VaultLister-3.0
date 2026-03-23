@@ -3889,7 +3889,12 @@ Object.assign(handlers, {
 
 
     addFinancialGoal: function() {
-        modals.show('Add Financial Goal', `
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('target', 20)} Add Financial Goal</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
             <form onsubmit="handlers.saveFinancialGoal(event)" style="padding: 8px;">
                 <div class="form-group">
                     <label class="form-label">Goal Name *</label>
@@ -3924,6 +3929,7 @@ Object.assign(handlers, {
                     <button type="submit" class="btn btn-primary">Create Goal</button>
                 </div>
             </form>
+            </div>
         `);
     },
 

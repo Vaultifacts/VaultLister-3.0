@@ -15135,7 +15135,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '2f7f1f88';
+    const v = '36ce7145';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27145,6 +27145,12 @@ async function initApp() {
 
     // OAuth callback handler via postMessage (handles both same-origin and cross-origin via ngrok)
     window.addEventListener('message', (event) => {
+        // Verify message origin — accept same-origin and configured API base
+        const allowedOrigins = [window.location.origin];
+        const apiBase = store.state?.apiBase || window.location.origin;
+        if (apiBase && apiBase !== window.location.origin) allowedOrigins.push(apiBase);
+        if (!allowedOrigins.includes(event.origin)) return;
+
         if (event.data && event.data.type === 'email-oauth-success') {
             // Handled in connectGmail function
         } else if (event.data && event.data.type === 'email-oauth-error') {
