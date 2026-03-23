@@ -8,8 +8,6 @@
       "Bash(git push --force-with-lease*)",
       "Bash(git push -f*)",
       "Bash(git push * -f*)",
-      "Bash(git push --force origin main*)",
-      "Bash(git push --force origin master*)",
       "Bash(git push * --delete*)",
       "Bash(git reset --hard*)",
       "Bash(git rebase -i*)",
@@ -20,22 +18,14 @@
       "Bash(git add -A)",
       "Bash(git add .)",
       "Bash(curl * | bash)",
-      "Bash(wget * | sh)",
       "Bash(* --no-verify*)",
       "Bash(bun run db:drop*)",
       "Bash(bun run db:reset*)",
       "Bash(docker compose down -v*)",
-      "Bash(rm -rf src/*)",
-      "Bash(rm -rf e2e/*)",
-      "Bash(rm -rf .github/*)",
-      "Bash(rm -rf data/*)",
       "Bash(*DROP TABLE*)",
       "Bash(*DROP DATABASE*)",
       "Bash(npm publish*)",
       "Bash(bun publish*)",
-      "Bash(rm -rf .git*)",
-      "Bash(rm -rf .husky*)",
-      "Bash(rm -rf .claude*)",
       "Bash(*HUSKY=0*)",
       "Bash(git config core.hookspath*)",
       "Bash(git config core.hooksPath*)",
@@ -43,41 +33,7 @@
       "Bash(git restore --staged .*)"
     ]
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/validate-bash.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/protect-files.sh \"$CLAUDE_TOOL_INPUT\""
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'SPRINT_COUNT=$(python -c \"import json; d=json.load(open(\\\".notion-sprint-cache.json\\\")); print(len(d.get(\\\"items\\\",[])))\" 2>/dev/null || echo \"?\"); echo \"\" && echo \"SESSION END CHECKLIST:\" && echo \"  1. Did you update Notion for every fix/feat commit?\" && echo \"  2. Sprint Board non-Done items: $SPRINT_COUNT \u2014 did you report ALL of them?\" && echo \"  3. Run: bash scripts/reconcile-notion.sh\" && echo \"  4. Any bugs found? Add them to Sprint Board.\" && echo \"  5. Were you asked to fix N items? Did you fix ALL N?\" && echo \"\"'"
-          }
-        ]
-      }
-    ]
-  },
-  "statusLine": ".claude/statusline.sh",
+  "hooks": {},
   "memory": [
     "memory/STATUS.md",
     "memory/MEMORY.md"

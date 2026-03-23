@@ -105,3 +105,8 @@ memory/*.lock
 .notion-sprint-cache.json
 .notion-errors.log
 .notion-drift-acknowledged
+
+# SSL certificates and private keys
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
