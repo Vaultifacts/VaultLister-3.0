@@ -3,6 +3,11 @@
 
 import { query } from '../db/database.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 export async function settingsRouter(ctx) {
     const { method, path, body, user } = ctx;
 
@@ -16,7 +21,7 @@ export async function settingsRouter(ctx) {
                 return { status: 200, data: { announcement: null } };
             }
             let parsed;
-            try { parsed = JSON.parse(row.value); } catch (_) { parsed = null; }
+            parsed = safeJsonParse(row.value, null);
             return { status: 200, data: { announcement: parsed } };
         } catch (_) {
             return { status: 200, data: { announcement: null } };
