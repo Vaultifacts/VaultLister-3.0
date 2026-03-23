@@ -3016,7 +3016,7 @@ Object.assign(handlers, {
                     const file = new File([blob], image.original_filename, { type: image.mime_type });
                     files.push(file);
                 } catch (err) {
-                    console.error(`Failed to fetch image ${image.id}:`, err);
+                    console.error('Failed to fetch image:', image.id, err);
                 }
             }
 

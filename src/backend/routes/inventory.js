@@ -1123,8 +1123,9 @@ export async function inventoryRouter(ctx) {
 
         // Extract Open Graph metadata (present on all major marketplaces)
         const og = (prop) => {
-            const m = html.match(new RegExp(`<meta[^>]+property=["']og:${prop}["'][^>]+content=["']([^"']+)["']`, 'i'))
-                      || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${prop}["']`, 'i'));
+            const esc = prop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const m = html.match(new RegExp(`<meta[^>]+property=["']og:${esc}["'][^>]+content=["']([^"']+)["']`, 'i'))
+                      || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${esc}["']`, 'i'));
             return m ? m[1].trim() : null;
         };
 

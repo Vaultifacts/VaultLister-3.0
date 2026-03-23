@@ -199,7 +199,7 @@ const pages = {
             try {
                 return renderFn();
             } catch (err) {
-                console.error(`Widget "${widgetName}" failed to render:`, err);
+                console.error('Widget failed to render:', widgetName, err);
                 return `
                     <div class="card dashboard-widget widget-error-boundary">
                         <div class="card-body text-center py-4">

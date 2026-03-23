@@ -37,6 +37,10 @@ function sanitizeHTML(html) {
     return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(html) : escapeHtml(html);
 }
 
+function escapeRegExp(str) {
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function highlightText(text, query) {
     if (!text || !query) return escapeHtml(text);
     const escaped = escapeHtml(text);
