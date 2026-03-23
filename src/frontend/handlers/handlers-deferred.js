@@ -6636,6 +6636,27 @@ Object.assign(handlers, {
             checklist: [
                 { selector: '.kanban-board', title: 'Kanban View', description: 'Drag tasks between columns to update their status.' },
                 { selector: '.pomodoro-timer', title: 'Focus Timer', description: 'Use the Pomodoro technique to stay productive.' }
+            ],
+            inventory: [
+                { selector: '.inventory-table, .inventory-grid', title: 'Your Inventory', description: 'All your items in one place. Click any item to edit.' },
+                { selector: '[onclick*="showAddItemModal"], [onclick*="addItem"]', title: 'Add Items', description: 'Add new inventory items manually or import from marketplaces.' },
+                { selector: '[onclick*="showFilterMenu"]', title: 'Filters', description: 'Filter by category, platform, status, price range, and more.' },
+                { selector: '[onclick*="exportInventoryCSV"]', title: 'Export', description: 'Export your inventory as CSV for spreadsheets or backup.' }
+            ],
+            analytics: [
+                { selector: '.analytics-hero, .page-header', title: 'Analytics Overview', description: 'Your sales performance at a glance — revenue, profit, and trends.' },
+                { selector: '[onclick*="switchAnalyticsTab"]', title: 'Tab Navigation', description: 'Switch between Sales, Performance, Reports, and more.' },
+                { selector: '[onclick*="setAnalyticsPeriod"]', title: 'Time Period', description: 'Change the date range to see different time periods.' }
+            ],
+            'image-bank': [
+                { selector: '.image-bank-grid, .image-grid', title: 'Image Library', description: 'All your product photos organized in one place.' },
+                { selector: '[onclick*="openImageUpload"]', title: 'Upload Images', description: 'Upload photos from your device or drag and drop.' },
+                { selector: '[onclick*="selectFolder"]', title: 'Folders', description: 'Organize images into folders for easy access.' }
+            ],
+            calendar: [
+                { selector: '.calendar-grid', title: 'Calendar View', description: 'Your events, deadlines, and milestones on a monthly calendar.' },
+                { selector: '.calendar-view-btn', title: 'View Toggle', description: 'Switch between Month, Week, and Day views.' },
+                { selector: '[onclick*="addCalendarEvent"]', title: 'Add Events', description: 'Click any day or use this button to add new events.' }
             ]
         };
 

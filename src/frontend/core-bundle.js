@@ -15135,7 +15135,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '1017b83b';
+    const v = '3a971fe8';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15805,6 +15805,9 @@ const components = {
                     </div>
                 </div>
                 <div class="header-right">
+                    <button class="header-icon-btn" onclick="focusMode.toggle()" title="Focus Mode" aria-label="Toggle focus mode">
+                        ${this.icon('maximize', 18)}
+                    </button>
                     <button class="header-icon-btn" onclick="handlers.showKeyboardShortcuts()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
                         ${this.icon('help')}
                     </button>

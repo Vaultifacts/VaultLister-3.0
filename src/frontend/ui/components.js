@@ -316,6 +316,9 @@ const components = {
                     </div>
                 </div>
                 <div class="header-right">
+                    <button class="header-icon-btn" onclick="focusMode.toggle()" title="Focus Mode" aria-label="Toggle focus mode">
+                        ${this.icon('maximize', 18)}
+                    </button>
                     <button class="header-icon-btn" onclick="handlers.showKeyboardShortcuts()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
                         ${this.icon('help')}
                     </button>
