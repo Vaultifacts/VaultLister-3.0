@@ -38,6 +38,10 @@ function sanitizeHTML(html) {
     return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(html) : escapeHtml(html);
 }
 
+function escapeRegExp(str) {
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function highlightText(text, query) {
     if (!text || !query) return escapeHtml(text);
     const escaped = escapeHtml(text);
@@ -9288,7 +9292,7 @@ const autocomplete = {
         dropdown.innerHTML = sanitizeHTML(items.slice(0, 10).map((item, idx) => {
             const escapedItem = escapeHtml(item);
             const highlighted = query
-                ? escapedItem.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<span class="autocomplete-item-highlight">$1</span>')
+                ? escapedItem.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<span class="autocomplete-item-highlight">$1</span>')
                 : escapedItem;
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
@@ -15139,7 +15143,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'dac56998';
+    const v = 'd530e264';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17665,7 +17669,7 @@ const pages = {
             try {
                 return renderFn();
             } catch (err) {
-                console.error(`Widget "${widgetName}" failed to render:`, err);
+                console.error('Widget failed to render:', widgetName, err);
                 return `
                     <div class="card dashboard-widget widget-error-boundary">
                         <div class="card-body text-center py-4">
