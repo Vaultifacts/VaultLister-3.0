@@ -882,6 +882,7 @@ export class PoshmarkBot {
     /** Upload local or base64 images to the listing form. */
     async _uploadPhotos(page, images) {
         const tmpDir = path.join(process.cwd(), 'data', 'tmp');
+        const allowedRoot = path.resolve(process.cwd());
         const localFiles = [];
 
         for (const img of images.slice(0, 8)) {
@@ -897,8 +898,12 @@ export class PoshmarkBot {
                     } catch (e) { logger.warn('[PoshmarkBot] base64 decode failed', { error: e.message }); }
                 }
             } else {
-                // Relative paths resolved from cwd
-                const resolved = path.isAbsolute(img) ? img : path.join(process.cwd(), img);
+                // Relative paths resolved from cwd — validate stays within project root
+                const resolved = path.resolve(path.isAbsolute(img) ? img : path.join(process.cwd(), img));
+                if (!resolved.startsWith(allowedRoot + path.sep) && resolved !== allowedRoot) {
+                    logger.warn('[PoshmarkBot] Rejected path outside project root', { img });
+                    continue;
+                }
                 if (fs.existsSync(resolved)) localFiles.push(resolved);
             }
         }
