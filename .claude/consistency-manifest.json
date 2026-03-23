@@ -1,6 +1,6 @@
 {
-  "deny_patterns": 38,
-  "validate_bash_patterns": 36,
+  "deny_patterns": 28,
+  "validate_bash_patterns": 0,
   "protected_files": 0,
   "agent_files": 14,
   "memory_rules": 36,

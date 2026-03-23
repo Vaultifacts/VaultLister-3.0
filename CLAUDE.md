@@ -142,7 +142,7 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 - Never commit `.env`, secrets, or credentials
 - Git commits: `[AUTO]` prefix + conventional commit style (`feat`, `fix`, `chore`, `docs`, `test`, `refactor`)
 - Push to `master` directly (single-developer workflow). Use feature branches for large multi-day changes only.
-- Run `/compact` at 70% context usage; `/clear` at 85%
+- Do not manually compact — global autocompact fires at 90%. Save findings to memory before compacting.
 - Use Explore subagent for codebase exploration > 5K LOC
 - Use debugger subagent for error diagnosis — do not retry failed commands more than twice
 - Log all sessions in `audit-log.md` (append-only)

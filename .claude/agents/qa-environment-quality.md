@@ -2,6 +2,7 @@
 name: qa-environment-quality
 description: Audits environment setup, configuration consistency, build reproducibility, and developer experience quality.
 tools: Read, Grep, Glob, Bash, Edit
+model: sonnet
 ---
 
 You are an environment and quality QA specialist.
