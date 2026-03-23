@@ -114,7 +114,7 @@ export async function offlineSyncRouter(ctx) {
 
             for (const item of pendingItems) {
                 try {
-                    const payload = item.payload ? JSON.parse(item.payload) : {};
+                    const payload = safeJsonParse(item.payload, {});
 
                     // Execute the corresponding action
                     switch (item.entity_type) {

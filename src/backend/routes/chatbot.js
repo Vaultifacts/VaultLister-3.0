@@ -6,6 +6,11 @@ import { query } from '../db/database.js';
 import { getGrokResponse, getChatbotMode } from '../services/grokService.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 /**
  * Chatbot router
  */
@@ -138,11 +143,7 @@ What can I help you with today?`;
 
             // Parse metadata JSON
             messages.forEach(msg => {
-                try {
-                    msg.metadata = msg.metadata ? JSON.parse(msg.metadata) : {};
-                } catch (e) {
-                    msg.metadata = {};
-                }
+                msg.metadata = safeJsonParse(msg.metadata, {});
             });
 
             return {

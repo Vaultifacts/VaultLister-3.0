@@ -10,6 +10,11 @@ import { DEFAULT_RECEIPT_SENDERS } from '../services/receiptDetector.js';
 import { queueTask } from '../workers/taskWorker.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 // Gmail OAuth configuration
 const GMAIL_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GMAIL_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -302,16 +307,9 @@ export async function emailOAuthRouter(ctx) {
 
         // Parse filter_senders JSON
         const parsed = accounts.map(a => {
-            let filter_senders;
-            try {
-                filter_senders = JSON.parse(a.filter_senders || '[]');
-            } catch (e) {
-                logger.error('[EmailOAuth] Error parsing filter_senders', user?.id || null, { detail: e.message });
-                filter_senders = [];
-            }
             return {
                 ...a,
-                filter_senders,
+                filter_senders: safeJsonParse(a.filter_senders, []),
                 is_enabled: Boolean(a.is_enabled)
             };
         });

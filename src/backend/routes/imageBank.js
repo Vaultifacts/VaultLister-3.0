@@ -146,13 +146,8 @@ export async function imageBankRouter(ctx) {
 
         // Parse JSON fields
         images.forEach(img => {
-            try {
-                if (img.tags) img.tags = JSON.parse(img.tags);
-                if (img.ai_analysis) img.ai_analysis = JSON.parse(img.ai_analysis);
-            } catch (e) {
-                img.tags = [];
-                img.ai_analysis = {};
-            }
+            img.tags = safeJsonParse(img.tags, []);
+            img.ai_analysis = safeJsonParse(img.ai_analysis, {});
         });
 
         // Get total count
@@ -177,13 +172,8 @@ export async function imageBankRouter(ctx) {
         }
 
         // Parse JSON fields
-        try {
-            if (image.tags) image.tags = JSON.parse(image.tags);
-            if (image.ai_analysis) image.ai_analysis = JSON.parse(image.ai_analysis);
-        } catch (e) {
-            image.tags = [];
-            image.ai_analysis = {};
-        }
+        image.tags = safeJsonParse(image.tags, []);
+        image.ai_analysis = safeJsonParse(image.ai_analysis, {});
 
         // Get usage information
         const usage = query.all(
@@ -329,12 +319,7 @@ export async function imageBankRouter(ctx) {
         for (const imageId of imageIds) {
             const image = imageMap.get(imageId);
             if (image) {
-                let existingTags = [];
-                try {
-                    existingTags = JSON.parse(image.tags || '[]');
-                } catch (e) {
-                    existingTags = [];
-                }
+                let existingTags = safeJsonParse(image.tags, []);
 
                 // Merge tags (avoid duplicates)
                 const mergedTags = [...new Set([...existingTags, ...tags])];
@@ -374,13 +359,8 @@ export async function imageBankRouter(ctx) {
 
         // Parse JSON fields
         images.forEach(img => {
-            try {
-                if (img.tags) img.tags = JSON.parse(img.tags);
-                if (img.ai_analysis) img.ai_analysis = JSON.parse(img.ai_analysis);
-            } catch (e) {
-                img.tags = [];
-                img.ai_analysis = {};
-            }
+            img.tags = safeJsonParse(img.tags, []);
+            img.ai_analysis = safeJsonParse(img.ai_analysis, {});
         });
 
         return { status: 200, data: { images, count: images.length } };
@@ -797,11 +777,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         );
 
         history.forEach(edit => {
-            try {
-                if (edit.parameters) edit.parameters = JSON.parse(edit.parameters);
-            } catch (e) {
-                edit.parameters = {};
-            }
+            edit.parameters = safeJsonParse(edit.parameters, {});
         });
 
         return { status: 200, data: { history, count: history.length } };

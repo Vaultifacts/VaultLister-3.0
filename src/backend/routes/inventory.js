@@ -230,10 +230,10 @@ export async function inventoryRouter(ctx) {
 
         // Parse JSON fields
         items.forEach(item => {
-            try { item.tags = JSON.parse(item.tags || '[]'); } catch { item.tags = []; }
-            try { item.images = JSON.parse(item.images || '[]'); } catch { item.images = []; }
-            try { item.ai_generated_data = JSON.parse(item.ai_generated_data || '{}'); } catch { item.ai_generated_data = {}; }
-            try { item.custom_fields = JSON.parse(item.custom_fields || '{}'); } catch { item.custom_fields = {}; }
+            item.tags = safeJsonParse(item.tags, []);
+            item.images = safeJsonParse(item.images, []);
+            item.ai_generated_data = safeJsonParse(item.ai_generated_data, {});
+            item.custom_fields = safeJsonParse(item.custom_fields, {});
         });
 
         return {

@@ -3,6 +3,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { cacheForUser } from '../middleware/cache.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 export async function templatesRouter(ctx) {
     const { method, path, user } = ctx;
 
@@ -15,13 +20,8 @@ export async function templatesRouter(ctx) {
 
         // Parse JSON fields
         templates.forEach(template => {
-            try {
-                if (template.tags) template.tags = JSON.parse(template.tags);
-                if (template.platform_settings) template.platform_settings = JSON.parse(template.platform_settings);
-            } catch (e) {
-                template.tags = [];
-                template.platform_settings = {};
-            }
+            template.tags = safeJsonParse(template.tags, []);
+            template.platform_settings = safeJsonParse(template.platform_settings, {});
         });
 
         return { status: 200, data: templates, cacheControl: cacheForUser(300) };
@@ -37,13 +37,8 @@ export async function templatesRouter(ctx) {
         }
 
         // Parse JSON fields
-        try {
-            if (template.tags) template.tags = JSON.parse(template.tags);
-            if (template.platform_settings) template.platform_settings = JSON.parse(template.platform_settings);
-        } catch (e) {
-            template.tags = [];
-            template.platform_settings = {};
-        }
+        template.tags = safeJsonParse(template.tags, []);
+        template.platform_settings = safeJsonParse(template.platform_settings, {});
 
         return { status: 200, data: template };
     }
@@ -93,13 +88,8 @@ export async function templatesRouter(ctx) {
         const template = query.get('SELECT * FROM listing_templates WHERE id = ?', [id]);
 
         // Parse JSON fields for response
-        try {
-            if (template.tags) template.tags = JSON.parse(template.tags);
-            if (template.platform_settings) template.platform_settings = JSON.parse(template.platform_settings);
-        } catch (e) {
-            template.tags = [];
-            template.platform_settings = {};
-        }
+        template.tags = safeJsonParse(template.tags, []);
+        template.platform_settings = safeJsonParse(template.platform_settings, {});
 
         return { status: 201, data: template };
     }
@@ -158,13 +148,8 @@ export async function templatesRouter(ctx) {
         const template = query.get('SELECT * FROM listing_templates WHERE id = ?', [templateId]);
 
         // Parse JSON fields
-        try {
-            if (template.tags) template.tags = JSON.parse(template.tags);
-            if (template.platform_settings) template.platform_settings = JSON.parse(template.platform_settings);
-        } catch (e) {
-            template.tags = [];
-            template.platform_settings = {};
-        }
+        template.tags = safeJsonParse(template.tags, []);
+        template.platform_settings = safeJsonParse(template.platform_settings, {});
 
         return { status: 200, data: template };
     }

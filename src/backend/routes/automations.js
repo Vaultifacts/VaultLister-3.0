@@ -19,6 +19,11 @@ function validateCronSchedule(schedule) {
     }
 }
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 export async function automationsRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
 
@@ -158,11 +163,7 @@ export async function automationsRouter(ctx) {
 
             // Parse metadata JSON for each run
             runs.forEach(run => {
-                try {
-                    run.metadata = JSON.parse(run.metadata || '{}');
-                } catch (e) {
-                    run.metadata = {};
-                }
+                run.metadata = safeJsonParse(run.metadata, {});
             });
 
             const total = query.get('SELECT COUNT(*) as count FROM automation_runs WHERE user_id = ?', [user.id])?.count || 0;
@@ -499,8 +500,8 @@ export async function automationsRouter(ctx) {
             [newId, user.id, rule.name + ' (Copy)', rule.type, rule.platform, rule.schedule, rule.conditions, rule.actions]);
 
         const cloned = query.get('SELECT * FROM automation_rules WHERE id = ?', [newId]);
-        try { cloned.conditions = JSON.parse(cloned.conditions); } catch { cloned.conditions = {}; }
-        try { cloned.actions = JSON.parse(cloned.actions); } catch { cloned.actions = {}; }
+        cloned.conditions = safeJsonParse(cloned.conditions, {});
+        cloned.actions = safeJsonParse(cloned.actions, {});
         return { status: 201, data: { rule: cloned } };
     }
 
@@ -1028,7 +1029,7 @@ export async function automationsRouter(ctx) {
 
         let settings = defaults;
         if (row) {
-            try { settings = { ...defaults, ...JSON.parse(row.settings) }; } catch (_) {}
+            settings = { ...defaults, ...safeJsonParse(row.settings, {}) };
         }
 
         return { status: 200, data: { settings } };
@@ -1084,7 +1085,7 @@ export async function automationsRouter(ctx) {
 
         let prefs = defaults;
         if (row) {
-            try { prefs = { ...defaults, ...JSON.parse(row.settings) }; } catch (_) {}
+            prefs = { ...defaults, ...safeJsonParse(row.settings, {}) };
         }
 
         return { status: 200, data: { prefs } };
@@ -1230,8 +1231,8 @@ export async function automationsRouter(ctx) {
             const rules = query.all('SELECT name, type, platform, schedule, conditions, actions FROM automation_rules WHERE user_id = ? ORDER BY name', [user.id]);
             const parsed = rules.map(r => ({
                 ...r,
-                conditions: (() => { try { return JSON.parse(r.conditions); } catch { return r.conditions; } })(),
-                actions: (() => { try { return JSON.parse(r.actions); } catch { return r.actions; } })()
+                conditions: safeJsonParse(r.conditions, r.conditions),
+                actions: safeJsonParse(r.actions, r.actions)
             }));
             return { status: 200, data: { rules: parsed, count: parsed.length, exported_at: new Date().toISOString() } };
         } catch (error) {
@@ -1279,8 +1280,8 @@ export async function automationsRouter(ctx) {
             `);
             const parsed = templates.map(t => ({
                 ...t,
-                conditions: (() => { try { return JSON.parse(t.conditions); } catch { return t.conditions; } })(),
-                actions: (() => { try { return JSON.parse(t.actions); } catch { return t.actions; } })()
+                conditions: safeJsonParse(t.conditions, t.conditions),
+                actions: safeJsonParse(t.actions, t.actions)
             }));
             return { status: 200, data: { templates: parsed } };
         } catch (error) {
@@ -1370,8 +1371,8 @@ export async function automationsRouter(ctx) {
             if (!rule) return { status: 404, data: { error: 'Rule not found' } };
             const versions = query.all('SELECT * FROM automation_rule_versions WHERE rule_id = ? ORDER BY version DESC LIMIT 50', [ruleId]);
             for (const v of versions) {
-                try { v.conditions = JSON.parse(v.conditions); } catch { }
-                try { v.actions = JSON.parse(v.actions); } catch { }
+                v.conditions = safeJsonParse(v.conditions, v.conditions);
+                v.actions = safeJsonParse(v.actions, v.actions);
             }
             return { status: 200, data: { versions } };
         } catch (error) {

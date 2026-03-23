@@ -20,8 +20,8 @@ export async function shopsRouter(ctx) {
             const shops = query.all('SELECT * FROM shops WHERE user_id = ?', [user.id]);
 
             shops.forEach(shop => {
-                try { shop.settings = JSON.parse(shop.settings || '{}'); } catch { shop.settings = {}; }
-                try { shop.stats = JSON.parse(shop.stats || '{}'); } catch { shop.stats = {}; }
+                shop.settings = safeJsonParse(shop.settings, {});
+                shop.stats = safeJsonParse(shop.stats, {});
                 // Don't expose credentials
                 delete shop.credentials;
             });

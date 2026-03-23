@@ -67,6 +67,11 @@ function generateSku(pattern, itemData, rule) {
     return prefix + sku + suffix;
 }
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 export async function skuRulesRouter(ctx) {
     const { method, path, body, user, query: queryParams } = ctx;
 
@@ -79,12 +84,7 @@ export async function skuRulesRouter(ctx) {
 
         // Parse JSON fields
         rules.forEach(rule => {
-            try {
-                rule.variables = JSON.parse(rule.variables || '[]');
-            } catch (error) {
-                logger.warn('[SkuRules] Failed to parse SKU rule variables');
-                rule.variables = [];
-            }
+            rule.variables = safeJsonParse(rule.variables, []);
         });
 
         return { status: 200, data: { rules } };
@@ -101,12 +101,7 @@ export async function skuRulesRouter(ctx) {
             return { status: 200, data: { rule: null } };
         }
 
-        try {
-            rule.variables = JSON.parse(rule.variables || '[]');
-        } catch (error) {
-            logger.warn('[SkuRules] Failed to parse SKU rule variables');
-            rule.variables = [];
-        }
+        rule.variables = safeJsonParse(rule.variables, []);
 
         return { status: 200, data: { rule } };
     }
@@ -266,12 +261,7 @@ export async function skuRulesRouter(ctx) {
             return { status: 404, data: { error: 'Rule not found' } };
         }
 
-        try {
-            rule.variables = JSON.parse(rule.variables || '[]');
-        } catch (error) {
-            logger.warn('[SkuRules] Failed to parse SKU rule variables');
-            rule.variables = [];
-        }
+        rule.variables = safeJsonParse(rule.variables, []);
 
         return { status: 200, data: rule };
     }
@@ -438,12 +428,7 @@ export async function skuRulesRouter(ctx) {
         );
 
         const updatedRule = query.get('SELECT * FROM sku_rules WHERE id = ?', [ruleId]);
-        try {
-            updatedRule.variables = JSON.parse(updatedRule.variables || '[]');
-        } catch (error) {
-            logger.warn('[SkuRules] Failed to parse SKU rule variables');
-            updatedRule.variables = [];
-        }
+        updatedRule.variables = safeJsonParse(updatedRule.variables, []);
 
         return { status: 200, data: updatedRule };
     }

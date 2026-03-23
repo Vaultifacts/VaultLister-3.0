@@ -10,6 +10,11 @@ import { applyRateLimit } from '../middleware/rateLimiter.js';
 import { auditLog } from '../services/auditLog.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 /**
  * Security Router
  */
@@ -410,7 +415,7 @@ export async function securityRouter(ctx) {
             }
 
             const userData = query.get('SELECT mfa_enabled, mfa_backup_codes FROM users WHERE id = ?', [user.id]);
-            const backupCodes = JSON.parse(userData.mfa_backup_codes || '[]');
+            const backupCodes = safeJsonParse(userData.mfa_backup_codes, []);
             const remainingCodes = backupCodes.filter(c => c !== null).length;
 
             return {

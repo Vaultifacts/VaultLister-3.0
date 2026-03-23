@@ -3,6 +3,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 export async function salesRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
 
@@ -48,11 +53,7 @@ export async function salesRouter(ctx) {
         const sales = query.all(sql, params);
 
         sales.forEach(sale => {
-            try {
-                sale.item_images = JSON.parse(sale.item_images || '[]');
-            } catch (e) {
-                sale.item_images = [];
-            }
+            sale.item_images = safeJsonParse(sale.item_images, []);
             // Map created_at to sold_at for frontend compatibility
             sale.sold_at = sale.created_at;
         });
@@ -102,11 +103,7 @@ export async function salesRouter(ctx) {
             return { status: 404, data: { error: 'Sale not found' } };
         }
 
-        try {
-            sale.item_images = JSON.parse(sale.item_images || '[]');
-        } catch (e) {
-            sale.item_images = [];
-        }
+        sale.item_images = safeJsonParse(sale.item_images, []);
 
         return { status: 200, data: { sale } };
     }

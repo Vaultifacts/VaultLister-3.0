@@ -4,6 +4,11 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { websocketService } from '../services/websocket.js';
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 const ALLOWED_RULE_FIELDS = new Set(['name', 'platform', 'conditions', 'actions', 'isEnabled']);
 
 export async function offersRouter(ctx) {
@@ -38,7 +43,7 @@ export async function offersRouter(ctx) {
         const offers = query.all(sql, params);
 
         offers.forEach(offer => {
-            try { offer.item_images = JSON.parse(offer.item_images || '[]'); } catch { offer.item_images = []; }
+            offer.item_images = safeJsonParse(offer.item_images, []);
             // Calculate offer percentage
             if (offer.listing_price && offer.offer_amount != null) {
                 offer.percentage = offer.listing_price > 0 ? Math.round((offer.offer_amount / offer.listing_price) * 100) : 0;
@@ -81,7 +86,7 @@ export async function offersRouter(ctx) {
             return { status: 404, data: { error: 'Offer not found' } };
         }
 
-        try { offer.item_images = JSON.parse(offer.item_images || '[]'); } catch (e) { offer.item_images = []; }
+        offer.item_images = safeJsonParse(offer.item_images, []);
         offer.percentage = offer.listing_price > 0 ? Math.round((offer.offer_amount / offer.listing_price) * 100) : 0;
 
         return { status: 200, data: { offer } };
@@ -261,8 +266,8 @@ export async function offersRouter(ctx) {
         );
 
         rules.forEach(rule => {
-            try { rule.conditions = JSON.parse(rule.conditions || '{}'); } catch (e) { rule.conditions = {}; }
-            try { rule.actions = JSON.parse(rule.actions || '{}'); } catch (e) { rule.actions = {}; }
+            rule.conditions = safeJsonParse(rule.conditions, {});
+            rule.actions = safeJsonParse(rule.actions, {});
         });
 
         return { status: 200, data: { rules } };
@@ -288,16 +293,8 @@ export async function offersRouter(ctx) {
         ]);
 
         const rule = query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
-        try {
-            rule.conditions = JSON.parse(rule.conditions);
-        } catch (e) {
-            rule.conditions = [];
-        }
-        try {
-            rule.actions = JSON.parse(rule.actions);
-        } catch (e) {
-            rule.actions = {};
-        }
+        rule.conditions = safeJsonParse(rule.conditions, []);
+        rule.actions = safeJsonParse(rule.actions, {});
 
         return { status: 201, data: { rule } };
     }
@@ -354,16 +351,8 @@ export async function offersRouter(ctx) {
         }
 
         const rule = query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
-        try {
-            rule.conditions = JSON.parse(rule.conditions);
-        } catch (e) {
-            rule.conditions = [];
-        }
-        try {
-            rule.actions = JSON.parse(rule.actions);
-        } catch (e) {
-            rule.actions = {};
-        }
+        rule.conditions = safeJsonParse(rule.conditions, []);
+        rule.actions = safeJsonParse(rule.actions, {});
 
         return { status: 200, data: { rule } };
     }

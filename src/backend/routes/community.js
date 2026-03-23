@@ -14,6 +14,11 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 /**
  * Community router
  */
@@ -80,16 +85,8 @@ export async function communityRouter(ctx) {
             );
 
             // Parse JSON fields
-            try {
-                post.tags = JSON.parse(post.tags || '[]');
-                if (post.sale_details) {
-                    post.sale_details = JSON.parse(post.sale_details);
-                }
-            } catch (parseError) {
-                logger.error('[Community] Error parsing post JSON', user?.id, { detail: parseError.message });
-                post.tags = [];
-                post.sale_details = null;
-            }
+            post.tags = safeJsonParse(post.tags, []);
+            post.sale_details = post.sale_details ? safeJsonParse(post.sale_details, null) : null;
 
             return {
                 status: 201,
@@ -152,16 +149,8 @@ export async function communityRouter(ctx) {
 
             // Parse JSON fields
             posts.forEach(post => {
-                try {
-                    post.tags = JSON.parse(post.tags || '[]');
-                    if (post.sale_details) {
-                        post.sale_details = JSON.parse(post.sale_details);
-                    }
-                } catch (parseError) {
-                    logger.error('[Community] Error parsing post JSON', user?.id, { detail: parseError.message });
-                    post.tags = [];
-                    post.sale_details = null;
-                }
+                post.tags = safeJsonParse(post.tags, []);
+                post.sale_details = post.sale_details ? safeJsonParse(post.sale_details, null) : null;
             });
 
             return {
@@ -199,16 +188,8 @@ export async function communityRouter(ctx) {
             }
 
             // Parse JSON
-            try {
-                post.tags = JSON.parse(post.tags || '[]');
-                if (post.sale_details) {
-                    post.sale_details = JSON.parse(post.sale_details);
-                }
-            } catch (parseError) {
-                logger.error('[Community] Error parsing post JSON', user?.id, { detail: parseError.message });
-                post.tags = [];
-                post.sale_details = null;
-            }
+            post.tags = safeJsonParse(post.tags, []);
+            post.sale_details = post.sale_details ? safeJsonParse(post.sale_details, null) : null;
 
             // Get replies
             const replies = query.all(

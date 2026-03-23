@@ -9,6 +9,11 @@ import { cacheFor } from '../middleware/cache.js';
 const ALLOWED_TICKET_FIELDS = new Set(['status', 'priority']);
 // TECH-DEBT: Migrate error responses to AppError classes (errorHandler.js)
 
+function safeJsonParse(str, fallback = null) {
+    if (str == null) return fallback;
+    try { return JSON.parse(str); } catch { return fallback; }
+}
+
 /**
  * Help router
  */
@@ -258,11 +263,7 @@ export async function helpRouter(ctx) {
 
             // Parse tags
             articles.forEach(article => {
-                try {
-                    article.tags = JSON.parse(article.tags || '[]');
-                } catch (e) {
-                    article.tags = [];
-                }
+                article.tags = safeJsonParse(article.tags, []);
             });
 
             return {
@@ -294,11 +295,7 @@ export async function helpRouter(ctx) {
             }
 
             // Parse tags
-            try {
-                article.tags = JSON.parse(article.tags || '[]');
-            } catch (e) {
-                article.tags = [];
-            }
+            article.tags = safeJsonParse(article.tags, []);
 
             return {
                 status: 200,
@@ -456,11 +453,7 @@ export async function helpRouter(ctx) {
 
             // Parse JSON fields
             tickets.forEach(ticket => {
-                try {
-                    ticket.screenshots = JSON.parse(ticket.screenshots || '[]');
-                } catch (e) {
-                    ticket.screenshots = [];
-                }
+                ticket.screenshots = safeJsonParse(ticket.screenshots, []);
             });
 
             return {
@@ -494,11 +487,7 @@ export async function helpRouter(ctx) {
             }
 
             // Parse screenshots
-            try {
-                ticket.screenshots = JSON.parse(ticket.screenshots || '[]');
-            } catch (e) {
-                ticket.screenshots = [];
-            }
+            ticket.screenshots = safeJsonParse(ticket.screenshots, []);
 
             // Get replies
             const replies = query.all(
@@ -636,11 +625,7 @@ export async function helpRouter(ctx) {
             );
 
             const updatedTicket = query.get(`SELECT * FROM support_tickets WHERE id = ?`, [ticketId]);
-            try {
-                updatedTicket.screenshots = JSON.parse(updatedTicket.screenshots || '[]');
-            } catch (e) {
-                updatedTicket.screenshots = [];
-            }
+            updatedTicket.screenshots = safeJsonParse(updatedTicket.screenshots, []);
 
             return {
                 status: 200,
@@ -706,11 +691,7 @@ export async function helpRouter(ctx) {
 
             // Parse tags for articles
             articles.forEach(article => {
-                try {
-                    article.tags = JSON.parse(article.tags || '[]');
-                } catch (e) {
-                    article.tags = [];
-                }
+                article.tags = safeJsonParse(article.tags, []);
             });
 
             return {

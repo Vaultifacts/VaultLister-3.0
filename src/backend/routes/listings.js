@@ -229,11 +229,11 @@ export async function listingsRouter(ctx) {
 
         const listings = query.all(sql, params);
 
-        // SECURITY: JSON.parse with try-catch to handle malformed data
+        // Parse JSON fields safely
         listings.forEach(listing => {
-            try { listing.images = JSON.parse(listing.images || '[]'); } catch { listing.images = []; }
-            try { listing.inventory_images = JSON.parse(listing.inventory_images || '[]'); } catch { listing.inventory_images = []; }
-            try { listing.platform_specific_data = JSON.parse(listing.platform_specific_data || '{}'); } catch { listing.platform_specific_data = {}; }
+            listing.images = safeJsonParse(listing.images, []);
+            listing.inventory_images = safeJsonParse(listing.inventory_images, []);
+            listing.platform_specific_data = safeJsonParse(listing.platform_specific_data, {});
         });
 
         // Build COUNT query with same filters as main query

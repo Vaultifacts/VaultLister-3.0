@@ -71,13 +71,7 @@ export async function extensionRouter(ctx) {
                 [productId]
             );
 
-            if (product.images) {
-                try {
-                    product.images = JSON.parse(product.images);
-                } catch {
-                    product.images = [];
-                }
-            }
+            product.images = safeJsonParse(product.images, []);
 
             return {
                 status: 201,
@@ -302,13 +296,7 @@ export async function extensionRouter(ctx) {
 
             const item = query.get(`SELECT * FROM inventory WHERE id = ?`, [itemId]);
 
-            if (item.images) {
-                try {
-                    item.images = JSON.parse(item.images);
-                } catch (e) {
-                    item.images = [];
-                }
-            }
+            item.images = safeJsonParse(item.images, []);
 
             return {
                 status: 201,
@@ -341,13 +329,7 @@ export async function extensionRouter(ctx) {
             }
 
             // Parse JSON fields
-            if (item.images) {
-                try {
-                    item.images = JSON.parse(item.images);
-                } catch (e) {
-                    item.images = [];
-                }
-            }
+            item.images = safeJsonParse(item.images, []);
 
             return {
                 status: 200,
@@ -412,13 +394,7 @@ export async function extensionRouter(ctx) {
             );
 
             // Parse JSON field
-            if (product.images) {
-                try {
-                    product.images = JSON.parse(product.images);
-                } catch {
-                    product.images = [];
-                }
-            }
+            product.images = safeJsonParse(product.images, []);
 
             return {
                 status: 201,
@@ -456,9 +432,7 @@ export async function extensionRouter(ctx) {
 
             // Parse JSON fields
             items.forEach(item => {
-                if (item.images) {
-                    try { item.images = JSON.parse(item.images); } catch { item.images = []; }
-                }
+                item.images = safeJsonParse(item.images, []);
             });
 
             // Get total count
