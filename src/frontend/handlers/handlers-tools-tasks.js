@@ -747,7 +747,7 @@ Object.assign(handlers, {
             return html;
         };
 
-        container.innerHTML = `<div>${renderMiniChart(selA.value)}</div><div>${renderMiniChart(selB.value)}</div>`;
+        container.innerHTML = sanitizeHTML(`<div>${renderMiniChart(selA.value)}</div><div>${renderMiniChart(selB.value)}</div>`);
     },
 
 
@@ -864,17 +864,17 @@ Object.assign(handlers, {
 
             const sizeResultEl = document.getElementById('size-recommendation-result');
             if (!sizeResultEl) return;
-            sizeResultEl.innerHTML = `
+            sizeResultEl.innerHTML = sanitizeHTML(`
                 <div class="card" style="padding: 16px; background: var(--bg-success-subtle); border: 1px solid var(--border-success);">
                     <h4>Recommended Size: ${data.recommended_size || 'M'}</h4>
                     <p style="color: var(--text-secondary);">Based on your measurements</p>
                     <div style="margin-top: 8px; font-size: 13px;">
-                        ${Object.entries(data.size_conversions || {}).map(([sys, sz]) => `<span class="badge" style="margin: 2px;">${sys}: ${sz}</span>`).join('')}
+                        ${Object.entries(data.size_conversions || {}).map(([sys, sz]) => `)<span class="badge" style="margin: 2px;">${sys}: ${sz}</span>`).join('')}
                     </div>
                 </div>
             `;
         } catch (err) {
-            document.getElementById('size-recommendation-result').innerHTML = '<p style="color: var(--text-error);">Failed to get recommendation</p>';
+            document.getElementById('size-recommendation-result').innerHTML = sanitizeHTML('<p style="color: var(--text-error));">Failed to get recommendation</p>';
             console.error(err);
         }
     },
@@ -985,7 +985,7 @@ Object.assign(handlers, {
         };
 
         const rec = getSize(bust, waist, hips);
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="p-4 bg-green-50 rounded-lg border border-green-200 mt-4">
                 <h4 class="font-semibold text-green-800 mb-2">${components.icon('check-circle', 16)} Your Recommended Size</h4>
                 <div class="grid grid-cols-3 gap-4">
@@ -995,7 +995,7 @@ Object.assign(handlers, {
                 </div>
                 <p class="text-xs text-gray-500 mt-2">Based on: ${bust ? 'Bust ' + bust + '"' : ''}${waist ? ' Waist ' + waist + '"' : ''}${hips ? ' Hips ' + hips + '"' : ''}</p>
             </div>
-        `;
+        `);
     },
 
 
@@ -1468,7 +1468,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 // Animate the new task sliding in
                 setTimeout(() => {
                     const wrapper = document.querySelector('.checklist-items .checklist-item-wrapper:first-child');
@@ -1507,7 +1507,7 @@ Object.assign(handlers, {
 
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML = pageContent;
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 }
             } else {
                 // Optimistic UI update — reflect checkbox immediately
@@ -1518,7 +1518,7 @@ Object.assign(handlers, {
                 store.setState({ checklistItems: updatedItems });
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML = pageContent;
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 }
 
                 // Debounce server request: only the latest toggle state gets sent
@@ -1540,7 +1540,7 @@ Object.assign(handlers, {
 
                         if (store.state.currentPage === 'checklist') {
                             const pageContent = pages.checklist();
-                            document.querySelector('.page-content').innerHTML = pageContent;
+                            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                             setTimeout(() => handlers.checkChecklistCelebration(), 100);
                         }
                     } catch (error) {
@@ -1549,7 +1549,7 @@ Object.assign(handlers, {
                         await handlers.loadChecklistItems();
                         if (store.state.currentPage === 'checklist') {
                             const pageContent = pages.checklist();
-                            document.querySelector('.page-content').innerHTML = pageContent;
+                            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                         }
                     } finally {
                         delete this._pendingToggles[itemId];
@@ -1570,7 +1570,7 @@ Object.assign(handlers, {
             // Show celebration overlay
             const overlay = document.createElement('div');
             overlay.className = 'checklist-celebration';
-            overlay.innerHTML = '<div class="celebration-content">' +
+            overlay.innerHTML = sanitizeHTML('<div class="celebration-content">' +)
                 '<div class="celebration-icon">🎉</div>' +
                 '<h2 style="font-size: 24px; font-weight: 700; margin: 12px 0 4px;">All Tasks Complete!</h2>' +
                 '<p style="color: var(--gray-500); font-size: 14px;">Great job! You finished everything today.</p>' +
@@ -1610,7 +1610,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to duplicate: ' + error.message);
@@ -1725,7 +1725,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -1800,7 +1800,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -1825,7 +1825,7 @@ Object.assign(handlers, {
 
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML = pageContent;
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 }
             } else {
                 await api.ensureCSRFToken();
@@ -1836,7 +1836,7 @@ Object.assign(handlers, {
 
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML = pageContent;
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 }
             }
         } catch (error) {
@@ -1956,7 +1956,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to update task: ' + error.message);
@@ -2011,7 +2011,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 // Re-focus the quick add input for rapid entry
                 const input = document.getElementById('quick-add-task-input');
                 if (input) input.focus();
@@ -2027,7 +2027,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -2052,7 +2052,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
         toast.success('List created!');
     },
@@ -2062,7 +2062,7 @@ Object.assign(handlers, {
         store.setState({ activeTodoListId: listId });
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -2080,7 +2080,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
         toast.success('List deleted');
     },
@@ -2098,7 +2098,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             // Focus the input again
             setTimeout(() => document.getElementById('todo-quick-add')?.focus(), 100);
         }
@@ -2116,7 +2116,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -2132,7 +2132,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -2784,20 +2784,20 @@ Object.assign(handlers, {
                 if (usageContainer) {
                     const items = usageData.usage || [];
                     if (items.length > 0) {
-                        usageContainer.innerHTML = items.map(item => `
+                        usageContainer.innerHTML = sanitizeHTML(items.map(item => `
                             <div class="image-usage-item" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
                                 ${components.icon('package', 14)}
                                 <span>${escapeHtml(item.title)}</span>
                             </div>
-                        `).join('');
+                        `).join(''));
                     } else {
-                        usageContainer.innerHTML = '<div class="image-usage-empty">Not used in any listings yet</div>';
+                        usageContainer.innerHTML = sanitizeHTML('<div class="image-usage-empty">Not used in any listings yet</div>');
                     }
                 }
             } catch (err) {
                 const usageContainer = document.getElementById('image-usage-list');
                 if (usageContainer) {
-                    usageContainer.innerHTML = '<div class="image-usage-empty">Could not load usage data</div>';
+                    usageContainer.innerHTML = sanitizeHTML('<div class="image-usage-empty">Could not load usage data</div>');
                 }
             }
         } catch (error) {
@@ -3539,7 +3539,7 @@ Object.assign(handlers, {
 
         const newRow = document.createElement('div');
         newRow.className = 'receipt-line-item-row';
-        newRow.innerHTML = `
+        newRow.innerHTML = sanitizeHTML(`
             <input type="text" name="itemDescription" placeholder="Description" class="form-input">
             <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px">
             <input type="number" name="itemUnitPrice" step="0.01" placeholder="0.00" class="form-input" style="width:80px">
@@ -3553,7 +3553,7 @@ Object.assign(handlers, {
             <button type="button" class="btn btn-icon btn-sm btn-ghost" onclick="this.parentElement.remove()" aria-label="Remove tag">
                 <span class="icon">×</span>
             </button>
-        `;
+        `);
         container.appendChild(newRow);
     },
 
@@ -4261,12 +4261,12 @@ Object.assign(handlers, {
 
             // Check for camera access
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                document.querySelector('.barcode-scanner-container').innerHTML = `
+                document.querySelector('.barcode-scanner-container').innerHTML = sanitizeHTML(`
                     <div style="padding: 32px; text-align: center; color: var(--gray-600);">
                         <p>Camera not supported in this browser.</p>
                         <p style="font-size: 13px; margin-top: 8px;">Use the manual entry below.</p>
                     </div>
-                `;
+                `);
                 return;
             }
 
@@ -4283,12 +4283,12 @@ Object.assign(handlers, {
         } catch (error) {
             console.error('Camera access failed:', error);
             toast.error('Camera access denied or unavailable');
-            document.querySelector('.barcode-scanner-container').innerHTML = `
+            document.querySelector('.barcode-scanner-container').innerHTML = sanitizeHTML(`
                 <div style="padding: 32px; text-align: center; color: var(--gray-600);">
                     <p>Camera access denied or unavailable.</p>
                     <p style="font-size: 13px; margin-top: 8px;">Use the manual entry below.</p>
                 </div>
-            `;
+            `);
         }
     },
 
@@ -4371,25 +4371,25 @@ Object.assign(handlers, {
         const listEl = document.getElementById('duplicates-list');
         if (!listEl) return;
 
-        listEl.innerHTML = `
+        listEl.innerHTML = sanitizeHTML(`
             <div style="text-align: center; padding: 32px;">
                 <div class="spinner"></div>
                 <p style="margin-top: 12px; color: var(--gray-600);">Scanning inventory for duplicates...</p>
             </div>
-        `;
+        `);
 
         try {
             await api.ensureCSRFToken();
             const result = await api.post('/duplicates/scan', {});
 
             if (result.duplicates_found === 0) {
-                listEl.innerHTML = `
+                listEl.innerHTML = sanitizeHTML(`
                     <div style="text-align: center; padding: 32px; color: var(--success);">
                         ${components.icon('check', 32)}
                         <p style="margin-top: 12px; font-weight: 600;">No duplicates found!</p>
                         <p style="color: var(--gray-600); font-size: 13px;">Your inventory is clean.</p>
                     </div>
-                `;
+                `);
                 return;
             }
 
@@ -4397,7 +4397,7 @@ Object.assign(handlers, {
             const data = await api.get('/duplicates?status=pending');
             handlers.renderDuplicatesList(data.duplicates || []);
         } catch (error) {
-            listEl.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
+            listEl.innerHTML = sanitizeHTML(`<p style="color: var(--error);">Error: ${error.message}</p>`);
         }
     },
 
@@ -4598,7 +4598,7 @@ Object.assign(handlers, {
 
         const listEl = document.getElementById('event-item-list');
         if (listEl) {
-            listEl.innerHTML = filtered.length === 0 ?
+            listEl.innerHTML = sanitizeHTML(filtered.length === 0 ?)
                 '<p class="text-gray-500 text-center py-4">No items found</p>' :
                 filtered.slice(0, 20).map(item => `
                     <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" onclick="handlers.selectEventItem('', '${item.id}')">
@@ -4944,12 +4944,12 @@ Object.assign(handlers, {
         const listEl = document.getElementById(listId);
         if (listEl) {
             const arr = mode === 'add' ? handlers._addChecklistAttachments : handlers._editChecklistAttachments;
-            listEl.innerHTML = arr.map((a, i) => `
+            listEl.innerHTML = sanitizeHTML(arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
                     <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
                 </span>
-            `).join('');
+            `).join(''));
         }
     },
 
@@ -4964,12 +4964,12 @@ Object.assign(handlers, {
         const listEl = document.getElementById(listId);
         if (listEl) {
             const arr = mode === 'add' ? handlers._addChecklistAttachments : handlers._editChecklistAttachments;
-            listEl.innerHTML = arr.map((a, i) => `
+            listEl.innerHTML = sanitizeHTML(arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
                     <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
                 </span>
-            `).join('');
+            `).join(''));
         }
     },
 

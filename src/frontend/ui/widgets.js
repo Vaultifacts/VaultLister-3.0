@@ -72,7 +72,7 @@ const globalSearch = {
         const results = this.getResults(query);
         const resultsContainer = document.getElementById('global-search-results');
         if (resultsContainer) {
-            resultsContainer.innerHTML = this.renderResults(results, query);
+            resultsContainer.innerHTML = sanitizeHTML(this.renderResults(results, query));
             this.selectedIndex = 0;
             const items = document.querySelectorAll('.search-result-item');
             if (items.length > 0) items[0].classList.add('selected');
@@ -303,7 +303,7 @@ const globalSearch = {
             if (e.target === overlay) this.close();
         };
 
-        overlay.innerHTML = `
+        overlay.innerHTML = sanitizeHTML(`
             <div class="global-search-modal">
                 <div class="global-search-input-wrapper">
                     <span class="global-search-icon">${components.icon('search', 20)}</span>
@@ -343,7 +343,7 @@ const globalSearch = {
                     </div>
                 </div>
             </div>
-        `;
+        `);
 
         document.body.appendChild(overlay);
         setTimeout(() => overlay.querySelector('.global-search-input').focus(), 50);
@@ -443,7 +443,7 @@ const formValidation = {
         }
 
         if (iconEl) {
-            iconEl.innerHTML = isValid
+            iconEl.innerHTML = sanitizeHTML(isValid)
                 ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
                 : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
             iconEl.classList.remove('success', 'error');
@@ -460,7 +460,7 @@ const formValidation = {
 
         if (formGroup) formGroup.classList.remove('has-error');
         if (errorEl) errorEl.classList.add('hidden');
-        if (iconEl) iconEl.innerHTML = '';
+        if (iconEl) iconEl.innerHTML = sanitizeHTML('');
     },
 
     validateForm(formId) {
@@ -633,11 +633,11 @@ const autocomplete = {
         if (!dropdown) return;
 
         if (items.length === 0) {
-            dropdown.innerHTML = '<div class="autocomplete-empty">No matches found</div>';
+            dropdown.innerHTML = sanitizeHTML('<div class="autocomplete-empty">No matches found</div>');
             return;
         }
 
-        dropdown.innerHTML = items.slice(0, 10).map((item, idx) => {
+        dropdown.innerHTML = sanitizeHTML(items.slice(0, 10).map((item, idx) => {
             const escapedItem = escapeHtml(item);
             const highlighted = query
                 ? escapedItem.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<span class="autocomplete-item-highlight">$1</span>')
@@ -648,7 +648,7 @@ const autocomplete = {
                     ${highlighted}
                 </div>
             `;
-        }).join('');
+        }).join(''));
     },
 
     select(fieldName, value) {
@@ -876,7 +876,7 @@ const autoSave = {
         }
 
         indicator.className = `autosave-indicator ${status}`;
-        indicator.innerHTML = status === 'saving'
+        indicator.innerHTML = sanitizeHTML(status === 'saving')
             ? `<span class="autosave-spinner"></span> ${text}`
             : `${components.icon('check', 12)} ${text}`;
 
@@ -1119,7 +1119,7 @@ const widgetManager = {
             if (el) {
                 el.classList.toggle('collapsed', widget.collapsed);
                 const btn = el.querySelector('.widget-collapse-btn');
-                if (btn) btn.innerHTML = widget.collapsed ? '▼' : '▲';
+                if (btn) btn.innerHTML = sanitizeHTML(widget.collapsed ? '▼' : '▲');
             }
         }
     },
@@ -1565,10 +1565,10 @@ const imageUploader = {
             const thumb = document.createElement('div');
             thumb.className = 'image-thumbnail';
             thumb.draggable = true;
-            thumb.innerHTML = `
+            thumb.innerHTML = sanitizeHTML(`
                 <img src="${e.target.result}" alt="${file.name}">
                 <button class="image-thumbnail-remove" onclick="this.parentElement.remove()">×</button>
-            `;
+            `);
 
             // Drag reorder
             thumb.addEventListener('dragstart', (ev) => {
@@ -1603,7 +1603,7 @@ const imageUploader = {
             progress.className = 'image-upload-progress';
             zone?.appendChild(progress);
         }
-        progress.innerHTML = components.progressBar(percent, 'Uploading...', 'primary');
+        progress.innerHTML = sanitizeHTML(components.progressBar(percent, 'Uploading...', 'primary'));
     },
 
     hideProgress(zoneId) {
@@ -1864,7 +1864,7 @@ const commandPalette = {
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         overlay.setAttribute('aria-label', 'Command Palette');
-        overlay.innerHTML = `
+        overlay.innerHTML = sanitizeHTML(`
             <div class="command-palette">
                 <div class="command-palette-input-wrapper">
                     <span class="command-palette-icon">${components.icon('search', 20)}</span>
@@ -1881,7 +1881,7 @@ const commandPalette = {
                     <span><kbd>ESC</kbd> Close</span>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(overlay);
         this.renderResults();
     },
@@ -1896,7 +1896,7 @@ const commandPalette = {
             groups[cmd.category].push(cmd);
         });
 
-        container.innerHTML = Object.entries(groups).map(([category, cmds]) => `
+        container.innerHTML = sanitizeHTML(Object.entries(groups).map(([category, cmds]) => `
             <div class="command-palette-group">
                 <div class="command-palette-group-title">${category}</div>
                 ${cmds.map((cmd, idx) => {
@@ -1915,7 +1915,7 @@ const commandPalette = {
                     `;
                 }).join('')}
             </div>
-        `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>';
+        `).join('') || '<div class="command-palette-group"><div style="padding: 20px); text-align: center; color: var(--gray-500);">No results found</div></div>';
     }
 };
 
@@ -2004,7 +2004,7 @@ const keyboardShortcuts = {
         const panel = document.createElement('div');
         panel.id = 'shortcuts-panel';
         panel.className = 'shortcuts-panel';
-        panel.innerHTML = `
+        panel.innerHTML = sanitizeHTML(`
             <div class="shortcuts-panel-header">
                 <span class="shortcuts-panel-title">Keyboard Shortcuts</span>
                 <button class="shortcuts-panel-close" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">${components.icon('close', 16)}</button>
@@ -2019,7 +2019,7 @@ const keyboardShortcuts = {
                     </div>
                 `).join('')}
             </div>
-        `;
+        `);
         document.body.appendChild(panel);
     },
 
@@ -2073,13 +2073,13 @@ const sessionMonitor = {
         const banner = document.createElement('div');
         banner.id = 'session-timeout-warning';
         banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10001;background:var(--warning-500);color:white;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
-        banner.innerHTML = `
+        banner.innerHTML = sanitizeHTML(`
             <span>Your session will expire in 5 minutes due to inactivity.</span>
             <div style="display:flex;gap:8px;">
                 <button onclick="sessionMonitor.resetTimer()" style="background:white;color:var(--warning-700);border:none;padding:6px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Stay Logged In</button>
                 <button onclick="handlers.logout()" style="background:transparent;color:white;border:1px solid white;padding:6px 16px;border-radius:6px;cursor:pointer;">Log Out</button>
             </div>
-        `;
+        `);
         document.body.appendChild(banner);
     },
 
@@ -2131,7 +2131,7 @@ const contextMenu = {
         menu.style.left = `${x}px`;
         menu.style.top = `${y}px`;
 
-        menu.innerHTML = items.map(item => {
+        menu.innerHTML = sanitizeHTML(items.map(item => {
             if (item.divider) return '<div class="context-menu-divider"></div>';
             return `
                 <div class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
@@ -2140,7 +2140,7 @@ const contextMenu = {
                     ${item.shortcut ? `<span class="context-menu-item-shortcut">${escapeHtml(item.shortcut)}</span>` : ''}
                 </div>
             `;
-        }).join('');
+        }).join(''));
 
         document.body.appendChild(menu);
 
@@ -2223,7 +2223,7 @@ const bulkSelection = {
             document.body.appendChild(toolbar);
         }
 
-        toolbar.innerHTML = `
+        toolbar.innerHTML = sanitizeHTML(`
             <span class="bulk-toolbar-count">${this.selected.size} selected</span>
             <div class="bulk-toolbar-actions">
                 <button class="bulk-toolbar-btn" onclick="bulkSelection.action('export')">
@@ -2242,7 +2242,7 @@ const bulkSelection = {
             <button class="bulk-toolbar-close" onclick="bulkSelection.clearAll()">
                 ${components.icon('close', 16)}
             </button>
-        `;
+        `);
     },
 
     async action(type) {
@@ -2435,7 +2435,7 @@ const lightbox = {
         overlay.className = 'lightbox-overlay';
         overlay.onclick = (e) => { if (e.target === overlay) this.close(); };
 
-        overlay.innerHTML = `
+        overlay.innerHTML = sanitizeHTML(`
             <div class="lightbox-container">
                 <button class="lightbox-close" aria-label="Close" onclick="lightbox.close()">×</button>
                 ${this.images.length > 1 ? `
@@ -2457,7 +2457,7 @@ const lightbox = {
                     </button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(overlay);
     }
 };
@@ -2653,7 +2653,7 @@ const richTextEditor = {
 
         const { maxLength = 5000, placeholder = 'Enter description...', onChange } = options;
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="rich-text-editor">
                 <div class="rich-text-toolbar">
                     <button class="rich-text-btn" onclick="richTextEditor.format('bold')" title="Bold"><b>B</b></button>
@@ -2674,7 +2674,7 @@ const richTextEditor = {
                     <span>Supports basic formatting</span>
                 </div>
             </div>
-        `;
+        `);
     },
 
     format(command) {
@@ -2718,7 +2718,7 @@ const richTextEditor = {
 
     setValue(containerId, html) {
         const content = document.getElementById(`${containerId}-content`);
-        if (content) content.innerHTML = html;
+        if (content) content.innerHTML = sanitizeHTML(html);
     }
 };
 
@@ -2851,10 +2851,10 @@ const focusMode = {
             const bar = document.createElement('div');
             bar.id = 'focus-mode-bar';
             bar.className = 'focus-mode-bar';
-            bar.innerHTML = `
+            bar.innerHTML = sanitizeHTML(`
                 <span class="focus-mode-title">${components.icon('maximize', 16)} Focus Mode</span>
                 <button class="focus-mode-exit" onclick="focusMode.toggle()">Exit Focus Mode</button>
-            `;
+            `);
             document.body.prepend(bar);
         } else {
             document.getElementById('focus-mode-bar')?.remove();
@@ -3164,12 +3164,12 @@ const toastWithUndo = {
         toastEl.className = 'toast toast-info';
         toastEl.setAttribute('role', 'status');
         toastEl.setAttribute('aria-live', 'polite');
-        toastEl.innerHTML = `
+        toastEl.innerHTML = sanitizeHTML(`
             <div class="toast-undo">
                 <span>${message}</span>
                 <button class="toast-undo-btn" onclick="(${undoAction})(); this.closest('.toast').remove();">Undo</button>
             </div>
-        `;
+        `);
         document.getElementById('toast-container')?.appendChild(toastEl);
         setTimeout(() => toastEl.remove(), duration);
     }
@@ -3495,7 +3495,7 @@ const countdownTimer = {
         this._intervalId = setInterval(() => {
             document.querySelectorAll('[data-countdown-target]').forEach(el => {
                 const target = el.dataset.countdownTarget;
-                el.innerHTML = this.render(target);
+                el.innerHTML = sanitizeHTML(this.render(target));
             });
         }, 60000);
     },
@@ -4757,7 +4757,7 @@ const imageComparison = {
     _rerender(beforeUrl, afterUrl) {
         const container = document.querySelector('.image-comparison-wrapper');
         if (container) {
-            container.innerHTML = this.render(beforeUrl, afterUrl);
+            container.innerHTML = sanitizeHTML(this.render(beforeUrl, afterUrl));
         }
     }
 };
@@ -5029,7 +5029,7 @@ const sizeConverter = {
 
         const resultsEl = document.getElementById('conversion-results');
         if (resultsEl && index >= 0) {
-            resultsEl.innerHTML = Object.entries(chart).map(([r, sizes]) => `
+            resultsEl.innerHTML = sanitizeHTML(Object.entries(chart).map(([r, sizes]) => `
                 <div class="conversion-result-card ${r === region ? 'selected' : ''}">
                     <div class="conversion-result-flag">${this.regionFlags[r]}</div>
                     <div class="conversion-result-info">
@@ -5038,7 +5038,7 @@ const sizeConverter = {
                     </div>
                     <div class="conversion-result-size">${sizes[index] || 'N/A'}</div>
                 </div>
-            `).join('');
+            `).join(''));
         }
     },
 
@@ -5049,7 +5049,7 @@ const sizeConverter = {
         const chart = this.charts[category];
 
         if (sizeSelect && chart[region]) {
-            sizeSelect.innerHTML = chart[region].map(size => `<option value="${size}">${size}</option>`).join('');
+            sizeSelect.innerHTML = sanitizeHTML(chart[region].map(size => `<option value="${size}">${size}</option>`).join(''));
             this.convert();
         }
     },
@@ -5137,7 +5137,7 @@ const toolSearch = {
 
         const resultsEl = document.getElementById('tool-search-results');
         if (resultsEl) {
-            resultsEl.innerHTML = results.map(t => `
+            resultsEl.innerHTML = sanitizeHTML(results.map(t => `
                 <div class="tool-search-result" onclick="router.navigate('${t.path}')">
                     <div class="tool-search-result-icon">${components.icon(t.icon, 16)}</div>
                     <div>
@@ -5145,7 +5145,7 @@ const toolSearch = {
                         <div class="tool-search-result-path">Tools / ${t.name}</div>
                     </div>
                 </div>
-            `).join('') || '<div class="p-4 text-gray-500 text-sm">No results found</div>';
+            `).join('') || '<div class="p-4 text-gray-500 text-sm">No results found</div>');
         }
     },
 
@@ -5224,7 +5224,7 @@ const toolTips = {
 
             const popover = document.createElement('div');
             popover.className = 'tool-tip-popover bottom';
-            popover.innerHTML = `
+            popover.innerHTML = sanitizeHTML(`
                 <div class="tool-tip-title">${tip.title}</div>
                 <div class="tool-tip-description">${tip.description}</div>
                 <div class="tool-tip-progress">
@@ -5236,7 +5236,7 @@ const toolTips = {
                         ${this.currentIndex === this.tips.length - 1 ? 'Finish' : 'Next'}
                     </button>
                 </div>
-            `;
+            `);
 
             const rect = target.getBoundingClientRect();
             popover.style.position = 'fixed';

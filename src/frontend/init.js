@@ -81,14 +81,14 @@ async function initApp() {
     // Add global UI elements
     const globalUI = document.createElement('div');
     globalUI.id = 'global-ui';
-    globalUI.innerHTML = `
+    globalUI.innerHTML = sanitizeHTML(`
         ${components.backToTop()}
         ${components.offlineIndicator()}
         ${components.pullToRefresh()}
         ${notificationCenter.render()}
         ${mobileUI.renderBottomNav()}
         ${mobileUI.renderFAB()}
-    `;
+    `);
     document.body.appendChild(globalUI);
 
     // Initialize mobile pull-to-refresh
@@ -428,7 +428,7 @@ async function initApp() {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'webhook-modal';
-        modal.innerHTML = `
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
@@ -460,7 +460,7 @@ async function initApp() {
                     <button class="btn btn-primary" onclick="window.submitWebhookEndpoint()">Create Endpoint</button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(modal);
     };
 
@@ -511,7 +511,7 @@ function render(content) {
     // Wrap in <main> so public pages (login, register, etc.) have a landmark
     // that screen readers can jump to, matching the skip-link target used in renderApp.
     document.getElementById('app').innerHTML =
-        `<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`;
+        sanitizeHTML(`<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`);
     hideLoadingScreen();
 }
 
@@ -529,7 +529,7 @@ function renderApp(pageContent) {
     }
 
     try {
-        document.getElementById('app').innerHTML = `
+        document.getElementById('app').innerHTML = sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
                 ${components.sidebar()}
@@ -557,7 +557,7 @@ function renderApp(pageContent) {
             </div>
             ${components.vaultBuddy()}
             ${components.photoEditorModal()}
-        `;
+        `);
 
         // Move focus to main content on route change for screen readers
         const mainEl = document.getElementById('main-content');
@@ -572,7 +572,7 @@ function renderApp(pageContent) {
     } catch (err) {
         console.error('renderApp error:', err);
         hideLoadingScreen();
-        document.getElementById('app').innerHTML = `
+        document.getElementById('app').innerHTML = sanitizeHTML(`
             <div style="padding: 40px; text-align: center; font-family: system-ui;">
                 <h2>Something went wrong</h2>
                 <p style="color: #666;">An error occurred while rendering the page.</p>
@@ -580,7 +580,7 @@ function renderApp(pageContent) {
                     Reload Page
                 </button>
             </div>
-        `;
+        `);
     }
 }
 
@@ -1860,7 +1860,7 @@ document.addEventListener('keydown', function(e) {
             hideBanner();
         });
 
-        el.innerHTML = icon + text;
+        el.innerHTML = sanitizeHTML(icon + text);
         el.appendChild(btnInstall);
         el.appendChild(btnDismiss);
         return el;
