@@ -15135,7 +15135,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '78c16bf8';
+    const v = '1017b83b';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16199,14 +16199,24 @@ const components = {
             'changelog': { label: 'Changelog', section: '' },
             'about': { label: 'About Us', section: '' },
             'terms': { label: 'Terms of Service', section: '' },
-            'privacy': { label: 'Privacy Policy', section: '' }
+            'privacy': { label: 'Privacy Policy', section: '' },
+            'sales': { label: 'Sales', section: 'Sell' },
+            'reports': { label: 'Reports', section: 'Manage' },
+            'report-builder': { label: 'Report Builder', section: 'Manage' },
+            'heatmaps': { label: 'Heatmaps', section: 'Manage' },
+            'community': { label: 'Community', section: '' },
+            'admin-metrics': { label: 'Admin Metrics', section: '' },
+            'recently-deleted': { label: 'Recently Deleted', section: 'Sell' },
+            'receipt-parser': { label: 'Receipt Parser', section: 'Manage' },
+            'whatnot-live': { label: 'Whatnot Live', section: 'Manage' },
+            'shipping-labels': { label: 'Shipping Labels', section: 'Sell' }
         };
 
         const info = pageInfo[currentPage] || { label: currentPage, section: '' };
 
         return `
             <nav class="breadcrumb">
-                <a href="#" class="breadcrumb-item" onclick="handlers.navigate('dashboard'); return false;">
+                <a href="#" class="breadcrumb-item" onclick="router.navigate('dashboard'); return false;">
                     <span class="breadcrumb-home">${this.icon('home', 16)}</span>
                 </a>
                 <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>
@@ -16769,8 +16779,8 @@ const components = {
         `;
     },
 
-    // Breadcrumb navigation
-    breadcrumb(items) {
+    // Breadcrumb navigation (array-based — for custom breadcrumb paths)
+    breadcrumbItems(items) {
         return `
             <nav class="breadcrumb" aria-label="Breadcrumb">
                 ${items.map((item, index) => `
@@ -17868,7 +17878,7 @@ const pages = {
             <div class="dashboard-widgets-container mb-6">
                 ${safeWidget(() => `<!-- Platform Performance Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'platform-performance')?.visible && sortedPlatforms.length > 0 ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('platform-performance') ? 'collapsed' : ''}" data-widget-id="platform-performance" style="${widgetManager.getWidgetStyle('platform-performance', 100)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('platform-performance') ? 'collapsed' : ''}" draggable="true" data-widget-id="platform-performance" style="${widgetManager.getWidgetStyle('platform-performance', 100)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Platform Performance</h3>
                         <div class="flex items-center gap-2">
@@ -17897,7 +17907,7 @@ const pages = {
 
             ${safeWidget(() => `<!-- Stats Overview Widget -->
             ${widgetManager.getWidgets().find(w => w.id === 'stats')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('stats') ? 'collapsed' : ''}" data-widget-id="stats" style="${widgetManager.getWidgetStyle('stats', 100)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('stats') ? 'collapsed' : ''}" draggable="true" data-widget-id="stats" style="${widgetManager.getWidgetStyle('stats', 100)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Stats Overview</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('stats')" title="Collapse/Expand">${widgetManager.isCollapsed('stats') ? '▼' : '▲'}</button>
@@ -17939,7 +17949,7 @@ const pages = {
 
                 <!-- Monthly Goal Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'goals')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')) handlers.setMonthlyGoal()" title="Click to edit goal">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('goals') ? 'collapsed' : ''}" draggable="true" data-widget-id="goals" style="${widgetManager.getWidgetStyle('goals', 33)} cursor: pointer;" onclick="if(!event.target.closest('.widget-collapse-btn')) handlers.setMonthlyGoal()" title="Click to edit goal">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Monthly Goal</h3>
                         <div class="flex items-center gap-2">
@@ -17960,7 +17970,7 @@ const pages = {
 
                 <!-- Comparison Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'comparison')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('comparison') ? 'collapsed' : ''}" data-widget-id="comparison" style="${widgetManager.getWidgetStyle('comparison', 33)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('comparison') ? 'collapsed' : ''}" draggable="true" data-widget-id="comparison" style="${widgetManager.getWidgetStyle('comparison', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Comparison</h3>
                         <div class="flex items-center gap-2">
@@ -17981,7 +17991,7 @@ const pages = {
 
                 ${safeWidget(() => `<!-- Recent Activity Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'activity')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('activity') ? 'collapsed' : ''}" data-widget-id="activity" style="${widgetManager.getWidgetStyle('activity', 33)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('activity') ? 'collapsed' : ''}" draggable="true" data-widget-id="activity" style="${widgetManager.getWidgetStyle('activity', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Recent Activity</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('activity')" title="Collapse/Expand">${widgetManager.isCollapsed('activity') ? '▼' : '▲'}</button>
@@ -17994,7 +18004,7 @@ const pages = {
 
                 <!-- Quick Actions Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'quick-actions')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('quick-actions') ? 'collapsed' : ''}" data-widget-id="quick-actions" style="${widgetManager.getWidgetStyle('quick-actions', 50)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('quick-actions') ? 'collapsed' : ''}" draggable="true" data-widget-id="quick-actions" style="${widgetManager.getWidgetStyle('quick-actions', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Quick Actions</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('quick-actions')" title="Collapse/Expand">${widgetManager.isCollapsed('quick-actions') ? '▼' : '▲'}</button>
@@ -18026,7 +18036,7 @@ const pages = {
 
                 ${safeWidget(() => `<!-- Stale Listings Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'stale-listings')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('stale-listings') ? 'collapsed' : ''}" data-widget-id="stale-listings" style="${widgetManager.getWidgetStyle('stale-listings', 50)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('stale-listings') ? 'collapsed' : ''}" draggable="true" data-widget-id="stale-listings" style="${widgetManager.getWidgetStyle('stale-listings', 50)}">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <h3 class="card-title" style="color: var(--warning-600);">Stale Listings</h3>
                         <div class="flex items-center gap-2">
@@ -18072,7 +18082,7 @@ const pages = {
 
                 <!-- Recently Relisted Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'recent-relisted')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-relisted') ? 'collapsed' : ''}" data-widget-id="recent-relisted" style="${widgetManager.getWidgetStyle('recent-relisted', 50)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-relisted') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-relisted" style="${widgetManager.getWidgetStyle('recent-relisted', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Recently Relisted</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-relisted')" title="Collapse/Expand">${widgetManager.isCollapsed('recent-relisted') ? '▼' : '▲'}</button>
@@ -18108,7 +18118,7 @@ const pages = {
 
                 <!-- Recent Sales Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'recent-sales')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-sales') ? 'collapsed' : ''}" data-widget-id="recent-sales" style="${widgetManager.getWidgetStyle('recent-sales', 50)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-sales') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-sales" style="${widgetManager.getWidgetStyle('recent-sales', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Recent Activity</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-sales')" title="Collapse/Expand">${widgetManager.isCollapsed('recent-sales') ? '▼' : '▲'}</button>
@@ -18177,7 +18187,7 @@ const pages = {
 
                 ${safeWidget(() => `<!-- Sales Forecast Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'sales-forecast')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('sales-forecast') ? 'collapsed' : ''}" data-widget-id="sales-forecast" style="${widgetManager.getWidgetStyle('sales-forecast', 33)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('sales-forecast') ? 'collapsed' : ''}" draggable="true" data-widget-id="sales-forecast" style="${widgetManager.getWidgetStyle('sales-forecast', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Sales Forecast</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('sales-forecast')" title="Collapse/Expand">${widgetManager.isCollapsed('sales-forecast') ? '▼' : '▲'}</button>
@@ -18206,7 +18216,7 @@ const pages = {
 
                 <!-- Conversion Funnel Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'conversion-funnel')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('conversion-funnel') ? 'collapsed' : ''}" data-widget-id="conversion-funnel" style="${widgetManager.getWidgetStyle('conversion-funnel', 33)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('conversion-funnel') ? 'collapsed' : ''}" draggable="true" data-widget-id="conversion-funnel" style="${widgetManager.getWidgetStyle('conversion-funnel', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Conversion Funnel</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('conversion-funnel')" title="Collapse/Expand">${widgetManager.isCollapsed('conversion-funnel') ? '▼' : '▲'}</button>
@@ -18224,7 +18234,7 @@ const pages = {
 
                 <!-- Profit Margin Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'profit-margin')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('profit-margin') ? 'collapsed' : ''}" data-widget-id="profit-margin" style="${widgetManager.getWidgetStyle('profit-margin', 33)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('profit-margin') ? 'collapsed' : ''}" draggable="true" data-widget-id="profit-margin" style="${widgetManager.getWidgetStyle('profit-margin', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Profit Margin</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('profit-margin')" title="Collapse/Expand">${widgetManager.isCollapsed('profit-margin') ? '▼' : '▲'}</button>
@@ -18242,7 +18252,7 @@ const pages = {
 
                 ${safeWidget(() => `<!-- Cash Flow Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'cash-flow')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('cash-flow') ? 'collapsed' : ''}" data-widget-id="cash-flow" style="${widgetManager.getWidgetStyle('cash-flow', 33)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('cash-flow') ? 'collapsed' : ''}" draggable="true" data-widget-id="cash-flow" style="${widgetManager.getWidgetStyle('cash-flow', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Cash Flow</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('cash-flow')" title="Collapse/Expand">${widgetManager.isCollapsed('cash-flow') ? '▼' : '▲'}</button>
@@ -18261,7 +18271,7 @@ const pages = {
 
                 <!-- Today's Tasks Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'todays-tasks')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('todays-tasks') ? 'collapsed' : ''}" data-widget-id="todays-tasks" style="${widgetManager.getWidgetStyle('todays-tasks', 33)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('todays-tasks') ? 'collapsed' : ''}" draggable="true" data-widget-id="todays-tasks" style="${widgetManager.getWidgetStyle('todays-tasks', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Today's Tasks</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('todays-tasks')" title="Collapse/Expand">${widgetManager.isCollapsed('todays-tasks') ? '▼' : '▲'}</button>
@@ -18274,7 +18284,7 @@ const pages = {
 
                 <!-- Ship Today Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'ship-today')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('ship-today') ? 'collapsed' : ''}" data-widget-id="ship-today" style="${widgetManager.getWidgetStyle('ship-today', 33)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('ship-today') ? 'collapsed' : ''}" draggable="true" data-widget-id="ship-today" style="${widgetManager.getWidgetStyle('ship-today', 33)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Ship Today</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('ship-today')" title="Collapse/Expand">${widgetManager.isCollapsed('ship-today') ? '▼' : '▲'}</button>
@@ -18287,7 +18297,7 @@ const pages = {
 
                 <!-- Milestones Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'milestones')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('milestones') ? 'collapsed' : ''}" data-widget-id="milestones" style="${widgetManager.getWidgetStyle('milestones', 50)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('milestones') ? 'collapsed' : ''}" draggable="true" data-widget-id="milestones" style="${widgetManager.getWidgetStyle('milestones', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Milestones</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('milestones')" title="Collapse/Expand">${widgetManager.isCollapsed('milestones') ? '▼' : '▲'}</button>
@@ -18315,7 +18325,7 @@ const pages = {
                     if (!widgetManager.getWidgets().find(w => w.id === 'low-stock-alerts')?.visible) return '';
 
                     return `
-                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('low-stock-alerts') ? 'collapsed' : ''}" data-widget-id="low-stock-alerts" style="${widgetManager.getWidgetStyle('low-stock-alerts', 33)}">
+                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('low-stock-alerts') ? 'collapsed' : ''}" draggable="true" data-widget-id="low-stock-alerts" style="${widgetManager.getWidgetStyle('low-stock-alerts', 33)}">
                         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                             <h3 class="card-title" style="color: ${lowStockAlertItems.length > 0 ? 'var(--error-600)' : 'inherit'};">
                                 ${components.icon('alert-triangle', 16)} Low Stock Alerts
@@ -18366,7 +18376,7 @@ const pages = {
 
                 <!-- Marketplace Price Trends Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'price-trends')?.visible ? `
-                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('price-trends') ? 'collapsed' : ''}" data-widget-id="price-trends" style="${widgetManager.getWidgetStyle('price-trends', 50)}">
+                <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('price-trends') ? 'collapsed' : ''}" draggable="true" data-widget-id="price-trends" style="${widgetManager.getWidgetStyle('price-trends', 50)}">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">${components.icon('trending-up', 16)} Price Trends</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('price-trends')" title="Collapse/Expand">${widgetManager.isCollapsed('price-trends') ? '▼' : '▲'}</button>
@@ -18465,7 +18475,7 @@ const pages = {
                         .slice(0, 5);
                     if (!widgetManager.getWidgets().find(w => w.id === 'upcoming-events')?.visible) return '';
                     return `
-                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('upcoming-events') ? 'collapsed' : ''}" data-widget-id="upcoming-events" style="${widgetManager.getWidgetStyle('upcoming-events', 33)}">
+                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('upcoming-events') ? 'collapsed' : ''}" draggable="true" data-widget-id="upcoming-events" style="${widgetManager.getWidgetStyle('upcoming-events', 33)}">
                         <div class="card-header flex justify-between items-center">
                             <h3 class="card-title">${components.icon('calendar', 16)} Upcoming Events</h3>
                             <div class="flex items-center gap-2">
@@ -18507,7 +18517,7 @@ const pages = {
                         .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
                         .slice(0, 5);
                     return `
-                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-items') ? 'collapsed' : ''}" data-widget-id="recent-items" style="${widgetManager.getWidgetStyle('recent-items', 100)}">
+                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-items') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-items" style="${widgetManager.getWidgetStyle('recent-items', 100)}">
                         <div class="card-header flex justify-between items-center">
                             <h3 class="card-title">${components.icon('clock', 16)} Recent Items</h3>
                             <div class="flex items-center gap-2">
@@ -18555,7 +18565,7 @@ const pages = {
                     const net = revenue - cogs - fees;
                     const maxVal = Math.max(revenue, 1);
                     return `
-                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('mini-pnl') ? 'collapsed' : ''}" data-widget-id="mini-pnl" style="${widgetManager.getWidgetStyle('mini-pnl', 33)}">
+                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('mini-pnl') ? 'collapsed' : ''}" draggable="true" data-widget-id="mini-pnl" style="${widgetManager.getWidgetStyle('mini-pnl', 33)}">
                         <div class="card-header flex justify-between items-center">
                             <h3 class="card-title">${components.icon('dollar-sign', 16)} P&L Snapshot</h3>
                             <div class="flex items-center gap-2">
@@ -18613,7 +18623,7 @@ const pages = {
                         })
                         .slice(0, 5);
                     return `
-                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('pending-offers') ? 'collapsed' : ''}" data-widget-id="pending-offers" style="${widgetManager.getWidgetStyle('pending-offers', 33)}">
+                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('pending-offers') ? 'collapsed' : ''}" draggable="true" data-widget-id="pending-offers" style="${widgetManager.getWidgetStyle('pending-offers', 33)}">
                         <div class="card-header flex justify-between items-center">
                             <h3 class="card-title">${components.icon('offers', 16)} Pending Offers</h3>
                             <div class="flex items-center gap-2">
@@ -18686,7 +18696,7 @@ const pages = {
                     })() : '';
 
                     return `
-                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('poshmark-closet') ? 'collapsed' : ''}" data-widget-id="poshmark-closet" style="${widgetManager.getWidgetStyle('poshmark-closet', 50)}">
+                    <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('poshmark-closet') ? 'collapsed' : ''}" draggable="true" data-widget-id="poshmark-closet" style="${widgetManager.getWidgetStyle('poshmark-closet', 50)}">
                         <div class="card-header flex justify-between items-center">
                             <h3 class="card-title">Poshmark Closet</h3>
                             <div class="flex items-center gap-2">
@@ -21716,6 +21726,8 @@ const modals = {
                 </div>
             </div>
         `, 'modal-xl');
+        // Wire auto-save for Add Item form
+        setTimeout(() => autoSave.init('add-item-form', 'add-item', 1500), 100);
     },
 
     async showItemHistory(itemId) {
@@ -24002,6 +24014,8 @@ const modals = {
                 </button>
             </div>
         `);
+        // Wire auto-save for calendar event form
+        setTimeout(() => autoSave.init('add-event-form', 'calendar-event', 1500), 100);
     },
 
     // Edit Calendar Event Modal
@@ -26877,6 +26891,7 @@ async function initApp() {
         // Initialize resize handles and animations after DOM update
         setTimeout(() => {
             widgetManager.initResize();
+            widgetManager.initDragDrop();
             handlers.animateCountUp();
             // On mobile, override FAB for dashboard quick actions
             if (mobileUI.isMobile()) {
@@ -27295,6 +27310,7 @@ function renderApp(pageContent) {
                     ${components.header()}
                     <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
                         <div class="page-content">
+                            ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}
                             ${pageContent}
                         </div>
                     </main>
@@ -28500,6 +28516,12 @@ document.addEventListener('keydown', function(e) {
     }
 
     // JS Error tracking
+    // Warn before closing tab if a form with unsaved data is open
+    window.addEventListener('beforeunload', function(e) {
+        const activeForms = ['add-item-form', 'edit-item-form', 'add-event-form'];
+        if (activeForms.some(id => document.getElementById(id))) { e.preventDefault(); }
+    });
+
     window.addEventListener('error', function(e) {
         rumRecord('JS_ERROR', 1, { message: (e.message || '').slice(0, 200), source: (e.filename || '').slice(0, 200), line: e.lineno });
     });

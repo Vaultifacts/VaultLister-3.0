@@ -710,14 +710,24 @@ const components = {
             'changelog': { label: 'Changelog', section: '' },
             'about': { label: 'About Us', section: '' },
             'terms': { label: 'Terms of Service', section: '' },
-            'privacy': { label: 'Privacy Policy', section: '' }
+            'privacy': { label: 'Privacy Policy', section: '' },
+            'sales': { label: 'Sales', section: 'Sell' },
+            'reports': { label: 'Reports', section: 'Manage' },
+            'report-builder': { label: 'Report Builder', section: 'Manage' },
+            'heatmaps': { label: 'Heatmaps', section: 'Manage' },
+            'community': { label: 'Community', section: '' },
+            'admin-metrics': { label: 'Admin Metrics', section: '' },
+            'recently-deleted': { label: 'Recently Deleted', section: 'Sell' },
+            'receipt-parser': { label: 'Receipt Parser', section: 'Manage' },
+            'whatnot-live': { label: 'Whatnot Live', section: 'Manage' },
+            'shipping-labels': { label: 'Shipping Labels', section: 'Sell' }
         };
 
         const info = pageInfo[currentPage] || { label: currentPage, section: '' };
 
         return `
             <nav class="breadcrumb">
-                <a href="#" class="breadcrumb-item" onclick="handlers.navigate('dashboard'); return false;">
+                <a href="#" class="breadcrumb-item" onclick="router.navigate('dashboard'); return false;">
                     <span class="breadcrumb-home">${this.icon('home', 16)}</span>
                 </a>
                 <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>
@@ -1280,8 +1290,8 @@ const components = {
         `;
     },
 
-    // Breadcrumb navigation
-    breadcrumb(items) {
+    // Breadcrumb navigation (array-based — for custom breadcrumb paths)
+    breadcrumbItems(items) {
         return `
             <nav class="breadcrumb" aria-label="Breadcrumb">
                 ${items.map((item, index) => `

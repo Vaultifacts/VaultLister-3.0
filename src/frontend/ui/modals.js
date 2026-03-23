@@ -582,6 +582,8 @@ const modals = {
                 </div>
             </div>
         `, 'modal-xl');
+        // Wire auto-save for Add Item form
+        setTimeout(() => autoSave.init('add-item-form', 'add-item', 1500), 100);
     },
 
     async showItemHistory(itemId) {
@@ -2868,6 +2870,8 @@ const modals = {
                 </button>
             </div>
         `);
+        // Wire auto-save for calendar event form
+        setTimeout(() => autoSave.init('add-event-form', 'calendar-event', 1500), 100);
     },
 
     // Edit Calendar Event Modal

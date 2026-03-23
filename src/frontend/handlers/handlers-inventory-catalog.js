@@ -7822,6 +7822,7 @@ Object.assign(handlers, {
 
         try {
             const result = await api.post('/inventory', data);
+            autoSave.clear('add-item');
             toast.success('Item added successfully!');
             modals.close();
             await this.loadInventory();

@@ -124,6 +124,7 @@ async function initApp() {
         // Initialize resize handles and animations after DOM update
         setTimeout(() => {
             widgetManager.initResize();
+            widgetManager.initDragDrop();
             handlers.animateCountUp();
             // On mobile, override FAB for dashboard quick actions
             if (mobileUI.isMobile()) {
@@ -542,6 +543,7 @@ function renderApp(pageContent) {
                     ${components.header()}
                     <main class="main-content" role="main" id="main-content" tabindex="-1" aria-label="Page content">
                         <div class="page-content">
+                            ${store.state.currentPage !== 'dashboard' && store.state.currentPage !== 'login' && store.state.currentPage !== 'register' ? components.breadcrumb(store.state.currentPage) : ''}
                             ${pageContent}
                         </div>
                     </main>
@@ -1747,6 +1749,12 @@ document.addEventListener('keydown', function(e) {
     }
 
     // JS Error tracking
+    // Warn before closing tab if a form with unsaved data is open
+    window.addEventListener('beforeunload', function(e) {
+        const activeForms = ['add-item-form', 'edit-item-form', 'add-event-form'];
+        if (activeForms.some(id => document.getElementById(id))) { e.preventDefault(); }
+    });
+
     window.addEventListener('error', function(e) {
         rumRecord('JS_ERROR', 1, { message: (e.message || '').slice(0, 200), source: (e.filename || '').slice(0, 200), line: e.lineno });
     });

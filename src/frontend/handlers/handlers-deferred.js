@@ -17920,6 +17920,7 @@ Object.assign(handlers, {
             const events = [...(store.state.calendarEvents || []), response.event || { ...eventData, id: response.id }];
             store.setState({ calendarEvents: events });
 
+            autoSave.clear('calendar-event');
             toast.success('Event added successfully');
             modals.close();
             renderApp(pages.calendar());
@@ -24306,6 +24307,7 @@ Object.assign(handlers, {
 
         try {
             const result = await api.post('/inventory', data);
+            autoSave.clear('add-item');
             toast.success('Item added successfully!');
             modals.close();
             await this.loadInventory();
