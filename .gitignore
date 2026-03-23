@@ -2,6 +2,9 @@
 node_modules/
 __pycache__/
 
+# QA verification audit log (local, not committed)
+.notion-qa-verified.log
+
 # Crash dumps
 *.stackdump
 

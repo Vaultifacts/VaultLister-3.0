@@ -3,7 +3,7 @@
   "validate_bash_patterns": 36,
   "protected_files": 7,
   "agent_files": 14,
-  "memory_rules": 34,
+  "memory_rules": 35,
   "_comment": "Update this file whenever any of the counted sources change. Run scripts/reconcile-notion.sh to verify counts. See Notion Rules Architecture page for documentation.",
   "_sources": {
     "deny_patterns": ".claude/settings.json — grep -c '\"Bash(' (lines in deny array)",

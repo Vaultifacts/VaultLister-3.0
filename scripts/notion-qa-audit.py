@@ -9,7 +9,15 @@ Usage:
   python scripts/notion-qa-audit.py audit
   python scripts/notion-qa-audit.py list Fail
   python scripts/notion-qa-audit.py list Issue
-  python scripts/notion-qa-audit.py update <page-id> Pass "Fixed in commit abc123"
+  python scripts/notion-qa-audit.py verify <page-id>
+  python scripts/notion-qa-audit.py update <page-id> Pass --verified "Browser: description of evidence"
+  python scripts/notion-qa-audit.py update <page-id> Issue "notes"
+  python scripts/notion-qa-audit.py verify-log
+
+SAFEGUARD: Setting Result to Pass requires:
+  1. A prior `verify <page-id>` call within the last 30 minutes
+  2. The --verified flag
+  3. Notes starting with an evidence prefix: Browser:, Console:, Curl:, or Test:
 
 Requires: NOTION_TOKEN or NOTION_INTEGRATION_TOKEN in environment.
 """
@@ -19,13 +27,17 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timedelta
 
 NOTION_VERSION = "2022-06-28"
 TOKEN = os.environ.get("NOTION_TOKEN") or os.environ.get("NOTION_INTEGRATION_TOKEN", "")
 QA_DB_ID = os.environ.get("NOTION_QA_DB_ID", "298e00f79d854a0fb97daabdfc199dbf")
 QA_DB_ID_FALLBACK = "878a764b06144208934fbf13a5706f07"
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+VERIFY_LOG = os.path.join(PROJECT_ROOT, ".notion-qa-verified.log")
 
 VALID_RESULTS = {"Pass", "Fail", "Issue", "Skipped", "To Do"}
+EVIDENCE_PREFIXES = ("Browser:", "Console:", "Curl:", "Test:")
 
 
 def api_request(method, url, body=None):
@@ -123,6 +135,34 @@ def resolve_db_id():
     sys.exit(1)
 
 
+def log_entry(action, page_id, detail):
+    """Append a line to the verification audit log."""
+    ts = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    line = f"{ts} | {action:6s} | {page_id} | {detail}\n"
+    with open(VERIFY_LOG, "a", encoding="utf-8") as f:
+        f.write(line)
+
+
+def check_verify_step(page_id):
+    """Check that a VERIFY entry for this page-id exists within the last 30 minutes."""
+    if not os.path.exists(VERIFY_LOG):
+        return False
+    cutoff = datetime.now() - timedelta(minutes=30)
+    with open(VERIFY_LOG, "r", encoding="utf-8") as f:
+        for line in f:
+            parts = line.strip().split(" | ")
+            if len(parts) < 3:
+                continue
+            if parts[1].strip() == "VERIFY" and parts[2].strip() == page_id:
+                try:
+                    entry_time = datetime.strptime(parts[0].strip(), "%Y-%m-%dT%H:%M:%S")
+                    if entry_time >= cutoff:
+                        return True
+                except ValueError:
+                    continue
+    return False
+
+
 def cmd_audit(db_id):
     """Show counts by Result status."""
     items = query_database(db_id)
@@ -157,9 +197,48 @@ def cmd_list(db_id, status):
     print()
 
 
-def cmd_update(db_id, page_id, result, notes=None):
+def cmd_verify(db_id, page_id):
+    """Start a verification session for a page. Must be called before marking Pass."""
+    url = f"https://api.notion.com/v1/pages/{page_id}"
+    page_data = api_request("GET", url)
+    item = extract_item(page_data)
+
+    print(f"\nVERIFY #{item['num']:.0f}: \"{item['title'][:60]}\"")
+    print(f"  Section:  {item['section']}")
+    print(f"  Severity: {item['severity']}")
+    print(f"  Current:  {item['result']}")
+    print(f"  Notes:    {item['notes'][:100]}")
+    print(f"\n  → Test this item in the browser now.")
+    print(f"  → Then run: notion-qa-audit.py update {page_id} Pass --verified \"Browser: <what you verified>\"")
+    print()
+
+    log_entry("VERIFY", page_id, item["title"][:80])
+    print(f"  Logged to {VERIFY_LOG}")
+
+
+def cmd_update(db_id, page_id, result, notes=None, verified=False):
     """Update a single page's Result and optionally Notes."""
     result = normalize_result(result)
+
+    # SAFEGUARD: Pass requires 3 checks
+    if result == "Pass":
+        if not verified:
+            print("ERROR: Pass updates require the --verified flag.", file=sys.stderr)
+            print("  You must verify the fix in the browser before marking Pass.", file=sys.stderr)
+            print(f"  Usage: notion-qa-audit.py update {page_id} Pass --verified \"Browser: <evidence>\"", file=sys.stderr)
+            sys.exit(1)
+        if not notes or not notes.lstrip().startswith(EVIDENCE_PREFIXES):
+            print("ERROR: Pass notes must start with an evidence prefix.", file=sys.stderr)
+            print(f"  Valid prefixes: {', '.join(EVIDENCE_PREFIXES)}", file=sys.stderr)
+            print("  Example: --verified \"Browser: clicked all analytics tabs, content changed\"", file=sys.stderr)
+            print("  Reasoning like 'Fixed by chunk fix' is NOT valid evidence.", file=sys.stderr)
+            sys.exit(1)
+        if not check_verify_step(page_id):
+            print("ERROR: No verify step found for this page-id in the last 30 minutes.", file=sys.stderr)
+            print(f"  Run first: notion-qa-audit.py verify {page_id}", file=sys.stderr)
+            print("  Then test in browser, then mark Pass.", file=sys.stderr)
+            sys.exit(1)
+
     url = f"https://api.notion.com/v1/pages/{page_id}"
     props = {"Result": {"select": {"name": result}}}
     if notes is not None:
@@ -172,6 +251,24 @@ def cmd_update(db_id, page_id, result, notes=None):
     page_data = api_request("GET", url)
     item = extract_item(page_data)
     print(f"Updated: #{item['num']:.0f} \"{item['title'][:50]}\" → {result}")
+
+    # Log Pass updates for audit trail
+    if result == "Pass":
+        log_entry("PASS", page_id, notes[:100] if notes else "")
+
+
+def cmd_verify_log():
+    """Print the verification audit log."""
+    if not os.path.exists(VERIFY_LOG):
+        print("No verification log found.")
+        return
+    with open(VERIFY_LOG, "r", encoding="utf-8") as f:
+        content = f.read()
+    if not content.strip():
+        print("Verification log is empty.")
+        return
+    print(f"\nVerification Log ({VERIFY_LOG}):\n")
+    print(content)
 
 
 def normalize_result(s):
@@ -198,24 +295,35 @@ def main():
         print(__doc__)
         sys.exit(0)
 
-    cmd = sys.argv[1].lower()
+    # Extract --verified flag from anywhere in argv
+    verified = "--verified" in sys.argv
+    argv_clean = [a for a in sys.argv if a != "--verified"]
+
+    cmd = argv_clean[1].lower()
     db_id = resolve_db_id()
 
     if cmd == "audit":
         cmd_audit(db_id)
     elif cmd == "list":
-        if len(sys.argv) < 3:
+        if len(argv_clean) < 3:
             print("Usage: notion-qa-audit.py list <status>", file=sys.stderr)
             sys.exit(1)
-        cmd_list(db_id, sys.argv[2])
-    elif cmd == "update":
-        if len(sys.argv) < 4:
-            print("Usage: notion-qa-audit.py update <page-id> <result> [notes]", file=sys.stderr)
+        cmd_list(db_id, argv_clean[2])
+    elif cmd == "verify":
+        if len(argv_clean) < 3:
+            print("Usage: notion-qa-audit.py verify <page-id>", file=sys.stderr)
             sys.exit(1)
-        page_id = sys.argv[2]
-        result = sys.argv[3]
-        notes = sys.argv[4] if len(sys.argv) > 4 else None
-        cmd_update(db_id, page_id, result, notes)
+        cmd_verify(db_id, argv_clean[2])
+    elif cmd == "update":
+        if len(argv_clean) < 4:
+            print("Usage: notion-qa-audit.py update <page-id> <result> [--verified] [notes]", file=sys.stderr)
+            sys.exit(1)
+        page_id = argv_clean[2]
+        result = argv_clean[3]
+        notes = argv_clean[4] if len(argv_clean) > 4 else None
+        cmd_update(db_id, page_id, result, notes, verified)
+    elif cmd in ("verify-log", "log"):
+        cmd_verify_log()
     else:
         print(f"Unknown command: {cmd}", file=sys.stderr)
         print(__doc__)
