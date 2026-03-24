@@ -92,6 +92,7 @@ export async function extensionRouter(ctx) {
 
     // POST /api/extension/price-tracking - Add price tracking (alias for /price-track)
     if (method === 'POST' && path === '/price-tracking') {
+        if (!user) return { status: 401, data: { error: 'Authentication required' } };
 
         const { url, site, productTitle, currentPrice, targetPrice } = body;
 
@@ -263,6 +264,7 @@ export async function extensionRouter(ctx) {
 
     // POST /api/extension/quick-add - Quick add item to inventory
     if (method === 'POST' && path === '/quick-add') {
+        if (!user) return { status: 401, data: { error: 'Authentication required' } };
 
         const { title, price, brand, images, description, category } = body;
 
@@ -356,6 +358,7 @@ export async function extensionRouter(ctx) {
 
     // POST /api/extension/scraped - Save scraped product
     if (method === 'POST' && path === '/scraped') {
+        if (!user) return { status: 401, data: { error: 'Authentication required' } };
 
         const { title, price, images, brand, description, category, source, sourceUrl } = body;
 
@@ -652,10 +655,11 @@ export async function extensionRouter(ctx) {
 
         const { action_type, data } = body;
 
-        if (!action_type) {
+        const ALLOWED_ACTION_TYPES = ['add_inventory', 'update_price', 'cross_list', 'delete_listing', 'sync_sale'];
+        if (!action_type || !ALLOWED_ACTION_TYPES.includes(action_type)) {
             return {
                 status: 400,
-                data: { error: 'action_type is required' }
+                data: { error: `action_type must be one of: ${ALLOWED_ACTION_TYPES.join(', ')}` }
             };
         }
 
