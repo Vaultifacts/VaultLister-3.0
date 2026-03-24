@@ -37,6 +37,7 @@ function escapeHtml(text) {
 function sanitizeHTML(html) {
     if (typeof DOMPurify === 'undefined') return html;
     return DOMPurify.sanitize(html, {
+        SANITIZE_DOM: false,
         ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
                    'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
                    'onscroll', 'ondblclick', 'oncopy', 'onpaste']
@@ -15266,6 +15267,11 @@ const router = {
             clearInterval(window._lockoutCountdown);
             window._lockoutCountdown = null;
         }
+        if (window._loginBanCountdown) {
+            clearInterval(window._loginBanCountdown);
+            window._loginBanCountdown = null;
+        }
+        if (typeof countdownTimer !== 'undefined') countdownTimer.stopUpdates();
         if (window._liveAnalyticsTimer) {
             clearInterval(window._liveAnalyticsTimer);
             window._liveAnalyticsTimer = null;
@@ -21268,6 +21274,7 @@ const modals = {
 
     confirm(message, { title = 'Confirm', confirmText = 'Confirm', cancelText = 'Cancel', danger = false } = {}) {
         return new Promise((resolve, reject) => {
+            this._previouslyFocused = document.activeElement;
             this._confirmResolve = resolve;
             this._confirmReject = () => resolve(false);
             const btnClass = danger ? 'btn btn-danger' : 'btn btn-primary';
@@ -21291,18 +21298,16 @@ const modals = {
             `);
             document.getElementById('main-content')?.setAttribute('inert', '');
             document.getElementById('confirm-cancel-btn').onclick = () => {
-                resolve(false);
                 this._confirmResolve = null;
                 this._confirmReject = null;
-                document.getElementById('main-content')?.removeAttribute('inert');
-                document.getElementById('modal-container').innerHTML = sanitizeHTML('');
+                resolve(false);
+                this.close();
             };
             document.getElementById('confirm-ok-btn').onclick = () => {
-                resolve(true);
                 this._confirmResolve = null;
                 this._confirmReject = null;
-                document.getElementById('main-content')?.removeAttribute('inert');
-                document.getElementById('modal-container').innerHTML = sanitizeHTML('');
+                resolve(true);
+                this.close();
             };
         });
     },

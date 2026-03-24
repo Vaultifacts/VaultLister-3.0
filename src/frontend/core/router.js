@@ -210,6 +210,11 @@ const router = {
             clearInterval(window._lockoutCountdown);
             window._lockoutCountdown = null;
         }
+        if (window._loginBanCountdown) {
+            clearInterval(window._loginBanCountdown);
+            window._loginBanCountdown = null;
+        }
+        if (typeof countdownTimer !== 'undefined') countdownTimer.stopUpdates();
         if (window._liveAnalyticsTimer) {
             clearInterval(window._liveAnalyticsTimer);
             window._liveAnalyticsTimer = null;

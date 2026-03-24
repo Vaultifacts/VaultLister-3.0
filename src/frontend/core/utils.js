@@ -36,6 +36,7 @@ function escapeHtml(text) {
 function sanitizeHTML(html) {
     if (typeof DOMPurify === 'undefined') return html;
     return DOMPurify.sanitize(html, {
+        SANITIZE_DOM: false,
         ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
                    'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
                    'onscroll', 'ondblclick', 'oncopy', 'onpaste']

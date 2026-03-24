@@ -37906,6 +37906,7 @@ const modals = {
 
     confirm(message, { title = 'Confirm', confirmText = 'Confirm', cancelText = 'Cancel', danger = false } = {}) {
         return new Promise((resolve, reject) => {
+            this._previouslyFocused = document.activeElement;
             this._confirmResolve = resolve;
             this._confirmReject = () => resolve(false);
             const btnClass = danger ? 'btn btn-danger' : 'btn btn-primary';
@@ -37915,7 +37916,7 @@ const modals = {
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title">${escapeHtml(title)}</h2>
-                            <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); document.getElementById('modal-container').innerHTML='';">${components.icon('close')}</button>
+                            <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); modals.close();">${components.icon('close')}</button>
                         </div>
                         <div class="modal-body">
                             <p style="margin-bottom: 20px; line-height: 1.5;">${escapeHtml(message)}</p>
@@ -37928,16 +37929,16 @@ const modals = {
                 </div>
             `;
             document.getElementById('confirm-cancel-btn').onclick = () => {
-                resolve(false);
                 this._confirmResolve = null;
                 this._confirmReject = null;
-                document.getElementById('modal-container').innerHTML = '';
+                resolve(false);
+                this.close();
             };
             document.getElementById('confirm-ok-btn').onclick = () => {
-                resolve(true);
                 this._confirmResolve = null;
                 this._confirmReject = null;
-                document.getElementById('modal-container').innerHTML = '';
+                resolve(true);
+                this.close();
             };
         });
     },

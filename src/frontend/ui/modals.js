@@ -93,6 +93,7 @@ const modals = {
 
     confirm(message, { title = 'Confirm', confirmText = 'Confirm', cancelText = 'Cancel', danger = false } = {}) {
         return new Promise((resolve, reject) => {
+            this._previouslyFocused = document.activeElement;
             this._confirmResolve = resolve;
             this._confirmReject = () => resolve(false);
             const btnClass = danger ? 'btn btn-danger' : 'btn btn-primary';
@@ -116,18 +117,16 @@ const modals = {
             `);
             document.getElementById('main-content')?.setAttribute('inert', '');
             document.getElementById('confirm-cancel-btn').onclick = () => {
-                resolve(false);
                 this._confirmResolve = null;
                 this._confirmReject = null;
-                document.getElementById('main-content')?.removeAttribute('inert');
-                document.getElementById('modal-container').innerHTML = sanitizeHTML('');
+                resolve(false);
+                this.close();
             };
             document.getElementById('confirm-ok-btn').onclick = () => {
-                resolve(true);
                 this._confirmResolve = null;
                 this._confirmReject = null;
-                document.getElementById('main-content')?.removeAttribute('inert');
-                document.getElementById('modal-container').innerHTML = sanitizeHTML('');
+                resolve(true);
+                this.close();
             };
         });
     },
