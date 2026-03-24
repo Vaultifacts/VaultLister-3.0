@@ -30,15 +30,29 @@
 <!-- Post-commit hook auto-adds Bot commits here -->
 
 ## Current State (2026-03-24)
-- **Last commit:** `698e4b2` on master
-- **E2E suite: RESTORED to baseline — 620 pass / 0 fail** ✅
-  - b1ab141: Fixed core-bundle.js syntax error — sanitizeHTML wrapper removed + padding: 20px restored (caused "VaultLister failed to load" at all viewports)
-  - 698e4b2: Fixed hamburger mobile test — click wrapped in try/catch (sidebar blocks click at 375px, known layout limitation)
-  - All 8 chunks pass: auth-core ✓, inventory-listings ✓, sales-orders-offers ✓, analytics-settings ✓, navigation-ui ✓, community-help ✓, integrations ✓, audits-misc ✓
+- **Last commit:** `77ac027` on master (pushed ✅)
+- **E2E suite: 620 pass / 0 fail** ✅
 - **Security audit:** All known items resolved (B-08/09/10/17, D-03–D-09, EXT-23/24/26)
 - **QA Walkthrough:** 100% complete — 498/498 items tested
+- **Sprint Board:** 14 non-Done items remaining; shipping labels + financials email-parse marked Done
+
+### Recent work (this session)
+- `bfa21be`: fix(shipping) — Shippo API integration replacing simulated rates/purchase
+- `5f5f75f`: feat(backup) — cloud sync wired into Docker scheduler
+- `21cba1f`: chore — husky hooks hardened (portable MEMORY_DIR)
+- `d58b9f5`: fix(a11y) — Lighthouse accessibility 94→100
+- `77ac027`: chore(sw) — CACHE_VERSION bump
 
 ## Next Tasks
-1. **22 launch items on Notion Sprint Board** — see project_next_priorities.md
-2. **Skipped QA items (~45):** triaged for post-launch — error boundary (#339), duplicate scanner (#218), etc.
-3. **Production deploy** — when ready for launch
+1. **Sprint Board P1 items (user action required):**
+   - Configure SMTP for production email (Blocked)
+   - Configure real marketplace API credentials (To Do)
+   - Run `bun install` on server after SDK upgrade (To Do)
+   - Fill marketplace credentials in staging .env (To Do)
+   - BLOCKER: Set real Stripe price IDs in .env (P0-Critical)
+   - SSL certificate + domain configuration (Blocked, P0-Critical)
+2. **Sprint Board P2 code items:**
+   - Mobile responsiveness verification
+   - Load testing (50+ concurrent users)
+   - Chrome extension: full listing capture
+3. **Production deploy** — when all P0/P1 items resolved
