@@ -50561,7 +50561,7 @@ const handlers = {
             store.setState({ ordersDateFilter: value });
         }
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -50570,7 +50570,7 @@ const handlers = {
     searchOrders: function(query) {
         store.setState({ ordersSearchQuery: query });
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -50584,7 +50584,7 @@ const handlers = {
             ordersSearchQuery: ''
         });
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -50604,7 +50604,7 @@ const handlers = {
 
         store.setState({ ordersVisibleColumns: [...visibleColumns] });
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -50994,7 +50994,7 @@ const handlers = {
         toast.success(`Follow-up reminder set for ${new Date(date).toLocaleDateString()}`);
 
         // Refresh orders page if on it
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             renderApp(pages.orders());
         }
     },
@@ -51007,7 +51007,7 @@ const handlers = {
         modals.close();
         toast.info('Reminder removed');
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             renderApp(pages.orders());
         }
     },
@@ -54430,7 +54430,7 @@ const handlers = {
             store.setState({ selectedOrderIds: [] });
         }
         // Re-render checkboxes
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -54529,7 +54529,7 @@ const handlers = {
 
             // Reload orders
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders') {
+            if (store.state.currentPage === 'orders-sales') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -54557,7 +54557,7 @@ const handlers = {
             }
 
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders') {
+            if (store.state.currentPage === 'orders-sales') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -54573,7 +54573,7 @@ const handlers = {
             const result = await api.post('/orders/sync/' + platform);
             toast.success(result.message || 'Orders synced from ' + platform);
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders') {
+            if (store.state.currentPage === 'orders-sales') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -54680,7 +54680,7 @@ const handlers = {
         modals.close();
 
         // Re-render to clear checkboxes
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }

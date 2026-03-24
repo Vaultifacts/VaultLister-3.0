@@ -10588,7 +10588,7 @@ const commandPalette = {
                     `;
                 }).join('')}
             </div>
-        `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>');
+        `).join('') || '<div class="command-palette-group"><div style="padding: 20px); text-align: center; color: var(--gray-500);">No results found</div></div>';
     }
 };
 
@@ -15164,7 +15164,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'd530e264';
+    const v = '734e308f';
     const src = '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
