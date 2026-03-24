@@ -176,6 +176,7 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 2. If you modified any backend route, run the relevant test file
 3. Never use `git add -A` — add specific files you changed
 4. The pre-commit hook enforces these on Linux/CI. On Windows, tests run via PowerShell fallback.
+5. Pre-push hook requires server running on PORT — start with `bun run dev:bg` before pushing.
 
 ### Things You Must NEVER Do
 - Remove `token` or `refreshToken` from `store.persist()` or `store.hydrate()`
@@ -196,7 +197,8 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 ## Autonomous Mode Rules
 - Always check file existence before Write — never overwrite unknown files
 - Never commit `.env`, secrets, or credentials
-- Git commits: `[AUTO]` prefix + conventional commit style (`feat`, `fix`, `chore`, `docs`, `test`, `refactor`)
+- Git commits: `[AUTO]` prefix + conventional commit style (`feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `ci`, `build`, `revert`)
+- ALL `[AUTO]` commits MUST include `Notion-Skip: <reason>` (or `Notion-Done: <page-id>`) and `Verified: <how tested>` trailers. Commit-msg and pre-push enforce for all types except docs/style/ci.
 - Push to `master` directly (single-developer workflow). Use feature branches for large multi-day changes only.
 - Do not manually compact — global autocompact fires at 90%. Save findings to memory before compacting.
 - Use Explore subagent for codebase exploration > 5K LOC

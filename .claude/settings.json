@@ -30,7 +30,10 @@
       "Bash(git config core.hookspath*)",
       "Bash(git config core.hooksPath*)",
       "Bash(git restore .*)",
-      "Bash(git restore --staged .*)"
+      "Bash(git restore --staged .*)",
+      "Bash(npm *)",
+      "Bash(yarn *)",
+      "Bash(pnpm *)"
     ]
   },
   "hooks": {},
