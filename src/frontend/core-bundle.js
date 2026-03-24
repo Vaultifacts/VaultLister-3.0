@@ -10569,7 +10569,7 @@ const commandPalette = {
             groups[cmd.category].push(cmd);
         });
 
-        container.innerHTML = sanitizeHTML(Object.entries(groups).map(([category, cmds]) => `
+        container.innerHTML = Object.entries(groups).map(([category, cmds]) => `
             <div class="command-palette-group">
                 <div class="command-palette-group-title">${category}</div>
                 ${cmds.map((cmd, idx) => {
@@ -10588,7 +10588,7 @@ const commandPalette = {
                     `;
                 }).join('')}
             </div>
-        `).join('') || '<div class="command-palette-group"><div style="padding: 20px); text-align: center; color: var(--gray-500);">No results found</div></div>';
+        `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>';
     }
 };
 
