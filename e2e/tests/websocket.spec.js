@@ -272,8 +272,9 @@ test.describe('WebSocket Real-Time Updates', () => {
             for (const p of [page1, page2]) {
                 await p.goto(`${BASE}/#login`);
                 await p.evaluate((data) => {
-                    localStorage.setItem('vaultlister_state', JSON.stringify({
-                        user: data.user, token: data.token, refreshToken: data.refreshToken
+                    sessionStorage.setItem('vaultlister_state', JSON.stringify({
+                        user: data.user, token: data.token, refreshToken: data.refreshToken,
+                        useSessionStorage: true
                     }));
                 }, loginData);
                 await p.goto(`${BASE}/#dashboard`);

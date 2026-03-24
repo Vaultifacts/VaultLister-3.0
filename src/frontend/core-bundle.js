@@ -16232,7 +16232,7 @@ const components = {
 
         return `
             <nav class="breadcrumb">
-                <a href="#" class="breadcrumb-item" onclick="router.navigate('dashboard'); return false;">
+                <a href="#" class="breadcrumb-item" aria-label="Dashboard home" onclick="router.navigate('dashboard'); return false;">
                     <span class="breadcrumb-home">${this.icon('home', 16)}</span>
                 </a>
                 <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>

@@ -51,10 +51,11 @@ test.describe('GDPR and Privacy - Data Management', () => {
             const loginData = await loginResp.json();
             await page.goto(`${BASE}/#login`);
             await page.evaluate((data) => {
-                localStorage.setItem('vaultlister_state', JSON.stringify({
+                sessionStorage.setItem('vaultlister_state', JSON.stringify({
                     user: data.user,
                     token: data.token,
-                    refreshToken: data.refreshToken
+                    refreshToken: data.refreshToken,
+                    useSessionStorage: true
                 }));
             }, loginData);
             await page.goto(`${BASE}/#dashboard`);

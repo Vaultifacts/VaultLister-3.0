@@ -75,10 +75,12 @@ export async function loginAndNavigate(page, route = 'dashboard', { baseUrl = nu
     // Navigate to SPA and inject auth tokens
     await page.goto(`${BASE}/#login`);
     await page.evaluate((data) => {
-      localStorage.setItem('vaultlister_state', JSON.stringify({
+      // Tokens must go to sessionStorage — hydrate() ignores tokens from localStorage
+      sessionStorage.setItem('vaultlister_state', JSON.stringify({
         user: data.user,
         token: data.token,
-        refreshToken: data.refreshToken
+        refreshToken: data.refreshToken,
+        useSessionStorage: true
       }));
     }, loginData);
     await page.goto(`${BASE}/#dashboard`);
@@ -104,7 +106,8 @@ export async function loginAndNavigate(page, route = 'dashboard', { baseUrl = nu
   }
 
   if (route !== 'dashboard') {
-    await page.evaluate((r) => router.navigate(r), route);
+    await page.waitForFunction(() => typeof window.router !== 'undefined' && typeof window.router.navigate === 'function', { timeout: 10_000 });
+    await page.evaluate((r) => window.router.navigate(r), route);
     await waitForSpaRender(page);
     // Wait for route-specific content
     if (['inventory', 'sales', 'orders'].includes(route)) {
