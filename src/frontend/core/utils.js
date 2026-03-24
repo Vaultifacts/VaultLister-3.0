@@ -34,7 +34,12 @@ function escapeHtml(text) {
 }
 
 function sanitizeHTML(html) {
-    return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(html) : escapeHtml(html);
+    if (typeof DOMPurify === 'undefined') return html;
+    return DOMPurify.sanitize(html, {
+        ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
+                   'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
+                   'onscroll', 'ondblclick', 'oncopy', 'onpaste']
+    });
 }
 
 function escapeRegExp(str) {
