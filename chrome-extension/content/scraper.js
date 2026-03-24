@@ -1,5 +1,5 @@
-// Product Scraper for Amazon and Nordstrom
-// Extracts product details from retail websites
+// Product Scraper for Amazon, Nordstrom, eBay, Poshmark, Mercari, Depop
+// Extracts product details from retail and resale websites
 
 // Detect which site we're on
 const currentSite = detectSite();
@@ -8,6 +8,10 @@ function detectSite() {
     const hostname = window.location.hostname;
     if (hostname.includes('amazon.com')) return 'amazon';
     if (hostname.includes('nordstrom.com')) return 'nordstrom';
+    if (hostname.includes('ebay.com')) return 'ebay';
+    if (hostname.includes('poshmark.com')) return 'poshmark';
+    if (hostname.includes('mercari.com')) return 'mercari';
+    if (hostname.includes('depop.com')) return 'depop';
     return null;
 }
 
@@ -145,6 +149,139 @@ const scrapers = {
             };
         } catch (error) {
             console.error('Nordstrom scraper error:', error);
+            return null;
+        }
+    },
+
+    ebay: () => {
+        try {
+            const title = document.querySelector('h1.x-item-title__mainTitle span')?.textContent?.trim() ||
+                         document.querySelector('#itemTitle')?.textContent?.trim()?.replace('Details about\u00a0', '');
+
+            let price = null;
+            const priceText = document.querySelector('.x-price-primary span.ux-textspans')?.textContent?.trim() ||
+                             document.querySelector('#prcIsum')?.textContent?.trim();
+            if (priceText) price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+
+            const images = [];
+            document.querySelectorAll('#vi_main_img_fs img, .ux-image-magnify__image--original, img[data-zoom-src]').forEach(img => {
+                const src = img.getAttribute('data-zoom-src') || img.src;
+                if (src && !images.includes(src)) images.push(src);
+            });
+
+            const condition = document.querySelector('.x-item-condition-text span.ux-textspans--BOLD')?.textContent?.trim() ||
+                             document.querySelector('#vi-itm-cond')?.textContent?.trim();
+            const description = document.querySelector('#desc_div')?.textContent?.trim()?.slice(0, 500) || null;
+            const category = Array.from(document.querySelectorAll('#vi-VR-brumb-lnkLst a'))
+                .map(a => a.textContent.trim()).filter(Boolean).join(' > ');
+            const itemId = window.location.pathname.match(/\/itm\/(\d+)/)?.[1];
+
+            return {
+                title, price, images, condition, description, category,
+                source: 'eBay', sourceUrl: window.location.href, sourceId: itemId,
+                scrapedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('eBay scraper error:', error);
+            return null;
+        }
+    },
+
+    poshmark: () => {
+        try {
+            const title = document.querySelector('h1.listing-title')?.textContent?.trim() ||
+                         document.querySelector('[data-et-name="listing_title"]')?.textContent?.trim();
+
+            let price = null;
+            const priceText = document.querySelector('.listing-price')?.textContent?.trim() ||
+                             document.querySelector('[data-et-name="price"]')?.textContent?.trim();
+            if (priceText) price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+
+            const images = [];
+            document.querySelectorAll('.listing-image img, img[data-testid="listing-img"]').forEach(img => {
+                const src = img.getAttribute('data-src') || img.src;
+                if (src && !images.includes(src) && !src.includes('default')) images.push(src);
+            });
+
+            const brand = document.querySelector('.listing-brand')?.textContent?.trim() ||
+                         document.querySelector('[itemprop="brand"]')?.textContent?.trim();
+            const size = document.querySelector('.listing-size')?.textContent?.trim();
+            const condition = document.querySelector('.listing-condition')?.textContent?.trim();
+            const description = document.querySelector('.listing-description')?.textContent?.trim()?.slice(0, 500);
+
+            return {
+                title, price, images, brand, size, condition, description,
+                source: 'Poshmark', sourceUrl: window.location.href,
+                sourceId: window.location.pathname.split('/').pop(),
+                scrapedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Poshmark scraper error:', error);
+            return null;
+        }
+    },
+
+    mercari: () => {
+        try {
+            const title = document.querySelector('h1[class*="ItemName"]')?.textContent?.trim() ||
+                         document.querySelector('h1')?.textContent?.trim();
+
+            let price = null;
+            const priceText = document.querySelector('[class*="ItemPrice"]')?.textContent?.trim() ||
+                             document.querySelector('[data-testid="price"]')?.textContent?.trim();
+            if (priceText) price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+
+            const images = [];
+            document.querySelectorAll('[class*="ItemImage"] img, [class*="Carousel"] img').forEach(img => {
+                const src = img.getAttribute('data-src') || img.src;
+                if (src && !images.includes(src)) images.push(src);
+            });
+
+            const condition = document.querySelector('[class*="ItemCondition"]')?.textContent?.trim();
+            const description = document.querySelector('[class*="ItemDescription"]')?.textContent?.trim()?.slice(0, 500);
+
+            return {
+                title, price, images, condition, description,
+                source: 'Mercari', sourceUrl: window.location.href,
+                sourceId: window.location.pathname.match(/\/item\/([^/]+)/)?.[1],
+                scrapedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Mercari scraper error:', error);
+            return null;
+        }
+    },
+
+    depop: () => {
+        try {
+            const title = document.querySelector('h1[class*="productCard"]')?.textContent?.trim() ||
+                         document.querySelector('h1')?.textContent?.trim();
+
+            let price = null;
+            const priceText = document.querySelector('[class*="productPrice"]')?.textContent?.trim() ||
+                             document.querySelector('p[class*="price"]')?.textContent?.trim();
+            if (priceText) price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+
+            const images = [];
+            document.querySelectorAll('[class*="productImage"] img, [class*="ProductImage"] img').forEach(img => {
+                const src = img.getAttribute('data-src') || img.src;
+                if (src && !images.includes(src) && src.startsWith('http')) images.push(src);
+            });
+
+            const brand = document.querySelector('[class*="brandName"]')?.textContent?.trim();
+            const size = document.querySelector('[class*="productSize"], [class*="ProductSize"]')?.textContent?.trim();
+            const condition = document.querySelector('[class*="productCondition"]')?.textContent?.trim();
+            const description = document.querySelector('[class*="productDescription"]')?.textContent?.trim()?.slice(0, 500);
+
+            return {
+                title, price, images, brand, size, condition, description,
+                source: 'Depop', sourceUrl: window.location.href,
+                sourceId: window.location.pathname.match(/\/products\/([^/]+)/)?.[1] ||
+                         window.location.pathname.split('/').filter(Boolean).pop(),
+                scrapedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Depop scraper error:', error);
             return null;
         }
     }

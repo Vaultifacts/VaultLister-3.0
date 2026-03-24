@@ -16,7 +16,15 @@
       "mcp__claude-in-chrome__gif_creator",
       "mcp__claude_ai_Gmail__gmail_search_messages",
       "mcp__claude_ai_Gmail__gmail_read_message",
-      "mcp__claude_ai_Notion__notion-create-pages"
+      "mcp__claude_ai_Notion__notion-create-pages",
+      "WebFetch(domain:json.schemastore.org)",
+      "WebFetch(domain:www.schemastore.org)",
+      "Read(/c/Users/Matt1/.claude/**)",
+      "Bash(mv settings.tmp.json settings.json)",
+      "mcp__plugin_context7_context7__query-docs"
     ]
+  },
+  "remote": {
+    "defaultEnvironmentId": "env_0188L1NEsQ1VgXcnmwtixkpQ"
   }
 }

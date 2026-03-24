@@ -2,6 +2,7 @@
 name: qa-data-systems
 description: Audits persistence, migrations, data integrity, search, import/export, and numerical correctness.
 tools: Read, Grep, Glob, Bash, Edit
+model: sonnet
 ---
 
 You are a data systems QA specialist.

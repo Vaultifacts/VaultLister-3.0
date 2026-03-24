@@ -28,10 +28,14 @@ async function injectAuth(page, loginData) {
     const state = JSON.stringify({
         user: loginData.user || { email: DEMO_EMAIL },
         token: loginData.token,
-        refreshToken: loginData.refreshToken
+        refreshToken: loginData.refreshToken,
+        useSessionStorage: true
     });
+    // Tokens must go into sessionStorage — store.hydrate() intentionally ignores
+    // tokens from localStorage (security design). sessionStorage persists across
+    // page reloads within the same tab, so this survives the upcoming goto().
     await page.evaluate((s) => {
-        localStorage.setItem('vaultlister_state', s);
+        sessionStorage.setItem('vaultlister_state', s);
     }, state);
 }
 

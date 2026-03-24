@@ -108,7 +108,7 @@ function loadChunk(chunkName) {
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
     const v = '19';
-    const src = '/chunk-' + chunkName + '.js?v=' + v;
+    const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
         var timeout = setTimeout(function() {
@@ -182,7 +182,7 @@ const router = {
         'suppliers': { target: 'analytics', tab: 'sourcing' },
         'platform-health': { target: 'shops', tab: 'health' },
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
-        'roadmap': { target: 'help-support', tab: 'roadmap' },
+        // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
         'teams': { target: 'settings', tab: 'teams' },
         'size-charts': { target: 'settings', tab: 'reference-data' },
@@ -210,6 +210,11 @@ const router = {
             clearInterval(window._lockoutCountdown);
             window._lockoutCountdown = null;
         }
+        if (window._loginBanCountdown) {
+            clearInterval(window._loginBanCountdown);
+            window._loginBanCountdown = null;
+        }
+        if (typeof countdownTimer !== 'undefined') countdownTimer.stopUpdates();
         if (window._liveAnalyticsTimer) {
             clearInterval(window._liveAnalyticsTimer);
             window._liveAnalyticsTimer = null;

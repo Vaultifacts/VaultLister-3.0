@@ -35,7 +35,13 @@ function escapeHtml(text) {
 }
 
 function sanitizeHTML(html) {
-    return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(html) : escapeHtml(html);
+    if (typeof DOMPurify === 'undefined') return html;
+    return DOMPurify.sanitize(html, {
+        SANITIZE_DOM: false,
+        ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
+                   'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
+                   'onscroll', 'ondblclick', 'oncopy', 'onpaste']
+    });
 }
 
 function escapeRegExp(str) {
@@ -207,16 +213,31 @@ const tableSorter = {
     initSortableHeaders(table) {
         const headers = table.querySelectorAll('th.sortable');
         headers.forEach((header, index) => {
-            header.addEventListener('click', () => {
+            header.setAttribute('tabindex', '0');
+            header.setAttribute('aria-sort', 'none');
+
+            const activate = () => {
                 const currentDirection = header.classList.contains('sorted-asc') ? 'desc' : 'asc';
 
-                // Remove sort classes from all headers
-                headers.forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+                // Remove sort classes and reset aria-sort on all headers
+                headers.forEach(h => {
+                    h.classList.remove('sorted-asc', 'sorted-desc');
+                    h.setAttribute('aria-sort', 'none');
+                });
 
-                // Add sort class to clicked header
+                // Add sort class and set aria-sort on active header
                 header.classList.add(`sorted-${currentDirection}`);
+                header.setAttribute('aria-sort', currentDirection === 'asc' ? 'ascending' : 'descending');
 
                 this.sortTable(table, index, currentDirection);
+            };
+
+            header.addEventListener('click', activate);
+            header.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    activate();
+                }
             });
         });
     }
@@ -9698,25 +9719,25 @@ const widgetManager = {
     defaultWidgets: [
         { id: 'stats', label: 'Stats Overview', width: 100, height: null, visible: true, collapsed: false, order: 0 },
         { id: 'goals', label: 'Monthly Goal', width: 33, height: null, visible: true, collapsed: false, order: 1 },
-        { id: 'comparison', label: 'Weekly Comparison', width: 33, height: null, visible: false, collapsed: true, order: 2 },
+        { id: 'comparison', label: 'Weekly Comparison', width: 33, height: null, visible: true, collapsed: false, order: 2 },
         { id: 'activity', label: 'Activity Feed', width: 33, height: null, visible: true, collapsed: false, order: 3 },
-        { id: 'platform-performance', label: 'Platform Performance', width: 100, height: null, visible: false, collapsed: true, order: 4 },
+        { id: 'platform-performance', label: 'Platform Performance', width: 100, height: null, visible: true, collapsed: false, order: 4 },
         { id: 'quick-actions', label: 'Quick Actions', width: 50, height: null, visible: true, collapsed: false, order: 5 },
-        { id: 'stale-listings', label: 'Stale Listings', width: 50, height: null, visible: false, collapsed: true, order: 6 },
-        { id: 'recent-relisted', label: 'Recently Relisted', width: 50, height: null, visible: false, collapsed: true, order: 7 },
+        { id: 'stale-listings', label: 'Stale Listings', width: 50, height: null, visible: true, collapsed: false, order: 6 },
+        { id: 'recent-relisted', label: 'Recently Relisted', width: 50, height: null, visible: true, collapsed: false, order: 7 },
         { id: 'recent-sales', label: 'Recent Sales', width: 50, height: null, visible: true, collapsed: false, order: 8 },
-        { id: 'sales-forecast', label: 'Sales Forecast', width: 33, height: null, visible: false, collapsed: true, order: 9 },
-        { id: 'conversion-funnel', label: 'Conversion Funnel', width: 33, height: null, visible: false, collapsed: true, order: 10 },
-        { id: 'profit-margin', label: 'Profit Margin', width: 33, height: null, visible: false, collapsed: true, order: 11 },
-        { id: 'cash-flow', label: 'Cash Flow', width: 33, height: null, visible: false, collapsed: true, order: 12 },
+        { id: 'sales-forecast', label: 'Sales Forecast', width: 33, height: null, visible: true, collapsed: false, order: 9 },
+        { id: 'conversion-funnel', label: 'Conversion Funnel', width: 33, height: null, visible: true, collapsed: false, order: 10 },
+        { id: 'profit-margin', label: 'Profit Margin', width: 33, height: null, visible: true, collapsed: false, order: 11 },
+        { id: 'cash-flow', label: 'Cash Flow', width: 33, height: null, visible: true, collapsed: false, order: 12 },
         { id: 'todays-tasks', label: "Today's Tasks", width: 33, height: null, visible: true, collapsed: false, order: 13 },
-        { id: 'ship-today', label: 'Ship Today', width: 33, height: null, visible: false, collapsed: true, order: 14 },
-        { id: 'milestones', label: 'Milestones', width: 50, height: null, visible: false, collapsed: true, order: 15 },
-        { id: 'low-stock-alerts', label: 'Low Stock Alerts', width: 33, height: null, visible: false, collapsed: true, order: 16 },
-        { id: 'price-trends', label: 'Price Trends', width: 50, height: null, visible: false, collapsed: true, order: 17 },
-        { id: 'upcoming-events', label: 'Upcoming Events', width: 33, height: null, visible: false, collapsed: true, order: 18 },
-        { id: 'recent-items', label: 'Recent Items', width: 100, height: null, visible: false, collapsed: true, order: 19 },
-        { id: 'mini-pnl', label: 'Mini P&L', width: 33, height: null, visible: false, collapsed: true, order: 20 },
+        { id: 'ship-today', label: 'Ship Today', width: 33, height: null, visible: true, collapsed: false, order: 14 },
+        { id: 'milestones', label: 'Milestones', width: 50, height: null, visible: true, collapsed: false, order: 15 },
+        { id: 'low-stock-alerts', label: 'Low Stock Alerts', width: 33, height: null, visible: true, collapsed: false, order: 16 },
+        { id: 'price-trends', label: 'Price Trends', width: 50, height: null, visible: true, collapsed: false, order: 17 },
+        { id: 'upcoming-events', label: 'Upcoming Events', width: 33, height: null, visible: true, collapsed: false, order: 18 },
+        { id: 'recent-items', label: 'Recent Items', width: 100, height: null, visible: true, collapsed: false, order: 19 },
+        { id: 'mini-pnl', label: 'Mini P&L', width: 33, height: null, visible: true, collapsed: false, order: 20 },
         { id: 'pending-offers', label: 'Pending Offers', width: 33, height: null, visible: true, collapsed: false, order: 21 },
         { id: 'poshmark-closet', label: 'Poshmark Closet', width: 50, height: null, visible: true, collapsed: false, order: 22 }
     ],
@@ -10567,7 +10588,7 @@ const commandPalette = {
                     `;
                 }).join('')}
             </div>
-        `).join('') || '<div class="command-palette-group"><div style="padding: 20px); text-align: center; color: var(--gray-500);">No results found</div></div>';
+        `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>');
     }
 };
 
@@ -11911,7 +11932,7 @@ const cashFlowTicker = {
     render(transactions) {
         return `
             <div class="cash-flow-ticker">
-                <div class="ticker-track">
+                <div class="ticker-content">
                     ${transactions.map(t => `
                         <span class="ticker-item ${t.type}">
                             <span class="ticker-amount">${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)}</span>
@@ -15143,8 +15164,8 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'd530e264';
-    const src = '/chunk-' + chunkName + '.js?v=' + v;
+    const v = 'bfb08570';
+    const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
         var timeout = setTimeout(function() {
@@ -15218,7 +15239,7 @@ const router = {
         'suppliers': { target: 'analytics', tab: 'sourcing' },
         'platform-health': { target: 'shops', tab: 'health' },
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
-        'roadmap': { target: 'help-support', tab: 'roadmap' },
+        // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
         'teams': { target: 'settings', tab: 'teams' },
         'size-charts': { target: 'settings', tab: 'reference-data' },
@@ -15246,6 +15267,11 @@ const router = {
             clearInterval(window._lockoutCountdown);
             window._lockoutCountdown = null;
         }
+        if (window._loginBanCountdown) {
+            clearInterval(window._loginBanCountdown);
+            window._loginBanCountdown = null;
+        }
+        if (typeof countdownTimer !== 'undefined') countdownTimer.stopUpdates();
         if (window._liveAnalyticsTimer) {
             clearInterval(window._liveAnalyticsTimer);
             window._liveAnalyticsTimer = null;
@@ -16227,7 +16253,7 @@ const components = {
 
         return `
             <nav class="breadcrumb">
-                <a href="#" class="breadcrumb-item" onclick="router.navigate('dashboard'); return false;">
+                <a href="#" class="breadcrumb-item" aria-label="Dashboard home" onclick="router.navigate('dashboard'); return false;">
                     <span class="breadcrumb-home">${this.icon('home', 16)}</span>
                 </a>
                 <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>
@@ -21248,6 +21274,7 @@ const modals = {
 
     confirm(message, { title = 'Confirm', confirmText = 'Confirm', cancelText = 'Cancel', danger = false } = {}) {
         return new Promise((resolve, reject) => {
+            this._previouslyFocused = document.activeElement;
             this._confirmResolve = resolve;
             this._confirmReject = () => resolve(false);
             const btnClass = danger ? 'btn btn-danger' : 'btn btn-primary';
@@ -21271,18 +21298,16 @@ const modals = {
             `);
             document.getElementById('main-content')?.setAttribute('inert', '');
             document.getElementById('confirm-cancel-btn').onclick = () => {
-                resolve(false);
                 this._confirmResolve = null;
                 this._confirmReject = null;
-                document.getElementById('main-content')?.removeAttribute('inert');
-                document.getElementById('modal-container').innerHTML = sanitizeHTML('');
+                resolve(false);
+                this.close();
             };
             document.getElementById('confirm-ok-btn').onclick = () => {
-                resolve(true);
                 this._confirmResolve = null;
                 this._confirmReject = null;
-                document.getElementById('main-content')?.removeAttribute('inert');
-                document.getElementById('modal-container').innerHTML = sanitizeHTML('');
+                resolve(true);
+                this.close();
             };
         });
     },
@@ -26749,7 +26774,8 @@ const handlers = {
                 handlers.loadListings(),
                 handlers.loadSales(),
                 handlers.loadOffers(),
-                handlers.loadOrders()
+                handlers.loadOrders(),
+                handlers.loadPurchases()
             ]);
             store.setState({ dashboardLastRefresh: Date.now() });
             router.navigate('dashboard');
@@ -26977,9 +27003,9 @@ async function initApp() {
     });
     // Consolidated: Orders & Sales page
     router.register('orders-sales', async () => {
-        renderApp(pages.ordersSales());
+        renderApp(pages.orders());
         await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
-        renderApp(pages.ordersSales());
+        renderApp(pages.orders());
     });
     router.register('checklist', () => renderApp(pages.checklist()));
     router.register('calendar', () => renderApp(pages.calendar()));
@@ -27391,6 +27417,14 @@ function renderApp(pageContent) {
     function applyLayout() {
         var vw = getPhysicalWidth();
         var html = document.documentElement;
+
+        // On real small-screen devices (phones/tablets), screen.width is small.
+        // Don't apply desktop-lock — let CSS breakpoints handle mobile layout.
+        if (screen.width < LOCK_WIDTH) {
+            html.style.zoom = '';
+            html.classList.remove('desktop-lock');
+            return;
+        }
 
         if (vw < LOCK_WIDTH) {
             // Zoom to fit + lock desktop layout (prevent breakpoint CSS)

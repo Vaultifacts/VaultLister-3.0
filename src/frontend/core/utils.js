@@ -34,7 +34,13 @@ function escapeHtml(text) {
 }
 
 function sanitizeHTML(html) {
-    return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(html) : escapeHtml(html);
+    if (typeof DOMPurify === 'undefined') return html;
+    return DOMPurify.sanitize(html, {
+        SANITIZE_DOM: false,
+        ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
+                   'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
+                   'onscroll', 'ondblclick', 'oncopy', 'onpaste']
+    });
 }
 
 function escapeRegExp(str) {
@@ -206,16 +212,31 @@ const tableSorter = {
     initSortableHeaders(table) {
         const headers = table.querySelectorAll('th.sortable');
         headers.forEach((header, index) => {
-            header.addEventListener('click', () => {
+            header.setAttribute('tabindex', '0');
+            header.setAttribute('aria-sort', 'none');
+
+            const activate = () => {
                 const currentDirection = header.classList.contains('sorted-asc') ? 'desc' : 'asc';
 
-                // Remove sort classes from all headers
-                headers.forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+                // Remove sort classes and reset aria-sort on all headers
+                headers.forEach(h => {
+                    h.classList.remove('sorted-asc', 'sorted-desc');
+                    h.setAttribute('aria-sort', 'none');
+                });
 
-                // Add sort class to clicked header
+                // Add sort class and set aria-sort on active header
                 header.classList.add(`sorted-${currentDirection}`);
+                header.setAttribute('aria-sort', currentDirection === 'asc' ? 'ascending' : 'descending');
 
                 this.sortTable(table, index, currentDirection);
+            };
+
+            header.addEventListener('click', activate);
+            header.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    activate();
+                }
             });
         });
     }

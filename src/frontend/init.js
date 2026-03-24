@@ -195,9 +195,9 @@ async function initApp() {
     });
     // Consolidated: Orders & Sales page
     router.register('orders-sales', async () => {
-        renderApp(pages.ordersSales());
+        renderApp(pages.orders());
         await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
-        renderApp(pages.ordersSales());
+        renderApp(pages.orders());
     });
     router.register('checklist', () => renderApp(pages.checklist()));
     router.register('calendar', () => renderApp(pages.calendar()));
@@ -609,6 +609,14 @@ function renderApp(pageContent) {
     function applyLayout() {
         var vw = getPhysicalWidth();
         var html = document.documentElement;
+
+        // On real small-screen devices (phones/tablets), screen.width is small.
+        // Don't apply desktop-lock — let CSS breakpoints handle mobile layout.
+        if (screen.width < LOCK_WIDTH) {
+            html.style.zoom = '';
+            html.classList.remove('desktop-lock');
+            return;
+        }
 
         if (vw < LOCK_WIDTH) {
             // Zoom to fit + lock desktop layout (prevent breakpoint CSS)

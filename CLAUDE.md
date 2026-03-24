@@ -84,9 +84,64 @@ Key decisions:
 | Run unit tests | `bun run test:unit` |
 | Run E2E tests | `bun run test:e2e` |
 | Run visual tests | `node scripts/visual-test.js` |
-| Reset database | `bun run db:reset` |
+| Reset database | `bun run db:reset` _(requires user approval — denied by settings.json)_ |
 | Syntax check | `bun run lint` |
 | Script help | `bun scripts/help.js` |
+
+## Project Structure
+
+```
+/
+├── src/
+│   ├── backend/         # Server, routes, middleware, services
+│   ├── frontend/        # app.js (SPA core-bundle.js), pages/, handlers/, styles/
+│   ├── shared/          # AI (src/shared/ai/), automations, utils
+│   └── tests/           # Unit tests (Bun:test)
+├── e2e/                 # Playwright E2E tests
+├── data/                # SQLite database + backups
+├── public/              # Static assets, uploads
+├── scripts/             # Utility scripts
+├── claude-docs/         # Legacy docs (reference, commands, project-control)
+├── design/              # Design artifacts (source of truth)
+└── memory/              # Session state (STATUS.md, MEMORY.md, COMPLETED.md)
+```
+
+## Reference Documents
+
+Load on demand based on task — do not read all at once:
+
+| Task | Reference |
+|------|-----------|
+| API endpoints, routes | `claude-docs/docs/reference/api.md` |
+| Backend architecture, services | `claude-docs/docs/reference/backend.md` |
+| Frontend components, state, handlers | `claude-docs/docs/reference/frontend.md` |
+| Database schema, migrations, queries | `claude-docs/docs/reference/database.md` |
+| CSRF, rate limiting, auth | `claude-docs/docs/reference/security.md` |
+| Test patterns, commands | `claude-docs/docs/reference/testing.md` |
+
+## Key Patterns
+
+**API Route:**
+```javascript
+export async function routerName(ctx) {
+    const { method, path, body, query: queryParams, user } = ctx;
+    return { status: 200, data: {...} };
+}
+```
+
+**Database Query:**
+```javascript
+import { query } from '../db/database.js';
+query.get(sql, params);   // Single row
+query.all(sql, params);   // Multiple rows
+query.run(sql, params);   // INSERT/UPDATE/DELETE
+```
+
+**State Update:**
+```javascript
+store.setState({ key: value });
+renderApp(pages.currentPage());
+```
 
 ## Critical Rules
 
@@ -99,6 +154,7 @@ Key decisions:
 7. **Use TEXT for all ID columns** (UUIDs, not INTEGER)
 8. **Include CSRF token** for POST/PUT/PATCH/DELETE requests
 9. **Notion page IDs are in `.env`** — never hardcode them in scripts
+10. **Never call `router.handleRoute()` from data loading functions** — causes infinite loops
 
 ## Bot Safety Rules (MANDATORY for automated agents)
 
@@ -120,6 +176,7 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 2. If you modified any backend route, run the relevant test file
 3. Never use `git add -A` — add specific files you changed
 4. The pre-commit hook enforces these on Linux/CI. On Windows, tests run via PowerShell fallback.
+5. Pre-push hook requires server running on PORT — start with `bun run dev:bg` before pushing.
 
 ### Things You Must NEVER Do
 - Remove `token` or `refreshToken` from `store.persist()` or `store.hydrate()`
@@ -140,9 +197,10 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 ## Autonomous Mode Rules
 - Always check file existence before Write — never overwrite unknown files
 - Never commit `.env`, secrets, or credentials
-- Git commits: `[AUTO]` prefix + conventional commit style (`feat`, `fix`, `chore`, `docs`, `test`, `refactor`)
+- Git commits: `[AUTO]` prefix + conventional commit style (`feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `ci`, `build`, `revert`)
+- ALL `[AUTO]` commits MUST include `Notion-Skip: <reason>` (or `Notion-Done: <page-id>`) and `Verified: <how tested>` trailers. Commit-msg and pre-push enforce for all types except docs/style/ci.
 - Push to `master` directly (single-developer workflow). Use feature branches for large multi-day changes only.
-- Run `/compact` at 70% context usage; `/clear` at 85%
+- Do not manually compact — global autocompact fires at 90%. Save findings to memory before compacting.
 - Use Explore subagent for codebase exploration > 5K LOC
 - Use debugger subagent for error diagnosis — do not retry failed commands more than twice
 - Log all sessions in `audit-log.md` (append-only)
@@ -154,6 +212,8 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 4. This file (`CLAUDE.md`) — project-wide guidance
 5. Memory files (`MEMORY.md`) — behavioral guidance, advisory
 6. Global `~/.claude/CLAUDE.md` — defaults, overridden by project
+
+> **Warning:** If Claude Code is launched from a directory above this project, any `CLAUDE.md` in that parent directory is also loaded and may conflict. Always launch Claude Code from inside this project directory (`cd vaultlister-3 && claude`).
 
 ## Code Conventions
 - This project uses **Bun** (not npm) despite the global CLAUDE.md default
@@ -206,7 +266,6 @@ These items require manual action before the first Claude Code session.
 - [ ] Set `ANTHROPIC_API_KEY` in `.env` for AI listing generation and Vault Buddy
 - [ ] Configure marketplace API credentials in `.env` (eBay OAuth, Etsy API, Poshmark, Mercari)
 - [ ] Install Playwright browsers: `bunx playwright install`
-- [ ] Set `GITHUB_TOKEN` in `.env` (used by .mcp.json GitHub MCP server)
 - [ ] Implement hook stubs in `.claude/hooks/` — each stub has behavior spec in comments
 - [ ] Review `.claude/settings.json` deny rules — tighten or relax as needed
 - [ ] Test a Claude Code session to confirm hooks run without error before a full autonomous session

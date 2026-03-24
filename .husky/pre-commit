@@ -269,6 +269,8 @@ if [ -f "$MANIFEST" ] && command -v grep >/dev/null 2>&1; then
     echo "Checking consistency manifest..."
 
     MANIFEST_DENY=$(grep '"deny_patterns"' "$MANIFEST" | grep -o '[0-9]*' | head -1)
+    # validate_bash_patterns and protected_files use "global" sentinel in manifest —
+    # maintained globally (~/.claude/), no project-level count. Empty result → if [ -n ] guard skips. Intentional.
     MANIFEST_BASH=$(grep '"validate_bash_patterns"' "$MANIFEST" | grep -o '[0-9]*' | head -1)
     MANIFEST_FILES=$(grep '"protected_files"' "$MANIFEST" | grep -o '[0-9]*' | head -1)
     MANIFEST_AGENTS=$(grep '"agent_files"' "$MANIFEST" | grep -o '[0-9]*' | head -1)
@@ -283,7 +285,21 @@ if [ -f "$MANIFEST" ] && command -v grep >/dev/null 2>&1; then
         [ -f "$f" ] && ACTUAL_AGENTS=$((ACTUAL_AGENTS + 1))
     done
 
-    MEMORY_DIR="$HOME/.claude/projects/C--Users-Matt1-OneDrive-Desktop-Claude-Code-Project-Brainstormer-vaultlister-3/memory"
+    # Derive Claude Code project key dynamically from git root — portable across machines
+    _GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+    if [ -n "$_GIT_ROOT" ]; then
+        # Handle both Windows-style (C:/path) and Unix-style (/c/path) from git rev-parse
+        if echo "$_GIT_ROOT" | grep -qE '^[A-Za-z]:/'; then
+            _DRIVE=$(echo "$_GIT_ROOT" | sed 's|^\([A-Za-z]\):/.*|\1|' | tr '[:lower:]' '[:upper:]')
+            _REST=$(echo "$_GIT_ROOT" | sed 's|^[A-Za-z]:/||' | tr '/' '-')
+        else
+            _DRIVE=$(echo "$_GIT_ROOT" | sed 's|^/\([a-zA-Z]\)/.*|\1|' | tr '[:lower:]' '[:upper:]')
+            _REST=$(echo "$_GIT_ROOT" | sed 's|^/[a-zA-Z]/||' | tr '/' '-')
+        fi
+        MEMORY_DIR="$HOME/.claude/projects/${_DRIVE}--${_REST}/memory"
+    else
+        MEMORY_DIR="$HOME/.claude/projects/C--Users-Matt1-OneDrive-Desktop-vaultlister-3/memory"
+    fi
     ACTUAL_MEMORY=0
     if [ -d "$MEMORY_DIR" ]; then
         for f in "$MEMORY_DIR"/*.md; do

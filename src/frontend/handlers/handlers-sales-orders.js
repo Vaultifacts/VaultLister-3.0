@@ -1366,7 +1366,7 @@ Object.assign(handlers, {
             store.setState({ ordersDateFilter: value });
         }
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -1376,7 +1376,7 @@ Object.assign(handlers, {
     searchOrders: function(query) {
         store.setState({ ordersSearchQuery: query });
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -1391,7 +1391,7 @@ Object.assign(handlers, {
             ordersSearchQuery: ''
         });
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -1412,7 +1412,7 @@ Object.assign(handlers, {
 
         store.setState({ ordersVisibleColumns: [...visibleColumns] });
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -1817,7 +1817,7 @@ Object.assign(handlers, {
         toast.success(`Follow-up reminder set for ${new Date(date).toLocaleDateString()}`);
 
         // Refresh orders page if on it
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             renderApp(pages.orders());
         }
     },
@@ -1831,7 +1831,7 @@ Object.assign(handlers, {
         modals.close();
         toast.info('Reminder removed');
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             renderApp(pages.orders());
         }
     },
@@ -3544,11 +3544,10 @@ Object.assign(handlers, {
         } else {
             store.setState({ selectedOrderIds: [] });
         }
-        // Re-render checkboxes
-        if (store.state.currentPage === 'orders') {
-            const pageContent = pages.orders();
-            document.querySelector('.page-content').innerHTML = pageContent;
-        }
+        // Directly update DOM checkboxes to avoid full re-render
+        document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => { cb.checked = checked; });
+        const thead = document.querySelector('thead input[type="checkbox"]');
+        if (thead) thead.checked = checked;
     },
 
 
@@ -3646,7 +3645,7 @@ Object.assign(handlers, {
 
             // Reload orders
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders') {
+            if (store.state.currentPage === 'orders-sales') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -3675,7 +3674,7 @@ Object.assign(handlers, {
             }
 
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders') {
+            if (store.state.currentPage === 'orders-sales') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -3692,7 +3691,7 @@ Object.assign(handlers, {
             const result = await api.post('/orders/sync/' + platform);
             toast.success(result.message || 'Orders synced from ' + platform);
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders') {
+            if (store.state.currentPage === 'orders-sales') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -3803,7 +3802,7 @@ Object.assign(handlers, {
         modals.close();
 
         // Re-render to clear checkboxes
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }

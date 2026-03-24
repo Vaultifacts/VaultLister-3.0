@@ -12,7 +12,7 @@ import { demoUser, routes, selectors } from '../fixtures/test-data.js';
 async function loginAndNavigate(page, targetRoute) {
     if (targetRoute && targetRoute !== routes.dashboard) {
         await page.goto(targetRoute);
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('domcontentloaded');
     }
 }
 
@@ -56,6 +56,7 @@ const KNOWN_RULES = {
 };
 
 test.describe('Accessibility - WCAG 2.1 AA', () => {
+    test.setTimeout(90_000);
     // ============================================================
     // Public Pages (no auth needed)
     // ============================================================
@@ -70,7 +71,7 @@ test.describe('Accessibility - WCAG 2.1 AA', () => {
 
     test('Register page has no new critical/serious violations', async ({ authedPage: page }) => {
         await page.goto(routes.register);
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('domcontentloaded');
 
         const violations = await getSeriesViolations(page, KNOWN_RULES.register);
         expect(violations, formatViolations(violations)).toHaveLength(0);

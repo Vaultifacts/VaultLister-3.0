@@ -51,44 +51,6 @@ Architect-Planner, Backend, Frontend-UI, Automations-AI, Security-Auth, Testing,
 ## Scaffold Date
 Generated: 2026-03-02 from VaultLister 2.0 reference by claude-project-scaffolder
 
-## Audit Fixes (2026-03-08) — merged to master
-63-question audit done. 8 items fixed. Commits on master:
-- 58eb410 — Q9/Q12: rateLimiter LRU eviction; getKey fixed to `user:${userId}`; CSRF skip for /api/webhooks/incoming + /api/csp-report
-- 0e8fd0e — Q3: WebSocket upgrade now requires valid auth token before accepting
-- 343567b — Q14/Q53/Q60/Q61: TRUST_PROXY=1 in docker-compose; nginx service_healthy gate; daily backup-scheduler
-- 8e74344 — Q16/Q37/Q41: /api/csp-report handler; explicit crypto import in errorHandler.js
-- 18a11fd — Q13: tokens → sessionStorage only (never localStorage); hydrate() excludes tokens from localStorage reads
-- d9680e7 — Q8: poshmark-bot.js — login() reads from process.env only; shared logger; jitteredDelay(RATE_LIMITS); writeAuditLog for all key actions; try/finally in init()
-- d5d5a99 — Q63: both submitCrosslist() now capture per-platform results; warning+error toasts on partial failure
-- 9034dbe — Q35: removed stale 051_add_offers_table.sql entry; corrected 080 filename to 080_add_offers_table.sql
-- 62968af — Q51: /api/workers/health endpoint; all 5 workers track lastRun; stale detection (3× missed cycles)
-- 6a9cf3b — Q4: rateLimiter._cleanupInterval + stopRateLimiter(); csrfManager._cleanupInterval + stopCSRF(); both called in gracefulShutdown(); middleware-shutdown.test.js (6/6 pass)
-- e8dab56 — Q17: SW v4.2.0 CLEAR_USER_CACHE handler; auth.logout() posts to SW; SWR cache wiped on logout
-- 9a222b0 — Q22: name-based .test-baseline (KNOWN_FAIL entries); CI+pre-push now flag new failures by name not count; fixed 4 Q51 test regressions (isRunning→running, getKey key format)
-- d5bdebd — Q4b: stopGDPRWorker() added to gracefulShutdown(); 3 shutdown tests added to middleware-shutdown.test.js (9/9 pass)
-- 42a9228 — Q29: build scripts compute SHA-256 content hash; auto-sync ?v= in index.html, sw.js PRECACHE_URLS, core-bundle.js router const; router.js source unchanged
-- 21326c3 — Q21: CSRFManager.clearTokens() + exported clearCSRFTokens(); beforeEach isolation in csrf-expanded + csrf-coverage tests (78/78 pass)
-Full tracking: audit-table.md in Claude projects folder
-All originally-flagged high-priority audit items resolved.
-
-## Unit Baseline Finalized (2026-03-08) — 5289/0 — commit 7df5afb on master
-- `getRefreshSchedulerStatus()` returns `isRunning`, `bufferMs`, `maxFailures` (aliases alongside existing fields)
-- `getPriceCheckWorkerStatus()` returns `interval_ms`, `interval_minutes`, `max_items_per_cycle` (aliases)
-- Tests use PORT=process.env.PORT||3000 (standardized 2026-03-20, commit 9186326)
-- security.test.js BASE_URL defaults to port 3000; auth.helper.js to 3001 — TEST_BASE_URL must be set
-
-## E2E Fixes + App Defects (2026-03-08) — merged to master
-All 49 E2E failures fixed → 620/620 pass. Then 4 app-level defects patched:
-- `core-bundle.js` is the file actually served (via `index.html`), NOT `app.js` — critical architecture note
-- `const handlers = {` defined at core-bundle.js:24705, closed at :26077, `window.handlers` set at :26674
-- Sidebar collapse: `toggleSidebarCollapse` was absent from core handlers (only in lazy chunks) → added to core-bundle.js
-- CSV import: `handleImportFile` same issue → added to core handlers
-- WS badge: `#notification-badge` element never rendered → changed header bell to always render `<span id="notification-badge">`; `notificationCenter.updateBadge()` uses `getElementById`
-- Mobile overflow: `@media(max-width:768px)` guard added at end of main.css
-- Hardened: P2-1/P2-2/P2-4 (nav), P1-1 (import), P9-3/P10-3 (WS badge)
-- auth.test.js / security.test.js: now 0 fail when TEST_BASE_URL/PORT env vars are set correctly
-- Commit: 0b26054 on master (app defects); 7df5afb (unit baseline cleanup)
-
 ## ngrok — ALWAYS run when needed
 User has authorized always starting ngrok. Reserved domain command:
 ```
@@ -105,179 +67,22 @@ bun run dev:bg
 `bun run dev:stop` alone is unreliable — PID file goes stale and old process keeps running.
 
 ## Auto-Offer Rule Live — commits dd5ffa3, e8229f7
-- Rule created: "Auto-Offer Rule (80% min, counter at 90%)" — type=offer, platform=poshmark, schedule=`*/5 * * * *`, conditions={minPercentage:80, counterPercentage:90}, actions={autoCounter:true}
-- `executeOffer()` in taskWorker.js now guards autoCounter with minPercentage threshold — offers below 80% are skipped, ≥80% are countered at 90% of asking price
-- End-to-end verified: test offer at 85% ($38.25) → auto-countered at 90% ($40.50) in <15s — automation_logs confirms `action_taken: auto_counter`
-- `POST /api/automations/:id/run` is the manual trigger; CSRF token must come from a prior GET response header, not /auth/csrf
+- Rule: "Auto-Offer Rule (80% min, counter at 90%)" — type=offer, platform=poshmark, schedule=`*/5 * * * *`
+- `executeOffer()` in taskWorker.js: guards autoCounter with minPercentage threshold (≥80% countered at 90%)
+- `POST /api/automations/:id/run` is the manual trigger; CSRF token must come from a prior GET response header, not /api/auth/csrf
 
-## Generic Publish Route Fixed (2026-03-08) — commit dd5ffa3
-`POST /api/listings/:id/publish` is now a multi-platform dispatcher — routes to the correct publisher (poshmark/ebay/etsy/mercari/depop/grailed/facebook/whatnot/shopify) based on `listing.platform`. Previously it was Poshmark-only and used a task-queue stub. Also: `generateListing()` added to listing-generator.js (Claude Haiku with template fallback), `analyzeImage()` now uses Claude Vision, `predictPrice()` accepts `historicalSales`, model IDs updated to claude-sonnet-4-6 / claude-haiku-4-5-20251001.
+## CSRF Pattern
+- Get CSRF token from GET response header (not `/auth/csrf` endpoint)
+- Include as `X-CSRF-Token` header on all POST/PUT/PATCH/DELETE
 
-## Poshmark Publish Bot — WORKING (2026-03-08) — commit 3a255bd
-`scripts/poshmark-publish-bot.js` — standalone ESM subprocess, spawned by `poshmarkPublish.js`.
-Key patterns discovered for Poshmark's Vue.js SPA:
-- **Category picker is hierarchical in ONE dropdown**: click dept (Men via `A.dropdown__link`) → wait 2.5-3.5s → click category (Jackets & Coats via `LI.dropdown__link`) — all via `page.evaluate` with `dispatchEvent(mouseenter/down/up) + click()`
-- **Size dropdown**: Playwright `isVisible()` returns false on Vue components even when element has height > 0. Fix: use `page.evaluate` to get `getBoundingClientRect()` coords then `page.mouse.click(x, y)`. Poshmark size labels are "US L", "US M" etc.
-- **Multi-step form**: "Next" button (step 1→2), then "List This Item" (step 2, publishes). Both found via `page.evaluate` + `page.mouse.click()` at coordinates.
-- **Price**: click `input[data-vv-name="listingPrice"]` → opens `.listing-price-suggestion-modal` → `humanType()` in modal → click `.listing-price-suggestion-modal button.btn--primary`
-- **Photo**: `setInputFiles()` triggers Cropper.js modal → dismiss via `.modal button[class*="primary"]` with text "Apply"
-- **Session**: 41 poshmark.ca cookies at `data/poshmark-cookies.json`, loaded at startup
-- **Success URL**: after "List This Item", navigates to `/closet/[username]` (not `/listing/...`)
-- **POSHMARK_COUNTRY=ca** env var required for Canadian account
+## Unit Test Baseline (2026-03-08) — 5289/0 — commit 7df5afb
+- Tests use `PORT=process.env.PORT||3000` (standardized 2026-03-20)
+- security.test.js BASE_URL defaults to port 3000; auth.helper.js to 3001 — set `TEST_BASE_URL`
+- `core-bundle.js` is the file actually served (via `index.html`), NOT `app.js`
 
-## B-1 Auto-Offer Rule — COMPLETE (2026-03-09)
-- Rule: "Auto-Offer Rule (80% min, counter at 90%)" — verified end-to-end via DB simulation
-- Offer C$38 (84%) on C$45 listing → auto-countered at C$40.50 in <5s — automation_logs confirmed
-- `executeOffer()` in taskWorker.js: DB-only logic (correct). Poshmark-side counter-sending (`bot.counterOffer()`) requires a real buyer offer; selectors unverified against live UI
-- Offer sync script: `scripts/poshmark-offer-sync.mjs` (run with `node`, not `bun`; pass `POSHMARK_COUNTRY=ca`)
-- Per-item share audit log entries: working (commit 9b0d0e6)
+## E2E Status (last updated 2026-03-09)
+- 1826 pass / 33 fail, 1 flaky (98.2%)
+- Remaining 33 failures: monitoring RUM, forgot-pw CSP, CSV upload, inventory CSP, login Remember Me, register CSP, teams invite, transactions split/autocategorize, webkit-only edge cases
 
-## B-2 eBay — COMPLETE (2026-03-09)
-- Full OAuth → inventory_item → offer → publishOffer verified in sandbox
-- Test listing published (listingId: 110589145468), confirmed PUBLISHED, withdrawn via API
-- Fixes committed in 4e13d1e: marketplaceId body required for publishOffer; shop lookup in listings.js
-
-## Poshmark Publish — FIXED + VERIFIED (2026-03-09) — commit f528d45
-- Bot now uses `resolveImageFiles()` (imageUploadHelper.js) — same as Depop
-- Hard error if no real photos attached (no more placeholder fallback that triggers moderation)
-- Post-publish verification: bot navigates back to closet, confirms listing by title, returns real listing URL
-- Category default changed from 'Men>Jackets & Coats' → 'Men>Tops' (with warning log)
-- Size mapping FIXED (commit 2fd934d): `resolvePoshmarkSize(rawSize, catParts)` — "32x30" → "32" (numeric waist for pants), letter sizes → "US L" etc.
-- Test listing (stock photo) removed by Poshmark moderation — 404 confirmed. Delete script at `scripts/poshmark-delete-listing.mjs`.
-- `POSHMARK_COUNTRY=ca` now in .env (required for Canadian account)
-- Test listing live: https://poshmark.ca/listing/Vintage-Levis-501-Jeans-32x30-69ae6ca4db3a6fed550412ac
-
-## C-3 Price Predictor — COMPLETE (2026-03-09) — commit a9ab1ed
-- `predictPrice()` now uses `historicalAvg` as PRIMARY base when 3+ sales exist (was 50/50 blend)
-- Returns `{ price, priceSource }` — callers must destructure (old numeric return broken)
-- `getPriceRange()` returns `{ low, suggested, high, priceSource }` — use this for API responses
-- `/api/ai/suggest-price` and `generate-listing` now return `priceRange` + `priceSource`
-- UI label: "Estimated market price" with range "$low – $high (suggested: $X)"
-- Test script: `scripts/test-price-predictor.py`
-
-## C-4 Vault Buddy — COMPLETE (2026-03-09) — commit a42dea6
-- Model: `claude-sonnet-4-6` (upgraded from haiku)
-- Welcome message: "Hi! 👋 I'm Vault Buddy, your AI assistant built into VaultLister."
-- `getUserStats()` returns: inventory total (active/sold), last-30d sales+profit, top 5 platforms with counts
-- Verified: source=claude, responses include real inventory numbers (232 items, 48 active, 8 sold)
-- Test script: `scripts/test-vault-buddy.py`
-
-## C-5 Vault Buddy Platform Awareness — COMPLETE (2026-03-09) — commit (CRLF warnings only)
-- System prompt: lists LIVE (Poshmark, eBay, Etsy) vs COMING SOON (Mercari, Depop, Grailed, FB, Whatnot, Shopify)
-- `getUserStats()` now queries `shops` table → `Connected platforms: ebay (@user), poshmark, ...`
-- Vault Buddy correctly answers "What platforms am I selling on?" with real connected account data + usernames
-- Verified: source=claude, response includes eBay @testuser_vltest2026, Poshmark (19 listings), etc.
-
-## D-3 Chrome Extension — COMPLETE (2026-03-09) — commit dad6f9e
-- Icons GENERATED: icon16/48/128.png (solid #6366f1 purple, no external deps) — `scripts/gen-extension-icons.py`
-- Playwright test: `scripts/test-d3-extension.js` — 8-step checklist, all steps pass
-- Step 5b: price-tracking API end-to-end — requires CSRF token from GET /api/csrf-token, then POST with X-CSRF-Token header
-- Extension POSTs don't include CSRF in dev mode; workaround: test script fetches token separately
-- `high_memory` alert false positive FIXED: `v8.getHeapStatistics().heap_size_limit` replaces `heapTotal` — commit dad6f9e
-- E2E run: 1826 pass / 33 fail, 1 flaky (98.2%) — updated 2026-03-09 after E-1 session
-- Fixes applied this session: sidebar collapse (P2-1/2/4), notification badge (P9-3/P10-3), P1-1 hero buttons
-- Remaining 33 failures (11 unique × cross-browser): monitoring-routes RUM, forgot-pw CSP (E6), CSV upload (P1-1), inventory CSP (E18), login Remember Me (E4), register CSP (E12), teams invite, transactions split/autocategorize (9/10), webkit-only: login edge cases, modal focus, WS P1-2
-
-## E-1 Email Verification + MFA Setup — COMPLETE (2026-03-09) — commits 478e3b4, 6ba36e8, 465f4b0
-- Email send wired in auth.js register route (IS_TEST_RUNTIME guard); resend-verification route updated
-- MFA setup UI: `/api/security/mfa/setup` → QR + secret rendered; `verifyMFASetup()` → backup codes; `disableMFA()` → password prompt (submitText not confirmText)
-- `#verify-email?token=...` SPA route: GET /api/auth/verify-email validates token, marks used_at; router strips `?` from hash path for route lookup; verifyEmail(success, message) page with 3 states
-- Source files are in src/frontend/core/router.js + src/frontend/init.js (NOT app.js — that's the old monolith)
-- Build: `bun scripts/build-dev-bundle.js` → core-bundle.js (12 source files); app.js is NOT in the bundle
-- Bundle cache: after rebuild+restart, force fresh index.html with `/?v=<newHash>#route`
-
-## C-2 Image Analyzer — COMPLETE (2026-03-09) — commit bfd8ad8
-- `analyzeImage()` in `src/shared/ai/image-analyzer.js` → `claude-haiku-4-5-20251001` Vision API
-- Handles URL and base64 data URI input; falls back to text helpers (detectBrand/detectCategory/extractColors)
-- Duplicate removed from listing-generator.js; re-exported for backward compat
-- Test results: Nike image → brand=Nike, category=Footwear, colors=[white,gray], analyzed=true in ~4s vision
-- Test script: `scripts/test-image-analyzer.py`
-
-## C-1 Listing Generator — COMPLETE (2026-03-09) — commit b8d303c
-- `generateListing()` in `src/shared/ai/listing-generator.js` calls `claude-haiku-4-5-20251001` with template fallback
-- Verified: Nike sneaker → source=claude, 56-char title, 20 tags, multi-para description in 7.5s
-- API flow: login → GET /api/csrf-token (user-scoped) → POST /api/ai/generate-listing
-- Test script: `scripts/test-generate-listing.py`
-
-## B-4 Stub Platforms — COMPLETE (2026-03-09) — commit f0e8769
-- Mercari, Depop, Grailed, Facebook, Whatnot, Shopify marked Coming Soon in cross-lister UI
-- Platform buttons: `.coming-soon-btn` class — greyed out, `pointer-events: none`, tooltip "Coming soon — join the waitlist"
-- Basic cross-list modal: live=[poshmark,ebay,etsy]; coming-soon platforms have `disabled` checkbox + `.coming-soon-badge`
-- `updateCrosslistSelection()` no longer toggles coming-soon buttons
-- CSS in `main.css`: `.coming-soon-btn`, `.coming-soon-badge`
-- Live platforms: Poshmark, eBay, Etsy
-
-## B-3 Etsy — BLOCKED (pending Etsy approval)
-- App created (keystring: 1sgc9xd1hwi3zt5k33pn9k7d), status "Pending Personal Approval"
-- oauth.js PKCE fix committed (4e13d1e): isPKCE=platform==='etsy' skips clientSecret check
-- Authorize URL verified: returns code_challenge + S256 correctly
-- Once approved: add callback URL https://semianatomic-adelina-unspent.ngrok-free.dev/oauth-callback in Etsy developer portal
-
-## eBay + Etsy Integration (2026-03-09) — commit 4e13d1e
-- **eBay end-to-end VERIFIED**: Full OAuth → inventory_item → offer → publishOffer flow working in sandbox
-  - `publishOffer` requires `{ marketplaceId: 'EBAY_US' }` body — missing body causes error 25002
-  - `listings.js POST /api/listings/:id/publish`: must look up shop before calling publisher (null crash fix)
-  - Test listing published (listingId: 110589145468), confirmed PUBLISHED, then withdrawn via API
-- **Etsy OAuth**: App created (keystring `1sgc9xd1hwi3zt5k33pn9k7d`), status "Pending Personal Approval"
-  - Etsy uses PKCE (no client_secret) — `oauth.js` fixed: `isPKCE = platform === 'etsy'` skips clientSecret check
-  - Authorize URL verified: returns `code_challenge` + `code_challenge_method=S256` correctly
-  - BLOCKED: Etsy key pending manual approval by Etsy team — cannot complete OAuth until approved
-  - Once approved: add callback URL `https://semianatomic-adelina-unspent.ngrok-free.dev/oauth-callback` in Etsy developer portal
-- **Per-item audit log (B-1)**: Share entries now write per-item with `listingId`/`title` (commit 9b0d0e6)
-
-## QA Remediation Complete (2026-03-12) — commit e7508fd (151 files, +2515/−1014)
-20 REM items across 4 phases completed. Tracking commit: 6c6ea34.
-
-**Critical fixes (REM-01/08):**
-- Cross-listing integration tests with real DB (10 tests); FK CASCADE gap documented (schema declares it, live DB doesn't enforce)
-- Deploy rollback in deploy.yml — tags :rollback before pull, auto-restores on health check failure
-
-**Security fixes (REM-02–07):**
-- expect([200,500]) anti-pattern removed from 105 test files (544 occurrences)
-- Prompt injection protection (sanitizeForAI + system/user prompt separation)
-- File upload validation (validateBase64Image — MIME, size, magic bytes)
-- CSRF bypass narrowed to NODE_ENV=test only
-- OAuth token revocation on account deletion (gdprWorker.js)
-- Key rotation: dual-key JWT_SECRET + OAUTH_ENCRYPTION_KEY with scripts/rotate-encryption-key.js
-- CI lint: node --check → bun build --no-bundle (fixes ESM hang)
-
-**Reliability fixes (REM-11–16):**
-- Circuit breaker (circuitBreaker.js) wrapping Anthropic, Notion, webhook endpoints — 12 tests
-- External integration timeouts (fetchWithTimeout.js) on 10+ services
-- AI error logging (silent catch → logger.warn)
-- Feature flags middleware (featureFlags.js) — FEATURE_AI_LISTING, FEATURE_WHATNOT_INTEGRATION, FEATURE_ADVANCED_ANALYTICS wired to routes
-
-**Quality fixes (REM-18–20):**
-- Backend locale parameter on formatDate/formatDateTime/formatPrice (default en-US)
-- Listings UNIQUE(inventory_id, platform) constraint verified
-- File upload abuse prevention (MIME + magic bytes + size limits)
-
-**New files:** circuitBreaker.js, featureFlags.js, sanitize-input.js, fetchWithTimeout.js, rotate-encryption-key.js, service-circuitBreaker.test.js, ai-sanitize-input.test.js, service-upload-validation.test.js
-
-## Infrastructure Additions (2026-03-07)
-All 6 gaps from /compare-project run implemented. New files:
-- `src/backend/env.js` — Zod startup env validation (replaces manual JWT_SECRET check)
-- `src/backend/middleware/validate.js` — `validateBody(ctx.body, schema)` / `validateQuery(ctx.query, schema)` (zod@4.3.6)
-- `src/backend/middleware/cache.js` — `generateETag`, `etagMatches`, `cacheFor`, `cacheForUser`, `immutable`, `NO_CACHE`
-Modified files:
-- `src/backend/server.js` — env.js imported first; /api/health/live + /api/health/ready added; effectivePath normalization for /api/v1/ versioning; ETag/304 in response pipeline; cache.js import
-- `src/backend/middleware/rateLimiter.js` — getKey now `user:${userId}` (was `user:${userId}:${ip}`)
-- `public/sw.js` — SWR cache for stable GET API routes (health, size-charts, shipping-profiles, templates, checklist)
-Commits: d003af4 (infra) → 1e7e2eb (SW v4.1.0) → 1b1c85d (Dockerfile fix) — all deployed
-Post-deploy: 7/7 checks pass; auth+security tests: 43/58 pass (15 pre-existing, not our changes)
-Dockerfile: groupadd/useradd (Debian); python3+make+g++ in builder for better-sqlite3
-Tests must run against local bun server (PORT=3000), NOT Docker (rate limiting enabled in prod)
-
-## Frontend Accessibility Fixes (2026-03-19) — commit b8bf0b0
-Fixed 4 audit items (F-12, F-13, F-16, F-20):
-- **F-12: Keyboard navigation in dropdowns** — date range picker now supports ArrowUp/ArrowDown/Escape; date-range-input changed from div to button with aria-haspopup/aria-expanded
-- **F-13: Visual aria-expanded indicator** — added CSS `button[aria-expanded="true"] svg { transform: rotate(90deg); }` to rotate carets when expanded
-- **F-16: Missing alt attributes** — added `alt="Listing preview image ${idx + 1}"` to img at line 62152
-- **F-20: Toast announcements** — added `aria-atomic="true"` to individual toast elements for proper screen reader announcement
-
-Changes:
-- src/frontend/app.js: date-range-input button with ARIA attrs, keyboard handlers for presets, alt text for image
-- src/frontend/core/toast.js: aria-atomic attribute on toasts
-- src/frontend/styles/main.css: CSS rule for rotated chevrons on aria-expanded="true"
-
-All tests passing (auth.test.js 26/26, security.test.js 32/32, E2E 620+ tests pass)
+## Completed Features Reference
+Detailed implementation notes for all completed features (B-1 through E-1, QA Remediation, Infrastructure) are in `memory/COMPLETED.md` — read on demand, not every session.

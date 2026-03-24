@@ -14,8 +14,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DISABLE_CSRF: true
-  DISABLE_RATE_LIMIT: true
   NODE_ENV: test
   JWT_SECRET: ci-test-secret-do-not-use-in-production
   PORT: '3000'
@@ -54,6 +52,9 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      DISABLE_CSRF: 'true'
+      DISABLE_RATE_LIMIT: 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -156,6 +157,9 @@ jobs:
     name: E2E Tests (Guardian)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      DISABLE_CSRF: 'true'
+      DISABLE_RATE_LIMIT: 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 

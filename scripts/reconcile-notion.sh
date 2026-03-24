@@ -32,7 +32,7 @@ for f in .claude/agents/*.md; do
     [ -f "$f" ] && ACTUAL_AGENTS=$((ACTUAL_AGENTS + 1))
 done
 
-MEMORY_DIR="$HOME/.claude/projects/C--Users-Matt1-OneDrive-Desktop-Claude-Code-Project-Brainstormer-vaultlister-3/memory"
+MEMORY_DIR="$HOME/.claude/projects/C--Users-Matt1-OneDrive-Desktop-vaultlister-3/memory"
 ACTUAL_MEMORY=0
 if [ -d "$MEMORY_DIR" ]; then
     for f in "$MEMORY_DIR"/*.md; do
@@ -105,7 +105,7 @@ if [ -n "$REMOTE_HEAD" ]; then
         MSG=$(git log -1 --pretty=%s "$hash")
         BODY=$(git log -1 --pretty=%B "$hash")
         if echo "$MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
-            if ! echo "$BODY" | grep -qE "^Notion-Done:"; then
+            if ! echo "$BODY" | grep -qE "^Notion-Done:|^Notion-Skip:"; then
                 SHORT=$(git log -1 --pretty=%h "$hash")
                 printf "    MISSING: %s %s\n" "$SHORT" "$MSG"
                 MISSING=$((MISSING + 1))
@@ -131,7 +131,7 @@ for hash in $(git log --since="24 hours ago" --pretty=%H -- 2>/dev/null); do
     MSG=$(git log -1 --pretty=%s "$hash")
     BODY=$(git log -1 --pretty=%B "$hash")
     if echo "$MSG" | grep -qE "^(\[AUTO\] )?(fix|feat):"; then
-        if ! echo "$BODY" | grep -qE "^Notion-Done:"; then
+        if ! echo "$BODY" | grep -qE "^Notion-Done:|^Notion-Skip:"; then
             SHORT=$(git log -1 --pretty=%h "$hash")
             printf "    %s %s\n" "$SHORT" "$MSG"
             RECENT_MISSING=$((RECENT_MISSING + 1))

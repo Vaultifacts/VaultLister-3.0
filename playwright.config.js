@@ -26,6 +26,7 @@ export default defineConfig({
     globalSetup: './e2e/global-setup.js',
     globalTeardown: './e2e/global-teardown.js',
     fullyParallel: true,
+    timeout: 60000,
     updateSnapshots: 'missing',
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 1,

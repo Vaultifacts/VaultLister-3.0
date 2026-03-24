@@ -2,130 +2,66 @@
 // Prevents unauthorized state-changing requests from external sites
 
 import crypto from 'crypto';
+import { query } from '../db/database.js';
 
 /**
- * CSRF Token Manager
- * Uses cryptographic tokens to prevent CSRF attacks
+ * CSRF Token Manager — SQLite-backed (B-09)
+ * Tokens survive server restarts and work across multiple instances.
  */
 class CSRFManager {
     constructor() {
-        // Store valid tokens (in production, use Redis or database)
-        this.tokens = new Map();
-        this.maxTokens = 10000; // Max tokens before eviction
-
         // Clean up expired tokens every 10 minutes
         this._cleanupInterval = setInterval(() => this.cleanup(), 10 * 60 * 1000);
     }
 
-    /**
-     * Generate a cryptographically secure CSRF token
-     */
     generateToken(sessionId = null) {
-        // Create random token
         const token = crypto.randomBytes(32).toString('hex');
-
-        // Store token with expiry (4 hours)
         const expiresAt = Date.now() + (4 * 60 * 60 * 1000);
-
-        // Enforce max token count — evict oldest when full
-        if (this.tokens.size >= this.maxTokens) {
-            const toDelete = [...this.tokens.keys()].slice(0, 1000);
-            toDelete.forEach(k => this.tokens.delete(k));
-        }
-
-        this.tokens.set(token, {
-            sessionId,
-            expiresAt,
-            createdAt: Date.now()
-        });
-
+        query.run(
+            'INSERT INTO csrf_tokens (token, session_id, expires_at) VALUES (?, ?, ?)',
+            [token, sessionId ?? '', expiresAt]
+        );
         return token;
     }
 
-    /**
-     * Validate a CSRF token
-     */
     validateToken(token, sessionId = null) {
-        if (!token) {
+        if (!token) return false;
+        const row = query.get(
+            'SELECT session_id, expires_at FROM csrf_tokens WHERE token = ?',
+            [token]
+        );
+        if (!row) return false;
+        if (Date.now() > row.expires_at) {
+            query.run('DELETE FROM csrf_tokens WHERE token = ?', [token]);
             return false;
         }
-
-        const tokenData = this.tokens.get(token);
-
-        if (!tokenData) {
-            return false;
-        }
-
-        // Check expiry
-        if (Date.now() > tokenData.expiresAt) {
-            this.tokens.delete(token);
-            return false;
-        }
-
-        // Check session ID if provided
-        if (sessionId && tokenData.sessionId && tokenData.sessionId !== sessionId) {
-            return false;
-        }
-
+        if (sessionId && row.session_id && row.session_id !== sessionId) return false;
         return true;
     }
 
-    /**
-     * Consume (invalidate) a token after use
-     * Enforces one-time use for better security
-     */
     consumeToken(token) {
-        this.tokens.delete(token);
+        query.run('DELETE FROM csrf_tokens WHERE token = ?', [token]);
     }
 
-    /**
-     * Stop the cleanup interval — call during graceful shutdown
-     */
     stop() {
         clearInterval(this._cleanupInterval);
         this._cleanupInterval = null;
     }
 
-    /**
-     * Clear all tokens — test isolation helper only, not for production use
-     */
     clearTokens() {
-        this.tokens.clear();
+        query.run('DELETE FROM csrf_tokens', []);
     }
 
-    /**
-     * Clean up expired tokens
-     */
     cleanup() {
-        const now = Date.now();
-        for (const [token, data] of this.tokens.entries()) {
-            if (now > data.expiresAt) {
-                this.tokens.delete(token);
-            }
-        }
+        query.run('DELETE FROM csrf_tokens WHERE expires_at < ?', [Date.now()]);
     }
 
-    /**
-     * Get statistics
-     */
     getStats() {
+        const row = query.get('SELECT COUNT(*) as total, MIN(created_at) as oldest FROM csrf_tokens', []);
         return {
-            totalTokens: this.tokens.size,
-            oldestToken: this.getOldestToken()
+            totalTokens: row?.total ?? 0,
+            oldestToken: row?.oldest ? Date.now() - row.oldest : 0
         };
-    }
-
-    /**
-     * Get oldest token age
-     */
-    getOldestToken() {
-        let oldest = null;
-        for (const [, data] of this.tokens.entries()) {
-            if (!oldest || data.createdAt < oldest) {
-                oldest = data.createdAt;
-            }
-        }
-        return oldest ? Date.now() - oldest : 0;
     }
 }
 
@@ -142,10 +78,10 @@ if (process.env.DISABLE_CSRF === 'true' && process.env.NODE_ENV !== 'test') {
  * Add CSRF token to responses that will need it
  */
 export function addCSRFToken(ctx) {
-    // Use IP as session ID for consistency — some routes (e.g. /api/auth/*)
-    // handle auth internally and don't populate ctx.user in the server context,
-    // causing a session ID mismatch (user.id at generate vs IP at validate).
-    const sessionId = ctx.ip;
+    // B-08: bind to ip:userId when authenticated so tokens aren't shared across
+    // users behind the same NAT/proxy. Pre-login calls use ip only; those routes
+    // (login, register) are in skipPaths so CSRF is not enforced on them.
+    const sessionId = ctx.user?.id ? `${ctx.ip}:${ctx.user.id}` : ctx.ip;
     const token = csrfManager.generateToken(sessionId);
 
     // Add to response headers
@@ -204,8 +140,8 @@ export function validateCSRF(ctx) {
         };
     }
 
-    // Validate token — use IP only (matches addCSRFToken generation)
-    const sessionId = ip;
+    // B-08: match the session ID scheme used in addCSRFToken
+    const sessionId = user?.id ? `${ip}:${user.id}` : ip;
     const isValid = csrfManager.validateToken(token, sessionId);
 
     if (!isValid) {

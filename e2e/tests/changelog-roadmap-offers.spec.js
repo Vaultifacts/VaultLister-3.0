@@ -125,14 +125,10 @@ test.describe('Changelog Features', () => {
     });
 });
 
-// Helper: navigate to #help-support and activate the Roadmap tab
+// Helper: navigate to the Roadmap page
 async function navigateToRoadmap(page) {
-    await page.goto(`${BASE_URL}/#help-support`);
+    await page.evaluate(() => router.navigate('roadmap'));
     await page.waitForLoadState('networkidle');
-    // The Help page opens on "Help & Support" tab by default; click Roadmap tab
-    const roadmapTab = page.locator('button:has-text("Roadmap")').first();
-    await roadmapTab.waitFor({ state: 'visible', timeout: 10_000 });
-    await roadmapTab.click();
 }
 
 test.describe('Roadmap Features', () => {

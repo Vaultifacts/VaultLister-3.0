@@ -200,16 +200,31 @@ const tableSorter = {
     initSortableHeaders(table) {
         const headers = table.querySelectorAll('th.sortable');
         headers.forEach((header, index) => {
-            header.addEventListener('click', () => {
+            header.setAttribute('tabindex', '0');
+            header.setAttribute('aria-sort', 'none');
+
+            const activate = () => {
                 const currentDirection = header.classList.contains('sorted-asc') ? 'desc' : 'asc';
 
-                // Remove sort classes from all headers
-                headers.forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+                // Remove sort classes and reset aria-sort on all headers
+                headers.forEach(h => {
+                    h.classList.remove('sorted-asc', 'sorted-desc');
+                    h.setAttribute('aria-sort', 'none');
+                });
 
-                // Add sort class to clicked header
+                // Add sort class and set aria-sort on active header
                 header.classList.add(`sorted-${currentDirection}`);
+                header.setAttribute('aria-sort', currentDirection === 'asc' ? 'ascending' : 'descending');
 
                 this.sortTable(table, index, currentDirection);
+            };
+
+            header.addEventListener('click', activate);
+            header.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    activate();
+                }
             });
         });
     }
@@ -6444,7 +6459,7 @@ const fabMenu = {
                         </div>
                     `).join('')}
                 </div>
-                <button class="fab-main">${components.icon('plus', 24)}</button>
+                <button class="fab-main" aria-label="Quick actions">${components.icon('plus', 24)}</button>
             </div>
         `;
     }
@@ -16016,7 +16031,7 @@ const components = {
 
         return `
             <nav class="breadcrumb">
-                <a href="#" class="breadcrumb-item" onclick="handlers.navigate('dashboard'); return false;">
+                <a href="#" class="breadcrumb-item" aria-label="Dashboard home" onclick="handlers.navigate('dashboard'); return false;">
                     <span class="breadcrumb-home">${this.icon('home', 16)}</span>
                 </a>
                 <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>
@@ -37891,6 +37906,7 @@ const modals = {
 
     confirm(message, { title = 'Confirm', confirmText = 'Confirm', cancelText = 'Cancel', danger = false } = {}) {
         return new Promise((resolve, reject) => {
+            this._previouslyFocused = document.activeElement;
             this._confirmResolve = resolve;
             this._confirmReject = () => resolve(false);
             const btnClass = danger ? 'btn btn-danger' : 'btn btn-primary';
@@ -37900,7 +37916,7 @@ const modals = {
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
                             <h2 class="modal-title">${escapeHtml(title)}</h2>
-                            <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); document.getElementById('modal-container').innerHTML='';">${components.icon('close')}</button>
+                            <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); modals.close();">${components.icon('close')}</button>
                         </div>
                         <div class="modal-body">
                             <p style="margin-bottom: 20px; line-height: 1.5;">${escapeHtml(message)}</p>
@@ -37913,16 +37929,16 @@ const modals = {
                 </div>
             `;
             document.getElementById('confirm-cancel-btn').onclick = () => {
-                resolve(false);
                 this._confirmResolve = null;
                 this._confirmReject = null;
-                document.getElementById('modal-container').innerHTML = '';
+                resolve(false);
+                this.close();
             };
             document.getElementById('confirm-ok-btn').onclick = () => {
-                resolve(true);
                 this._confirmResolve = null;
                 this._confirmReject = null;
-                document.getElementById('modal-container').innerHTML = '';
+                resolve(true);
+                this.close();
             };
         });
     },
@@ -50545,7 +50561,7 @@ const handlers = {
             store.setState({ ordersDateFilter: value });
         }
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -50554,7 +50570,7 @@ const handlers = {
     searchOrders: function(query) {
         store.setState({ ordersSearchQuery: query });
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -50568,7 +50584,7 @@ const handlers = {
             ordersSearchQuery: ''
         });
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -50588,7 +50604,7 @@ const handlers = {
 
         store.setState({ ordersVisibleColumns: [...visibleColumns] });
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -50978,7 +50994,7 @@ const handlers = {
         toast.success(`Follow-up reminder set for ${new Date(date).toLocaleDateString()}`);
 
         // Refresh orders page if on it
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             renderApp(pages.orders());
         }
     },
@@ -50991,7 +51007,7 @@ const handlers = {
         modals.close();
         toast.info('Reminder removed');
 
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             renderApp(pages.orders());
         }
     },
@@ -54414,7 +54430,7 @@ const handlers = {
             store.setState({ selectedOrderIds: [] });
         }
         // Re-render checkboxes
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -54513,7 +54529,7 @@ const handlers = {
 
             // Reload orders
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders') {
+            if (store.state.currentPage === 'orders-sales') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -54541,7 +54557,7 @@ const handlers = {
             }
 
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders') {
+            if (store.state.currentPage === 'orders-sales') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -54557,7 +54573,7 @@ const handlers = {
             const result = await api.post('/orders/sync/' + platform);
             toast.success(result.message || 'Orders synced from ' + platform);
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders') {
+            if (store.state.currentPage === 'orders-sales') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -54664,7 +54680,7 @@ const handlers = {
         modals.close();
 
         // Re-render to clear checkboxes
-        if (store.state.currentPage === 'orders') {
+        if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = pageContent;
         }
@@ -70166,9 +70182,9 @@ async function initApp() {
         renderApp(pages.orders());
     });
     router.register('orders-sales', async () => {
-        renderApp(pages.ordersSales());
+        renderApp(pages.orders());
         await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
-        renderApp(pages.ordersSales());
+        renderApp(pages.orders());
     });
     router.register('checklist', () => renderApp(pages.checklist()));
     router.register('calendar', () => renderApp(pages.calendar()));
@@ -70178,6 +70194,7 @@ async function initApp() {
         renderApp(pages.planner());
     });
     router.register('size-charts', () => renderApp(pages.sizeCharts()));
+    router.register('duplicates', () => modals.duplicates());
     router.register('image-bank', async () => {
         renderApp(pages.imageBank());
         await handlers.loadImageStorageStats();
@@ -70558,6 +70575,14 @@ function renderApp(pageContent) {
     function applyLayout() {
         var vw = getPhysicalWidth();
         var html = document.documentElement;
+
+        // On real small-screen devices (phones/tablets), screen.width is small.
+        // Don't apply desktop-lock — let CSS breakpoints handle mobile layout.
+        if (screen.width < LOCK_WIDTH) {
+            html.style.zoom = '';
+            html.classList.remove('desktop-lock');
+            return;
+        }
 
         if (vw < LOCK_WIDTH) {
             // Zoom to fit + lock desktop layout (prevent breakpoint CSS)

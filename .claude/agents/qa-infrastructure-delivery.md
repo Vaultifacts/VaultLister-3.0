@@ -2,6 +2,7 @@
 name: qa-infrastructure-delivery
 description: Audits setup, deployment, CI/CD, build artifacts, internal tooling, runtime failures, backup/restore, and coverage integrity.
 tools: Read, Grep, Glob, Bash, Edit
+model: sonnet
 ---
 
 You are an infrastructure and delivery QA specialist.

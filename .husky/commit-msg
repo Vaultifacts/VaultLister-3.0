@@ -14,7 +14,7 @@ if echo "$COMMIT_MSG" | grep -qE "^Merge "; then
 fi
 
 # All commit types that produce functional changes require trailers.
-# Only docs/style/ci are exempt (no functional impact).
+# docs/style/ci are exempt — maintenance and non-functional changes.
 TRAILER_REQUIRED_TYPES="feat|fix|chore|refactor|perf|test|build|revert"
 TRAILER_EXEMPT_TYPES="docs|style|ci"
 

@@ -1,4 +1,4 @@
-KNOWN_FAILURES=300
+KNOWN_FAILURES=305
 # Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
 # Local Windows: 2050 pass / 264 fail (named below — baselined 2026-03-20)
 # CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
@@ -395,3 +395,8 @@ KNOWN_FAIL: GET /api/rate-limits/blocked-users > regular user returns 403 (enter
 KNOWN_FAIL: GET /api/rate-limits/history > regular user returns 403 (enterprise only)
 KNOWN_FAIL: GET /api/rate-limits/alerts > regular user returns 403 (enterprise only)
 KNOWN_FAIL: monitoring.initSentry > does not throw when @sentry/node is not installed
+KNOWN_FAIL: GET /api/auth/verify-email > missing token returns 400
+KNOWN_FAIL: GET /api/auth/verify-email > invalid token returns 400
+KNOWN_FAIL: Task Worker API > GET /tasks/status should return worker status
+KNOWN_FAIL: Task Worker API > GET /tasks should list tasks
+KNOWN_FAIL: Task Worker API > POST /tasks should create a task

@@ -79,6 +79,7 @@ jobs:
         run: bun test --coverage --coverage-reporter=lcov --coverage-dir=coverage src/tests/
 
       - name: Analyze with SonarCloud
+        if: github.actor != 'dependabot[bot]'
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # nosemgrep

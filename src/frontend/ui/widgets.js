@@ -1046,25 +1046,25 @@ const widgetManager = {
     defaultWidgets: [
         { id: 'stats', label: 'Stats Overview', width: 100, height: null, visible: true, collapsed: false, order: 0 },
         { id: 'goals', label: 'Monthly Goal', width: 33, height: null, visible: true, collapsed: false, order: 1 },
-        { id: 'comparison', label: 'Weekly Comparison', width: 33, height: null, visible: false, collapsed: true, order: 2 },
+        { id: 'comparison', label: 'Weekly Comparison', width: 33, height: null, visible: true, collapsed: false, order: 2 },
         { id: 'activity', label: 'Activity Feed', width: 33, height: null, visible: true, collapsed: false, order: 3 },
-        { id: 'platform-performance', label: 'Platform Performance', width: 100, height: null, visible: false, collapsed: true, order: 4 },
+        { id: 'platform-performance', label: 'Platform Performance', width: 100, height: null, visible: true, collapsed: false, order: 4 },
         { id: 'quick-actions', label: 'Quick Actions', width: 50, height: null, visible: true, collapsed: false, order: 5 },
-        { id: 'stale-listings', label: 'Stale Listings', width: 50, height: null, visible: false, collapsed: true, order: 6 },
-        { id: 'recent-relisted', label: 'Recently Relisted', width: 50, height: null, visible: false, collapsed: true, order: 7 },
+        { id: 'stale-listings', label: 'Stale Listings', width: 50, height: null, visible: true, collapsed: false, order: 6 },
+        { id: 'recent-relisted', label: 'Recently Relisted', width: 50, height: null, visible: true, collapsed: false, order: 7 },
         { id: 'recent-sales', label: 'Recent Sales', width: 50, height: null, visible: true, collapsed: false, order: 8 },
-        { id: 'sales-forecast', label: 'Sales Forecast', width: 33, height: null, visible: false, collapsed: true, order: 9 },
-        { id: 'conversion-funnel', label: 'Conversion Funnel', width: 33, height: null, visible: false, collapsed: true, order: 10 },
-        { id: 'profit-margin', label: 'Profit Margin', width: 33, height: null, visible: false, collapsed: true, order: 11 },
-        { id: 'cash-flow', label: 'Cash Flow', width: 33, height: null, visible: false, collapsed: true, order: 12 },
+        { id: 'sales-forecast', label: 'Sales Forecast', width: 33, height: null, visible: true, collapsed: false, order: 9 },
+        { id: 'conversion-funnel', label: 'Conversion Funnel', width: 33, height: null, visible: true, collapsed: false, order: 10 },
+        { id: 'profit-margin', label: 'Profit Margin', width: 33, height: null, visible: true, collapsed: false, order: 11 },
+        { id: 'cash-flow', label: 'Cash Flow', width: 33, height: null, visible: true, collapsed: false, order: 12 },
         { id: 'todays-tasks', label: "Today's Tasks", width: 33, height: null, visible: true, collapsed: false, order: 13 },
-        { id: 'ship-today', label: 'Ship Today', width: 33, height: null, visible: false, collapsed: true, order: 14 },
-        { id: 'milestones', label: 'Milestones', width: 50, height: null, visible: false, collapsed: true, order: 15 },
-        { id: 'low-stock-alerts', label: 'Low Stock Alerts', width: 33, height: null, visible: false, collapsed: true, order: 16 },
-        { id: 'price-trends', label: 'Price Trends', width: 50, height: null, visible: false, collapsed: true, order: 17 },
-        { id: 'upcoming-events', label: 'Upcoming Events', width: 33, height: null, visible: false, collapsed: true, order: 18 },
-        { id: 'recent-items', label: 'Recent Items', width: 100, height: null, visible: false, collapsed: true, order: 19 },
-        { id: 'mini-pnl', label: 'Mini P&L', width: 33, height: null, visible: false, collapsed: true, order: 20 },
+        { id: 'ship-today', label: 'Ship Today', width: 33, height: null, visible: true, collapsed: false, order: 14 },
+        { id: 'milestones', label: 'Milestones', width: 50, height: null, visible: true, collapsed: false, order: 15 },
+        { id: 'low-stock-alerts', label: 'Low Stock Alerts', width: 33, height: null, visible: true, collapsed: false, order: 16 },
+        { id: 'price-trends', label: 'Price Trends', width: 50, height: null, visible: true, collapsed: false, order: 17 },
+        { id: 'upcoming-events', label: 'Upcoming Events', width: 33, height: null, visible: true, collapsed: false, order: 18 },
+        { id: 'recent-items', label: 'Recent Items', width: 100, height: null, visible: true, collapsed: false, order: 19 },
+        { id: 'mini-pnl', label: 'Mini P&L', width: 33, height: null, visible: true, collapsed: false, order: 20 },
         { id: 'pending-offers', label: 'Pending Offers', width: 33, height: null, visible: true, collapsed: false, order: 21 },
         { id: 'poshmark-closet', label: 'Poshmark Closet', width: 50, height: null, visible: true, collapsed: false, order: 22 }
     ],
@@ -1915,7 +1915,7 @@ const commandPalette = {
                     `;
                 }).join('')}
             </div>
-        `).join('') || '<div class="command-palette-group"><div style="padding: 20px); text-align: center; color: var(--gray-500);">No results found</div></div>';
+        `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>');
     }
 };
 
@@ -3259,7 +3259,7 @@ const cashFlowTicker = {
     render(transactions) {
         return `
             <div class="cash-flow-ticker">
-                <div class="ticker-track">
+                <div class="ticker-content">
                     ${transactions.map(t => `
                         <span class="ticker-item ${t.type}">
                             <span class="ticker-amount">${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)}</span>

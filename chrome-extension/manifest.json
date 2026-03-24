@@ -16,7 +16,8 @@
     "https://www.nordstrom.com/*",
     "https://poshmark.com/*",
     "https://www.ebay.com/*",
-    "https://www.mercari.com/*"
+    "https://www.mercari.com/*",
+    "https://www.depop.com/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js",
@@ -34,6 +35,34 @@
     {
       "matches": [
         "https://www.nordstrom.com/s/*"
+      ],
+      "js": ["content/scraper.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.ebay.com/itm/*"
+      ],
+      "js": ["content/scraper.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://poshmark.com/listing/*"
+      ],
+      "js": ["content/scraper.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.mercari.com/item/*"
+      ],
+      "js": ["content/scraper.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.depop.com/products/*"
       ],
       "js": ["content/scraper.js"],
       "run_at": "document_idle"

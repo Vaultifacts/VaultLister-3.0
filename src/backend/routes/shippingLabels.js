@@ -379,17 +379,36 @@ export async function shippingLabelsRouter(ctx) {
 
         for (const label of labels) {
             try {
-                // Simulate label purchase
-                const postage = label.postage_cost || 0;
+                // Purchase label via Shippo if configured, else mark as purchased locally
+                const shippoKey = process.env.SHIPPO_API_KEY;
+                const rateRecord = label.rate_id ? query.get('SELECT * FROM shipping_rates WHERE rate_id = ?', [label.rate_id]) : null;
+                let postage = label.postage_cost || 0;
+
+                if (shippoKey && rateRecord?.rate_id) {
+                    const purchaseRes = await fetch('https://api.goshippo.com/transactions/', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `ShippoToken ${shippoKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ rate: rateRecord.rate_id, label_file_type: 'PDF', async: false })
+                    });
+                    if (!purchaseRes.ok) throw new Error('Shippo purchase failed: ' + purchaseRes.status);
+                    const txn = await purchaseRes.json();
+                    if (txn.status !== 'SUCCESS') throw new Error('Shippo transaction status: ' + txn.status);
+                    postage = parseFloat(txn.rate?.amount || postage);
+                    query.run(
+                        "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, tracking_number = ?, label_url = ?, total_cost = ? WHERE id = ?",
+                        [txn.tracking_number || null, txn.label_url || null, postage, label.id]
+                    );
+                } else {
+                    query.run(
+                        "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, total_cost = COALESCE(postage_cost, 0) + COALESCE(insurance_cost, 0) WHERE id = ?",
+                        [label.id]
+                    );
+                }
+
                 totalPostage += postage;
-
-                query.run(`
-                    UPDATE shipping_labels
-                    SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP,
-                        total_cost = COALESCE(postage_cost, 0) + COALESCE(insurance_cost, 0)
-                    WHERE id = ?
-                `, [label.id]);
-
                 completed++;
             } catch (error) {
                 query.run(
@@ -439,48 +458,87 @@ export async function shippingLabelsRouter(ctx) {
                 return { status: 400, data: { error: 'Weight, from_zip, and to_zip are required' } };
             }
 
-            // Generate simulated rates for demonstration
+            const shippoKey = process.env.SHIPPO_API_KEY;
+            if (!shippoKey) {
+                return {
+                    status: 503,
+                    data: {
+                        error: 'Carrier API not configured',
+                        message: 'Set SHIPPO_API_KEY in .env to enable real shipping rates. Get a free key at goshippo.com.'
+                    }
+                };
+            }
+
+            // Call Shippo API for real carrier rates
+            const weightLb = (weight_oz || 1) / 16;
+            const shipmentPayload = {
+                address_from: {
+                    name: body.from_name || 'Sender',
+                    street1: body.from_street1 || '123 Main St',
+                    city: body.from_city || '',
+                    state: body.from_state || '',
+                    zip: from_zip,
+                    country: 'US'
+                },
+                address_to: {
+                    name: body.to_name || 'Recipient',
+                    street1: body.to_street1 || '456 Elm St',
+                    city: body.to_city || '',
+                    state: body.to_state || '',
+                    zip: to_zip,
+                    country: to_country || 'US'
+                },
+                parcels: [{
+                    length: String(length_in || 12),
+                    width: String(width_in || 9),
+                    height: String(height_in || 4),
+                    distance_unit: 'in',
+                    weight: String(weightLb),
+                    mass_unit: 'lb'
+                }],
+                async: false
+            };
+
+            const shippoRes = await fetch('https://api.goshippo.com/shipments/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `ShippoToken ${shippoKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(shipmentPayload)
+            });
+
+            if (!shippoRes.ok) {
+                const errText = await shippoRes.text();
+                logger.error('[ShippingLabels] Shippo API error', user?.id, { status: shippoRes.status, detail: errText });
+                return { status: 502, data: { error: 'Carrier API error', detail: 'Failed to retrieve rates from Shippo' } };
+            }
+
+            const shipment = await shippoRes.json();
             const rates = [];
-            const carriers = [
-                { carrier: 'usps', services: [
-                    { service: 'Priority Mail', baseCost: 7.75, days: 2 },
-                    { service: 'First Class', baseCost: 4.50, days: 4 },
-                    { service: 'Flat Rate Box', baseCost: 15.50, days: 2 },
-                    { service: 'Ground Advantage', baseCost: 5.25, days: 5 }
-                ]},
-                { carrier: 'ups', services: [
-                    { service: 'Ground', baseCost: 9.50, days: 5 },
-                    { service: '2nd Day Air', baseCost: 18.75, days: 2 },
-                    { service: 'Next Day Air', baseCost: 32.00, days: 1 }
-                ]},
-                { carrier: 'fedex', services: [
-                    { service: 'Ground', baseCost: 9.25, days: 5 },
-                    { service: 'Express Saver', baseCost: 16.50, days: 3 },
-                    { service: 'Overnight', baseCost: 35.00, days: 1 }
-                ]}
-            ];
 
-            const weightMultiplier = Math.max(1, (weight_oz || 16) / 16);
+            for (const r of (shipment.rates || [])) {
+                if (r.object_state !== 'VALID') continue;
+                const rateId = uuidv4();
+                const rate = parseFloat(r.amount);
+                const days = r.estimated_days || null;
+                const carrier = (r.provider || '').toLowerCase();
+                const service = (r.servicelevel && r.servicelevel.name) || '';
 
-            for (const { carrier, services } of carriers) {
-                for (const { service, baseCost, days } of services) {
-                    const rate = Math.round(baseCost * weightMultiplier * 100) / 100;
-                    const rateId = uuidv4();
+                query.run(
+                    "INSERT INTO shipping_rates (id, user_id, carrier, service, rate, delivery_days, rate_id, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', '+1 hour'))",
+                    [rateId, user.id, carrier, service, rate, days, r.object_id]
+                );
 
-                    query.run(`
-                        INSERT INTO shipping_rates (id, user_id, carrier, service, rate, delivery_days, rate_id, expires_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', '+1 hour'))
-                    `, [rateId, user.id, carrier, service, rate, days, rateId]);
-
-                    rates.push({
-                        id: rateId,
-                        carrier,
-                        service,
-                        rate,
-                        delivery_days: days,
-                        delivery_date: new Date(Date.now() + days * 86400000).toISOString().split('T')[0]
-                    });
-                }
+                rates.push({
+                    id: rateId,
+                    carrier,
+                    service,
+                    rate,
+                    delivery_days: days,
+                    delivery_date: days ? new Date(Date.now() + days * 86400000).toISOString().split('T')[0] : null,
+                    shippo_rate_id: r.object_id
+                });
             }
 
             rates.sort((a, b) => a.rate - b.rate);

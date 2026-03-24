@@ -385,7 +385,7 @@ Object.assign(handlers, {
         );
 
         if (matches.length === 0) {
-            resultsEl.innerHTML = sanitizeHTML('<div style="padding:12px 16px); color:var(--gray-500); font-size:13px;">No matching settings found</div>';
+            resultsEl.innerHTML = sanitizeHTML('<div style="padding:12px 16px; color:var(--gray-500); font-size:13px;">No matching settings found</div>');
             resultsEl.style.display = 'block';
             return;
         }
@@ -1221,8 +1221,8 @@ Object.assign(handlers, {
             return;
         }
 
-        select.innerHTML = sanitizeHTML('<option value="">Select Service</option>' +)
-            serviceTypes[carrier].map(s => `<option value="${s}">${s}</option>`).join('');
+        select.innerHTML = sanitizeHTML('<option value="">Select Service</option>' +
+            serviceTypes[carrier].map(s => `<option value="${s}">${s}</option>`).join(''));
     },
 
 
@@ -2643,8 +2643,8 @@ Object.assign(handlers, {
         customSizeInput?.classList.add('hidden');
 
         const options = sizeOptions[sizeType] || sizeOptions.clothing;
-        sizeSelect.innerHTML = sanitizeHTML('<option value="">Select size...</option>' +)
-            options.map(size => `<option value="${size}">${size}</option>`).join('');
+        sizeSelect.innerHTML = sanitizeHTML('<option value="">Select size...</option>' +
+            options.map(size => `<option value="${size}">${size}</option>`).join(''));
     },
 
 
@@ -4454,7 +4454,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-conditions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 condition-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" style="flex:1);" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>';
+        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');
         container.appendChild(row);
     },
 
@@ -4463,7 +4463,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-actions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 action-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select action-type" style="flex:1);"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>';
+        row.innerHTML = sanitizeHTML('<select class="form-select action-type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');
         container.appendChild(row);
     },
 
