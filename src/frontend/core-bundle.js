@@ -10569,7 +10569,7 @@ const commandPalette = {
             groups[cmd.category].push(cmd);
         });
 
-        container.innerHTML = Object.entries(groups).map(([category, cmds]) => `
+        container.innerHTML = sanitizeHTML(Object.entries(groups).map(([category, cmds]) => `
             <div class="command-palette-group">
                 <div class="command-palette-group-title">${category}</div>
                 ${cmds.map((cmd, idx) => {
@@ -10588,7 +10588,7 @@ const commandPalette = {
                     `;
                 }).join('')}
             </div>
-        `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>';
+        `).join('') || '<div class="command-palette-group"><div style="padding: 20px); text-align: center; color: var(--gray-500);">No results found</div></div>';
     }
 };
 
@@ -15164,7 +15164,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '82d80cbf';
+    const v = 'fe5aa3f4';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27417,6 +27417,14 @@ function renderApp(pageContent) {
     function applyLayout() {
         var vw = getPhysicalWidth();
         var html = document.documentElement;
+
+        // On real small-screen devices (phones/tablets), screen.width is small.
+        // Don't apply desktop-lock — let CSS breakpoints handle mobile layout.
+        if (screen.width < LOCK_WIDTH) {
+            html.style.zoom = '';
+            html.classList.remove('desktop-lock');
+            return;
+        }
 
         if (vw < LOCK_WIDTH) {
             // Zoom to fit + lock desktop layout (prevent breakpoint CSS)

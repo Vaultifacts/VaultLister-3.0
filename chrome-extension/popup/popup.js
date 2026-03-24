@@ -167,8 +167,9 @@ scrapeBtn.addEventListener('click', async () => {
         // Get active tab
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-        if (!tab.url.includes('amazon.com') && !tab.url.includes('nordstrom.com')) {
-            showToast('Please visit Amazon or Nordstrom first', 'error');
+        const supported = ['amazon.com','nordstrom.com','ebay.com','poshmark.com','mercari.com','depop.com'];
+        if (!supported.some(s => tab.url.includes(s))) {
+            showToast('Visit Amazon, eBay, Poshmark, Mercari, Depop, or Nordstrom first', 'error');
             return;
         }
 
@@ -196,8 +197,9 @@ priceTrackBtn.addEventListener('click', async () => {
     try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-        if (!tab.url.includes('amazon.com') && !tab.url.includes('nordstrom.com')) {
-            showToast('Please visit Amazon or Nordstrom first', 'error');
+        const supported = ['amazon.com','nordstrom.com','ebay.com','poshmark.com','mercari.com','depop.com'];
+        if (!supported.some(s => tab.url.includes(s))) {
+            showToast('Visit Amazon, eBay, Poshmark, Mercari, Depop, or Nordstrom first', 'error');
             return;
         }
 

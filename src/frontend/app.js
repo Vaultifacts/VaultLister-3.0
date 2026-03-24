@@ -6459,7 +6459,7 @@ const fabMenu = {
                         </div>
                     `).join('')}
                 </div>
-                <button class="fab-main">${components.icon('plus', 24)}</button>
+                <button class="fab-main" aria-label="Quick actions">${components.icon('plus', 24)}</button>
             </div>
         `;
     }
@@ -70575,6 +70575,14 @@ function renderApp(pageContent) {
     function applyLayout() {
         var vw = getPhysicalWidth();
         var html = document.documentElement;
+
+        // On real small-screen devices (phones/tablets), screen.width is small.
+        // Don't apply desktop-lock — let CSS breakpoints handle mobile layout.
+        if (screen.width < LOCK_WIDTH) {
+            html.style.zoom = '';
+            html.classList.remove('desktop-lock');
+            return;
+        }
 
         if (vw < LOCK_WIDTH) {
             // Zoom to fit + lock desktop layout (prevent breakpoint CSS)
