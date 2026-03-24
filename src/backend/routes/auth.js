@@ -222,7 +222,7 @@ function enforceSessionLimit(userId) {
 }
 
 export async function authRouter(ctx) {
-    const { method, path, body } = ctx;
+    const { method, path, body, user } = ctx;
     const ip = ctx.ip || 'unknown';
     const userAgent = ctx.userAgent || 'unknown';
 
@@ -728,14 +728,14 @@ export async function authRouter(ctx) {
         }
 
         if (updates.length > 0) {
-            values.push(user.userId);
+            values.push(user.id);
             query.run(
                 `UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 values
             );
         }
 
-        const updatedUser = query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, timezone, locale, preferences, created_at, updated_at FROM users WHERE id = ?', [user.userId]);
+        const updatedUser = query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, timezone, locale, preferences, created_at, updated_at FROM users WHERE id = ?', [user.id]);
 
         return { status: 200, data: { user: updatedUser } };
     }
@@ -757,7 +757,7 @@ export async function authRouter(ctx) {
         }
 
         // SECURITY: Need password_hash for verification
-        const pwUser = query.get('SELECT id, password_hash FROM users WHERE id = ?', [user.userId]);
+        const pwUser = query.get('SELECT id, password_hash FROM users WHERE id = ?', [user.id]);
 
         // SECURITY: User null check
         if (!pwUser) {
@@ -771,7 +771,7 @@ export async function authRouter(ctx) {
 
         // SECURITY: Use async bcrypt with BCRYPT_ROUNDS constant
         const newHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-        query.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, user.userId]);
+        query.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, user.id]);
 
         // SECURITY: Invalidate all other sessions after password change to prevent
         // session hijacking with a stolen pre-change refresh token.
@@ -783,15 +783,15 @@ export async function authRouter(ctx) {
             const invalidated = query.run(
                 `UPDATE sessions SET is_valid = 0
                  WHERE user_id = ? AND refresh_token != ?`,
-                [user.userId, currentRefreshToken]
+                [user.id, currentRefreshToken]
             );
-            logger.info(`[auth] Password changed for user ${user.userId}; invalidated ${invalidated.changes} other session(s)`);
+            logger.info(`[auth] Password changed for user ${user.id}; invalidated ${invalidated.changes} other session(s)`);
         } else {
             const invalidated = query.run(
                 'UPDATE sessions SET is_valid = 0 WHERE user_id = ?',
-                [user.userId]
+                [user.id]
             );
-            logger.info(`[auth] Password changed for user ${user.userId}; invalidated all ${invalidated.changes} session(s) (no current token in context)`);
+            logger.info(`[auth] Password changed for user ${user.id}; invalidated all ${invalidated.changes} session(s) (no current token in context)`);
         }
 
         return { status: 200, data: { message: 'Password updated. All other sessions have been signed out.' } };
