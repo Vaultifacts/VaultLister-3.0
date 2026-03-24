@@ -31,9 +31,6 @@ const IS_TEST_RUNTIME = (() => {
 function isAuthLockoutBypassed(ip = '') {
     if (IS_TEST_RUNTIME) return true;
     if (process.env.DISABLE_RATE_LIMIT === 'true' && process.env.NODE_ENV !== 'production') return true;
-    // Loopback IPs are always local dev/health traffic — never real abuse
-    if (!ip || ip === '::1' || ip === 'localhost' || ip === 'unknown' ||
-        ip.startsWith('127.') || ip.startsWith('::ffff:127.')) return true;
     return false;
 }
 
