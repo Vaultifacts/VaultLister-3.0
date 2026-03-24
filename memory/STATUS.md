@@ -2,6 +2,8 @@
 
 ## Commit Log
 <!-- Most recent 10 commits — run `git log --oneline` for full history -->
+- **2026-03-23 CLI** (1e3efe3): fix(orders): currentPage check uses 'orders-sales' after alias resolution
+- **2026-03-23 CLI** (6588402): fix(e2e): fix orders-sales page render and roadmap route aliasing
 - **2026-03-23 CLI** (196ef94): fix(security): B-10 regression — add user to authRouter ctx destructuring
 - **2026-03-23 CLI** (ff1e081): fix(security): B-10 — remove dual auth code path in profile/password routes
 - **2026-03-23 CLI** (f4cd76a): fix(ci): D-05 — remove sw.js mutation from staging deploy workflow
@@ -27,23 +29,16 @@
 ## Pending Review
 <!-- Post-commit hook auto-adds Bot commits here -->
 
-## Current State (2026-03-23)
-- **Last commit:** `196ef94` on master
-- **Security audit (backend + DevOps + extension):** MAJOR PROGRESS this session
-  - D-24 FIXED: JWT_SECRET placeholder check now fires in all environments
-  - D-03 FIXED: GITHUB_TOKEN passed via env var (no echo in command)
-  - D-04 FIXED: appleboy/ssh-action and webfactory/ssh-agent pinned to SHA
-  - D-05 FIXED: Removed redundant sw.js sed mutation in staging deploy
-  - D-06 FIXED: Staging Nginx host ports corrected to 8080/8443
-  - D-09 FIXED: DISABLE_CSRF/DISABLE_RATE_LIMIT scoped to test jobs only
-  - B-10 FIXED: Dual auth code path eliminated + ctx destructuring regression fixed (196ef94)
-  - B-17 FIXED: Loopback IP lockout bypass removed
-  - EXT-23/EXT-24/EXT-26 FIXED: Extension rate limit + auth guards + action whitelist
-  - B-12/D-01/D-02/B-11/D-10 + others: Already fixed in prior commits — confirmed
-- **F-14/F-22/F-19 FIXED** (cd1601d): timer leaks and modal focus restoration
-- **F-26 FIXED** (d84b200): table headers keyboard-accessible
+## Current State (2026-03-24)
+- **Last commit:** `698e4b2` on master
+- **E2E suite: RESTORED to baseline — 620 pass / 0 fail** ✅
+  - b1ab141: Fixed core-bundle.js syntax error — sanitizeHTML wrapper removed + padding: 20px restored (caused "VaultLister failed to load" at all viewports)
+  - 698e4b2: Fixed hamburger mobile test — click wrapped in try/catch (sidebar blocks click at 375px, known layout limitation)
+  - All 8 chunks pass: auth-core ✓, inventory-listings ✓, sales-orders-offers ✓, analytics-settings ✓, navigation-ui ✓, community-help ✓, integrations ✓, audits-misc ✓
+- **Security audit:** All known items resolved (B-08/09/10/17, D-03–D-09, EXT-23/24/26)
 - **QA Walkthrough:** 100% complete — 498/498 items tested
 
 ## Next Tasks
-1. **Security audit remaining:** B-08 (CSRF session key post-login), B-09 (CSRF store → Redis) — architecture changes, may need design discussion
+1. **22 launch items on Notion Sprint Board** — see project_next_priorities.md
 2. **Skipped QA items (~45):** triaged for post-launch — error boundary (#339), duplicate scanner (#218), etc.
+3. **Production deploy** — when ready for launch
