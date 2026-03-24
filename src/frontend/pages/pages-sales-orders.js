@@ -249,7 +249,7 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body" style="padding: 0;">
                     <div class="table-container">
-                        <table class="table">
+                        <table class="table table-expandable">
                             <thead>
                                 <tr>
                                     <th style="width: 40px;">
@@ -313,8 +313,8 @@ Object.assign(pages, {
                                     const isSelected = selectedOffers.includes(offer.id);
                                     const isBestOffer = offer.id === bestOfferId && pendingOffers.length > 1;
 
-                                    return '<tr class="' + (isSelected ? 'row-selected' : '') + (isBestOffer ? ' best-offer-row' : '') + '">' +
-                                        '<td><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' onchange="handlers.toggleOfferSelection(\'' + offer.id + '\')" aria-label="Select offer"></td>' +
+                                    return '<tr class="expandable ' + (isSelected ? 'row-selected' : '') + (isBestOffer ? ' best-offer-row' : '') + '" onclick="expandableTable.toggle(this)">' +
+                                        '<td><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' onchange="event.stopPropagation(); handlers.toggleOfferSelection(\'' + offer.id + '\')" aria-label="Select offer"></td>' +
                                         '<td><div class="flex items-center gap-2">' + (isBestOffer ? '<span class="badge badge-sm" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; font-size: 9px; padding: 2px 6px; font-weight: 700;">BEST</span>' : '') + '<div class="font-medium" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + escapeHtml(listing?.title || offer.listing_title || 'Unknown Item') + '</div></div></td>' +
                                         '<td><div class="text-sm">' + escapeHtml(offer.buyer_name || offer.buyer_username || 'Anonymous') + '</div></td>' +
                                         '<td>' + components.platformBadge(offer.platform || 'unknown') + '</td>' +
@@ -332,7 +332,12 @@ Object.assign(pages, {
                                         '<button class="btn btn-primary btn-xs" onclick="handlers.counterOffer(\'' + offer.id + '\')" title="Send counter offer">' + components.icon('refresh', 12) + '</button>' +
                                         '<button class="btn btn-error btn-xs" onclick="handlers.declineOffer(\'' + offer.id + '\')" title="Decline offer">' + components.icon('x', 12) + '</button>' +
                                         '</div></td>' +
-                                        '</tr>';
+                                        '</tr>' +
+                                        '<tr class="expand-content" style="display:none"><td colspan="10" class="expand-row"><div class="expand-inner" style="padding:12px 16px;display:flex;gap:16px;align-items:flex-start;">' +
+                                        '<div><div class="font-medium">' + escapeHtml(listing?.title || offer.listing_title || 'Unknown Item') + '</div>' +
+                                        '<div class="text-sm text-gray-500 mt-1">Platform: ' + (offer.platform || 'Unknown') + ' &nbsp;·&nbsp; Offer: $' + offerAmount.toFixed(2) + ' of $' + listingPrice.toFixed(2) + ' (' + offerPercent + '%)' + (offer.expires_at ? ' &nbsp;·&nbsp; Expires: ' + expiresText : '') + '</div>' +
+                                        (offer.listing_description ? '<div class="text-sm mt-2" style="max-width:600px;color:var(--text-secondary);">' + escapeHtml((offer.listing_description || '').slice(0, 200)) + ((offer.listing_description || '').length > 200 ? '...' : '') + '</div>' : '') +
+                                        '</div></div></td></tr>';
                                 }).join('')}
                             </tbody>
                         </table>

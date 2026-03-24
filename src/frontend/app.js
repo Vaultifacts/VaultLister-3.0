@@ -70194,6 +70194,7 @@ async function initApp() {
         renderApp(pages.planner());
     });
     router.register('size-charts', () => renderApp(pages.sizeCharts()));
+    router.register('duplicates', () => modals.duplicates());
     router.register('image-bank', async () => {
         renderApp(pages.imageBank());
         await handlers.loadImageStorageStats();

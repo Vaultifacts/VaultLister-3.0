@@ -1830,7 +1830,8 @@ const handlers = {
                 handlers.loadListings(),
                 handlers.loadSales(),
                 handlers.loadOffers(),
-                handlers.loadOrders()
+                handlers.loadOrders(),
+                handlers.loadPurchases()
             ]);
             store.setState({ dashboardLastRefresh: Date.now() });
             router.navigate('dashboard');
