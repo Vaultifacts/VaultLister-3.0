@@ -869,12 +869,12 @@ Object.assign(handlers, {
                     <h4>Recommended Size: ${data.recommended_size || 'M'}</h4>
                     <p style="color: var(--text-secondary);">Based on your measurements</p>
                     <div style="margin-top: 8px; font-size: 13px;">
-                        ${Object.entries(data.size_conversions || {}).map(([sys, sz]) => `)<span class="badge" style="margin: 2px;">${sys}: ${sz}</span>`).join('')}
+                        ${Object.entries(data.size_conversions || {}).map(([sys, sz]) => `<span class="badge" style="margin: 2px;">${sys}: ${sz}</span>`).join('')}
                     </div>
                 </div>
-            `;
+            `);
         } catch (err) {
-            document.getElementById('size-recommendation-result').innerHTML = sanitizeHTML('<p style="color: var(--text-error));">Failed to get recommendation</p>';
+            document.getElementById('size-recommendation-result').innerHTML = sanitizeHTML('<p style="color: var(--text-error);">Failed to get recommendation</p>');
             console.error(err);
         }
     },
@@ -1570,11 +1570,11 @@ Object.assign(handlers, {
             // Show celebration overlay
             const overlay = document.createElement('div');
             overlay.className = 'checklist-celebration';
-            overlay.innerHTML = sanitizeHTML('<div class="celebration-content">' +)
+            overlay.innerHTML = sanitizeHTML('<div class="celebration-content">' +
                 '<div class="celebration-icon">🎉</div>' +
                 '<h2 style="font-size: 24px; font-weight: 700; margin: 12px 0 4px;">All Tasks Complete!</h2>' +
                 '<p style="color: var(--gray-500); font-size: 14px;">Great job! You finished everything today.</p>' +
-                '</div>';
+                '</div>');
             document.body.appendChild(overlay);
             setTimeout(() => {
                 overlay.classList.add('fade-out');
@@ -4598,7 +4598,7 @@ Object.assign(handlers, {
 
         const listEl = document.getElementById('event-item-list');
         if (listEl) {
-            listEl.innerHTML = sanitizeHTML(filtered.length === 0 ?)
+            listEl.innerHTML = sanitizeHTML(filtered.length === 0 ?
                 '<p class="text-gray-500 text-center py-4">No items found</p>' :
                 filtered.slice(0, 20).map(item => `
                     <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" onclick="handlers.selectEventItem('', '${item.id}')">
@@ -4611,7 +4611,7 @@ Object.assign(handlers, {
                         </div>
                         <button class="btn btn-sm btn-primary">Add</button>
                     </div>
-                `).join('');
+                `).join(''));
         }
     },
 
