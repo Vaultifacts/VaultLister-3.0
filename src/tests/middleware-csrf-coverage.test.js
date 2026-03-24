@@ -1,17 +1,53 @@
 // middleware-csrf-coverage.test.js — Coverage-focused tests for csrf.js
-// Tests CSRFManager internals (expiry, session mismatch, max token eviction, cleanup,
-// getOldestToken edge cases), validateCSRF in non-test env, skip paths, body token,
-// and applyCSRFProtection error response.
+// Tests CSRFManager internals (expiry, session mismatch, cleanup, getStats),
+// validateCSRF in non-test env, skip paths, body token, and applyCSRFProtection.
 // Only mocks database.js and logger.js per project rules.
 import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
+
+// ── In-memory simulation of the csrf_tokens SQLite table ────────────────────
+
+const tokenStore = new Map(); // token → { session_id, expires_at, created_at }
 
 // ── Mocks ───────────────────────────────────────────────────────────────────
 
 mock.module('../backend/db/database.js', () => ({
     query: {
-        get: mock(() => null),
+        get: mock((sql, params) => {
+            if (typeof sql === 'string' && sql.includes('COUNT')) {
+                // getStats query: SELECT COUNT(*) as total, MIN(created_at) as oldest
+                if (tokenStore.size === 0) return { total: 0, oldest: null };
+                let oldest = Infinity;
+                for (const v of tokenStore.values()) {
+                    if (v.created_at < oldest) oldest = v.created_at;
+                }
+                return { total: tokenStore.size, oldest: oldest === Infinity ? null : oldest };
+            }
+            // validateToken query: SELECT session_id, expires_at FROM csrf_tokens WHERE token = ?
+            const token = params?.[0];
+            return tokenStore.get(token) ?? null;
+        }),
         all: mock(() => []),
-        run: mock(() => ({ changes: 1 })),
+        run: mock((sql, params) => {
+            if (typeof sql === 'string') {
+                if (sql.includes('INSERT INTO csrf_tokens')) {
+                    tokenStore.set(params[0], {
+                        session_id: params[1] ?? '',
+                        expires_at: params[2],
+                        created_at: Date.now(),
+                    });
+                } else if (sql.includes('DELETE FROM csrf_tokens WHERE token')) {
+                    tokenStore.delete(params[0]);
+                } else if (sql.includes('DELETE FROM csrf_tokens WHERE expires_at')) {
+                    const cutoff = params[0];
+                    for (const [k, v] of tokenStore) {
+                        if (v.expires_at < cutoff) tokenStore.delete(k);
+                    }
+                } else if (sql.includes('DELETE FROM csrf_tokens')) {
+                    tokenStore.clear();
+                }
+            }
+            return { changes: 1 };
+        }),
         prepare: mock(() => ({ run: mock(), get: mock(() => null), all: mock(() => []) })),
         exec: mock(() => undefined),
         transaction: mock((fn) => fn()),
@@ -46,8 +82,8 @@ const {
     clearCSRFTokens,
 } = await import('../backend/middleware/csrf.js');
 
-// Isolate the csrfManager singleton between tests
-beforeEach(() => { clearCSRFTokens(); });
+// Isolate state between tests
+beforeEach(() => { tokenStore.clear(); clearCSRFTokens(); });
 
 // ── Environment manipulation helpers ────────────────────────────────────────
 
@@ -80,26 +116,24 @@ function restoreEnv() {
 
 describe('CSRFManager — token expiry', () => {
     test('expired token is rejected by validateToken', () => {
-        // Manually insert a token with a past expiresAt
         const fakeToken = 'expired-token-test-' + Date.now();
-        csrfManager.tokens.set(fakeToken, {
-            sessionId: 'session-1',
-            expiresAt: Date.now() - 1000, // already expired
-            createdAt: Date.now() - 5000,
+        tokenStore.set(fakeToken, {
+            session_id: 'session-1',
+            expires_at: Date.now() - 1000,
+            created_at: Date.now() - 5000,
         });
 
         const isValid = csrfManager.validateToken(fakeToken, 'session-1');
         expect(isValid).toBe(false);
-        // Token should have been deleted
-        expect(csrfManager.tokens.has(fakeToken)).toBe(false);
+        expect(tokenStore.has(fakeToken)).toBe(false);
     });
 
     test('token right at expiry boundary is rejected', () => {
         const fakeToken = 'boundary-token-' + Date.now();
-        csrfManager.tokens.set(fakeToken, {
-            sessionId: null,
-            expiresAt: Date.now() - 1, // just expired
-            createdAt: Date.now() - 1000,
+        tokenStore.set(fakeToken, {
+            session_id: null,
+            expires_at: Date.now() - 1,
+            created_at: Date.now() - 1000,
         });
 
         expect(csrfManager.validateToken(fakeToken)).toBe(false);
@@ -112,16 +146,15 @@ describe('CSRFManager — token expiry', () => {
 
 describe('CSRFManager — session ID validation', () => {
     test('valid when no sessionId constraint on token', () => {
-        const token = csrfManager.generateToken(null); // null sessionId
-        // Validate with a sessionId — should pass since tokenData.sessionId is null
+        const token = csrfManager.generateToken(null); // null → stored as ''
+        // Validate with a sessionId — passes since row.session_id is '' (falsy)
         expect(csrfManager.validateToken(token, 'any-session')).toBe(true);
     });
 
     test('valid when no sessionId provided for validation', () => {
         const token = csrfManager.generateToken('session-x');
-        // Validate without sessionId constraint — should pass
+        // Validate without sessionId constraint — passes
         expect(csrfManager.validateToken(token, null)).toBe(true);
-        // Also without second arg
         expect(csrfManager.validateToken(token)).toBe(true);
     });
 
@@ -137,37 +170,20 @@ describe('CSRFManager — session ID validation', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CSRFManager — max token eviction
+// CSRFManager — token generation (SQLite-backed)
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('CSRFManager — max token eviction', () => {
-    test('evicts oldest tokens when maxTokens is exceeded', () => {
-        // Save original maxTokens and set a low threshold for testing
-        const originalMax = csrfManager.maxTokens;
-        csrfManager.maxTokens = 5;
+describe('CSRFManager — token generation (SQLite-backed)', () => {
+    test('generates unique tokens on each call', () => {
+        const t1 = csrfManager.generateToken('session-a');
+        const t2 = csrfManager.generateToken('session-b');
+        expect(t1).not.toBe(t2);
+        expect(tokenStore.size).toBe(2);
+    });
 
-        // Clear existing tokens to have a clean slate
-        const savedTokens = new Map(csrfManager.tokens);
-        csrfManager.tokens.clear();
-
-        // Generate 5 tokens to fill up
-        const tokens = [];
-        for (let i = 0; i < 5; i++) {
-            tokens.push(csrfManager.generateToken(`eviction-${i}`));
-        }
-        expect(csrfManager.tokens.size).toBe(5);
-
-        // Generate one more — should trigger eviction
-        const newToken = csrfManager.generateToken('eviction-new');
-        // After eviction of 1000 (but only 5 existed), new token is still there
-        expect(csrfManager.validateToken(newToken)).toBe(true);
-
-        // Restore
-        csrfManager.maxTokens = originalMax;
-        csrfManager.tokens.clear();
-        for (const [k, v] of savedTokens) {
-            csrfManager.tokens.set(k, v);
-        }
+    test('generateToken returns 64-char hex string', () => {
+        const token = csrfManager.generateToken('sess');
+        expect(token).toMatch(/^[0-9a-f]{64}$/);
     });
 });
 
@@ -180,24 +196,23 @@ describe('CSRFManager — cleanup', () => {
         const expiredToken = 'cleanup-expired-' + Date.now();
         const validToken = 'cleanup-valid-' + Date.now();
 
-        csrfManager.tokens.set(expiredToken, {
-            sessionId: null,
-            expiresAt: Date.now() - 1000,
-            createdAt: Date.now() - 5000,
+        tokenStore.set(expiredToken, {
+            session_id: null,
+            expires_at: Date.now() - 1000,
+            created_at: Date.now() - 5000,
         });
-        csrfManager.tokens.set(validToken, {
-            sessionId: null,
-            expiresAt: Date.now() + 3600000,
-            createdAt: Date.now(),
+        tokenStore.set(validToken, {
+            session_id: null,
+            expires_at: Date.now() + 3600000,
+            created_at: Date.now(),
         });
 
         csrfManager.cleanup();
 
-        expect(csrfManager.tokens.has(expiredToken)).toBe(false);
-        expect(csrfManager.tokens.has(validToken)).toBe(true);
+        expect(tokenStore.has(expiredToken)).toBe(false);
+        expect(tokenStore.has(validToken)).toBe(true);
 
-        // Clean up
-        csrfManager.tokens.delete(validToken);
+        tokenStore.delete(validToken);
     });
 
     test('cleanup is idempotent — calling twice is safe', () => {
@@ -206,66 +221,47 @@ describe('CSRFManager — cleanup', () => {
         // No errors thrown
     });
 
-    test('cleanup on empty tokens map is safe', () => {
-        const savedTokens = new Map(csrfManager.tokens);
-        csrfManager.tokens.clear();
+    test('cleanup on empty store is safe', () => {
+        tokenStore.clear();
         csrfManager.cleanup();
-        expect(csrfManager.tokens.size).toBe(0);
-
-        // Restore
-        for (const [k, v] of savedTokens) {
-            csrfManager.tokens.set(k, v);
-        }
+        expect(tokenStore.size).toBe(0);
     });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CSRFManager — getOldestToken
+// CSRFManager — getStats (includes oldestToken)
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('CSRFManager — getOldestToken', () => {
-    test('returns 0 when no tokens exist', () => {
-        const savedTokens = new Map(csrfManager.tokens);
-        csrfManager.tokens.clear();
-
-        expect(csrfManager.getOldestToken()).toBe(0);
-
-        // Restore
-        for (const [k, v] of savedTokens) {
-            csrfManager.tokens.set(k, v);
-        }
+describe('CSRFManager — getStats (oldestToken)', () => {
+    test('oldestToken is 0 when no tokens exist', () => {
+        tokenStore.clear();
+        expect(csrfManager.getStats().oldestToken).toBe(0);
     });
 
-    test('returns age of oldest token', () => {
-        const savedTokens = new Map(csrfManager.tokens);
-        csrfManager.tokens.clear();
-
+    test('oldestToken reflects age of oldest token', () => {
+        tokenStore.clear();
         const oldTime = Date.now() - 60000; // 1 minute ago
-        csrfManager.tokens.set('old-token', {
-            sessionId: null,
-            expiresAt: Date.now() + 3600000,
-            createdAt: oldTime,
+        tokenStore.set('old-token', {
+            session_id: null,
+            expires_at: Date.now() + 3600000,
+            created_at: oldTime,
         });
-        csrfManager.tokens.set('new-token', {
-            sessionId: null,
-            expiresAt: Date.now() + 3600000,
-            createdAt: Date.now(),
+        tokenStore.set('new-token', {
+            session_id: null,
+            expires_at: Date.now() + 3600000,
+            created_at: Date.now(),
         });
 
-        const age = csrfManager.getOldestToken();
+        const age = csrfManager.getStats().oldestToken;
         expect(age).toBeGreaterThanOrEqual(59000);
         expect(age).toBeLessThan(120000);
 
-        // Restore
-        csrfManager.tokens.clear();
-        for (const [k, v] of savedTokens) {
-            csrfManager.tokens.set(k, v);
-        }
+        tokenStore.clear();
     });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CSRFManager — getStats
+// CSRFManager — getStats edge cases
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('CSRFManager — getStats edge cases', () => {
@@ -283,7 +279,7 @@ describe('CSRFManager — getStats edge cases', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CSRFManager — consumeToken
+// CSRFManager — consumeToken edge cases
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('CSRFManager — consumeToken edge cases', () => {
@@ -310,7 +306,6 @@ describe('addCSRFToken — edge cases', () => {
         expect(typeof token).toBe('string');
         expect(token.length).toBe(64);
         expect(ctx.csrfToken).toBe(token);
-        // Token should be valid for that sessionId (ip)
         expect(csrfManager.validateToken(token, '10.0.0.1')).toBe(true);
     });
 
@@ -320,11 +315,11 @@ describe('addCSRFToken — edge cases', () => {
         expect(csrfManager.validateToken(token, '10.0.0.2')).toBe(true);
     });
 
-    test('always uses ip for session ID even when user is present', () => {
+    test('uses ip:userId for session ID when user is present (B-08)', () => {
         const ctx = { user: { id: 'uid-99' }, ip: '10.0.0.3' };
         const token = addCSRFToken(ctx);
-        // After CSRF fix (df02d35): IP-only to avoid mismatch on auth routes
-        expect(csrfManager.validateToken(token, '10.0.0.3')).toBe(true);
+        // B-08: binds token to ip:userId when authenticated
+        expect(csrfManager.validateToken(token, '10.0.0.3:uid-99')).toBe(true);
     });
 });
 
@@ -424,14 +419,12 @@ describe('validateCSRF — enforced mode (production)', () => {
 
     test('token is consumed after successful validation (one-time use)', () => {
         const token = csrfManager.generateToken('1.2.3.4');
-        // First use — should pass
         const result1 = validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': token },
             path: '/api/inventory', user: null, ip: '1.2.3.4', body: {},
         });
         expect(result1.valid).toBe(true);
 
-        // Second use — token consumed, should fail
         const result2 = validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': token },
             path: '/api/inventory', user: null, ip: '1.2.3.4', body: {},
@@ -452,10 +445,10 @@ describe('validateCSRF — enforced mode (production)', () => {
 
     test('expired token returns error', () => {
         const fakeToken = 'force-expired-' + Date.now();
-        csrfManager.tokens.set(fakeToken, {
-            sessionId: '1.2.3.4',
-            expiresAt: Date.now() - 1000,
-            createdAt: Date.now() - 5000,
+        tokenStore.set(fakeToken, {
+            session_id: '1.2.3.4',
+            expires_at: Date.now() - 1000,
+            created_at: Date.now() - 5000,
         });
 
         const result = validateCSRF({
@@ -476,8 +469,8 @@ describe('validateCSRF — enforced mode (production)', () => {
         expect(result.error).toBe('Invalid or expired CSRF token');
     });
 
-    test('uses ip as sessionId even when user is present', () => {
-        const token = csrfManager.generateToken('1.2.3.4');
+    test('uses ip:userId as sessionId when user is present (B-08)', () => {
+        const token = csrfManager.generateToken('1.2.3.4:user-77');
         const result = validateCSRF({
             method: 'POST', headers: { 'x-csrf-token': token },
             path: '/api/inventory', user: { id: 'user-77' }, ip: '1.2.3.4', body: {},
@@ -523,8 +516,6 @@ describe('validateCSRF — skip paths (production)', () => {
     });
 
     test('non-api skip paths also work (stripped /api prefix)', () => {
-        // The code checks: ctx.path === path.replace('/api', '')
-        // So /auth/login should also be skipped
         const result = validateCSRF({
             method: 'POST', headers: {}, path: '/auth/login',
             user: null, ip: '1.2.3.4', body: {},
@@ -674,7 +665,6 @@ describe('csrfConfig — additional checks', () => {
     });
 
     test('cookie.secure reflects NODE_ENV', () => {
-        // In test env, secure should be false
         expect(typeof csrfConfig.cookie.secure).toBe('boolean');
     });
 

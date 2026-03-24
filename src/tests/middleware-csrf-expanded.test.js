@@ -1,9 +1,58 @@
 // CSRF Middleware — Pure Function & Lifecycle Unit Tests
-import { describe, expect, test, beforeEach } from 'bun:test';
-import { csrfConfig, csrfManager, addCSRFToken, validateCSRF, applyCSRFProtection, clearCSRFTokens } from '../backend/middleware/csrf.js';
+import { describe, expect, test, mock, beforeEach } from 'bun:test';
+
+// In-memory simulation of the csrf_tokens SQLite table
+const tokenStore = new Map();
+
+mock.module('../backend/db/database.js', () => ({
+    query: {
+        get: mock((sql, params) => {
+            if (typeof sql === 'string' && sql.includes('COUNT')) {
+                if (tokenStore.size === 0) return { total: 0, oldest: null };
+                let oldest = Infinity;
+                for (const v of tokenStore.values()) {
+                    if (v.created_at < oldest) oldest = v.created_at;
+                }
+                return { total: tokenStore.size, oldest: oldest === Infinity ? null : oldest };
+            }
+            return tokenStore.get(params?.[0]) ?? null;
+        }),
+        all: mock(() => []),
+        run: mock((sql, params) => {
+            if (typeof sql === 'string') {
+                if (sql.includes('INSERT INTO csrf_tokens')) {
+                    tokenStore.set(params[0], { session_id: params[1] ?? '', expires_at: params[2], created_at: Date.now() });
+                } else if (sql.includes('DELETE FROM csrf_tokens WHERE token')) {
+                    tokenStore.delete(params[0]);
+                } else if (sql.includes('DELETE FROM csrf_tokens WHERE expires_at')) {
+                    const cutoff = params[0];
+                    for (const [k, v] of tokenStore) { if (v.expires_at < cutoff) tokenStore.delete(k); }
+                } else if (sql.includes('DELETE FROM csrf_tokens')) {
+                    tokenStore.clear();
+                }
+            }
+            return { changes: 1 };
+        }),
+        prepare: mock(() => ({ run: mock(), get: mock(() => null), all: mock(() => []) })),
+        exec: mock(() => undefined),
+        transaction: mock((fn) => fn()),
+    },
+    models: { create: mock(), findById: mock(), findOne: mock(), findMany: mock(() => []), update: mock(), delete: mock(), count: mock(() => 0) },
+    escapeLike: (str) => String(str).replace(/[%_\\]/g, '\\$&'),
+    cleanupExpiredData: mock(() => ({})),
+    initializeDatabase: mock(() => true),
+    default: {},
+}));
+
+mock.module('../backend/shared/logger.js', () => {
+    const l = { info: mock(), warn: mock(), error: mock(), debug: mock(), request: mock(), db: mock(), automation: mock(), bot: mock(), security: mock(), performance: mock() };
+    return { ...l, logger: l, createLogger: mock(() => l), default: l };
+});
+
+const { csrfConfig, csrfManager, addCSRFToken, validateCSRF, applyCSRFProtection, clearCSRFTokens } = await import('../backend/middleware/csrf.js');
 
 // Isolate the csrfManager singleton between tests so token state never bleeds
-beforeEach(() => { clearCSRFTokens(); });
+beforeEach(() => { tokenStore.clear(); clearCSRFTokens(); });
 
 describe('csrfConfig', () => {
     test('has headerNames array with expected values', () => {
@@ -84,11 +133,11 @@ describe('addCSRFToken', () => {
         expect(ctx.csrfToken).toBe(token);
     });
 
-    test('always uses ip for session ID even when user is present', () => {
+    test('uses ip:userId for session ID when user is present (B-08)', () => {
         const ctx = { user: { id: 'user-123' }, ip: '127.0.0.1' };
         const token = addCSRFToken(ctx);
-        // After CSRF fix (df02d35): IP-only to avoid mismatch on auth routes
-        expect(csrfManager.validateToken(token, '127.0.0.1')).toBe(true);
+        // B-08: binds token to ip:userId when authenticated
+        expect(csrfManager.validateToken(token, '127.0.0.1:user-123')).toBe(true);
     });
 });
 
