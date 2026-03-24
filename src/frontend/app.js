@@ -70182,9 +70182,9 @@ async function initApp() {
         renderApp(pages.orders());
     });
     router.register('orders-sales', async () => {
-        renderApp(pages.ordersSales());
+        renderApp(pages.orders());
         await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
-        renderApp(pages.ordersSales());
+        renderApp(pages.orders());
     });
     router.register('checklist', () => renderApp(pages.checklist()));
     router.register('calendar', () => renderApp(pages.calendar()));

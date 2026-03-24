@@ -15239,7 +15239,7 @@ const router = {
         'suppliers': { target: 'analytics', tab: 'sourcing' },
         'platform-health': { target: 'shops', tab: 'health' },
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
-        'roadmap': { target: 'help-support', tab: 'roadmap' },
+        // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
         'teams': { target: 'settings', tab: 'teams' },
         'size-charts': { target: 'settings', tab: 'reference-data' },
@@ -27002,9 +27002,9 @@ async function initApp() {
     });
     // Consolidated: Orders & Sales page
     router.register('orders-sales', async () => {
-        renderApp(pages.ordersSales());
+        renderApp(pages.orders());
         await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
-        renderApp(pages.ordersSales());
+        renderApp(pages.orders());
     });
     router.register('checklist', () => renderApp(pages.checklist()));
     router.register('calendar', () => renderApp(pages.calendar()));

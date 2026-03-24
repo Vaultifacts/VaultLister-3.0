@@ -182,7 +182,7 @@ const router = {
         'suppliers': { target: 'analytics', tab: 'sourcing' },
         'platform-health': { target: 'shops', tab: 'health' },
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
-        'roadmap': { target: 'help-support', tab: 'roadmap' },
+        // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
         'teams': { target: 'settings', tab: 'teams' },
         'size-charts': { target: 'settings', tab: 'reference-data' },
