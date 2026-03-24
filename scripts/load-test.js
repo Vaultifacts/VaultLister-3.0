@@ -46,7 +46,7 @@ const GET_ENDPOINTS = [
     { method: 'GET', path: '/api/community/posts', auth: true, tag: 'community' },
     { method: 'GET', path: '/api/feedback', auth: true, tag: 'feedback' },
     { method: 'GET', path: '/api/roadmap', auth: true, tag: 'roadmap' },
-    { method: 'GET', path: '/api/monitoring/health', auth: false, tag: 'monitoring' },
+    { method: 'GET', path: '/api/monitoring/health', auth: true, tag: 'monitoring' },
 ];
 
 const MUTATION_ENDPOINTS = [
