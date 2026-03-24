@@ -142,14 +142,18 @@ services:
       dockerfile: Dockerfile
     container_name: vaultlister-backup-scheduler
     restart: unless-stopped
-    entrypoint: ["sh", "-c", "bun run scripts/backup.js --compress; while true; do sleep 86400; bun run scripts/backup.js --compress; done"]
+    entrypoint: ["sh", "-c", "bun run scripts/backup-automation.js backup; while true; do sleep 86400; bun run scripts/backup-automation.js backup; done"]
     environment:
       - DATA_DIR=/app/data
       - BACKUP_DIR=/app/backups
-      - ONEDRIVE_ENABLED=${ONEDRIVE_ENABLED:-false}
+      - CLOUD_BACKUP_ENABLED=${CLOUD_BACKUP_ENABLED:-false}
+      - VAULTLISTER_RCLONE_REMOTE=${VAULTLISTER_RCLONE_REMOTE:-vaultlister-backup}
+      - VAULTLISTER_REMOTE_PATH=${VAULTLISTER_REMOTE_PATH:-VaultLister/Backups}
+      - RCLONE_PATH=/usr/bin/rclone
     volumes:
       - vaultlister-data:/app/data:ro
       - vaultlister-backups:/app/backups
+      - ${RCLONE_CONFIG_DIR:-/root/.config/rclone}:/root/.config/rclone:ro
     depends_on:
       app:
         condition: service_healthy

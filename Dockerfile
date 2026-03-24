@@ -48,6 +48,12 @@ COPY --from=builder --chown=vaultlister:nodejs /app/dist ./dist
 COPY --from=builder --chown=vaultlister:nodejs /app/scripts/build-frontend.js ./scripts/build-frontend.js
 COPY --from=builder --chown=vaultlister:nodejs /app/package.json ./
 
+# Install rclone for cloud backup sync
+RUN apt-get update && apt-get install -y --no-install-recommends rclone && rm -rf /var/lib/apt/lists/*
+
+# Copy backup scripts needed by the scheduler
+COPY --from=builder --chown=vaultlister:nodejs /app/scripts ./scripts
+
 # Create data directory for SQLite
 RUN mkdir -p /app/data /app/logs /app/backups && \
     chown -R vaultlister:nodejs /app/data /app/logs /app/backups
