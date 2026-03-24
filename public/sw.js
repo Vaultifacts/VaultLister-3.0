@@ -1,30 +1,30 @@
 ﻿// VaultLister Service Worker v4.7
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v4.7';
+const CACHE_VERSION = 'v4.8';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
 // Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=82d80cbf',
-    '/styles/main.css?v=82d80cbf',
+    '/core-bundle.js?v=a18610f4',
+    '/styles/main.css?v=a18610f4',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/favicon.svg',
-    '/components/photoEditor.js?v=82d80cbf',
-    '/components/chatWidget.js?v=82d80cbf',
-    '/chunk-inventory.js?v=82d80cbf',
+    '/components/photoEditor.js?v=a18610f4',
+    '/components/chatWidget.js?v=a18610f4',
+    '/chunk-inventory.js?v=a18610f4',
 ];
 
 // Secondary chunks — fetched in the background during activate
 const BACKGROUND_CACHE_URLS = [
-    '/chunk-sales.js?v=82d80cbf',
-    '/chunk-tools.js?v=82d80cbf',
-    '/chunk-intelligence.js?v=82d80cbf',
-    '/chunk-settings.js?v=82d80cbf',
-    '/chunk-community.js?v=82d80cbf',
+    '/chunk-sales.js?v=a18610f4',
+    '/chunk-tools.js?v=a18610f4',
+    '/chunk-intelligence.js?v=a18610f4',
+    '/chunk-settings.js?v=a18610f4',
+    '/chunk-community.js?v=a18610f4',
 ];
 
 // â”€â”€â”€ Install: pre-cache app shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
