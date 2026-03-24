@@ -1,5 +1,5 @@
 {
-  "deny_patterns": 28,
+  "deny_patterns": 31,
   "validate_bash_patterns": "global",
   "protected_files": "global",
   "agent_files": 14,
