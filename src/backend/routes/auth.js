@@ -704,17 +704,7 @@ export async function authRouter(ctx) {
 
     // PUT /api/auth/profile
     if (method === 'PUT' && path === '/profile') {
-        const authHeader = ctx.request.headers.get('Authorization');
-        if (!authHeader) {
-            return { status: 401, data: { error: 'Not authenticated' } };
-        }
-
-        const token = authHeader.split(' ')[1];
-        const decoded = verifyToken(token);
-
-        if (!decoded) {
-            return { status: 401, data: { error: 'Invalid token' } };
-        }
+        if (!user) return { status: 401, data: { error: 'Not authenticated' } };
 
         const { fullName, timezone, locale, preferences } = body;
         const updates = [];
@@ -738,31 +728,21 @@ export async function authRouter(ctx) {
         }
 
         if (updates.length > 0) {
-            values.push(decoded.userId);
+            values.push(user.userId);
             query.run(
                 `UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 values
             );
         }
 
-        const user = query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, timezone, locale, preferences, created_at, updated_at FROM users WHERE id = ?', [decoded.userId]);
+        const updatedUser = query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, timezone, locale, preferences, created_at, updated_at FROM users WHERE id = ?', [user.userId]);
 
-        return { status: 200, data: { user } };
+        return { status: 200, data: { user: updatedUser } };
     }
 
     // PUT /api/auth/password
     if (method === 'PUT' && path === '/password') {
-        const authHeader = ctx.request.headers.get('Authorization');
-        if (!authHeader) {
-            return { status: 401, data: { error: 'Not authenticated' } };
-        }
-
-        const token = authHeader.split(' ')[1];
-        const decoded = verifyToken(token);
-
-        if (!decoded) {
-            return { status: 401, data: { error: 'Invalid token' } };
-        }
+        if (!user) return { status: 401, data: { error: 'Not authenticated' } };
 
         const { currentPassword, newPassword } = body;
 
@@ -777,21 +757,21 @@ export async function authRouter(ctx) {
         }
 
         // SECURITY: Need password_hash for verification
-        const user = query.get('SELECT id, password_hash FROM users WHERE id = ?', [decoded.userId]);
+        const pwUser = query.get('SELECT id, password_hash FROM users WHERE id = ?', [user.userId]);
 
         // SECURITY: User null check
-        if (!user) {
+        if (!pwUser) {
             return { status: 404, data: { error: 'User not found' } };
         }
 
         // SECURITY: Use async bcrypt to avoid blocking event loop
-        if (!(await bcrypt.compare(currentPassword, user.password_hash))) {
+        if (!(await bcrypt.compare(currentPassword, pwUser.password_hash))) {
             return { status: 401, data: { error: 'Current password incorrect' } };
         }
 
         // SECURITY: Use async bcrypt with BCRYPT_ROUNDS constant
         const newHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-        query.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, decoded.userId]);
+        query.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, user.userId]);
 
         // SECURITY: Invalidate all other sessions after password change to prevent
         // session hijacking with a stolen pre-change refresh token.
@@ -803,15 +783,15 @@ export async function authRouter(ctx) {
             const invalidated = query.run(
                 `UPDATE sessions SET is_valid = 0
                  WHERE user_id = ? AND refresh_token != ?`,
-                [decoded.userId, currentRefreshToken]
+                [user.userId, currentRefreshToken]
             );
-            logger.info(`[auth] Password changed for user ${decoded.userId}; invalidated ${invalidated.changes} other session(s)`);
+            logger.info(`[auth] Password changed for user ${user.userId}; invalidated ${invalidated.changes} other session(s)`);
         } else {
             const invalidated = query.run(
                 'UPDATE sessions SET is_valid = 0 WHERE user_id = ?',
-                [decoded.userId]
+                [user.userId]
             );
-            logger.info(`[auth] Password changed for user ${decoded.userId}; invalidated all ${invalidated.changes} session(s) (no current token in context)`);
+            logger.info(`[auth] Password changed for user ${user.userId}; invalidated all ${invalidated.changes} session(s) (no current token in context)`);
         }
 
         return { status: 200, data: { message: 'Password updated. All other sessions have been signed out.' } };
