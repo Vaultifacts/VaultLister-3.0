@@ -15165,7 +15165,7 @@ function loadChunk(chunkName) {
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
     const v = '82d80cbf';
-    const src = '/chunk-' + chunkName + '.js?v=' + v;
+    const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
         var timeout = setTimeout(function() {

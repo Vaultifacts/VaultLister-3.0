@@ -96,6 +96,7 @@ import { applySecurityHeaders, securityHeadersConfig, buildCSPWithNonce } from '
 import { handleError } from './middleware/errorHandler.js';
 import { logRequestComplete } from './middleware/requestLogger.js';
 import { generateETag, etagMatches } from './middleware/cache.js';
+import { CDN_URL, getPreloadHints } from './middleware/cdn.js';
 import { startTokenRefreshScheduler, stopTokenRefreshScheduler, getRefreshSchedulerStatus } from './services/tokenRefreshScheduler.js';
 import { startSyncScheduler, stopSyncScheduler } from './services/syncScheduler.js';
 import { startTaskWorker, stopTaskWorker, getTaskWorkerStatus } from './workers/taskWorker.js';
@@ -1458,10 +1459,14 @@ const server = Bun.serve({
                 : html;
 
         if (_indexHtml !== null) {
-            const content = injectNonce(_indexHtml);
+            const cdnScript = CDN_URL ? `<script>window.__CDN_URL__='${CDN_URL}';</script>` : '';
+            const htmlWithCdn = cdnScript ? _indexHtml.replace('</head>', cdnScript + '</head>') : _indexHtml;
+            const content = injectNonce(htmlWithCdn);
+            const preloadHeader = getPreloadHints();
             const htmlHeaders = {
                 'Content-Type': 'text/html',
                 'Cache-Control': 'no-cache, must-revalidate',
+                ...(preloadHeader && { 'Link': preloadHeader }),
                 ...dynamicCorsHeaders,
                 ...spaSecHeaders
             };
