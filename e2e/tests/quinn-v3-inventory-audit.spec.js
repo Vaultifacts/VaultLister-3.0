@@ -786,9 +786,11 @@ test.describe('Quinn v3 > Inventory Page > Batch 4: Add Item Modal Fields', () =
     const qtyValue = await quantity.inputValue();
     console.log(`Quantity default value: "${qtyValue}"`);
 
-    // --- Description textarea ---
-    const description = modal.locator('textarea[name="description"]');
-    await expect(description).toBeVisible();
+    // --- Description (rich text editor — backing field is hidden input) ---
+    const richEditor = modal.locator('#add-item-rich-editor');
+    await expect(richEditor).toBeVisible();
+    const descInput = modal.locator('input[name="description"]');
+    expect(await descInput.count()).toBe(1);
 
     // --- Negative: Negative price ---
     await costPrice.fill('-10');
