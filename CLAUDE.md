@@ -84,9 +84,64 @@ Key decisions:
 | Run unit tests | `bun run test:unit` |
 | Run E2E tests | `bun run test:e2e` |
 | Run visual tests | `node scripts/visual-test.js` |
-| Reset database | `bun run db:reset` |
+| Reset database | `bun run db:reset` _(requires user approval — denied by settings.json)_ |
 | Syntax check | `bun run lint` |
 | Script help | `bun scripts/help.js` |
+
+## Project Structure
+
+```
+/
+├── src/
+│   ├── backend/         # Server, routes, middleware, services
+│   ├── frontend/        # app.js (SPA core-bundle.js), pages/, handlers/, styles/
+│   ├── shared/          # AI (src/shared/ai/), automations, utils
+│   └── tests/           # Unit tests (Bun:test)
+├── e2e/                 # Playwright E2E tests
+├── data/                # SQLite database + backups
+├── public/              # Static assets, uploads
+├── scripts/             # Utility scripts
+├── claude-docs/         # Legacy docs (reference, commands, project-control)
+├── design/              # Design artifacts (source of truth)
+└── memory/              # Session state (STATUS.md, MEMORY.md, COMPLETED.md)
+```
+
+## Reference Documents
+
+Load on demand based on task — do not read all at once:
+
+| Task | Reference |
+|------|-----------|
+| API endpoints, routes | `claude-docs/docs/reference/api.md` |
+| Backend architecture, services | `claude-docs/docs/reference/backend.md` |
+| Frontend components, state, handlers | `claude-docs/docs/reference/frontend.md` |
+| Database schema, migrations, queries | `claude-docs/docs/reference/database.md` |
+| CSRF, rate limiting, auth | `claude-docs/docs/reference/security.md` |
+| Test patterns, commands | `claude-docs/docs/reference/testing.md` |
+
+## Key Patterns
+
+**API Route:**
+```javascript
+export async function routerName(ctx) {
+    const { method, path, body, query: queryParams, user } = ctx;
+    return { status: 200, data: {...} };
+}
+```
+
+**Database Query:**
+```javascript
+import { query } from '../db/database.js';
+query.get(sql, params);   // Single row
+query.all(sql, params);   // Multiple rows
+query.run(sql, params);   // INSERT/UPDATE/DELETE
+```
+
+**State Update:**
+```javascript
+store.setState({ key: value });
+renderApp(pages.currentPage());
+```
 
 ## Critical Rules
 
@@ -99,6 +154,7 @@ Key decisions:
 7. **Use TEXT for all ID columns** (UUIDs, not INTEGER)
 8. **Include CSRF token** for POST/PUT/PATCH/DELETE requests
 9. **Notion page IDs are in `.env`** — never hardcode them in scripts
+10. **Never call `router.handleRoute()` from data loading functions** — causes infinite loops
 
 ## Bot Safety Rules (MANDATORY for automated agents)
 
@@ -155,6 +211,8 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 5. Memory files (`MEMORY.md`) — behavioral guidance, advisory
 6. Global `~/.claude/CLAUDE.md` — defaults, overridden by project
 
+> **Warning:** If Claude Code is launched from a directory above this project, any `CLAUDE.md` in that parent directory is also loaded and may conflict. Always launch Claude Code from inside this project directory (`cd vaultlister-3 && claude`).
+
 ## Code Conventions
 - This project uses **Bun** (not npm) despite the global CLAUDE.md default
 - Prefer existing patterns in the codebase over introducing new abstractions
@@ -206,7 +264,6 @@ These items require manual action before the first Claude Code session.
 - [ ] Set `ANTHROPIC_API_KEY` in `.env` for AI listing generation and Vault Buddy
 - [ ] Configure marketplace API credentials in `.env` (eBay OAuth, Etsy API, Poshmark, Mercari)
 - [ ] Install Playwright browsers: `bunx playwright install`
-- [ ] Set `GITHUB_TOKEN` in `.env` (used by .mcp.json GitHub MCP server)
 - [ ] Implement hook stubs in `.claude/hooks/` — each stub has behavior spec in comments
 - [ ] Review `.claude/settings.json` deny rules — tighten or relax as needed
 - [ ] Test a Claude Code session to confirm hooks run without error before a full autonomous session

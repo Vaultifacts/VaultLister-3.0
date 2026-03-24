@@ -32,7 +32,7 @@ for f in .claude/agents/*.md; do
     [ -f "$f" ] && ACTUAL_AGENTS=$((ACTUAL_AGENTS + 1))
 done
 
-MEMORY_DIR="$HOME/.claude/projects/C--Users-Matt1-OneDrive-Desktop-Claude-Code-Project-Brainstormer-vaultlister-3/memory"
+MEMORY_DIR="$HOME/.claude/projects/C--Users-Matt1-OneDrive-Desktop-vaultlister-3/memory"
 ACTUAL_MEMORY=0
 if [ -d "$MEMORY_DIR" ]; then
     for f in "$MEMORY_DIR"/*.md; do
