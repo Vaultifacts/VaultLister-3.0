@@ -610,6 +610,14 @@ function renderApp(pageContent) {
         var vw = getPhysicalWidth();
         var html = document.documentElement;
 
+        // On real small-screen devices (phones/tablets), screen.width is small.
+        // Don't apply desktop-lock — let CSS breakpoints handle mobile layout.
+        if (screen.width < LOCK_WIDTH) {
+            html.style.zoom = '';
+            html.classList.remove('desktop-lock');
+            return;
+        }
+
         if (vw < LOCK_WIDTH) {
             // Zoom to fit + lock desktop layout (prevent breakpoint CSS)
             var z = vw / LOCK_WIDTH;
