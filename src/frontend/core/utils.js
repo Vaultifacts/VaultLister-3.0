@@ -33,6 +33,10 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, m => map[m]);
 }
 
+// For INTERNAL template HTML only — allows event handler attributes so inline
+// onclick/onchange patterns in page templates continue to work.
+// NEVER pass user-supplied content (search input, item titles, usernames, etc.)
+// directly to this function — use sanitizeUserContent() for that.
 function sanitizeHTML(html) {
     if (typeof DOMPurify === 'undefined') return html;
     return DOMPurify.sanitize(html, {
@@ -41,6 +45,14 @@ function sanitizeHTML(html) {
                    'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
                    'onscroll', 'ondblclick', 'oncopy', 'onpaste']
     });
+}
+
+// For USER-SUPPLIED content — strict mode, strips all event handlers and
+// dangerous attributes. Use whenever rendering data from API responses,
+// search results, user profile fields, item titles, notes, etc.
+function sanitizeUserContent(html) {
+    if (typeof DOMPurify === 'undefined') return escapeHtml(html);
+    return DOMPurify.sanitize(html);
 }
 
 function escapeRegExp(str) {

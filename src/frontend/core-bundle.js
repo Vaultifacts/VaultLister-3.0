@@ -34,6 +34,8 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, m => map[m]);
 }
 
+// For INTERNAL template HTML only — allows event handler attributes.
+// NEVER pass user-supplied content to this function.
 function sanitizeHTML(html) {
     if (typeof DOMPurify === 'undefined') return String(html).replace(/<[^>]*>/g, '');
     return DOMPurify.sanitize(html, {
@@ -42,6 +44,12 @@ function sanitizeHTML(html) {
                    'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
                    'onscroll', 'ondblclick', 'oncopy', 'onpaste']
     });
+}
+
+// For USER-SUPPLIED content — strict mode, strips all event handlers.
+function sanitizeUserContent(html) {
+    if (typeof DOMPurify === 'undefined') return escapeHtml(html);
+    return DOMPurify.sanitize(html);
 }
 
 function escapeRegExp(str) {
