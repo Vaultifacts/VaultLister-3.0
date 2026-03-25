@@ -29,8 +29,8 @@
 ## Pending Review
 <!-- Post-commit hook auto-adds Bot commits here -->
 
-## Current State (2026-03-24)
-- **Last commit:** `4453885` on master (pushed ✅)
+## Current State (2026-03-25)
+- **Last commit:** `4225e54` on master (pushed ✅)
 - **E2E suite: 620 pass / 0 fail** ✅
 - **Security audit:** All known items resolved + 8 new FP1 issues fixed
 - **QA Walkthrough:** 100% complete — 498/498 items tested
@@ -47,16 +47,15 @@
   - V336: inventory.js — SSRF protection on /import/url (private IP blocklist)
   - V368: chatWidget.js — onclick HTML attr injection fixed (proper &, <, >, ' encoding)
   - V322: .env.example — JWT_SECRET/SESSION_SECRET default replaced with REPLACE_ME
+- `4225e54`: fix(reliability): FP6 — graceful shutdown interval leaks (V370-V373)
 - `95534a4`: fix(reliability): FP2 — fetch timeouts + Stripe webhook idempotency
   - V350: AbortSignal.timeout() added to 11 bare fetch() calls (barcode, socialAuth, shippingLabels, emailOAuth, shopifySync, webhooks)
   - V351: Stripe webhook idempotency — check event.id before processing, use event.id as row ID
   - V352: N/A — PRAGMA busy_timeout = 5000 already in database.js:31
 
 ## Next Tasks
-1. **FP5 items:** M2, M6, M7, M14 (deploy smoke test, SW precache, DOMPurify fallback, Stripe guard), V346 (chatWidget eval allowlist), V353 (GDPR cascade completeness)
-3. **FP5 items:** M2, M6, M7, M14 (deploy smoke test, SW precache, DOMPurify fallback, Stripe guard), V346 (chatWidget eval allowlist), V353 (GDPR cascade completeness)
-4. **FP6 items:** V370-V373 — graceful shutdown interval leaks
-5. **Sprint Board P0/P1 config (user action required):**
+1. **FP5 deferred:** V353 (GDPR cascade completeness — verify all 199 tables covered)
+2. **Sprint Board P0/P1 config (user action required):**
    - SSL certificate + domain configuration (Blocked, P0-Critical)
    - Set real Stripe price IDs in .env (P0-Critical)
    - Configure SMTP for production email (Blocked)
