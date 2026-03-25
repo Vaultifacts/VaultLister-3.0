@@ -110,3 +110,9 @@ memory/*.lock
 nginx/ssl/*.pem
 nginx/ssl/*.key
 nginx/ssl/*.crt
+
+# Git worktrees
+.worktrees/
+
+# Git worktrees
+.worktrees/
