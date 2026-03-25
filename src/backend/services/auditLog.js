@@ -55,8 +55,16 @@ const auditLog = {
     // Initialize service
     init() {
         // Start cleanup job (runs daily)
-        setInterval(() => this.cleanup(), 86400000);
+        this.cleanupInterval = setInterval(() => this.cleanup(), 86400000);
         logger.info('[AuditLog] Service initialized');
+    },
+
+    // Stop background jobs (called during graceful shutdown)
+    stop() {
+        if (this.cleanupInterval) {
+            clearInterval(this.cleanupInterval);
+            this.cleanupInterval = null;
+        }
     },
 
     // Log an event

@@ -15,7 +15,7 @@ const CLEANUP_INTERVAL = 15 * 60 * 1000; // 15 minutes
 const MAX_MAP_SIZE = 10000;
 const STALE_THRESHOLD = 24 * 60 * 60 * 1000; // 24 hours
 
-setInterval(() => {
+const rateLimitDashboardCleanupInterval = setInterval(() => {
     const now = Date.now();
     const cutoff = now - STALE_THRESHOLD;
 
@@ -46,6 +46,10 @@ setInterval(() => {
     if (rateLimitStats.ipBlocks.size > MAX_MAP_SIZE) rateLimitStats.ipBlocks.clear();
     if (rateLimitStats.userBlocks.size > MAX_MAP_SIZE) rateLimitStats.userBlocks.clear();
 }, CLEANUP_INTERVAL);
+
+export function stopRateLimitDashboard() {
+    clearInterval(rateLimitDashboardCleanupInterval);
+}
 
 // Track rate limit hit
 export function trackRateLimitHit(endpoint, ip, userId, blocked) {

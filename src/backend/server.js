@@ -55,13 +55,13 @@ import { inventoryImportRouter } from './routes/inventoryImport.js';
 import { whatnotRouter } from './routes/whatnot.js';
 import { reportsRouter } from './routes/reports.js';
 import { securityRouter } from './routes/security.js';
-import { rateLimitDashboardRouter } from './routes/rateLimitDashboard.js';
+import { rateLimitDashboardRouter, stopRateLimitDashboard } from './routes/rateLimitDashboard.js';
 import { socialAuthRouter } from './routes/socialAuth.js';
 import { gdprRouter } from './routes/gdpr.js';
 import { outgoingWebhooksRouter } from './services/outgoingWebhooks.js';
-import { emailMarketingRouter } from './services/emailMarketing.js';
+import { emailMarketingRouter, emailMarketing } from './services/emailMarketing.js';
 import { enhancedMFARouter } from './services/enhancedMFA.js';
-import { auditLogRouter } from './services/auditLog.js';
+import { auditLogRouter, auditLog } from './services/auditLog.js';
 import { pushNotificationsRouter } from './routes/pushNotifications.js';
 import { notionRouter } from './routes/notion.js';
 import { sizeChartsRouter } from './routes/sizeCharts.js';
@@ -1615,6 +1615,10 @@ async function gracefulShutdown(signal) {
     clearInterval(cleanupInterval);
     monitoring.stopMetricsCollection();
     websocketService.cleanup();
+    auditLog.stop();
+    emailMarketing.cleanup();
+    stopRateLimitDashboard();
+    await analyticsService.shutdown();
     logger.info('Background services stopped.');
 
     // Close Redis connection
