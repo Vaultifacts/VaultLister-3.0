@@ -69,7 +69,16 @@ Migrations run automatically on server start. To run manually:
 bun run db:init    # Applies all pending migrations
 ```
 
-The migration chain is in `src/backend/db/database.js` (104 migrations). Schema is in `src/backend/db/schema.sql`.
+The migration chain is in `src/backend/db/database.js` (112 migrations). Schema is in `src/backend/db/schema.sql`.
+
+## Git Hooks
+
+The pre-push hook runs the full unit test suite and requires the server to be running on `PORT` (default 3000). Before pushing:
+```bash
+bun run dev:bg   # Start server in background
+git push         # Hook will run tests then push
+bun run dev:stop # Stop background server after push
+```
 
 ## Deployment
 
