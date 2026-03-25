@@ -30,7 +30,7 @@
 <!-- Post-commit hook auto-adds Bot commits here -->
 
 ## Current State (2026-03-25)
-- **Last commit:** `41267ea` on master (pushed ✅)
+- **Last commit:** `455ea8e` on master (pending push)
 - **E2E suite: 2429 pass / 179 fail** (full suite with Redis wiring; all 179 failures are pre-existing baseline)
 - **Unit tests (Redis-related):** 162 pass / 0 fail (service-redis, enhancedMFA, rateLimiter, security-rate-limit, arch-caching-etag, middleware-shutdown)
 - **Auth+security baseline:** 58 pass / 0 fail ✅ (maintained)
@@ -63,7 +63,7 @@
   - autofill.js: 4 new platforms in detectPlatform() + fieldMappings (was 3/7, now 7/7)
   - manifest.json: host_permissions + content_scripts updated for all new platforms
 - `41267ea`: chore: M11 — trivy-action bump 0.32.0→0.35.0; closed Dependabot PR #17
-- `[PENDING]`: feat(redis): wire Redis into all 7 in-memory consumers (rateLimiter, enhancedMFA, socialAuth, receiptParser, barcode, analytics, idempotency)
+- `455ea8e`: feat(redis): wire Redis into all 7 in-memory consumers (rateLimiter, enhancedMFA, socialAuth, receiptParser, barcode, analytics, idempotency)
 
 ## Next Tasks
 1. **Sprint Board P0/P1 config (user action required):**
