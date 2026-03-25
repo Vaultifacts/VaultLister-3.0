@@ -6,20 +6,59 @@ import { query } from '../db/database.js';
 import emailService from '../services/email.js';
 import { logger } from '../shared/logger.js';
 
-// Tables containing user data
+// Tables containing user data — explicit DELETE on erasure
+// (tables with ON DELETE CASCADE are handled automatically by SQLite FK constraint)
+// (tables with ON DELETE SET NULL — audit_logs, error_logs, request_logs, security_logs,
+//  webhook_events — are intentionally anonymized rather than deleted)
 const USER_DATA_TABLES = [
-    { table: 'users', idColumn: 'id' },
+    // Core user data (CASCADE not set — explicit delete required)
     { table: 'inventory', idColumn: 'user_id' },
     { table: 'listings', idColumn: 'user_id' },
-    { table: 'sales', idColumn: 'user_id' },
-    { table: 'shops', idColumn: 'user_id' },
-    { table: 'automations', idColumn: 'user_id' },
+    { table: 'orders', idColumn: 'user_id' },
     { table: 'sessions', idColumn: 'user_id' },
     { table: 'notifications', idColumn: 'user_id' },
-    { table: 'oauth_accounts', idColumn: 'user_id' },
-    { table: 'orders', idColumn: 'user_id' },
+    { table: 'shops', idColumn: 'user_id' },
     { table: 'checklists', idColumn: 'user_id' },
-    { table: 'templates', idColumn: 'user_id' },
+
+    // Auth / security tokens
+    { table: 'email_verifications', idColumn: 'user_id' },
+    { table: 'password_resets', idColumn: 'user_id' },
+
+    // PII — shipping and address data
+    { table: 'return_addresses', idColumn: 'user_id' },
+    { table: 'shipping_labels', idColumn: 'user_id' },
+    { table: 'shipping_rates', idColumn: 'user_id' },
+    { table: 'label_batches', idColumn: 'user_id' },
+
+    // Automation and relisting
+    { table: 'relisting_rules', idColumn: 'user_id' },
+    { table: 'relisting_queue', idColumn: 'user_id' },
+    { table: 'relisting_performance', idColumn: 'user_id' },
+    { table: 'poshmark_monitoring_log', idColumn: 'user_id' },
+    { table: 'whatnot_events', idColumn: 'user_id' },
+    { table: 'whatnot_cohosts', idColumn: 'user_id' },
+
+    // Import / export history
+    { table: 'import_jobs', idColumn: 'user_id' },
+    { table: 'import_mappings', idColumn: 'user_id' },
+
+    // Analytics and metrics
+    { table: 'rum_metrics', idColumn: 'user_id' },
+    { table: 'duplicate_detections', idColumn: 'user_id' },
+
+    // Reports and preferences
+    { table: 'custom_reports', idColumn: 'user_id' },
+    { table: 'categorization_rules', idColumn: 'user_id' },
+    { table: 'recurring_transaction_templates', idColumn: 'user_id' },
+
+    // Marketing
+    { table: 'email_unsubscribes', idColumn: 'user_id' },
+
+    // Team activity
+    { table: 'team_activity_log', idColumn: 'user_id' },
+
+    // Deleted last
+    { table: 'users', idColumn: 'id' },
 ];
 
 // Export all user data
@@ -102,7 +141,8 @@ async function cancelAccountDeletion(userId) {
 // Execute account deletion
 async function executeAccountDeletion(userId) {
     query.transaction(() => {
-        // First, anonymize data that needs to be kept for legal/financial reasons
+        // Anonymize data that must be retained for legal/financial reasons
+        // sales records kept for financial/tax compliance; buyer PII stripped
         query.run(`
             UPDATE sales SET
                 buyer_username = 'DELETED',
@@ -110,6 +150,11 @@ async function executeAccountDeletion(userId) {
                 notes = NULL
             WHERE user_id = ?
         `, [userId]);
+
+        // transaction_audit_log — financial audit trail (legal retention); anonymize user reference
+        try {
+            query.run(`UPDATE transaction_audit_log SET user_id = NULL WHERE user_id = ?`, [userId]);
+        } catch (e) { /* table may not exist */ }
 
         // Delete user data from all tables
         for (const { table, idColumn } of USER_DATA_TABLES) {
