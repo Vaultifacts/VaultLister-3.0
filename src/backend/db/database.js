@@ -1,6 +1,6 @@
-// Database connection and utilities for VaultLister
-import { Database } from 'bun:sqlite';
-import { readFileSync, existsSync, mkdirSync } from 'fs';
+// Database connection and utilities for VaultLister — PostgreSQL adapter (Phase 1)
+import postgres from 'postgres';
+import { readFileSync, existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { seedHelpContent } from './seeds/helpContent.js';
@@ -9,67 +9,235 @@ import { seedBrandSizeGuides } from '../routes/sizeCharts.js';
 import { logger } from '../shared/logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = join(__dirname, '..', '..', '..');
-const DATA_DIR = join(ROOT_DIR, 'data');
-const DB_PATH = process.env.DB_PATH || join(DATA_DIR, 'vaultlister.db');
-const SCHEMA_PATH = join(__dirname, 'schema.sql');
 
-// Ensure data directory exists
-if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true });
+const sql = postgres(process.env.DATABASE_URL || 'postgresql://vaultlister:localdev@localhost:5432/vaultlister_dev', {
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    max: 25,
+    idle_timeout: 20,
+    connect_timeout: 10,
+});
+
+// Convert ? positional params to $1, $2, ... for postgres.js
+// Skips ? inside single-quoted string literals
+function convertPlaceholders(sqlStr) {
+    let index = 0;
+    let result = '';
+    let inString = false;
+    for (let i = 0; i < sqlStr.length; i++) {
+        const ch = sqlStr[i];
+        if (ch === "'" && !inString) { inString = true; result += ch; }
+        else if (ch === "'" && inString) { inString = false; result += ch; }
+        else if (ch === '?' && !inString) { result += '$' + (++index); }
+        else { result += ch; }
+    }
+    return result;
 }
 
-// Create and configure database connection (using Bun's built-in SQLite)
-const db = new Database(DB_PATH, { create: true });
+// SQL identifier validation — prevents injection via dynamic column/table names
+const VALID_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+function validateIdentifier(name) {
+    if (!VALID_IDENTIFIER.test(name)) throw new Error(`Invalid SQL identifier: ${name}`);
+    return name;
+}
 
-// Performance optimizations (Bun's SQLite API)
-db.exec('PRAGMA journal_mode = WAL');
-db.exec('PRAGMA synchronous = NORMAL');
-db.exec('PRAGMA cache_size = 10000');
-db.exec('PRAGMA temp_store = MEMORY');
-db.exec('PRAGMA foreign_keys = ON');
-db.exec('PRAGMA busy_timeout = 5000'); // Wait up to 5 seconds for database locks
-db.exec('PRAGMA mmap_size = 268435456'); // 256 MB memory-mapped I/O
-db.exec('PRAGMA analysis_limit = 1000');
+// Escape LIKE wildcards for safe use in LIKE clauses (use with ESCAPE '\\')
+export function escapeLike(str) {
+    return String(str).replace(/[%_\\]/g, '\\$&');
+}
 
-// Initialize schema if needed
-export function initializeDatabase() {
-    try {
-        const schema = readFileSync(SCHEMA_PATH, 'utf-8');
-        db.exec(schema);
-        logger.info('✓ Database schema initialized');
+export function getStatementCacheStats() {
+    return { poolSize: sql.options.max, idleConnections: sql.options.idle_timeout };
+}
 
-        // Run migrations
-        runMigrations();
+export const query = {
+    // Get single row
+    async get(sqlStr, params = []) {
+        try {
+            const converted = convertPlaceholders(sqlStr);
+            const paramArray = Array.isArray(params) ? params : [params];
+            const rows = await sql.unsafe(converted, paramArray);
+            return rows.length > 0 ? rows[0] : null;
+        } catch (error) {
+            logger.error('Query error:', error.message, process.env.NODE_ENV !== 'production' ? sqlStr : '');
+            throw error;
+        }
+    },
 
-        // Seed help content
-        seedHelpContent();
+    // Get all rows
+    async all(sqlStr, params = []) {
+        try {
+            const converted = convertPlaceholders(sqlStr);
+            const paramArray = Array.isArray(params) ? params : [params];
+            return await sql.unsafe(converted, paramArray);
+        } catch (error) {
+            logger.error('Query error:', error.message, process.env.NODE_ENV !== 'production' ? sqlStr : '');
+            throw error;
+        }
+    },
 
-        // Seed demo data (inventory, orders, listings) — skip in production
-        if (process.env.NODE_ENV !== 'production') {
-            seedDemoData();
+    // Execute mutation (INSERT, UPDATE, DELETE)
+    async run(sqlStr, params = []) {
+        try {
+            const converted = convertPlaceholders(sqlStr);
+            const paramArray = Array.isArray(params) ? params : [params];
+            const result = await sql.unsafe(converted, paramArray);
+            return { changes: result.count, lastInsertRowid: 0 };
+        } catch (error) {
+            logger.error('Query error:', error.message, process.env.NODE_ENV !== 'production' ? sqlStr : '');
+            throw error;
+        }
+    },
+
+    // Execute raw SQL (DDL, no params)
+    async exec(sqlStr) {
+        try {
+            await sql.unsafe(sqlStr);
+        } catch (error) {
+            logger.error('Exec error:', error.message);
+            throw error;
+        }
+    },
+
+    // Transaction helper — returns a promise (callers: await query.transaction(fn))
+    async transaction(fn) {
+        return await sql.begin(async (tx) => {
+            const txQuery = {
+                async get(s, p = []) {
+                    const paramArray = Array.isArray(p) ? p : [p];
+                    const r = await tx.unsafe(convertPlaceholders(s), paramArray);
+                    return r.length > 0 ? r[0] : null;
+                },
+                async all(s, p = []) {
+                    const paramArray = Array.isArray(p) ? p : [p];
+                    return await tx.unsafe(convertPlaceholders(s), paramArray);
+                },
+                async run(s, p = []) {
+                    const paramArray = Array.isArray(p) ? p : [p];
+                    const r = await tx.unsafe(convertPlaceholders(s), paramArray);
+                    return { changes: r.count, lastInsertRowid: 0 };
+                },
+                async exec(s) {
+                    await tx.unsafe(s);
+                },
+            };
+            return await fn(txQuery);
+        });
+    },
+
+    // Full-text search on inventory — Phase 1 stub (ILIKE fallback; FTS5->tsvector in Phase 3)
+    async searchInventory(searchTerm, userId, limit = 50) {
+        // TODO Phase 3: implement tsvector full-text search
+        const term = `%${searchTerm}%`;
+        const rows = await sql.unsafe(
+            `SELECT * FROM inventory WHERE user_id = $1 AND (title ILIKE $2 OR description ILIKE $2) LIMIT $3`,
+            [userId, term, limit]
+        );
+        return rows;
+    }
+};
+
+// Model helpers for common operations
+export const models = {
+    async create(table, data) {
+        validateIdentifier(table);
+        const keys = Object.keys(data);
+        keys.forEach(validateIdentifier);
+        const values = Object.values(data);
+        const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
+        const sqlStr = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`;
+        return await query.run(sqlStr, values);
+    },
+
+    async findById(table, id) {
+        validateIdentifier(table);
+        return await query.get(`SELECT * FROM ${table} WHERE id = ?`, [id]);
+    },
+
+    async findOne(table, conditions) {
+        validateIdentifier(table);
+        const keys = Object.keys(conditions);
+        keys.forEach(validateIdentifier);
+        const values = Object.values(conditions);
+        const where = keys.map((k, i) => `${k} = $${i + 1}`).join(' AND ');
+        return await query.get(`SELECT * FROM ${table} WHERE ${where}`, values);
+    },
+
+    async findMany(table, conditions = {}, options = {}) {
+        validateIdentifier(table);
+        const keys = Object.keys(conditions);
+        keys.forEach(validateIdentifier);
+        const values = Object.values(conditions);
+        let sqlStr = `SELECT * FROM ${table}`;
+
+        if (keys.length > 0) {
+            const where = keys.map((k, i) => `${k} = $${i + 1}`).join(' AND ');
+            sqlStr += ` WHERE ${where}`;
         }
 
-        // Seed brand size guides
-        seedBrandSizeGuides();
+        if (options.orderBy) {
+            const orderParts = options.orderBy.split(',').map(s => s.trim());
+            for (const part of orderParts) {
+                const [col, dir] = part.split(/\s+/);
+                validateIdentifier(col);
+                if (dir && !['ASC', 'DESC', 'asc', 'desc'].includes(dir)) {
+                    throw new Error(`Invalid ORDER BY direction: ${dir}`);
+                }
+            }
+            sqlStr += ` ORDER BY ${options.orderBy}`;
+        }
 
-        logger.info('✓ Database initialized successfully');
-        return true;
-    } catch (error) {
-        logger.error('Database initialization error:', error);
-        throw error;
+        if (options.limit) {
+            sqlStr += ` LIMIT ${parseInt(options.limit, 10)}`;
+        }
+
+        if (options.offset) {
+            sqlStr += ` OFFSET ${parseInt(options.offset, 10)}`;
+        }
+
+        return await query.all(sqlStr, values);
+    },
+
+    async update(table, id, data) {
+        validateIdentifier(table);
+        const keys = Object.keys(data);
+        keys.forEach(validateIdentifier);
+        const values = Object.values(data);
+        const set = keys.map((k, i) => `${k} = $${i + 1}`).join(', ');
+        const sqlStr = `UPDATE ${table} SET ${set}, updated_at = CURRENT_TIMESTAMP WHERE id = $${keys.length + 1}`;
+        return await query.run(sqlStr, [...values, id]);
+    },
+
+    async delete(table, id) {
+        validateIdentifier(table);
+        return await query.run(`DELETE FROM ${table} WHERE id = ?`, [id]);
+    },
+
+    async count(table, conditions = {}) {
+        validateIdentifier(table);
+        const keys = Object.keys(conditions);
+        keys.forEach(validateIdentifier);
+        const values = Object.values(conditions);
+        let sqlStr = `SELECT COUNT(*) as count FROM ${table}`;
+
+        if (keys.length > 0) {
+            const where = keys.map((k, i) => `${k} = $${i + 1}`).join(' AND ');
+            sqlStr += ` WHERE ${where}`;
+        }
+
+        const row = await query.get(sqlStr, values);
+        return row?.count || 0;
     }
-}
+};
 
 // Migration system
-function runMigrations() {
+async function runMigrations() {
     try {
         // Create migrations table if it doesn't exist
-        db.exec(`
+        await query.exec(`
             CREATE TABLE IF NOT EXISTS migrations (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 name TEXT UNIQUE NOT NULL,
-                applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
@@ -193,7 +361,7 @@ function runMigrations() {
 
         for (const migrationFile of migrationFiles) {
             // Check if migration has already been applied
-            const applied = db.query('SELECT id FROM migrations WHERE name = ?').get(migrationFile);
+            const applied = await query.get('SELECT id FROM migrations WHERE name = ?', [migrationFile]);
 
             if (!applied) {
                 const migrationPath = join(MIGRATIONS_DIR, migrationFile);
@@ -204,22 +372,20 @@ function runMigrations() {
                         const migrationSQL = readFileSync(migrationPath, 'utf-8');
 
                         // Run migration in transaction
-                        db.transaction(() => {
-                            db.exec(migrationSQL);
-                            db.query('INSERT INTO migrations (name) VALUES (?)').run(migrationFile);
-                        })();
+                        await query.transaction(async (tx) => {
+                            await tx.exec(migrationSQL);
+                            await tx.run('INSERT INTO migrations (name) VALUES (?)', [migrationFile]);
+                        });
 
                         logger.info(`  ✓ Applied migration: ${migrationFile}`);
                     } catch (migrationError) {
-                        // Handle schema mismatch errors gracefully
                         const errorMsg = migrationError.message || '';
                         if (errorMsg.includes('duplicate column') ||
                             errorMsg.includes('already exists') ||
-                            errorMsg.includes('UNIQUE constraint failed') ||
-                            errorMsg.includes('no such column') ||
-                            errorMsg.includes('no such table')) {
+                            errorMsg.includes('unique constraint') ||
+                            errorMsg.includes('does not exist')) {
                             // Mark as applied — schema differs from what migration expects
-                            db.query('INSERT OR IGNORE INTO migrations (name) VALUES (?)').run(migrationFile);
+                            await query.run('INSERT INTO migrations (name) VALUES (?) ON CONFLICT (name) DO NOTHING', [migrationFile]);
                             logger.info(`  ⚠ Migration ${migrationFile} skipped (schema mismatch: ${errorMsg.slice(0, 60)})`);
                         } else {
                             throw migrationError;
@@ -227,7 +393,7 @@ function runMigrations() {
                     }
                 } else {
                     // File not found - mark as applied if it's an old migration
-                    db.query('INSERT OR IGNORE INTO migrations (name) VALUES (?)').run(migrationFile);
+                    await query.run('INSERT INTO migrations (name) VALUES (?) ON CONFLICT (name) DO NOTHING', [migrationFile]);
                     logger.info(`  ⚠ Migration file not found: ${migrationFile} (marked as applied)`);
                 }
             }
@@ -238,217 +404,51 @@ function runMigrations() {
     }
 }
 
-// SQL identifier validation — prevents injection via dynamic column/table names
-const VALID_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-function validateIdentifier(name) {
-    if (!VALID_IDENTIFIER.test(name)) throw new Error(`Invalid SQL identifier: ${name}`);
-    return name;
-}
+// Initialize schema if needed
+export async function initializeDatabase() {
+    try {
+        // Test connection
+        await sql.unsafe('SELECT 1');
+        logger.info('✓ PostgreSQL connection established');
 
-// Escape LIKE wildcards for safe use in LIKE clauses (use with ESCAPE '\\')
-export function escapeLike(str) {
-    return String(str).replace(/[%_\\]/g, '\\$&');
-}
+        // Run migrations
+        await runMigrations();
 
-// Generic query helpers with prepared statement caching
-const MAX_STATEMENT_CACHE = 1000;
-const statementCache = new Map();
+        // Seed help content
+        await seedHelpContent();
 
-function getStatement(sql) {
-    if (!statementCache.has(sql)) {
-        if (statementCache.size >= MAX_STATEMENT_CACHE) {
-            const first = statementCache.keys().next().value;
-            statementCache.delete(first);
+        // Seed demo data (inventory, orders, listings) — skip in production
+        if (process.env.NODE_ENV !== 'production') {
+            await seedDemoData();
         }
-        statementCache.set(sql, db.query(sql));
+
+        // Seed brand size guides
+        await seedBrandSizeGuides();
+
+        logger.info('✓ Database initialized successfully');
+        return true;
+    } catch (error) {
+        logger.error('Database initialization error:', error);
+        throw error;
     }
-    return statementCache.get(sql);
 }
-
-export function getStatementCacheStats() {
-    return { size: statementCache.size, maxSize: MAX_STATEMENT_CACHE };
-}
-
-export const query = {
-    // Expose raw db instance for advanced use (e.g. direct transaction API)
-    db,
-
-    // Get single row
-    get(sql, params = []) {
-        try {
-            const stmt = getStatement(sql);
-            const paramArray = Array.isArray(params) ? params : [params];
-            return stmt.get(...paramArray);
-        } catch (error) {
-            logger.error('Query error:', error.message, process.env.NODE_ENV !== 'production' ? sql : '');
-            throw error;
-        }
-    },
-
-    // Get all rows
-    all(sql, params = []) {
-        try {
-            const stmt = getStatement(sql);
-            const paramArray = Array.isArray(params) ? params : [params];
-            return stmt.all(...paramArray);
-        } catch (error) {
-            logger.error('Query error:', error.message, process.env.NODE_ENV !== 'production' ? sql : '');
-            throw error;
-        }
-    },
-
-    // Execute mutation (INSERT, UPDATE, DELETE)
-    run(sql, params = []) {
-        try {
-            const stmt = getStatement(sql);
-            const paramArray = Array.isArray(params) ? params : [params];
-            return stmt.run(...paramArray);
-        } catch (error) {
-            logger.error('Query error:', error.message, process.env.NODE_ENV !== 'production' ? sql : '');
-            throw error;
-        }
-    },
-
-    // Execute raw SQL
-    exec(sql) {
-        try {
-            return db.exec(sql);
-        } catch (error) {
-            logger.error('Exec error:', error.message);
-            throw error;
-        }
-    },
-
-    // Transaction helper
-    transaction(fn) {
-        const transaction = db.transaction(fn);
-        return transaction();
-    },
-
-    // Full-text search on inventory
-    searchInventory(searchTerm, userId, limit = 50) {
-        const sql = `
-            SELECT i.* FROM inventory i
-            JOIN inventory_fts fts ON i.id = fts.id
-            WHERE inventory_fts MATCH ? AND i.user_id = ?
-            ORDER BY rank
-            LIMIT ?
-        `;
-        return this.all(sql, [searchTerm, userId, limit]);
-    }
-};
-
-// Model helpers for common operations
-export const models = {
-    // Generic CRUD
-    create(table, data) {
-        validateIdentifier(table);
-        const keys = Object.keys(data);
-        keys.forEach(validateIdentifier);
-        const values = Object.values(data);
-        const placeholders = keys.map(() => '?').join(', ');
-        const sql = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`;
-        return query.run(sql, values);
-    },
-
-    findById(table, id) {
-        validateIdentifier(table);
-        return query.get(`SELECT * FROM ${table} WHERE id = ?`, [id]);
-    },
-
-    findOne(table, conditions) {
-        validateIdentifier(table);
-        const keys = Object.keys(conditions);
-        keys.forEach(validateIdentifier);
-        const values = Object.values(conditions);
-        const where = keys.map(k => `${k} = ?`).join(' AND ');
-        return query.get(`SELECT * FROM ${table} WHERE ${where}`, values);
-    },
-
-    findMany(table, conditions = {}, options = {}) {
-        validateIdentifier(table);
-        const keys = Object.keys(conditions);
-        keys.forEach(validateIdentifier);
-        const values = Object.values(conditions);
-        let sql = `SELECT * FROM ${table}`;
-
-        if (keys.length > 0) {
-            const where = keys.map(k => `${k} = ?`).join(' AND ');
-            sql += ` WHERE ${where}`;
-        }
-
-        if (options.orderBy) {
-            // Validate orderBy: allow "column ASC/DESC" patterns
-            const orderParts = options.orderBy.split(',').map(s => s.trim());
-            for (const part of orderParts) {
-                const [col, dir] = part.split(/\s+/);
-                validateIdentifier(col);
-                if (dir && !['ASC', 'DESC', 'asc', 'desc'].includes(dir)) {
-                    throw new Error(`Invalid ORDER BY direction: ${dir}`);
-                }
-            }
-            sql += ` ORDER BY ${options.orderBy}`;
-        }
-
-        if (options.limit) {
-            sql += ` LIMIT ${parseInt(options.limit, 10)}`;
-        }
-
-        if (options.offset) {
-            sql += ` OFFSET ${parseInt(options.offset, 10)}`;
-        }
-
-        return query.all(sql, values);
-    },
-
-    update(table, id, data) {
-        validateIdentifier(table);
-        const keys = Object.keys(data);
-        keys.forEach(validateIdentifier);
-        const values = Object.values(data);
-        const set = keys.map(k => `${k} = ?`).join(', ');
-        const sql = `UPDATE ${table} SET ${set}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
-        return query.run(sql, [...values, id]);
-    },
-
-    delete(table, id) {
-        validateIdentifier(table);
-        return query.run(`DELETE FROM ${table} WHERE id = ?`, [id]);
-    },
-
-    count(table, conditions = {}) {
-        validateIdentifier(table);
-        const keys = Object.keys(conditions);
-        keys.forEach(validateIdentifier);
-        const values = Object.values(conditions);
-        let sql = `SELECT COUNT(*) as count FROM ${table}`;
-
-        if (keys.length > 0) {
-            const where = keys.map(k => `${k} = ?`).join(' AND ');
-            sql += ` WHERE ${where}`;
-        }
-
-        return query.get(sql, values)?.count || 0;
-    }
-};
 
 // Cleanup expired data (tokens, sessions, etc.)
-export function cleanupExpiredData() {
+export async function cleanupExpiredData() {
     const tables = [
-        { name: 'verification_tokens', condition: "expires_at < datetime('now') OR used_at IS NOT NULL" },
-        { name: 'oauth_states', condition: "expires_at < datetime('now')" },
-        { name: 'email_oauth_states', condition: "expires_at < datetime('now')" },
-        { name: 'sms_codes', condition: "expires_at < datetime('now')" },
-        { name: 'sessions', condition: "expires_at < datetime('now')" },
-        { name: 'webhook_events', condition: "created_at < datetime('now', '-30 days')" },
-        { name: 'automation_logs', condition: "created_at < datetime('now', '-30 days')" },
-        { name: 'security_logs', condition: "created_at < datetime('now', '-90 days')" },
-        // Sent emails: retain for 30 days; failed emails: retain for only 7 days
-        { name: 'email_queue', condition: "(status = 'sent' AND created_at < datetime('now', '-30 days')) OR (status = 'failed' AND created_at < datetime('now', '-7 days'))" },
-        { name: 'team_invitations', condition: "status = 'expired' OR expires_at < datetime('now', '-30 days')" },
-        { name: 'request_logs', condition: "created_at < datetime('now', '-30 days')" },
-        { name: 'audit_logs', condition: "created_at < datetime('now', '-1 year')" },
-        { name: 'push_notification_log', condition: "created_at < datetime('now', '-30 days')" }
+        { name: 'verification_tokens', condition: "expires_at < NOW() OR used_at IS NOT NULL" },
+        { name: 'oauth_states', condition: "expires_at < NOW()" },
+        { name: 'email_oauth_states', condition: "expires_at < NOW()" },
+        { name: 'sms_codes', condition: "expires_at < NOW()" },
+        { name: 'sessions', condition: "expires_at < NOW()" },
+        { name: 'webhook_events', condition: "created_at < NOW() - INTERVAL '30 days'" },
+        { name: 'automation_logs', condition: "created_at < NOW() - INTERVAL '30 days'" },
+        { name: 'security_logs', condition: "created_at < NOW() - INTERVAL '90 days'" },
+        { name: 'email_queue', condition: "(status = 'sent' AND created_at < NOW() - INTERVAL '30 days') OR (status = 'failed' AND created_at < NOW() - INTERVAL '7 days')" },
+        { name: 'team_invitations', condition: "status = 'expired' OR expires_at < NOW() - INTERVAL '30 days'" },
+        { name: 'request_logs', condition: "created_at < NOW() - INTERVAL '30 days'" },
+        { name: 'audit_logs', condition: "created_at < NOW() - INTERVAL '1 year'" },
+        { name: 'push_notification_log', condition: "created_at < NOW() - INTERVAL '30 days'" }
     ];
 
     const results = {};
@@ -456,9 +456,9 @@ export function cleanupExpiredData() {
 
     for (const table of tables) {
         try {
-            // Check if table exists first
-            const tableExists = query.get(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            // Check if table exists (PostgreSQL equivalent of sqlite_master)
+            const tableExists = await query.get(
+                "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = ?",
                 [table.name]
             );
 
@@ -467,13 +467,12 @@ export function cleanupExpiredData() {
                 continue;
             }
 
-            const sql = `DELETE FROM ${table.name} WHERE ${table.condition}`;
-            const result = query.run(sql);
+            const sqlStr = `DELETE FROM ${table.name} WHERE ${table.condition}`;
+            const result = await query.run(sqlStr);
             const deletedCount = result.changes || 0;
             results[table.name] = deletedCount;
             totalDeleted += deletedCount;
         } catch (error) {
-            // Log error but continue with other tables
             logger.error(`Cleanup error for ${table.name}:`, error.message);
             results[table.name] = 0;
         }
@@ -483,13 +482,21 @@ export function cleanupExpiredData() {
         logger.info(`✓ Cleaned up ${totalDeleted} expired records:`, results);
     }
 
-    // Run incremental ANALYZE optimization
-    db.exec('PRAGMA optimize');
+    // Refresh statistics (PostgreSQL equivalent of PRAGMA optimize)
+    await query.exec('ANALYZE');
 
     return results;
 }
 
-// Close database on process exit (server.js handles SIGTERM/SIGINT and calls process.exit)
-process.on('exit', () => db.close());
+// Close database connection pool
+export async function closeDatabase() {
+    await sql.end();
+}
 
-export default db;
+// Close database on process exit
+process.on('exit', () => {
+    // sql.end() is async but process exit is synchronous — best effort
+    sql.end({ timeout: 0 });
+});
+
+export default sql;

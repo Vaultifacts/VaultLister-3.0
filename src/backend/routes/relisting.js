@@ -638,12 +638,12 @@ export async function relistingRouter(ctx) {
 
                 if (!dry_run && priceResult.price !== listing.list_price) {
                     // Apply the price change atomically
-                    query.transaction(() => {
-                        query.run('UPDATE listings SET price = ?, updated_at = datetime(\'now\'), last_refreshed_at = datetime(\'now\') WHERE id = ? AND user_id = ?',
+                    await query.transaction(async (tx) => {
+                        await tx.run('UPDATE listings SET price = ?, updated_at = datetime(\'now\'), last_refreshed_at = datetime(\'now\') WHERE id = ? AND user_id = ?',
                             [priceResult.price, listing.id, user.id]);
-                        query.run('UPDATE inventory SET list_price = ?, updated_at = datetime(\'now\') WHERE id = ? AND user_id = ?',
+                        await tx.run('UPDATE inventory SET list_price = ?, updated_at = datetime(\'now\') WHERE id = ? AND user_id = ?',
                             [priceResult.price, listing.inventory_id, user.id]);
-                    })();
+                    });
                     entry.status = 'applied';
                     applied++;
                 } else if (!dry_run) {

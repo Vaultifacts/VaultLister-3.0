@@ -140,10 +140,10 @@ async function cancelAccountDeletion(userId) {
 
 // Execute account deletion
 async function executeAccountDeletion(userId) {
-    query.transaction(() => {
+    await query.transaction(async (tx) => {
         // Anonymize data that must be retained for legal/financial reasons
         // sales records kept for financial/tax compliance; buyer PII stripped
-        query.run(`
+        await tx.run(`
             UPDATE sales SET
                 buyer_username = 'DELETED',
                 buyer_address = NULL,
@@ -153,29 +153,29 @@ async function executeAccountDeletion(userId) {
 
         // transaction_audit_log — financial audit trail (legal retention); anonymize user reference
         try {
-            query.run(`UPDATE transaction_audit_log SET user_id = NULL WHERE user_id = ?`, [userId]);
+            await tx.run(`UPDATE transaction_audit_log SET user_id = NULL WHERE user_id = ?`, [userId]);
         } catch (e) { /* table may not exist */ }
 
         // Delete user data from all tables
         for (const { table, idColumn } of USER_DATA_TABLES) {
             if (table === 'users') continue; // Delete last
             try {
-                query.run(`DELETE FROM ${table} WHERE ${idColumn} = ?`, [userId]);
+                await tx.run(`DELETE FROM ${table} WHERE ${idColumn} = ?`, [userId]);
             } catch (e) {
                 // Table might not exist — skip silently
             }
         }
 
         // Finally, delete the user record
-        query.run('DELETE FROM users WHERE id = ?', [userId]);
+        await tx.run('DELETE FROM users WHERE id = ?', [userId]);
 
         // Mark deletion request as completed
-        query.run(`
+        await tx.run(`
             UPDATE account_deletion_requests
             SET status = 'completed', completed_at = datetime('now')
             WHERE user_id = ?
         `, [userId]);
-    })();
+    });
 }
 
 export async function gdprRouter(ctx) {
