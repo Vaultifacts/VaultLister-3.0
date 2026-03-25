@@ -6,6 +6,11 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
     apiVersion: '2024-12-18.acacia'
 }) : null;
 
+function requireStripe() {
+    if (!stripe) throw new Error('Stripe is not configured — set STRIPE_SECRET_KEY in .env');
+    return stripe;
+}
+
 // Placeholder Price IDs — replace with real IDs after creating products in Stripe Dashboard
 export const STRIPE_PRICE_IDS = {
     starter:  process.env.STRIPE_PRICE_STARTER  || 'price_starter_placeholder',
@@ -19,7 +24,7 @@ export const TIER_FOR_PRICE = Object.fromEntries(
 
 export async function createCustomer(userId, email) {
     try {
-        const customer = await stripe.customers.create({ email, metadata: { vaultlister_user_id: userId } });
+        const customer = await requireStripe().customers.create({ email, metadata: { vaultlister_user_id: userId } });
         query.run('UPDATE users SET stripe_customer_id = ?, updated_at = datetime(\'now\') WHERE id = ?',
             [customer.id, userId]);
         logger.info(`[Stripe] Created customer ${customer.id} for user ${userId}`);
@@ -41,7 +46,7 @@ export async function createCheckoutSession(userId, priceId, successUrl, cancelU
             customerId = customer.id;
         }
 
-        const session = await stripe.checkout.sessions.create({
+        const session = await requireStripe().checkout.sessions.create({
             customer: customerId,
             mode: 'subscription',
             payment_method_types: ['card'],
@@ -61,7 +66,7 @@ export async function createCheckoutSession(userId, priceId, successUrl, cancelU
 
 export async function createPortalSession(customerId, returnUrl) {
     try {
-        const session = await stripe.billingPortal.sessions.create({
+        const session = await requireStripe().billingPortal.sessions.create({
             customer: customerId,
             return_url: returnUrl
         });
@@ -74,7 +79,7 @@ export async function createPortalSession(customerId, returnUrl) {
 
 export async function cancelSubscription(subscriptionId) {
     try {
-        const subscription = await stripe.subscriptions.cancel(subscriptionId);
+        const subscription = await requireStripe().subscriptions.cancel(subscriptionId);
         logger.info(`[Stripe] Subscription ${subscriptionId} cancelled`);
         return subscription;
     } catch (error) {
@@ -85,7 +90,7 @@ export async function cancelSubscription(subscriptionId) {
 
 export async function getSubscription(subscriptionId) {
     try {
-        return await stripe.subscriptions.retrieve(subscriptionId, {
+        return await requireStripe().subscriptions.retrieve(subscriptionId, {
             expand: ['items.data.price.product']
         });
     } catch (error) {
@@ -95,7 +100,7 @@ export async function getSubscription(subscriptionId) {
 }
 
 export function constructWebhookEvent(rawBody, signature) {
-    return stripe.webhooks.constructEvent(
+    return requireStripe().webhooks.constructEvent(
         rawBody,
         signature,
         process.env.STRIPE_WEBHOOK_SECRET

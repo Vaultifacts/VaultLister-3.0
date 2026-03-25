@@ -13,8 +13,6 @@ const PRECACHE_URLS = [
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/favicon.svg',
-    '/components/photoEditor.js?v=9a80b34e',
-    '/components/chatWidget.js?v=9a80b34e',
     '/chunk-inventory.js?v=9a80b34e',
 ];
 

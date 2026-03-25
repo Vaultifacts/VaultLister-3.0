@@ -122,13 +122,19 @@ const ChatWidget = {
             this.isOpen = false;
             this.render();
         } else if (action.action) {
-            // Execute function
-            try {
-                eval(action.action);
+            // Dispatch action by parsing — no code evaluation
+            const routeMatch = action.action.match(/^router\.navigate\(['"]([^'"<>]+)['"]\)$/);
+            const hashMatch = action.action.match(/^window\.location\.hash\s*=\s*['"]([^'"<>]+)['"]$/);
+            if (routeMatch) {
+                router.navigate(routeMatch[1]);
                 this.isOpen = false;
                 this.render();
-            } catch (error) {
-                console.error('Failed to execute action:', error);
+            } else if (hashMatch) {
+                window.location.hash = hashMatch[1];
+                this.isOpen = false;
+                this.render();
+            } else {
+                console.warn('[ChatWidget] Unsupported quick action type — ignored');
             }
         }
     },
