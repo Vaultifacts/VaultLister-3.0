@@ -180,7 +180,7 @@ export async function barcodeRouter(ctx) {
 async function lookupExternalBarcode(barcode) {
     // Try Open Food Facts API (free, no API key required)
     try {
-        const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+        const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`, { signal: AbortSignal.timeout(10000) });
         if (response.ok) {
             const data = await response.json();
             if (data.status === 1 && data.product) {
@@ -202,6 +202,7 @@ async function lookupExternalBarcode(barcode) {
     // Try UPC Item DB (community database, may require proxy in production)
     try {
         const response = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${barcode}`, {
+            signal: AbortSignal.timeout(10000),
             headers: {
                 'Accept': 'application/json'
             }

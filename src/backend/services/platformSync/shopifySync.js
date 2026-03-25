@@ -156,6 +156,7 @@ async function fetchShopifyProducts(shop, accessToken, mode) {
 
     try {
         const resp = await fetch(`${storeUrl}/admin/api/2024-01/products.json?limit=250`, {
+            signal: AbortSignal.timeout(30000),
             headers: { 'X-Shopify-Access-Token': accessToken }
         });
         if (!resp.ok) return [];
@@ -172,6 +173,7 @@ async function fetchShopifyOrders(shop, accessToken, mode) {
 
     try {
         const resp = await fetch(`${storeUrl}/admin/api/2024-01/orders.json?status=any&limit=250`, {
+            signal: AbortSignal.timeout(30000),
             headers: { 'X-Shopify-Access-Token': accessToken }
         });
         if (!resp.ok) return [];

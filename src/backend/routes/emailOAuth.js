@@ -158,6 +158,7 @@ export async function emailOAuthRouter(ctx) {
             // Exchange code for tokens
             const tokenResponse = await fetch(GMAIL_TOKEN_URL, {
                 method: 'POST',
+                signal: AbortSignal.timeout(15000),
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
@@ -521,6 +522,7 @@ export async function emailOAuthRouter(ctx) {
             // Exchange code for tokens
             const tokenResponse = await fetch(OUTLOOK_TOKEN_URL, {
                 method: 'POST',
+                signal: AbortSignal.timeout(15000),
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },

@@ -387,6 +387,7 @@ export async function shippingLabelsRouter(ctx) {
                 if (shippoKey && rateRecord?.rate_id) {
                     const purchaseRes = await fetch('https://api.goshippo.com/transactions/', {
                         method: 'POST',
+                        signal: AbortSignal.timeout(30000),
                         headers: {
                             'Authorization': `ShippoToken ${shippoKey}`,
                             'Content-Type': 'application/json'
@@ -501,6 +502,7 @@ export async function shippingLabelsRouter(ctx) {
 
             const shippoRes = await fetch('https://api.goshippo.com/shipments/', {
                 method: 'POST',
+                signal: AbortSignal.timeout(30000),
                 headers: {
                     'Authorization': `ShippoToken ${shippoKey}`,
                     'Content-Type': 'application/json'

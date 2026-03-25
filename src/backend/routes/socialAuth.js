@@ -19,7 +19,7 @@ const JWKS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 async function getApplePublicKey(kid) {
     if (!appleJwksCache || Date.now() - appleJwksCacheTime > JWKS_CACHE_TTL) {
-        const res = await fetch('https://appleid.apple.com/auth/keys');
+        const res = await fetch('https://appleid.apple.com/auth/keys', { signal: AbortSignal.timeout(10000) });
         if (!res.ok) throw new Error('Failed to fetch Apple JWKS');
         appleJwksCache = await res.json();
         appleJwksCacheTime = Date.now();
@@ -185,6 +185,7 @@ export async function socialAuthRouter(ctx) {
             // Exchange code for tokens
             const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
                 method: 'POST',
+                signal: AbortSignal.timeout(15000),
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({
                     code,
@@ -203,6 +204,7 @@ export async function socialAuthRouter(ctx) {
 
             // Get user info
             const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                signal: AbortSignal.timeout(10000),
                 headers: { 'Authorization': `Bearer ${tokens.access_token}` }
             });
 

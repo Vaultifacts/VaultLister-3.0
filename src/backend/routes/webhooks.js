@@ -69,6 +69,17 @@ export async function webhooksRouter(ctx) {
             return { status: 400, data: { error: `Webhook signature verification failed: ${err.message}` } };
         }
 
+        // Idempotency check — prevent double-processing on Stripe retry
+        try {
+            const existing = query.get('SELECT id FROM webhook_events WHERE id = ?', [event.id]);
+            if (existing) {
+                logger.info(`[Webhooks/Stripe] Duplicate event ${event.id} — skipping (already processed)`);
+                return { status: 200, data: { received: true } };
+            }
+        } catch {
+            // webhook_events table may not exist yet — proceed with processing
+        }
+
         try {
             const STRIPE_SYSTEM_USER = '00000000-0000-0000-0000-000000000001';
 
@@ -146,11 +157,11 @@ export async function webhooksRouter(ctx) {
                     logger.info(`[Webhooks/Stripe] Unhandled event type: ${event.type}`);
             }
 
-            // Store event for audit trail
+            // Store event for audit trail — use event.id as row ID for idempotency
             try {
                 query.run(
                     'INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at) VALUES (?, ?, \'stripe\', ?, ?, \'processed\', datetime(\'now\'))',
-                    [uuidv4(), STRIPE_SYSTEM_USER, event.type, JSON.stringify(event.data.object)]
+                    [event.id, STRIPE_SYSTEM_USER, event.type, JSON.stringify(event.data.object)]
                 );
             } catch {
                 // Don't fail the Stripe response if audit insert fails
@@ -527,6 +538,7 @@ export async function webhooksRouter(ctx) {
             const response = await fetch(endpoint.url, {
                 method: 'POST',
                 redirect: 'manual', // Prevent SSRF via redirect
+                signal: AbortSignal.timeout(10000),
                 headers: {
                     'Content-Type': 'application/json',
                     'X-VaultLister-Event': 'test',

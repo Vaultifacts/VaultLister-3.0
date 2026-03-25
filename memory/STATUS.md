@@ -30,29 +30,36 @@
 <!-- Post-commit hook auto-adds Bot commits here -->
 
 ## Current State (2026-03-24)
-- **Last commit:** `77ac027` on master (pushed ✅)
+- **Last commit:** `03f9d32` on master (pushed ✅)
 - **E2E suite: 620 pass / 0 fail** ✅
-- **Security audit:** All known items resolved (B-08/09/10/17, D-03–D-09, EXT-23/24/26)
+- **Security audit:** All known items resolved + 8 new FP1 issues fixed
 - **QA Walkthrough:** 100% complete — 498/498 items tested
-- **Sprint Board:** 14 non-Done items remaining; shipping labels + financials email-parse marked Done
+- **Deep Audit Tracker v2:** All 418+ rows populated in Notion
 
 ### Recent work (this session)
-- `bfa21be`: fix(shipping) — Shippo API integration replacing simulated rates/purchase
-- `5f5f75f`: feat(backup) — cloud sync wired into Docker scheduler
-- `21cba1f`: chore — husky hooks hardened (portable MEMORY_DIR)
-- `d58b9f5`: fix(a11y) — Lighthouse accessibility 94→100
-- `77ac027`: chore(sw) — CACHE_VERSION bump
+- Created Deep Audit Tracker v2 in Notion — V1-V375, D1-D43, all bug/finding rows
+- Created "Audit Findings — Full Report" narrative page in Notion
+- `03f9d32`: fix(security): FP1 — 8 production-blocking bugs fixed:
+  - C1: server.js — /core-bundle.js now remaps to dist/app.js in production
+  - C2: docker-compose.yml — OAUTH_ENCRYPTION_KEY added (prevented container startup)
+  - C3: oauth.js — PLAYWRIGHT_ONLY_PLATFORMS moved to module scope (ReferenceError fix)
+  - V300/V301: .dockerignore created — excludes .env, ssl keys, .claude/, memory/, data/
+  - V336: inventory.js — SSRF protection on /import/url (private IP blocklist)
+  - V368: chatWidget.js — onclick HTML attr injection fixed (proper &, <, >, ' encoding)
+  - V322: .env.example — JWT_SECRET/SESSION_SECRET default replaced with REPLACE_ME
 
 ## Next Tasks
-1. **Sprint Board P1 items (user action required):**
+1. **FP2 items (HIGH reliability):**
+   - V350: Add timeout to 14+ bare fetch() calls across 11 service files
+   - V351: Fix Stripe webhook idempotency (use event.id not uuidv4)
+   - V352: Add PRAGMA busy_timeout to database.js (currently 0ms)
+2. **FP3 items:** Update stale memory files (H1/H2 — STATUS.md last commit, test baseline count)
+3. **FP4 items:** CI E2E gap (H3), CSRF/rate-limit testing in CI (M1)
+4. **FP5 items:** M2, M6, M7, M14 (deploy smoke test, SW precache, DOMPurify fallback, Stripe guard), V346 (chatWidget eval allowlist), V353 (GDPR cascade completeness)
+5. **FP6 items:** V370-V373 — graceful shutdown interval leaks
+6. **Sprint Board P0/P1 config (user action required):**
+   - SSL certificate + domain configuration (Blocked, P0-Critical)
+   - Set real Stripe price IDs in .env (P0-Critical)
    - Configure SMTP for production email (Blocked)
    - Configure real marketplace API credentials (To Do)
    - Run `bun install` on server after SDK upgrade (To Do)
-   - Fill marketplace credentials in staging .env (To Do)
-   - BLOCKER: Set real Stripe price IDs in .env (P0-Critical)
-   - SSL certificate + domain configuration (Blocked, P0-Critical)
-2. **Sprint Board P2 code items:**
-   - Mobile responsiveness verification
-   - Load testing (50+ concurrent users)
-   - Chrome extension: full listing capture
-3. **Production deploy** — when all P0/P1 items resolved
