@@ -80,6 +80,12 @@ class RateLimiter {
             maxRequests: 10,
             message: 'Rate limit exceeded for this operation'
         },
+        // Chrome extension API requests
+        api: {
+            windowMs: 60 * 1000, // 1 minute
+            maxRequests: 60,
+            message: 'Too many extension requests, please slow down'
+        },
         // Block period for repeated violations
         blockDuration: 60 * 60 * 1000 // 1 hour
     };
