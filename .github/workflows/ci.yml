@@ -154,9 +154,9 @@ jobs:
           retention-days: 7
 
   test-e2e:
-    name: E2E Tests (Guardian)
+    name: E2E Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       DISABLE_CSRF: 'true'
       DISABLE_RATE_LIMIT: 'true'
@@ -204,8 +204,8 @@ jobs:
           for i in $(seq 1 30); do curl -sf http://localhost:3000/api/health > /dev/null && break; sleep 1; done
           curl -sf http://localhost:3000/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
 
-      - name: Run E2E guardian tests
-        run: npx playwright test --project=chromium --grep @quinn-v3-guardian
+      - name: Run E2E tests
+        run: npx playwright test --project=chromium
 
       - name: Upload Playwright report
         if: always()
@@ -216,6 +216,9 @@ jobs:
           retention-days: 7
 
   security-scan:
+    # NOTE: This job intentionally does NOT set DISABLE_CSRF or DISABLE_RATE_LIMIT.
+    # It is the CI gate that verifies CSRF protection and rate limiting are enforced.
+    # test-unit and test-e2e disable these for test isolation; regressions are caught here.
     name: Security Scan
     runs-on: ubuntu-latest
     timeout-minutes: 10
