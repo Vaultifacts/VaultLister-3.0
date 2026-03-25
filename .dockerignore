@@ -1,0 +1,42 @@
+# Secrets and credentials — never in Docker build context
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.pfx
+*.p12
+nginx/ssl/
+
+# Git history
+.git/
+.gitignore
+
+# Claude Code / AI tooling
+.claude/
+memory/
+
+# Development artifacts
+logs/
+*.log
+backups/
+data/
+!data/.gitkeep
+
+# Test outputs
+e2e/test-results/
+e2e/playwright-report/
+coverage/
+.test-baseline
+
+# Local dev files
+node_modules/
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build artifacts that are rebuilt inside Docker
+dist/

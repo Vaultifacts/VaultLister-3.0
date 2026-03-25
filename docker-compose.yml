@@ -17,6 +17,7 @@ services:
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=3000
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set}
+      - OAUTH_ENCRYPTION_KEY=${OAUTH_ENCRYPTION_KEY:?OAUTH_ENCRYPTION_KEY must be set}
       - REDIS_URL=redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set}@redis:6379
       - DATA_DIR=/app/data
       - LOG_DIR=/app/logs

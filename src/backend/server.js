@@ -736,7 +736,9 @@ function serveStatic(pathname, request) {
     const resolvedDistDir = path.resolve(DIST_DIR);
 
     if (IS_PROD && pathname.endsWith('.js')) {
-        const distPath = join(DIST_DIR, pathname);
+        // Remap /core-bundle.js to /app.js (minified build output from dist/)
+        const distName = pathname === '/core-bundle.js' ? '/app.js' : pathname;
+        const distPath = join(DIST_DIR, distName);
         const resolvedDist = path.resolve(distPath);
         if (resolvedDist.startsWith(resolvedDistDir) && existsSync(distPath)) {
             filePath = distPath;

@@ -1105,6 +1105,27 @@ export async function inventoryRouter(ctx) {
             return { status: 400, data: { error: 'URL required' } };
         }
 
+        // SSRF protection — block private/loopback/link-local addresses
+        try {
+            const parsed = new URL(url);
+            if (!['http:', 'https:'].includes(parsed.protocol)) {
+                return { status: 400, data: { error: 'URL must use http or https' } };
+            }
+            const host = parsed.hostname.toLowerCase();
+            if (
+                host === 'localhost' || host === '::1' ||
+                /^127\./.test(host) ||
+                /^169\.254\./.test(host) ||
+                /^10\./.test(host) ||
+                /^192\.168\./.test(host) ||
+                /^172\.(1[6-9]|2[0-9]|3[01])\./.test(host)
+            ) {
+                return { status: 400, data: { error: 'URL not allowed' } };
+            }
+        } catch {
+            return { status: 400, data: { error: 'Invalid URL' } };
+        }
+
         let html = '';
         try {
             const response = await fetch(url, {

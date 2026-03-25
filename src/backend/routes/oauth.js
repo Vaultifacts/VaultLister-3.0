@@ -18,6 +18,9 @@ if (!process.env.EBAY_ENVIRONMENT || process.env.EBAY_ENVIRONMENT === 'sandbox')
     logger.warn('[OAuth] WARNING: EBAY_ENVIRONMENT=sandbox — eBay API calls go to sandbox, not production. Set EBAY_ENVIRONMENT=production for live listings.');
 }
 
+// Platforms that use Playwright automation instead of OAuth (no public OAuth API exists)
+const PLAYWRIGHT_ONLY_PLATFORMS = ['poshmark', 'mercari', 'depop', 'grailed', 'whatnot'];
+
 export async function oauthRouter(ctx) {
     const { method, path, body, user, query: queryParams } = ctx;
 
@@ -534,9 +537,6 @@ function getOAuthConfig(platform, mode) {
             scopes: ['read', 'write', 'listings']
         };
     }
-
-    // Platforms that use Playwright automation instead of OAuth (no public OAuth API exists)
-    const PLAYWRIGHT_ONLY_PLATFORMS = ['poshmark', 'mercari', 'depop', 'grailed', 'whatnot'];
 
     // Real platform configurations
     const configs = {

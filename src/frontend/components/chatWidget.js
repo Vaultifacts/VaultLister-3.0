@@ -235,7 +235,7 @@ const ChatWidget = {
                         <div class="chat-quick-actions">
                             ${quickActions.map(action => `
                                 <button class="chat-quick-action-btn"
-                                        onclick='ChatWidget.executeQuickAction(${JSON.stringify(action).replace(/'/g, "&apos;")})'>
+                                        onclick='ChatWidget.executeQuickAction(${JSON.stringify(action).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;')})'>
                                     ${escapeHtml(action.label)}
                                 </button>
                             `).join('')}
