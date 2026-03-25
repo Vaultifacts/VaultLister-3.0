@@ -55,7 +55,7 @@ Deployment: Docker container → Nginx reverse proxy → GitHub Actions CI/CD
 
 **Rationale:** Bun provides built-in HTTP server and WebSocket support, native SQLite bindings, and measurably faster startup than Node.js. It runs the same JS/ESM code without a separate transpile step. For a self-hosted single-binary server, startup speed and the reduced dependency surface matter more than ecosystem breadth.
 
-**Trade-offs accepted:** Bun is younger than Node.js; some Node ecosystem packages need compatibility shims. The `better-sqlite3` native addon still requires node-gyp on first install.
+**Trade-offs accepted:** Bun is younger than Node.js; some Node ecosystem packages need compatibility shims. The database driver is Bun's native `bun:sqlite` — no native addon or node-gyp required.
 
 ---
 
@@ -115,7 +115,7 @@ src/
     middleware/            — auth, rateLimiter, CSRF, securityHeaders
     db/
       schema.sql           — single source of truth for all tables
-      database.js          — better-sqlite3 connection + WAL init
+      database.js          — bun:sqlite connection + WAL init
       migrations/          — numbered migration files
     services/
       platformSync/        — per-platform publish + sync handlers

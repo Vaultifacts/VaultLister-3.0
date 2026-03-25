@@ -69,7 +69,6 @@
     "@notionhq/client": "^5.9.0",
     "@sentry/node": "^10.45.0",
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^12.6.2",
     "dompurify": "^3.3.3",
     "ioredis": "^5.9.2",
     "jsonwebtoken": "^9.0.2",

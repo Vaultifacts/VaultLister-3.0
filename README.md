@@ -5,7 +5,7 @@ Zero-cost, offline-capable multi-channel reselling platform. List to 9+ marketpl
 ## Tech Stack
 - **Runtime:** Bun.js 1.3+ (server + package manager)
 - **Frontend:** Vanilla JS SPA (route-based chunking, no framework)
-- **Database:** SQLite 3 (WAL mode, FTS5 full-text search, better-sqlite3)
+- **Database:** SQLite 3 (WAL mode, FTS5 full-text search, bun:sqlite)
 - **Automations:** Playwright (stealth mode) for marketplace bots
 - **AI:** Claude API (@anthropic-ai/sdk) for listings, pricing, predictions
 - **Auth:** JWT + bcrypt + TOTP MFA + OAuth 2.0 (eBay, Etsy, Shopify)
