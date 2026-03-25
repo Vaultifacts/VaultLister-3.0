@@ -21,7 +21,11 @@
       "WebFetch(domain:www.schemastore.org)",
       "Read(/c/Users/Matt1/.claude/**)",
       "Bash(mv settings.tmp.json settings.json)",
-      "mcp__plugin_context7_context7__query-docs"
+      "mcp__plugin_context7_context7__query-docs",
+      "WebFetch(domain:docs.docker.com)",
+      "WebFetch(domain:eff-certbot.readthedocs.io)",
+      "WebFetch(domain:community.letsencrypt.org)",
+      "WebFetch(domain:ipinfo.io)"
     ]
   },
   "remote": {
