@@ -17,7 +17,10 @@
     "https://poshmark.com/*",
     "https://www.ebay.com/*",
     "https://www.mercari.com/*",
-    "https://www.depop.com/*"
+    "https://www.depop.com/*",
+    "https://www.grailed.com/*",
+    "https://www.etsy.com/*",
+    "https://*.myshopify.com/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js",
@@ -69,9 +72,35 @@
     },
     {
       "matches": [
+        "https://www.grailed.com/listings/*"
+      ],
+      "js": ["content/scraper.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.etsy.com/listing/*"
+      ],
+      "js": ["content/scraper.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.myshopify.com/products/*"
+      ],
+      "js": ["content/scraper.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
         "https://poshmark.com/create-listing*",
         "https://www.ebay.com/sl/sell*",
-        "https://www.mercari.com/sell/*"
+        "https://www.mercari.com/sell/*",
+        "https://www.depop.com/sell/*",
+        "https://www.grailed.com/listings/new*",
+        "https://www.etsy.com/your/listings/*",
+        "https://*.myshopify.com/admin/products/new*",
+        "https://*.myshopify.com/admin/products/*"
       ],
       "js": ["content/autofill.js"],
       "run_at": "document_idle"

@@ -1,4 +1,4 @@
-// Product Scraper for Amazon, Nordstrom, eBay, Poshmark, Mercari, Depop
+// Product Scraper for Amazon, Nordstrom, eBay, Poshmark, Mercari, Depop, Grailed, Etsy, Shopify
 // Extracts product details from retail and resale websites
 
 // Detect which site we're on
@@ -12,6 +12,9 @@ function detectSite() {
     if (hostname.includes('poshmark.com')) return 'poshmark';
     if (hostname.includes('mercari.com')) return 'mercari';
     if (hostname.includes('depop.com')) return 'depop';
+    if (hostname.includes('grailed.com')) return 'grailed';
+    if (hostname.includes('etsy.com')) return 'etsy';
+    if (hostname.includes('myshopify.com') || document.querySelector('meta[name="shopify-checkout-api-token"]')) return 'shopify';
     return null;
 }
 
@@ -282,6 +285,131 @@ const scrapers = {
             };
         } catch (error) {
             console.error('Depop scraper error:', error);
+            return null;
+        }
+    },
+
+    grailed: () => {
+        try {
+            const title = document.querySelector('h1[class*="ListingCard"]')?.textContent?.trim() ||
+                         document.querySelector('h1[class*="listing"]')?.textContent?.trim() ||
+                         document.querySelector('h1')?.textContent?.trim();
+
+            let price = null;
+            const priceText = document.querySelector('[class*="ListingCard-module_price"]')?.textContent?.trim() ||
+                             document.querySelector('[class*="price"]')?.textContent?.trim();
+            if (priceText) price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+
+            const images = [];
+            document.querySelectorAll('[class*="ListingCard-module_photo"] img, [class*="listing-photo"] img').forEach(img => {
+                const src = img.getAttribute('data-src') || img.src;
+                if (src && !images.includes(src) && src.startsWith('http')) images.push(src);
+            });
+
+            const brand = document.querySelector('[class*="ListingCard-module_designer"]')?.textContent?.trim() ||
+                         document.querySelector('[class*="designer"]')?.textContent?.trim();
+            const size = document.querySelector('[class*="ListingCard-module_size"]')?.textContent?.trim() ||
+                        document.querySelector('[class*="size"]')?.textContent?.trim();
+            const condition = document.querySelector('[class*="ListingCard-module_condition"]')?.textContent?.trim();
+            const description = document.querySelector('[class*="ListingCard-module_description"]')?.textContent?.trim()?.slice(0, 500) ||
+                              document.querySelector('[class*="description"]')?.textContent?.trim()?.slice(0, 500);
+
+            const category = Array.from(document.querySelectorAll('[class*="Breadcrumbs"] a, nav[aria-label="breadcrumb"] a'))
+                .map(a => a.textContent.trim()).filter(Boolean).join(' > ');
+
+            return {
+                title, price, images, brand, size, condition, description, category,
+                source: 'Grailed', sourceUrl: window.location.href,
+                sourceId: window.location.pathname.match(/\/listings\/(\d+)/)?.[1],
+                scrapedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Grailed scraper error:', error);
+            return null;
+        }
+    },
+
+    etsy: () => {
+        try {
+            const title = document.querySelector('h1[data-buy-box-listing-title]')?.textContent?.trim() ||
+                         document.querySelector('h1.wt-text-body-01')?.textContent?.trim() ||
+                         document.querySelector('h1')?.textContent?.trim();
+
+            let price = null;
+            const priceText = document.querySelector('[data-selector="price-only"] .currency-value')?.textContent?.trim() ||
+                             document.querySelector('.wt-text-title-larger')?.textContent?.trim();
+            if (priceText) price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+
+            const images = [];
+            document.querySelectorAll('[data-image-carousel-image] img, [data-appears-component-name="listing_image"] img').forEach(img => {
+                const src = img.getAttribute('data-src-zoom') || img.getAttribute('data-src') || img.src;
+                if (src && !images.includes(src) && src.startsWith('http')) images.push(src);
+            });
+
+            const brand = document.querySelector('[data-component="shop-name-and-title-info"] a')?.textContent?.trim() ||
+                         document.querySelector('.wt-text-link[href*="/shop/"]')?.textContent?.trim();
+            const description = document.querySelector('#wt-content-toggle-product-details-read-more')?.textContent?.trim()?.slice(0, 500) ||
+                              document.querySelector('[data-id="description-text"]')?.textContent?.trim()?.slice(0, 500);
+
+            const category = Array.from(document.querySelectorAll('[data-component="breadcrumb"] a, nav[aria-label="breadcrumb"] a'))
+                .map(a => a.textContent.trim()).filter(Boolean).join(' > ');
+
+            const listingId = window.location.pathname.match(/\/listing\/(\d+)/)?.[1];
+
+            return {
+                title, price, images, brand, description, category,
+                source: 'Etsy', sourceUrl: window.location.href,
+                sourceId: listingId,
+                scrapedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Etsy scraper error:', error);
+            return null;
+        }
+    },
+
+    shopify: () => {
+        try {
+            // Try Shopify JSON API first for accurate data
+            let productData = null;
+            try {
+                const jsonUrl = window.location.pathname.replace(/(\?.*)?$/, '.js');
+                // Fallback to DOM if JSON not available synchronously
+            } catch (_) {}
+
+            const title = document.querySelector('h1.product__title, h1.product-single__title, .product__title h1')?.textContent?.trim() ||
+                         document.querySelector('h1')?.textContent?.trim();
+
+            let price = null;
+            const priceText = document.querySelector('[class*="product__price"] .money, .product__price .money, [data-product-price]')?.textContent?.trim();
+            if (priceText) price = parseFloat(priceText.replace(/[^0-9.]/g, '')) / 100 ||
+                                   parseFloat(priceText.replace(/[^0-9.]/g, ''));
+
+            const images = [];
+            document.querySelectorAll('.product__media img, .product-single__photo img, [data-product-media-type="image"] img').forEach(img => {
+                const src = img.getAttribute('data-src') || img.src;
+                const hiRes = src ? 'https:' + src.replace(/_(pico|icon|thumb|small|compact|medium|large|grande|original|master|1024x1024|2048x2048)(\.[^.]+)$/, '$2').replace(/^https:/, '') : null;
+                if (hiRes && !images.includes(hiRes) && hiRes.startsWith('http')) images.push(hiRes);
+            });
+
+            const brand = document.querySelector('[class*="product__vendor"], .product-single__vendor')?.textContent?.trim();
+            const description = document.querySelector('.product__description, .product-single__description, [itemprop="description"]')?.textContent?.trim()?.slice(0, 500);
+
+            const breadcrumbs = Array.from(document.querySelectorAll('.breadcrumb a, nav.breadcrumbs a, [data-breadcrumb] a'))
+                .map(a => a.textContent.trim()).filter(Boolean);
+
+            // Extract product handle from URL
+            const productHandle = window.location.pathname.match(/\/products\/([^/?]+)/)?.[1];
+
+            return {
+                title, price, images, brand, description,
+                category: breadcrumbs.join(' > '),
+                source: 'Shopify', sourceUrl: window.location.href,
+                sourceId: productHandle,
+                scrapedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Shopify scraper error:', error);
             return null;
         }
     }

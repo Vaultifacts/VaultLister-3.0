@@ -1,5 +1,5 @@
 // Autofill Helper for Marketplace Platforms
-// Assists with filling out listing forms on Poshmark, eBay, and Mercari
+// Assists with filling out listing forms on Poshmark, eBay, Mercari, Depop, Grailed, Etsy, Shopify
 
 function escapeHtml(str) {
     if (str == null) return '';
@@ -19,6 +19,10 @@ function detectPlatform() {
     if (hostname.includes('poshmark.com')) return 'poshmark';
     if (hostname.includes('ebay.com')) return 'ebay';
     if (hostname.includes('mercari.com')) return 'mercari';
+    if (hostname.includes('depop.com')) return 'depop';
+    if (hostname.includes('grailed.com')) return 'grailed';
+    if (hostname.includes('etsy.com')) return 'etsy';
+    if (hostname.includes('myshopify.com') || document.querySelector('meta[name="shopify-checkout-api-token"]')) return 'shopify';
     return null;
 }
 
@@ -47,6 +51,40 @@ const fieldMappings = {
         brand: 'input[data-testid="brand"], input[name="brand"]',
         condition: 'select[data-testid="condition"], select[name="item_condition"]',
         category: 'input[data-testid="category"]'
+    },
+    depop: {
+        title: 'input[name="itemDescription"], input[placeholder*="title"], input[placeholder*="Title"]',
+        description: 'textarea[name="description"], textarea[placeholder*="description"]',
+        price: 'input[name="price"], input[placeholder*="price"], input[placeholder*="Price"]',
+        brand: 'input[name="brand"], input[placeholder*="brand"]',
+        size: 'select[name="size"], button[data-testid="size-selector"]',
+        condition: 'select[name="condition"]',
+        category: 'select[name="category"]'
+    },
+    grailed: {
+        title: 'input[name="listing[title]"], input[placeholder*="title"]',
+        description: 'textarea[name="listing[description]"], textarea[placeholder*="description"]',
+        price: 'input[name="listing[price]"], input[placeholder*="price"]',
+        brand: 'input[name="listing[designer_names][]"], input[placeholder*="designer"]',
+        size: 'select[name="listing[size]"], input[placeholder*="size"]',
+        condition: 'select[name="listing[condition]"]',
+        category: 'select[name="listing[category]"]'
+    },
+    etsy: {
+        title: 'input#listing-edit-form-title, input[name="title"]',
+        description: 'textarea#listing-edit-form-description, textarea[name="description"]',
+        price: 'input#listing-edit-form-price, input[name="price"]',
+        brand: 'input[name="brand"]',
+        condition: 'select[name="item_condition"]',
+        category: 'input[name="category"]'
+    },
+    shopify: {
+        title: 'input#title, input[name="title"]',
+        description: 'textarea#description, [contenteditable][aria-label*="description"]',
+        price: 'input#price, input[name="price"]',
+        brand: 'input[name="vendor"], input#vendor',
+        condition: 'select[name="condition"]',
+        category: 'input[name="type"], input#type'
     }
 };
 
