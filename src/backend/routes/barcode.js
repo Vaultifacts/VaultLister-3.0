@@ -2,19 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
-
-// In-memory cache for barcode lookups (to avoid hammering external APIs)
-const barcodeCache = new Map();
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-const MAX_CACHE_SIZE = 10000;
-
-function cacheSet(key, value) {
-    if (barcodeCache.size >= MAX_CACHE_SIZE) {
-        // Evict oldest entry (Maps preserve insertion order)
-        barcodeCache.delete(barcodeCache.keys().next().value);
-    }
-    barcodeCache.set(key, value);
-}
+import redis from '../services/redis.js';
 
 export async function barcodeRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
@@ -25,12 +13,12 @@ export async function barcodeRouter(ctx) {
         const barcode = lookupMatch[1];
 
         // Check cache first
-        const cached = barcodeCache.get(barcode);
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        const cached = await redis.getJson('cache:barcode:' + barcode);
+        if (cached) {
             return {
                 status: 200,
                 data: {
-                    ...cached.data,
+                    ...cached,
                     cached: true
                 }
             };
@@ -51,7 +39,7 @@ export async function barcodeRouter(ctx) {
                 image_url: localResult.image_url,
                 source: 'local'
             };
-            cacheSet(barcode, { data, timestamp: Date.now() });
+            await redis.setJson('cache:barcode:' + barcode, data, 86400);
             return {
                 status: 200,
                 data: { ...data, cached: false }
@@ -64,7 +52,7 @@ export async function barcodeRouter(ctx) {
             if (externalData) {
                 // Save to local database for future lookups
                 saveBarcodeLookup(barcode, externalData);
-                cacheSet(barcode, { data: externalData, timestamp: Date.now() });
+                await redis.setJson('cache:barcode:' + barcode, externalData, 86400);
                 return {
                     status: 200,
                     data: { ...externalData, cached: false }
@@ -118,7 +106,7 @@ export async function barcodeRouter(ctx) {
 
             // Update cache
             const data = { barcode, title, brand, category, description, image_url, source: 'user' };
-            cacheSet(barcode, { data, timestamp: Date.now() });
+            await redis.setJson('cache:barcode:' + barcode, data, 86400);
 
             return {
                 status: 201,

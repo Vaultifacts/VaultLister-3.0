@@ -73,7 +73,7 @@ export async function securityRouter(ctx) {
     // POST /api/security/verify-email - Verify email with token
     if (method === 'POST' && path === '/verify-email') {
         try {
-            const verifyRateError = applyRateLimit(ctx, 'auth');
+            const verifyRateError = await applyRateLimit(ctx, 'auth');
             if (verifyRateError) return verifyRateError;
 
             const { token } = body;
@@ -123,7 +123,7 @@ export async function securityRouter(ctx) {
     if (method === 'POST' && path === '/forgot-password') {
         try {
             // SECURITY: Auth-tier rate limit to prevent password reset abuse / email flooding
-            const resetRateError = applyRateLimit(ctx, 'auth');
+            const resetRateError = await applyRateLimit(ctx, 'auth');
             if (resetRateError) return resetRateError;
 
             const { email } = body;
@@ -171,7 +171,7 @@ export async function securityRouter(ctx) {
     // POST /api/security/reset-password - Reset password with token
     if (method === 'POST' && path === '/reset-password') {
         try {
-            const resetRateError = applyRateLimit(ctx, 'auth');
+            const resetRateError = await applyRateLimit(ctx, 'auth');
             if (resetRateError) return resetRateError;
 
             const { token, password } = body;
@@ -271,7 +271,7 @@ export async function securityRouter(ctx) {
             }
 
             // SECURITY: Auth-tier rate limit — 6-digit TOTP codes are brute-forceable at 30 req/min
-            const mfaRateError = applyRateLimit(ctx, 'auth');
+            const mfaRateError = await applyRateLimit(ctx, 'auth');
             if (mfaRateError) return mfaRateError;
 
             const { setupToken, code, secret } = body;

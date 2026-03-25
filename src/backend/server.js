@@ -710,16 +710,7 @@ function parseParams(url, pattern) {
 const gzipCache = new Map();
 
 // Idempotency key cache — prevents double-submit on POST/PUT/PATCH.
-// Key: Idempotency-Key header value. Value: { status, data, headers, expiresAt }.
-const IDEMPOTENCY_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const idempotencyCache = new Map();
-// Sweep expired entries every minute — lightweight O(n) scan; cache is small in practice.
-setInterval(() => {
-    const now = Date.now();
-    for (const [k, v] of idempotencyCache) {
-        if (v.expiresAt <= now) idempotencyCache.delete(k);
-    }
-}, 60_000).unref();
+// Stored in Redis (with in-memory fallback) via redisService.
 
 // Serve static files
 function serveStatic(pathname, request) {
@@ -1268,7 +1259,7 @@ const server = Bun.serve({
             };
 
             // Apply rate limiting
-            const rateLimitError = applyRateLimit(context, 'auto');
+            const rateLimitError = await applyRateLimit(context, 'auto');
             if (rateLimitError) {
                 const headers = {
                     'Content-Type': 'application/json',
@@ -1297,8 +1288,8 @@ const server = Bun.serve({
             const idempotencyKey = request.headers.get('Idempotency-Key');
             const isMutatingMethod = method === 'POST' || method === 'PUT' || method === 'PATCH';
             if (idempotencyKey && isMutatingMethod) {
-                const cached = idempotencyCache.get(idempotencyKey);
-                if (cached && cached.expiresAt > Date.now()) {
+                const cached = await redisService.getJson('idempotency:' + idempotencyKey);
+                if (cached) {
                     const responseHeaders = {
                         'Content-Type': 'application/json',
                         'X-API-Version': '1.0.0',
@@ -1372,12 +1363,11 @@ const server = Bun.serve({
 
                         // Cache idempotent response for replay
                         if (idempotencyKey && isMutatingMethod) {
-                            idempotencyCache.set(idempotencyKey, {
+                            await redisService.setJson('idempotency:' + idempotencyKey, {
                                 status: result.status || 200,
                                 data: result.data,
-                                headers: result.headers || {},
-                                expiresAt: Date.now() + IDEMPOTENCY_TTL_MS
-                            });
+                                headers: result.headers || {}
+                            }, 300);
                         }
 
                         return response;

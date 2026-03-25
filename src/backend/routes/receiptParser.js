@@ -4,40 +4,16 @@ import { query } from '../db/database.js';
 import { getAnthropicClient } from '../../shared/ai/claude-client.js';
 import { logger } from '../shared/logger.js';
 import { validateBase64Image } from '../services/imageStorage.js';
+import redis from '../services/redis.js';
 
 
 function safeJsonParse(str, fallback = null) { try { return JSON.parse(str); } catch { return fallback; } }
 
-// Per-user rate limiting for receipt uploads (5 per minute)
-const receiptUploadLimiter = new Map();
-
-// Evict stale entries every 5 minutes so the Map doesn't accumulate an entry
-// for every user who has ever uploaded a receipt.
-setInterval(() => {
-    const now = Date.now();
-    const windowMs = 60 * 1000;
-    for (const [userId, timestamps] of receiptUploadLimiter.entries()) {
-        if (timestamps.every(t => now - t >= windowMs)) {
-            receiptUploadLimiter.delete(userId);
-        }
-    }
-}, 5 * 60 * 1000).unref(); // .unref() so this timer doesn't prevent clean process exit
-
-function checkReceiptRateLimit(userId) {
-    const now = Date.now();
-    const windowMs = 60 * 1000; // 1 minute
-    const maxUploads = 5;
-
-    if (!receiptUploadLimiter.has(userId)) {
-        receiptUploadLimiter.set(userId, []);
-    }
-    const timestamps = receiptUploadLimiter.get(userId).filter(t => now - t < windowMs);
-    if (timestamps.length >= maxUploads) {
-        return false;
-    }
-    timestamps.push(now);
-    receiptUploadLimiter.set(userId, timestamps);
-    return true;
+async function checkReceiptRateLimit(userId) {
+    const key = 'rl:receipt:' + userId;
+    const count = await redis.incr(key);
+    if (count === 1) await redis.expire(key, 60);
+    return count <= 5;
 }
 
 // Helper function to parse receipt with Claude AI
@@ -175,7 +151,7 @@ export async function receiptParserRouter(ctx) {
         }
 
         // Rate limit: 5 uploads per minute per user (checked after validation)
-        if (!checkReceiptRateLimit(user.id)) {
+        if (!(await checkReceiptRateLimit(user.id))) {
             return { status: 429, data: { error: 'Too many uploads. Please wait a minute before trying again.' } };
         }
 

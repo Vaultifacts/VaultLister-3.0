@@ -5,14 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import redis from './redis.js';
 
 // WebAuthn configuration
 const RP_NAME = 'VaultLister';
 const RP_ID = process.env.RP_ID || 'localhost';
 const ORIGIN = process.env.ORIGIN || 'http://localhost:3000';
-
-// Challenge store (in production, use Redis)
-const challenges = new Map();
 
 // Generate random bytes as base64url
 function generateChallenge() {
@@ -57,14 +55,11 @@ const enhancedMFA = {
         const challenge = generateChallenge();
 
         // Store challenge temporarily
-        challenges.set(userId, {
+        await redis.setJson('mfa:challenge:' + userId, {
             challenge,
             type: 'registration',
             timestamp: Date.now()
-        });
-
-        // Clean old challenges
-        this.cleanupChallenges();
+        }, 120);
 
         return {
             challenge,
@@ -98,17 +93,17 @@ const enhancedMFA = {
 
     // Complete WebAuthn registration
     async completeRegistration(userId, credential, deviceName) {
-        const stored = challenges.get(userId);
+        const stored = await redis.getJson('mfa:challenge:' + userId);
         if (!stored || stored.type !== 'registration') {
             throw new Error('No registration in progress');
         }
 
         if (Date.now() - stored.timestamp > 60000) {
-            challenges.delete(userId);
+            await redis.del('mfa:challenge:' + userId);
             throw new Error('Challenge expired');
         }
 
-        challenges.delete(userId);
+        await redis.del('mfa:challenge:' + userId);
 
         // In production, verify attestation properly
         // For now, store the credential
@@ -150,11 +145,11 @@ const enhancedMFA = {
 
         const challenge = generateChallenge();
 
-        challenges.set(userId, {
+        await redis.setJson('mfa:challenge:' + userId, {
             challenge,
             type: 'authentication',
             timestamp: Date.now()
-        });
+        }, 120);
 
         return {
             challenge,
@@ -171,17 +166,17 @@ const enhancedMFA = {
 
     // Complete WebAuthn authentication
     async completeAuthentication(userId, assertion) {
-        const stored = challenges.get(userId);
+        const stored = await redis.getJson('mfa:challenge:' + userId);
         if (!stored || stored.type !== 'authentication') {
             throw new Error('No authentication in progress');
         }
 
         if (Date.now() - stored.timestamp > 60000) {
-            challenges.delete(userId);
+            await redis.del('mfa:challenge:' + userId);
             throw new Error('Challenge expired');
         }
 
-        challenges.delete(userId);
+        await redis.del('mfa:challenge:' + userId);
 
         // Verify the credential exists
         const credential = query.get(
@@ -513,15 +508,6 @@ const enhancedMFA = {
         return { message: 'MFA disabled' };
     },
 
-    // Cleanup expired challenges
-    cleanupChallenges() {
-        const now = Date.now();
-        for (const [key, value] of challenges.entries()) {
-            if (now - value.timestamp > 120000) { // 2 minutes
-                challenges.delete(key);
-            }
-        }
-    }
 };
 
 // Router

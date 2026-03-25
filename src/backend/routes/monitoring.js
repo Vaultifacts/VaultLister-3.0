@@ -226,7 +226,7 @@ export async function monitoringRouter(ctx) {
 
     // POST /api/monitoring/rum - Receive batched RUM metrics (public)
     if (method === 'POST' && path === '/rum') {
-        const rateLimitError = applyRateLimit(ctx, 'default');
+        const rateLimitError = await applyRateLimit(ctx, 'default');
         if (rateLimitError) return rateLimitError;
 
         try {

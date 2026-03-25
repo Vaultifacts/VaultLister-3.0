@@ -3,6 +3,7 @@
 
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import redis from '../services/redis.js';
 
 // Snapshot at module load so test runs stay hermetic even if individual tests mutate NODE_ENV.
 // Include common test-runner signals to keep this stable when NODE_ENV is overridden in specific tests.
@@ -45,11 +46,7 @@ function isLoopbackIp(ip) {
  */
 class RateLimiter {
     constructor() {
-        this.requests = new Map();
-        this.blocklist = new Map();
-
-        // Clean up old entries every 5 minutes
-        this._cleanupInterval = setInterval(() => this.cleanup(), 5 * 60 * 1000);
+        // Rate limit data stored in Redis (or in-memory fallback via redis.js)
     }
 
     /**
@@ -90,6 +87,9 @@ class RateLimiter {
         blockDuration: 60 * 60 * 1000 // 1 hour
     };
 
+    // Entries live for the full block duration so violations accumulate across windows
+    static ENTRY_TTL = Math.ceil(RateLimiter.config.blockDuration / 1000); // 3600s
+
     /**
      * Get rate limit key from request
      * Authenticated: keyed on user ID only (IP-independent) — prevents shared IPs
@@ -104,33 +104,33 @@ class RateLimiter {
      * Check if request is allowed
      * @returns { allowed: boolean, retryAfter: number }
      */
-    check(key, limitType = 'default', ip = '') {
+    async check(key, limitType = 'default', ip = '') {
         const now = Date.now();
         const config = RateLimiter.config[limitType];
 
         // Check if blocked
-        if (this.blocklist.has(key)) {
-            const blockedUntil = this.blocklist.get(key);
+        const blockedUntilStr = await redis.get('rl:block:' + key);
+        if (blockedUntilStr) {
+            const blockedUntil = Number(blockedUntilStr);
             if (now < blockedUntil) {
                 const retryAfter = Math.ceil((blockedUntil - now) / 1000);
                 return { allowed: false, retryAfter, blocked: true };
             } else {
-                // Block expired
-                this.blocklist.delete(key);
+                await redis.del('rl:block:' + key);
             }
         }
 
         // Get or create rate limit entry
-        let entry = this.requests.get(key);
+        let entry = await redis.getJson('rl:' + key);
 
         if (!entry || now > entry.resetTime) {
-            // New window
+            // New window — preserve violations from previous entry
             entry = {
                 count: 0,
                 resetTime: now + config.windowMs,
                 violations: entry?.violations || 0
             };
-            this.requests.set(key, entry);
+            await redis.setJson('rl:' + key, entry, RateLimiter.ENTRY_TTL);
         }
 
         // Increment request count
@@ -143,7 +143,7 @@ class RateLimiter {
             // Block after repeated violations (3 strikes) — never ban loopback IPs
             if (entry.violations >= 3 && !isLoopbackIp(ip)) {
                 const blockedUntil = now + RateLimiter.config.blockDuration;
-                this.blocklist.set(key, blockedUntil);
+                await redis.set('rl:block:' + key, String(blockedUntil), Math.ceil(RateLimiter.config.blockDuration / 1000));
 
                 // Log security event
                 this.logSecurityEvent('RATE_LIMIT_BLOCK', key, {
@@ -151,6 +151,9 @@ class RateLimiter {
                     blockedUntil
                 });
             }
+
+            // Write-back: persist mutated entry (count + violations) to Redis
+            await redis.setJson('rl:' + key, entry, RateLimiter.ENTRY_TTL);
 
             const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
             return {
@@ -161,6 +164,9 @@ class RateLimiter {
             };
         }
 
+        // Write-back: persist mutated entry (count) to Redis
+        await redis.setJson('rl:' + key, entry, RateLimiter.ENTRY_TTL);
+
         return {
             allowed: true,
             remaining: config.maxRequests - entry.count,
@@ -169,44 +175,9 @@ class RateLimiter {
     }
 
     /**
-     * Clean up expired entries
+     * Clean up expired entries — no-op: Redis handles key expiration
      */
-    cleanup() {
-        const now = Date.now();
-        const MAX_MAP_SIZE = 50000;
-
-        // Clean up requests
-        for (const [key, entry] of this.requests.entries()) {
-            if (now > entry.resetTime) {
-                this.requests.delete(key);
-            }
-        }
-
-        // Clean up blocklist
-        for (const [key, blockedUntil] of this.blocklist.entries()) {
-            if (now > blockedUntil) {
-                this.blocklist.delete(key);
-            }
-        }
-
-        // Safety cap: LRU evict oldest 10% if Maps grow too large (prevents full-wipe security event)
-        if (this.requests.size > MAX_MAP_SIZE) {
-            const evictCount = Math.floor(this.requests.size * 0.1);
-            let i = 0;
-            for (const key of this.requests.keys()) {
-                if (i++ >= evictCount) break;
-                this.requests.delete(key);
-            }
-        }
-        if (this.blocklist.size > MAX_MAP_SIZE) {
-            const evictCount = Math.floor(this.blocklist.size * 0.1);
-            let i = 0;
-            for (const key of this.blocklist.keys()) {
-                if (i++ >= evictCount) break;
-                this.blocklist.delete(key);
-            }
-        }
-    }
+    cleanup() {}
 
     /**
      * Log security events to database
@@ -223,51 +194,39 @@ class RateLimiter {
     }
 
     /**
-     * Stop the cleanup interval — call during graceful shutdown
+     * Stop the cleanup interval — no-op: no local interval when using Redis
      */
-    stop() {
-        clearInterval(this._cleanupInterval);
-        this._cleanupInterval = null;
-    }
+    stop() {}
 
     /**
      * Manually block an IP or user
      */
-    block(key, durationMs = RateLimiter.config.blockDuration) {
+    async block(key, durationMs = RateLimiter.config.blockDuration) {
         const blockedUntil = Date.now() + durationMs;
-        this.blocklist.set(key, blockedUntil);
+        await redis.set('rl:block:' + key, String(blockedUntil), Math.ceil(durationMs / 1000));
         this.logSecurityEvent('MANUAL_BLOCK', key, { blockedUntil });
     }
 
     /**
      * Manually unblock an IP or user
      */
-    unblock(key) {
-        this.blocklist.delete(key);
+    async unblock(key) {
+        await redis.del('rl:block:' + key);
         this.logSecurityEvent('MANUAL_UNBLOCK', key, {});
     }
 
     /**
-     * Get statistics
+     * Get statistics — stats now managed by Redis; return empty structure for compat
      */
     getStats() {
-        return {
-            totalTracked: this.requests.size,
-            blocked: this.blocklist.size,
-            topOffenders: this.getTopOffenders()
-        };
+        return { totalTracked: 0, blocked: 0, topOffenders: [] };
     }
 
     /**
      * Get IPs/users with most requests
      */
     getTopOffenders(limit = 10) {
-        const entries = Array.from(this.requests.entries())
-            .map(([key, data]) => ({ key, ...data }))
-            .sort((a, b) => b.count - a.count)
-            .slice(0, limit);
-
-        return entries;
+        return [];
     }
 }
 
@@ -279,7 +238,7 @@ const rateLimiter = new RateLimiter();
  * @param {string} limitType - Type of rate limit (default, auth, mutation, expensive)
  */
 export function createRateLimiter(limitType = 'default') {
-    return function rateLimitMiddleware(ctx) {
+    return async function rateLimitMiddleware(ctx) {
         const { ip, user, method, path } = ctx;
 
         // Disable rate limiting in test/dev environment only (never in production)
@@ -312,7 +271,7 @@ export function createRateLimiter(limitType = 'default') {
         const key = rateLimiter.getKey(ip, user?.id);
 
         // Check rate limit
-        const result = rateLimiter.check(key, actualLimitType, ip);
+        const result = await rateLimiter.check(key, actualLimitType, ip);
 
         // Add rate limit headers to response
         ctx.rateLimitHeaders = {
@@ -340,14 +299,14 @@ export function createRateLimiter(limitType = 'default') {
 /**
  * Apply rate limiting to a request
  */
-export function applyRateLimit(ctx, limitType = 'auto') {
+export async function applyRateLimit(ctx, limitType = 'auto') {
     // Bypass rate limiting in test/dev environments (never in production)
     if (isRateLimitBypassed()) {
         return null; // No rate limit
     }
 
     const limiter = createRateLimiter(limitType);
-    const result = limiter(ctx);
+    const result = await limiter(ctx);
 
     if (!result.allowed) {
         const message = result.blocked

@@ -7,14 +7,8 @@ import { csrfManager, stopCSRF } from '../backend/middleware/csrf.js';
 import { startGDPRWorker, stopGDPRWorker, getGDPRWorkerStatus } from '../backend/workers/gdprWorker.js';
 
 describe('middleware shutdown — rateLimiter', () => {
-    it('should have an active cleanup interval after module load', () => {
-        // The singleton is created at module load time; interval must be set
-        expect(rateLimiter._cleanupInterval).not.toBeNull();
-    });
-
-    it('stop() clears the cleanup interval', () => {
-        stopRateLimiter();
-        expect(rateLimiter._cleanupInterval).toBeNull();
+    it('stop() does not throw', () => {
+        expect(() => stopRateLimiter()).not.toThrow();
     });
 
     it('stop() is idempotent — calling twice does not throw', () => {

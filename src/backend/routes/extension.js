@@ -17,7 +17,7 @@ export async function extensionRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
 
     // Rate limit all extension endpoints (EXT-26)
-    const rateLimitError = applyRateLimit(ctx, 'api');
+    const rateLimitError = await applyRateLimit(ctx, 'api');
     if (rateLimitError) return rateLimitError;
 
     // POST /api/extension/auth/verify - Verify extension token

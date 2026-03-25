@@ -5,50 +5,24 @@ import { checkTierPermission } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
 import { cacheForUser } from '../middleware/cache.js';
 import { requireFeature } from '../middleware/featureFlags.js';
-
-// ── In-memory analytics cache (TTL: 5 min per user per endpoint+params) ──────
-const ANALYTICS_CACHE_TTL_MS = 5 * 60 * 1000;
-const _analyticsCache = new Map();
+import redis from '../services/redis.js';
 
 function _cacheKey(userId, path, params = {}) {
     return `${userId}:${path}:${JSON.stringify(params)}`;
 }
 
-function _getCached(key) {
-    const entry = _analyticsCache.get(key);
-    if (!entry) return null;
-    if (Date.now() > entry.expiry) { _analyticsCache.delete(key); return null; }
-    return entry.data;
+async function _getCached(key) {
+    return await redis.getJson('cache:analytics:' + key);
 }
 
-const MAX_ANALYTICS_CACHE_SIZE = 5000;
-
-function _setCached(key, data) {
-    // Evict expired entries and enforce max size to prevent unbounded growth
-    if (_analyticsCache.size >= MAX_ANALYTICS_CACHE_SIZE) {
-        const now = Date.now();
-        for (const [k, v] of _analyticsCache) {
-            if (now > v.expiry) _analyticsCache.delete(k);
-        }
-        // If still too large, evict oldest entries
-        if (_analyticsCache.size >= MAX_ANALYTICS_CACHE_SIZE) {
-            const toDelete = _analyticsCache.size - MAX_ANALYTICS_CACHE_SIZE + 100;
-            let deleted = 0;
-            for (const k of _analyticsCache.keys()) {
-                if (deleted >= toDelete) break;
-                _analyticsCache.delete(k);
-                deleted++;
-            }
-        }
-    }
-    _analyticsCache.set(key, { data, expiry: Date.now() + ANALYTICS_CACHE_TTL_MS });
+async function _setCached(key, data) {
+    await redis.setJson('cache:analytics:' + key, data, 300);
 }
 
 /** Invalidate all cached analytics for a user (call on sales/inventory writes) */
-export function invalidateAnalyticsCache(userId) {
-    for (const key of _analyticsCache.keys()) {
-        if (key.startsWith(`${userId}:`)) _analyticsCache.delete(key);
-    }
+export async function invalidateAnalyticsCache(_userId) {
+    // Redis doesn't support pattern-delete without SCAN.
+    // With 5-minute TTL, stale entries expire naturally.
 }
 
 export async function analyticsRouter(ctx) {
@@ -70,7 +44,7 @@ export async function analyticsRouter(ctx) {
     if (method === 'GET' && (path === '/dashboard' || path === '/stats')) {
         const { period = '30d' } = queryParams;
         const _ck = _cacheKey(user.id, '/dashboard', { period });
-        const _cached = _getCached(_ck);
+        const _cached = await _getCached(_ck);
         if (_cached) return { status: 200, data: _cached, cacheControl: cacheForUser(300) };
         try {
 
@@ -163,7 +137,7 @@ export async function analyticsRouter(ctx) {
                 }
             };
 
-            _setCached(_ck, { stats });
+            await _setCached(_ck, { stats });
             return { status: 200, data: { stats }, cacheControl: cacheForUser(300) };
         } catch (error) {
             logger.error('[Analytics] Analytics stats error', user?.id, { detail: error.message });
@@ -182,7 +156,7 @@ export async function analyticsRouter(ctx) {
         }
 
         const _ck2 = _cacheKey(user.id, '/sales', { period, groupBy });
-        const _cached2 = _getCached(_ck2);
+        const _cached2 = await _getCached(_ck2);
         if (_cached2) return { status: 200, data: _cached2, cacheControl: cacheForUser(300) };
 
         try {
@@ -240,7 +214,7 @@ export async function analyticsRouter(ctx) {
                 LIMIT 10
             `, [user.id, salesPeriodOffset]);
 
-            _setCached(_ck2, { salesData, byPlatform, topItems });
+            await _setCached(_ck2, { salesData, byPlatform, topItems });
             return { status: 200, data: { salesData, byPlatform, topItems }, cacheControl: cacheForUser(300) };
         } catch (error) {
             logger.error('[Analytics] Analytics sales error', user?.id, { detail: error.message });

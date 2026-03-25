@@ -736,23 +736,6 @@ describe('enhancedMFA.disableMFA', () => {
 });
 
 // ============================================================
-// enhancedMFA.cleanupChallenges
-// ============================================================
-describe('enhancedMFA.cleanupChallenges', () => {
-    test('does not throw when called directly', () => {
-        expect(() => enhancedMFA.cleanupChallenges()).not.toThrow();
-    });
-
-    test('is called during startRegistration', async () => {
-        db.query.get.mockReturnValue({ id: 'user-cleanup', email: 'c@e.com', username: 'c' });
-        db.query.all.mockReturnValue([]);
-
-        // This should call cleanupChallenges internally without error
-        await enhancedMFA.startRegistration('user-cleanup');
-    });
-});
-
-// ============================================================
 // enhancedMFARouter
 // ============================================================
 describe('enhancedMFARouter', () => {

@@ -448,7 +448,7 @@ export async function authRouter(ctx) {
     if (process.env.NODE_ENV !== 'production' && method === 'POST' && path === '/demo-login') {
         try {
             // SECURITY: Apply auth-tier rate limiting to prevent bcrypt DoS attacks
-            const demoRateError = applyRateLimit(ctx, 'auth');
+            const demoRateError = await applyRateLimit(ctx, 'auth');
             if (demoRateError) return demoRateError;
 
             const demoEmail = process.env.DEMO_EMAIL;
@@ -492,7 +492,7 @@ export async function authRouter(ctx) {
     if (method === 'POST' && path === '/mfa-verify') {
         try {
             // SECURITY: Auth-tier rate limit — prevents brute-force of 6-digit TOTP codes
-            const mfaRateError = applyRateLimit(ctx, 'auth');
+            const mfaRateError = await applyRateLimit(ctx, 'auth');
             if (mfaRateError) return mfaRateError;
 
             const { mfaToken, code } = body;
@@ -588,7 +588,7 @@ export async function authRouter(ctx) {
     // POST /api/auth/refresh
     if (method === 'POST' && path === '/refresh') {
         try {
-            const refreshRateError = applyRateLimit(ctx, 'auth');
+            const refreshRateError = await applyRateLimit(ctx, 'auth');
             if (refreshRateError) return refreshRateError;
 
             const { refreshToken } = body;
@@ -857,7 +857,7 @@ export async function authRouter(ctx) {
     // POST /api/auth/password-reset - Request password reset
     if (method === 'POST' && path === '/password-reset') {
         // SECURITY: Apply mutation-tier rate limiting to prevent abuse of password reset flow
-        const resetRateError = applyRateLimit(ctx, 'mutation');
+        const resetRateError = await applyRateLimit(ctx, 'mutation');
         if (resetRateError) return resetRateError;
 
         const { email } = body;
@@ -899,7 +899,7 @@ export async function authRouter(ctx) {
 
     // POST /api/auth/password-reset/confirm - Consume token and set new password
     if (method === 'POST' && path === '/password-reset/confirm') {
-        const resetRateError = applyRateLimit(ctx, 'mutation');
+        const resetRateError = await applyRateLimit(ctx, 'mutation');
         if (resetRateError) return resetRateError;
 
         const { token, password } = body;

@@ -31,6 +31,7 @@ const { generateETag, etagMatches, cacheFor, cacheForUser, immutable, NO_CACHE }
     await import('../backend/middleware/cache.js');
 
 const { RateLimiter } = await import('../backend/middleware/rateLimiter.js');
+const redis = (await import('../backend/services/redis.js')).default;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ETAG GENERATION (Medium #7)
@@ -137,67 +138,67 @@ describe('Rate limiter — actual behavior (bypassing test-mode skip)', () => {
     let limiter;
 
     beforeEach(() => {
-        if (limiter) {
-            clearInterval(limiter._cleanupInterval);
-        }
+        redis.flushAll();
         limiter = new RateLimiter();
     });
 
-    afterAll(() => {
-        if (limiter) {
-            clearInterval(limiter._cleanupInterval);
-        }
-    });
+    afterAll(() => {});
 
-    test('should allow requests under the default limit (100/min)', () => {
+    test('should allow requests under the default limit (100/min)', async () => {
         for (let i = 0; i < 100; i++) {
-            const result = limiter.check('test-key', 'default');
+            const result = await limiter.check('test-key', 'default');
             expect(result.allowed).toBe(true);
         }
     });
 
-    test('should reject request #101 over the default limit', () => {
+    test('should reject request #101 over the default limit', async () => {
         for (let i = 0; i < 100; i++) {
-            limiter.check('test-key-101', 'default');
+            await limiter.check('test-key-101', 'default');
         }
-        const result = limiter.check('test-key-101', 'default');
+        const result = await limiter.check('test-key-101', 'default');
         expect(result.allowed).toBe(false);
         expect(result.remaining).toBe(0);
     });
 
-    test('should enforce auth limit (10 per 15min)', () => {
+    test('should enforce auth limit (10 per 15min)', async () => {
         for (let i = 0; i < 10; i++) {
-            const r = limiter.check('auth-key', 'auth');
+            const r = await limiter.check('auth-key', 'auth');
             expect(r.allowed).toBe(true);
         }
-        const rejected = limiter.check('auth-key', 'auth');
+        const rejected = await limiter.check('auth-key', 'auth');
         expect(rejected.allowed).toBe(false);
     });
 
-    test('should block after 3 violations but never block loopback IPs', () => {
+    test('should block after 3 violations but never block loopback IPs', async () => {
         const key = 'ip:192.168.1.100';
         for (let v = 0; v < 3; v++) {
             for (let i = 0; i <= 100; i++) {
-                limiter.check(key, 'default', '192.168.1.100');
+                await limiter.check(key, 'default', '192.168.1.100');
             }
-            const entry = limiter.requests.get(key);
-            if (entry) entry.resetTime = 0;
+            const entry = await redis.getJson('rl:' + key);
+            if (entry) {
+                entry.resetTime = 0;
+                await redis.setJson('rl:' + key, entry, 3600);
+            }
         }
 
-        const blocked = limiter.check(key, 'default', '192.168.1.100');
+        const blocked = await limiter.check(key, 'default', '192.168.1.100');
         expect(blocked.blocked).toBe(true);
 
         // Loopback should never be permanently blocked
         const loopKey = 'ip:127.0.0.1';
         for (let v = 0; v < 3; v++) {
             for (let i = 0; i <= 100; i++) {
-                limiter.check(loopKey, 'default', '127.0.0.1');
+                await limiter.check(loopKey, 'default', '127.0.0.1');
             }
-            const entry = limiter.requests.get(loopKey);
-            if (entry) entry.resetTime = 0;
+            const entry = await redis.getJson('rl:' + loopKey);
+            if (entry) {
+                entry.resetTime = 0;
+                await redis.setJson('rl:' + loopKey, entry, 3600);
+            }
         }
 
-        const loopResult = limiter.check(loopKey, 'default', '127.0.0.1');
+        const loopResult = await limiter.check(loopKey, 'default', '127.0.0.1');
         expect(loopResult.blocked).toBeFalsy();
     });
 });

@@ -217,6 +217,21 @@ export async function exists(key) {
     return memoryStore.has(key) ? 1 : 0;
 }
 
+export async function getJson(key) {
+    const raw = await get(key);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return null; }
+}
+
+export async function setJson(key, value, ttlSeconds = 3600) {
+    return set(key, JSON.stringify(value), ttlSeconds);
+}
+
+export function flushAll() {
+    memoryStore.clear();
+    memoryExpiry.clear();
+}
+
 /**
  * Clean expired entries from memory store
  */
@@ -261,5 +276,8 @@ export default {
     exists,
     isConnected: isRedisConnected,
     getClient,
-    close: closeRedis
+    close: closeRedis,
+    getJson,
+    setJson,
+    flushAll
 };

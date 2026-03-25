@@ -106,3 +106,30 @@ describe('Redis - TTL and Expire', () => {
         expect(remaining).toBeLessThan(0);
     });
 });
+
+describe('Redis - getJson / setJson / flushAll', () => {
+    test('setJson/getJson round-trips an object', async () => {
+        await redis.setJson('test-json-obj', { foo: 'bar', n: 42 }, 60);
+        const result = await redis.getJson('test-json-obj');
+        expect(result).toEqual({ foo: 'bar', n: 42 });
+    });
+
+    test('getJson returns null for missing key', async () => {
+        const result = await redis.getJson('nonexistent-json-key-xyz');
+        expect(result).toBeNull();
+    });
+
+    test('getJson returns null for non-JSON string', async () => {
+        await redis.set('test-bad-json', 'not-json-{{{', 60);
+        const result = await redis.getJson('test-bad-json');
+        expect(result).toBeNull();
+    });
+
+    test('flushAll clears all keys', async () => {
+        await redis.set('flush-k1', 'v1', 60);
+        await redis.set('flush-k2', 'v2', 60);
+        redis.flushAll();
+        expect(await redis.get('flush-k1')).toBeNull();
+        expect(await redis.get('flush-k2')).toBeNull();
+    });
+});

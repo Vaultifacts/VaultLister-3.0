@@ -111,7 +111,7 @@ export async function roadmapRouter(ctx) {
             };
         }
 
-        const voteRateError = applyRateLimit(ctx, 'mutation');
+        const voteRateError = await applyRateLimit(ctx, 'mutation');
         if (voteRateError) return voteRateError;
 
         try {

@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { query } from '../db/database.js';
 import { generateToken, generateRefreshToken } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
+import redis from '../services/redis.js';
 
 function safeJsonParse(str, fallback = null) {
     try { return JSON.parse(str); } catch { return fallback; }
@@ -42,40 +43,16 @@ const APPLE_KEY_ID = process.env.APPLE_KEY_ID;
 const APPLE_PRIVATE_KEY = process.env.APPLE_PRIVATE_KEY;
 const APPLE_REDIRECT_URI = process.env.APPLE_REDIRECT_URI || 'http://localhost:3000/api/social-auth/apple/callback';
 
-// State tokens for CSRF protection
-const stateTokens = new Map();
-
-// Generate state token
-const MAX_STATE_TOKENS = 10000;
-
-function generateStateToken() {
+async function generateStateToken() {
     const state = crypto.randomBytes(32).toString('hex');
-
-    // Clean up old tokens (older than 10 minutes)
-    for (const [key, value] of stateTokens.entries()) {
-        if (Date.now() - value.created > 600000) {
-            stateTokens.delete(key);
-        }
-    }
-
-    // Enforce max size to prevent memory exhaustion
-    if (stateTokens.size >= MAX_STATE_TOKENS) {
-        const oldest = stateTokens.keys().next().value;
-        stateTokens.delete(oldest);
-    }
-
-    stateTokens.set(state, { created: Date.now() });
-
+    await redis.setJson('oauth:state:' + state, { created: Date.now() }, 600);
     return state;
 }
 
-// Verify state token
-function verifyStateToken(state) {
-    if (!stateTokens.has(state)) {
-        return false;
-    }
-    const tokenData = stateTokens.get(state);
-    stateTokens.delete(state);
+async function verifyStateToken(state) {
+    const tokenData = await redis.getJson('oauth:state:' + state);
+    if (!tokenData) return false;
+    await redis.del('oauth:state:' + state);
     return Date.now() - tokenData.created < 600000;
 }
 
@@ -141,7 +118,7 @@ export async function socialAuthRouter(ctx) {
             return { status: 503, data: { error: 'Google OAuth not configured' } };
         }
 
-        const state = generateStateToken();
+        const state = await generateStateToken();
         const params = new URLSearchParams({
             client_id: GOOGLE_CLIENT_ID,
             redirect_uri: GOOGLE_REDIRECT_URI,
@@ -173,7 +150,7 @@ export async function socialAuthRouter(ctx) {
             };
         }
 
-        if (!verifyStateToken(state)) {
+        if (!(await verifyStateToken(state))) {
             return {
                 status: 302,
                 headers: { 'Location': '/#login?error=invalid_state' },
@@ -277,7 +254,7 @@ export async function socialAuthRouter(ctx) {
             return { status: 503, data: { error: 'Apple OAuth not configured' } };
         }
 
-        const state = generateStateToken();
+        const state = await generateStateToken();
         const params = new URLSearchParams({
             client_id: APPLE_CLIENT_ID,
             redirect_uri: APPLE_REDIRECT_URI,
@@ -308,7 +285,7 @@ export async function socialAuthRouter(ctx) {
             };
         }
 
-        if (!verifyStateToken(state)) {
+        if (!(await verifyStateToken(state))) {
             return {
                 status: 302,
                 headers: { 'Location': '/#login?error=invalid_state' },

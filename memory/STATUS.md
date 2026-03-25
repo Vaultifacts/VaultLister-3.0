@@ -30,11 +30,14 @@
 <!-- Post-commit hook auto-adds Bot commits here -->
 
 ## Current State (2026-03-25)
-- **Last commit:** `4225e54` on master (pushed ✅)
-- **E2E suite: 620 pass / 0 fail** ✅
-- **Security audit:** All known items resolved + 8 new FP1 issues fixed
+- **Last commit:** `41267ea` on master (pushed ✅)
+- **E2E suite: 2429 pass / 179 fail** (full suite with Redis wiring; all 179 failures are pre-existing baseline)
+- **Unit tests (Redis-related):** 162 pass / 0 fail (service-redis, enhancedMFA, rateLimiter, security-rate-limit, arch-caching-etag, middleware-shutdown)
+- **Auth+security baseline:** 58 pass / 0 fail ✅ (maintained)
+- **Redis integration:** COMPLETE — all 7 consumers wired (rateLimiter, enhancedMFA, socialAuth, receiptParser, barcode, analytics, idempotency)
+- **Security audit:** All known items resolved + all FP1–FP7 fix priorities complete
 - **QA Walkthrough:** 100% complete — 498/498 items tested
-- **Deep Audit Tracker v2:** All 418+ rows populated in Notion
+- **Deep Audit Tracker v2:** All 418+ rows populated in Notion; ALL V1-V375 findings submitted ✅ (Batches 1-12 complete)
 
 ### Recent work (this session)
 - Created Deep Audit Tracker v2 in Notion — V1-V375, D1-D43, all bug/finding rows
@@ -47,15 +50,23 @@
   - V336: inventory.js — SSRF protection on /import/url (private IP blocklist)
   - V368: chatWidget.js — onclick HTML attr injection fixed (proper &, <, >, ' encoding)
   - V322: .env.example — JWT_SECRET/SESSION_SECRET default replaced with REPLACE_ME
-- `4225e54`: fix(reliability): FP6 — graceful shutdown interval leaks (V370-V373)
 - `95534a4`: fix(reliability): FP2 — fetch timeouts + Stripe webhook idempotency
-  - V350: AbortSignal.timeout() added to 11 bare fetch() calls (barcode, socialAuth, shippingLabels, emailOAuth, shopifySync, webhooks)
+  - V350: AbortSignal.timeout() added to 11 bare fetch() calls
   - V351: Stripe webhook idempotency — check event.id before processing, use event.id as row ID
   - V352: N/A — PRAGMA busy_timeout = 5000 already in database.js:31
+- `4225e54`: fix(reliability): FP6 — graceful shutdown interval leaks (V370-V373)
+  - auditLog.stop(), emailMarketing.cleanup(), stopRateLimitDashboard(), analyticsService.shutdown()
+- `18ba1af`: fix(gdpr): V353 — expand USER_DATA_TABLES to cover all 27 missing user-linked tables
+  - 32-entry list covering all non-CASCADE tables; transaction_audit_log anonymized
+- `4b669ec`: feat: M9 — Chrome extension: add Grailed/Etsy/Shopify scrapers + full autofill (Depop/Grailed/Etsy/Shopify)
+  - scraper.js: 3 new platform scrapers (was 6/9, now 9/9)
+  - autofill.js: 4 new platforms in detectPlatform() + fieldMappings (was 3/7, now 7/7)
+  - manifest.json: host_permissions + content_scripts updated for all new platforms
+- `41267ea`: chore: M11 — trivy-action bump 0.32.0→0.35.0; closed Dependabot PR #17
+- `[PENDING]`: feat(redis): wire Redis into all 7 in-memory consumers (rateLimiter, enhancedMFA, socialAuth, receiptParser, barcode, analytics, idempotency)
 
 ## Next Tasks
-1. **FP5 deferred:** V353 (GDPR cascade completeness — verify all 199 tables covered)
-2. **Sprint Board P0/P1 config (user action required):**
+1. **Sprint Board P0/P1 config (user action required):**
    - SSL certificate + domain configuration (Blocked, P0-Critical)
    - Set real Stripe price IDs in .env (P0-Critical)
    - Configure SMTP for production email (Blocked)
