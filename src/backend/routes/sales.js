@@ -186,10 +186,10 @@ export async function salesRouter(ctx) {
                         item_cost, tax_amount, net_profit, notes, status
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `, [
-                    id, user.id, listingId, inventoryId, platform, platformOrderId,
-                    buyerUsername, buyerAddress, salePrice, platformFee || 0,
+                    id, user.id, listingId || null, inventoryId || null, platform, platformOrderId || null,
+                    buyerUsername || null, buyerAddress || null, salePrice, platformFee || 0,
                     shippingCost || 0, customerShippingCost || 0, actualSellerShipping,
-                    itemCost, taxAmount || 0, netProfit, notes, 'pending'
+                    itemCost, taxAmount || 0, netProfit, notes || null, 'pending'
                 ]);
 
                 // Update inventory status atomically - check current status to prevent race condition

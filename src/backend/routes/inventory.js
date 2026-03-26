@@ -162,16 +162,16 @@ export async function inventoryRouter(ctx) {
                 break;
             case 'title':
             case 'title_asc':
-                sql += ' ORDER BY title COLLATE NOCASE ASC';
+                sql += ' ORDER BY LOWER(title) ASC';
                 break;
             case 'title_desc':
-                sql += ' ORDER BY title COLLATE NOCASE DESC';
+                sql += ' ORDER BY LOWER(title) DESC';
                 break;
             case 'sku_asc':
-                sql += ' ORDER BY sku COLLATE NOCASE ASC';
+                sql += ' ORDER BY LOWER(sku) ASC';
                 break;
             case 'sku_desc':
-                sql += ' ORDER BY sku COLLATE NOCASE DESC';
+                sql += ' ORDER BY LOWER(sku) DESC';
                 break;
             case 'status_asc':
                 sql += ' ORDER BY status ASC';
@@ -180,16 +180,16 @@ export async function inventoryRouter(ctx) {
                 sql += ' ORDER BY status DESC';
                 break;
             case 'marketplace_asc':
-                sql += ' ORDER BY marketplace COLLATE NOCASE ASC';
+                sql += ' ORDER BY LOWER(marketplace) ASC';
                 break;
             case 'marketplace_desc':
-                sql += ' ORDER BY marketplace COLLATE NOCASE DESC';
+                sql += ' ORDER BY LOWER(marketplace) DESC';
                 break;
             case 'tags_asc':
-                sql += ' ORDER BY tags COLLATE NOCASE ASC';
+                sql += ' ORDER BY LOWER(tags::text) ASC';
                 break;
             case 'tags_desc':
-                sql += ' ORDER BY tags COLLATE NOCASE DESC';
+                sql += ' ORDER BY LOWER(tags::text) DESC';
                 break;
             default:
                 sql += ' ORDER BY created_at DESC';

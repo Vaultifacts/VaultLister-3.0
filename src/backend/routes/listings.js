@@ -321,7 +321,7 @@ export async function listingsRouter(ctx) {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 id, inventoryId, user.id, platform, title, description || item.description,
-                price, originalPrice, shippingPrice || 0, categoryPath,
+                price, originalPrice || null, shippingPrice || 0, categoryPath || null,
                 JSON.stringify(images || safeJsonParse(item.images, [])),
                 JSON.stringify(platformSpecificData || {}), 'draft', folderId || null
             ]);

@@ -78,14 +78,14 @@ async function findOrCreateUser(provider, profile) {
     }
 
     // Check if user exists with this email
-    user = await query.get(`SELECT ${USER_SELECT_COLUMNS} FROM users WHERE email = ?`, [email?.toLowerCase()]);
+    user = email ? await query.get(`SELECT ${USER_SELECT_COLUMNS} FROM users WHERE email = ?`, [email.toLowerCase()]) : null;
 
     if (user) {
         // Link OAuth account to existing user
         await query.run(`
             INSERT INTO oauth_accounts (id, user_id, provider, provider_user_id, provider_email, created_at)
             VALUES (?, ?, ?, ?, ?, NOW())
-        `, [uuidv4(), user.id, provider, providerId, email]);
+        `, [uuidv4(), user.id, provider, providerId, email ?? null]);
 
         await query.run('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
         return user;
@@ -98,13 +98,13 @@ async function findOrCreateUser(provider, profile) {
     await query.run(`
         INSERT INTO users (id, email, username, full_name, avatar_url, email_verified, email_verified_at, created_at, updated_at, last_login_at)
         VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW(), NOW(), NOW())
-    `, [userId, email?.toLowerCase(), username, name, picture]);
+    `, [userId, email?.toLowerCase() ?? null, username, name ?? null, picture ?? null]);
 
     // Link OAuth account
     await query.run(`
         INSERT INTO oauth_accounts (id, user_id, provider, provider_user_id, provider_email, created_at)
         VALUES (?, ?, ?, ?, ?, NOW())
-    `, [uuidv4(), userId, provider, providerId, email]);
+    `, [uuidv4(), userId, provider, providerId, email ?? null]);
 
     return await query.get(`SELECT ${USER_SELECT_COLUMNS} FROM users WHERE id = ?`, [userId]);
 }
