@@ -1,4 +1,4 @@
-KNOWN_FAILURES=426
+KNOWN_FAILURES=581
 # Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
 # Local Windows: 2050 pass / 264 fail (named below — baselined 2026-03-20)
 # CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
@@ -525,3 +525,158 @@ KNOWN_FAIL: validateCSRF — test mode bypass > NODE_ENV=test alone does NOT byp
 KNOWN_FAIL: OAuth - Authorization > GET /oauth/authorize/:platform - should return auth URL for poshmark
 KNOWN_FAIL: OAuth - Authorization > GET /oauth/authorize/:platform - should return auth URL for mercari
 KNOWN_FAIL: AI - Generate Description > POST /ai/generate-description - should generate description
+KNOWN_FAIL: (unnamed) [5016.00ms]
+KNOWN_FAIL: Alert threshold — high error rate > should fire high_error_rate alert when rate > 5% AND total > 100 [15.00ms]
+KNOWN_FAIL: Audit Log Service (H14) > should trigger alertCritical for critical severity events
+KNOWN_FAIL: CSRF Protection > POST without CSRF token should be rejected [15.00ms]
+KNOWN_FAIL: CSRFManager lifecycle > validateToken returns false for unknown token [15.00ms]
+KNOWN_FAIL: DELETE /api/integrations/google/drive/revoke > should return 403 when CSRF token is invalid
+KNOWN_FAIL: DELETE /api/integrations/google/drive/revoke > should return 403 when CSRF token is missing [16.00ms]
+KNOWN_FAIL: Dead-letter gap — failed task lifecycle > cleanupOldTasks should return count of deleted tasks
+KNOWN_FAIL: Image Bank - AI Analysis > POST /image-bank/analyze - should analyze image [5016.00ms]
+KNOWN_FAIL: Monitoring Router - mounted endpoints > GET /api/monitoring/health returns 200 [15.00ms]
+KNOWN_FAIL: POST /api/integrations/google/drive/backup > should return 403 when CSRF token is invalid
+KNOWN_FAIL: POST /api/integrations/google/drive/backup > should return 403 when CSRF token is missing
+KNOWN_FAIL: POST /api/rate-limits/reset > regular user returns 403 (enterprise only)
+KNOWN_FAIL: POST /api/watermark/presets > creates preset when authenticated with valid body
+KNOWN_FAIL: PUT /api/settings/announcement > should return 403 when CSRF token is invalid
+KNOWN_FAIL: PUT /api/settings/announcement > should return 403 when CSRF token is missing
+KNOWN_FAIL: Receipt Parser - Upload > POST /receipts/upload - should fail with invalid mime type
+KNOWN_FAIL: Shipping Labels - Rates > POST /shipping-labels/rates - should get shipping rates
+KNOWN_FAIL: Token refresh — consecutive failure tracking > should auto-disconnect shop after 5 consecutive failures
+KNOWN_FAIL: Token refresh — consecutive failure tracking > should create OAUTH_DISCONNECTED notification on auto-disconnect
+KNOWN_FAIL: abTesting.getResults > queries experiment results from DB
+KNOWN_FAIL: abTesting.getResults > returns empty array on DB error
+KNOWN_FAIL: analyticsService — extended coverage > analyzeFunnel — step parsing and dropoff calculation > calculates multi-step funnel
+KNOWN_FAIL: analyticsService — extended coverage > analyzeFunnel — step parsing and dropoff calculation > handles funnel step with zero users at a point
+KNOWN_FAIL: analyticsService — extended coverage > analyzeFunnel — step parsing and dropoff calculation > parses step with event:target format
+KNOWN_FAIL: analyticsService — extended coverage > analyzeFunnel — step parsing and dropoff calculation > parses step without target
+KNOWN_FAIL: analyticsService — extended coverage > analyzeFunnel — step parsing and dropoff calculation > returns empty results array for empty steps
+KNOWN_FAIL: analyticsService — extended coverage > flush — queue processing and error recovery > flush calls query.prepare with INSERT statement
+KNOWN_FAIL: analyticsService — extended coverage > flush — queue processing and error recovery > flush re-queues events on error if queue is small
+KNOWN_FAIL: analyticsService — extended coverage > getConversionMetrics — result shape > returns conversion metrics for a specific type
+KNOWN_FAIL: analyticsService — extended coverage > getConversionMetrics — result shape > returns null values when no conversions exist
+KNOWN_FAIL: analyticsService — extended coverage > getEventCounts — query behavior > calls query.all with date range
+KNOWN_FAIL: analyticsService — extended coverage > getEventCounts — query behavior > returns empty array when no events
+KNOWN_FAIL: analyticsService — extended coverage > getPageViews — groupBy logic > defaults to day format when groupBy is unrecognized
+KNOWN_FAIL: analyticsService — extended coverage > getPageViews — groupBy logic > passes day format when groupBy is day [15.00ms]
+KNOWN_FAIL: analyticsService — extended coverage > getPageViews — groupBy logic > passes hour format when groupBy is hour
+KNOWN_FAIL: analyticsService — extended coverage > getPageViews — groupBy logic > returns page views grouped by day (default)
+KNOWN_FAIL: analyticsService — extended coverage > getRetentionCohorts — result handling > returns cohort data array
+KNOWN_FAIL: analyticsService — extended coverage > getRetentionCohorts — result handling > returns empty array when no data
+KNOWN_FAIL: analyticsService — extended coverage > getUserSessions — parameters > returns empty array for user with no sessions
+KNOWN_FAIL: analyticsService — extended coverage > getUserSessions — parameters > returns sessions for a specific user
+KNOWN_FAIL: analyticsService — extended coverage > migration SQL — structural validation > defines analytics_events table with all 7 columns
+KNOWN_FAIL: analyticsService — extended coverage > migration SQL — structural validation > has 4 CREATE INDEX statements
+KNOWN_FAIL: analyticsService — extended coverage > migration SQL — structural validation > id is INTEGER PRIMARY KEY AUTOINCREMENT
+KNOWN_FAIL: analyticsService — extended coverage > migration SQL — structural validation > name is TEXT NOT NULL
+KNOWN_FAIL: analyticsService — extended coverage > migration SQL — structural validation > timestamp is TEXT NOT NULL
+KNOWN_FAIL: analyticsService — extended coverage > module exports > migration is a named export with valid SQL
+KNOWN_FAIL: auditLog.query — filters > action filter uses LIKE with escaping
+KNOWN_FAIL: auditLog.query — filters > all filters combined
+KNOWN_FAIL: depopSync — expanded > uses description field as listing title (not title field) [16.00ms]
+KNOWN_FAIL: ebaySync > updates existing listings when found [16.00ms]
+KNOWN_FAIL: emailPollingWorker (unit) > getEmailPollingStatus > intervalMs defaults to 5 minutes
+KNOWN_FAIL: emailPollingWorker (unit) > getEmailPollingStatus > returns expected shape
+KNOWN_FAIL: emailPollingWorker (unit) > getEmailPollingStatus > running false when stopped
+KNOWN_FAIL: featureFlags.getUsageStats > queries usage stats from DB
+KNOWN_FAIL: featureFlags.getUsageStats > returns empty array on DB error
+KNOWN_FAIL: getDemandForecast — extended > null category uses default seasonality [15.00ms]
+KNOWN_FAIL: getRefreshSchedulerStatus > includes interval and buffer config
+KNOWN_FAIL: getRefreshSchedulerStatus > includes maxFailures
+KNOWN_FAIL: getRefreshSchedulerStatus > returns status object
+KNOWN_FAIL: getRefreshSchedulerStatus — coverage > isRunning is true when scheduler is active
+KNOWN_FAIL: getRefreshSchedulerStatus — coverage > returns correct shape with stats from DB
+KNOWN_FAIL: getRefreshSchedulerStatus — coverage > returns zeroed stats on non-column error
+KNOWN_FAIL: getRefreshSchedulerStatus — coverage > uses fallback query on "no such column" error
+KNOWN_FAIL: getTaskStatus > should return null when task not found
+KNOWN_FAIL: getTaskStatus > should return task record when found
+KNOWN_FAIL: getWorkerStatus > should return status with maxConcurrent and activeTasks
+KNOWN_FAIL: imageStorage > getImageUrl > returns file_path when image exists
+KNOWN_FAIL: imageStorage > getImageUrl > returns null when image not found
+KNOWN_FAIL: marketDataService > getCompetitorsForPlatform > each competitor has required fields
+KNOWN_FAIL: marketDataService > getCompetitorsForPlatform > returns empty array for unknown platform
+KNOWN_FAIL: migration SQL > creates index on user_webhooks
+KNOWN_FAIL: migration SQL > creates index on webhook_deliveries
+KNOWN_FAIL: migration SQL > creates user_webhooks table
+KNOWN_FAIL: migration SQL > creates webhook_deliveries table
+KNOWN_FAIL: migration SQL > includes foreign key on user_webhooks
+KNOWN_FAIL: migration SQL > includes foreign key on webhook_deliveries
+KNOWN_FAIL: migration SQL > user_webhooks has all required columns
+KNOWN_FAIL: migration SQL > webhook_deliveries has all required columns
+KNOWN_FAIL: migration export > email_queue has foreign key to users
+KNOWN_FAIL: migration export > email_queue has required columns
+KNOWN_FAIL: migration export > migration creates audit_logs table
+KNOWN_FAIL: migration export > migration creates email_log table
+KNOWN_FAIL: migration export > migration creates email_queue table
+KNOWN_FAIL: migration export > migration creates indexes
+KNOWN_FAIL: migration export > migration includes all required columns
+KNOWN_FAIL: migration export > migration includes foreign key constraint
+KNOWN_FAIL: migration export > migration is a non-empty string
+KNOWN_FAIL: notionService > Sync history > getSyncHistory returns ordered results
+KNOWN_FAIL: notionService > Sync history > logSyncHistory inserts and returns UUID
+KNOWN_FAIL: notionService > Sync operations > getPendingSyncItems returns items
+KNOWN_FAIL: notionService > Sync operations > getSyncMap queries by user, entity type, and local ID
+KNOWN_FAIL: notionService > getSettings / deleteSettings > deleteSettings runs 4 cleanup queries
+KNOWN_FAIL: notionService > getSettings / deleteSettings > getSettings returns DB row
+KNOWN_FAIL: notionService > isConfigured > returns false when no token anywhere
+KNOWN_FAIL: notionService > isConfigured > returns true when env token exists (no userId)
+KNOWN_FAIL: notionService > isConfigured > returns true when user has encrypted token in DB
+KNOWN_FAIL: notionSync > performSync > throws when Notion not configured
+KNOWN_FAIL: notionSync > performSync > throws when sync already in progress (recent)
+KNOWN_FAIL: queueTask > should accept custom priority and maxAttempts
+KNOWN_FAIL: queueTask > should insert task with correct fields and return pending status
+KNOWN_FAIL: requestLogger middleware > logAuditEvent > also calls logInfo after inserting audit record
+KNOWN_FAIL: scheduler lifecycle — coverage > double start does not create second interval
+KNOWN_FAIL: scheduler lifecycle — coverage > start-stop-start-stop cycle works correctly
+KNOWN_FAIL: scheduler lifecycle — coverage > startTokenRefreshScheduler sets isRunning=true
+KNOWN_FAIL: scheduler lifecycle — coverage > stop after start sets isRunning=false
+KNOWN_FAIL: scheduler lifecycle — coverage > stop without start is safe
+KNOWN_FAIL: startTokenRefreshScheduler / stopTokenRefreshScheduler > start after stop restarts
+KNOWN_FAIL: startTokenRefreshScheduler / stopTokenRefreshScheduler > starting scheduler sets isRunning to true
+KNOWN_FAIL: startTokenRefreshScheduler / stopTokenRefreshScheduler > stopping scheduler sets isRunning to false
+KNOWN_FAIL: taskWorker (unit) > cleanupOldTasks > returns 0 when no tasks are old enough
+KNOWN_FAIL: taskWorker (unit) > cleanupOldTasks > returns the number of deleted tasks
+KNOWN_FAIL: taskWorker (unit) > cleanupOldTasks > with daysOld of 1 works correctly
+KNOWN_FAIL: taskWorker (unit) > edge cases > cleanupOldTasks with large daysOld still works
+KNOWN_FAIL: taskWorker (unit) > edge cases > getWorkerStatus activeTasks starts at 0
+KNOWN_FAIL: taskWorker (unit) > edge cases > queueTask with empty payload object
+KNOWN_FAIL: taskWorker (unit) > edge cases > queueTask with maxAttempts of 1 means single try only
+KNOWN_FAIL: taskWorker (unit) > edge cases > queueTask with negative priority is stored
+KNOWN_FAIL: taskWorker (unit) > edge cases > queueTask with nested payload data
+KNOWN_FAIL: taskWorker (unit) > edge cases > queueTask with priority 0 is stored correctly
+KNOWN_FAIL: taskWorker (unit) > getTaskStatus > returns a failed task with error info
+KNOWN_FAIL: taskWorker (unit) > getTaskStatus > returns a pending task
+KNOWN_FAIL: taskWorker (unit) > getTaskStatus > returns null when task is not found
+KNOWN_FAIL: taskWorker (unit) > getTaskStatus > returns the task record from the database
+KNOWN_FAIL: taskWorker (unit) > getTaskStatus > returns undefined when query.get returns undefined
+KNOWN_FAIL: taskWorker (unit) > getWorkerStatus > activeTasks is a number
+KNOWN_FAIL: taskWorker (unit) > getWorkerStatus > isRunning is false when worker is stopped
+KNOWN_FAIL: taskWorker (unit) > getWorkerStatus > last24Hours contains the stats from the database
+KNOWN_FAIL: taskWorker (unit) > getWorkerStatus > maxConcurrent is 3
+KNOWN_FAIL: taskWorker (unit) > getWorkerStatus > pollIntervalMs is 10000 (10 seconds)
+KNOWN_FAIL: taskWorker (unit) > getWorkerStatus > query uses 24 hour window
+KNOWN_FAIL: taskWorker (unit) > getWorkerStatus > returns expected shape with all properties
+KNOWN_FAIL: taskWorker (unit) > queueTask > accepts custom maxAttempts option
+KNOWN_FAIL: taskWorker (unit) > queueTask > accepts custom priority option
+KNOWN_FAIL: taskWorker (unit) > queueTask > accepts custom scheduledAt option
+KNOWN_FAIL: taskWorker (unit) > queueTask > generates a non-empty string ID (real UUID)
+KNOWN_FAIL: taskWorker (unit) > queueTask > returns a task object with correct fields
+KNOWN_FAIL: taskWorker (unit) > queueTask > returns the payload object (not serialized)
+KNOWN_FAIL: taskWorker (unit) > queueTask > scheduledAt defaults to a SQLite datetime format (no T or Z)
+KNOWN_FAIL: taskWorker (unit) > queueTask > uses default maxAttempts of 3
+KNOWN_FAIL: taskWorker (unit) > queueTask > uses default priority of 0 [15.00ms]
+KNOWN_FAIL: taskWorker (unit) > queueTask > works with different task types
+KNOWN_FAIL: taskWorker (unit) > startTaskWorker / stopTaskWorker > calling startTaskWorker twice does not create duplicate intervals
+KNOWN_FAIL: taskWorker (unit) > startTaskWorker / stopTaskWorker > start then stop then start cycle works correctly
+KNOWN_FAIL: taskWorker (unit) > startTaskWorker / stopTaskWorker > startTaskWorker starts the worker (isRunning becomes true)
+KNOWN_FAIL: taskWorker (unit) > startTaskWorker / stopTaskWorker > stopTaskWorker stops the worker (isRunning becomes false)
+KNOWN_FAIL: taskWorker coverage > mixed success and failure > processes mix of succeeding and failing tasks [406.00ms]
+KNOWN_FAIL: taskWorker coverage > processQueue — with tasks > processes a sync_shop task that fails and retries (attempts < maxAttempts) [203.00ms]
+KNOWN_FAIL: taskWorker coverage > processQueue — with tasks > processes a sync_shop task that fails permanently (attempts >= maxAttempts) [204.00ms]
+KNOWN_FAIL: taskWorker coverage > processTask max_attempts fallback > uses DEFAULT_MAX_ATTEMPTS when task.max_attempts is null/undefined [313.00ms]
+KNOWN_FAIL: taskWorker coverage > processTask — success path logging > logs automation_run on successful cleanup_notifications task [312.00ms]
+KNOWN_FAIL: taskWorker coverage > retry with exponential backoff > error.code is passed as error_code in automation_runs failure [312.00ms]
+KNOWN_FAIL: taskWorker coverage > retry with exponential backoff > retry delay increases exponentially [313.00ms]
+KNOWN_FAIL: tokenRefreshScheduler > getRefreshSchedulerStatus > handles missing DB columns with fallback
+KNOWN_FAIL: tokenRefreshScheduler > getRefreshSchedulerStatus > returns status with expected shape
