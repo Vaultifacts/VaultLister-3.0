@@ -61,10 +61,10 @@ export async function processWebhookEvent(event) {
         const result = await handler(event, payload);
 
         // Update event status
-        query.run(`
+        await query.run(`
             UPDATE webhook_events SET
                 status = 'processed',
-                processed_at = datetime('now')
+                processed_at = NOW()
             WHERE id = ?
         `, [event.id]);
 
@@ -74,12 +74,12 @@ export async function processWebhookEvent(event) {
         logger.error(`[WebhookProcessor] Error processing event ${event.id}:`, error);
 
         // Update event with error
-        query.run(`
+        await query.run(`
             UPDATE webhook_events SET
                 status = 'failed',
                 error_message = ?,
                 retry_count = retry_count + 1,
-                processed_at = datetime('now')
+                processed_at = NOW()
             WHERE id = ?
         `, [error.message, event.id]);
 
@@ -94,12 +94,12 @@ export async function processWebhookEvent(event) {
  * @param {Object} payload - Event payload
  */
 export async function dispatchToUserEndpoints(userId, eventType, payload) {
-    // Escape LIKE wildcards to prevent injection
+    // Escape ILIKE wildcards to prevent injection
     const escapedEvent = eventType.replace(/[%_]/g, '\\$&');
-    const endpoints = query.all(`
+    const endpoints = await query.all(`
         SELECT * FROM webhook_endpoints
         WHERE user_id = ? AND is_enabled = 1
-        AND (events LIKE '%"' || ? || '"%' ESCAPE '\\' OR events = '[]')
+        AND (events ILIKE '%"' || ? || '"%' ESCAPE '\\' OR events = '[]')
     `, [userId, escapedEvent]);
 
     for (const endpoint of endpoints) {
@@ -130,11 +130,11 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
             }
 
             // Update success
-            query.run(`
+            await query.run(`
                 UPDATE webhook_endpoints SET
-                    last_triggered_at = datetime('now'),
+                    last_triggered_at = NOW(),
                     failure_count = 0,
-                    updated_at = datetime('now')
+                    updated_at = NOW()
                 WHERE id = ?
             `, [endpoint.id]);
 
@@ -142,22 +142,22 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
             logger.error(`[WebhookProcessor] Failed to dispatch to ${endpoint.url}:`, error.message);
 
             // Update failure count
-            query.run(`
+            await query.run(`
                 UPDATE webhook_endpoints SET
                     failure_count = failure_count + 1,
-                    updated_at = datetime('now')
+                    updated_at = NOW()
                 WHERE id = ?
             `, [endpoint.id]);
 
             // Disable after too many failures
-            const failures = query.get(
+            const failures = await query.get(
                 'SELECT failure_count FROM webhook_endpoints WHERE id = ?',
                 [endpoint.id]
             );
 
             if (failures && failures.failure_count >= 10) {
-                query.run(`
-                    UPDATE webhook_endpoints SET is_enabled = 0, updated_at = datetime('now')
+                await query.run(`
+                    UPDATE webhook_endpoints SET is_enabled = 0, updated_at = NOW()
                     WHERE id = ?
                 `, [endpoint.id]);
 
@@ -229,11 +229,11 @@ async function handleListingUpdated(event, payload) {
     // Sync updated data to local listing
     if (payload.listingId && event.user_id) {
         try {
-            query.run(`
+            await query.run(`
                 UPDATE listings SET
                     price = COALESCE(?, price),
                     title = COALESCE(?, title),
-                    updated_at = datetime('now')
+                    updated_at = NOW()
                 WHERE platform_listing_id = ? AND user_id = ?
             `, [payload.price, payload.title, payload.listingId, event.user_id]);
         } catch (err) {
@@ -276,9 +276,9 @@ async function handleListingViews(event, payload) {
     if (payload.listingId && event.user_id) {
         const now = new Date();
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO listing_engagement (id, user_id, listing_id, event_type, platform, hour_of_day, day_of_week, created_at)
-                VALUES (?, ?, ?, 'view', ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, 'view', ?, ?, ?, NOW())
             `, [uuidv4(), event.user_id, payload.listingId, payload.platform || 'unknown', now.getHours(), now.getDay()]);
         } catch (err) {
             // Table might not exist yet

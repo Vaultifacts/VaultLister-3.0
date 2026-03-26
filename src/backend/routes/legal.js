@@ -92,21 +92,21 @@ async function handleDataExport(user) {
       feedback,
       transactions
     ] = await Promise.all([
-      query.all('SELECT id, email, name, created_at FROM users WHERE id = ?', [userId]),
-      query.all('SELECT * FROM inventory WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM listings WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM orders WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM offers WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM sales WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM checklists WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM automations WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM calendar_events WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM analytics WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM image_bank WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM suppliers WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM user_settings WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM feedback WHERE user_id = ? LIMIT 10000', [userId]),
-      query.all('SELECT * FROM transactions WHERE user_id = ? LIMIT 10000', [userId])
+      await query.all('SELECT id, email, name, created_at FROM users WHERE id = ?', [userId]),
+      await query.all('SELECT * FROM inventory WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM listings WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM orders WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM offers WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM sales WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM checklists WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM automations WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM calendar_events WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM analytics WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM image_bank WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM suppliers WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM user_settings WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM feedback WHERE user_id = ? LIMIT 10000', [userId]),
+      await query.all('SELECT * FROM transactions WHERE user_id = ? LIMIT 10000', [userId])
     ]);
 
     const exportData = {
@@ -217,9 +217,9 @@ async function getDataAudit(user) {
     const userId = user.id;
 
     // Count records in each table
-    const getCount = (table) => {
+    const getCount = async (table) => {
       if (!ALLOWED_AUDIT_TABLES.has(table)) { logger.warn('Blocked audit query for disallowed table', { table }); return 0; }
-      try { return query.get(`SELECT COUNT(*) as count FROM ${table} WHERE user_id = ?`, [userId])?.count || 0; }
+      try { return await query.get(`SELECT COUNT(*) as count FROM ${table} WHERE user_id = ?`, [userId])?.count || 0; }
       catch { return 0; }
     };
 

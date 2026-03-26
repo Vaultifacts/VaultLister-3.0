@@ -46,7 +46,7 @@ async function checkAndQueueDueShops() {
     try {
         let dueShops;
         try {
-            dueShops = query.all(`
+            dueShops = await query.all(`
                 SELECT id, user_id, platform, sync_status, auto_sync_interval_minutes
                 FROM shops
                 WHERE auto_sync_enabled = 1
@@ -55,7 +55,7 @@ async function checkAndQueueDueShops() {
                   AND sync_status != 'syncing'
                   AND (
                       last_sync_at IS NULL
-                      OR datetime(last_sync_at, '+' || auto_sync_interval_minutes || ' minutes') < datetime('now')
+                      OR last_sync_at + (auto_sync_interval_minutes * INTERVAL '1 minute') < NOW()
                   )
             `);
         } catch (err) {

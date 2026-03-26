@@ -64,7 +64,7 @@ export async function sizeChartsRouter(ctx) {
 
             sql += ` ORDER BY created_at DESC LIMIT 500`;
 
-            const charts = query.all(sql, params);
+            const charts = await query.all(sql, params);
 
             // Parse JSON fields
             const chartsWithParsed = charts.map(chart => ({
@@ -123,7 +123,7 @@ export async function sizeChartsRouter(ctx) {
 
         try {
             const chartId = nanoid();
-            query.run(
+            await query.run(
                 `INSERT INTO size_charts (
                     id, user_id, name, category, garment_type, brand, gender, size_system,
                     measurements, sizes, custom_fields, notes, is_template, linked_listings
@@ -146,7 +146,7 @@ export async function sizeChartsRouter(ctx) {
                 ]
             );
 
-            const chart = query.get(`SELECT * FROM size_charts WHERE id = ?`, [chartId]);
+            const chart = await query.get(`SELECT * FROM size_charts WHERE id = ?`, [chartId]);
 
             return {
                 status: 201,
@@ -174,7 +174,7 @@ export async function sizeChartsRouter(ctx) {
         const chartId = path.substring(1);
 
         try {
-            const chart = query.get(
+            const chart = await query.get(
                 `SELECT * FROM size_charts WHERE id = ? AND user_id = ?`,
                 [chartId, user.id]
             );
@@ -212,7 +212,7 @@ export async function sizeChartsRouter(ctx) {
         const chartId = path.substring(1);
 
         try {
-            const chart = query.get(
+            const chart = await query.get(
                 `SELECT * FROM size_charts WHERE id = ? AND user_id = ?`,
                 [chartId, user.id]
             );
@@ -239,7 +239,7 @@ export async function sizeChartsRouter(ctx) {
                 linked_listings
             } = body;
 
-            query.run(
+            await query.run(
                 `UPDATE size_charts SET
                     name = ?,
                     category = ?,
@@ -272,7 +272,7 @@ export async function sizeChartsRouter(ctx) {
                 ]
             );
 
-            const updatedChart = query.get(`SELECT * FROM size_charts WHERE id = ?`, [chartId]);
+            const updatedChart = await query.get(`SELECT * FROM size_charts WHERE id = ?`, [chartId]);
 
             return {
                 status: 200,
@@ -300,7 +300,7 @@ export async function sizeChartsRouter(ctx) {
         const chartId = path.substring(1);
 
         try {
-            const chart = query.get(
+            const chart = await query.get(
                 `SELECT * FROM size_charts WHERE id = ? AND user_id = ?`,
                 [chartId, user.id]
             );
@@ -312,7 +312,7 @@ export async function sizeChartsRouter(ctx) {
                 };
             }
 
-            query.run(`DELETE FROM size_charts WHERE id = ? AND user_id = ?`, [chartId, user.id]);
+            await query.run(`DELETE FROM size_charts WHERE id = ? AND user_id = ?`, [chartId, user.id]);
 
             return {
                 status: 200,
@@ -382,7 +382,7 @@ export async function sizeChartsRouter(ctx) {
             sql += ` AND ${fromColumn} = ? LIMIT 500`;
             params.push(size);
 
-            const results = query.all(sql, params);
+            const results = await query.all(sql, params);
 
             if (results.length === 0) {
                 return {
@@ -446,7 +446,7 @@ export async function sizeChartsRouter(ctx) {
     // GET /api/size-charts/brands - List available brands
     if (method === 'GET' && path === '/brands') {
         try {
-            const brands = query.all(
+            const brands = await query.all(
                 `SELECT DISTINCT brand, COUNT(*) as guide_count
                  FROM brand_size_guides
                  GROUP BY brand
@@ -471,7 +471,7 @@ export async function sizeChartsRouter(ctx) {
         const brandName = decodeURIComponent(path.split('/')[2]);
 
         try {
-            const guides = query.all(
+            const guides = await query.all(
                 `SELECT * FROM brand_size_guides WHERE brand = ? ORDER BY garment_type, size_label`,
                 [brandName]
             );
@@ -516,7 +516,7 @@ export async function sizeChartsRouter(ctx) {
         const garmentType = decodeURIComponent(parts[3]);
 
         try {
-            const guides = query.all(
+            const guides = await query.all(
                 `SELECT * FROM brand_size_guides WHERE brand = ? AND garment_type = ? ORDER BY size_label`,
                 [brandName, garmentType]
             );
@@ -576,7 +576,7 @@ export async function sizeChartsRouter(ctx) {
             }
 
             sql += ` LIMIT 500`;
-            const guides = query.all(sql, params);
+            const guides = await query.all(sql, params);
 
             if (guides.length === 0) {
                 return {
@@ -658,7 +658,7 @@ export async function sizeChartsRouter(ctx) {
         }
 
         try {
-            const chart = query.get(
+            const chart = await query.get(
                 `SELECT * FROM size_charts WHERE id = ? AND user_id = ?`,
                 [chartId, user.id]
             );
@@ -677,7 +677,7 @@ export async function sizeChartsRouter(ctx) {
             const mergedLinked = [...new Set([...existingLinked, ...listing_ids])];
 
             // Update chart
-            query.run(
+            await query.run(
                 `UPDATE size_charts SET linked_listings = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 [JSON.stringify(mergedLinked), chartId]
             );
@@ -704,7 +704,7 @@ export async function sizeChartsRouter(ctx) {
         const chartId = path.split('/')[1];
 
         try {
-            const chart = query.get(
+            const chart = await query.get(
                 `SELECT * FROM size_charts WHERE id = ? AND user_id = ?`,
                 [chartId, user.id]
             );
@@ -727,7 +727,7 @@ export async function sizeChartsRouter(ctx) {
 
             // Fetch actual listing data
             const placeholders = linkedIds.map(() => '?').join(',');
-            const listings = query.all(
+            const listings = await query.all(
                 `SELECT id, title, platform, status, price, sku
                  FROM listings
                  WHERE id IN (${placeholders}) AND user_id = ?`,
@@ -782,7 +782,7 @@ export async function sizeChartsRouter(ctx) {
 
             sql += ` GROUP BY size ORDER BY size`;
 
-            const availability = query.all(sql, params);
+            const availability = await query.all(sql, params);
 
             // Calculate total for percentage calculation
             const total = availability.reduce((sum, item) => sum + item.count, 0);
@@ -819,10 +819,10 @@ export async function sizeChartsRouter(ctx) {
  * Seed brand size guide data
  * This function should be called during initialization or manually via admin endpoint
  */
-export function seedBrandSizeGuides() {
+export async function seedBrandSizeGuides() {
     try {
         // Check if already seeded
-        const existing = query.get(`SELECT COUNT(*) as count FROM brand_size_guides`);
+        const existing = await query.get(`SELECT COUNT(*) as count FROM brand_size_guides`);
         if (existing && existing.count > 0) {
             logger.info('Brand size guides already seeded');
             return;
@@ -881,17 +881,9 @@ export function seedBrandSizeGuides() {
         ];
 
         // Insert all guides
-        const insertStmt = query.exec(`
-            INSERT OR IGNORE INTO brand_size_guides (
-                id, brand, garment_type, size_label, us_size, uk_size, eu_size, jp_size, cn_size,
-                it_size, fr_size, au_size, chest_cm, waist_cm, hips_cm, length_cm,
-                shoulder_cm, sleeve_cm, inseam_cm, foot_length_cm
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `);
-
-        guides.forEach(guide => {
-            query.run(
-                `INSERT OR IGNORE INTO brand_size_guides (
+        for (const guide of guides) {
+            await query.run(
+                `INSERT INTO brand_size_guides (
                     id, brand, garment_type, size_label, us_size, uk_size, eu_size, jp_size, cn_size,
                     it_size, fr_size, au_size, chest_cm, waist_cm, hips_cm, length_cm,
                     shoulder_cm, sleeve_cm, inseam_cm, foot_length_cm
@@ -919,7 +911,7 @@ export function seedBrandSizeGuides() {
                     guide.foot_length_cm || null
                 ]
             );
-        });
+        }
 
         logger.info(`✓ Seeded ${guides.length} brand size guides`);
     } catch (error) {

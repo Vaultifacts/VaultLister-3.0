@@ -20,12 +20,9 @@ fi
 # Stop current containers
 docker compose -f docker-compose.staging.yml stop app
 
-# Restore the backup if it exists
-LATEST_BACKUP=$(ls -t /app/backups/vaultlister-*.db 2>/dev/null | head -1)
-if [ -n "$LATEST_BACKUP" ]; then
-    echo "Restoring database from: $LATEST_BACKUP"
-    docker cp "$LATEST_BACKUP" vaultlister-staging-app:/app/data/vaultlister.db
-fi
+# PostgreSQL: DB rollback requires manual pg_restore from a backup dump.
+# See scripts/pg-restore.js for restore instructions.
+echo "NOTE: PostgreSQL data rollback not automated — restore manually if needed."
 
 # Start with rollback image
 OVERRIDE="services:\n  app:\n    image: $ROLLBACK_IMAGE"

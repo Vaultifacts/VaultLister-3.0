@@ -12,17 +12,16 @@
  */
 
 import { stealthChromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, mouseWiggle } from '../src/shared/automations/stealth.js';
+import { query, initializeDatabase, closeDatabase } from '../src/backend/db/database.js';
 import { existsSync, readFileSync, appendFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
-import Database from 'better-sqlite3';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT        = join(__dirname, '..');
 const COOKIE_FILE = join(ROOT, 'data', 'poshmark-cookies.json');
 const AUDIT_LOG   = join(ROOT, 'data', 'automation-audit.log');
-const DB_PATH     = join(ROOT, 'data', 'vaultlister.db');
 const SCREENSHOT  = join(ROOT, 'data', 'offers-page-debug.png');
 
 const POSHMARK_DOMAINS = { us: 'https://poshmark.com', ca: 'https://poshmark.ca', au: 'https://poshmark.com.au', in: 'https://poshmark.in' };
@@ -65,7 +64,7 @@ async function humanType(page, selector, text) {
     }
 }
 
-let browser, page, db;
+let browser, page;
 
 try {
     log('Starting' + (isDryRun ? ' [DRY RUN]' : '') + (isHeadful ? ' [HEADFUL]' : ''));
@@ -74,6 +73,8 @@ try {
         log('ERROR: Cookie file not found: ' + COOKIE_FILE);
         process.exit(1);
     }
+
+    await initializeDatabase();
 
     // ── Launch browser (stealth Chromium instead of plain Firefox) ─────────
     browser = await stealthChromium.launch({
@@ -186,8 +187,7 @@ try {
     }
 
     // ── DB ────────────────────────────────────────────────────────────────────
-    db = new Database(DB_PATH);
-    const userId = db.prepare('SELECT id FROM users LIMIT 1').get()?.id;
+    const userId = (await query.get('SELECT id FROM users LIMIT 1', []))?.id;
 
     let countered = 0, skipped = 0, errors = 0;
 
@@ -240,17 +240,25 @@ try {
 
                 // Sync to DB
                 if (userId) {
-                    const listing = db.prepare("SELECT id FROM listings WHERE title LIKE ? AND platform='poshmark' LIMIT 1")
-                                      .get('%' + (offer.itemTitle || '').substring(0, 20) + '%');
-                    const existing = db.prepare("SELECT id FROM offers WHERE buyer_username=? AND platform='poshmark' AND status='pending' LIMIT 1")
-                                       .get(offer.buyerUsername);
+                    const listing = await query.get(
+                        "SELECT id FROM listings WHERE title ILIKE ? AND platform='poshmark' LIMIT 1",
+                        ['%' + (offer.itemTitle || '').substring(0, 20) + '%']
+                    );
+                    const existing = await query.get(
+                        "SELECT id FROM offers WHERE buyer_username=? AND platform='poshmark' AND status='pending' LIMIT 1",
+                        [offer.buyerUsername]
+                    );
                     if (!existing) {
-                        db.prepare(`INSERT INTO offers (id,user_id,listing_id,platform,buyer_username,offer_amount,counter_amount,status,auto_action,responded_at,created_at,updated_at)
-                                    VALUES (?,?,?,'poshmark',?,?,?,'countered','auto_counter',datetime('now'),datetime('now'),datetime('now'))`)
-                          .run(randomUUID(), userId, listing?.id || null, offer.buyerUsername, offer.offerAmount, offer.counterAmt);
+                        await query.run(
+                            `INSERT INTO offers (id,user_id,listing_id,platform,buyer_username,offer_amount,counter_amount,status,auto_action,responded_at,created_at,updated_at)
+                             VALUES (?,?,?,'poshmark',?,?,?,'countered','auto_counter',NOW(),NOW(),NOW())`,
+                            [randomUUID(), userId, listing?.id || null, offer.buyerUsername, offer.offerAmount, offer.counterAmt]
+                        );
                     } else {
-                        db.prepare("UPDATE offers SET status='countered',counter_amount=?,auto_action='auto_counter',responded_at=datetime('now'),updated_at=CURRENT_TIMESTAMP WHERE id=?")
-                          .run(offer.counterAmt, existing.id);
+                        await query.run(
+                            "UPDATE offers SET status='countered',counter_amount=?,auto_action='auto_counter',responded_at=NOW(),updated_at=NOW() WHERE id=?",
+                            [offer.counterAmt, existing.id]
+                        );
                     }
                     log('DB synced');
                 }
@@ -287,7 +295,7 @@ try {
     log('Done.', { countered, skipped, errors });
     writeAuditLog('offer_sync_complete', { countered, skipped, errors });
 
-    if (db) db.close();
+    await closeDatabase();
     await browser.close();
     process.exit(errors > 0 ? 1 : 0);
 
@@ -295,6 +303,6 @@ try {
     log('Fatal: ' + err.message);
     if (page) await page.screenshot({ path: SCREENSHOT }).catch(() => {});
     if (browser) await browser.close().catch(() => {});
-    if (db) db.close();
+    await closeDatabase();
     process.exit(1);
 }

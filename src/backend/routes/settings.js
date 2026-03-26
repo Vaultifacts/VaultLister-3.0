@@ -14,7 +14,7 @@ export async function settingsRouter(ctx) {
     // GET /api/settings/announcement - Public: fetch active announcement
     if (method === 'GET' && path === '/announcement') {
         try {
-            const row = query.get(
+            const row = await query.get(
                 `SELECT value FROM app_settings WHERE key = 'announcement' LIMIT 1`
             );
             if (!row || !row.value) {
@@ -38,11 +38,11 @@ export async function settingsRouter(ctx) {
         }
         const { text, color } = body || {};
         if (!text || !text.trim()) {
-            query.run(`DELETE FROM app_settings WHERE key = 'announcement'`);
+            await query.run(`DELETE FROM app_settings WHERE key = 'announcement'`);
             return { status: 200, data: { success: true, announcement: null } };
         }
         const value = JSON.stringify({ text: text.trim(), color: color || 'primary' });
-        query.run(
+        await query.run(
             `INSERT INTO app_settings (key, value, updated_at)
              VALUES ('announcement', ?, CURRENT_TIMESTAMP)
              ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,

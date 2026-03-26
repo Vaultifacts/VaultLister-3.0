@@ -7,7 +7,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { join, dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
-import { initializeDatabase, cleanupExpiredData, getStatementCacheStats } from './db/database.js';
+import { initializeDatabase, closeDatabase, cleanupExpiredData, getStatementCacheStats } from './db/database.js';
 import { authRouter } from './routes/auth.js';
 import { inventoryRouter } from './routes/inventory.js';
 import { listingsRouter } from './routes/listings.js';
@@ -153,14 +153,22 @@ process.on('exit', _flushLog);
 // Log startup early (test log function)
 log('Server starting...');
 
-// Write PID file for server-manager
+// PID file (local dev only — Railway is single-process, Railway captures stdout)
 const PID_PATH = join(ROOT_DIR, 'logs', 'server.pid');
-mkdirSync(join(ROOT_DIR, 'logs'), { recursive: true });
-writeFileSync(PID_PATH, String(process.pid));
-log(`PID ${process.pid} written to ${PID_PATH}`);
+if (process.env.NODE_ENV !== 'production') {
+    mkdirSync(join(ROOT_DIR, 'logs'), { recursive: true });
+    writeFileSync(PID_PATH, String(process.pid));
+    log(`PID ${process.pid} written to ${PID_PATH}`);
+}
+
+// Hoisted for access in gracefulShutdown (declared inside main())
+let server;
+let cleanupInterval;
+
+async function main() {
 
 // Initialize database
-initializeDatabase();
+await initializeDatabase();
 log('Database initialized');
 
 // Initialize Redis service (with in-memory fallback)
@@ -396,7 +404,7 @@ const apiRoutes = {
         let dbStatus = 'ok';
         try {
             const { query } = await import('./db/database.js');
-            query.get('SELECT 1');
+            await query.get('SELECT 1');
         } catch (e) {
             dbStatus = 'error';
         }
@@ -426,7 +434,7 @@ const apiRoutes = {
         // Database check
         try {
             const { query } = await import('./db/database.js');
-            query.get('SELECT 1');
+            await query.get('SELECT 1');
             checks.database = 'ok';
         } catch (e) {
             checks.database = 'error';
@@ -463,12 +471,9 @@ const apiRoutes = {
         // Detailed health check — unauthenticated, safe for external uptime monitors
         const { query: dbQuery } = await import('./db/database.js');
         let dbConnected = false;
-        let walMode = false;
         try {
-            dbQuery.get('SELECT 1');
+            await dbQuery.get('SELECT 1');
             dbConnected = true;
-            const row = dbQuery.get('PRAGMA journal_mode');
-            walMode = row && Object.values(row)[0] === 'wal';
         } catch (_) {}
 
         const mem = process.memoryUsage();
@@ -482,7 +487,7 @@ const apiRoutes = {
                     heapUsed: Math.round(mem.heapUsed / (1024 * 1024)),
                     heapTotal: Math.round(mem.heapTotal / (1024 * 1024))
                 },
-                db: { connected: dbConnected, walMode },
+                db: { connected: dbConnected },
                 timestamp: new Date().toISOString()
             }
         };
@@ -865,7 +870,7 @@ function withRequestTimeout(handlerPromise, timeoutMs) {
 }
 
 // Main server handler
-const server = Bun.serve({
+server = Bun.serve({
     port: process.env.PORT || 3000,
     hostname: '0.0.0.0',
 
@@ -1273,7 +1278,7 @@ const server = Bun.serve({
             }
 
             // Apply CSRF protection for state-changing requests
-            const csrfError = applyCSRFProtection(context);
+            const csrfError = await applyCSRFProtection(context);
             if (csrfError) {
                 return new Response(JSON.stringify(csrfError.data), {
                     status: csrfError.status,
@@ -1282,7 +1287,7 @@ const server = Bun.serve({
             }
 
             // Generate CSRF token for response
-            addCSRFToken(context);
+            await addCSRFToken(context);
 
             // Idempotency — check/store for POST, PUT, PATCH
             const idempotencyKey = request.headers.get('Idempotency-Key');
@@ -1576,10 +1581,17 @@ log('Background services started (including GDPR worker and monitoring)');
 
 // Start cleanup scheduler (delayed startup call + daily interval)
 setTimeout(() => cleanupExpiredData(), 30 * 1000); // 30-second delay on startup
-const cleanupInterval = setInterval(() => {
+cleanupInterval = setInterval(() => {
     cleanupExpiredData();
 }, 24 * 60 * 60 * 1000); // 24 hours
 log('Database cleanup scheduler started (runs daily, first run in 30s)');
+
+} // end async function main()
+
+main().catch((err) => {
+    logger.error('Fatal startup error:', err);
+    process.exit(1);
+});
 
 // Graceful shutdown helper
 async function gracefulShutdown(signal) {
@@ -1611,15 +1623,22 @@ async function gracefulShutdown(signal) {
     await analyticsService.shutdown();
     logger.info('Background services stopped.');
 
+    // Stop accepting new requests before closing dependencies
+    server.stop();
+    logger.info('Server closed.');
+
     // Close Redis connection
     await redisService.close();
     logger.info('Redis connection closed.');
 
-    // Clean up PID file
-    try { unlinkSync(PID_PATH); } catch {}
+    // Close database connection pool
+    await closeDatabase();
+    logger.info('Database connection closed.');
 
-    server.stop();
-    logger.info('Server closed.');
+    // Clean up PID file (local dev only)
+    if (process.env.NODE_ENV !== 'production') {
+        try { unlinkSync(PID_PATH); } catch {}
+    }
     log(`Server shutdown (${signal})`);
     process.exit(0);
 }

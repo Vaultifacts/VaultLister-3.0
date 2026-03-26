@@ -1,7 +1,7 @@
 // Email Service
 // Handles sending verification and security-related emails
 
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { logger } from '../shared/logger.js';
 
 /**
@@ -16,37 +16,22 @@ function escapeHtml(str) {
         .replace(/'/g, '&#x27;');
 }
 
-const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@vaultlister.com';
-const SMTP_HOST = process.env.SMTP_HOST || 'localhost';
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
-const SMTP_USER = process.env.SMTP_USER;
-const SMTP_PASS = process.env.SMTP_PASS;
-const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'VaultLister <noreply@vaultlister.com>';
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 
-let transporter = null;
+let resend = null;
 
 /**
- * Initialize email transporter
+ * Initialize email service (Resend)
  */
 export function initEmailService() {
-    if (SMTP_USER && SMTP_PASS) {
-        transporter = nodemailer.createTransport({
-            host: SMTP_HOST,
-            port: SMTP_PORT,
-            secure: SMTP_SECURE,
-            auth: {
-                user: SMTP_USER,
-                pass: SMTP_PASS
-            }
-        });
-
-        logger.info('[Email] Service initialized with SMTP');
+    if (process.env.RESEND_API_KEY) {
+        resend = new Resend(process.env.RESEND_API_KEY);
+        logger.info('[Email] Service initialized with Resend');
         return true;
     }
 
-    // Development mode - log emails instead of sending
-    logger.info('[Email] No SMTP credentials configured - emails will be logged to console');
+    logger.info('[Email] No RESEND_API_KEY configured - emails will be logged to console');
     return false;
 }
 
@@ -62,11 +47,12 @@ async function sendEmail(to, subject, html, text) {
         text: text || html.replace(/<[^>]*>/g, '')
     };
 
-    if (transporter) {
+    if (resend) {
         try {
-            const result = await transporter.sendMail(mailOptions);
+            const { data, error } = await resend.emails.send(mailOptions);
+            if (error) throw new Error(error.message || JSON.stringify(error));
             logger.info(`[Email] Sent to ${to.replace(/(.{2}).*(@.*)/, '$1***$2')}: ${subject}`);
-            return { success: true, messageId: result.messageId };
+            return { success: true, messageId: data?.id };
         } catch (error) {
             logger.error('[Email] Send failed', null, { detail: error.message });
             return { success: false, error: error.message };

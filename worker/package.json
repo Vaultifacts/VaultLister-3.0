@@ -1,0 +1,18 @@
+{
+  "name": "vaultlister-worker",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "bun index.js",
+    "dev": "bun --watch index.js"
+  },
+  "dependencies": {
+    "bullmq": "^5.1.0",
+    "ioredis": "^5.9.2",
+    "playwright": "1.58.2",
+    "playwright-extra": "^4.3.6",
+    "postgres": "^3.4.8",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "uuid": "^11.0.5"
+  }
+}

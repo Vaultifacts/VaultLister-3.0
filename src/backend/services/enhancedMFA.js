@@ -43,11 +43,11 @@ const enhancedMFA = {
 
     // Start WebAuthn registration
     async startRegistration(userId) {
-        const user = query.get('SELECT id, email, username FROM users WHERE id = ?', [userId]);
+        const user = await query.get('SELECT id, email, username FROM users WHERE id = ?', [userId]);
         if (!user) throw new Error('User not found');
 
         // Get existing credentials to exclude
-        const existingCredentials = query.all(
+        const existingCredentials = await query.all(
             'SELECT credential_id FROM webauthn_credentials WHERE user_id = ?',
             [userId]
         ) || [];
@@ -109,11 +109,11 @@ const enhancedMFA = {
         // For now, store the credential
         const credentialId = uuidv4();
 
-        query.run(`
+        await query.run(`
             INSERT INTO webauthn_credentials (
                 id, user_id, credential_id, public_key, sign_count,
                 device_name, created_at, last_used_at
-            ) VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+            ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
         `, [
             credentialId,
             userId,
@@ -124,8 +124,8 @@ const enhancedMFA = {
         ]);
 
         // Enable MFA if not already
-        query.run(`
-            UPDATE users SET mfa_enabled = 1, mfa_method = 'webauthn', updated_at = datetime('now')
+        await query.run(`
+            UPDATE users SET mfa_enabled = 1, mfa_method = 'webauthn', updated_at = NOW()
             WHERE id = ? AND mfa_enabled = 0
         `, [userId]);
 
@@ -134,7 +134,7 @@ const enhancedMFA = {
 
     // Start WebAuthn authentication
     async startAuthentication(userId) {
-        const credentials = query.all(
+        const credentials = await query.all(
             'SELECT credential_id FROM webauthn_credentials WHERE user_id = ?',
             [userId]
         );
@@ -179,7 +179,7 @@ const enhancedMFA = {
         await redis.del('mfa:challenge:' + userId);
 
         // Verify the credential exists
-        const credential = query.get(
+        const credential = await query.get(
             'SELECT * FROM webauthn_credentials WHERE user_id = ? AND credential_id = ?',
             [userId, assertion.id]
         );
@@ -190,9 +190,9 @@ const enhancedMFA = {
 
         // In production, verify signature properly
         // Update sign count and last used
-        query.run(`
+        await query.run(`
             UPDATE webauthn_credentials
-            SET sign_count = sign_count + 1, last_used_at = datetime('now')
+            SET sign_count = sign_count + 1, last_used_at = NOW()
             WHERE id = ?
         `, [credential.id]);
 
@@ -201,7 +201,7 @@ const enhancedMFA = {
 
     // List registered security keys
     async listSecurityKeys(userId) {
-        return query.all(`
+        return await query.all(`
             SELECT id, device_name, created_at, last_used_at
             FROM webauthn_credentials
             WHERE user_id = ?
@@ -211,14 +211,14 @@ const enhancedMFA = {
 
     // Remove security key
     async removeSecurityKey(userId, credentialId) {
-        const remaining = query.get(
+        const remaining = await query.get(
             'SELECT COUNT(*) as count FROM webauthn_credentials WHERE user_id = ? AND id != ?',
             [userId, credentialId]
         );
 
         // Check if user has other MFA methods
-        const user = query.get('SELECT mfa_method FROM users WHERE id = ?', [userId]);
-        const hasBackupCodes = query.get(
+        const user = await query.get('SELECT mfa_method FROM users WHERE id = ?', [userId]);
+        const hasBackupCodes = await query.get(
             'SELECT COUNT(*) as count FROM backup_codes WHERE user_id = ? AND used_at IS NULL',
             [userId]
         );
@@ -227,7 +227,7 @@ const enhancedMFA = {
             throw new Error('Cannot remove last security key without other MFA methods');
         }
 
-        query.run('DELETE FROM webauthn_credentials WHERE id = ? AND user_id = ?', [credentialId, userId]);
+        await query.run('DELETE FROM webauthn_credentials WHERE id = ? AND user_id = ?', [credentialId, userId]);
 
         return { message: 'Security key removed' };
     },
@@ -239,21 +239,21 @@ const enhancedMFA = {
     // Generate new backup codes
     async generateBackupCodes(userId) {
         // Delete existing unused codes
-        query.run('DELETE FROM backup_codes WHERE user_id = ? AND used_at IS NULL', [userId]);
+        await query.run('DELETE FROM backup_codes WHERE user_id = ? AND used_at IS NULL', [userId]);
 
         const codes = generateBackupCodes(10);
         const batchId = uuidv4();
 
         for (const code of codes) {
-            query.run(`
+            await query.run(`
                 INSERT INTO backup_codes (id, user_id, code_hash, batch_id, created_at)
-                VALUES (?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, NOW())
             `, [uuidv4(), userId, hashBackupCode(code), batchId]);
         }
 
         // Enable MFA if not already
-        query.run(`
-            UPDATE users SET mfa_enabled = 1, updated_at = datetime('now')
+        await query.run(`
+            UPDATE users SET mfa_enabled = 1, updated_at = NOW()
             WHERE id = ? AND mfa_enabled = 0
         `, [userId]);
 
@@ -268,7 +268,7 @@ const enhancedMFA = {
     async verifyBackupCode(userId, code) {
         const codeHash = hashBackupCode(code.replaceAll('-', '').replaceAll(' ', ''));
 
-        const backupCode = query.get(`
+        const backupCode = await query.get(`
             SELECT * FROM backup_codes
             WHERE user_id = ? AND code_hash = ? AND used_at IS NULL
         `, [userId, codeHash]);
@@ -278,12 +278,12 @@ const enhancedMFA = {
         }
 
         // Mark as used
-        query.run(`
-            UPDATE backup_codes SET used_at = datetime('now') WHERE id = ?
+        await query.run(`
+            UPDATE backup_codes SET used_at = NOW() WHERE id = ?
         `, [backupCode.id]);
 
         // Count remaining codes
-        const remaining = query.get(`
+        const remaining = await query.get(`
             SELECT COUNT(*) as count FROM backup_codes
             WHERE user_id = ? AND used_at IS NULL
         `, [userId]);
@@ -297,7 +297,7 @@ const enhancedMFA = {
 
     // Get backup code status
     async getBackupCodeStatus(userId) {
-        const stats = query.get(`
+        const stats = await query.get(`
             SELECT
                 COUNT(*) as total,
                 COUNT(CASE WHEN used_at IS NULL THEN 1 END) as remaining,
@@ -332,12 +332,12 @@ const enhancedMFA = {
         // Hash the code before storing
         const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
 
-        query.run(`
+        await query.run(`
             UPDATE users SET
                 pending_phone = ?,
                 phone_verification_code = ?,
                 phone_verification_expires = ?,
-                updated_at = datetime('now')
+                updated_at = NOW()
             WHERE id = ?
         `, [cleanPhone, hashedCode, expiresAt.toISOString(), userId]);
 
@@ -354,7 +354,7 @@ const enhancedMFA = {
 
     // Verify phone number
     async verifyPhone(userId, code) {
-        const user = query.get(`
+        const user = await query.get(`
             SELECT pending_phone, phone_verification_code, phone_verification_expires
             FROM users WHERE id = ?
         `, [userId]);
@@ -372,14 +372,14 @@ const enhancedMFA = {
             throw new Error('Invalid verification code');
         }
 
-        query.run(`
+        await query.run(`
             UPDATE users SET
                 phone_number = pending_phone,
                 pending_phone = NULL,
                 phone_verification_code = NULL,
                 phone_verification_expires = NULL,
                 phone_verified = 1,
-                updated_at = datetime('now')
+                updated_at = NOW()
             WHERE id = ?
         `, [userId]);
 
@@ -388,7 +388,7 @@ const enhancedMFA = {
 
     // Send SMS code for authentication
     async sendSMSCode(userId) {
-        const user = query.get('SELECT phone_number, phone_verified FROM users WHERE id = ?', [userId]);
+        const user = await query.get('SELECT phone_number, phone_verified FROM users WHERE id = ?', [userId]);
 
         if (!user?.phone_number || !user.phone_verified) {
             throw new Error('No verified phone number');
@@ -401,9 +401,9 @@ const enhancedMFA = {
         // Hash code before storing
         const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
 
-        query.run(`
+        await query.run(`
             INSERT INTO sms_codes (id, user_id, code, expires_at, created_at)
-            VALUES (?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, NOW())
         `, [uuidv4(), userId, hashedCode, expiresAt.toISOString()]);
 
         // In production, send via Twilio/SNS — never log codes in production
@@ -421,7 +421,7 @@ const enhancedMFA = {
     async verifySMSCode(userId, code) {
         // Hash the input code to match stored hash
         const hashedInput = crypto.createHash('sha256').update(code).digest('hex');
-        const smsCode = query.get(`
+        const smsCode = await query.get(`
             SELECT * FROM sms_codes
             WHERE user_id = ? AND code = ? AND used_at IS NULL
             ORDER BY created_at DESC LIMIT 1
@@ -435,7 +435,7 @@ const enhancedMFA = {
             return { success: false, message: 'Code expired' };
         }
 
-        query.run('UPDATE sms_codes SET used_at = datetime("now") WHERE id = ?', [smsCode.id]);
+        await query.run('UPDATE sms_codes SET used_at = NOW() WHERE id = ?', [smsCode.id]);
 
         return { success: true };
     },
@@ -446,7 +446,7 @@ const enhancedMFA = {
 
     // Get MFA status for user
     async getMFAStatus(userId) {
-        const user = query.get(`
+        const user = await query.get(`
             SELECT mfa_enabled, mfa_method, phone_number, phone_verified
             FROM users WHERE id = ?
         `, [userId]);
@@ -454,7 +454,7 @@ const enhancedMFA = {
         const securityKeys = await this.listSecurityKeys(userId);
         const backupStatus = await this.getBackupCodeStatus(userId);
 
-        const hasTOTP = query.get(
+        const hasTOTP = await query.get(
             'SELECT 1 FROM totp_secrets WHERE user_id = ? AND verified = 1',
             [userId]
         );
@@ -480,7 +480,7 @@ const enhancedMFA = {
     // Disable MFA
     async disableMFA(userId, password) {
         // Verify password
-        const user = query.get('SELECT password_hash FROM users WHERE id = ?', [userId]);
+        const user = await query.get('SELECT password_hash FROM users WHERE id = ?', [userId]);
         if (user?.password_hash) {
             const bcrypt = await import('bcryptjs');
             const valid = await bcrypt.compare(password, user.password_hash);
@@ -490,18 +490,18 @@ const enhancedMFA = {
         }
 
         // Remove all MFA data
-        query.run('DELETE FROM webauthn_credentials WHERE user_id = ?', [userId]);
-        query.run('DELETE FROM backup_codes WHERE user_id = ?', [userId]);
-        query.run('DELETE FROM totp_secrets WHERE user_id = ?', [userId]);
-        query.run('DELETE FROM sms_codes WHERE user_id = ?', [userId]);
+        await query.run('DELETE FROM webauthn_credentials WHERE user_id = ?', [userId]);
+        await query.run('DELETE FROM backup_codes WHERE user_id = ?', [userId]);
+        await query.run('DELETE FROM totp_secrets WHERE user_id = ?', [userId]);
+        await query.run('DELETE FROM sms_codes WHERE user_id = ?', [userId]);
 
-        query.run(`
+        await query.run(`
             UPDATE users SET
                 mfa_enabled = 0,
                 mfa_method = NULL,
                 phone_number = NULL,
                 phone_verified = 0,
-                updated_at = datetime('now')
+                updated_at = NOW()
             WHERE id = ?
         `, [userId]);
 
@@ -650,56 +650,8 @@ export async function enhancedMFARouter(ctx) {
     return { status: 404, data: { error: 'Not found' } };
 }
 
-// Database migration
-export const migration = `
--- WebAuthn credentials
-CREATE TABLE IF NOT EXISTS webauthn_credentials (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    credential_id TEXT NOT NULL UNIQUE,
-    public_key TEXT NOT NULL,
-    sign_count INTEGER DEFAULT 0,
-    device_name TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    last_used_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_webauthn_user ON webauthn_credentials(user_id);
-
--- Backup codes
-CREATE TABLE IF NOT EXISTS backup_codes (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    code_hash TEXT NOT NULL,
-    batch_id TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    used_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_backup_codes_user ON backup_codes(user_id, used_at);
-
--- SMS verification codes
-CREATE TABLE IF NOT EXISTS sms_codes (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    code TEXT NOT NULL,
-    expires_at TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now')),
-    used_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_sms_codes_user ON sms_codes(user_id, expires_at);
-
--- Add phone columns to users table
-ALTER TABLE users ADD COLUMN phone_number TEXT;
-ALTER TABLE users ADD COLUMN phone_verified INTEGER DEFAULT 0;
-ALTER TABLE users ADD COLUMN pending_phone TEXT;
-ALTER TABLE users ADD COLUMN phone_verification_code TEXT;
-ALTER TABLE users ADD COLUMN phone_verification_expires TEXT;
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 export { enhancedMFA };
 export default enhancedMFA;

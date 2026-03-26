@@ -25,7 +25,7 @@ export const TIER_FOR_PRICE = Object.fromEntries(
 export async function createCustomer(userId, email) {
     try {
         const customer = await requireStripe().customers.create({ email, metadata: { vaultlister_user_id: userId } });
-        query.run('UPDATE users SET stripe_customer_id = ?, updated_at = datetime(\'now\') WHERE id = ?',
+        await query.run('UPDATE users SET stripe_customer_id = ?, updated_at = NOW() WHERE id = ?',
             [customer.id, userId]);
         logger.info(`[Stripe] Created customer ${customer.id} for user ${userId}`);
         return customer;
@@ -37,7 +37,7 @@ export async function createCustomer(userId, email) {
 
 export async function createCheckoutSession(userId, priceId, successUrl, cancelUrl) {
     try {
-        let user = query.get('SELECT id, email, stripe_customer_id FROM users WHERE id = ?', [userId]);
+        let user = await query.get('SELECT id, email, stripe_customer_id FROM users WHERE id = ?', [userId]);
         if (!user) throw new Error('User not found');
 
         let customerId = user.stripe_customer_id;

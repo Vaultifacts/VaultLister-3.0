@@ -4,7 +4,7 @@
 import { stealthChromium as chromium, randomChromeUA, randomViewport, STEALTH_ARGS, STEALTH_IGNORE_DEFAULTS, humanClick, humanScroll, mouseWiggle } from './stealth.js';
 import fs from 'fs';
 import path from 'path';
-import { logger } from '../../backend/shared/logger.js';
+import { logger } from '../../src/backend/shared/logger.js';
 import { RATE_LIMITS, jitteredDelay } from './rate-limits.js';
 
 // Regional domain map — set POSHMARK_COUNTRY in .env (us, ca, au, in)

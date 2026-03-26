@@ -113,7 +113,7 @@ export async function authenticateToken(request) {
     }
 
     // Get user from database (exclude password_hash for security)
-    const user = query.get(
+    const user = await query.get(
         'SELECT id, email, full_name, username, subscription_tier, subscription_expires_at, avatar_url, is_active, is_admin, email_verified, created_at, updated_at FROM users WHERE id = ? AND is_active = 1',
         [decoded.userId]
     );
@@ -138,7 +138,7 @@ export async function authenticateToken(request) {
 }
 
 // Check subscription tier permissions
-export function checkTierPermission(user, feature) {
+export async function checkTierPermission(user, feature) {
     const tierLimits = {
         free: {
             maxListings: 25,
@@ -171,10 +171,10 @@ export function checkTierPermission(user, feature) {
     switch (feature) {
         case 'listings':
             if (limits.maxListings === -1) return { allowed: true };
-            const currentListings = query.get(
+            const currentListings = (await query.get(
                 'SELECT COUNT(*) as count FROM inventory WHERE user_id = ?',
                 [user.id]
-            )?.count || 0;
+            ))?.count || 0;
             return {
                 allowed: currentListings < limits.maxListings,
                 limit: limits.maxListings,
@@ -183,10 +183,10 @@ export function checkTierPermission(user, feature) {
 
         case 'platforms':
             if (limits.maxPlatforms === -1) return { allowed: true };
-            const currentPlatforms = query.get(
+            const currentPlatforms = (await query.get(
                 'SELECT COUNT(*) as count FROM shops WHERE user_id = ? AND is_connected = 1',
                 [user.id]
-            )?.count || 0;
+            ))?.count || 0;
             return {
                 allowed: currentPlatforms < limits.maxPlatforms,
                 limit: limits.maxPlatforms,

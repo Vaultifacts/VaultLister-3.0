@@ -11,14 +11,12 @@
 //   bun scripts/test-publish-automation.js poshmark → one platform only
 
 import { chromium } from 'playwright';
-import { Database } from 'bun:sqlite';
+import { query, initializeDatabase, closeDatabase } from '../src/backend/db/database.js';
 import crypto from 'crypto';
-import { existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DB_PATH = process.env.DB_PATH || join(__dirname, '..', 'data', 'vaultlister.db');
 
 const PLATFORMS = {
     poshmark: {
@@ -150,19 +148,16 @@ function decryptToken(encrypted) {
 }
 
 // Get a connected shop's OAuth token from the DB
-function getShopToken(platform) {
-    if (!existsSync(DB_PATH)) return null;
+async function getShopToken(platform) {
     try {
-        const db = new Database(DB_PATH, { readonly: true });
-        const row = db.query('SELECT oauth_token FROM shops WHERE platform = ? AND is_connected = 1 AND oauth_token IS NOT NULL LIMIT 1').get(platform);
-        db.close();
+        const row = await query.get('SELECT oauth_token FROM shops WHERE platform = ? AND is_connected = 1 AND oauth_token IS NOT NULL LIMIT 1', [platform]);
         if (!row?.oauth_token) return null;
         return decryptToken(row.oauth_token);
     } catch { return null; }
 }
 
 async function testEbay() {
-    const token = getShopToken('ebay');
+    const token = await getShopToken('ebay');
     if (!token) {
         return { name: 'ebay', pass: false, warning: 'No connected eBay shop in DB — skip', error: null };
     }
@@ -186,7 +181,7 @@ async function testEbay() {
 }
 
 async function testEtsy() {
-    const token = getShopToken('etsy');
+    const token = await getShopToken('etsy');
     if (!token) {
         return { name: 'etsy', pass: false, warning: 'No connected Etsy shop in DB — skip', error: null };
     }
@@ -306,7 +301,8 @@ async function main() {
     if (failed > 0) process.exit(1);
 }
 
-main().catch(err => {
+await initializeDatabase();
+main().then(() => closeDatabase()).catch(err => {
     console.error(`${RED}Fatal: ${err.message}${RESET}`);
-    process.exit(1);
+    closeDatabase().finally(() => process.exit(1));
 });

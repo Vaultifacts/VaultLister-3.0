@@ -80,7 +80,7 @@ async function createAdminUserWithToken() {
     );
     query.run(
         `INSERT INTO sessions (id, user_id, refresh_token, device_info, ip_address, expires_at)
-         VALUES (?, ?, ?, ?, ?, datetime('now', '+7 days'))`,
+         VALUES (?, ?, ?, ?, ?, NOW() + INTERVAL '7 days')`,
         [uuidv4(), user.id, refreshToken, 'Admin Test', '127.0.0.1']
     );
 

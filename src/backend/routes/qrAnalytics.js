@@ -10,13 +10,13 @@ export async function qrAnalyticsRouter(ctx) {
     if (method === 'GET' && path === '/dashboard') {
         try {
             // Total scans (sum of scan_count across all QR entries)
-            const totalScans = query.get(
+            const totalScans = await query.get(
                 'SELECT COALESCE(SUM(scan_count), 0) as total, COUNT(*) as items FROM qr_analytics WHERE user_id = ?',
                 [user.id]
             );
 
             // Scans by type
-            const scansByType = query.all(
+            const scansByType = await query.all(
                 `SELECT qr_type, SUM(scan_count) as count
                 FROM qr_analytics
                 WHERE user_id = ?
@@ -26,7 +26,7 @@ export async function qrAnalyticsRouter(ctx) {
             );
 
             // Top 10 most scanned items
-            const topScanned = query.all(
+            const topScanned = await query.all(
                 `SELECT reference_id, qr_type, scan_count, last_scanned_at
                 FROM qr_analytics
                 WHERE user_id = ? AND qr_type = 'listing'
@@ -36,8 +36,8 @@ export async function qrAnalyticsRouter(ctx) {
             );
 
             // Get item details for top scanned
-            const enrichedTopScanned = topScanned.map(item => {
-                const details = query.get(
+            const enrichedTopScanned = await Promise.all(topScanned.map(async item => {
+                const details = await query.get(
                     'SELECT title, sku FROM inventory WHERE id = ?',
                     [item.reference_id]
                 );
@@ -46,12 +46,12 @@ export async function qrAnalyticsRouter(ctx) {
                     title: details?.title || 'Unknown',
                     sku: details?.sku || 'N/A'
                 };
-            });
+            }));
 
             // Recently scanned (last 24 hours)
-            const recentScans = query.get(
+            const recentScans = await query.get(
                 `SELECT COUNT(*) as count FROM qr_analytics
-                WHERE user_id = ? AND last_scanned_at > datetime('now', '-24 hours')`,
+                WHERE user_id = ? AND last_scanned_at > NOW() - INTERVAL '24 hours'`,
                 [user.id]
             );
 
@@ -87,7 +87,7 @@ export async function qrAnalyticsRouter(ctx) {
 
             // Upsert: increment scan_count if exists, otherwise create
             const id = uuidv4();
-            query.run(
+            await query.run(
                 `INSERT INTO qr_analytics (id, user_id, qr_type, reference_id, scan_count, last_scanned_at)
                 VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
                 ON CONFLICT(user_id, qr_type, reference_id) DO UPDATE SET
@@ -96,7 +96,7 @@ export async function qrAnalyticsRouter(ctx) {
                 [id, user.id, qr_type, reference_id]
             );
 
-            const scan = query.get(
+            const scan = await query.get(
                 'SELECT * FROM qr_analytics WHERE user_id = ? AND qr_type = ? AND reference_id = ?',
                 [user.id, qr_type, reference_id]
             );
@@ -113,7 +113,7 @@ export async function qrAnalyticsRouter(ctx) {
             const itemId = path.split('/')[2];
 
             // Verify item belongs to user
-            const item = query.get(
+            const item = await query.get(
                 'SELECT id, title, sku FROM inventory WHERE id = ? AND user_id = ?',
                 [itemId, user.id]
             );
@@ -123,13 +123,13 @@ export async function qrAnalyticsRouter(ctx) {
             }
 
             // Total scans for this item
-            const totalScans = query.get(
+            const totalScans = await query.get(
                 'SELECT COALESCE(SUM(scan_count), 0) as count FROM qr_analytics WHERE reference_id = ? AND user_id = ?',
                 [itemId, user.id]
             );
 
             // Scans by type for this item
-            const scansByType = query.all(
+            const scansByType = await query.all(
                 `SELECT qr_type, SUM(scan_count) as count
                 FROM qr_analytics
                 WHERE reference_id = ? AND user_id = ?
@@ -138,7 +138,7 @@ export async function qrAnalyticsRouter(ctx) {
             );
 
             // QR entries for this item
-            const scanHistory = query.all(
+            const scanHistory = await query.all(
                 `SELECT qr_type, scan_count, last_scanned_at, created_at
                 FROM qr_analytics
                 WHERE reference_id = ? AND user_id = ?
@@ -164,7 +164,7 @@ export async function qrAnalyticsRouter(ctx) {
     // GET /api/qr-analytics/warehouse-bins - List all warehouse bins
     if (method === 'GET' && path === '/warehouse-bins') {
         try {
-            const bins = query.all(
+            const bins = await query.all(
                 `SELECT wb.*,
                 (SELECT COUNT(*) FROM inventory WHERE bin_location = wb.bin_code AND user_id = ?) as item_count
                 FROM warehouse_bins wb
@@ -190,7 +190,7 @@ export async function qrAnalyticsRouter(ctx) {
             }
 
             // Check for duplicate bin code
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT id FROM warehouse_bins WHERE bin_code = ? AND user_id = ?',
                 [bin_code.trim().toUpperCase(), user.id]
             );
@@ -201,13 +201,13 @@ export async function qrAnalyticsRouter(ctx) {
 
             const id = uuidv4();
 
-            query.run(
+            await query.run(
                 `INSERT INTO warehouse_bins (id, user_id, bin_code, label, zone, capacity)
                 VALUES (?, ?, ?, ?, ?, ?)`,
                 [id, user.id, bin_code.trim().toUpperCase(), label || null, zone || null, capacity || null]
             );
 
-            const bin = query.get('SELECT * FROM warehouse_bins WHERE id = ?', [id]);
+            const bin = await query.get('SELECT * FROM warehouse_bins WHERE id = ?', [id]);
 
             return { status: 201, data: bin };
         } catch (error) {
@@ -221,7 +221,7 @@ export async function qrAnalyticsRouter(ctx) {
         try {
             const binId = path.split('/')[2];
 
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT * FROM warehouse_bins WHERE id = ? AND user_id = ?',
                 [binId, user.id]
             );
@@ -236,7 +236,7 @@ export async function qrAnalyticsRouter(ctx) {
 
             if (bin_code !== undefined) {
                 // Check for duplicate
-                const duplicate = query.get(
+                const duplicate = await query.get(
                     'SELECT id FROM warehouse_bins WHERE bin_code = ? AND user_id = ? AND id != ?',
                     [bin_code.trim().toUpperCase(), user.id, binId]
                 );
@@ -277,12 +277,12 @@ export async function qrAnalyticsRouter(ctx) {
 
             values.push(binId);
 
-            query.run(
+            await query.run(
                 `UPDATE warehouse_bins SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 values
             );
 
-            const updated = query.get('SELECT * FROM warehouse_bins WHERE id = ?', [binId]);
+            const updated = await query.get('SELECT * FROM warehouse_bins WHERE id = ?', [binId]);
 
             return { status: 200, data: updated };
         } catch (error) {
@@ -296,7 +296,7 @@ export async function qrAnalyticsRouter(ctx) {
         try {
             const binId = path.split('/')[2];
 
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT * FROM warehouse_bins WHERE id = ? AND user_id = ?',
                 [binId, user.id]
             );
@@ -306,7 +306,7 @@ export async function qrAnalyticsRouter(ctx) {
             }
 
             // Check if bin has inventory
-            const itemCount = query.get(
+            const itemCount = await query.get(
                 'SELECT COUNT(*) as count FROM inventory WHERE bin_location = ? AND user_id = ?',
                 [existing.bin_code, user.id]
             );
@@ -315,7 +315,7 @@ export async function qrAnalyticsRouter(ctx) {
                 return { status: 409, data: { error: 'Cannot delete bin with inventory. Move items first.' } };
             }
 
-            query.run('DELETE FROM warehouse_bins WHERE id = ? AND user_id = ?', [binId, user.id]);
+            await query.run('DELETE FROM warehouse_bins WHERE id = ? AND user_id = ?', [binId, user.id]);
 
             return { status: 200, data: { message: 'Bin deleted successfully' } };
         } catch (error) {
@@ -329,7 +329,7 @@ export async function qrAnalyticsRouter(ctx) {
         try {
             const binId = path.split('/')[2];
 
-            const bin = query.get(
+            const bin = await query.get(
                 'SELECT * FROM warehouse_bins WHERE id = ? AND user_id = ?',
                 [binId, user.id]
             );
@@ -338,7 +338,7 @@ export async function qrAnalyticsRouter(ctx) {
                 return { status: 404, data: { error: 'Bin not found' } };
             }
 
-            const items = query.all(
+            const items = await query.all(
                 `SELECT id, title, sku, quantity, cost, status, bin_location
                 FROM inventory
                 WHERE bin_location = ? AND user_id = ?
@@ -358,7 +358,7 @@ export async function qrAnalyticsRouter(ctx) {
         try {
             const binId = path.split('/')[2];
 
-            const bin = query.get(
+            const bin = await query.get(
                 'SELECT * FROM warehouse_bins WHERE id = ? AND user_id = ?',
                 [binId, user.id]
             );

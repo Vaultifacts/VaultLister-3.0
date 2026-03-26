@@ -37,7 +37,7 @@ export async function syncEbayShop(shop) {
 
         // Update shop's last sync time (handle missing columns gracefully)
         try {
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     last_sync_at = ?,
                     sync_error = NULL,
@@ -46,7 +46,7 @@ export async function syncEbayShop(shop) {
             `, [results.completedAt, results.completedAt, shop.id]);
         } catch (err) {
             if (err.message.includes('no such column')) {
-                query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
                     [results.completedAt, shop.id]);
             }
         }
@@ -59,7 +59,7 @@ export async function syncEbayShop(shop) {
 
         // Record sync error (handle missing columns gracefully)
         try {
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     sync_error = ?,
                     updated_at = ?
@@ -67,7 +67,7 @@ export async function syncEbayShop(shop) {
             `, [error.message, new Date().toISOString(), shop.id]);
         } catch (err) {
             if (err.message.includes('no such column')) {
-                query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
                     [new Date().toISOString(), shop.id]);
             }
         }
@@ -90,14 +90,14 @@ async function syncEbayListings(shop, accessToken, mode) {
                 const mapped = mapEbayListingToVaultLister(ebayListing, shop);
 
                 // Check if listing already exists
-                const existing = query.get(`
+                const existing = await query.get(`
                     SELECT id FROM listings
                     WHERE user_id = ? AND platform = 'ebay' AND platform_listing_id = ?
                 `, [shop.user_id, ebayListing.sku || ebayListing.listingId]);
 
                 if (existing) {
                     // Update existing listing
-                    query.run(`
+                    await query.run(`
                         UPDATE listings SET
                             title = ?,
                             price = ?,
@@ -117,7 +117,7 @@ async function syncEbayListings(shop, accessToken, mode) {
                 } else {
                     // Create new listing
                     const listingId = uuidv4();
-                    query.run(`
+                    await query.run(`
                         INSERT INTO listings (
                             id, user_id, inventory_id, platform, title, price,
                             status, platform_listing_id, platform_specific_data,
@@ -169,7 +169,7 @@ async function syncEbayOrders(shop, accessToken, mode) {
                 const mapped = mapEbayOrderToSale(ebayOrder, shop);
 
                 // Check if sale already exists
-                const existing = query.get(`
+                const existing = await query.get(`
                     SELECT id FROM sales
                     WHERE user_id = ? AND platform_order_id = ? AND platform = 'ebay'
                 `, [shop.user_id, ebayOrder.orderId]);
@@ -177,7 +177,7 @@ async function syncEbayOrders(shop, accessToken, mode) {
                 if (!existing) {
                     // Create new sale
                     const saleId = uuidv4();
-                    query.run(`
+                    await query.run(`
                         INSERT INTO sales (
                             id, user_id, listing_id, platform, platform_order_id, buyer_username,
                             sale_price, platform_fee, shipping_cost, net_profit,

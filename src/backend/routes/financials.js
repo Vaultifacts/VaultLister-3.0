@@ -30,7 +30,7 @@ export async function financialsRouter(ctx) {
             const params = [user.id];
 
             if (vendor) {
-                sql += " AND p.vendor_name LIKE ? ESCAPE '\\'";
+                sql += " AND p.vendor_name ILIKE ? ESCAPE '\\'";
                 params.push(`%${escapeLike(vendor)}%`);
             }
 
@@ -52,14 +52,14 @@ export async function financialsRouter(ctx) {
             sql += ' ORDER BY p.purchase_date DESC, p.created_at DESC LIMIT ? OFFSET ?';
             params.push(limit, offset);
 
-            const purchases = query.all(sql, params);
-            const total = query.get('SELECT COUNT(*) as count FROM purchases WHERE user_id = ?', [user.id])?.count || 0;
+            const purchases = await query.all(sql, params);
+            const total = await query.get('SELECT COUNT(*) as count FROM purchases WHERE user_id = ?', [user.id])?.count || 0;
 
             // Calculate stats
             const stats = {
                 totalPurchases: total,
-                totalSpend: query.get('SELECT SUM(total_amount) as total FROM purchases WHERE user_id = ? AND status = ?', [user.id, 'completed'])?.total || 0,
-                avgPurchaseAmount: query.get('SELECT AVG(total_amount) as avg FROM purchases WHERE user_id = ? AND status = ?', [user.id, 'completed'])?.avg || 0
+                totalSpend: await query.get('SELECT SUM(total_amount) as total FROM purchases WHERE user_id = ? AND status = ?', [user.id, 'completed'])?.total || 0,
+                avgPurchaseAmount: await query.get('SELECT AVG(total_amount) as avg FROM purchases WHERE user_id = ? AND status = ?', [user.id, 'completed'])?.avg || 0
             };
 
             return { status: 200, data: { purchases, total, stats } };
@@ -73,14 +73,14 @@ export async function financialsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/purchases\/[a-f0-9-]+$/)) {
         try {
             const id = path.split('/')[2];
-            const purchase = query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
+            const purchase = await query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
 
             if (!purchase) {
                 return { status: 404, data: { error: 'Purchase not found' } };
             }
 
             // Get line items
-            const items = query.all(`
+            const items = await query.all(`
                 SELECT pi.*, i.title as inventory_title, i.sku as inventory_sku
                 FROM purchase_items pi
                 LEFT JOIN inventory i ON pi.inventory_id = i.id
@@ -135,14 +135,14 @@ export async function financialsRouter(ctx) {
         try {
             const createPurchase = async () => {
                 // Generate purchase number INSIDE transaction to prevent race conditions
-                const maxNum = query.get(
+                const maxNum = await query.get(
                     `SELECT MAX(CAST(SUBSTR(purchase_number, 5) AS INTEGER)) as max_num FROM purchases WHERE user_id = ?`,
                     [user.id]
                 )?.max_num || 0;
                 const purchaseNumber = `PUR-${String(maxNum + 1).padStart(5, '0')}`;
 
                 // Insert purchase
-                query.run(`
+                await query.run(`
                     INSERT INTO purchases (
                         id, user_id, purchase_number, vendor_name, purchase_date,
                         total_amount, shipping_cost, tax_amount, payment_method,
@@ -162,7 +162,7 @@ export async function financialsRouter(ctx) {
                     const purchaseItemId = uuidv4();
 
                     // Insert purchase item
-                    query.run(`
+                    await query.run(`
                         INSERT INTO purchase_items (
                             id, purchase_id, inventory_id, description, quantity, unit_cost, total_cost
                         ) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -171,7 +171,7 @@ export async function financialsRouter(ctx) {
                     // If linked to inventory, create cost layer and update inventory
                     if (item.inventoryId) {
                         // Create inventory cost layer for FIFO
-                        query.run(`
+                        await query.run(`
                             INSERT INTO inventory_cost_layers (
                                 id, inventory_id, purchase_item_id, quantity_original, quantity_remaining,
                                 unit_cost, purchase_date
@@ -179,7 +179,7 @@ export async function financialsRouter(ctx) {
                         `, [uuidv4(), item.inventoryId, purchaseItemId, quantity, quantity, unitCost, purchaseDate]);
 
                         // Atomic update: recalculate weighted average cost in single statement
-                        query.run(`
+                        await query.run(`
                             UPDATE inventory SET
                                 quantity = COALESCE(quantity, 0) + ?,
                                 cost_price = CASE
@@ -194,13 +194,13 @@ export async function financialsRouter(ctx) {
                 }
 
                 // Create financial transaction record
-                const cogsAccount = query.get(
+                const cogsAccount = await query.get(
                     'SELECT id FROM accounts WHERE user_id = ? AND account_type = ? LIMIT 1',
                     [user.id, 'COGS']
                 );
 
                 if (cogsAccount) {
-                    query.run(`
+                    await query.run(`
                         INSERT INTO financial_transactions (
                             id, user_id, transaction_date, description, amount, account_id,
                             category, reference_type, reference_id
@@ -213,10 +213,10 @@ export async function financialsRouter(ctx) {
             };
 
             // Execute all operations in a transaction
-            query.transaction(createPurchase);
+            await query.transaction(createPurchase);
 
-            const purchase = query.get('SELECT * FROM purchases WHERE id = ?', [purchaseId]);
-            const purchaseItems = query.all('SELECT * FROM purchase_items WHERE purchase_id = ?', [purchaseId]);
+            const purchase = await query.get('SELECT * FROM purchases WHERE id = ?', [purchaseId]);
+            const purchaseItems = await query.all('SELECT * FROM purchase_items WHERE purchase_id = ?', [purchaseId]);
 
             return { status: 201, data: { purchase, items: purchaseItems } };
         } catch (error) {
@@ -230,7 +230,7 @@ export async function financialsRouter(ctx) {
         try {
             const id = path.split('/')[2];
 
-            const existing = query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
             if (!existing) {
                 return { status: 404, data: { error: 'Purchase not found' } };
             }
@@ -263,13 +263,13 @@ export async function financialsRouter(ctx) {
 
             if (updates.length > 0) {
                 values.push(id, user.id);
-                query.run(
+                await query.run(
                     `UPDATE purchases SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                     values
                 );
             }
 
-            const purchase = query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
+            const purchase = await query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
             return { status: 200, data: { purchase } };
         } catch (error) {
             logger.error('[Financials] Error updating purchase', user?.id, { detail: error.message });
@@ -281,23 +281,23 @@ export async function financialsRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/purchases\/[a-f0-9-]+$/)) {
         const id = path.split('/')[2];
 
-        const existing = query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
+        const existing = await query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Purchase not found' } };
         }
 
         try {
-            query.transaction(() => {
+            await query.transaction(async () => {
                 // Get items to reverse inventory updates
-                const items = query.all('SELECT * FROM purchase_items WHERE purchase_id = ?', [id]);
+                const items = await query.all('SELECT * FROM purchase_items WHERE purchase_id = ?', [id]);
 
                 for (const item of items) {
                     if (item.inventory_id) {
                         // Remove cost layer
-                        query.run('DELETE FROM inventory_cost_layers WHERE purchase_item_id = ?', [item.id]);
+                        await query.run('DELETE FROM inventory_cost_layers WHERE purchase_item_id = ?', [item.id]);
 
                         // Reduce inventory quantity
-                        query.run(`
+                        await query.run(`
                             UPDATE inventory SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
                             WHERE id = ? AND user_id = ?
                         `, [item.quantity, item.inventory_id, user.id]);
@@ -305,10 +305,10 @@ export async function financialsRouter(ctx) {
                 }
 
                 // Delete related transactions
-                query.run('DELETE FROM financial_transactions WHERE reference_type = ? AND reference_id = ? AND user_id = ?', ['purchase', id, user.id]);
+                await query.run('DELETE FROM financial_transactions WHERE reference_type = ? AND reference_id = ? AND user_id = ?', ['purchase', id, user.id]);
 
                 // Delete purchase (cascades to purchase_items)
-                query.run('DELETE FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
+                await query.run('DELETE FROM purchases WHERE id = ? AND user_id = ?', [id, user.id]);
             });
 
             return { status: 200, data: { message: 'Purchase deleted successfully' } };
@@ -323,7 +323,7 @@ export async function financialsRouter(ctx) {
     // GET /api/financials/accounts - List all accounts grouped by type
     if (method === 'GET' && (path === '/accounts' || path === '/accounts/')) {
         try {
-            const accounts = query.all(`
+            const accounts = await query.all(`
                 SELECT a.*,
                        (SELECT COALESCE(SUM(amount), 0) FROM financial_transactions WHERE account_id = a.id) as calculated_balance,
                        (SELECT COUNT(*) FROM financial_transactions WHERE account_id = a.id) as transaction_count
@@ -374,20 +374,20 @@ export async function financialsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/accounts\/[a-f0-9-]+$/)) {
         try {
             const id = path.split('/')[2];
-            const account = query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
+            const account = await query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
 
             if (!account) {
                 return { status: 404, data: { error: 'Account not found' } };
             }
 
-            const transactions = query.all(`
+            const transactions = await query.all(`
                 SELECT * FROM financial_transactions
                 WHERE account_id = ?
                 ORDER BY transaction_date DESC, created_at DESC
                 LIMIT 100
             `, [id]);
 
-            const balance = query.get('SELECT COALESCE(SUM(amount), 0) as balance FROM financial_transactions WHERE account_id = ?', [id])?.balance || 0;
+            const balance = await query.get('SELECT COALESCE(SUM(amount), 0) as balance FROM financial_transactions WHERE account_id = ?', [id])?.balance || 0;
 
             return { status: 200, data: { account, transactions, balance } };
         } catch (error) {
@@ -422,13 +422,13 @@ export async function financialsRouter(ctx) {
                 if (parentAccountId === accountId) {
                     return { status: 400, data: { error: 'Account cannot be its own parent' } };
                 }
-                const parentExists = query.get('SELECT id FROM accounts WHERE id = ? AND user_id = ?', [parentAccountId, user.id]);
+                const parentExists = await query.get('SELECT id FROM accounts WHERE id = ? AND user_id = ?', [parentAccountId, user.id]);
                 if (!parentExists) {
                     return { status: 400, data: { error: 'Parent account not found' } };
                 }
             }
 
-            query.run(`
+            await query.run(`
                 INSERT INTO accounts (
                     id, user_id, account_name, account_type, description,
                     balance, parent_account_id, is_active
@@ -437,7 +437,7 @@ export async function financialsRouter(ctx) {
 
             // Create initial balance transaction if provided
             if (initialBalance && initialBalance !== 0) {
-                query.run(`
+                await query.run(`
                     INSERT INTO financial_transactions (
                         id, user_id, transaction_date, description, amount,
                         account_id, category, reference_type
@@ -448,7 +448,7 @@ export async function financialsRouter(ctx) {
                 ]);
             }
 
-            const account = query.get('SELECT * FROM accounts WHERE id = ?', [accountId]);
+            const account = await query.get('SELECT * FROM accounts WHERE id = ?', [accountId]);
             return { status: 201, data: { account } };
         } catch (error) {
             logger.error('[Financials] Error creating account', user?.id, { detail: error.message });
@@ -461,7 +461,7 @@ export async function financialsRouter(ctx) {
         try {
             const id = path.split('/')[2];
 
-            const existing = query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
             if (!existing) {
                 return { status: 404, data: { error: 'Account not found' } };
             }
@@ -486,13 +486,13 @@ export async function financialsRouter(ctx) {
 
             if (updates.length > 0) {
                 values.push(id, user.id);
-                query.run(
+                await query.run(
                     `UPDATE accounts SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                     values
                 );
             }
 
-            const account = query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
+            const account = await query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
             return { status: 200, data: { account } };
         } catch (error) {
             logger.error('[Financials] Error updating account', user?.id, { detail: error.message });
@@ -505,17 +505,17 @@ export async function financialsRouter(ctx) {
         try {
             const id = path.split('/')[2];
 
-            const existing = query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
             if (!existing) {
                 return { status: 404, data: { error: 'Account not found' } };
             }
 
-            const transactionCount = query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE account_id = ?', [id])?.count || 0;
+            const transactionCount = await query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE account_id = ?', [id])?.count || 0;
             if (transactionCount > 0) {
                 return { status: 400, data: { error: 'Cannot delete account with transactions. Deactivate instead.' } };
             }
 
-            query.run('DELETE FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
+            await query.run('DELETE FROM accounts WHERE id = ? AND user_id = ?', [id, user.id]);
             return { status: 200, data: { message: 'Account deleted successfully' } };
         } catch (error) {
             logger.error('[Financials] Error deleting account', user?.id, { detail: error.message });
@@ -562,8 +562,8 @@ export async function financialsRouter(ctx) {
             sql += ' ORDER BY t.transaction_date DESC, t.created_at DESC LIMIT ? OFFSET ?';
             params.push(limit, offset);
 
-            const transactions = query.all(sql, params);
-            const total = query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE user_id = ?', [user.id])?.count || 0;
+            const transactions = await query.all(sql, params);
+            const total = await query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE user_id = ?', [user.id])?.count || 0;
 
             return { status: 200, data: { transactions, total } };
         } catch (error) {
@@ -591,20 +591,20 @@ export async function financialsRouter(ctx) {
             }
 
             // Verify account exists and belongs to user
-            const account = query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [accountId, user.id]);
+            const account = await query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [accountId, user.id]);
             if (!account) {
                 return { status: 400, data: { error: 'Invalid account' } };
             }
 
             const transactionId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO financial_transactions (
                     id, user_id, transaction_date, description, amount,
                     account_id, category, reference_type
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `, [transactionId, user.id, transactionDate, description, parsedAmount, accountId, category || account.account_type, 'manual']);
 
-            const transaction = query.get('SELECT * FROM financial_transactions WHERE id = ?', [transactionId]);
+            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ?', [transactionId]);
             return { status: 201, data: { transaction } };
         } catch (error) {
             logger.error('[Financials] Error creating transaction', user?.id, { detail: error.message });
@@ -625,7 +625,7 @@ export async function financialsRouter(ctx) {
             const dateParams = start && end ? [start, end] : [];
 
             // Get account balances by type
-            const getBalanceByTypes = (types) => {
+            const getBalanceByTypes = async (types) => {
                 const placeholders = types.map(() => '?').join(',');
                 const sql = `
                     SELECT a.id, a.account_name, a.account_type,
@@ -636,7 +636,7 @@ export async function financialsRouter(ctx) {
                     GROUP BY a.id
                     ORDER BY a.account_type, a.account_name
                 `;
-                return query.all(sql, [...dateParams, user.id, ...types]);
+                return await query.all(sql, [...dateParams, user.id, ...types]);
             };
 
             const statements = {
@@ -707,7 +707,7 @@ export async function financialsRouter(ctx) {
             const dateParams = start && end ? [start, end] : [];
 
             // Get totals by account type
-            const getTotalByTypes = (types) => {
+            const getTotalByTypes = async (types) => {
                 const placeholders = types.map(() => '?').join(',');
                 const sql = `
                     SELECT a.id, a.account_name, a.account_type,
@@ -718,7 +718,7 @@ export async function financialsRouter(ctx) {
                     GROUP BY a.id
                     ORDER BY a.account_name
                 `;
-                return query.all(sql, [...dateParams, user.id, ...types]);
+                return await query.all(sql, [...dateParams, user.id, ...types]);
             };
 
             const sumTotals = (accounts) => accounts.reduce((sum, a) => sum + Math.abs(a.total || 0), 0);
@@ -736,7 +736,7 @@ export async function financialsRouter(ctx) {
             if (totalIncome === 0 && totalCOGS === 0) {
                 const salesDateFilter = start && end ? 'AND created_at BETWEEN ? AND ?' : '';
                 const salesQueryParams = start && end ? [user.id, start, end] : [user.id];
-                const salesTotals = query.get(
+                const salesTotals = await query.get(
                     `SELECT COALESCE(SUM(sale_price), 0) as revenue,
                             COALESCE(SUM(COALESCE(item_cost, 0)), 0) as cogs,
                             COALESCE(SUM(COALESCE(platform_fee, 0)), 0) as fees,
@@ -811,13 +811,13 @@ export async function financialsRouter(ctx) {
             }
 
             // Verify inventory item belongs to user
-            const ownerCheck = query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+            const ownerCheck = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
             if (!ownerCheck) {
                 return { status: 404, data: { error: 'Inventory item not found' } };
             }
 
             // Get cost layers in FIFO order (oldest first)
-            const layers = query.all(`
+            const layers = await query.all(`
                 SELECT * FROM inventory_cost_layers
                 WHERE inventory_id = ? AND quantity_remaining > 0
                 ORDER BY purchase_date ASC, created_at ASC
@@ -837,7 +837,7 @@ export async function financialsRouter(ctx) {
                 remainingQty -= qtyToConsume;
 
                 // Update layer
-                query.run(`
+                await query.run(`
                     UPDATE inventory_cost_layers
                     SET quantity_remaining = quantity_remaining - ?, updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
@@ -853,22 +853,22 @@ export async function financialsRouter(ctx) {
 
             // Update sale with item_cost if saleId provided
             if (saleId) {
-                query.run('UPDATE sales SET item_cost = ? WHERE id = ? AND user_id = ?', [totalCOGS, saleId, user.id]);
+                await query.run('UPDATE sales SET item_cost = ? WHERE id = ? AND user_id = ?', [totalCOGS, saleId, user.id]);
 
                 // Recalculate net_profit
-                const sale = query.get('SELECT * FROM sales WHERE id = ? AND user_id = ?', [saleId, user.id]);
+                const sale = await query.get('SELECT * FROM sales WHERE id = ? AND user_id = ?', [saleId, user.id]);
                 if (sale) {
                     const netProfit = (sale.sale_price || 0) -
                                       (sale.platform_fee || 0) -
                                       totalCOGS -
                                       (sale.seller_shipping_cost || sale.shipping_cost || 0) -
                                       (sale.tax_amount || 0);
-                    query.run('UPDATE sales SET net_profit = ? WHERE id = ? AND user_id = ?', [netProfit, saleId, user.id]);
+                    await query.run('UPDATE sales SET net_profit = ? WHERE id = ? AND user_id = ?', [netProfit, saleId, user.id]);
                 }
             }
 
             // Update inventory quantity
-            query.run(`
+            await query.run(`
                 UPDATE inventory SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ?
             `, [quantity, inventoryId, user.id]);
@@ -911,7 +911,7 @@ export async function financialsRouter(ctx) {
     if (method === 'POST' && path === '/seed-accounts') {
         try {
             // Check if user already has accounts
-            const existingCount = query.get('SELECT COUNT(*) as count FROM accounts WHERE user_id = ?', [user.id])?.count || 0;
+            const existingCount = await query.get('SELECT COUNT(*) as count FROM accounts WHERE user_id = ?', [user.id])?.count || 0;
             if (existingCount > 0) {
                 return { status: 200, data: { message: 'Accounts already exist', count: existingCount } };
             }
@@ -942,7 +942,7 @@ export async function financialsRouter(ctx) {
             ];
 
             for (const account of defaultAccounts) {
-                query.run(`
+                await query.run(`
                     INSERT INTO accounts (id, user_id, account_name, account_type, is_active)
                     VALUES (?, ?, ?, ?, 1)
                 `, [uuidv4(), user.id, account.name, account.type]);
@@ -960,7 +960,7 @@ export async function financialsRouter(ctx) {
     // GET /api/financials/categorization-rules - List all categorization rules
     if (method === 'GET' && path === '/categorization-rules') {
         try {
-            const rules = query.all(`
+            const rules = await query.all(`
                 SELECT cr.*, a.account_name
                 FROM categorization_rules cr
                 LEFT JOIN accounts a ON cr.account_id = a.id
@@ -985,15 +985,15 @@ export async function financialsRouter(ctx) {
             }
 
             // Verify account exists and belongs to user
-            const account = query.get('SELECT id FROM accounts WHERE id = ? AND user_id = ?', [accountId, user.id]);
+            const account = await query.get('SELECT id FROM accounts WHERE id = ? AND user_id = ?', [accountId, user.id]);
             if (!account) {
                 return { status: 400, data: { error: 'Invalid account' } };
             }
 
             const ruleId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO categorization_rules (id, user_id, pattern, account_id, description, created_at)
-                VALUES (?, ?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, ?, NOW())
             `, [ruleId, user.id, pattern, accountId, description || null]);
 
             return { status: 201, data: { id: ruleId, message: 'Categorization rule created' } };
@@ -1008,7 +1008,7 @@ export async function financialsRouter(ctx) {
         try {
             const ruleId = path.split('/')[2];
 
-            const result = query.run('DELETE FROM categorization_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+            const result = await query.run('DELETE FROM categorization_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Rule not found' } };
@@ -1026,7 +1026,7 @@ export async function financialsRouter(ctx) {
     // POST /api/financials/auto-categorize - Apply categorization rules to uncategorized transactions
     if (method === 'POST' && path === '/auto-categorize') {
         try {
-            const rules = query.all(`
+            const rules = await query.all(`
                 SELECT cr.*, a.account_name, a.account_type
                 FROM categorization_rules cr
                 LEFT JOIN accounts a ON cr.account_id = a.id
@@ -1037,7 +1037,7 @@ export async function financialsRouter(ctx) {
                 return { status: 400, data: { error: 'No categorization rules defined. Create rules first.' } };
             }
 
-            const uncategorized = query.all(`
+            const uncategorized = await query.all(`
                 SELECT * FROM financial_transactions
                 WHERE user_id = ? AND (category IS NULL OR category = '' OR category = 'Uncategorized')
                 ORDER BY transaction_date DESC
@@ -1049,7 +1049,7 @@ export async function financialsRouter(ctx) {
                 for (const rule of rules) {
                     const pattern = (rule.pattern || '').toLowerCase();
                     if (pattern && desc.includes(pattern)) {
-                        query.run(`
+                        await query.run(`
                             UPDATE financial_transactions
                             SET category = ?, account_id = ?, updated_at = CURRENT_TIMESTAMP
                             WHERE id = ?
@@ -1074,7 +1074,7 @@ export async function financialsRouter(ctx) {
         try {
             const id = path.split('/')[2];
 
-            const original = query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [id, user.id]);
+            const original = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [id, user.id]);
             if (!original) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
@@ -1094,13 +1094,13 @@ export async function financialsRouter(ctx) {
             const splitNote = `Split into ${splitCount} parts`;
 
             // Mark original as split parent
-            query.run(`
+            await query.run(`
                 UPDATE financial_transactions SET is_split = 1, split_note = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `, [splitNote, id]);
 
             // Log to audit — new_value bound as parameter, never interpolated into SQL
-            query.run(`
+            await query.run(`
                 INSERT INTO transaction_audit_log (id, transaction_id, user_id, action, field_name, old_value, new_value)
                 VALUES (?, ?, ?, 'split', 'amount', ?, ?)
             `, [uuidv4(), id, user.id, String(original.amount), splitNote]);
@@ -1109,7 +1109,7 @@ export async function financialsRouter(ctx) {
             const sign = original.amount < 0 ? -1 : 1;
             for (const split of splits) {
                 const childId = uuidv4();
-                query.run(`
+                await query.run(`
                     INSERT INTO financial_transactions (
                         id, user_id, transaction_date, description, amount,
                         account_id, category, reference_type, parent_transaction_id
@@ -1122,11 +1122,11 @@ export async function financialsRouter(ctx) {
                     split.category || original.category,
                     id
                 ]);
-                childTransactions.push(query.get('SELECT * FROM financial_transactions WHERE id = ?', [childId]));
+                childTransactions.push(await query.get('SELECT * FROM financial_transactions WHERE id = ?', [childId]));
             }
 
             // Zero out original amount since children now hold it
-            query.run('UPDATE financial_transactions SET amount = 0 WHERE id = ? AND user_id = ?', [id, user.id]);
+            await query.run('UPDATE financial_transactions SET amount = 0 WHERE id = ? AND user_id = ?', [id, user.id]);
 
             return { status: 200, data: { message: 'Transaction split successfully', parent: id, children: childTransactions } };
         } catch (error) {
@@ -1140,7 +1140,7 @@ export async function financialsRouter(ctx) {
     // GET /api/financials/recurring-templates - List recurring templates
     if (method === 'GET' && path === '/recurring-templates') {
         try {
-            const templates = query.all(`
+            const templates = await query.all(`
                 SELECT rt.*, a.account_name
                 FROM recurring_transaction_templates rt
                 LEFT JOIN accounts a ON rt.account_id = a.id
@@ -1164,7 +1164,7 @@ export async function financialsRouter(ctx) {
             }
 
             const templateId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO recurring_transaction_templates (id, user_id, description, amount, account_id, category, frequency)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `, [templateId, user.id, description, amount, accountId, category || 'Expense', frequency || 'monthly']);
@@ -1180,14 +1180,14 @@ export async function financialsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/recurring-templates\/[a-f0-9-]+\/execute$/)) {
         try {
             const templateId = path.split('/')[2];
-            const template = query.get('SELECT * FROM recurring_transaction_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
+            const template = await query.get('SELECT * FROM recurring_transaction_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
 
             if (!template) {
                 return { status: 404, data: { error: 'Template not found' } };
             }
 
             const txId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO financial_transactions (
                     id, user_id, transaction_date, description, amount,
                     account_id, category, reference_type, reference_id
@@ -1195,9 +1195,9 @@ export async function financialsRouter(ctx) {
             `, [txId, user.id, template.description, template.amount, template.account_id, template.category, templateId]);
 
             // Update last_executed
-            query.run('UPDATE recurring_transaction_templates SET last_executed = datetime(\'now\') WHERE id = ?', [templateId]);
+            await query.run('UPDATE recurring_transaction_templates SET last_executed = NOW() WHERE id = ?', [templateId]);
 
-            const transaction = query.get('SELECT * FROM financial_transactions WHERE id = ?', [txId]);
+            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ?', [txId]);
             return { status: 201, data: { transaction, message: 'Recurring transaction created' } };
         } catch (error) {
             logger.error('[Financials] Error executing recurring template', user?.id, { detail: error.message });
@@ -1209,7 +1209,7 @@ export async function financialsRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/recurring-templates\/[a-f0-9-]+$/)) {
         try {
             const templateId = path.split('/')[2];
-            const result = query.run('DELETE FROM recurring_transaction_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
+            const result = await query.run('DELETE FROM recurring_transaction_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Template not found' } };
             }
@@ -1226,11 +1226,11 @@ export async function financialsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/transactions\/[a-f0-9-]+\/attachments$/)) {
         try {
             const txId = path.split('/')[2];
-            const tx = query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
+            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
             if (!tx) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
-            const attachments = query.all('SELECT id, transaction_id, file_name, file_type, file_size, created_at FROM transaction_attachments WHERE transaction_id = ?', [txId]);
+            const attachments = await query.all('SELECT id, transaction_id, file_name, file_type, file_size, created_at FROM transaction_attachments WHERE transaction_id = ?', [txId]);
             return { status: 200, data: { attachments } };
         } catch (error) {
             logger.error('[Financials] Error fetching transaction attachments', user?.id, { detail: error.message });
@@ -1242,7 +1242,7 @@ export async function financialsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/transactions\/[a-f0-9-]+\/attachments$/)) {
         try {
             const txId = path.split('/')[2];
-            const tx = query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
+            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
             if (!tx) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
@@ -1259,7 +1259,7 @@ export async function financialsRouter(ctx) {
             }
 
             const attachId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO transaction_attachments (id, transaction_id, file_name, file_type, file_size, file_data)
                 VALUES (?, ?, ?, ?, ?, ?)
             `, [attachId, txId, fileName, fileType || 'image/jpeg', sizeBytes, fileData]);
@@ -1278,12 +1278,12 @@ export async function financialsRouter(ctx) {
             const txId = parts[2];
             const attachId = parts[4];
 
-            const tx = query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
+            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
             if (!tx) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
 
-            const result = query.run('DELETE FROM transaction_attachments WHERE id = ? AND transaction_id = ?', [attachId, txId]);
+            const result = await query.run('DELETE FROM transaction_attachments WHERE id = ? AND transaction_id = ?', [attachId, txId]);
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Attachment not found' } };
             }
@@ -1329,7 +1329,7 @@ export async function financialsRouter(ctx) {
 
             sql += ' GROUP BY platform ORDER BY total_fees DESC';
 
-            const platformFees = query.all(sql, params);
+            const platformFees = await query.all(sql, params);
 
             return { status: 200, data: { platformFees } };
         } catch (error) {
@@ -1370,7 +1370,7 @@ export async function financialsRouter(ctx) {
                 params.push(endDate);
             }
 
-            const summary = query.get(sql, params);
+            const summary = await query.get(sql, params);
 
             return { status: 200, data: { summary } };
         } catch (error) {
@@ -1385,11 +1385,11 @@ export async function financialsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/transactions\/[a-f0-9-]+\/audit$/)) {
         try {
             const txId = path.split('/')[2];
-            const tx = query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
+            const tx = await query.get('SELECT id FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
             if (!tx) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
-            const logs = query.all('SELECT * FROM transaction_audit_log WHERE transaction_id = ? ORDER BY created_at DESC', [txId]);
+            const logs = await query.all('SELECT * FROM transaction_audit_log WHERE transaction_id = ? ORDER BY created_at DESC', [txId]);
             return { status: 200, data: { logs } };
         } catch (error) {
             logger.error('[Financials] Error fetching transaction audit log', user?.id, { detail: error.message });
@@ -1401,7 +1401,7 @@ export async function financialsRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/transactions\/[a-f0-9-]+$/) && !path.includes('/attachments') && !path.includes('/audit')) {
         try {
             const id = path.split('/')[2];
-            const existing = query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [id, user.id]);
             if (!existing) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
@@ -1441,18 +1441,18 @@ export async function financialsRouter(ctx) {
 
             if (updates.length > 0) {
                 values.push(id, user.id);
-                query.run(`UPDATE financial_transactions SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, values);
+                await query.run(`UPDATE financial_transactions SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, values);
 
                 // Write audit log entries
                 for (const change of changes) {
-                    query.run(`
+                    await query.run(`
                         INSERT INTO transaction_audit_log (id, transaction_id, user_id, action, field_name, old_value, new_value)
                         VALUES (?, ?, ?, 'update', ?, ?, ?)
                     `, [uuidv4(), id, user.id, change.field, change.old || '', change.new || '']);
                 }
             }
 
-            const transaction = query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [id, user.id]);
+            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [id, user.id]);
             return { status: 200, data: { transaction, changes: changes.length } };
         } catch (error) {
             logger.error('[Financials] Error updating transaction', user?.id, { detail: error.message });

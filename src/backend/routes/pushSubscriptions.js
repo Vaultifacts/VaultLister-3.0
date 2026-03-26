@@ -87,21 +87,21 @@ export async function pushSubscriptionsRouter(ctx) {
 
         try {
             // Check if subscription already exists
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT id FROM push_subscriptions WHERE endpoint = ?',
                 [endpoint]
             );
 
             if (existing) {
                 // Update existing subscription
-                query.run(`
+                await query.run(`
                     UPDATE push_subscriptions SET
                         user_id = ?,
                         p256dh_key = ?,
                         auth_key = ?,
                         user_agent = ?,
                         is_active = 1,
-                        updated_at = datetime('now')
+                        updated_at = NOW()
                     WHERE endpoint = ?
                 `, [user.id, keys.p256dh, keys.auth, userAgent || null, endpoint]);
 
@@ -113,9 +113,9 @@ export async function pushSubscriptionsRouter(ctx) {
 
             // Create new subscription
             const subscriptionId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO push_subscriptions (id, user_id, endpoint, p256dh_key, auth_key, user_agent, is_active, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
             `, [subscriptionId, user.id, endpoint, keys.p256dh, keys.auth, userAgent || null]);
 
             return {
@@ -140,8 +140,8 @@ export async function pushSubscriptionsRouter(ctx) {
             return { status: 400, data: { error: 'Endpoint required' } };
         }
 
-        query.run(`
-            UPDATE push_subscriptions SET is_active = 0, updated_at = datetime('now')
+        await query.run(`
+            UPDATE push_subscriptions SET is_active = 0, updated_at = NOW()
             WHERE endpoint = ? AND user_id = ?
         `, [endpoint, user.id]);
 
@@ -156,7 +156,7 @@ export async function pushSubscriptionsRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        const subscriptions = query.all(`
+        const subscriptions = await query.all(`
             SELECT id, endpoint, user_agent, is_active, created_at, last_used_at
             FROM push_subscriptions
             WHERE user_id = ? AND is_active = 1
@@ -183,7 +183,7 @@ export async function pushSubscriptionsRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        const subscriptions = query.all(`
+        const subscriptions = await query.all(`
             SELECT * FROM push_subscriptions
             WHERE user_id = ? AND is_active = 1
         `, [user.id]);
@@ -208,8 +208,8 @@ export async function pushSubscriptionsRouter(ctx) {
                     testPayload
                 );
 
-                query.run(`
-                    UPDATE push_subscriptions SET last_used_at = datetime('now')
+                await query.run(`
+                    UPDATE push_subscriptions SET last_used_at = NOW()
                     WHERE id = ?
                 `, [sub.id]);
 
@@ -219,8 +219,8 @@ export async function pushSubscriptionsRouter(ctx) {
                 logger.error('[Push] Test notification failed', user?.id || null, { detail: error.message });
 
                 if (error.statusCode === 410 || error.statusCode === 404) {
-                    query.run(`
-                        UPDATE push_subscriptions SET is_active = 0, updated_at = datetime('now')
+                    await query.run(`
+                        UPDATE push_subscriptions SET is_active = 0, updated_at = NOW()
                         WHERE id = ?
                     `, [sub.id]);
                 }
@@ -251,7 +251,7 @@ export async function pushSubscriptionsRouter(ctx) {
         // Admin can send to any user, regular users can only send to themselves
         const userId = (user.role === 'admin' && targetUserId) ? targetUserId : user.id;
 
-        const subscriptions = query.all(`
+        const subscriptions = await query.all(`
             SELECT * FROM push_subscriptions
             WHERE user_id = ? AND is_active = 1
         `, [userId]);
@@ -276,8 +276,8 @@ export async function pushSubscriptionsRouter(ctx) {
                     payload
                 );
 
-                query.run(`
-                    UPDATE push_subscriptions SET last_used_at = datetime('now')
+                await query.run(`
+                    UPDATE push_subscriptions SET last_used_at = NOW()
                     WHERE id = ?
                 `, [sub.id]);
 
@@ -287,8 +287,8 @@ export async function pushSubscriptionsRouter(ctx) {
                 logger.error('[Push] Send notification failed', user?.id || null, { detail: error.message });
 
                 if (error.statusCode === 410 || error.statusCode === 404) {
-                    query.run(`
-                        UPDATE push_subscriptions SET is_active = 0, updated_at = datetime('now')
+                    await query.run(`
+                        UPDATE push_subscriptions SET is_active = 0, updated_at = NOW()
                         WHERE id = ?
                     `, [sub.id]);
                 }
@@ -309,7 +309,7 @@ export async function pushSubscriptionsRouter(ctx) {
 
         const subId = subIdMatch[1];
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id FROM push_subscriptions WHERE id = ? AND user_id = ?',
             [subId, user.id]
         );
@@ -318,7 +318,7 @@ export async function pushSubscriptionsRouter(ctx) {
             return { status: 404, data: { error: 'Subscription not found' } };
         }
 
-        query.run('DELETE FROM push_subscriptions WHERE id = ? AND user_id = ?', [subId, user.id]);
+        await query.run('DELETE FROM push_subscriptions WHERE id = ? AND user_id = ?', [subId, user.id]);
 
         return {
             status: 200,
@@ -332,7 +332,7 @@ export async function pushSubscriptionsRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const row = query.get(
+            const row = await query.get(
                 'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
                 [user.id, PUSH_SETTINGS_KEY]
             );
@@ -359,12 +359,12 @@ export async function pushSubscriptionsRouter(ctx) {
         };
 
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO user_preferences (id, user_id, key, settings, created_at, updated_at)
-                VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, ?, NOW(), NOW())
                 ON CONFLICT(user_id, key) DO UPDATE SET
                     settings = excluded.settings,
-                    updated_at = datetime('now')
+                    updated_at = NOW()
             `, [uuidv4(), user.id, PUSH_SETTINGS_KEY, JSON.stringify(updated)]);
 
             return { status: 200, data: { updated: true, ...updated } };

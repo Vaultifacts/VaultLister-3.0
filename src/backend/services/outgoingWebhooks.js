@@ -155,9 +155,9 @@ async function processQueue() {
                 );
 
                 // Log delivery attempt
-                query.run(`
+                await query.run(`
                     INSERT INTO webhook_deliveries (id, webhook_id, event_type, payload, status, status_code, response_body, attempt, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
                 `, [
                     uuidv4(),
                     delivery.webhookId,
@@ -210,11 +210,11 @@ const outgoingWebhooks = {
         }
 
         // Get active webhooks for this event and user
-        // Escape LIKE wildcards in eventType to prevent injection
+        // Escape ILIKE wildcards in eventType to prevent injection
         const escapedEvent = eventType.replace(/[%_]/g, '\\$&');
-        const webhooks = query.all(`
+        const webhooks = await query.all(`
             SELECT * FROM user_webhooks
-            WHERE user_id = ? AND is_active = 1 AND (events LIKE ? ESCAPE '\\' OR events = '*')
+            WHERE user_id = ? AND is_active = 1 AND (events ILIKE ? ESCAPE '\\' OR events = '*')
         `, [userId, `%${escapedEvent}%`]);
 
         if (!webhooks || webhooks.length === 0) return;
@@ -266,7 +266,7 @@ export async function outgoingWebhooksRouter(ctx) {
 
     // GET /api/outgoing-webhooks - List user's webhooks
     if (method === 'GET' && (path === '/' || path === '')) {
-        const webhooks = query.all(`
+        const webhooks = await query.all(`
             SELECT id, name, url, events, is_active, created_at, updated_at
             FROM user_webhooks
             WHERE user_id = ?
@@ -318,9 +318,9 @@ export async function outgoingWebhooksRouter(ctx) {
         const secret = crypto.randomBytes(32).toString('hex');
         const id = uuidv4();
 
-        query.run(`
+        await query.run(`
             INSERT INTO user_webhooks (id, user_id, name, url, secret, events, headers, is_active, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
         `, [id, user.id, name, url, secret, Array.isArray(events) ? events.join(',') : events, headers ? JSON.stringify(headers) : null]);
 
         return {
@@ -336,7 +336,7 @@ export async function outgoingWebhooksRouter(ctx) {
     if (method === 'GET' && path.length > 1) {
         const webhookId = path.replace('/', '');
 
-        const webhook = query.get(`
+        const webhook = await query.get(`
             SELECT id, name, url, events, headers, is_active, created_at, updated_at
             FROM user_webhooks
             WHERE id = ? AND user_id = ?
@@ -347,7 +347,7 @@ export async function outgoingWebhooksRouter(ctx) {
         }
 
         // Get recent deliveries
-        const deliveries = query.all(`
+        const deliveries = await query.all(`
             SELECT id, event_type, status, status_code, attempt, created_at
             FROM webhook_deliveries
             WHERE webhook_id = ?
@@ -366,7 +366,7 @@ export async function outgoingWebhooksRouter(ctx) {
         const webhookId = path.replace('/', '');
         const { name, url, events, headers, is_active } = body;
 
-        const existing = query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
+        const existing = await query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Webhook not found' } };
         }
@@ -381,9 +381,9 @@ export async function outgoingWebhooksRouter(ctx) {
         if (is_active !== undefined) { updates.push('is_active = ?'); values.push(is_active ? 1 : 0); }
 
         if (updates.length > 0) {
-            updates.push('updated_at = datetime("now")');
+            updates.push('updated_at = NOW()');
             values.push(webhookId);
-            query.run(`UPDATE user_webhooks SET ${updates.join(', ')} WHERE id = ?`, values);
+            await query.run(`UPDATE user_webhooks SET ${updates.join(', ')} WHERE id = ?`, values);
         }
 
         return { status: 200, data: { message: 'Webhook updated' } };
@@ -393,7 +393,7 @@ export async function outgoingWebhooksRouter(ctx) {
     if (method === 'DELETE' && path.length > 1) {
         const webhookId = path.replace('/', '');
 
-        query.run('DELETE FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
+        await query.run('DELETE FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
 
         return { status: 200, data: { message: 'Webhook deleted' } };
     }
@@ -402,7 +402,7 @@ export async function outgoingWebhooksRouter(ctx) {
     if (method === 'POST' && path.endsWith('/test')) {
         const webhookId = path.split('/')[1];
 
-        const webhook = query.get('SELECT * FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
+        const webhook = await query.get('SELECT * FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
         if (!webhook) {
             return { status: 404, data: { error: 'Webhook not found' } };
         }
@@ -434,13 +434,13 @@ export async function outgoingWebhooksRouter(ctx) {
     if (method === 'POST' && path.endsWith('/rotate-secret')) {
         const webhookId = path.split('/')[1];
 
-        const existing = query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
+        const existing = await query.get('SELECT id FROM user_webhooks WHERE id = ? AND user_id = ?', [webhookId, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Webhook not found' } };
         }
 
         const newSecret = crypto.randomBytes(32).toString('hex');
-        query.run('UPDATE user_webhooks SET secret = ?, updated_at = datetime("now") WHERE id = ?', [newSecret, webhookId]);
+        await query.run('UPDATE user_webhooks SET secret = ?, updated_at = NOW() WHERE id = ?', [newSecret, webhookId]);
 
         return {
             status: 200,
@@ -454,41 +454,8 @@ export async function outgoingWebhooksRouter(ctx) {
     return { status: 404, data: { error: 'Not found' } };
 }
 
-// Database migration
-export const migration = `
--- User webhooks table
-CREATE TABLE IF NOT EXISTS user_webhooks (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    name TEXT NOT NULL,
-    url TEXT NOT NULL,
-    secret TEXT NOT NULL,
-    events TEXT NOT NULL,
-    headers TEXT,
-    is_active INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_webhooks_user ON user_webhooks(user_id, is_active);
-
--- Webhook deliveries log
-CREATE TABLE IF NOT EXISTS webhook_deliveries (
-    id TEXT PRIMARY KEY,
-    webhook_id TEXT NOT NULL,
-    event_type TEXT NOT NULL,
-    payload TEXT,
-    status TEXT NOT NULL,
-    status_code INTEGER,
-    response_body TEXT,
-    attempt INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (webhook_id) REFERENCES user_webhooks(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_webhook_deliveries ON webhook_deliveries(webhook_id, created_at DESC);
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 export { outgoingWebhooks };
 export default outgoingWebhooks;

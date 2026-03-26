@@ -43,6 +43,10 @@ const APPLE_KEY_ID = process.env.APPLE_KEY_ID;
 const APPLE_PRIVATE_KEY = process.env.APPLE_PRIVATE_KEY;
 const APPLE_REDIRECT_URI = process.env.APPLE_REDIRECT_URI || 'http://localhost:3000/api/social-auth/apple/callback';
 
+// Cookie security flags — matches auth.js pattern
+const SECURE_FLAG = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+const COOKIE_BASE = `HttpOnly; SameSite=Strict${SECURE_FLAG}`;
+
 async function generateStateToken() {
     const state = crypto.randomBytes(32).toString('hex');
     await redis.setJson('oauth:state:' + state, { created: Date.now() }, 600);
@@ -61,7 +65,7 @@ async function findOrCreateUser(provider, profile) {
     const { id: providerId, email, name, picture } = profile;
 
     // Check if user exists with this OAuth provider
-    let user = query.get(`
+    let user = await query.get(`
         SELECT ${USER_SELECT_COLUMNS} FROM users u
         JOIN oauth_accounts oa ON u.id = oa.user_id
         WHERE oa.provider = ? AND oa.provider_user_id = ?
@@ -69,21 +73,21 @@ async function findOrCreateUser(provider, profile) {
 
     if (user) {
         // Update last login
-        query.run('UPDATE users SET last_login_at = datetime("now") WHERE id = ?', [user.id]);
+        await query.run('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
         return user;
     }
 
     // Check if user exists with this email
-    user = query.get(`SELECT ${USER_SELECT_COLUMNS} FROM users WHERE email = ?`, [email?.toLowerCase()]);
+    user = email ? await query.get(`SELECT ${USER_SELECT_COLUMNS} FROM users WHERE email = ?`, [email.toLowerCase()]) : null;
 
     if (user) {
         // Link OAuth account to existing user
-        query.run(`
+        await query.run(`
             INSERT INTO oauth_accounts (id, user_id, provider, provider_user_id, provider_email, created_at)
-            VALUES (?, ?, ?, ?, ?, datetime('now'))
-        `, [uuidv4(), user.id, provider, providerId, email]);
+            VALUES (?, ?, ?, ?, ?, NOW())
+        `, [uuidv4(), user.id, provider, providerId, email ?? null]);
 
-        query.run('UPDATE users SET last_login_at = datetime("now") WHERE id = ?', [user.id]);
+        await query.run('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
         return user;
     }
 
@@ -91,18 +95,18 @@ async function findOrCreateUser(provider, profile) {
     const userId = uuidv4();
     const username = email ? email.split('@')[0] + '_' + crypto.randomUUID().split('-')[0] : 'user_' + uuidv4().substring(0, 8);
 
-    query.run(`
+    await query.run(`
         INSERT INTO users (id, email, username, full_name, avatar_url, email_verified, email_verified_at, created_at, updated_at, last_login_at)
-        VALUES (?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'), datetime('now'), datetime('now'))
-    `, [userId, email?.toLowerCase(), username, name, picture]);
+        VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW(), NOW(), NOW())
+    `, [userId, email?.toLowerCase() ?? null, username, name ?? null, picture ?? null]);
 
     // Link OAuth account
-    query.run(`
+    await query.run(`
         INSERT INTO oauth_accounts (id, user_id, provider, provider_user_id, provider_email, created_at)
-        VALUES (?, ?, ?, ?, ?, datetime('now'))
-    `, [uuidv4(), userId, provider, providerId, email]);
+        VALUES (?, ?, ?, ?, ?, NOW())
+    `, [uuidv4(), userId, provider, providerId, email ?? null]);
 
-    return query.get(`SELECT ${USER_SELECT_COLUMNS} FROM users WHERE id = ?`, [userId]);
+    return await query.get(`SELECT ${USER_SELECT_COLUMNS} FROM users WHERE id = ?`, [userId]);
 }
 
 export async function socialAuthRouter(ctx) {
@@ -190,7 +194,7 @@ export async function socialAuthRouter(ctx) {
             // Reject if no email from Google profile
             if (!profile.email) {
                 try {
-                    query.run(
+                    await query.run(
                         `INSERT INTO security_logs (id, event_type, ip_or_user, details, created_at)
                          VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
                         [uuidv4(), 'oauth_missing_email', 'google_callback', JSON.stringify({ profileId: profile.id })]
@@ -217,9 +221,9 @@ export async function socialAuthRouter(ctx) {
             const refreshToken = generateRefreshToken(user);
 
             // Store session
-            query.run(`
+            await query.run(`
                 INSERT INTO sessions (id, user_id, refresh_token, expires_at)
-                VALUES (?, ?, ?, datetime('now', '+30 days'))
+                VALUES (?, ?, ?, NOW() + INTERVAL '30 days')
             `, [uuidv4(), user.id, refreshToken]);
 
             // Redirect with token in secure HttpOnly cookie (not URL)
@@ -228,8 +232,8 @@ export async function socialAuthRouter(ctx) {
                 headers: {
                     'Location': '/#/auth/callback',
                     'Set-Cookie': [
-                        `auth_token=${token}; HttpOnly; Secure; SameSite=Lax; Max-Age=${24 * 60 * 60}; Path=/`,
-                        `refresh_token=${refreshToken}; HttpOnly; Secure; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}; Path=/`
+                        `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
+                        `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`
                     ]
                 },
                 data: {}
@@ -320,7 +324,7 @@ export async function socialAuthRouter(ctx) {
                 } catch (e) {
                     logger.error('[SocialAuth] Failed to parse Apple user info', null, { detail: e?.message || 'Unknown error' });
                     try {
-                        query.run(
+                        await query.run(
                             `INSERT INTO security_logs (id, event_type, ip_or_user, details, created_at)
                              VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
                             [uuidv4(), 'oauth_parse_error', 'apple_callback', JSON.stringify({ error: e.message })]
@@ -333,7 +337,7 @@ export async function socialAuthRouter(ctx) {
             // Reject if no email in token payload
             if (!payload.email) {
                 try {
-                    query.run(
+                    await query.run(
                         `INSERT INTO security_logs (id, event_type, ip_or_user, details, created_at)
                          VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
                         [uuidv4(), 'oauth_missing_email', 'apple_callback', JSON.stringify({ sub: payload.sub })]
@@ -360,9 +364,9 @@ export async function socialAuthRouter(ctx) {
             const refreshToken = generateRefreshToken(user);
 
             // Store session
-            query.run(`
+            await query.run(`
                 INSERT INTO sessions (id, user_id, refresh_token, expires_at)
-                VALUES (?, ?, ?, datetime('now', '+30 days'))
+                VALUES (?, ?, ?, NOW() + INTERVAL '30 days')
             `, [uuidv4(), user.id, refreshToken]);
 
             // Redirect with token in secure HttpOnly cookie (not URL)
@@ -371,8 +375,8 @@ export async function socialAuthRouter(ctx) {
                 headers: {
                     'Location': '/#/auth/callback',
                     'Set-Cookie': [
-                        `auth_token=${token}; HttpOnly; Secure; SameSite=Lax; Max-Age=${24 * 60 * 60}; Path=/`,
-                        `refresh_token=${refreshToken}; HttpOnly; Secure; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}; Path=/`
+                        `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
+                        `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`
                     ]
                 },
                 data: {}
@@ -405,14 +409,14 @@ export async function socialAuthRouter(ctx) {
         const provider = path.substring(1);
 
         // Check if user has password or other OAuth accounts
-        const user = query.get('SELECT password_hash FROM users WHERE id = ?', [ctx.user.id]);
-        const oauthCount = query.get('SELECT COUNT(*) as count FROM oauth_accounts WHERE user_id = ?', [ctx.user.id]);
+        const user = await query.get('SELECT password_hash FROM users WHERE id = ?', [ctx.user.id]);
+        const oauthCount = await query.get('SELECT COUNT(*) as count FROM oauth_accounts WHERE user_id = ?', [ctx.user.id]);
 
         if (!user.password_hash && oauthCount.count <= 1) {
             return { status: 400, data: { error: 'Cannot unlink last authentication method. Set a password first.' } };
         }
 
-        query.run('DELETE FROM oauth_accounts WHERE user_id = ? AND provider = ?', [ctx.user.id, provider]);
+        await query.run('DELETE FROM oauth_accounts WHERE user_id = ? AND provider = ?', [ctx.user.id, provider]);
 
         return { status: 200, data: { message: `${provider} account unlinked` } };
     }
@@ -420,24 +424,5 @@ export async function socialAuthRouter(ctx) {
     return { status: 404, data: { error: 'Not found' } };
 }
 
-// Database migration
-export const migration = `
--- OAuth accounts table
-CREATE TABLE IF NOT EXISTS oauth_accounts (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    provider TEXT NOT NULL,
-    provider_user_id TEXT NOT NULL,
-    provider_email TEXT,
-    access_token TEXT,
-    refresh_token TEXT,
-    token_expires_at TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE(provider, provider_user_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_oauth_user ON oauth_accounts(user_id);
-CREATE INDEX IF NOT EXISTS idx_oauth_provider ON oauth_accounts(provider, provider_user_id);
-`;
+// Table created by pg-schema.sql (managed by migration system)
+export const migration = '';

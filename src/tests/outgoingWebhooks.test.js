@@ -3,58 +3,13 @@
 import { describe, expect, test, beforeAll } from 'bun:test';
 import { TestApiClient } from './helpers/api.client.js';
 import { createTestUserWithToken } from './helpers/auth.helper.js';
-import Database from 'bun:sqlite';
-import { join } from 'path';
 
 let clientA;
 let clientB;
 let unauthClient;
 
-// Ensure the user_webhooks and webhook_deliveries tables exist.
-// Migration 082_add_service_tables.sql may not have been applied to the DB,
-// so we create the tables directly (IF NOT EXISTS) before tests run.
-function ensureWebhookTables() {
-    const dbPath = process.env.DB_PATH || join(import.meta.dir, '../../data/vaultlister.db');
-    const db = new Database(dbPath);
-    try {
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS user_webhooks (
-                id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                name TEXT NOT NULL,
-                url TEXT NOT NULL,
-                secret TEXT NOT NULL,
-                events TEXT NOT NULL,
-                headers TEXT,
-                is_active INTEGER DEFAULT 1,
-                created_at TEXT,
-                updated_at TEXT,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            );
-        `);
-        db.exec('CREATE INDEX IF NOT EXISTS idx_webhooks_user ON user_webhooks(user_id, is_active)');
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS webhook_deliveries (
-                id TEXT PRIMARY KEY,
-                webhook_id TEXT NOT NULL,
-                event_type TEXT NOT NULL,
-                payload TEXT,
-                status TEXT NOT NULL,
-                status_code INTEGER,
-                response_body TEXT,
-                attempt INTEGER DEFAULT 1,
-                created_at TEXT,
-                FOREIGN KEY (webhook_id) REFERENCES user_webhooks(id) ON DELETE CASCADE
-            );
-        `);
-        db.exec('CREATE INDEX IF NOT EXISTS idx_webhook_deliveries ON webhook_deliveries(webhook_id, created_at DESC)');
-    } finally {
-        db.close();
-    }
-}
-
 beforeAll(async () => {
-    ensureWebhookTables();
+    // Tables are defined in pg-schema.sql and applied during db:init
     const userA = await createTestUserWithToken();
     clientA = new TestApiClient(userA.token);
     const userB = await createTestUserWithToken();

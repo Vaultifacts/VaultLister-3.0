@@ -44,7 +44,7 @@ export async function imageBankRouter(ctx) {
             }
 
             // Enforce per-user storage quota (5GB)
-            const storageStats = query.get(
+            const storageStats = await query.get(
                 'SELECT COALESCE(SUM(file_size), 0) as total_bytes FROM image_bank WHERE user_id = ?',
                 [user.id]
             );
@@ -77,7 +77,7 @@ export async function imageBankRouter(ctx) {
                 // Save to database
                 const imageId = uuidv4();
                 try {
-                    query.run(`
+                    await query.run(`
                         INSERT INTO image_bank (
                             id, user_id, folder_id, original_filename, stored_filename,
                             file_path, file_size, mime_type, title, description, tags
@@ -142,7 +142,7 @@ export async function imageBankRouter(ctx) {
         sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
         params.push(parseInt(limit), parseInt(offset));
 
-        const images = query.all(sql, params);
+        const images = await query.all(sql, params);
 
         // Parse JSON fields
         images.forEach(img => {
@@ -157,7 +157,7 @@ export async function imageBankRouter(ctx) {
             countSql += ' AND folder_id = ?';
             countParams.push(folderId);
         }
-        const { count } = query.get(countSql, countParams);
+        const { count } = await query.get(countSql, countParams);
 
         return { status: 200, data: { images, total: count, limit: parseInt(limit), offset: parseInt(offset) } };
     }
@@ -165,7 +165,7 @@ export async function imageBankRouter(ctx) {
     // GET /api/image-bank/:id - Get single image details
     if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+$/) && !reservedPaths.includes(path) && !path.startsWith('/usage/') && !path.startsWith('/edit-history/') && !path.startsWith('/folders/')) {
         const imageId = path.substring(1);
-        const image = query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
+        const image = await query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
 
         if (!image) {
             return { status: 404, data: { error: 'Image not found' } };
@@ -176,7 +176,7 @@ export async function imageBankRouter(ctx) {
         image.ai_analysis = safeJsonParse(image.ai_analysis, {});
 
         // Get usage information
-        const usage = query.all(
+        const usage = await query.all(
             'SELECT inventory_id FROM image_bank_usage WHERE image_id = ?',
             [imageId]
         );
@@ -191,7 +191,7 @@ export async function imageBankRouter(ctx) {
         const { title, description, tags, folderId } = body;
 
         // Verify ownership
-        const existing = query.get('SELECT id FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
+        const existing = await query.get('SELECT id FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Image not found' } };
         }
@@ -223,7 +223,7 @@ export async function imageBankRouter(ctx) {
         updates.push('updated_at = CURRENT_TIMESTAMP');
         params.push(imageId, user.id);
 
-        query.run(
+        await query.run(
             `UPDATE image_bank SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
             params
         );
@@ -283,7 +283,7 @@ export async function imageBankRouter(ctx) {
         }
 
         const placeholders = imageIds.map(() => '?').join(',');
-        query.run(
+        await query.run(
             `UPDATE image_bank SET folder_id = ?, updated_at = CURRENT_TIMESTAMP
              WHERE id IN (${placeholders}) AND user_id = ?`,
             [folderId || null, ...imageIds, user.id]
@@ -310,7 +310,7 @@ export async function imageBankRouter(ctx) {
 
         // Batch fetch all images instead of N+1 individual queries
         const placeholders = imageIds.map(() => '?').join(',');
-        const images = query.all(
+        const images = await query.all(
             `SELECT id, tags FROM image_bank WHERE id IN (${placeholders}) AND user_id = ?`,
             [...imageIds, user.id]
         );
@@ -324,7 +324,7 @@ export async function imageBankRouter(ctx) {
                 // Merge tags (avoid duplicates)
                 const mergedTags = [...new Set([...existingTags, ...tags])];
 
-                query.run(
+                await query.run(
                     'UPDATE image_bank SET tags = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
                     [JSON.stringify(mergedTags), imageId, user.id]
                 );
@@ -349,13 +349,12 @@ export async function imageBankRouter(ctx) {
         // Sanitize search query for FTS5 (strip quotes, operators, special chars)
         const sanitizedQuery = q.replace(/['"*(){}[\]^~\\]/g, '').replace(/\b(AND|OR|NOT|NEAR)\b/gi, '');
 
-        const images = query.all(`
+        const images = await query.all(`
             SELECT ib.* FROM image_bank ib
-            JOIN image_bank_fts fts ON ib.id = fts.id
-            WHERE fts MATCH ? AND ib.user_id = ?
-            ORDER BY rank
+            WHERE ib.search_vector @@ plainto_tsquery('english', ?) AND ib.user_id = ?
+            ORDER BY ts_rank(ib.search_vector, plainto_tsquery('english', ?)) DESC
             LIMIT ?
-        `, [sanitizedQuery, user.id, parseInt(limit)]);
+        `, [sanitizedQuery, user.id, sanitizedQuery, parseInt(limit)]);
 
         // Parse JSON fields
         images.forEach(img => {
@@ -370,7 +369,7 @@ export async function imageBankRouter(ctx) {
     if (method === 'POST' && path === '/analyze') {
         const { imageId } = body;
 
-        const image = query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
+        const image = await query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
         if (!image) {
             return { status: 404, data: { error: 'Image not found' } };
         }
@@ -438,7 +437,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
             const existingTags = safeJsonParse(image.tags || '[]', []);
             const mergedTags = [...new Set([...existingTags, ...(analysis.suggestedTags || [])])];
 
-            query.run(
+            await query.run(
                 `UPDATE image_bank SET ai_analysis = ?, tags = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 [JSON.stringify(analysis), JSON.stringify(mergedTags), imageId]
             );
@@ -461,7 +460,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         }
 
         const folderId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO image_bank_folders (id, user_id, name, parent_id, color, icon)
             VALUES (?, ?, ?, ?, ?, ?)
         `, [folderId, user.id, name.trim(), parentId || null, color || '#6366f1', icon || 'folder']);
@@ -471,7 +470,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
 
     // GET /api/image-bank/folders - List folders (tree structure)
     if (method === 'GET' && path === '/folders') {
-        const folders = query.all(
+        const folders = await query.all(
             'SELECT * FROM image_bank_folders WHERE user_id = ? ORDER BY name ASC LIMIT 1000',
             [user.id]
         );
@@ -500,7 +499,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         const folderId = path.substring('/folders/'.length);
         const { name, color, icon, parentId } = body;
 
-        const existing = query.get('SELECT id FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
+        const existing = await query.get('SELECT id FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Folder not found' } };
         }
@@ -532,13 +531,13 @@ Be specific and accurate. Only include what you can confidently detect from the 
         updates.push('updated_at = CURRENT_TIMESTAMP');
         params.push(folderId, user.id);
 
-        query.run(
+        await query.run(
             `UPDATE image_bank_folders SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
             params
         );
 
         // Return updated folder data
-        const updatedFolder = query.get('SELECT * FROM image_bank_folders WHERE id = ?', [folderId]);
+        const updatedFolder = await query.get('SELECT * FROM image_bank_folders WHERE id = ?', [folderId]);
         return { status: 200, data: { folder: updatedFolder } };
     }
 
@@ -546,16 +545,16 @@ Be specific and accurate. Only include what you can confidently detect from the 
     if (method === 'DELETE' && path.startsWith('/folders/')) {
         const folderId = path.substring('/folders/'.length);
 
-        const existing = query.get('SELECT id FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
+        const existing = await query.get('SELECT id FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Folder not found' } };
         }
 
         // Move images in this folder to root (folder_id = NULL)
-        query.run('UPDATE image_bank SET folder_id = NULL WHERE folder_id = ? AND user_id = ?', [folderId, user.id]);
+        await query.run('UPDATE image_bank SET folder_id = NULL WHERE folder_id = ? AND user_id = ?', [folderId, user.id]);
 
         // Delete folder
-        query.run('DELETE FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
+        await query.run('DELETE FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
 
         return { status: 200, data: { message: 'Folder deleted successfully' } };
     }
@@ -585,12 +584,12 @@ Be specific and accurate. Only include what you can confidently detect from the 
     if (method === 'GET' && path.startsWith('/usage/')) {
         const imageId = path.substring('/usage/'.length);
 
-        const image = query.get('SELECT id FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
+        const image = await query.get('SELECT id FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
         if (!image) {
             return { status: 404, data: { error: 'Image not found' } };
         }
 
-        const usage = query.all(`
+        const usage = await query.all(`
             SELECT u.inventory_id, i.title
             FROM image_bank_usage u
             JOIN inventory i ON u.inventory_id = i.id
@@ -604,7 +603,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
     if (method === 'POST' && path === '/edit') {
         const { imageId, editType, parameters } = body;
 
-        const image = query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
+        const image = await query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
         if (!image) {
             return { status: 404, data: { error: 'Image not found' } };
         }
@@ -612,7 +611,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         // TECH-DEBT: Implement Canvas-based editing (crop, rotate, filters)
         // For now, save edit history
         const editId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO image_edit_history (id, image_id, user_id, edit_type, parameters, original_path, edited_path)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `, [editId, imageId, user.id, editType, JSON.stringify(parameters), image.file_path, image.file_path]);
@@ -652,7 +651,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
             return { status: 400, data: { error: 'Image ID required' } };
         }
 
-        const image = query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
+        const image = await query.get('SELECT * FROM image_bank WHERE id = ? AND user_id = ?', [imageId, user.id]);
         if (!image) {
             return { status: 404, data: { error: 'Image not found' } };
         }
@@ -670,7 +669,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
                 publicId = uploadResult.publicId;
 
                 // Save public ID to database
-                query.run(
+                await query.run(
                     'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
                     [publicId, imageId]
                 );
@@ -686,7 +685,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
                             return { status: 500, data: { error: uploadResult.error || 'Failed to upload to Cloudinary' } };
                         }
                         publicId = uploadResult.publicId;
-                        query.run(
+                        await query.run(
                             'UPDATE image_bank SET cloudinary_public_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
                             [publicId, imageId]
                         );
@@ -745,7 +744,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
 
             // Log to edit history
             const editId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO image_edit_history (id, image_id, user_id, edit_type, parameters, original_path, edited_path, cloudinary_public_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `, [editId, imageId, user.id, `cloudinary_${operation}`, JSON.stringify(params || {}), image.file_path, result.url, publicId]);
@@ -771,7 +770,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
     if (method === 'GET' && path.startsWith('/edit-history/')) {
         const imageId = path.substring('/edit-history/'.length);
 
-        const history = query.all(
+        const history = await query.all(
             'SELECT * FROM image_edit_history WHERE image_id = ? AND user_id = ? ORDER BY created_at DESC',
             [imageId, user.id]
         );
@@ -786,7 +785,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
     // GET /api/image-bank/storage-stats - Real storage usage stats
     if (method === 'GET' && path === '/storage-stats') {
         try {
-            const stats = query.get(`
+            const stats = await query.get(`
                 SELECT
                     COUNT(*) as total_images,
                     COALESCE(SUM(file_size), 0) as total_bytes,
@@ -816,13 +815,13 @@ Be specific and accurate. Only include what you can confidently detect from the 
     if (method === 'POST' && path === '/scan-usage') {
         try {
             // Get all user images
-            const images = query.all(
+            const images = await query.all(
                 'SELECT id, file_path, original_filename FROM image_bank WHERE user_id = ? LIMIT 10000',
                 [user.id]
             );
 
             // Get all inventory items with images
-            const inventoryItems = query.all(
+            const inventoryItems = await query.all(
                 "SELECT id, title, images FROM inventory WHERE user_id = ? AND images IS NOT NULL AND images != '[]' LIMIT 10000",
                 [user.id]
             );
@@ -830,7 +829,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
             let updatedCount = 0;
 
             // Clear existing usage records for this user
-            query.run(`
+            await query.run(`
                 DELETE FROM image_bank_usage WHERE image_id IN (
                     SELECT id FROM image_bank WHERE user_id = ?
                 )
@@ -852,8 +851,8 @@ Be specific and accurate. Only include what you can confidently detect from the 
                     });
 
                     if (isUsed) {
-                        query.run(
-                            'INSERT OR IGNORE INTO image_bank_usage (image_id, inventory_id) VALUES (?, ?)',
+                        await query.run(
+                            'INSERT INTO image_bank_usage (image_id, inventory_id) VALUES (?, ?)',
                             [img.id, item.id]
                         );
                     }
@@ -861,7 +860,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
             }
 
             // Update used_count for all images
-            query.run(`
+            await query.run(`
                 UPDATE image_bank SET used_count = (
                     SELECT COUNT(*) FROM image_bank_usage WHERE image_bank_usage.image_id = image_bank.id
                 ), updated_at = CURRENT_TIMESTAMP

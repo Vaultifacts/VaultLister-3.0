@@ -43,7 +43,7 @@ const CONDITION_MULTIPLIERS = {
  * @returns {Object} Price prediction
  */
 export async function generatePricePrediction(inventoryId, userId, options = {}) {
-    const item = query.get(`
+    const item = await query.get(`
         SELECT * FROM inventory WHERE id = ? AND user_id = ?
     `, [inventoryId, userId]);
 
@@ -94,7 +94,7 @@ export async function generatePricePrediction(inventoryId, userId, options = {})
 
     // Store prediction
     try {
-        query.run(`
+        await query.run(`
             INSERT INTO price_predictions (
                 id, user_id, inventory_id, predicted_price, confidence,
                 price_range_low, price_range_high, demand_score, recommendation,
@@ -128,10 +128,10 @@ async function findComparableSales(item, options = {}) {
 
     try {
         // Try category-matched sales first
-        let sales = query.all(`
+        let sales = await query.all(`
             SELECT s.sale_price, s.platform, s.created_at,
                    i.category, i.condition,
-                   CAST((julianday(s.created_at) - julianday(s.created_at)) AS INTEGER) AS daysToSell
+                   CAST((EXTRACT(EPOCH FROM (s.created_at - s.created_at)) / 86400) AS INTEGER) AS daysToSell
             FROM sales s
             LEFT JOIN inventory i ON s.inventory_id = i.id
             WHERE s.user_id = ?
@@ -143,7 +143,7 @@ async function findComparableSales(item, options = {}) {
         `, [item.user_id, ninetyDaysAgo, item.category || '']);
 
         if (sales.length < 3) {
-            sales = query.all(`
+            sales = await query.all(`
                 SELECT s.sale_price, s.platform, s.created_at,
                        i.category, i.condition
                 FROM sales s
@@ -395,7 +395,7 @@ export async function getDemandForecast(category, platform = null, userId = null
     if (userId) {
         try {
             const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-            const salesData = query.all(`
+            const salesData = await query.all(`
                 SELECT s.sale_price, s.platform, s.created_at, i.category
                 FROM sales s
                 LEFT JOIN inventory i ON s.inventory_id = i.id

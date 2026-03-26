@@ -17,7 +17,7 @@ export async function shopsRouter(ctx) {
     // GET /api/shops - List connected shops
     if (method === 'GET' && (path === '/' || path === '')) {
         try {
-            const shops = query.all('SELECT * FROM shops WHERE user_id = ?', [user.id]);
+            const shops = await query.all('SELECT * FROM shops WHERE user_id = ?', [user.id]);
 
             shops.forEach(shop => {
                 shop.settings = safeJsonParse(shop.settings, {});
@@ -37,7 +37,7 @@ export async function shopsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-z]+$/)) {
         try {
             const platform = path.slice(1);
-            const shop = query.get(
+            const shop = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ?',
                 [user.id, platform]
             );
@@ -67,7 +67,7 @@ export async function shopsRouter(ctx) {
             }
 
             // Check tier limits
-            const permission = checkTierPermission(user, 'platforms');
+            const permission = await checkTierPermission(user, 'platforms');
             if (!permission.allowed) {
                 return {
                     status: 403,
@@ -80,7 +80,7 @@ export async function shopsRouter(ctx) {
             }
 
             // Check if already connected
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT id FROM shops WHERE user_id = ? AND platform = ?',
                 [user.id, platform]
             );
@@ -95,16 +95,16 @@ export async function shopsRouter(ctx) {
 
             const id = uuidv4();
 
-            query.run(`
+            await query.run(`
                 INSERT INTO shops (id, user_id, platform, platform_username, credentials, is_connected)
                 VALUES (?, ?, ?, ?, ?, ?)
             `, [
-                id, user.id, platform, username,
+                id, user.id, platform, username || null,
                 credentials ? encryptToken(JSON.stringify(credentials)) : null,
                 1
             ]);
 
-            const shop = query.get('SELECT * FROM shops WHERE id = ?', [id]);
+            const shop = await query.get('SELECT * FROM shops WHERE id = ?', [id]);
             delete shop.credentials;
 
             return { status: 201, data: { shop } };
@@ -119,7 +119,7 @@ export async function shopsRouter(ctx) {
         try {
             const platform = path.slice(1);
 
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ?',
                 [user.id, platform]
             );
@@ -169,14 +169,14 @@ export async function shopsRouter(ctx) {
 
             if (updates.length > 0) {
                 values.push(platform, user.id);
-                query.run(
+                await query.run(
                     `UPDATE shops SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP
                      WHERE platform = ? AND user_id = ?`,
                     values
                 );
             }
 
-            const shop = query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ?', [user.id, platform]);
+            const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ?', [user.id, platform]);
             shop.settings = safeJsonParse(shop.settings || '{}', {});
             shop.stats = safeJsonParse(shop.stats || '{}', {});
             delete shop.credentials;
@@ -193,7 +193,7 @@ export async function shopsRouter(ctx) {
         try {
             const platform = path.slice(1);
 
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ?',
                 [user.id, platform]
             );
@@ -203,7 +203,7 @@ export async function shopsRouter(ctx) {
             }
 
             // Soft disconnect
-            query.run(
+            await query.run(
                 'UPDATE shops SET is_connected = 0, credentials = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND platform = ?',
                 [user.id, platform]
             );
@@ -220,7 +220,7 @@ export async function shopsRouter(ctx) {
         try {
             const platform = path.split('/')[1];
 
-            const shop = query.get(
+            const shop = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
                 [user.id, platform]
             );
@@ -231,13 +231,13 @@ export async function shopsRouter(ctx) {
 
             // Queue sync task
             const taskId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO tasks (id, user_id, type, payload, status)
                 VALUES (?, ?, ?, ?, ?)
             `, [taskId, user.id, 'sync_shop', JSON.stringify({ platform, shopId: shop.id }), 'pending']);
 
             // Update sync status
-            query.run(
+            await query.run(
                 'UPDATE shops SET sync_status = ? WHERE id = ?',
                 ['syncing', shop.id]
             );
@@ -254,7 +254,7 @@ export async function shopsRouter(ctx) {
         try {
             const platform = path.split('/')[1];
 
-            const shop = query.get(
+            const shop = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ?',
                 [user.id, platform]
             );
@@ -264,15 +264,15 @@ export async function shopsRouter(ctx) {
             }
 
             const stats = {
-                listings: query.get(
+                listings: await query.get(
                     'SELECT COUNT(*) as total, SUM(CASE WHEN status = "active" THEN 1 ELSE 0 END) as active FROM listings WHERE user_id = ? AND platform = ?',
                     [user.id, platform]
                 ),
-                sales: query.get(
+                sales: await query.get(
                     'SELECT COUNT(*) as count, SUM(sale_price) as revenue FROM sales WHERE user_id = ? AND platform = ?',
                     [user.id, platform]
                 ),
-                offers: query.get(
+                offers: await query.get(
                     'SELECT COUNT(*) as total, SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending FROM offers WHERE user_id = ? AND platform = ?',
                     [user.id, platform]
                 )
@@ -288,7 +288,7 @@ export async function shopsRouter(ctx) {
     // POST /api/shops/sync-all - Sync all connected shops
     if (method === 'POST' && path === '/sync-all') {
         try {
-            const shops = query.all(
+            const shops = await query.all(
                 'SELECT * FROM shops WHERE user_id = ? AND is_connected = 1',
                 [user.id]
             );
@@ -304,13 +304,13 @@ export async function shopsRouter(ctx) {
                 try {
                     // Queue sync task for each platform
                     const taskId = uuidv4();
-                    query.run(`
+                    await query.run(`
                         INSERT INTO tasks (id, user_id, type, payload, status)
                         VALUES (?, ?, ?, ?, ?)
                     `, [taskId, user.id, 'sync_shop', JSON.stringify({ platform: shop.platform, shopId: shop.id }), 'pending']);
 
                     // Update sync status
-                    query.run(
+                    await query.run(
                         'UPDATE shops SET sync_status = ? WHERE id = ?',
                         ['syncing', shop.id]
                     );
@@ -340,7 +340,7 @@ export async function shopsRouter(ctx) {
     // GET /api/shops/health - Platform connection health dashboard
     if (method === 'GET' && path === '/health') {
         try {
-            const shops = query.all(
+            const shops = await query.all(
                 `SELECT id, platform, platform_username, is_connected, last_sync_at, sync_status,
                     oauth_token_expires_at, consecutive_refresh_failures, last_token_refresh_at,
                     token_refresh_error, connection_type, created_at, updated_at
@@ -348,7 +348,7 @@ export async function shopsRouter(ctx) {
                 [user.id]
             );
 
-            const health = shops.map(shop => {
+            const health = await Promise.all(shops.map(async shop => {
                 const now = Date.now();
                 const tokenExpiry = shop.oauth_token_expires_at ? new Date(shop.oauth_token_expires_at).getTime() : null;
                 const lastSync = shop.last_sync_at ? new Date(shop.last_sync_at).getTime() : null;
@@ -400,7 +400,7 @@ export async function shopsRouter(ctx) {
                 }
 
                 // Get listing/error counts for this platform
-                const listingStats = query.get(
+                const listingStats = await query.get(
                     `SELECT COUNT(*) as total,
                         SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
                         SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) as errors
@@ -429,7 +429,7 @@ export async function shopsRouter(ctx) {
                     listings: listingStats,
                     connected_since: shop.created_at
                 };
-            });
+            }));
 
             const overall = health.length > 0
                 ? Math.round(health.reduce((sum, h) => sum + h.health_score, 0) / health.length)
@@ -445,7 +445,7 @@ export async function shopsRouter(ctx) {
     // GET /api/shops/sync-status - Get sync status for all shops
     if (method === 'GET' && path === '/sync-status') {
         try {
-            const shops = query.all(
+            const shops = await query.all(
                 'SELECT platform, sync_status, last_sync_at FROM shops WHERE user_id = ?',
                 [user.id]
             );

@@ -71,7 +71,7 @@ export async function webhooksRouter(ctx) {
 
         // Idempotency check — prevent double-processing on Stripe retry
         try {
-            const existing = query.get('SELECT id FROM webhook_events WHERE id = ?', [event.id]);
+            const existing = await query.get('SELECT id FROM webhook_events WHERE id = ?', [event.id]);
             if (existing) {
                 logger.info(`[Webhooks/Stripe] Duplicate event ${event.id} — skipping (already processed)`);
                 return { status: 200, data: { received: true } };
@@ -92,8 +92,8 @@ export async function webhooksRouter(ctx) {
                         const subObj = session.subscription;
                         // We only have the subscription ID here; price lookup happens on subscription.updated
                         // For now, mark as starter (lowest paid) — subscription.updated fires immediately after and sets the real tier
-                        query.run(
-                            'UPDATE users SET stripe_subscription_id = ?, updated_at = datetime(\'now\') WHERE id = ?',
+                        await query.run(
+                            'UPDATE users SET stripe_subscription_id = ?, updated_at = NOW() WHERE id = ?',
                             [subObj, vaultUserId]
                         );
                         logger.info(`[Webhooks/Stripe] checkout.session.completed: user ${vaultUserId} subscription ${subObj}`);
@@ -106,10 +106,10 @@ export async function webhooksRouter(ctx) {
                     const priceId = sub.items?.data?.[0]?.price?.id;
                     const tier = TIER_FOR_PRICE[priceId] || null;
                     if (tier && sub.customer) {
-                        const dbUser = query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [sub.customer]);
+                        const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [sub.customer]);
                         if (dbUser) {
-                            query.run(
-                                'UPDATE users SET subscription_tier = ?, stripe_subscription_id = ?, updated_at = datetime(\'now\') WHERE id = ?',
+                            await query.run(
+                                'UPDATE users SET subscription_tier = ?, stripe_subscription_id = ?, updated_at = NOW() WHERE id = ?',
                                 [tier, sub.id, dbUser.id]
                             );
                             logger.info(`[Webhooks/Stripe] subscription.updated: user ${dbUser.id} → tier ${tier}`);
@@ -121,10 +121,10 @@ export async function webhooksRouter(ctx) {
                 case 'customer.subscription.deleted': {
                     const sub = event.data.object;
                     if (sub.customer) {
-                        const dbUser = query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [sub.customer]);
+                        const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [sub.customer]);
                         if (dbUser) {
-                            query.run(
-                                'UPDATE users SET subscription_tier = \'free\', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = datetime(\'now\') WHERE id = ?',
+                            await query.run(
+                                'UPDATE users SET subscription_tier = \'free\', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = NOW() WHERE id = ?',
                                 [dbUser.id]
                             );
                             logger.info(`[Webhooks/Stripe] subscription.deleted: user ${dbUser.id} downgraded to free`);
@@ -136,12 +136,12 @@ export async function webhooksRouter(ctx) {
                 case 'invoice.payment_failed': {
                     const invoice = event.data.object;
                     if (invoice.customer) {
-                        const dbUser = query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [invoice.customer]);
+                        const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [invoice.customer]);
                         if (dbUser) {
                             // Insert notification for the user
                             try {
-                                query.run(
-                                    'INSERT INTO notifications (id, user_id, type, title, message, is_read, created_at) VALUES (?, ?, \'billing\', \'Payment Failed\', \'Your subscription payment failed. Please update your payment method to keep your plan active.\', 0, datetime(\'now\'))',
+                                await query.run(
+                                    'INSERT INTO notifications (id, user_id, type, title, message, is_read, created_at) VALUES (?, ?, \'billing\', \'Payment Failed\', \'Your subscription payment failed. Please update your payment method to keep your plan active.\', 0, NOW())',
                                     [uuidv4(), dbUser.id]
                                 );
                             } catch {
@@ -159,8 +159,8 @@ export async function webhooksRouter(ctx) {
 
             // Store event for audit trail — use event.id as row ID for idempotency
             try {
-                query.run(
-                    'INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at) VALUES (?, ?, \'stripe\', ?, ?, \'processed\', datetime(\'now\'))',
+                await query.run(
+                    'INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at) VALUES (?, ?, \'stripe\', ?, ?, \'processed\', NOW())',
                     [event.id, STRIPE_SYSTEM_USER, event.type, JSON.stringify(event.data.object)]
                 );
             } catch {
@@ -220,9 +220,9 @@ export async function webhooksRouter(ctx) {
             // Store in webhook_events for audit — use a sentinel user_id for eBay system events
             const EBAY_SYSTEM_USER = '00000000-0000-0000-0000-000000000000';
             try {
-                query.run(`
+                await query.run(`
                     INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at)
-                    VALUES (?, ?, 'ebay', 'marketplace.account.deletion', ?, 'processed', datetime('now'))
+                    VALUES (?, ?, 'ebay', 'marketplace.account.deletion', ?, 'processed', NOW())
                 `, [uuidv4(), EBAY_SYSTEM_USER, JSON.stringify(payload)]);
             } catch (dbErr) {
                 // Don't fail the response — eBay requires 200 even if we have internal issues
@@ -232,9 +232,9 @@ export async function webhooksRouter(ctx) {
             // If an eBay user is linked to a VaultLister account, revoke their OAuth token
             if (ebayUserId) {
                 try {
-                    query.run(`
+                    await query.run(`
                         UPDATE oauth_tokens
-                        SET access_token = NULL, refresh_token = NULL, revoked_at = datetime('now')
+                        SET access_token = NULL, refresh_token = NULL, revoked_at = NOW()
                         WHERE platform = 'ebay' AND platform_user_id = ?
                     `, [String(ebayUserId)]);
                 } catch (revokeErr) {
@@ -263,7 +263,7 @@ export async function webhooksRouter(ctx) {
             const signature = ctx.headers?.['x-signature'] || ctx.headers?.['x-hub-signature'] || ctx.headers?.['x-vaultlister-signature'] || null;
 
             // Look up webhook configuration for this source (most recent if duplicates)
-            const webhookConfig = query.get(`
+            const webhookConfig = await query.get(`
                 SELECT secret, user_id FROM webhook_endpoints
                 WHERE name = ? AND is_enabled = 1
                 ORDER BY rowid DESC
@@ -297,20 +297,20 @@ export async function webhooksRouter(ctx) {
             const eventId = uuidv4();
             const eventType = body.type || body.event_type || 'unknown';
 
-            query.run(`
+            await query.run(`
                 INSERT INTO webhook_events (id, user_id, source, event_type, payload, signature, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())
             `, [eventId, webhookConfig.user_id, source, eventType, JSON.stringify(body), signature]);
 
             // Queue for async processing
             try {
-                query.run(`
+                await query.run(`
                     INSERT INTO tasks (id, type, payload, status, priority, created_at)
-                    VALUES (?, 'process_webhook', ?, 'pending', 5, datetime('now'))
+                    VALUES (?, 'process_webhook', ?, 'pending', 5, NOW())
                 `, [uuidv4(), JSON.stringify({ eventId })]);
             } catch (err) {
                 // Fallback: process synchronously
-                const event = query.get('SELECT * FROM webhook_events WHERE id = ?', [eventId]);
+                const event = await query.get('SELECT * FROM webhook_events WHERE id = ?', [eventId]);
                 if (event) {
                     await processWebhookEvent(event);
                 }
@@ -334,7 +334,7 @@ export async function webhooksRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        const endpoints = query.all(`
+        const endpoints = await query.all(`
             SELECT id, name, url, events, is_enabled, last_triggered_at,
                    failure_count, created_at, updated_at
             FROM webhook_endpoints
@@ -375,7 +375,7 @@ export async function webhooksRouter(ctx) {
         }
 
         // Check for existing endpoint with same name for this user
-        const existingEndpoint = query.get(
+        const existingEndpoint = await query.get(
             'SELECT id FROM webhook_endpoints WHERE user_id = ? AND name = ? AND is_enabled = 1',
             [user.id, name]
         );
@@ -387,19 +387,19 @@ export async function webhooksRouter(ctx) {
         if (existingEndpoint) {
             // Update existing endpoint (rotate secret, update URL/events)
             endpointId = existingEndpoint.id;
-            query.run(`
-                UPDATE webhook_endpoints SET url = ?, secret = ?, events = ?, updated_at = datetime('now')
+            await query.run(`
+                UPDATE webhook_endpoints SET url = ?, secret = ?, events = ?, updated_at = NOW()
                 WHERE id = ? AND user_id = ?
             `, [url, secret, JSON.stringify(events), endpointId, user.id]);
         } else {
             endpointId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO webhook_endpoints (id, user_id, name, url, secret, events, is_enabled, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
             `, [endpointId, user.id, name, url, secret, JSON.stringify(events)]);
         }
 
-        const endpoint = query.get('SELECT * FROM webhook_endpoints WHERE id = ?', [endpointId]);
+        const endpoint = await query.get('SELECT * FROM webhook_endpoints WHERE id = ?', [endpointId]);
 
         return {
             status: 201,
@@ -418,7 +418,7 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const endpointId = endpointIdMatch[1];
-        const endpoint = query.get(`
+        const endpoint = await query.get(`
             SELECT * FROM webhook_endpoints WHERE id = ? AND user_id = ?
         `, [endpointId, user.id]);
 
@@ -443,7 +443,7 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const endpointId = endpointIdMatch[1];
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id FROM webhook_endpoints WHERE id = ? AND user_id = ?',
             [endpointId, user.id]
         );
@@ -467,17 +467,17 @@ export async function webhooksRouter(ctx) {
             }
         }
 
-        query.run(`
+        await query.run(`
             UPDATE webhook_endpoints SET
                 name = COALESCE(?, name),
                 url = COALESCE(?, url),
                 events = COALESCE(?, events),
                 is_enabled = COALESCE(?, is_enabled),
-                updated_at = datetime('now')
+                updated_at = NOW()
             WHERE id = ? AND user_id = ?
         `, [name, url, events ? JSON.stringify(events) : null, is_enabled, endpointId, user.id]);
 
-        const updated = query.get('SELECT * FROM webhook_endpoints WHERE id = ?', [endpointId]);
+        const updated = await query.get('SELECT * FROM webhook_endpoints WHERE id = ?', [endpointId]);
         const { secret: _secret, ...safeUpdated } = updated;
 
         return {
@@ -495,7 +495,7 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const endpointId = endpointIdMatch[1];
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id FROM webhook_endpoints WHERE id = ? AND user_id = ?',
             [endpointId, user.id]
         );
@@ -504,7 +504,7 @@ export async function webhooksRouter(ctx) {
             return { status: 404, data: { error: 'Endpoint not found' } };
         }
 
-        query.run('DELETE FROM webhook_endpoints WHERE id = ? AND user_id = ?', [endpointId, user.id]);
+        await query.run('DELETE FROM webhook_endpoints WHERE id = ? AND user_id = ?', [endpointId, user.id]);
 
         return { status: 200, data: { deleted: true } };
     }
@@ -516,7 +516,7 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const endpointId = testMatch[1];
-        const endpoint = query.get(`
+        const endpoint = await query.get(`
             SELECT * FROM webhook_endpoints WHERE id = ? AND user_id = ?
         `, [endpointId, user.id]);
 
@@ -550,11 +550,11 @@ export async function webhooksRouter(ctx) {
             const success = response.ok;
 
             // Update endpoint
-            query.run(`
+            await query.run(`
                 UPDATE webhook_endpoints SET
-                    last_triggered_at = datetime('now'),
+                    last_triggered_at = NOW(),
                     failure_count = CASE WHEN ? THEN 0 ELSE failure_count + 1 END,
-                    updated_at = datetime('now')
+                    updated_at = NOW()
                 WHERE id = ? AND user_id = ?
             `, [success, endpointId, user.id]);
 
@@ -569,10 +569,10 @@ export async function webhooksRouter(ctx) {
 
         } catch (error) {
             logger.error('[Webhooks] Webhook delivery error', null, { detail: error?.message || 'Unknown error' });
-            query.run(`
+            await query.run(`
                 UPDATE webhook_endpoints SET
                     failure_count = failure_count + 1,
-                    updated_at = datetime('now')
+                    updated_at = NOW()
                 WHERE id = ? AND user_id = ?
             `, [endpointId, user.id]);
 
@@ -610,7 +610,7 @@ export async function webhooksRouter(ctx) {
         sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
         params.push(limit, offset);
 
-        const events = query.all(sql, params);
+        const events = await query.all(sql, params);
 
         // Parse payloads
         const parsed = events.map(ev => ({
@@ -628,7 +628,7 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const eventId = eventIdMatch[1];
-        const event = query.get(`
+        const event = await query.get(`
             SELECT * FROM webhook_events WHERE id = ? AND user_id = ?
         `, [eventId, user.id]);
 
@@ -652,7 +652,7 @@ export async function webhooksRouter(ctx) {
         if (authError) return authError;
 
         const eventId = retryMatch[1];
-        const event = query.get(`
+        const event = await query.get(`
             SELECT * FROM webhook_events WHERE id = ? AND user_id = ?
         `, [eventId, user.id]);
 
@@ -661,14 +661,14 @@ export async function webhooksRouter(ctx) {
         }
 
         // Requeue for processing
-        query.run(`
-            UPDATE webhook_events SET status = 'pending', error_message = NULL, updated_at = datetime('now')
+        await query.run(`
+            UPDATE webhook_events SET status = 'pending', error_message = NULL, updated_at = NOW()
             WHERE id = ? AND user_id = ?
         `, [eventId, user.id]);
 
         await processWebhookEvent({ ...event, payload: event.payload });
 
-        const updated = query.get('SELECT * FROM webhook_events WHERE id = ?', [eventId]);
+        const updated = await query.get('SELECT * FROM webhook_events WHERE id = ?', [eventId]);
 
         return {
             status: 200,

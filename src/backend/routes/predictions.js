@@ -52,7 +52,7 @@ export async function predictionsRouter(ctx) {
         const params = [user.id];
 
         if (!expired) {
-            sql += ` AND (p.expires_at IS NULL OR p.expires_at > datetime('now'))`;
+            sql += ` AND (p.expires_at IS NULL OR p.expires_at > NOW())`;
         }
 
         if (recommendation) {
@@ -64,7 +64,7 @@ export async function predictionsRouter(ctx) {
         params.push(limit, offset);
 
         try {
-            const predictions = query.all(sql, params);
+            const predictions = await query.all(sql, params);
             return { status: 200, data: predictions };
         } catch (error) {
             logger.error('[Predictions] error fetching predictions', user?.id, { detail: error?.message || 'Unknown error' });
@@ -98,12 +98,12 @@ export async function predictionsRouter(ctx) {
         const inventoryId = itemMatch[1];
 
         try {
-            const prediction = query.get(`
+            const prediction = await query.get(`
                 SELECT p.*, i.title, i.brand, i.category, i.list_price as current_price
                 FROM price_predictions p
                 LEFT JOIN inventory i ON p.inventory_id = i.id
                 WHERE p.inventory_id = ? AND p.user_id = ?
-                AND (p.expires_at IS NULL OR p.expires_at > datetime('now'))
+                AND (p.expires_at IS NULL OR p.expires_at > NOW())
                 ORDER BY p.created_at DESC
                 LIMIT 1
             `, [inventoryId, user.id]);
@@ -164,7 +164,7 @@ export async function predictionsRouter(ctx) {
             FROM price_predictions p
             INNER JOIN inventory i ON p.inventory_id = i.id
             WHERE p.user_id = ?
-            AND (p.expires_at IS NULL OR p.expires_at > datetime('now'))
+            AND (p.expires_at IS NULL OR p.expires_at > NOW())
             AND p.recommendation != 'hold'
         `;
         const params = [user.id];
@@ -177,7 +177,7 @@ export async function predictionsRouter(ctx) {
         sql += ' ORDER BY p.demand_score DESC, p.confidence DESC LIMIT 20';
 
         try {
-            const recommendations = query.all(sql, params);
+            const recommendations = await query.all(sql, params);
 
             // Group by recommendation type
             const grouped = {
@@ -231,7 +231,7 @@ export async function predictionsRouter(ctx) {
 
             sql += ' ORDER BY forecast_date DESC LIMIT 20';
 
-            const forecasts = query.all(sql, params);
+            const forecasts = await query.all(sql, params);
 
             if (forecasts.length === 0 && category) {
                 const forecast = await getDemandForecast(category, platform, user.id);
@@ -261,10 +261,10 @@ export async function predictionsRouter(ctx) {
 
         // Store forecast
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO demand_forecasts (id, user_id, category, platform, forecast_date,
                     demand_level, price_trend, seasonality_index, notes, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `, [
                 uuidv4(), user.id, forecast.category, forecast.platform,
                 forecast.forecast_date, forecast.demand_level, forecast.price_trend,
@@ -314,7 +314,7 @@ export async function predictionsRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const stats = query.get(`
+            const stats = await query.get(`
                 SELECT
                     COUNT(*) as total_predictions,
                     AVG(confidence) as avg_confidence,
@@ -325,7 +325,7 @@ export async function predictionsRouter(ctx) {
                     AVG(demand_score) as avg_demand_score
                 FROM price_predictions
                 WHERE user_id = ?
-                AND created_at > datetime('now', '-30 days')
+                AND created_at > NOW() - INTERVAL '30 days'
             `, [user.id]);
 
             return {
@@ -363,7 +363,7 @@ export async function predictionsRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const models = query.all(`
+            const models = await query.all(`
                 SELECT id, name, model_type, parameters, is_active,
                        accuracy_score, last_trained_at, created_at, updated_at
                 FROM prediction_models
@@ -413,7 +413,7 @@ export async function predictionsRouter(ctx) {
         const now = new Date().toISOString();
 
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO prediction_models
                 (id, user_id, name, model_type, parameters, is_active, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, 1, ?, ?)
@@ -427,7 +427,7 @@ export async function predictionsRouter(ctx) {
                 now
             ]);
 
-            const newModel = query.get(`
+            const newModel = await query.get(`
                 SELECT id, name, model_type, parameters, is_active,
                        accuracy_score, last_trained_at, created_at, updated_at
                 FROM prediction_models
@@ -459,7 +459,7 @@ export async function predictionsRouter(ctx) {
 
         try {
             // Check model exists and belongs to user
-            const existing = query.get(`
+            const existing = await query.get(`
                 SELECT id FROM prediction_models
                 WHERE id = ? AND user_id = ?
             `, [modelId, user.id]);
@@ -513,13 +513,13 @@ export async function predictionsRouter(ctx) {
 
             params.push(modelId, user.id);
 
-            query.run(`
+            await query.run(`
                 UPDATE prediction_models
                 SET ${updates.join(', ')}
                 WHERE id = ? AND user_id = ?
             `, params);
 
-            const updated = query.get(`
+            const updated = await query.get(`
                 SELECT id, name, model_type, parameters, is_active,
                        accuracy_score, last_trained_at, created_at, updated_at
                 FROM prediction_models
@@ -549,7 +549,7 @@ export async function predictionsRouter(ctx) {
         const modelId = modelDeleteMatch[1];
 
         try {
-            const result = query.run(`
+            const result = await query.run(`
                 DELETE FROM prediction_models
                 WHERE id = ? AND user_id = ?
             `, [modelId, user.id]);
@@ -573,7 +573,7 @@ export async function predictionsRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const scenarios = query.all(`
+            const scenarios = await query.all(`
                 SELECT id, name, base_data, adjustments, results, created_at
                 FROM prediction_scenarios
                 WHERE user_id = ?
@@ -623,7 +623,7 @@ export async function predictionsRouter(ctx) {
         const now = new Date().toISOString();
 
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO prediction_scenarios
                 (id, user_id, name, base_data, adjustments, results, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -637,7 +637,7 @@ export async function predictionsRouter(ctx) {
                 now
             ]);
 
-            const newScenario = query.get(`
+            const newScenario = await query.get(`
                 SELECT id, name, base_data, adjustments, results, created_at
                 FROM prediction_scenarios
                 WHERE id = ?
@@ -667,7 +667,7 @@ export async function predictionsRouter(ctx) {
         const scenarioId = scenarioGetMatch[1];
 
         try {
-            const scenario = query.get(`
+            const scenario = await query.get(`
                 SELECT id, name, base_data, adjustments, results, created_at
                 FROM prediction_scenarios
                 WHERE id = ? AND user_id = ?
@@ -701,7 +701,7 @@ export async function predictionsRouter(ctx) {
         const scenarioId = scenarioDeleteMatch[1];
 
         try {
-            const result = query.run(`
+            const result = await query.run(`
                 DELETE FROM prediction_scenarios
                 WHERE id = ? AND user_id = ?
             `, [scenarioId, user.id]);

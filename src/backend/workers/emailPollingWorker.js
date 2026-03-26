@@ -81,7 +81,7 @@ async function pollEmailAccounts() {
 
     try {
         // Find accounts due for sync (not syncing, enabled, with refresh token)
-        const accounts = query.all(`
+        const accounts = await query.all(`
             SELECT * FROM email_accounts
             WHERE is_enabled = 1
             AND sync_status != 'syncing'
@@ -124,7 +124,7 @@ export async function syncEmailAccount(account) {
     const now = new Date().toISOString();
 
     // Mark as syncing
-    query.run(`
+    await query.run(`
         UPDATE email_accounts SET sync_status = 'syncing', updated_at = ?
         WHERE id = ?
     `, [now, account.id]);
@@ -152,7 +152,7 @@ export async function syncEmailAccount(account) {
             accessToken = newTokens.access_token;
             const newExpiry = new Date(Date.now() + (newTokens.expires_in || 3600) * 1000);
 
-            query.run(`
+            await query.run(`
                 UPDATE email_accounts SET
                     oauth_token = ?,
                     oauth_token_expires_at = ?,
@@ -224,7 +224,7 @@ export async function syncEmailAccount(account) {
         }
 
         // Update account with success
-        query.run(`
+        await query.run(`
             UPDATE email_accounts SET
                 sync_status = 'idle',
                 last_sync_at = ?,
@@ -251,7 +251,7 @@ export async function syncEmailAccount(account) {
         // Record failure
         const failures = (account.consecutive_failures || 0) + 1;
 
-        query.run(`
+        await query.run(`
             UPDATE email_accounts SET
                 sync_status = 'error',
                 consecutive_failures = ?,
@@ -265,7 +265,7 @@ export async function syncEmailAccount(account) {
         if (failures >= MAX_CONSECUTIVE_FAILURES) {
             logger.info(`[EmailPolling] Disabling account ${redactId(account.id)} after ${failures} failures`);
 
-            query.run(`
+            await query.run(`
                 UPDATE email_accounts SET is_enabled = 0, updated_at = ?
                 WHERE id = ?
             `, [now, account.id]);
@@ -342,7 +342,7 @@ async function queueEmailReceipt(account, email, detection, accessToken) {
     };
 
     // Insert into email_parse_queue
-    query.run(`
+    await query.run(`
         INSERT INTO email_parse_queue (
             id, user_id, email_subject, email_from, email_body, email_date,
             parsed_data, status, receipt_type, confidence_score, source_file,
@@ -373,8 +373,8 @@ async function queueEmailReceipt(account, email, detection, accessToken) {
 /**
  * Get email polling worker status
  */
-export function getEmailPollingStatus() {
-    const stats = query.get(`
+export async function getEmailPollingStatus() {
+    const stats = await query.get(`
         SELECT
             COUNT(*) as total_accounts,
             SUM(CASE WHEN is_enabled = 1 THEN 1 ELSE 0 END) as enabled_accounts,

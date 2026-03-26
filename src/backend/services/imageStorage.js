@@ -1,5 +1,6 @@
 // Image Storage Service
-// Handles filesystem storage for Image Bank
+// Handles image storage: filesystem (dev) or Cloudflare R2/S3 (production)
+// Set IMAGE_STORAGE=r2 to use R2; defaults to local filesystem
 
 import { existsSync, mkdirSync, writeFileSync, unlinkSync, readFileSync, lstatSync } from 'fs';
 import { join, dirname, resolve } from 'path';
@@ -12,13 +13,35 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..', '..', '..');
 const UPLOADS_DIR = join(ROOT_DIR, 'public', 'uploads', 'images');
 
-// Ensure directories exist
-['original', 'thumbnails', 'edited', 'temp'].forEach(dir => {
-    const path = join(UPLOADS_DIR, dir);
-    if (!existsSync(path)) {
-        mkdirSync(path, { recursive: true });
-    }
-});
+const USE_R2 = process.env.IMAGE_STORAGE === 'r2';
+const R2_BUCKET = process.env.R2_BUCKET_NAME;
+const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+
+// Lazy R2/S3 client — only initialized when IMAGE_STORAGE=r2
+let _s3;
+async function getS3() {
+    if (_s3) return _s3;
+    const { S3Client } = await import('@aws-sdk/client-s3');
+    _s3 = new S3Client({
+        region: 'auto',
+        endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+            accessKeyId: process.env.R2_ACCESS_KEY_ID,
+            secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+        },
+    });
+    return _s3;
+}
+
+// Ensure local directories exist (local mode only)
+if (!USE_R2) {
+    ['original', 'thumbnails', 'edited', 'temp'].forEach(dir => {
+        const path = join(UPLOADS_DIR, dir);
+        if (!existsSync(path)) {
+            mkdirSync(path, { recursive: true });
+        }
+    });
+}
 
 /**
  * Generate unique image ID
@@ -133,18 +156,9 @@ export async function saveImage(fileData, userId, originalFilename, mimeType = '
         const extension = getExtensionFromMime(mimeType);
         const storedFilename = `${imageId}.${extension}`;
 
-        // Create user directory if it doesn't exist
-        const userDir = join(UPLOADS_DIR, 'original', userId);
-        if (!existsSync(userDir)) {
-            mkdirSync(userDir, { recursive: true });
-        }
-
-        const filePath = join(userDir, storedFilename);
-
         // Convert base64 to buffer if needed
         let buffer;
         if (typeof fileData === 'string') {
-            // Remove data URL prefix if present
             const base64Data = fileData.replace(/^data:image\/\w+;base64,/, '');
             buffer = Buffer.from(base64Data, 'base64');
         } else {
@@ -156,24 +170,41 @@ export async function saveImage(fileData, userId, originalFilename, mimeType = '
             throw new Error('Invalid image data: file signature does not match any supported image format');
         }
 
-        // Write file
-        writeFileSync(filePath, buffer);
-
-        // Get file size and dimensions (basic info)
         const fileSize = buffer.length;
+        let filePath, thumbnailPath;
 
-        // Generate thumbnail
-        const thumbnailPath = await generateThumbnail(filePath, userId, imageId, extension);
+        if (USE_R2) {
+            const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+            const s3 = await getS3();
+            const r2Key = `images/${userId}/${storedFilename}`;
+            await s3.send(new PutObjectCommand({
+                Bucket: R2_BUCKET,
+                Key: r2Key,
+                Body: buffer,
+                ContentType: mimeType,
+            }));
+            filePath = r2Key;
+            thumbnailPath = await generateThumbnail(buffer, userId, imageId);
+        } else {
+            const userDir = join(UPLOADS_DIR, 'original', userId);
+            if (!existsSync(userDir)) {
+                mkdirSync(userDir, { recursive: true });
+            }
+            const localPath = join(userDir, storedFilename);
+            writeFileSync(localPath, buffer);
+            filePath = `/uploads/images/original/${userId}/${storedFilename}`;
+            thumbnailPath = await generateThumbnail(localPath, userId, imageId, extension);
+        }
 
         return {
             id: imageId,
             original_filename: originalFilename,
             stored_filename: storedFilename,
-            file_path: `/uploads/images/original/${userId}/${storedFilename}`,
+            file_path: filePath,
             file_size: fileSize,
             mime_type: mimeType,
             thumbnail_path: thumbnailPath,
-            width: null, // Would need image library to get actual dimensions
+            width: null,
             height: null,
             aspect_ratio: null,
             dominant_color: null
@@ -185,29 +216,46 @@ export async function saveImage(fileData, userId, originalFilename, mimeType = '
 }
 
 /**
- * Generate thumbnail (max 300px wide, JPEG 80% quality)
+ * Generate thumbnail (max 300px wide, JPEG 80% quality).
+ * pathOrBuffer: file path (local mode) or Buffer (R2 mode).
  */
-export async function generateThumbnail(originalPath, userId, imageId, extension) {
+export async function generateThumbnail(pathOrBuffer, userId, imageId, extension) {
+    const thumbnailFilename = `${imageId}_thumb.jpg`;
+
+    if (USE_R2) {
+        const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+        const s3 = await getS3();
+        const r2Key = `images/${userId}/thumbnails/${thumbnailFilename}`;
+        try {
+            const sharp = (await import('sharp')).default;
+            const thumbBuffer = await sharp(pathOrBuffer)
+                .resize(300, null, { fit: 'inside', withoutEnlargement: true })
+                .jpeg({ quality: 80 })
+                .toBuffer();
+            await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: r2Key, Body: thumbBuffer, ContentType: 'image/jpeg' }));
+        } catch (err) {
+            logger.error('[ImageStorage] sharp/R2 thumbnail failed, uploading original', null, { detail: err.message });
+            await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: r2Key, Body: pathOrBuffer, ContentType: 'image/jpeg' }));
+        }
+        return r2Key;
+    }
+
     const userThumbDir = join(UPLOADS_DIR, 'thumbnails', userId);
     if (!existsSync(userThumbDir)) {
         mkdirSync(userThumbDir, { recursive: true });
     }
-
-    const thumbnailFilename = `${imageId}_thumb.jpg`;
     const thumbnailPath = join(userThumbDir, thumbnailFilename);
-
     try {
         const sharp = (await import('sharp')).default;
-        await sharp(originalPath)
+        await sharp(pathOrBuffer)
             .resize(300, null, { fit: 'inside', withoutEnlargement: true })
             .jpeg({ quality: 80 })
             .toFile(thumbnailPath);
     } catch (err) {
         logger.error('[ImageStorage] sharp resize failed, falling back to copy', null, { detail: err.message });
-        const originalBuffer = readFileSync(originalPath);
+        const originalBuffer = typeof pathOrBuffer === 'string' ? readFileSync(pathOrBuffer) : pathOrBuffer;
         writeFileSync(thumbnailPath, originalBuffer);
     }
-
     return `/uploads/images/thumbnails/${userId}/${thumbnailFilename}`;
 }
 
@@ -236,12 +284,11 @@ function safeDeleteFile(relativePath) {
 }
 
 /**
- * Delete image from filesystem and database
+ * Delete image from storage and database
  */
 export async function deleteImage(imageId, userId) {
     try {
-        // Get image metadata from database
-        const image = query.get(
+        const image = await query.get(
             'SELECT * FROM image_bank WHERE id = ? AND user_id = ?',
             [imageId, userId]
         );
@@ -250,26 +297,27 @@ export async function deleteImage(imageId, userId) {
             return { success: false, error: 'Image not found' };
         }
 
-        // Delete original file (with path traversal + symlink protection)
-        safeDeleteFile(image.file_path);
-
-        // Delete thumbnail if exists
-        if (image.thumbnail_path) {
-            safeDeleteFile(image.thumbnail_path);
-        }
-
-        // Delete edited versions from edit history
-        const editHistory = query.all(
+        const editHistory = await query.all(
             'SELECT edited_path FROM image_edit_history WHERE image_id = ?',
             [imageId]
         );
 
-        editHistory.forEach(edit => {
-            safeDeleteFile(edit.edited_path);
-        });
+        if (USE_R2) {
+            const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+            const s3 = await getS3();
+            const keys = [image.file_path];
+            if (image.thumbnail_path) keys.push(image.thumbnail_path);
+            editHistory.forEach(edit => { if (edit.edited_path) keys.push(edit.edited_path); });
+            await Promise.all(keys.map(key =>
+                s3.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key })).catch(() => {})
+            ));
+        } else {
+            safeDeleteFile(image.file_path);
+            if (image.thumbnail_path) safeDeleteFile(image.thumbnail_path);
+            editHistory.forEach(edit => { safeDeleteFile(edit.edited_path); });
+        }
 
-        // Delete from database
-        query.run('DELETE FROM image_bank WHERE id = ? AND user_id = ?', [imageId, userId]);
+        await query.run('DELETE FROM image_bank WHERE id = ? AND user_id = ?', [imageId, userId]);
 
         return { success: true };
     } catch (error) {
@@ -281,16 +329,17 @@ export async function deleteImage(imageId, userId) {
 /**
  * Get public URL for image
  */
-export function getImageUrl(imageId, userId) {
-    const image = query.get(
+export async function getImageUrl(imageId, userId) {
+    const image = await query.get(
         'SELECT file_path FROM image_bank WHERE id = ? AND user_id = ?',
         [imageId, userId]
     );
 
-    if (!image) {
-        return null;
-    }
+    if (!image) return null;
 
+    if (USE_R2) {
+        return `${R2_PUBLIC_URL}/${image.file_path}`;
+    }
     return image.file_path;
 }
 
@@ -300,7 +349,7 @@ export function getImageUrl(imageId, userId) {
 export async function importFromInventory(inventoryId, userId) {
     try {
         // Get inventory item
-        const item = query.get(
+        const item = await query.get(
             'SELECT images FROM inventory WHERE id = ? AND user_id = ?',
             [inventoryId, userId]
         );
@@ -344,7 +393,7 @@ export async function importFromInventory(inventoryId, userId) {
             );
 
             // Save to image_bank table
-            query.run(`
+            await query.run(`
                 INSERT INTO image_bank (
                     id, user_id, folder_id, original_filename, stored_filename,
                     file_path, file_size, mime_type, source_inventory_id

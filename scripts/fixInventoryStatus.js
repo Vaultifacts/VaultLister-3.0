@@ -1,21 +1,15 @@
+#!/usr/bin/env bun
 // Fix inventory status to make all items active
-import { Database } from 'bun:sqlite';
+import { query, initializeDatabase, closeDatabase } from '../src/backend/db/database.js';
 
-const db = new Database('./data/vaultlister.db');
-
+await initializeDatabase();
 console.log('Fixing inventory status...');
 
-// Update all items to active status
-const result = db.query('UPDATE inventory SET status = ? WHERE status != ?').run('active', 'active');
+const result = await query.run('UPDATE inventory SET status = ? WHERE status != ?', ['active', 'active']);
 console.log(`Updated ${result.changes} items to active status`);
 
-// Get counts after
-const counts = db.query('SELECT COUNT(*) as count, status FROM inventory GROUP BY status').all();
+const counts = await query.all('SELECT COUNT(*) as count, status FROM inventory GROUP BY status', []);
 console.log('\nFinal counts:');
-counts.forEach(row => {
-    console.log(`- ${row.status}: ${row.count} items`);
-});
-
+counts.forEach(row => console.log(`- ${row.status}: ${row.count} items`));
 console.log('\n✅ Status fix complete!');
-
-db.close();
+await closeDatabase();

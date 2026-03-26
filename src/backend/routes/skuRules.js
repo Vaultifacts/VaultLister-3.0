@@ -77,7 +77,7 @@ export async function skuRulesRouter(ctx) {
 
     // GET /api/sku-rules - List all rules for user
     if (method === 'GET' && (path === '' || path === '/')) {
-        const rules = query.all(
+        const rules = await query.all(
             'SELECT * FROM sku_rules WHERE user_id = ? ORDER BY is_default DESC, name ASC',
             [user.id]
         );
@@ -92,7 +92,7 @@ export async function skuRulesRouter(ctx) {
 
     // GET /api/sku-rules/default - Get default rule (must be before :id catch-all)
     if (method === 'GET' && path === '/default') {
-        const rule = query.get(
+        const rule = await query.get(
             'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1',
             [user.id]
         );
@@ -116,7 +116,7 @@ export async function skuRulesRouter(ctx) {
 
         let rule = null;
         if (ruleId) {
-            rule = query.get(
+            rule = await query.get(
                 'SELECT * FROM sku_rules WHERE id = ? AND user_id = ?',
                 [ruleId, user.id]
             );
@@ -151,12 +151,12 @@ export async function skuRulesRouter(ctx) {
 
         let rule;
         if (ruleId) {
-            rule = query.get(
+            rule = await query.get(
                 'SELECT * FROM sku_rules WHERE id = ? AND user_id = ?',
                 [ruleId, user.id]
             );
         } else {
-            rule = query.get(
+            rule = await query.get(
                 'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1',
                 [user.id]
             );
@@ -169,7 +169,7 @@ export async function skuRulesRouter(ctx) {
 
         const generatedSku = generateSku(rule.pattern, itemData, rule);
 
-        query.run(
+        await query.run(
             'UPDATE sku_rules SET counter_current = counter_current + 1 WHERE id = ?',
             [rule.id]
         );
@@ -195,7 +195,7 @@ export async function skuRulesRouter(ctx) {
             return { status: 400, data: { error: 'Rule ID is required' } };
         }
 
-        const rule = query.get(
+        const rule = await query.get(
             'SELECT * FROM sku_rules WHERE id = ? AND user_id = ?',
             [ruleId, user.id]
         );
@@ -206,12 +206,12 @@ export async function skuRulesRouter(ctx) {
 
         let items;
         if (onlyEmpty) {
-            items = query.all(
+            items = await query.all(
                 "SELECT * FROM inventory WHERE user_id = ? AND (sku IS NULL OR sku = '')",
                 [user.id]
             );
         } else {
-            items = query.all(
+            items = await query.all(
                 'SELECT * FROM inventory WHERE user_id = ?',
                 [user.id]
             );
@@ -224,7 +224,7 @@ export async function skuRulesRouter(ctx) {
             const tempRule = { ...rule, counter_current: currentCounter };
             const newSku = generateSku(rule.pattern, item, tempRule);
 
-            query.run(
+            await query.run(
                 'UPDATE inventory SET sku = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
                 [newSku, item.id]
             );
@@ -233,7 +233,7 @@ export async function skuRulesRouter(ctx) {
             updated++;
         }
 
-        query.run(
+        await query.run(
             'UPDATE sku_rules SET counter_current = ? WHERE id = ?',
             [currentCounter, ruleId]
         );
@@ -252,7 +252,7 @@ export async function skuRulesRouter(ctx) {
     if (method === 'GET' && path.startsWith('/') && !path.includes('/', 1)) {
         const ruleId = path.substring(1);
 
-        const rule = query.get(
+        const rule = await query.get(
             'SELECT * FROM sku_rules WHERE id = ? AND user_id = ?',
             [ruleId, user.id]
         );
@@ -292,7 +292,7 @@ export async function skuRulesRouter(ctx) {
 
         // If setting as default, clear other defaults first
         if (isDefault) {
-            query.run(
+            await query.run(
                 'UPDATE sku_rules SET is_default = 0 WHERE user_id = ?',
                 [user.id]
             );
@@ -302,7 +302,7 @@ export async function skuRulesRouter(ctx) {
         const variableMatches = pattern.match(/\{[^}]+\}/g) || [];
         const variables = [...new Set(variableMatches)];
 
-        query.run(`
+        await query.run(`
             INSERT INTO sku_rules (
                 id, user_id, name, pattern, description, is_default,
                 prefix, suffix, separator, counter_start, counter_padding,
@@ -324,7 +324,7 @@ export async function skuRulesRouter(ctx) {
             JSON.stringify(variables)
         ]);
 
-        const newRule = query.get('SELECT * FROM sku_rules WHERE id = ?', [ruleId]);
+        const newRule = await query.get('SELECT * FROM sku_rules WHERE id = ?', [ruleId]);
         newRule.variables = variables;
 
         return { status: 201, data: newRule };
@@ -334,7 +334,7 @@ export async function skuRulesRouter(ctx) {
     if (method === 'PUT' && path.startsWith('/') && !path.includes('/', 1)) {
         const ruleId = path.substring(1);
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id FROM sku_rules WHERE id = ? AND user_id = ?',
             [ruleId, user.id]
         );
@@ -381,7 +381,7 @@ export async function skuRulesRouter(ctx) {
         if (isDefault !== undefined) {
             // Clear other defaults first if setting this as default
             if (isDefault) {
-                query.run('UPDATE sku_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE sku_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
             }
             updates.push('is_default = ?');
             params.push(isDefault ? 1 : 0);
@@ -422,12 +422,12 @@ export async function skuRulesRouter(ctx) {
         updates.push('updated_at = CURRENT_TIMESTAMP');
         params.push(ruleId, user.id);
 
-        query.run(
+        await query.run(
             `UPDATE sku_rules SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
             params
         );
 
-        const updatedRule = query.get('SELECT * FROM sku_rules WHERE id = ?', [ruleId]);
+        const updatedRule = await query.get('SELECT * FROM sku_rules WHERE id = ?', [ruleId]);
         updatedRule.variables = safeJsonParse(updatedRule.variables, []);
 
         return { status: 200, data: updatedRule };
@@ -437,7 +437,7 @@ export async function skuRulesRouter(ctx) {
     if (method === 'DELETE' && path.startsWith('/') && !path.includes('/', 1)) {
         const ruleId = path.substring(1);
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id FROM sku_rules WHERE id = ? AND user_id = ?',
             [ruleId, user.id]
         );
@@ -446,7 +446,7 @@ export async function skuRulesRouter(ctx) {
             return { status: 404, data: { error: 'Rule not found' } };
         }
 
-        query.run('DELETE FROM sku_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+        await query.run('DELETE FROM sku_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
 
         return { status: 200, data: { message: 'Rule deleted successfully' } };
     }
@@ -455,7 +455,7 @@ export async function skuRulesRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[^/]+\/set-default$/)) {
         const ruleId = path.split('/')[1];
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id FROM sku_rules WHERE id = ? AND user_id = ?',
             [ruleId, user.id]
         );
@@ -465,10 +465,10 @@ export async function skuRulesRouter(ctx) {
         }
 
         // Clear all defaults for user
-        query.run('UPDATE sku_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
+        await query.run('UPDATE sku_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
 
         // Set this rule as default
-        query.run('UPDATE sku_rules SET is_default = 1 WHERE id = ?', [ruleId]);
+        await query.run('UPDATE sku_rules SET is_default = 1 WHERE id = ?', [ruleId]);
 
         return { status: 200, data: { message: 'Default rule updated' } };
     }

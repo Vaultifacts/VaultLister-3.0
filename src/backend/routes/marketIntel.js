@@ -50,7 +50,7 @@ export async function marketIntelRouter(ctx) {
         sql += ' ORDER BY listing_count DESC LIMIT 500';
 
         try {
-            const competitors = query.all(sql, params);
+            const competitors = await query.all(sql, params);
             return { status: 200, data: competitors };
         } catch (error) {
             logger.error('[MarketIntel] Error fetching competitors', user?.id || null, { detail: error.message });
@@ -72,14 +72,14 @@ export async function marketIntelRouter(ctx) {
         const competitorId = uuidv4();
 
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO competitors (id, user_id, platform, username, profile_url,
                     category_focus, notes, is_active, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
             `, [competitorId, user.id, platform, username, profile_url || null,
                 category_focus || null, notes || null]);
 
-            const competitor = query.get('SELECT * FROM competitors WHERE id = ?', [competitorId]);
+            const competitor = await query.get('SELECT * FROM competitors WHERE id = ?', [competitorId]);
             return { status: 201, data: competitor };
         } catch (error) {
             if (error.message.includes('UNIQUE')) {
@@ -98,7 +98,7 @@ export async function marketIntelRouter(ctx) {
         const competitorId = competitorIdMatch[1];
 
         try {
-            const competitor = query.get(`
+            const competitor = await query.get(`
                 SELECT * FROM competitors WHERE id = ? AND user_id = ?
             `, [competitorId, user.id]);
 
@@ -107,7 +107,7 @@ export async function marketIntelRouter(ctx) {
             }
 
             // Get their listings
-            const listings = query.all(`
+            const listings = await query.all(`
                 SELECT * FROM competitor_listings
                 WHERE competitor_id = ?
                 ORDER BY listed_at DESC
@@ -129,12 +129,12 @@ export async function marketIntelRouter(ctx) {
 
         const competitorId = competitorIdMatch[1];
 
-        const competitor = query.get('SELECT id FROM competitors WHERE id = ? AND user_id = ?', [competitorId, user.id]);
+        const competitor = await query.get('SELECT id FROM competitors WHERE id = ? AND user_id = ?', [competitorId, user.id]);
         if (!competitor) return { status: 404, data: { error: 'Competitor not found' } };
 
-        query.transaction(() => {
-            query.run('DELETE FROM competitor_listings WHERE competitor_id = ?', [competitorId]);
-            query.run('DELETE FROM competitors WHERE id = ? AND user_id = ?', [competitorId, user.id]);
+        await query.transaction(async () => {
+            await query.run('DELETE FROM competitor_listings WHERE competitor_id = ?', [competitorId]);
+            await query.run('DELETE FROM competitors WHERE id = ? AND user_id = ?', [competitorId, user.id]);
         });
 
         return { status: 200, data: { deleted: true } };
@@ -150,7 +150,7 @@ export async function marketIntelRouter(ctx) {
         const sold = queryParams.sold === 'true';
 
         // Verify ownership of competitor before listing their data
-        const ownerCheck = query.get(
+        const ownerCheck = await query.get(
             'SELECT id FROM competitors WHERE id = ? AND user_id = ?',
             [competitorId, user.id]
         );
@@ -173,7 +173,7 @@ export async function marketIntelRouter(ctx) {
 
             sql += ' ORDER BY listed_at DESC LIMIT 100';
 
-            const listings = query.all(sql, params);
+            const listings = await query.all(sql, params);
             return { status: 200, data: listings };
         } catch (error) {
             logger.error('[MarketIntel] Error fetching competitor listings', user?.id || null, { detail: error.message });
@@ -189,7 +189,7 @@ export async function marketIntelRouter(ctx) {
 
         const competitorId = refreshMatch[1];
 
-        const competitor = query.get(
+        const competitor = await query.get(
             'SELECT id, platform, username FROM competitors WHERE id = ? AND user_id = ?',
             [competitorId, user.id]
         );
@@ -216,8 +216,8 @@ export async function marketIntelRouter(ctx) {
         });
 
         // Stamp last_checked_at so the UI knows a refresh was triggered
-        query.run(`
-            UPDATE competitors SET last_checked_at = datetime('now'), updated_at = datetime('now')
+        await query.run(`
+            UPDATE competitors SET last_checked_at = NOW(), updated_at = NOW()
             WHERE id = ? AND user_id = ?
         `, [competitorId, user.id]);
 
@@ -243,7 +243,7 @@ export async function marketIntelRouter(ctx) {
             let sql = `
                 SELECT * FROM market_insights
                 WHERE (user_id = ? OR user_id IS NULL)
-                AND (valid_until IS NULL OR valid_until > datetime('now'))
+                AND (valid_until IS NULL OR valid_until > NOW())
             `;
             const params = [user.id];
 
@@ -259,7 +259,7 @@ export async function marketIntelRouter(ctx) {
 
             sql += ' ORDER BY opportunity_score DESC LIMIT 20';
 
-            const insights = query.all(sql, params);
+            const insights = await query.all(sql, params);
 
             if (insights.length > 0) {
                 // Parse JSON fields
@@ -295,12 +295,12 @@ export async function marketIntelRouter(ctx) {
 
         // Store insight
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO market_insights (id, user_id, category, subcategory, brand, platform,
                     saturation_score, opportunity_score, avg_price, price_range_low, price_range_high,
                     avg_days_to_sell, listing_count, demand_trend, competition_level,
                     recommended_price_range, insights_json, valid_until, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `, [
                 insight.id, user.id, insight.category, insight.subcategory, insight.brand,
                 insight.platform, insight.saturation_score, insight.opportunity_score,
@@ -338,7 +338,7 @@ export async function marketIntelRouter(ctx) {
             return { status: 400, data: { error: 'inventory_id required' } };
         }
 
-        const item = query.get(
+        const item = await query.get(
             'SELECT * FROM inventory WHERE id = ? AND user_id = ?',
             [inventory_id, user.id]
         );
@@ -393,11 +393,11 @@ export async function marketIntelRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const competitorStats = query.get(`
+            const competitorStats = await query.get(`
                 SELECT COUNT(*) as count FROM competitors WHERE user_id = ? AND is_active = 1
             `, [user.id]);
 
-            const listingStats = query.get(`
+            const listingStats = await query.get(`
                 SELECT
                     COUNT(*) as total,
                     COUNT(CASE WHEN sold_at IS NOT NULL THEN 1 END) as sold
@@ -406,13 +406,13 @@ export async function marketIntelRouter(ctx) {
                 WHERE c.user_id = ?
             `, [user.id]);
 
-            const insightStats = query.get(`
+            const insightStats = await query.get(`
                 SELECT
                     AVG(opportunity_score) as avg_opportunity,
                     AVG(saturation_score) as avg_saturation
                 FROM market_insights
                 WHERE user_id = ?
-                AND (valid_until IS NULL OR valid_until > datetime('now'))
+                AND (valid_until IS NULL OR valid_until > NOW())
             `, [user.id]);
 
             return {

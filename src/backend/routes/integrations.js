@@ -203,7 +203,7 @@ export async function integrationsRouter(ctx) {
         }
 
         try {
-            const items = query.all(
+            const items = await query.all(
                 `SELECT id, title, sku, description, price, quantity, status, condition, brand,
                         category, tags, created_at, updated_at
                  FROM inventory_items

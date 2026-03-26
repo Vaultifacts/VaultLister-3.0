@@ -187,7 +187,7 @@ function shouldSkipLogging(path) {
  */
 async function storeRequestLog(ctx, status, duration, error = null) {
     try {
-        query.run(`
+        await query.run(`
             INSERT INTO request_logs (
                 id, request_id, method, path, status_code,
                 duration_ms, user_id, ip_address, user_agent,
@@ -195,16 +195,16 @@ async function storeRequestLog(ctx, status, duration, error = null) {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             generateId(),
-            ctx.requestId,
+            ctx.requestId || null,
             ctx.method,
             ctx.path,
             status,
             duration,
             ctx.user?.id || null,
-            anonymizeIP(ctx.ip),
+            anonymizeIP(ctx.ip) || null,
             ctx.userAgent?.substring(0, 500) || null,
             error?.message || null,
-            ctx.timestamp
+            ctx.timestamp || now()
         ]);
     } catch (dbError) {
         // Silently fail
@@ -214,9 +214,9 @@ async function storeRequestLog(ctx, status, duration, error = null) {
 /**
  * Audit log for important actions
  */
-export function logAuditEvent(ctx, action, resourceType, resourceId, details = {}) {
+export async function logAuditEvent(ctx, action, resourceType, resourceId, details = {}) {
     try {
-        query.run(`
+        await query.run(`
             INSERT INTO audit_logs (
                 id, user_id, action, resource_type, resource_id,
                 details, ip_address, user_agent, created_at

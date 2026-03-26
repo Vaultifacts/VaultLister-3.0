@@ -3,7 +3,6 @@
 
 import v8 from 'v8';
 import crypto from 'crypto';
-import { statSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { query } from '../db/database.js';
@@ -11,8 +10,6 @@ import { logger } from '../shared/logger.js';
 import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = join(__dirname, '..', '..', '..');
-const DB_PATH = process.env.DB_PATH || join(ROOT_DIR, 'data', 'vaultlister.db');
 
 const DB_WARN_BYTES  = 500 * 1024 * 1024; // 500 MB
 const DB_CRIT_BYTES  =   1 * 1024 * 1024 * 1024; // 1 GB
@@ -93,7 +90,7 @@ const monitoring = {
     },
 
     // Track error
-    trackError(error, context = {}) {
+    async trackError(error, context = {}) {
         metrics.requests.errors++;
 
         const errorRecord = {
@@ -112,9 +109,9 @@ const monitoring = {
 
         // Log to database
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO error_logs (id, message, stack, context, created_at)
-                VALUES (?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, NOW())
             `, [
                 crypto.randomUUID(),
                 error.message,
@@ -151,31 +148,31 @@ const monitoring = {
         }
     },
 
-    // Check database file size and alert if thresholds are exceeded
-    checkDatabaseSize() {
+    // Check database size via pg_database_size() and alert if thresholds are exceeded
+    async checkDatabaseSize() {
         try {
-            const stat = statSync(DB_PATH);
-            const sizeBytes = stat.size;
+            const row = await query.get('SELECT pg_database_size(current_database()) AS size_bytes');
+            const sizeBytes = Number(row?.size_bytes || 0);
             metrics.database.sizeBytes = sizeBytes;
             metrics.database.lastChecked = new Date().toISOString();
 
             if (sizeBytes >= DB_CRIT_BYTES) {
-                logger.error(`[Monitoring] CRITICAL: database file is ${(sizeBytes / (1024 ** 3)).toFixed(2)} GB (>= 1 GB threshold): ${DB_PATH}`);
+                logger.error(`[Monitoring] CRITICAL: database is ${(sizeBytes / (1024 ** 3)).toFixed(2)} GB (>= 1 GB threshold)`);
                 this.alert('db_size_critical', { sizeBytes, sizeMB: Math.round(sizeBytes / (1024 ** 2)) });
             } else if (sizeBytes >= DB_WARN_BYTES) {
-                logger.warn(`[Monitoring] WARNING: database file is ${Math.round(sizeBytes / (1024 ** 2))} MB (>= 500 MB threshold): ${DB_PATH}`);
+                logger.warn(`[Monitoring] WARNING: database is ${Math.round(sizeBytes / (1024 ** 2))} MB (>= 500 MB threshold)`);
                 this.alert('db_size_warning', { sizeBytes, sizeMB: Math.round(sizeBytes / (1024 ** 2)) });
             }
         } catch (e) {
-            logger.warn('[Monitoring] Could not stat database file:', e.message);
+            logger.warn('[Monitoring] Could not query database size:', e.message);
         }
     },
 
     // Start metrics collection
     startMetricsCollection() {
         // Check DB size immediately on init, then every hour
-        this.checkDatabaseSize();
-        this._dbSizeInterval = setInterval(() => this.checkDatabaseSize(), 60 * 60 * 1000);
+        this.checkDatabaseSize().catch(err => logger.error('DB size check failed:', err.message));
+        this._dbSizeInterval = setInterval(() => this.checkDatabaseSize().catch(err => logger.error('DB size check failed:', err.message)), 60 * 60 * 1000);
 
         // Collect metrics every 30 seconds
         this._metricsInterval = setInterval(() => {
@@ -220,9 +217,9 @@ const monitoring = {
 
         // Store alert
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO alerts (id, type, data, created_at)
-                VALUES (?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, NOW())
             `, [
                 crypto.randomUUID(),
                 type,
@@ -272,7 +269,7 @@ const monitoring = {
 
         // Database check
         try {
-            query.get('SELECT 1');
+            await query.get('SELECT 1');
             checks.database = true;
         } catch (e) {}
 
@@ -373,12 +370,12 @@ const monitoring = {
     },
 
     // Get alerts
-    getAlerts(hours = 24) {
+    async getAlerts(hours = 24) {
         try {
             const h = Math.max(1, Math.min(Number(hours) || 24, 8760));
-            return query.all(`
+            return await query.all(`
                 SELECT * FROM alerts
-                WHERE created_at > datetime('now', '-' || ? || ' hours')
+                WHERE created_at > NOW() - (?::text || ' hours')::interval
                 ORDER BY created_at DESC
                 LIMIT 100
             `, [h]) || [];
@@ -388,31 +385,8 @@ const monitoring = {
     }
 };
 
-// Database migration for monitoring tables
-export const migration = `
--- Error logs
-CREATE TABLE IF NOT EXISTS error_logs (
-    id TEXT PRIMARY KEY,
-    message TEXT NOT NULL,
-    stack TEXT,
-    context TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
-);
-
-CREATE INDEX IF NOT EXISTS idx_error_logs_date ON error_logs(created_at DESC);
-
--- Alerts
-CREATE TABLE IF NOT EXISTS alerts (
-    id TEXT PRIMARY KEY,
-    type TEXT NOT NULL,
-    data TEXT,
-    acknowledged INTEGER DEFAULT 0,
-    created_at TEXT DEFAULT (datetime('now'))
-);
-
-CREATE INDEX IF NOT EXISTS idx_alerts_date ON alerts(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_alerts_type ON alerts(type, created_at DESC);
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 // Alias used by monitoring route
 export const monitor = monitoring;
@@ -434,11 +408,11 @@ export const healthChecker = {
 
 // Security monitor used by monitoring route
 export const securityMonitor = {
-    getSummary() {
+    async getSummary() {
         try {
-            const failedLogins = query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'LOGIN_FAILURE' AND created_at > datetime('now', '-24 hours')");
-            const suspicious = query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'SUSPICIOUS' AND created_at > datetime('now', '-24 hours')");
-            const blocked = query.get("SELECT COUNT(DISTINCT ip_or_user) as count FROM security_logs WHERE event_type = 'RATE_LIMIT_BLOCK' AND created_at > datetime('now', '-24 hours')");
+            const failedLogins = await query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'LOGIN_FAILURE' AND created_at > NOW() - INTERVAL '24 hours'");
+            const suspicious = await query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'SUSPICIOUS' AND created_at > NOW() - INTERVAL '24 hours'");
+            const blocked = await query.get("SELECT COUNT(DISTINCT ip_or_user) as count FROM security_logs WHERE event_type = 'RATE_LIMIT_BLOCK' AND created_at > NOW() - INTERVAL '24 hours'");
             return {
                 failedLogins: failedLogins?.count || 0,
                 suspiciousActivity: suspicious?.count || 0,

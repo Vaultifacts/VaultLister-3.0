@@ -79,7 +79,7 @@ async function exportUserData(userId) {
     const EXPORT_ROW_LIMIT = 10000;
     for (const { table, idColumn } of USER_DATA_TABLES) {
         try {
-            const rows = query.all(`SELECT * FROM ${table} WHERE ${idColumn} = ? LIMIT ?`, [userId, EXPORT_ROW_LIMIT]);
+            const rows = await query.all(`SELECT * FROM ${table} WHERE ${idColumn} = ? LIMIT ?`, [userId, EXPORT_ROW_LIMIT]);
             if (rows && rows.length > 0) {
                 // Strip sensitive columns from exported data
                 data.data[table] = rows.map(row => {
@@ -106,16 +106,16 @@ async function scheduleAccountDeletion(userId, reason) {
     const deletionDate = new Date();
     deletionDate.setDate(deletionDate.getDate() + 30); // 30-day grace period
 
-    query.run(`
+    await query.run(`
         INSERT INTO account_deletion_requests (id, user_id, reason, scheduled_for, status, created_at)
-        VALUES (?, ?, ?, ?, 'pending', datetime('now'))
+        VALUES (?, ?, ?, ?, 'pending', NOW())
     `, [uuidv4(), userId, reason, deletionDate.toISOString()]);
 
     // Mark user as pending deletion
-    query.run(`
+    await query.run(`
         UPDATE users SET
             deletion_scheduled_at = ?,
-            updated_at = datetime('now')
+            updated_at = NOW()
         WHERE id = ?
     `, [deletionDate.toISOString(), userId]);
 
@@ -124,26 +124,26 @@ async function scheduleAccountDeletion(userId, reason) {
 
 // Cancel account deletion
 async function cancelAccountDeletion(userId) {
-    query.run(`
+    await query.run(`
         UPDATE account_deletion_requests
-        SET status = 'cancelled', updated_at = datetime('now')
+        SET status = 'cancelled', updated_at = NOW()
         WHERE user_id = ? AND status = 'pending'
     `, [userId]);
 
-    query.run(`
+    await query.run(`
         UPDATE users SET
             deletion_scheduled_at = NULL,
-            updated_at = datetime('now')
+            updated_at = NOW()
         WHERE id = ?
     `, [userId]);
 }
 
 // Execute account deletion
 async function executeAccountDeletion(userId) {
-    query.transaction(() => {
+    await query.transaction(async (tx) => {
         // Anonymize data that must be retained for legal/financial reasons
         // sales records kept for financial/tax compliance; buyer PII stripped
-        query.run(`
+        await tx.run(`
             UPDATE sales SET
                 buyer_username = 'DELETED',
                 buyer_address = NULL,
@@ -153,29 +153,29 @@ async function executeAccountDeletion(userId) {
 
         // transaction_audit_log — financial audit trail (legal retention); anonymize user reference
         try {
-            query.run(`UPDATE transaction_audit_log SET user_id = NULL WHERE user_id = ?`, [userId]);
+            await tx.run(`UPDATE transaction_audit_log SET user_id = NULL WHERE user_id = ?`, [userId]);
         } catch (e) { /* table may not exist */ }
 
         // Delete user data from all tables
         for (const { table, idColumn } of USER_DATA_TABLES) {
             if (table === 'users') continue; // Delete last
             try {
-                query.run(`DELETE FROM ${table} WHERE ${idColumn} = ?`, [userId]);
+                await tx.run(`DELETE FROM ${table} WHERE ${idColumn} = ?`, [userId]);
             } catch (e) {
                 // Table might not exist — skip silently
             }
         }
 
         // Finally, delete the user record
-        query.run('DELETE FROM users WHERE id = ?', [userId]);
+        await tx.run('DELETE FROM users WHERE id = ?', [userId]);
 
         // Mark deletion request as completed
-        query.run(`
+        await tx.run(`
             UPDATE account_deletion_requests
-            SET status = 'completed', completed_at = datetime('now')
+            SET status = 'completed', completed_at = NOW()
             WHERE user_id = ?
         `, [userId]);
-    })();
+    });
 }
 
 export async function gdprRouter(ctx) {
@@ -195,18 +195,18 @@ export async function gdprRouter(ctx) {
             // Create export request
             const requestId = uuidv4();
 
-            query.run(`
+            await query.run(`
                 INSERT INTO data_export_requests (id, user_id, status, created_at)
-                VALUES (?, ?, 'processing', datetime('now'))
+                VALUES (?, ?, 'processing', NOW())
             `, [requestId, user.id]);
 
             // Export data
             const exportData = await exportUserData(user.id);
 
             // Store export
-            query.run(`
+            await query.run(`
                 UPDATE data_export_requests
-                SET status = 'completed', export_data = ?, completed_at = datetime('now')
+                SET status = 'completed', export_data = ?, completed_at = NOW()
                 WHERE id = ?
             `, [JSON.stringify(exportData), requestId]);
 
@@ -236,7 +236,7 @@ export async function gdprRouter(ctx) {
     if (method === 'GET' && path.startsWith('/export/') && path.endsWith('/download')) {
         const requestId = path.split('/')[2];
 
-        const request = query.get(`
+        const request = await query.get(`
             SELECT * FROM data_export_requests
             WHERE id = ? AND user_id = ? AND status = 'completed'
         `, [requestId, user.id]);
@@ -272,7 +272,7 @@ export async function gdprRouter(ctx) {
         const { reason, password } = body;
 
         // Verify password if user has one
-        const userRecord = query.get('SELECT password_hash FROM users WHERE id = ?', [user.id]);
+        const userRecord = await query.get('SELECT password_hash FROM users WHERE id = ?', [user.id]);
 
         if (userRecord.password_hash) {
             const bcrypt = await import('bcryptjs');
@@ -283,7 +283,7 @@ export async function gdprRouter(ctx) {
         }
 
         // Check for existing pending request
-        const existingRequest = query.get(`
+        const existingRequest = await query.get(`
             SELECT * FROM account_deletion_requests
             WHERE user_id = ? AND status = 'pending'
         `, [user.id]);
@@ -334,7 +334,7 @@ export async function gdprRouter(ctx) {
 
     // GET /api/gdpr/deletion-status - Check deletion status
     if (method === 'GET' && path === '/deletion-status') {
-        const request = query.get(`
+        const request = await query.get(`
             SELECT * FROM account_deletion_requests
             WHERE user_id = ? AND status = 'pending'
         `, [user.id]);
@@ -359,7 +359,7 @@ export async function gdprRouter(ctx) {
 
     // GET /api/gdpr/consents - Get user consents
     if (method === 'GET' && path === '/consents') {
-        const consents = query.all(`
+        const consents = await query.all(`
             SELECT consent_type, granted, granted_at, updated_at
             FROM user_consents
             WHERE user_id = ?
@@ -393,12 +393,12 @@ export async function gdprRouter(ctx) {
 
         for (const [type, granted] of Object.entries(consents)) {
             if (!VALID_CONSENT_TYPES.has(type)) continue;
-            query.run(`
+            await query.run(`
                 INSERT INTO user_consents (id, user_id, consent_type, granted, granted_at, updated_at)
-                VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, ?, NOW(), NOW())
                 ON CONFLICT(user_id, consent_type) DO UPDATE SET
                     granted = excluded.granted,
-                    updated_at = datetime('now')
+                    updated_at = NOW()
             `, [uuidv4(), user.id, type, granted ? 1 : 0]);
         }
 
@@ -414,9 +414,9 @@ export async function gdprRouter(ctx) {
         const { corrections } = body;
 
         // Log the rectification request
-        query.run(`
+        await query.run(`
             INSERT INTO data_rectification_requests (id, user_id, corrections, status, created_at)
-            VALUES (?, ?, ?, 'pending', datetime('now'))
+            VALUES (?, ?, ?, 'pending', NOW())
         `, [uuidv4(), user.id, JSON.stringify(corrections)]);
 
         // Apply corrections to user profile with strict field mapping
@@ -439,7 +439,7 @@ export async function gdprRouter(ctx) {
 
         if (updates.length > 0) {
             values.push(user.id);
-            query.run(`UPDATE users SET ${updates.join(', ')}, updated_at = datetime('now') WHERE id = ?`, values);
+            await query.run(`UPDATE users SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ?`, values);
         }
 
         return { status: 200, data: { message: 'Profile updated' } };
@@ -449,55 +449,7 @@ export async function gdprRouter(ctx) {
 }
 
 // Database migration
-export const migration = `
--- Data export requests
-CREATE TABLE IF NOT EXISTS data_export_requests (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    status TEXT DEFAULT 'pending',
-    export_data TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    completed_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Account deletion requests
-CREATE TABLE IF NOT EXISTS account_deletion_requests (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    reason TEXT,
-    scheduled_for TEXT NOT NULL,
-    status TEXT DEFAULT 'pending',
-    created_at TEXT DEFAULT (datetime('now')),
-    completed_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- User consents
-CREATE TABLE IF NOT EXISTS user_consents (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    consent_type TEXT NOT NULL,
-    granted INTEGER DEFAULT 0,
-    granted_at TEXT,
-    updated_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE(user_id, consent_type)
-);
-
--- Data rectification requests
-CREATE TABLE IF NOT EXISTS data_rectification_requests (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    corrections TEXT,
-    status TEXT DEFAULT 'pending',
-    created_at TEXT DEFAULT (datetime('now')),
-    completed_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Add deletion_scheduled_at to users table
-ALTER TABLE users ADD COLUMN deletion_scheduled_at TEXT;
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 export default gdprRouter;

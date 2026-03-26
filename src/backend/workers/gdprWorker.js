@@ -16,7 +16,7 @@ async function processAccountDeletions() {
     const now = new Date().toISOString();
 
     // Find accounts scheduled for deletion that have passed the grace period
-    const pendingDeletions = query.all(`
+    const pendingDeletions = await query.all(`
         SELECT adr.*, u.email, u.full_name, u.username
         FROM account_deletion_requests adr
         JOIN users u ON adr.user_id = u.id
@@ -39,9 +39,9 @@ async function processAccountDeletions() {
             logger.error(`[GDPR Worker] Error deleting account ${deletion.user_id}:`, error.message);
 
             // Mark as failed
-            query.run(`
+            await query.run(`
                 UPDATE account_deletion_requests
-                SET status = 'failed', error = ?, updated_at = datetime('now')
+                SET status = 'failed', error = ?, updated_at = NOW()
                 WHERE id = ?
             `, [error.message, deletion.id]);
         }
@@ -78,7 +78,7 @@ async function executeAccountDeletion(deletion) {
 
     // Revoke OAuth tokens at each platform before deleting (REM-13)
     try {
-        const oauthAccounts = query.all(
+        const oauthAccounts = await query.all(
             'SELECT platform, access_token FROM oauth_accounts WHERE user_id = ?',
             [userId]
         );
@@ -97,7 +97,7 @@ async function executeAccountDeletion(deletion) {
     }
 
     // Anonymize sales data (keep for financial records)
-    query.run(`
+    await query.run(`
         UPDATE sales SET
             buyer_username = 'DELETED',
             buyer_address = NULL,
@@ -108,19 +108,19 @@ async function executeAccountDeletion(deletion) {
     // Delete user data from all tables
     for (const { table, idColumn } of USER_DATA_TABLES) {
         try {
-            query.run(`DELETE FROM ${table} WHERE ${idColumn} = ?`, [userId]);
+            await query.run(`DELETE FROM ${table} WHERE ${idColumn} = ?`, [userId]);
         } catch (e) {
             // Table might not exist, continue
         }
     }
 
     // Delete the user record
-    query.run('DELETE FROM users WHERE id = ?', [userId]);
+    await query.run('DELETE FROM users WHERE id = ?', [userId]);
 
     // Mark deletion request as completed
-    query.run(`
+    await query.run(`
         UPDATE account_deletion_requests
-        SET status = 'completed', completed_at = datetime('now')
+        SET status = 'completed', completed_at = NOW()
         WHERE id = ?
     `, [deletion.id]);
 
@@ -141,9 +141,9 @@ async function executeAccountDeletion(deletion) {
 
     // Log to audit
     try {
-        query.run(`
+        await query.run(`
             INSERT INTO audit_logs (id, user_id, action, category, severity, details, created_at)
-            VALUES (?, NULL, 'account_deleted', 'security', 'info', ?, datetime('now'))
+            VALUES (?, NULL, 'account_deleted', 'security', 'info', ?, NOW())
         `, [
             crypto.randomUUID(),
             JSON.stringify({ deletedUserId: userId, reason: deletion.reason })
@@ -159,7 +159,7 @@ async function sendDeletionReminders() {
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
     // Find accounts that will be deleted in the next 3 days
-    const upcomingDeletions = query.all(`
+    const upcomingDeletions = await query.all(`
         SELECT adr.*, u.email, u.full_name, u.username
         FROM account_deletion_requests adr
         JOIN users u ON adr.user_id = u.id
@@ -183,9 +183,9 @@ async function sendDeletionReminders() {
             });
 
             // Mark reminder as sent
-            query.run(`
+            await query.run(`
                 UPDATE account_deletion_requests
-                SET reminder_sent = 1, updated_at = datetime('now')
+                SET reminder_sent = 1, updated_at = NOW()
                 WHERE id = ?
             `, [deletion.id]);
 
@@ -199,7 +199,7 @@ async function sendDeletionReminders() {
 async function cleanupExportRequests() {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    query.run(`
+    await query.run(`
         UPDATE data_export_requests
         SET export_data = NULL, status = 'expired'
         WHERE status = 'completed'

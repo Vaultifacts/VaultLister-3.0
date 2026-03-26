@@ -39,7 +39,7 @@ export async function suppliersRouter(ctx) {
         sql += ' ORDER BY name ASC LIMIT 500';
 
         try {
-            const suppliers = query.all(sql, params);
+            const suppliers = await query.all(sql, params);
             return { status: 200, data: suppliers };
         } catch (error) {
             logger.error('[Suppliers] Error fetching suppliers', user?.id, { detail: error?.message });
@@ -87,14 +87,14 @@ export async function suppliersRouter(ctx) {
         }
 
         const supplierId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO suppliers (id, user_id, name, type, website, contact_email, contact_phone,
                 address, notes, rating, is_active, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
         `, [supplierId, user.id, name, type, website || null, contact_email || null,
             contact_phone || null, address || null, notes || null, rating || null]);
 
-        const supplier = query.get('SELECT * FROM suppliers WHERE id = ?', [supplierId]);
+        const supplier = await query.get('SELECT * FROM suppliers WHERE id = ?', [supplierId]);
         return { status: 201, data: supplier };
     }
 
@@ -105,7 +105,7 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         const supplierId = supplierIdMatch[1];
-        const supplier = query.get(
+        const supplier = await query.get(
             'SELECT * FROM suppliers WHERE id = ? AND user_id = ?',
             [supplierId, user.id]
         );
@@ -116,7 +116,7 @@ export async function suppliersRouter(ctx) {
 
         // Get item count (scoped to user)
         try {
-            const itemCount = query.get(
+            const itemCount = await query.get(
                 'SELECT COUNT(*) as count FROM supplier_items WHERE supplier_id = ? AND user_id = ?',
                 [supplierId, user.id]
             );
@@ -135,7 +135,7 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         const supplierId = supplierIdMatch[1];
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id FROM suppliers WHERE id = ? AND user_id = ?',
             [supplierId, user.id]
         );
@@ -160,7 +160,7 @@ export async function suppliersRouter(ctx) {
             return { status: 400, data: { error: 'Rating must be between 1 and 5' } };
         }
 
-        query.run(`
+        await query.run(`
             UPDATE suppliers SET
                 name = COALESCE(?, name),
                 type = COALESCE(?, type),
@@ -171,11 +171,11 @@ export async function suppliersRouter(ctx) {
                 notes = COALESCE(?, notes),
                 rating = COALESCE(?, rating),
                 is_active = COALESCE(?, is_active),
-                updated_at = datetime('now')
+                updated_at = NOW()
             WHERE id = ? AND user_id = ?
         `, [name, type, website, contact_email, contact_phone, address, notes, rating, is_active, supplierId, user.id]);
 
-        const updated = query.get('SELECT * FROM suppliers WHERE id = ?', [supplierId]);
+        const updated = await query.get('SELECT * FROM suppliers WHERE id = ?', [supplierId]);
         return { status: 200, data: updated };
     }
 
@@ -185,7 +185,7 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         const supplierId = supplierIdMatch[1];
-        const result = query.run('DELETE FROM suppliers WHERE id = ? AND user_id = ?', [supplierId, user.id]);
+        const result = await query.run('DELETE FROM suppliers WHERE id = ? AND user_id = ?', [supplierId, user.id]);
 
         if (result.changes === 0) {
             return { status: 404, data: { error: 'Supplier not found' } };
@@ -203,7 +203,7 @@ export async function suppliersRouter(ctx) {
         const supplierId = supplierItemsMatch[1];
 
         try {
-            const items = query.all(`
+            const items = await query.all(`
                 SELECT si.*, s.name as supplier_name
                 FROM supplier_items si
                 JOIN suppliers s ON si.supplier_id = s.id
@@ -232,22 +232,22 @@ export async function suppliersRouter(ctx) {
         }
 
         const itemId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO supplier_items (id, user_id, supplier_id, name, sku, url, current_price,
                 target_price, alert_threshold, notes, alert_enabled, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
         `, [itemId, user.id, supplierId, name, sku || null, url || null,
             current_price || null, target_price || null, alert_threshold || 0.10, notes || null]);
 
         // Record initial price
         if (current_price) {
-            query.run(`
+            await query.run(`
                 INSERT INTO supplier_price_history (id, supplier_item_id, price, recorded_at)
-                VALUES (?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, NOW())
             `, [uuidv4(), itemId, current_price]);
         }
 
-        const item = query.get('SELECT * FROM supplier_items WHERE id = ?', [itemId]);
+        const item = await query.get('SELECT * FROM supplier_items WHERE id = ?', [itemId]);
         return { status: 201, data: item };
     }
 
@@ -258,7 +258,7 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         const itemId = itemIdMatch[1];
-        const item = query.get(`
+        const item = await query.get(`
             SELECT si.*, s.name as supplier_name
             FROM supplier_items si
             JOIN suppliers s ON si.supplier_id = s.id
@@ -271,7 +271,7 @@ export async function suppliersRouter(ctx) {
 
         // Get price history
         try {
-            const history = query.all(`
+            const history = await query.all(`
                 SELECT price, recorded_at
                 FROM supplier_price_history
                 WHERE supplier_item_id = ?
@@ -294,7 +294,7 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         const itemId = itemIdMatch[1];
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id, current_price FROM supplier_items WHERE id = ? AND user_id = ?',
             [itemId, user.id]
         );
@@ -307,20 +307,20 @@ export async function suppliersRouter(ctx) {
 
         // If price changed, record history
         if (current_price !== undefined && current_price !== existing.current_price) {
-            query.run(`
+            await query.run(`
                 UPDATE supplier_items SET
                     last_price = current_price,
                     price_change = ? - current_price
                 WHERE id = ?
             `, [current_price, itemId]);
 
-            query.run(`
+            await query.run(`
                 INSERT INTO supplier_price_history (id, supplier_item_id, price, recorded_at)
-                VALUES (?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, NOW())
             `, [uuidv4(), itemId, current_price]);
         }
 
-        query.run(`
+        await query.run(`
             UPDATE supplier_items SET
                 name = COALESCE(?, name),
                 sku = COALESCE(?, sku),
@@ -330,12 +330,12 @@ export async function suppliersRouter(ctx) {
                 alert_threshold = COALESCE(?, alert_threshold),
                 alert_enabled = COALESCE(?, alert_enabled),
                 notes = COALESCE(?, notes),
-                last_checked_at = datetime('now'),
-                updated_at = datetime('now')
+                last_checked_at = NOW(),
+                updated_at = NOW()
             WHERE id = ? AND user_id = ?
         `, [name, sku, url, current_price, target_price, alert_threshold, alert_enabled, notes, itemId, user.id]);
 
-        const updated = query.get('SELECT * FROM supplier_items WHERE id = ?', [itemId]);
+        const updated = await query.get('SELECT * FROM supplier_items WHERE id = ?', [itemId]);
         return { status: 200, data: updated };
     }
 
@@ -345,10 +345,10 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         const itemId = itemIdMatch[1];
-        const supplierItem = query.get('SELECT id FROM supplier_items WHERE id = ? AND user_id = ?', [itemId, user.id]);
+        const supplierItem = await query.get('SELECT id FROM supplier_items WHERE id = ? AND user_id = ?', [itemId, user.id]);
         if (!supplierItem) return { status: 404, data: { error: 'Item not found' } };
-        query.run('DELETE FROM supplier_price_history WHERE supplier_item_id = ?', [itemId]);
-        query.run('DELETE FROM supplier_items WHERE id = ? AND user_id = ?', [itemId, user.id]);
+        await query.run('DELETE FROM supplier_price_history WHERE supplier_item_id = ?', [itemId]);
+        await query.run('DELETE FROM supplier_items WHERE id = ? AND user_id = ?', [itemId, user.id]);
         return { status: 200, data: { deleted: true } };
     }
 
@@ -359,7 +359,7 @@ export async function suppliersRouter(ctx) {
 
         try {
             // Items where price dropped below target or by threshold percentage
-            const alerts = query.all(`
+            const alerts = await query.all(`
                 SELECT si.*, s.name as supplier_name,
                        (si.last_price - si.current_price) as price_drop,
                        ROUND((si.last_price - si.current_price) / si.last_price * 100, 1) as drop_percent
@@ -391,7 +391,7 @@ export async function suppliersRouter(ctx) {
         if (authError) return authError;
 
         try {
-            const stats = query.get(`
+            const stats = await query.get(`
                 SELECT
                     COUNT(DISTINCT s.id) as supplier_count,
                     COUNT(si.id) as item_count,
@@ -402,7 +402,7 @@ export async function suppliersRouter(ctx) {
                 WHERE s.user_id = ? AND s.is_active = 1
             `, [user.id]);
 
-            const byType = query.all(`
+            const byType = await query.all(`
                 SELECT type, COUNT(*) as count
                 FROM suppliers
                 WHERE user_id = ? AND is_active = 1

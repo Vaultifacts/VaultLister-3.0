@@ -31,7 +31,7 @@ export async function analyticsRouter(ctx) {
     // Feature flag gate (REM-17)
     if (requireFeature('FEATURE_ADVANCED_ANALYTICS', ctx)) return ctx.res;
 
-    const analyticsLevel = checkTierPermission(user, 'analytics').level;
+    const analyticsLevel = (await checkTierPermission(user, 'analytics')).level;
 
     // Tier-restricted endpoints
     const advancedEndpoints = ['/performance', '/platforms', '/inventory', '/trends', '/custom-metrics'];
@@ -59,7 +59,7 @@ export async function analyticsRouter(ctx) {
             const periodOffset = PERIOD_OFFSETS[period] ?? PERIOD_OFFSETS['30d'];
 
             // Batch queries: 5 queries instead of 16
-            const invRow = query.get(`
+            const invRow = await query.get(`
                 SELECT
                     COUNT(CASE WHEN status != 'deleted' THEN 1 END) as total,
                     COUNT(CASE WHEN status = 'active' THEN 1 END) as active,
@@ -69,7 +69,7 @@ export async function analyticsRouter(ctx) {
                 FROM inventory WHERE user_id = ?
             `, [user.id]) || {};
 
-            const listRow = query.get(`
+            const listRow = await query.get(`
                 SELECT
                     COUNT(*) as total,
                     COUNT(CASE WHEN status = 'active' THEN 1 END) as active,
@@ -78,14 +78,14 @@ export async function analyticsRouter(ctx) {
                 FROM listings WHERE user_id = ?
             `, [user.id]) || {};
 
-            const salesRow = periodOffset ? query.get(`
+            const salesRow = periodOffset ? await query.get(`
                 SELECT
-                    COUNT(CASE WHEN created_at >= datetime('now', ?) THEN 1 END) as total,
-                    COALESCE(SUM(CASE WHEN created_at >= datetime('now', ?) THEN sale_price ELSE 0 END), 0) as revenue,
-                    COALESCE(SUM(CASE WHEN created_at >= datetime('now', ?) THEN net_profit ELSE 0 END), 0) as profit,
+                    COUNT(CASE WHEN created_at >= NOW() + ?::interval THEN 1 END) as total,
+                    COALESCE(SUM(CASE WHEN created_at >= NOW() + ?::interval THEN sale_price ELSE 0 END), 0) as revenue,
+                    COALESCE(SUM(CASE WHEN created_at >= NOW() + ?::interval THEN net_profit ELSE 0 END), 0) as profit,
                     COUNT(CASE WHEN status IN ('pending', 'confirmed') THEN 1 END) as pendingShipments
                 FROM sales WHERE user_id = ?
-            `, [periodOffset, periodOffset, periodOffset, user.id]) || {} : query.get(`
+            `, [periodOffset, periodOffset, periodOffset, user.id]) || {} : await query.get(`
                 SELECT
                     COUNT(*) as total,
                     COALESCE(SUM(sale_price), 0) as revenue,
@@ -94,14 +94,14 @@ export async function analyticsRouter(ctx) {
                 FROM sales WHERE user_id = ?
             `, [user.id]) || {};
 
-            const offersRow = query.get(`
+            const offersRow = await query.get(`
                 SELECT
                     COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
                     COUNT(CASE WHEN status = 'accepted' THEN 1 END) as accepted
                 FROM offers WHERE user_id = ?
             `, [user.id]) || {};
 
-            const autoRow = query.get(`
+            const autoRow = await query.get(`
                 SELECT
                     (SELECT COUNT(*) FROM automation_rules WHERE user_id = ? AND is_enabled = 1) as active,
                     (SELECT COUNT(*) FROM automation_logs WHERE user_id = ? AND created_at >= date('now')) as runsToday
@@ -170,13 +170,13 @@ export async function analyticsRouter(ctx) {
             const salesPeriodOffset = SALES_DATE_OFFSETS[period] ?? SALES_DATE_OFFSETS['30d'];
 
             const GROUP_CLAUSES = {
-                'day':   "DATE(s.created_at)",
-                'week':  "strftime('%Y-%W', s.created_at)",
-                'month': "strftime('%Y-%m', s.created_at)"
+                'day':   "s.created_at::date",
+                'week':  "TO_CHAR(s.created_at, 'YYYY-IW')",
+                'month': "TO_CHAR(s.created_at, 'YYYY-MM')"
             };
             const groupClause = GROUP_CLAUSES[groupBy];
 
-            const salesData = query.all(`
+            const salesData = await query.all(`
                 SELECT
                     ${groupClause} as period,
                     COUNT(*) as sales,
@@ -186,30 +186,30 @@ export async function analyticsRouter(ctx) {
                     COALESCE(SUM(i.cost_price), 0) as cogs
                 FROM sales s
                 LEFT JOIN inventory i ON s.inventory_id = i.id
-                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= datetime('now', ?))
+                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= NOW() + ?::interval)
                 GROUP BY ${groupClause}
                 ORDER BY period DESC
             `, [user.id, salesPeriodOffset]);
 
-            const byPlatform = query.all(`
+            const byPlatform = await query.all(`
                 SELECT
                     s.platform,
                     COUNT(*) as sales,
                     SUM(s.sale_price) as revenue,
                     SUM(s.net_profit) as profit
                 FROM sales s
-                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= datetime('now', ?))
+                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= NOW() + ?::interval)
                 GROUP BY s.platform
                 ORDER BY revenue DESC
             `, [user.id, salesPeriodOffset]);
 
-            const topItems = query.all(`
+            const topItems = await query.all(`
                 SELECT
                     i.title, i.brand, i.category,
                     s.sale_price, s.net_profit, s.platform, s.created_at
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
-                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= datetime('now', ?))
+                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= NOW() + ?::interval)
                 ORDER BY s.sale_price DESC
                 LIMIT 10
             `, [user.id, salesPeriodOffset]);
@@ -225,7 +225,7 @@ export async function analyticsRouter(ctx) {
     // GET /api/analytics/inventory - Inventory analytics
     if (method === 'GET' && path === '/inventory') {
         try {
-            const byCategory = query.all(`
+            const byCategory = await query.all(`
                 SELECT
                     category,
                     COUNT(*) as count,
@@ -237,7 +237,7 @@ export async function analyticsRouter(ctx) {
                 ORDER BY count DESC
             `, [user.id]);
 
-            const byBrand = query.all(`
+            const byBrand = await query.all(`
                 SELECT
                     brand,
                     COUNT(*) as count,
@@ -249,13 +249,13 @@ export async function analyticsRouter(ctx) {
                 LIMIT 20
             `, [user.id]);
 
-            const byStatus = query.all(`
+            const byStatus = await query.all(`
                 SELECT status, COUNT(*) as count
                 FROM inventory WHERE user_id = ?
                 GROUP BY status
             `, [user.id]);
 
-            const priceDistribution = query.all(`
+            const priceDistribution = await query.all(`
                 SELECT
                     CASE
                         WHEN list_price < 25 THEN '$0-$25'
@@ -271,13 +271,13 @@ export async function analyticsRouter(ctx) {
                 ORDER BY MIN(list_price)
             `, [user.id]);
 
-            const ageAnalysis = query.all(`
+            const ageAnalysis = await query.all(`
                 SELECT
                     CASE
-                        WHEN julianday('now') - julianday(created_at) < 7 THEN '< 1 week'
-                        WHEN julianday('now') - julianday(created_at) < 30 THEN '1-4 weeks'
-                        WHEN julianday('now') - julianday(created_at) < 60 THEN '1-2 months'
-                        WHEN julianday('now') - julianday(created_at) < 90 THEN '2-3 months'
+                        WHEN EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400 < 7 THEN '< 1 week'
+                        WHEN EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400 < 30 THEN '1-4 weeks'
+                        WHEN EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400 < 60 THEN '1-2 months'
+                        WHEN EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400 < 90 THEN '2-3 months'
                         ELSE '3+ months'
                     END as age,
                     COUNT(*) as count,
@@ -297,7 +297,7 @@ export async function analyticsRouter(ctx) {
     // GET /api/analytics/platforms - Platform analytics
     if (method === 'GET' && path === '/platforms') {
         try {
-            const platforms = query.all(`
+            const platforms = await query.all(`
                 SELECT
                     l.platform,
                     COUNT(DISTINCT l.id) as listings,
@@ -323,11 +323,11 @@ export async function analyticsRouter(ctx) {
     if (method === 'GET' && path === '/inventory-deep') {
         try {
             // Aging report: items by days since created
-            const aging = query.all(`
+            const aging = await query.all(`
                 SELECT
                     i.id, i.title, i.sku, i.category, i.brand,
                     i.cost_price, i.list_price, i.status,
-                    CAST(julianday('now') - julianday(i.created_at) AS INTEGER) as days_old,
+                    CAST(EXTRACT(EPOCH FROM (NOW() - i.created_at)) / 86400 AS INTEGER) as days_old,
                     (SELECT COUNT(*) FROM listings l WHERE l.inventory_id = i.id AND l.status = 'active') as active_listings,
                     (SELECT SUM(l.views) FROM listings l WHERE l.inventory_id = i.id) as total_views
                 FROM inventory i
@@ -352,13 +352,13 @@ export async function analyticsRouter(ctx) {
             });
 
             // Sell-through rate by category
-            const sellThrough = query.all(`
+            const sellThrough = await query.all(`
                 SELECT
                     category,
                     COUNT(*) as total,
                     SUM(CASE WHEN status = 'sold' THEN 1 ELSE 0 END) as sold,
                     ROUND(SUM(CASE WHEN status = 'sold' THEN 1.0 ELSE 0 END) / COUNT(*) * 100, 1) as sell_rate,
-                    AVG(CASE WHEN status = 'sold' THEN julianday(updated_at) - julianday(created_at) END) as avg_days_to_sell
+                    AVG(CASE WHEN status = 'sold' THEN EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400 END) as avg_days_to_sell
                 FROM inventory
                 WHERE user_id = ? AND status != 'deleted'
                 GROUP BY category
@@ -367,7 +367,7 @@ export async function analyticsRouter(ctx) {
             `, [user.id]);
 
             // Margin analysis by category
-            const margins = query.all(`
+            const margins = await query.all(`
                 SELECT
                     i.category,
                     COUNT(*) as sold_count,
@@ -388,14 +388,14 @@ export async function analyticsRouter(ctx) {
             const deadStock = aging.filter(i => i.days_old >= 60 && (!i.total_views || i.total_views === 0));
 
             // Overall stats
-            const overallSellThrough = query.get(`
+            const overallSellThrough = await query.get(`
                 SELECT
                     ROUND(SUM(CASE WHEN status = 'sold' THEN 1.0 ELSE 0 END) / NULLIF(COUNT(*), 0) * 100, 1) as rate,
-                    ROUND(AVG(CASE WHEN status = 'sold' THEN julianday(updated_at) - julianday(created_at) END), 1) as avg_days
+                    ROUND(AVG(CASE WHEN status = 'sold' THEN EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400 END), 1) as avg_days
                 FROM inventory WHERE user_id = ? AND status != 'deleted'
             `, [user.id]) || { rate: 0, avg_days: 0 };
 
-            const overallMargin = query.get(`
+            const overallMargin = await query.get(`
                 SELECT
                     ROUND(AVG((s.sale_price - i.cost_price - COALESCE(s.platform_fee, 0) - COALESCE(s.shipping_cost, 0)) / NULLIF(s.sale_price, 0) * 100), 1) as margin_pct,
                     ROUND(SUM(s.sale_price - i.cost_price - COALESCE(s.platform_fee, 0) - COALESCE(s.shipping_cost, 0)), 2) as total_profit
@@ -431,20 +431,20 @@ export async function analyticsRouter(ctx) {
         }
 
         try {
-            const sellThroughRate = query.get(`
+            const sellThroughRate = await query.get(`
                 SELECT
                     COUNT(CASE WHEN status = 'sold' THEN 1 END) * 100.0 / COUNT(*) as rate
                 FROM inventory WHERE user_id = ? AND status != 'deleted'
             `, [user.id])?.rate || 0;
 
-            const avgDaysToSell = query.get(`
-                SELECT AVG(julianday(s.created_at) - julianday(i.created_at)) as days
+            const avgDaysToSell = await query.get(`
+                SELECT AVG(EXTRACT(EPOCH FROM (s.created_at - i.created_at)) / 86400) as days
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
                 WHERE s.user_id = ?
             `, [user.id])?.days || 0;
 
-            const roiAnalysis = query.get(`
+            const roiAnalysis = await query.get(`
                 SELECT
                     SUM(s.net_profit) as total_profit,
                     SUM(i.cost_price) as total_cost,
@@ -454,7 +454,7 @@ export async function analyticsRouter(ctx) {
                 WHERE s.user_id = ?
             `, [user.id]);
 
-            const topPerformers = query.all(`
+            const topPerformers = await query.all(`
                 SELECT
                     category,
                     COUNT(CASE WHEN status = 'sold' THEN 1 END) as sold,
@@ -486,7 +486,7 @@ export async function analyticsRouter(ctx) {
     // GET /api/analytics/sustainability - Sustainability impact
     if (method === 'GET' && path === '/sustainability') {
         try {
-            const impact = query.get(`
+            const impact = await query.get(`
                 SELECT
                     SUM(water_saved_liters) as water_saved,
                     SUM(co2_saved_kg) as co2_saved,
@@ -495,7 +495,7 @@ export async function analyticsRouter(ctx) {
                 WHERE user_id = ?
             `, [user.id]);
 
-            const byCategory = query.all(`
+            const byCategory = await query.all(`
                 SELECT
                     category,
                     SUM(water_saved_liters) as water,
@@ -506,7 +506,7 @@ export async function analyticsRouter(ctx) {
                 GROUP BY category
             `, [user.id]);
 
-            const salesCount = query.get('SELECT COUNT(*) as count FROM sales WHERE user_id = ?', [user.id])?.count || 0;
+            const salesCount = await query.get('SELECT COUNT(*) as count FROM sales WHERE user_id = ?', [user.id])?.count || 0;
 
             return {
                 status: 200,
@@ -539,15 +539,15 @@ export async function analyticsRouter(ctx) {
             const safeDays = Number.isFinite(parsedDays) ? Math.max(1, Math.min(365, parsedDays)) : 30;
             const daysModifier = `-${safeDays} days`;
 
-            const trends = query.all(`
+            const trends = await query.all(`
                 SELECT
-                    DATE(created_at) as date,
+                    created_at::date as date,
                     COUNT(*) as new_listings,
-                    (SELECT COUNT(*) FROM sales WHERE user_id = ? AND DATE(created_at) = DATE(i.created_at)) as sales,
-                    (SELECT SUM(sale_price) FROM sales WHERE user_id = ? AND DATE(created_at) = DATE(i.created_at)) as revenue
+                    (SELECT COUNT(*) FROM sales WHERE user_id = ? AND created_at::date = i.created_at::date) as sales,
+                    (SELECT SUM(sale_price) FROM sales WHERE user_id = ? AND created_at::date = i.created_at::date) as revenue
                 FROM inventory i
-                WHERE user_id = ? AND created_at >= datetime('now', ?)
-                GROUP BY DATE(created_at)
+                WHERE user_id = ? AND created_at >= NOW() + ?::interval
+                GROUP BY created_at::date
                 ORDER BY date DESC
             `, [user.id, user.id, user.id, daysModifier]);
 
@@ -576,10 +576,10 @@ export async function analyticsRouter(ctx) {
         let heatmapData;
         let engagementError = false;
         try {
-            heatmapData = query.all(`
+            heatmapData = await query.all(`
                 SELECT
-                    CAST(strftime('%w', event_time) AS INTEGER) as day_of_week,
-                    CAST(strftime('%H', event_time) AS INTEGER) as hour_of_day,
+                    CAST(EXTRACT(DOW FROM event_time) AS INTEGER) as day_of_week,
+                    CAST(EXTRACT(HOUR FROM event_time) AS INTEGER) as hour_of_day,
                     COUNT(*) as event_count,
                     SUM(CASE WHEN event_type = 'view' THEN 1 ELSE 0 END) as views,
                     SUM(CASE WHEN event_type = 'like' THEN 1 ELSE 0 END) as likes,
@@ -588,7 +588,7 @@ export async function analyticsRouter(ctx) {
                     SUM(CASE WHEN event_type = 'sale' THEN 1 ELSE 0 END) as sales
                 FROM listing_engagement
                 WHERE user_id = ?
-                AND event_time >= datetime('now', ?)
+                AND event_time >= NOW() + ?::interval
                 ${platformFilter}
                 GROUP BY day_of_week, hour_of_day
                 ORDER BY day_of_week, hour_of_day
@@ -641,7 +641,7 @@ export async function analyticsRouter(ctx) {
         let listingEngagement;
         let listingEngagementError = false;
         try {
-            listingEngagement = query.all(`
+            listingEngagement = await query.all(`
                 SELECT
                     le.listing_id,
                     l.title,
@@ -655,7 +655,7 @@ export async function analyticsRouter(ctx) {
                 FROM listing_engagement le
                 LEFT JOIN listings l ON le.listing_id = l.id
                 WHERE le.user_id = ?
-                AND le.event_time >= datetime('now', ?)
+                AND le.event_time >= NOW() + ?::interval
                 GROUP BY le.listing_id
                 ORDER BY total_events DESC
                 LIMIT ?
@@ -693,7 +693,7 @@ export async function analyticsRouter(ctx) {
 
         let rows;
         try {
-            rows = query.all(
+            rows = await query.all(
                 `SELECT buyer_address, platform, sale_price, net_profit
                  FROM sales
                  WHERE user_id = ? AND status != 'cancelled'`,
@@ -745,7 +745,7 @@ export async function analyticsRouter(ctx) {
     // GET /api/analytics/custom-metrics - List custom metrics
     if (method === 'GET' && path === '/custom-metrics') {
         try {
-            const metrics = query.all('SELECT * FROM custom_metrics WHERE user_id = ? ORDER BY created_at DESC', [user.id]);
+            const metrics = await query.all('SELECT * FROM custom_metrics WHERE user_id = ? ORDER BY created_at DESC', [user.id]);
             return { status: 200, data: { metrics } };
         } catch (err) {
             return { status: 500, data: { error: 'Failed to load custom metrics' } };
@@ -760,7 +760,7 @@ export async function analyticsRouter(ctx) {
         }
         const id = uuidv4();
         try {
-            query.run(
+            await query.run(
                 'INSERT INTO custom_metrics (id, user_id, name, metric_a, operation, metric_b, display_format) VALUES (?, ?, ?, ?, ?, ?, ?)',
                 [id, user.id, name, metric_a, operation || 'divide', metric_b, display_format || 'number']
             );
@@ -774,7 +774,7 @@ export async function analyticsRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/custom-metrics\/[a-f0-9-]+$/)) {
         try {
             const metricId = path.split('/')[2];
-            const result = query.run('DELETE FROM custom_metrics WHERE id = ? AND user_id = ?', [metricId, user.id]);
+            const result = await query.run('DELETE FROM custom_metrics WHERE id = ? AND user_id = ?', [metricId, user.id]);
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Metric not found' } };
             }
@@ -788,7 +788,7 @@ export async function analyticsRouter(ctx) {
     // GET /api/analytics/digest-settings - Get digest settings
     if (method === 'GET' && path === '/digest-settings') {
         try {
-            const settings = query.get('SELECT * FROM analytics_digests WHERE user_id = ?', [user.id]);
+            const settings = await query.get('SELECT * FROM analytics_digests WHERE user_id = ?', [user.id]);
             return { status: 200, data: { settings: settings || { frequency: 'weekly', email: '', is_active: false } } };
         } catch (err) {
             return { status: 500, data: { error: 'Failed to load digest settings' } };
@@ -801,14 +801,14 @@ export async function analyticsRouter(ctx) {
         const id = uuidv4();
         const now = new Date().toISOString();
         try {
-            const existing = query.get('SELECT id FROM analytics_digests WHERE user_id = ?', [user.id]);
+            const existing = await query.get('SELECT id FROM analytics_digests WHERE user_id = ?', [user.id]);
             if (existing) {
-                query.run(
+                await query.run(
                     'UPDATE analytics_digests SET email = ?, frequency = ?, is_active = ?, updated_at = ? WHERE user_id = ?',
                     [email || '', frequency || 'weekly', is_active ? 1 : 0, now, user.id]
                 );
             } else {
-                query.run(
+                await query.run(
                     'INSERT INTO analytics_digests (id, user_id, email, frequency, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
                     [id, user.id, email || '', frequency || 'weekly', is_active ? 1 : 0, now, now]
                 );
@@ -826,13 +826,13 @@ export async function analyticsRouter(ctx) {
         let data;
         switch (type) {
             case 'inventory':
-                data = query.all('SELECT * FROM inventory WHERE user_id = ? AND status != ? LIMIT 10000', [user.id, 'deleted']);
+                data = await query.all('SELECT * FROM inventory WHERE user_id = ? AND status != ? LIMIT 10000', [user.id, 'deleted']);
                 break;
             case 'sales':
-                data = query.all('SELECT * FROM sales WHERE user_id = ? LIMIT 10000', [user.id]);
+                data = await query.all('SELECT * FROM sales WHERE user_id = ? LIMIT 10000', [user.id]);
                 break;
             case 'listings':
-                data = query.all('SELECT * FROM listings WHERE user_id = ? LIMIT 10000', [user.id]);
+                data = await query.all('SELECT * FROM listings WHERE user_id = ? LIMIT 10000', [user.id]);
                 break;
             default:
                 return { status: 400, data: { error: 'Invalid export type' } };
@@ -859,17 +859,17 @@ export async function analyticsRouter(ctx) {
     if (method === 'GET' && path === '/forecast') {
         try {
             // Sell-through velocity by category (last 90 days)
-            const velocity = query.all(`
+            const velocity = await query.all(`
                 SELECT i.category,
                     COUNT(DISTINCT i.id) as total_items,
                     COUNT(DISTINCT s.id) as sold_items,
                     ROUND(COUNT(DISTINCT s.id) * 1.0 / NULLIF(COUNT(DISTINCT i.id), 0) * 100, 1) as sell_rate,
-                    ROUND(AVG(CASE WHEN s.id IS NOT NULL THEN julianday(s.created_at) - julianday(i.created_at) END), 1) as avg_days_to_sell,
+                    ROUND(AVG(CASE WHEN s.id IS NOT NULL THEN EXTRACT(EPOCH FROM (s.created_at - i.created_at)) / 86400 END), 1) as avg_days_to_sell,
                     ROUND(COUNT(DISTINCT s.id) * 1.0 / 3, 1) as monthly_velocity,
                     COUNT(DISTINCT CASE WHEN i.status = 'active' THEN i.id END) as active_count,
                     ROUND(SUM(CASE WHEN i.status = 'active' THEN i.cost_price ELSE 0 END), 2) as active_cost_value
                 FROM inventory i
-                LEFT JOIN sales s ON s.inventory_id = i.id AND s.created_at >= datetime('now', '-90 days')
+                LEFT JOIN sales s ON s.inventory_id = i.id AND s.created_at >= NOW() - INTERVAL '90 days'
                 WHERE i.user_id = ?
                 GROUP BY i.category
                 HAVING total_items > 0
@@ -916,20 +916,20 @@ export async function analyticsRouter(ctx) {
     // GET /api/analytics/price-suggestions - Age-based price recommendations
     if (method === 'GET' && path === '/price-suggestions') {
         try {
-            const items = query.all(`
+            const items = await query.all(`
                 SELECT i.id, i.title, i.sku, i.category, i.brand, i.cost_price, i.list_price, i.status,
-                    CAST(julianday('now') - julianday(i.created_at) AS INTEGER) as days_old,
+                    CAST(EXTRACT(EPOCH FROM (NOW() - i.created_at)) / 86400 AS INTEGER) as days_old,
                     (SELECT COUNT(*) FROM listings WHERE inventory_id = i.id) as listing_count
                 FROM inventory i
                 WHERE i.user_id = ? AND i.status = 'active'
-                    AND CAST(julianday('now') - julianday(i.created_at) AS INTEGER) >= 30
-                ORDER BY CAST(julianday('now') - julianday(i.created_at) AS INTEGER) DESC
+                    AND CAST(EXTRACT(EPOCH FROM (NOW() - i.created_at)) / 86400 AS INTEGER) >= 30
+                ORDER BY CAST(EXTRACT(EPOCH FROM (NOW() - i.created_at)) / 86400 AS INTEGER) DESC
                 LIMIT 50
             `, [user.id]);
 
-            const sellThrough = query.all(`
+            const sellThrough = await query.all(`
                 SELECT category, COUNT(DISTINCT s.id) * 1.0 / NULLIF(COUNT(DISTINCT i.id), 0) as sell_rate,
-                    AVG(CASE WHEN s.id IS NOT NULL THEN julianday(s.created_at) - julianday(i.created_at) END) as avg_days
+                    AVG(CASE WHEN s.id IS NOT NULL THEN EXTRACT(EPOCH FROM (s.created_at - i.created_at)) / 86400 END) as avg_days
                 FROM inventory i LEFT JOIN sales s ON s.inventory_id = i.id
                 WHERE i.user_id = ? GROUP BY category
             `, [user.id]);
@@ -992,16 +992,16 @@ export async function analyticsRouter(ctx) {
         }
         try {
             let updated = 0;
-            query.transaction(() => {
+            await query.transaction(async () => {
                 for (const item of items) {
                     if (!item.id || item.suggested_price == null) continue;
-                    const existing = query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [item.id, user.id]);
+                    const existing = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [item.id, user.id]);
                     if (!existing) continue;
-                    query.run('UPDATE inventory SET list_price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                    await query.run('UPDATE inventory SET list_price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
                         [item.suggested_price, item.id, user.id]);
 
                     try {
-                        query.run(`INSERT INTO price_history (id, inventory_id, user_id, old_price, new_price, change_reason)
+                        await query.run(`INSERT INTO price_history (id, inventory_id, user_id, old_price, new_price, change_reason)
                             VALUES (?, ?, ?, ?, ?, ?)`,
                             [uuidv4(), item.id, user.id, item.current_price || 0, item.suggested_price, 'auto_suggestion']);
                     } catch (_) { /* price_history table may not exist */ }

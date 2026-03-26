@@ -8,9 +8,6 @@ FROM oven/bun:1.3 AS builder
 
 WORKDIR /app
 
-# Install build tools needed by better-sqlite3 native addon
-RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
-
 # Copy package files
 COPY package.json bun.lock* ./
 
@@ -48,13 +45,13 @@ COPY --from=builder --chown=vaultlister:nodejs /app/dist ./dist
 COPY --from=builder --chown=vaultlister:nodejs /app/scripts/build-frontend.js ./scripts/build-frontend.js
 COPY --from=builder --chown=vaultlister:nodejs /app/package.json ./
 
-# Install rclone for cloud backup sync
-RUN apt-get update && apt-get install -y --no-install-recommends rclone && rm -rf /var/lib/apt/lists/*
+# Install libvips for sharp image processing (required for thumbnail generation)
+RUN apt-get update && apt-get install -y --no-install-recommends libvips42 && rm -rf /var/lib/apt/lists/*
 
 # Copy backup scripts needed by the scheduler
 COPY --from=builder --chown=vaultlister:nodejs /app/scripts ./scripts
 
-# Create data directory for SQLite
+# Create data and logs directories
 RUN mkdir -p /app/data /app/logs /app/backups && \
     chown -R vaultlister:nodejs /app/data /app/logs /app/backups
 
@@ -66,7 +63,7 @@ ENV LOG_DIR=/app/logs
 ENV TRUST_PROXY=1
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=60s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=60s --start-period=30s --retries=3 \
     CMD bun -e "fetch('http://localhost:3000/api/health',{signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
 # Switch to non-root user

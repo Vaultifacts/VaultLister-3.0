@@ -36,13 +36,13 @@ export async function startTokenRefreshScheduler() {
     // Auto-reset shops that were disconnected due to refresh failures
     // This allows retry on server restart (e.g. after .env credentials are updated)
     try {
-        const resetResult = query.run(`
+        const resetResult = await query.run(`
             UPDATE shops SET
                 is_connected = 1,
                 consecutive_refresh_failures = 0,
                 token_refresh_error = NULL,
                 token_refresh_error_at = NULL,
-                updated_at = datetime('now')
+                updated_at = NOW()
             WHERE is_connected = 0
               AND consecutive_refresh_failures >= ?
               AND oauth_refresh_token IS NOT NULL
@@ -124,7 +124,7 @@ export async function refreshExpiringTokens() {
         // Use a simpler query that doesn't rely on optional columns
         let expiringShops;
         try {
-            expiringShops = query.all(`
+            expiringShops = await query.all(`
                 SELECT s.*, u.id as owner_user_id
                 FROM shops s
                 LEFT JOIN users u ON s.user_id = u.id
@@ -139,7 +139,7 @@ export async function refreshExpiringTokens() {
             // Fallback query without consecutive_refresh_failures column
             if (err.message.includes('no such column')) {
                 logger.info('[TokenRefresh] Using fallback query (missing columns)');
-                expiringShops = query.all(`
+                expiringShops = await query.all(`
                     SELECT s.*, u.id as owner_user_id
                     FROM shops s
                     LEFT JOIN users u ON s.user_id = u.id
@@ -202,7 +202,7 @@ export async function refreshExpiringTokens() {
  */
 async function checkPlatformHealthAlerts() {
     const HEALTH_THRESHOLD = 50; // Alert when below this score
-    const allShops = query.all(`
+    const allShops = await query.all(`
         SELECT s.id, s.user_id, s.platform, s.platform_username, s.is_connected,
             s.oauth_token_expires_at, s.consecutive_refresh_failures, s.last_sync_at,
             s.connection_type, s.sync_status
@@ -228,7 +228,7 @@ async function checkPlatformHealthAlerts() {
         if (!lastSync) { score -= 10; issues.push('Never synced'); }
         else if (now - lastSync > 86400000 * 7) { score -= 15; issues.push('Sync stale >7 days'); }
 
-        const listingErrors = query.get(
+        const listingErrors = await query.get(
             "SELECT COUNT(*) as cnt FROM listings WHERE user_id = ? AND platform = ? AND status = 'error'",
             [shop.user_id, shop.platform]
         )?.cnt || 0;
@@ -238,9 +238,9 @@ async function checkPlatformHealthAlerts() {
 
         if (score < HEALTH_THRESHOLD && issues.length > 0) {
             // Check if we already sent a health alert in the last 6 hours
-            const recentAlert = query.get(`
+            const recentAlert = await query.get(`
                 SELECT id FROM notifications WHERE user_id = ? AND type = 'platform_health'
-                    AND data LIKE ? AND created_at >= datetime('now', '-6 hours')
+                    AND data ILIKE ? AND created_at >= NOW() - INTERVAL '6 hours'
             `, [shop.user_id, `%${shop.platform}%`]);
 
             if (!recentAlert) {
@@ -273,16 +273,16 @@ async function checkPlatformHealthAlerts() {
  * Check inventory forecast and alert users when categories have critical/low stock
  */
 async function checkInventoryForecastAlerts() {
-    const users = query.all('SELECT DISTINCT user_id FROM inventory WHERE status = ?', ['active']);
+    const users = await query.all('SELECT DISTINCT user_id FROM inventory WHERE status = ?', ['active']);
 
     for (const { user_id } of users) {
-        const velocity = query.all(`
+        const velocity = await query.all(`
             SELECT i.category,
                 COUNT(DISTINCT i.id) as total_items,
                 COUNT(DISTINCT s.id) as sold_items,
                 COUNT(DISTINCT CASE WHEN i.status = 'active' THEN i.id END) as active_count
             FROM inventory i
-            LEFT JOIN sales s ON s.inventory_id = i.id AND s.created_at >= datetime('now', '-90 days')
+            LEFT JOIN sales s ON s.inventory_id = i.id AND s.created_at >= NOW() - INTERVAL '90 days'
             WHERE i.user_id = ?
             GROUP BY i.category
             HAVING active_count > 0
@@ -303,8 +303,8 @@ async function checkInventoryForecastAlerts() {
         if (alerts.length === 0) continue;
 
         // 6-hour dedup
-        const recentAlert = query.get(
-            `SELECT id FROM notifications WHERE user_id = ? AND type = 'inventory_forecast' AND created_at >= datetime('now', '-6 hours')`,
+        const recentAlert = await query.get(
+            `SELECT id FROM notifications WHERE user_id = ? AND type = 'inventory_forecast' AND created_at >= NOW() - INTERVAL '6 hours'`,
             [user_id]
         );
         if (recentAlert) continue;
@@ -339,10 +339,10 @@ async function checkInventoryForecastAlerts() {
  */
 async function checkProfitMarginAlerts() {
     const MARGIN_THRESHOLD = 0.15; // Alert when margin drops below 15%
-    const users = query.all('SELECT DISTINCT user_id FROM inventory WHERE status = ?', ['active']);
+    const users = await query.all('SELECT DISTINCT user_id FROM inventory WHERE status = ?', ['active']);
 
     for (const { user_id } of users) {
-        const lowMarginItems = query.all(`
+        const lowMarginItems = await query.all(`
             SELECT i.category, COUNT(*) as item_count,
                 AVG(CASE WHEN i.list_price > 0 THEN (i.list_price - COALESCE(i.cost_price, 0)) / i.list_price ELSE 0 END) as avg_margin,
                 MIN(CASE WHEN i.list_price > 0 THEN (i.list_price - COALESCE(i.cost_price, 0)) / i.list_price ELSE 0 END) as min_margin
@@ -355,8 +355,8 @@ async function checkProfitMarginAlerts() {
         if (lowMarginItems.length === 0) continue;
 
         // 6-hour dedup
-        const recentAlert = query.get(
-            `SELECT id FROM notifications WHERE user_id = ? AND type = 'margin_alert' AND created_at >= datetime('now', '-6 hours')`,
+        const recentAlert = await query.get(
+            `SELECT id FROM notifications WHERE user_id = ? AND type = 'margin_alert' AND created_at >= NOW() - INTERVAL '6 hours'`,
             [user_id]
         );
         if (recentAlert) continue;
@@ -414,7 +414,7 @@ export async function refreshShopToken(shop) {
         // Update shop with new tokens
         // Use a try-catch to handle missing columns gracefully
         try {
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     oauth_token = ?,
                     oauth_refresh_token = ?,
@@ -436,7 +436,7 @@ export async function refreshShopToken(shop) {
         } catch (err) {
             // Fallback update without optional columns
             if (err.message.includes('no such column')) {
-                query.run(`
+                await query.run(`
                     UPDATE shops SET
                         oauth_token = ?,
                         oauth_refresh_token = ?,
@@ -464,7 +464,7 @@ export async function refreshShopToken(shop) {
 
         // Try to record the error, but handle missing columns gracefully
         try {
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     token_refresh_error = ?,
                     token_refresh_error_at = ?,
@@ -475,7 +475,7 @@ export async function refreshShopToken(shop) {
         } catch (updateErr) {
             if (updateErr.message.includes('no such column')) {
                 // Just update the timestamp if columns don't exist
-                query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`, [now, shop.id]);
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`, [now, shop.id]);
             }
         }
 
@@ -502,7 +502,7 @@ export async function refreshShopToken(shop) {
         if (failures >= maxForThisError) {
             logger.info(`[TokenRefresh] Auto-disconnecting ${shop.platform} after ${failures} ${isPermanent ? 'permanent' : 'transient'} failures`);
 
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     is_connected = 0,
                     updated_at = ?
@@ -670,7 +670,7 @@ export function getOAuthConfig(platform, mode) {
  * Used by API endpoints
  */
 export async function manualRefreshToken(shopId, userId) {
-    const shop = query.get(`
+    const shop = await query.get(`
         SELECT * FROM shops
         WHERE id = ? AND user_id = ? AND connection_type = 'oauth'
     `, [shopId, userId]);
@@ -689,27 +689,27 @@ export async function manualRefreshToken(shopId, userId) {
 /**
  * Get token refresh status for monitoring
  */
-export function getRefreshSchedulerStatus() {
+export async function getRefreshSchedulerStatus() {
     let stats;
     try {
-        stats = query.get(`
+        stats = await query.get(`
             SELECT
                 COUNT(*) as total_oauth_shops,
                 SUM(CASE WHEN is_connected = 1 THEN 1 ELSE 0 END) as connected_shops,
                 SUM(CASE WHEN consecutive_refresh_failures > 0 THEN 1 ELSE 0 END) as shops_with_errors,
-                SUM(CASE WHEN oauth_token_expires_at <= datetime('now', '+15 minutes') AND is_connected = 1 THEN 1 ELSE 0 END) as expiring_soon
+                SUM(CASE WHEN oauth_token_expires_at <= NOW() + INTERVAL '15 minutes' AND is_connected = 1 THEN 1 ELSE 0 END) as expiring_soon
             FROM shops
             WHERE connection_type = 'oauth'
         `);
     } catch (err) {
         // Fallback query without optional columns
         if (err.message.includes('no such column')) {
-            stats = query.get(`
+            stats = await query.get(`
                 SELECT
                     COUNT(*) as total_oauth_shops,
                     SUM(CASE WHEN is_connected = 1 THEN 1 ELSE 0 END) as connected_shops,
                     0 as shops_with_errors,
-                    SUM(CASE WHEN oauth_token_expires_at <= datetime('now', '+15 minutes') AND is_connected = 1 THEN 1 ELSE 0 END) as expiring_soon
+                    SUM(CASE WHEN oauth_token_expires_at <= NOW() + INTERVAL '15 minutes' AND is_connected = 1 THEN 1 ELSE 0 END) as expiring_soon
                 FROM shops
                 WHERE connection_type = 'oauth'
             `);

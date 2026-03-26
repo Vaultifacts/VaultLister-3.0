@@ -96,9 +96,9 @@ const emailMarketing = {
         // Check if user has marketing consent
         if (!await this.hasConsent(user.id, 'marketing_emails')) return;
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ?', [sale.listing_id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ?', [sale.listing_id]);
         const inventory = listing?.inventory_id ?
-            query.get('SELECT * FROM inventory WHERE id = ?', [listing.inventory_id]) : null;
+            await query.get('SELECT * FROM inventory WHERE id = ?', [listing.inventory_id]) : null;
 
         await this.sendEmail(user.id, 'saleNotification', {
             name: user.full_name || user.username,
@@ -113,13 +113,13 @@ const emailMarketing = {
 
     // Generate and send weekly digest
     async sendWeeklyDigest(userId) {
-        const user = query.get('SELECT id, email, username, full_name, display_name, avatar_url, subscription_tier, last_login_at FROM users WHERE id = ? AND is_active = 1', [userId]);
+        const user = await query.get('SELECT id, email, username, full_name, display_name, avatar_url, subscription_tier, last_login_at FROM users WHERE id = ? AND is_active = 1', [userId]);
         if (!user || !await this.hasConsent(userId, 'marketing_emails')) return;
 
         // Get stats for the week
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-        const salesStats = query.get(`
+        const salesStats = await query.get(`
             SELECT
                 COUNT(*) as total_sales,
                 SUM(sale_price) as total_revenue,
@@ -128,7 +128,7 @@ const emailMarketing = {
             WHERE user_id = ? AND created_at > ?
         `, [userId, weekAgo]) || { total_sales: 0, total_revenue: 0, total_profit: 0 };
 
-        const listingStats = query.get(`
+        const listingStats = await query.get(`
             SELECT
                 COUNT(*) as new_listings,
                 SUM(views) as total_views,
@@ -137,14 +137,14 @@ const emailMarketing = {
             WHERE user_id = ? AND created_at > ?
         `, [userId, weekAgo]) || { new_listings: 0, total_views: 0, total_likes: 0 };
 
-        const inventoryStats = query.get(`
+        const inventoryStats = await query.get(`
             SELECT COUNT(*) as active_items
             FROM inventory
             WHERE user_id = ? AND status = 'active'
         `, [userId]) || { active_items: 0 };
 
         // Top performing items
-        const topItems = query.all(`
+        const topItems = await query.all(`
             SELECT l.title, l.views, l.likes, l.platform
             FROM listings l
             WHERE l.user_id = ? AND l.status = 'active'
@@ -170,7 +170,7 @@ const emailMarketing = {
     async processWelcomeSequence() {
         const now = new Date().toISOString();
 
-        const pendingEmails = query.all(`
+        const pendingEmails = await query.all(`
             SELECT * FROM email_queue
             WHERE status = 'pending' AND scheduled_for <= ?
             LIMIT 50
@@ -179,9 +179,9 @@ const emailMarketing = {
         for (const email of pendingEmails || []) {
             try {
                 await this.sendEmail(email.user_id, email.template_key, JSON.parse(email.data));
-                query.run('UPDATE email_queue SET status = ?, sent_at = datetime("now") WHERE id = ?', ['sent', email.id]);
+                await query.run('UPDATE email_queue SET status = ?, sent_at = NOW() WHERE id = ?', ['sent', email.id]);
             } catch (error) {
-                query.run('UPDATE email_queue SET status = ?, error = ? WHERE id = ?', ['failed', error.message, email.id]);
+                await query.run('UPDATE email_queue SET status = ?, error = ? WHERE id = ?', ['failed', error.message, email.id]);
             }
         }
     },
@@ -192,7 +192,7 @@ const emailMarketing = {
         // Only run on Sundays between 9-10 AM
         if (now.getDay() !== 0 || now.getHours() !== 9) return;
 
-        const users = query.all(`
+        const users = await query.all(`
             SELECT u.id FROM users u
             JOIN user_consents uc ON u.id = uc.user_id
             WHERE u.is_active = 1
@@ -209,14 +209,14 @@ const emailMarketing = {
     async processInactivityReminders() {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-        const inactiveUsers = query.all(`
+        const inactiveUsers = await query.all(`
             SELECT id, email, username, full_name, last_login_at FROM users
             WHERE is_active = 1
             AND last_login_at < ?
             AND id NOT IN (
                 SELECT user_id FROM email_queue
                 WHERE template_key = 'inactivityReminder'
-                AND created_at > datetime('now', '-30 days')
+                AND created_at > NOW() - INTERVAL '30 days'
             )
             LIMIT 20
         `, [thirtyDaysAgo]);
@@ -233,9 +233,9 @@ const emailMarketing = {
 
     // Queue an email for later
     async queueEmail(userId, templateKey, data, scheduledFor = new Date()) {
-        query.run(`
+        await query.run(`
             INSERT INTO email_queue (id, user_id, template_key, data, scheduled_for, status, created_at)
-            VALUES (?, ?, ?, ?, ?, 'pending', datetime('now'))
+            VALUES (?, ?, ?, ?, ?, 'pending', NOW())
         `, [uuidv4(), userId, templateKey, JSON.stringify(data), scheduledFor.toISOString()]);
     },
 
@@ -262,15 +262,15 @@ const emailMarketing = {
         });
 
         // Log the email
-        query.run(`
+        await query.run(`
             INSERT INTO email_log (id, user_id, template_key, subject, created_at)
-            VALUES (?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, NOW())
         `, [uuidv4(), userId, templateKey, subject]);
     },
 
     // Check if user has consent
     async hasConsent(userId, consentType) {
-        const consent = query.get(`
+        const consent = await query.get(`
             SELECT granted FROM user_consents
             WHERE user_id = ? AND consent_type = ?
         `, [userId, consentType]);
@@ -291,8 +291,8 @@ const emailMarketing = {
             throw new Error('Invalid unsubscribe token');
         }
 
-        query.run(`
-            UPDATE user_consents SET granted = 0, updated_at = datetime('now')
+        await query.run(`
+            UPDATE user_consents SET granted = 0, updated_at = NOW()
             WHERE user_id = ? AND consent_type = 'marketing_emails'
         `, [userId]);
 
@@ -349,17 +349,17 @@ export async function emailMarketingRouter(ctx) {
             return { status: 403, data: { error: 'Admin access required' } };
         }
 
-        const stats = query.get(`
+        const stats = await query.get(`
             SELECT
                 COUNT(*) as total_sent,
-                COUNT(CASE WHEN template_key LIKE 'welcome%' THEN 1 END) as welcome_emails,
+                COUNT(CASE WHEN template_key ILIKE 'welcome%' THEN 1 END) as welcome_emails,
                 COUNT(CASE WHEN template_key = 'weeklyDigest' THEN 1 END) as digest_emails,
                 COUNT(CASE WHEN template_key = 'saleNotification' THEN 1 END) as sale_emails
             FROM email_log
-            WHERE created_at > datetime('now', '-30 days')
+            WHERE created_at > NOW() - INTERVAL '30 days'
         `);
 
-        const queueStats = query.get(`
+        const queueStats = await query.get(`
             SELECT
                 COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
                 COUNT(CASE WHEN status = 'sent' THEN 1 END) as sent,
@@ -376,36 +376,8 @@ export async function emailMarketingRouter(ctx) {
     return { status: 404, data: { error: 'Not found' } };
 }
 
-// Database migration
-export const migration = `
--- Email queue
-CREATE TABLE IF NOT EXISTS email_queue (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    template_key TEXT NOT NULL,
-    data TEXT,
-    scheduled_for TEXT NOT NULL,
-    status TEXT DEFAULT 'pending',
-    sent_at TEXT,
-    error TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_email_queue_status ON email_queue(status, scheduled_for);
-
--- Email log
-CREATE TABLE IF NOT EXISTS email_log (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    template_key TEXT NOT NULL,
-    subject TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_email_log_user ON email_log(user_id, created_at DESC);
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 export { emailMarketing };
 export default emailMarketing;

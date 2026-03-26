@@ -28,7 +28,7 @@ export async function chatbotRouter(ctx) {
             const now = new Date().toISOString();
 
             // Create conversation
-            query.run(
+            await query.run(
                 `INSERT INTO chat_conversations (id, user_id, title, created_at, updated_at)
                  VALUES (?, ?, ?, ?, ?)`,
                 [conversationId, user.id, body.title || 'New Chat', now, now]
@@ -46,7 +46,7 @@ export async function chatbotRouter(ctx) {
 • AI-powered listing generation
 
 What can I help you with today?`;
-            query.run(
+            await query.run(
                 `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, created_at)
                  VALUES (?, ?, ?, 'assistant', ?, ?)`,
                 [
@@ -81,7 +81,7 @@ What can I help you with today?`;
     // GET /api/chatbot/conversations - List all conversations
     if (method === 'GET' && path === '/conversations') {
         try {
-            const conversations = query.all(
+            const conversations = await query.all(
                 `SELECT
                     c.id,
                     c.title,
@@ -117,7 +117,7 @@ What can I help you with today?`;
 
         try {
             // Get conversation
-            const conversation = query.get(
+            const conversation = await query.get(
                 `SELECT id, title, created_at, updated_at
                  FROM chat_conversations
                  WHERE id = ? AND user_id = ?`,
@@ -132,7 +132,7 @@ What can I help you with today?`;
             }
 
             // Get messages
-            const messages = query.all(
+            const messages = await query.all(
                 `SELECT id, role, content, metadata, helpful_rating, created_at
                  FROM chat_messages
                  WHERE conversation_id = ?
@@ -179,7 +179,7 @@ What can I help you with today?`;
 
         try {
             // Verify conversation belongs to user
-            const conversation = query.get(
+            const conversation = await query.get(
                 `SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`,
                 [conversation_id, user.id]
             );
@@ -194,14 +194,14 @@ What can I help you with today?`;
             // Save user message
             const userMessageId = `msg_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
             const messageTimestamp = new Date().toISOString();
-            query.run(
+            await query.run(
                 `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, created_at)
                  VALUES (?, ?, ?, 'user', ?, ?)`,
                 [userMessageId, conversation_id, user.id, message, messageTimestamp]
             );
 
             // Get conversation history (last 10 messages for context)
-            const historyMessages = query.all(
+            const historyMessages = await query.all(
                 `SELECT role, content FROM chat_messages
                  WHERE conversation_id = ?
                  ORDER BY created_at DESC
@@ -224,14 +224,14 @@ What can I help you with today?`;
             };
 
             const responseTimestamp = new Date().toISOString();
-            query.run(
+            await query.run(
                 `INSERT INTO chat_messages (id, conversation_id, user_id, role, content, metadata, created_at)
                  VALUES (?, ?, ?, 'assistant', ?, ?, ?)`,
                 [assistantMessageId, conversation_id, user.id, grokResponse.content, JSON.stringify(metadata), responseTimestamp]
             );
 
             // Update conversation timestamp
-            query.run(
+            await query.run(
                 `UPDATE chat_conversations SET updated_at = ? WHERE id = ? AND user_id = ?`,
                 [responseTimestamp, conversation_id, user.id]
             );
@@ -279,7 +279,7 @@ What can I help you with today?`;
 
         try {
             // Verify message belongs to user's conversation
-            const message = query.get(
+            const message = await query.get(
                 `SELECT m.id
                  FROM chat_messages m
                  JOIN chat_conversations c ON m.conversation_id = c.id
@@ -295,7 +295,7 @@ What can I help you with today?`;
             }
 
             // Update rating
-            query.run(
+            await query.run(
                 `UPDATE chat_messages SET helpful_rating = ? WHERE id = ? AND user_id = ?`,
                 [rating, message_id, user.id]
             );
@@ -319,7 +319,7 @@ What can I help you with today?`;
 
         try {
             // Verify ownership
-            const conversation = query.get(
+            const conversation = await query.get(
                 `SELECT id FROM chat_conversations WHERE id = ? AND user_id = ?`,
                 [conversationId, user.id]
             );
@@ -332,13 +332,13 @@ What can I help you with today?`;
             }
 
             // Delete messages first (foreign key constraint)
-            query.run(
+            await query.run(
                 `DELETE FROM chat_messages WHERE conversation_id = ? AND conversation_id IN (SELECT id FROM chat_conversations WHERE user_id = ?)`,
                 [conversationId, user.id]
             );
 
             // Delete conversation
-            query.run(
+            await query.run(
                 `DELETE FROM chat_conversations WHERE id = ? AND user_id = ?`,
                 [conversationId, user.id]
             );

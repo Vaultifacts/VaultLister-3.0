@@ -36,7 +36,7 @@ export async function inventoryImportRouter(ctx) {
             sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
             params.push(limit, offset);
 
-            const jobs = query.all(sql, params);
+            const jobs = await query.all(sql, params);
 
             return {
                 status: 200,
@@ -59,7 +59,7 @@ export async function inventoryImportRouter(ctx) {
     const getJobMatch = path.match(/^\/jobs\/([a-f0-9-]+)$/i);
     if (method === 'GET' && getJobMatch) {
         try {
-            const job = query.get(
+            const job = await query.get(
                 'SELECT * FROM import_jobs WHERE id = ? AND user_id = ?',
                 [getJobMatch[1], user.id]
             );
@@ -90,7 +90,7 @@ export async function inventoryImportRouter(ctx) {
     if (method === 'GET' && getRowsMatch) {
         try {
             // Verify job belongs to authenticated user (prevent IDOR)
-            const ownerCheck = query.get(
+            const ownerCheck = await query.get(
                 'SELECT id FROM import_jobs WHERE id = ? AND user_id = ?',
                 [getRowsMatch[1], user.id]
             );
@@ -114,7 +114,7 @@ export async function inventoryImportRouter(ctx) {
             sql += ' ORDER BY row_number ASC LIMIT ? OFFSET ?';
             params.push(limit, offset);
 
-            const rows = query.all(sql, params);
+            const rows = await query.all(sql, params);
 
             return {
                 status: 200,
@@ -268,7 +268,7 @@ export async function inventoryImportRouter(ctx) {
             skipped_title_rows: skippedTitleRows
         };
 
-        query.run(`
+        await query.run(`
             INSERT INTO import_jobs (
                 id, user_id, name, source_type, original_filename, file_size,
                 status, has_header_row, skip_rows, date_format,
@@ -284,7 +284,7 @@ export async function inventoryImportRouter(ctx) {
         // Store rows for later processing
         for (let i = 0; i < rows.length; i++) {
             const rowId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO import_rows (id, job_id, row_number, raw_data)
                 VALUES (?, ?, ?, ?)
             `, [rowId, id, i + 1, JSON.stringify(rows[i])]);
@@ -321,7 +321,7 @@ export async function inventoryImportRouter(ctx) {
                 return { status: 400, data: { error: 'Field mapping object is required' } };
             }
 
-            const job = query.get(
+            const job = await query.get(
                 'SELECT id FROM import_jobs WHERE id = ? AND user_id = ?',
                 [jobId, user.id]
             );
@@ -330,7 +330,7 @@ export async function inventoryImportRouter(ctx) {
                 return { status: 404, data: { error: 'Import job not found' } };
             }
 
-            query.run(`
+            await query.run(`
                 UPDATE import_jobs SET field_mapping = ?, status = 'validating'
                 WHERE id = ?
             `, [JSON.stringify(field_mapping), jobId]);
@@ -348,7 +348,7 @@ export async function inventoryImportRouter(ctx) {
         try {
             const jobId = validateMatch[1];
 
-            const job = query.get(
+            const job = await query.get(
                 'SELECT * FROM import_jobs WHERE id = ? AND user_id = ?',
                 [jobId, user.id]
             );
@@ -362,7 +362,7 @@ export async function inventoryImportRouter(ctx) {
                 return { status: 400, data: { error: 'Field mapping must be set before validation' } };
             }
 
-            const rows = query.all(
+            const rows = await query.all(
                 'SELECT * FROM import_rows WHERE job_id = ? ORDER BY row_number ASC',
                 [jobId]
             );
@@ -416,13 +416,13 @@ export async function inventoryImportRouter(ctx) {
                     validCount++;
                 }
 
-                query.run(`
+                await query.run(`
                     UPDATE import_rows SET parsed_data = ?, status = ?, validation_errors = ?
                     WHERE id = ?
                 `, [JSON.stringify(parsed), rowStatus, rowErrors.length > 0 ? JSON.stringify(rowErrors) : null, row.id]);
             }
 
-            query.run(`
+            await query.run(`
                 UPDATE import_jobs SET status = 'validating', errors = ?
                 WHERE id = ?
             `, [errors.length > 0 ? JSON.stringify(errors.slice(0, 50)) : null, jobId]);
@@ -449,7 +449,7 @@ export async function inventoryImportRouter(ctx) {
         const jobId = executeMatch[1];
         const { update_existing = false, skip_duplicates = true } = body;
 
-        const job = query.get(
+        const job = await query.get(
             'SELECT * FROM import_jobs WHERE id = ? AND user_id = ?',
             [jobId, user.id]
         );
@@ -458,13 +458,13 @@ export async function inventoryImportRouter(ctx) {
             return { status: 404, data: { error: 'Import job not found' } };
         }
 
-        query.run(`
+        await query.run(`
             UPDATE import_jobs SET status = 'importing', started_at = CURRENT_TIMESTAMP,
                 update_existing = ?, skip_duplicates = ?
             WHERE id = ?
         `, [update_existing ? 1 : 0, skip_duplicates ? 1 : 0, jobId]);
 
-        const rows = query.all(
+        const rows = await query.all(
             "SELECT * FROM import_rows WHERE job_id = ? AND status = 'pending' ORDER BY row_number ASC",
             [jobId]
         );
@@ -480,14 +480,14 @@ export async function inventoryImportRouter(ctx) {
                 const parsed = safeJsonParse(row.parsed_data, {});
 
                 if (!parsed.title) {
-                    query.run("UPDATE import_rows SET status = 'skipped' WHERE id = ?", [row.id]);
+                    await query.run("UPDATE import_rows SET status = 'skipped' WHERE id = ?", [row.id]);
                     skipped++;
                     continue;
                 }
 
                 // Check for duplicates by SKU
                 if (parsed.sku) {
-                    const existing = query.get(
+                    const existing = await query.get(
                         'SELECT id FROM inventory WHERE user_id = ? AND sku = ?',
                         [user.id, parsed.sku]
                     );
@@ -521,16 +521,16 @@ export async function inventoryImportRouter(ctx) {
                             if (updateFields.length > 0) {
                                 updateFields.push('updated_at = CURRENT_TIMESTAMP');
                                 updateParams.push(existing.id);
-                                query.run(`UPDATE inventory SET ${updateFields.join(', ')} WHERE id = ?`, updateParams);
+                                await query.run(`UPDATE inventory SET ${updateFields.join(', ')} WHERE id = ?`, updateParams);
                             }
 
-                            query.run(`
+                            await query.run(`
                                 UPDATE import_rows SET status = 'updated', inventory_id = ? WHERE id = ?
                             `, [existing.id, row.id]);
                             updated++;
                             continue;
                         } else if (skip_duplicates) {
-                            query.run("UPDATE import_rows SET status = 'duplicate' WHERE id = ?", [row.id]);
+                            await query.run("UPDATE import_rows SET status = 'duplicate' WHERE id = ?", [row.id]);
                             duplicates++;
                             continue;
                         }
@@ -544,7 +544,7 @@ export async function inventoryImportRouter(ctx) {
                 let condition = parsed.condition ? String(parsed.condition).toLowerCase().replace(/\s+/g, '_') : null;
                 if (condition && !validConditions.includes(condition)) condition = null;
 
-                query.run(`
+                await query.run(`
                     INSERT INTO inventory (
                         id, user_id, title, description, sku, brand, category,
                         condition, size, color, list_price, cost_price, quantity, status, location, notes, tags
@@ -567,13 +567,13 @@ export async function inventoryImportRouter(ctx) {
                     parsed.tags ? JSON.stringify(String(parsed.tags).split(',').map(t => t.trim()).filter(Boolean)) : '[]'
                 ]);
 
-                query.run(`
+                await query.run(`
                     UPDATE import_rows SET status = 'imported', inventory_id = ? WHERE id = ?
                 `, [inventoryId, row.id]);
                 imported++;
 
             } catch (error) {
-                query.run(`
+                await query.run(`
                     UPDATE import_rows SET status = 'failed', error_message = ? WHERE id = ?
                 `, [error.message, row.id]);
                 failed++;
@@ -582,7 +582,7 @@ export async function inventoryImportRouter(ctx) {
 
         const finalStatus = failed === rows.length ? 'failed' : 'completed';
 
-        query.run(`
+        await query.run(`
             UPDATE import_jobs
             SET status = ?, completed_at = CURRENT_TIMESTAMP,
                 processed_rows = ?, imported_rows = ?, skipped_rows = ?,
@@ -613,7 +613,7 @@ export async function inventoryImportRouter(ctx) {
     const cancelMatch = path.match(/^\/jobs\/([a-f0-9-]+)\/cancel$/i);
     if (method === 'POST' && cancelMatch) {
         try {
-            const result = query.run(`
+            const result = await query.run(`
                 UPDATE import_jobs SET status = 'cancelled', completed_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ? AND status IN ('pending', 'mapping', 'validating')
             `, [cancelMatch[1], user.id]);
@@ -633,7 +633,7 @@ export async function inventoryImportRouter(ctx) {
     const deleteJobMatch = path.match(/^\/jobs\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteJobMatch) {
         try {
-            const result = query.run(
+            const result = await query.run(
                 'DELETE FROM import_jobs WHERE id = ? AND user_id = ?',
                 [deleteJobMatch[1], user.id]
             );
@@ -656,7 +656,7 @@ export async function inventoryImportRouter(ctx) {
     // GET /api/inventory-import/mappings - List saved mappings
     if (method === 'GET' && path === '/mappings') {
         try {
-            const mappings = query.all(
+            const mappings = await query.all(
                 'SELECT * FROM import_mappings WHERE user_id = ? ORDER BY use_count DESC, created_at DESC',
                 [user.id]
             );
@@ -692,10 +692,10 @@ export async function inventoryImportRouter(ctx) {
             const id = uuidv4();
 
             if (is_default) {
-                query.run('UPDATE import_mappings SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE import_mappings SET is_default = 0 WHERE user_id = ?', [user.id]);
             }
 
-            query.run(`
+            await query.run(`
                 INSERT INTO import_mappings (
                     id, user_id, name, description, source_type, source_name,
                     field_mapping, has_header_row, skip_rows, date_format, is_default
@@ -719,7 +719,7 @@ export async function inventoryImportRouter(ctx) {
         try {
             const id = patchMappingMatch[1];
 
-            const existing = query.get('SELECT id FROM import_mappings WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT id FROM import_mappings WHERE id = ? AND user_id = ?', [id, user.id]);
             if (!existing) {
                 return { status: 404, data: { error: 'Mapping template not found' } };
             }
@@ -750,7 +750,7 @@ export async function inventoryImportRouter(ctx) {
             }
 
             if (body.is_default) {
-                query.run('UPDATE import_mappings SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE import_mappings SET is_default = 0 WHERE user_id = ?', [user.id]);
                 updates.push('is_default = 1');
             }
 
@@ -761,7 +761,7 @@ export async function inventoryImportRouter(ctx) {
             updates.push('updated_at = CURRENT_TIMESTAMP');
             params.push(id);
 
-            query.run(`UPDATE import_mappings SET ${updates.join(', ')} WHERE id = ?`, params);
+            await query.run(`UPDATE import_mappings SET ${updates.join(', ')} WHERE id = ?`, params);
 
             return { status: 200, data: { message: 'Mapping template updated' } };
         } catch (error) {
@@ -774,7 +774,7 @@ export async function inventoryImportRouter(ctx) {
     const deleteMappingMatch = path.match(/^\/mappings\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteMappingMatch) {
         try {
-            const result = query.run(
+            const result = await query.run(
                 'DELETE FROM import_mappings WHERE id = ? AND user_id = ?',
                 [deleteMappingMatch[1], user.id]
             );
@@ -922,7 +922,7 @@ export async function inventoryImportRouter(ctx) {
 
             // Check for potential SKU duplicate
             if (parsed.sku && user) {
-                const existing = query.get(
+                const existing = await query.get(
                     'SELECT id, title FROM inventory WHERE user_id = ? AND sku = ?',
                     [user.id, parsed.sku]
                 );
@@ -978,11 +978,11 @@ export async function inventoryImportRouter(ctx) {
             let categories = [];
             let brands = [];
             try {
-                categories = query.all(
+                categories = await query.all(
                     'SELECT DISTINCT category FROM inventory WHERE user_id = ? AND category IS NOT NULL ORDER BY category',
                     [user.id]
                 ).map(r => r.category);
-                brands = query.all(
+                brands = await query.all(
                     'SELECT DISTINCT brand FROM inventory WHERE user_id = ? AND brand IS NOT NULL ORDER BY brand',
                     [user.id]
                 ).map(r => r.brand);

@@ -21,7 +21,7 @@
 //   - Reports success/failure counts
 
 import crypto from 'crypto';
-import { query } from '../src/backend/db/database.js';
+import { query, initializeDatabase, closeDatabase } from '../src/backend/db/database.js';
 import { encryptToken, decryptToken } from '../src/backend/utils/encryption.js';
 import { logger } from '../src/backend/shared/logger.js';
 
@@ -48,12 +48,14 @@ console.log('=== OAuth Encryption Key Rotation ===');
 console.log(`Old key length: ${OLD_KEY.length} chars`);
 console.log(`New key length: ${NEW_KEY.length} chars`);
 
+await initializeDatabase();
+
 // Fetch all OAuth accounts with encrypted tokens
-const accounts = query.all(`
+const accounts = await query.all(`
     SELECT id, platform, access_token, refresh_token
     FROM oauth_accounts
     WHERE access_token IS NOT NULL OR refresh_token IS NOT NULL
-`);
+`, []);
 
 console.log(`Found ${accounts.length} OAuth account(s) to re-encrypt.\n`);
 
@@ -82,9 +84,9 @@ for (const acct of accounts) {
         }
 
         if (changed) {
-            query.run(`
+            await query.run(`
                 UPDATE oauth_accounts
-                SET access_token = ?, refresh_token = ?, updated_at = datetime('now')
+                SET access_token = ?, refresh_token = ?, updated_at = NOW()
                 WHERE id = ?
             `, [newAccessToken, newRefreshToken, acct.id]);
 
@@ -108,6 +110,8 @@ console.log(`\n=== Results ===`);
 console.log(`  Success: ${success}`);
 console.log(`  Skipped: ${skipped}`);
 console.log(`  Failed:  ${failed}`);
+
+await closeDatabase();
 
 if (failed > 0) {
     console.error('\nWARNING: Some tokens failed to re-encrypt. Do NOT remove OAUTH_ENCRYPTION_KEY_OLD yet.');

@@ -18,6 +18,7 @@ services:
       - PORT=3000
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set}
       - OAUTH_ENCRYPTION_KEY=${OAUTH_ENCRYPTION_KEY:?OAUTH_ENCRYPTION_KEY must be set}
+      - DATABASE_URL=postgresql://vaultlister:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/vaultlister
       - REDIS_URL=redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set}@redis:6379
       - DATA_DIR=/app/data
       - LOG_DIR=/app/logs
@@ -65,12 +66,37 @@ services:
       - vaultlister-logs:/app/logs
       - vaultlister-backups:/app/backups
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     healthcheck:
       test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/api/health',{signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 60s
       retries: 3
+      start_period: 10s
+    networks:
+      - vaultlister-network
+
+  # ============================================
+  # PostgreSQL (primary database)
+  # ============================================
+  postgres:
+    image: postgres:17-alpine
+    container_name: vaultlister-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=vaultlister
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      - POSTGRES_DB=vaultlister
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vaultlister -d vaultlister"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 10s
     networks:
       - vaultlister-network
@@ -194,6 +220,8 @@ volumes:
   vaultlister-logs:
     driver: local
   vaultlister-backups:
+    driver: local
+  postgres-data:
     driver: local
   redis-data:
     driver: local

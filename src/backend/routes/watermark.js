@@ -9,7 +9,7 @@ export async function watermarkRouter(ctx) {
     // GET /api/watermark/presets - List user's watermark presets
     if (method === 'GET' && path === '/presets') {
         try {
-            const presets = query.all(
+            const presets = await query.all(
                 `SELECT * FROM watermark_presets
                 WHERE user_id = ?
                 ORDER BY is_default DESC, name`,
@@ -87,14 +87,14 @@ export async function watermarkRouter(ctx) {
 
             const id = uuidv4();
 
-            query.run(
+            await query.run(
                 `INSERT INTO watermark_presets
                 (id, user_id, name, type, content, position, opacity, size, rotation, color, is_default)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [id, user.id, name.trim(), type, content, presetPosition, presetOpacity, presetSize, presetRotation, color || null, false]
             );
 
-            const preset = query.get('SELECT * FROM watermark_presets WHERE id = ?', [id]);
+            const preset = await query.get('SELECT * FROM watermark_presets WHERE id = ?', [id]);
 
             return { status: 201, data: preset };
         } catch (error) {
@@ -108,7 +108,7 @@ export async function watermarkRouter(ctx) {
         try {
             const presetId = path.split('/')[2];
 
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?',
                 [presetId, user.id]
             );
@@ -187,12 +187,12 @@ export async function watermarkRouter(ctx) {
 
             values.push(presetId);
 
-            query.run(
+            await query.run(
                 `UPDATE watermark_presets SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 values
             );
 
-            const updated = query.get('SELECT * FROM watermark_presets WHERE id = ?', [presetId]);
+            const updated = await query.get('SELECT * FROM watermark_presets WHERE id = ?', [presetId]);
 
             return { status: 200, data: updated };
         } catch (error) {
@@ -206,7 +206,7 @@ export async function watermarkRouter(ctx) {
         try {
             const presetId = path.split('/')[2];
 
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?',
                 [presetId, user.id]
             );
@@ -219,7 +219,7 @@ export async function watermarkRouter(ctx) {
                 return { status: 409, data: { error: 'Cannot delete default preset. Set another preset as default first.' } };
             }
 
-            query.run('DELETE FROM watermark_presets WHERE id = ? AND user_id = ?', [presetId, user.id]);
+            await query.run('DELETE FROM watermark_presets WHERE id = ? AND user_id = ?', [presetId, user.id]);
 
             return { status: 200, data: { message: 'Preset deleted successfully' } };
         } catch (error) {
@@ -233,7 +233,7 @@ export async function watermarkRouter(ctx) {
         try {
             const presetId = path.split('/')[2];
 
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?',
                 [presetId, user.id]
             );
@@ -243,12 +243,12 @@ export async function watermarkRouter(ctx) {
             }
 
             // Use transaction to ensure atomicity
-            query.transaction(() => {
-                query.run('UPDATE watermark_presets SET is_default = 0 WHERE user_id = ?', [user.id]);
-                query.run('UPDATE watermark_presets SET is_default = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [presetId, user.id]);
-            })();
+            await query.transaction(async (tx) => {
+                await tx.run('UPDATE watermark_presets SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await tx.run('UPDATE watermark_presets SET is_default = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [presetId, user.id]);
+            });
 
-            const updated = query.get('SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?', [presetId, user.id]);
+            const updated = await query.get('SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?', [presetId, user.id]);
 
             return { status: 200, data: updated };
         } catch (error) {
@@ -271,7 +271,7 @@ export async function watermarkRouter(ctx) {
             }
 
             // Verify preset exists
-            const preset = query.get(
+            const preset = await query.get(
                 'SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?',
                 [preset_id, user.id]
             );
@@ -288,7 +288,7 @@ export async function watermarkRouter(ctx) {
             for (const imageId of image_ids) {
                 try {
                     // Verify image belongs to user
-                    const image = query.get(
+                    const image = await query.get(
                         'SELECT id FROM image_bank WHERE id = ? AND user_id = ?',
                         [imageId, user.id]
                     );
@@ -300,7 +300,7 @@ export async function watermarkRouter(ctx) {
                     }
 
                     // Mark as watermarked (actual watermark application happens client-side or worker)
-                    query.run(
+                    await query.run(
                         `UPDATE image_bank
                         SET watermarked = 1, watermark_preset_id = ?, updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?`,

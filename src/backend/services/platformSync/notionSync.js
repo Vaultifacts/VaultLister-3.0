@@ -37,7 +37,7 @@ export async function performSync(userId, options = {}) {
     }
 
     // Mark sync as in progress
-    query.run(`
+    await query.run(`
         UPDATE notion_settings SET
             last_sync_status = 'in_progress',
             last_sync_at = ?,
@@ -86,7 +86,7 @@ export async function performSync(userId, options = {}) {
         const status = totalErrors > 0 ? (totalPushed + totalPulled > 0 ? 'partial' : 'failed') : 'success';
 
         // Update settings with sync result
-        query.run(`
+        await query.run(`
             UPDATE notion_settings SET
                 last_sync_status = ?,
                 last_sync_error = ?,
@@ -123,7 +123,7 @@ export async function performSync(userId, options = {}) {
 
     } catch (error) {
         // Mark sync as failed
-        query.run(`
+        await query.run(`
             UPDATE notion_settings SET
                 last_sync_status = 'failed',
                 last_sync_error = ?,
@@ -146,7 +146,7 @@ async function syncInventory(userId, settings, direction) {
     try {
         // PUSH: VaultLister -> Notion
         if (direction === 'push' || direction === 'bidirectional') {
-            const localItems = query.all(
+            const localItems = await query.all(
                 `SELECT * FROM inventory WHERE user_id = ? AND deleted_at IS NULL`,
                 [userId]
             );
@@ -228,7 +228,7 @@ async function syncInventory(userId, settings, direction) {
 
                             // Check for conflicts
                             if (direction === 'bidirectional') {
-                                const localItem = query.get(
+                                const localItem = await query.get(
                                     'SELECT * FROM inventory WHERE id = ?',
                                     [syncMap.local_id]
                                 );
@@ -302,7 +302,7 @@ async function syncSales(userId, settings, direction) {
     try {
         // PUSH: VaultLister -> Notion
         if (direction === 'push' || direction === 'bidirectional') {
-            const localSales = query.all(
+            const localSales = await query.all(
                 `SELECT s.*, i.title as item_title
                  FROM sales s
                  LEFT JOIN inventory i ON s.inventory_id = i.id
@@ -414,7 +414,7 @@ async function syncNotes(userId, settings, direction) {
     try {
         // PUSH: VaultLister -> Notion
         if (direction === 'push' || direction === 'bidirectional') {
-            const localItems = query.all(
+            const localItems = await query.all(
                 `SELECT id, title, notes, updated_at FROM inventory
                  WHERE user_id = ? AND deleted_at IS NULL AND notes IS NOT NULL AND notes != ''`,
                 [userId]
@@ -484,7 +484,7 @@ async function syncNotes(userId, settings, direction) {
                         }
 
                         if (direction === 'bidirectional') {
-                            const localItem = query.get(
+                            const localItem = await query.get(
                                 'SELECT id, notes, updated_at FROM inventory WHERE id = ? AND deleted_at IS NULL',
                                 [syncMap.local_id]
                             );
@@ -507,7 +507,7 @@ async function syncNotes(userId, settings, direction) {
                         }
 
                         const now = new Date().toISOString();
-                        query.run(
+                        await query.run(
                             `UPDATE inventory SET notes = ?, updated_at = ? WHERE id = ? AND user_id = ?`,
                             [notionData.notes, now, syncMap.local_id, userId]
                         );
@@ -624,7 +624,7 @@ async function createConflictRecord(userId, syncMap, entityType, localItem, noti
     // Determine conflicting fields
     const conflictingFields = findConflictingFields(entityType, localItem, notionPage);
 
-    query.run(`
+    await query.run(`
         INSERT INTO notion_sync_conflicts (
             id, user_id, sync_map_id, entity_type, local_id, notion_page_id,
             local_data, notion_data, conflicting_fields, detected_at
@@ -670,7 +670,7 @@ function findConflictingFields(entityType, localItem, notionPage) {
  * Resolve a conflict
  */
 export async function resolveConflict(userId, conflictId, resolution, mergedData = null) {
-    const conflict = query.get(
+    const conflict = await query.get(
         'SELECT * FROM notion_sync_conflicts WHERE id = ? AND user_id = ?',
         [conflictId, userId]
     );
@@ -679,14 +679,14 @@ export async function resolveConflict(userId, conflictId, resolution, mergedData
         throw new Error('Conflict not found');
     }
 
-    const syncMap = query.get('SELECT * FROM notion_sync_map WHERE id = ?', [conflict.sync_map_id]);
+    const syncMap = await query.get('SELECT * FROM notion_sync_map WHERE id = ?', [conflict.sync_map_id]);
     const now = new Date().toISOString();
 
     switch (resolution) {
         case 'keep_local':
             // Push local to Notion
             if (conflict.entity_type === 'inventory') {
-                const localItem = query.get('SELECT * FROM inventory WHERE id = ?', [conflict.local_id]);
+                const localItem = await query.get('SELECT * FROM inventory WHERE id = ?', [conflict.local_id]);
                 if (localItem) {
                     const props = notionService.mapInventoryToNotion(localItem);
                     await notionService.updatePage(userId, conflict.notion_page_id, props);
@@ -724,7 +724,7 @@ export async function resolveConflict(userId, conflictId, resolution, mergedData
     }
 
     // Mark conflict as resolved
-    query.run(`
+    await query.run(`
         UPDATE notion_sync_conflicts SET
             resolved = 1,
             resolution = ?,
@@ -757,7 +757,7 @@ async function createLocalInventory(userId, notionData) {
         ? JSON.stringify(notionData.tags)
         : notionData.tags;
 
-    query.run(`
+    await query.run(`
         INSERT INTO inventory (
             id, user_id, title, sku, description, brand, category,
             condition, cost_price, list_price, quantity, status,
@@ -796,7 +796,7 @@ async function updateLocalInventory(localId, notionData) {
         ? JSON.stringify(notionData.tags)
         : notionData.tags;
 
-    query.run(`
+    await query.run(`
         UPDATE inventory SET
             title = COALESCE(?, title),
             sku = COALESCE(?, sku),
@@ -837,7 +837,7 @@ async function createLocalSale(userId, notionData) {
     const id = uuidv4();
     const now = new Date().toISOString();
 
-    query.run(`
+    await query.run(`
         INSERT INTO sales (
             id, user_id, platform, sale_price, platform_fee, shipping_cost,
             net_profit, buyer_username, status, created_at, updated_at
@@ -864,7 +864,7 @@ async function createLocalSale(userId, notionData) {
 async function updateLocalSale(localId, notionData) {
     const now = new Date().toISOString();
 
-    query.run(`
+    await query.run(`
         UPDATE sales SET
             sale_price = COALESCE(?, sale_price),
             platform_fee = COALESCE(?, platform_fee),
@@ -903,13 +903,13 @@ export function startSyncScheduler() {
     syncIntervalId = setInterval(async () => {
         try {
             // Find users due for sync
-            const dueUsers = query.all(`
+            const dueUsers = await query.all(`
                 SELECT user_id, sync_interval_minutes, last_sync_at
                 FROM notion_settings
                 WHERE sync_enabled = 1
                 AND (
                     last_sync_at IS NULL
-                    OR datetime(last_sync_at, '+' || sync_interval_minutes || ' minutes') < datetime('now')
+                    OR last_sync_at + (sync_interval_minutes * INTERVAL '1 minute') < NOW()
                 )
             `);
 

@@ -61,7 +61,7 @@ export async function calendarRouter(ctx) {
                 sql += ' LIMIT 500';
             }
 
-            const events = query.all(sql, params);
+            const events = await query.all(sql, params);
 
             return {
                 status: 200,
@@ -105,7 +105,7 @@ export async function calendarRouter(ctx) {
             const daysInMonth = new Date(Date.UTC(parsedYear, parsedMonth, 0)).getUTCDate();
             const endDate = `${parsedYear}-${String(parsedMonth).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
 
-            const events = query.all(
+            const events = await query.all(
                 `SELECT * FROM calendar_events WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY date ASC, time ASC`,
                 [user.id, startDate, endDate]
             );
@@ -128,7 +128,7 @@ export async function calendarRouter(ctx) {
         const eventId = path.split('/')[2];
 
         try {
-            const event = query.get(
+            const event = await query.get(
                 `SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`,
                 [eventId, user.id]
             );
@@ -200,7 +200,7 @@ export async function calendarRouter(ctx) {
 
         try {
             const eventId = nanoid();
-            query.run(
+            await query.run(
                 `INSERT INTO calendar_events (id, user_id, title, description, date, time, type, color, related_id, related_type, all_day, depends_on)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
@@ -219,7 +219,7 @@ export async function calendarRouter(ctx) {
                 ]
             );
 
-            const event = query.get(`SELECT * FROM calendar_events WHERE id = ?`, [eventId]);
+            const event = await query.get(`SELECT * FROM calendar_events WHERE id = ?`, [eventId]);
 
             return {
                 status: 201,
@@ -239,7 +239,7 @@ export async function calendarRouter(ctx) {
         const eventId = path.split('/')[2];
 
         try {
-            const event = query.get(
+            const event = await query.get(
                 `SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`,
                 [eventId, user.id]
             );
@@ -253,7 +253,7 @@ export async function calendarRouter(ctx) {
 
             const { title, description, date, time, type, color, completed, all_day, depends_on } = body;
 
-            query.run(
+            await query.run(
                 `UPDATE calendar_events SET
                     title = ?, description = ?, date = ?, time = ?, type = ?, color = ?, completed = ?, all_day = ?, depends_on = ?, updated_at = CURRENT_TIMESTAMP
                  WHERE id = ?`,
@@ -271,7 +271,7 @@ export async function calendarRouter(ctx) {
                 ]
             );
 
-            const updatedEvent = query.get(`SELECT * FROM calendar_events WHERE id = ?`, [eventId]);
+            const updatedEvent = await query.get(`SELECT * FROM calendar_events WHERE id = ?`, [eventId]);
 
             return {
                 status: 200,
@@ -291,7 +291,7 @@ export async function calendarRouter(ctx) {
         const eventId = path.split('/')[2];
 
         try {
-            const event = query.get(
+            const event = await query.get(
                 `SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`,
                 [eventId, user.id]
             );
@@ -303,10 +303,10 @@ export async function calendarRouter(ctx) {
                 };
             }
 
-            const result = query.run(`DELETE FROM calendar_events WHERE id = ? AND user_id = ?`, [eventId, user.id]);
+            const result = await query.run(`DELETE FROM calendar_events WHERE id = ? AND user_id = ?`, [eventId, user.id]);
 
             // Cascade delete dependent events
-            query.run(`DELETE FROM calendar_events WHERE depends_on = ? AND user_id = ?`, [eventId, user.id]);
+            await query.run(`DELETE FROM calendar_events WHERE depends_on = ? AND user_id = ?`, [eventId, user.id]);
 
             if (result.changes === 0) {
                 return {
@@ -335,7 +335,7 @@ export async function calendarRouter(ctx) {
     // GET /api/calendar/sync-settings - List user's sync configurations
     if (method === 'GET' && path === '/sync-settings') {
         try {
-            const settings = query.all(
+            const settings = await query.all(
                 'SELECT * FROM calendar_sync_settings WHERE user_id = ? ORDER BY created_at ASC',
                 [user.id]
             );
@@ -364,13 +364,13 @@ export async function calendarRouter(ctx) {
 
         try {
             // Upsert by user_id + provider
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT id FROM calendar_sync_settings WHERE user_id = ? AND provider = ?',
                 [user.id, provider]
             );
 
             if (existing) {
-                query.run(`
+                await query.run(`
                     UPDATE calendar_sync_settings
                     SET sync_direction = ?, frequency = ?, is_active = ?, calendar_name = ?, updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
@@ -384,7 +384,7 @@ export async function calendarRouter(ctx) {
                 return { status: 200, data: { message: 'Sync settings updated', id: existing.id } };
             } else {
                 const id = nanoid();
-                query.run(`
+                await query.run(`
                     INSERT INTO calendar_sync_settings (id, user_id, provider, sync_direction, frequency, is_active, calendar_name)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 `, [id, user.id, provider, sync_direction || 'both', frequency || 'daily', is_active ? 1 : 0, calendar_name || null]);
@@ -401,7 +401,7 @@ export async function calendarRouter(ctx) {
         const settingId = path.substring('/sync-settings/'.length);
 
         try {
-            const setting = query.get(
+            const setting = await query.get(
                 'SELECT id FROM calendar_sync_settings WHERE id = ? AND user_id = ?',
                 [settingId, user.id]
             );
@@ -410,7 +410,7 @@ export async function calendarRouter(ctx) {
                 return { status: 404, data: { error: 'Sync setting not found' } };
             }
 
-            const result = query.run('DELETE FROM calendar_sync_settings WHERE id = ? AND user_id = ?', [settingId, user.id]);
+            const result = await query.run('DELETE FROM calendar_sync_settings WHERE id = ? AND user_id = ?', [settingId, user.id]);
 
             if (result.changes === 0) {
                 return { status: 404, data: { error: 'Sync setting not found' } };
@@ -485,7 +485,7 @@ export async function calendarRouter(ctx) {
             if (end_date) { sql += ' AND date <= ?'; params.push(end_date); }
             sql += ' ORDER BY date ASC LIMIT 250';
 
-            const events = query.all(sql, params);
+            const events = await query.all(sql, params);
 
             let pushed = 0;
             let failed = 0;
@@ -518,7 +518,7 @@ export async function calendarRouter(ctx) {
             }
 
             // Update last_synced_at in sync settings
-            query.run(
+            await query.run(
                 `UPDATE calendar_sync_settings SET last_synced_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
                  WHERE user_id = ? AND provider = 'google'`,
                 [user.id]

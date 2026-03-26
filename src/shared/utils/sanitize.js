@@ -29,6 +29,8 @@ export function sanitizeHtml(input) {
     sanitized = sanitized.replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '');
     sanitized = sanitized.replace(/<embed\b[^<]*>/gi, '');
 
+    sanitized = sanitized.replace(/\x00/g, '');
+
     return sanitized;
 }
 

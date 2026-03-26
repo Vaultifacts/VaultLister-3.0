@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 // seed-demo.js — Standalone demo data seeder for VaultLister 3.0
 // Usage: bun scripts/seed-demo.js
 // Idempotent: exits with no changes if demo@vaultlister.com already exists.
@@ -5,26 +6,16 @@
 // Override the demo login via DEMO_PASSWORD env var.
 // Default credential is an intentional public placeholder for local dev only.
 
-import { Database } from 'bun:sqlite';
+import { query, initializeDatabase, closeDatabase } from '../src/backend/db/database.js';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { existsSync } from 'fs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = join(__dirname, '..');
-const DB_PATH = process.env.DB_PATH || join(ROOT_DIR, 'data', 'vaultlister.db');
-
-if (!existsSync(DB_PATH)) {
-    console.error(`Database not found at ${DB_PATH}`);
-    console.error('Run `bun run db:reset` first to initialize the database.');
+if (process.env.NODE_ENV === 'production') {
+    console.error('Refusing to seed demo data in production.');
     process.exit(1);
 }
 
-const db = new Database(DB_PATH);
-db.exec('PRAGMA journal_mode = WAL');
-db.exec('PRAGMA foreign_keys = ON');
+await initializeDatabase();
 
 const DEMO_EMAIL = 'demo@vaultlister.com';
 const DEMO_USERNAME = 'demo';
@@ -32,10 +23,10 @@ const DEMO_USERNAME = 'demo';
 const DEMO_CRED = process.env.DEMO_PASSWORD || ['Demo', 'Password123!'].join('');
 
 // ── Idempotency check ────────────────────────────────────────────────────────
-const existing = db.query('SELECT id FROM users WHERE email = ?').get(DEMO_EMAIL);
+const existing = await query.get('SELECT id FROM users WHERE email = ?', [DEMO_EMAIL]);
 if (existing) {
     console.log('Demo user already exists — skipping seed. Nothing changed.');
-    db.close();
+    await closeDatabase();
     process.exit(0);
 }
 
@@ -45,17 +36,17 @@ const userId = uuidv4();
 const passwordHash = bcrypt.hashSync(DEMO_CRED, 12);
 
 // ── 1. Demo user ─────────────────────────────────────────────────────────────
-db.query(`
+await query.run(`
     INSERT INTO users (id, email, password_hash, username, full_name, subscription_tier, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, 'pro', datetime('now'), datetime('now'))
-`).run(userId, DEMO_EMAIL, passwordHash, DEMO_USERNAME, 'Demo User');
+    VALUES (?, ?, ?, ?, ?, 'pro', NOW(), NOW())
+`, [userId, DEMO_EMAIL, passwordHash, DEMO_USERNAME, 'Demo User']);
 console.log('  ✓ Demo user created');
 
 // ── 2. Connected eBay shop ───────────────────────────────────────────────────
-db.query(`
+await query.run(`
     INSERT INTO shops (id, user_id, platform, platform_username, platform_user_id, is_connected, sync_status, created_at, updated_at)
-    VALUES (?, ?, 'ebay', 'demo_vault_seller', 'ebay-usr-98234761', 1, 'idle', datetime('now'), datetime('now'))
-`).run(uuidv4(), userId);
+    VALUES (?, ?, 'ebay', 'demo_vault_seller', 'ebay-usr-98234761', 1, 'idle', NOW(), NOW())
+`, [uuidv4(), userId]);
 console.log('  ✓ Connected eBay shop seeded');
 
 // ── 3. Inventory items (15) ──────────────────────────────────────────────────
@@ -83,25 +74,22 @@ const inventoryItems = [
     { title: "Carhartt Beanie Watch Cap - Brown",       brand: "Carhartt",        category: "Accessories", size: "One Size", color: "Brown",          condition: "new",      sku: "VL-CAR-BNE-015",  cost: 10.00,   price: 28.00,   qty: 1, status: "active" },
 ];
 
-const qInsertInventory = db.query(`
-    INSERT INTO inventory (id, user_id, sku, title, brand, category, size, color, condition,
-        cost_price, list_price, quantity, status, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-`);
-
 const inventoryIds = {};
-db.transaction(() => {
+await query.transaction(async (tx) => {
     for (const item of inventoryItems) {
         const id = uuidv4();
-        qInsertInventory.run(id, userId, item.sku, item.title, item.brand, item.category,
-            item.size, item.color, item.condition, item.cost, item.price, item.qty, item.status);
+        await tx.run(`
+            INSERT INTO inventory (id, user_id, sku, title, brand, category, size, color, condition,
+                cost_price, list_price, quantity, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `, [id, userId, item.sku, item.title, item.brand, item.category,
+            item.size, item.color, item.condition, item.cost, item.price, item.qty, item.status]);
         inventoryIds[item.sku] = id;
     }
-})();
+});
 console.log(`  ✓ ${inventoryItems.length} inventory items seeded`);
 
 // ── 4. Listings (11) across Poshmark, eBay, Mercari, Depop, Grailed ──────────
-// Each listing references a valid inventory_id (FK NOT NULL, UNIQUE per inventory+platform).
 const listingRows = [
     { invSku: "VL-LEV-501-001",  platform: "poshmark",  price: 45.00,  status: "active", views: 156, likes: 23, listedDaysAgo: 5  },
     { invSku: "VL-NIK-AM90-008", platform: "ebay",      price: 85.00,  status: "active", views: 342, likes: 18, listedDaysAgo: 10 },
@@ -113,27 +101,25 @@ const listingRows = [
     { invSku: "VL-ADI-UB-009",   platform: "mercari",   price: 110.00, status: "active", views: 67,  likes: 9,  listedDaysAgo: 6  },
     { invSku: "VL-BUR-TRN-004",  platform: "depop",     price: 450.00, status: "active", views: 203, likes: 31, listedDaysAgo: 4  },
     { invSku: "VL-JD1-CHI-011",  platform: "grailed",   price: 320.00, status: "active", views: 412, likes: 67, listedDaysAgo: 1  },
-    { invSku: "VL-CAR-BNE-015",  platform: "poshmark",  price: 28.00,  status: "active", views: 3,   likes: 0,  listedDaysAgo: 42 }, // stale
+    { invSku: "VL-CAR-BNE-015",  platform: "poshmark",  price: 28.00,  status: "active", views: 3,   likes: 0,  listedDaysAgo: 42 },
 ];
 
-const qInsertListing = db.query(`
-    INSERT INTO listings (id, inventory_id, user_id, platform, title, price,
-        status, views, likes, listed_at, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-`);
-
 const listingIds = {};
-db.transaction(() => {
+await query.transaction(async (tx) => {
     for (const l of listingRows) {
         const invId = inventoryIds[l.invSku];
         if (!invId) continue;
         const id = uuidv4();
         const item = inventoryItems.find(i => i.sku === l.invSku);
-        qInsertListing.run(id, invId, userId, l.platform, item.title,
-            l.price, l.status, l.views, l.likes, daysAgo(l.listedDaysAgo));
+        await tx.run(`
+            INSERT INTO listings (id, inventory_id, user_id, platform, title, price,
+                status, views, likes, listed_at, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `, [id, invId, userId, l.platform, item.title,
+            l.price, l.status, l.views, l.likes, daysAgo(l.listedDaysAgo)]);
         listingIds[`${l.invSku}:${l.platform}`] = id;
     }
-})();
+});
 console.log(`  ✓ ${listingRows.length} listings seeded (Poshmark, eBay, Mercari, Depop, Grailed)`);
 
 // ── 5. Sales (5) ─────────────────────────────────────────────────────────────
@@ -145,20 +131,18 @@ const salesRows = [
     { invSku: "VL-GUC-BLT-013",  platform: "grailed",  buyer: "hype_collector",    price: 340.00, fee: 30.60, ship: 15.00, profit: 144.40, status: "delivered", soldDaysAgo: 10 },
 ];
 
-const qInsertSale = db.query(`
-    INSERT INTO sales (id, user_id, listing_id, inventory_id, platform, buyer_username,
-        sale_price, platform_fee, shipping_cost, net_profit, status, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-`);
-
-db.transaction(() => {
+await query.transaction(async (tx) => {
     for (const s of salesRows) {
         const invId = inventoryIds[s.invSku];
         const listId = listingIds[`${s.invSku}:${s.platform}`] || null;
-        qInsertSale.run(uuidv4(), userId, listId, invId, s.platform, s.buyer,
-            s.price, s.fee, s.ship, s.profit, s.status, daysAgo(s.soldDaysAgo));
+        await tx.run(`
+            INSERT INTO sales (id, user_id, listing_id, inventory_id, platform, buyer_username,
+                sale_price, platform_fee, shipping_cost, net_profit, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        `, [uuidv4(), userId, listId, invId, s.platform, s.buyer,
+            s.price, s.fee, s.ship, s.profit, s.status, daysAgo(s.soldDaysAgo)]);
     }
-})();
+});
 console.log(`  ✓ ${salesRows.length} sales seeded`);
 
 // ── 6. Offers (4): 2 pending, 1 accepted, 1 declined ─────────────────────────
@@ -169,13 +153,7 @@ const offersRows = [
     { invSku: "VL-RL-POLO-002",  platform: "poshmark", buyer: "bargain_hunter", amount: 15.00,  status: "declined", expiresHoursFromNow: null, respondedDaysAgo: 3   },
 ];
 
-const qInsertOffer = db.query(`
-    INSERT INTO offers (id, user_id, listing_id, platform, buyer_username, offer_amount,
-        status, expires_at, responded_at, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-`);
-
-db.transaction(() => {
+await query.transaction(async (tx) => {
     for (const o of offersRows) {
         const listId = listingIds[`${o.invSku}:${o.platform}`];
         if (!listId) continue;
@@ -183,13 +161,17 @@ db.transaction(() => {
             ? new Date(now.getTime() + o.expiresHoursFromNow * 3600000).toISOString()
             : null;
         const respondedAt = o.respondedDaysAgo ? daysAgo(o.respondedDaysAgo) : null;
-        qInsertOffer.run(uuidv4(), userId, listId, o.platform, o.buyer, o.amount,
-            o.status, expiresAt, respondedAt);
+        await tx.run(`
+            INSERT INTO offers (id, user_id, listing_id, platform, buyer_username, offer_amount,
+                status, expires_at, responded_at, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `, [uuidv4(), userId, listId, o.platform, o.buyer, o.amount,
+            o.status, expiresAt, respondedAt]);
     }
-})();
+});
 console.log(`  ✓ ${offersRows.length} offers seeded (2 pending, 1 accepted, 1 declined)`);
 
-db.close();
+await closeDatabase();
 
 console.log('\nSeed complete.');
 console.log(`  Email:    ${DEMO_EMAIL}`);

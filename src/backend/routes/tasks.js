@@ -32,16 +32,16 @@ export async function tasksRouter(ctx) {
             sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
             params.push(parseInt(limit), parseInt(offset));
 
-            const tasks = query.all(sql, params);
+            const tasks = await query.all(sql, params);
 
             tasks.forEach(task => {
                 task.payload = safeJsonParse(task.payload, {});
                 task.result = safeJsonParse(task.result, null);
             });
 
-            const total = query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ?', [user.id])?.count || 0;
-            const pending = query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0;
-            const processing = query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'processing'])?.count || 0;
+            const total = await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ?', [user.id])?.count || 0;
+            const pending = await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0;
+            const processing = await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'processing'])?.count || 0;
 
             return { status: 200, data: { tasks, total, pending, processing } };
         } catch (error) {
@@ -54,7 +54,7 @@ export async function tasksRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
         try {
             const id = path.slice(1);
-            const task = query.get('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [id, user.id]);
+            const task = await query.get('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [id, user.id]);
 
             if (!task) {
                 return { status: 404, data: { error: 'Task not found' } };
@@ -94,7 +94,7 @@ export async function tasksRouter(ctx) {
 
             const id = uuidv4();
 
-            query.run(`
+            await query.run(`
                 INSERT INTO tasks (id, user_id, type, payload, priority, status, scheduled_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `, [
@@ -102,7 +102,7 @@ export async function tasksRouter(ctx) {
                 scheduledAt || new Date().toISOString()
             ]);
 
-            const task = query.get('SELECT * FROM tasks WHERE id = ?', [id]);
+            const task = await query.get('SELECT * FROM tasks WHERE id = ?', [id]);
             task.payload = safeJsonParse(task.payload, {});
 
             return { status: 201, data: { task } };
@@ -117,7 +117,7 @@ export async function tasksRouter(ctx) {
         try {
             const id = path.split('/')[1];
 
-            const task = query.get('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [id, user.id]);
+            const task = await query.get('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [id, user.id]);
 
             if (!task) {
                 return { status: 404, data: { error: 'Task not found' } };
@@ -127,7 +127,7 @@ export async function tasksRouter(ctx) {
                 return { status: 400, data: { error: 'Can only cancel pending tasks' } };
             }
 
-            query.run('UPDATE tasks SET status = ? WHERE id = ?', ['cancelled', id]);
+            await query.run('UPDATE tasks SET status = ? WHERE id = ?', ['cancelled', id]);
 
             return { status: 200, data: { message: 'Task cancelled' } };
         } catch (error) {
@@ -141,7 +141,7 @@ export async function tasksRouter(ctx) {
         try {
             const id = path.split('/')[1];
 
-            const task = query.get('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [id, user.id]);
+            const task = await query.get('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [id, user.id]);
 
             if (!task) {
                 return { status: 404, data: { error: 'Task not found' } };
@@ -151,7 +151,7 @@ export async function tasksRouter(ctx) {
                 return { status: 400, data: { error: 'Can only retry failed tasks' } };
             }
 
-            query.run(`
+            await query.run(`
                 UPDATE tasks SET status = ?, attempts = 0, error_message = NULL, scheduled_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `, ['pending', id]);
@@ -168,13 +168,13 @@ export async function tasksRouter(ctx) {
         try {
             const id = path.slice(1);
 
-            const task = query.get('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [id, user.id]);
+            const task = await query.get('SELECT * FROM tasks WHERE id = ? AND user_id = ?', [id, user.id]);
 
             if (!task) {
                 return { status: 404, data: { error: 'Task not found' } };
             }
 
-            query.run('DELETE FROM tasks WHERE id = ? AND user_id = ?', [id, user.id]);
+            await query.run('DELETE FROM tasks WHERE id = ? AND user_id = ?', [id, user.id]);
 
             return { status: 200, data: { message: 'Task deleted' } };
         } catch (error) {
@@ -215,7 +215,7 @@ export async function tasksRouter(ctx) {
                         continue;
                     }
                     const id = uuidv4();
-                    query.run(`
+                    await query.run(`
                         INSERT INTO tasks (id, user_id, type, payload, priority, status)
                         VALUES (?, ?, ?, ?, ?, ?)
                     `, [
@@ -254,7 +254,7 @@ export async function tasksRouter(ctx) {
                 params.push(olderThan);
             }
 
-            const result = query.run(sql, params);
+            const result = await query.run(sql, params);
 
             return { status: 200, data: { deleted: result.changes } };
         } catch (error) {
@@ -267,16 +267,16 @@ export async function tasksRouter(ctx) {
     if (method === 'GET' && path === '/queue') {
         try {
             const stats = {
-                pending: query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0,
-                processing: query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'processing'])?.count || 0,
-                completed: query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'completed'])?.count || 0,
-                failed: query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'failed'])?.count || 0,
-                byType: query.all(`
+                pending: await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0,
+                processing: await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'processing'])?.count || 0,
+                completed: await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'completed'])?.count || 0,
+                failed: await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'failed'])?.count || 0,
+                byType: await query.all(`
                     SELECT type, status, COUNT(*) as count
                     FROM tasks WHERE user_id = ?
                     GROUP BY type, status
                 `, [user.id]),
-                nextUp: query.all(`
+                nextUp: await query.all(`
                     SELECT * FROM tasks
                     WHERE user_id = ? AND status = 'pending'
                     ORDER BY priority ASC, scheduled_at ASC

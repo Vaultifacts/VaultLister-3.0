@@ -19,7 +19,7 @@ export async function monitoringRouter(ctx) {
     if (method === 'GET' && path === '/health') {
         try {
             // Quick DB check
-            const dbCheck = query.get('SELECT 1 as ok');
+            const dbCheck = await query.get('SELECT 1 as ok');
 
             return {
                 status: 200,
@@ -108,10 +108,10 @@ export async function monitoringRouter(ctx) {
         const summary = securityMonitor.getSummary();
 
         // Get recent security logs
-        const recentLogs = query.all(`
+        const recentLogs = await query.all(`
             SELECT event_type, ip_or_user, details, created_at
             FROM security_logs
-            WHERE created_at > datetime('now', '-24 hours')
+            WHERE created_at > NOW() - INTERVAL '24 hours'
             ORDER BY created_at DESC
             LIMIT 100
         `);
@@ -135,10 +135,10 @@ export async function monitoringRouter(ctx) {
         }
 
         try {
-            const alerts = query.all(`
+            const alerts = await query.all(`
                 SELECT id, type AS alert_type, data, created_at, acknowledged, acknowledged_at, acknowledged_by
                 FROM alerts
-                WHERE created_at > datetime('now', '-7 days')
+                WHERE created_at > NOW() - INTERVAL '7 days'
                 ORDER BY created_at DESC
                 LIMIT 50
             `);
@@ -173,7 +173,7 @@ export async function monitoringRouter(ctx) {
         const alertId = path.split('/')[2];
 
         try {
-            query.run(`
+            await query.run(`
                 UPDATE alerts
                 SET acknowledged = 1, acknowledged_at = CURRENT_TIMESTAMP, acknowledged_by = ?
                 WHERE id = ?
@@ -198,10 +198,10 @@ export async function monitoringRouter(ctx) {
         }
 
         try {
-            const errors = query.all(`
+            const errors = await query.all(`
                 SELECT id, error_type, message, context, created_at
                 FROM error_logs
-                WHERE created_at > datetime('now', '-24 hours')
+                WHERE created_at > NOW() - INTERVAL '24 hours'
                 ORDER BY created_at DESC
                 LIMIT 100
             `);
@@ -247,7 +247,7 @@ export async function monitoringRouter(ctx) {
                 if (!VALID_METRICS.includes(m.name)) continue;
 
                 try {
-                    query.run(
+                    await query.run(
                         `INSERT INTO rum_metrics (id, user_id, session_id, metric_name, metric_value, page_url, user_agent, connection_type, metadata)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         [
@@ -292,7 +292,7 @@ export async function monitoringRouter(ctx) {
             const hoursMap = { '1h': 1, '6h': 6, '24h': 24, '7d': 168, '30d': 720 };
             const hours = hoursMap[period] || 24;
 
-            const metrics = query.all(`
+            const metrics = await query.all(`
                 SELECT
                     metric_name,
                     COUNT(*) as sample_count,
@@ -300,7 +300,7 @@ export async function monitoringRouter(ctx) {
                     ROUND(MIN(metric_value), 2) as min_value,
                     ROUND(MAX(metric_value), 2) as max_value
                 FROM rum_metrics
-                WHERE timestamp > datetime('now', ? || ' hours')
+                WHERE timestamp > NOW() + (?::text || ' hours')::interval
                 GROUP BY metric_name
                 ORDER BY metric_name
             `, [-hours]);
@@ -308,9 +308,9 @@ export async function monitoringRouter(ctx) {
             // Get percentiles per metric
             const summary = {};
             for (const m of metrics) {
-                const values = query.all(`
+                const values = await query.all(`
                     SELECT metric_value FROM rum_metrics
-                    WHERE metric_name = ? AND timestamp > datetime('now', ? || ' hours')
+                    WHERE metric_name = ? AND timestamp > NOW() + (?::text || ' hours')::interval
                     ORDER BY metric_value
                 `, [m.metric_name, -hours]).map(r => r.metric_value);
 
@@ -331,9 +331,9 @@ export async function monitoringRouter(ctx) {
                 };
             }
 
-            const uniqueSessions = query.get(`
+            const uniqueSessions = await query.get(`
                 SELECT COUNT(DISTINCT session_id) as count FROM rum_metrics
-                WHERE timestamp > datetime('now', ? || ' hours')
+                WHERE timestamp > NOW() + (?::text || ' hours')::interval
             `, [-hours]);
 
             return {
@@ -360,7 +360,7 @@ export async function monitoringRouter(ctx) {
         }
 
         try {
-            const latest = query.get(
+            const latest = await query.get(
                 `SELECT * FROM poshmark_monitoring_log
                  WHERE user_id = ?
                  ORDER BY checked_at DESC
@@ -368,7 +368,7 @@ export async function monitoringRouter(ctx) {
                 [user.id]
             );
 
-            const history = query.all(
+            const history = await query.all(
                 `SELECT id, total_listings, total_shares, total_likes, active_offers, recent_sales, closet_value, checked_at
                  FROM poshmark_monitoring_log
                  WHERE user_id = ?
@@ -404,11 +404,11 @@ export async function monitoringRouter(ctx) {
             const { queueTask } = await import('../workers/taskWorker.js');
 
             // Throttle: one manual check per 5 minutes
-            const recent = query.get(
+            const recent = await query.get(
                 `SELECT id FROM task_queue
                  WHERE type = 'poshmark_monitoring'
-                   AND json_extract(payload, '$.userId') = ?
-                   AND created_at > datetime('now', '-5 minutes')
+                   AND payload::jsonb->>'userId' = ?
+                   AND created_at > NOW() - INTERVAL '5 minutes'
                  LIMIT 1`,
                 [user.id]
             );

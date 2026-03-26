@@ -39,7 +39,7 @@ export async function helpRouter(ctx) {
 
             sql += ` ORDER BY position ASC, created_at DESC LIMIT 200`;
 
-            const videos = query.all(sql, params);
+            const videos = await query.all(sql, params);
 
             return {
                 status: 200,
@@ -60,7 +60,7 @@ export async function helpRouter(ctx) {
         const videoId = path.split('/')[2];
 
         try {
-            const video = query.get(`SELECT * FROM help_videos WHERE id = ?`, [videoId]);
+            const video = await query.get(`SELECT * FROM help_videos WHERE id = ?`, [videoId]);
 
             if (!video) {
                 return {
@@ -100,13 +100,13 @@ export async function helpRouter(ctx) {
             }
 
             if (search) {
-                sql += ` AND (question LIKE ? ESCAPE '\\' OR answer LIKE ? ESCAPE '\\')`;
+                sql += ` AND (question ILIKE ? ESCAPE '\\' OR answer ILIKE ? ESCAPE '\\')`;
                 params.push(`%${escapeLike(search)}%`, `%${escapeLike(search)}%`);
             }
 
             sql += ` ORDER BY position ASC, helpful_count DESC LIMIT 200`;
 
-            const faqs = query.all(sql, params);
+            const faqs = await query.all(sql, params);
 
             return {
                 status: 200,
@@ -127,7 +127,7 @@ export async function helpRouter(ctx) {
         const faqId = path.split('/')[2];
 
         try {
-            const faq = query.get(`SELECT * FROM help_faq WHERE id = ?`, [faqId]);
+            const faq = await query.get(`SELECT * FROM help_faq WHERE id = ?`, [faqId]);
 
             if (!faq) {
                 return {
@@ -167,7 +167,7 @@ export async function helpRouter(ctx) {
 
         try {
             // Check if FAQ exists
-            const faq = query.get(`SELECT id FROM help_faq WHERE id = ?`, [faqId]);
+            const faq = await query.get(`SELECT id FROM help_faq WHERE id = ?`, [faqId]);
 
             if (!faq) {
                 return {
@@ -177,7 +177,7 @@ export async function helpRouter(ctx) {
             }
 
             // Check if already voted
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT * FROM help_faq_votes WHERE faq_id = ? AND user_id = ?`,
                 [faqId, user.id]
             );
@@ -191,17 +191,17 @@ export async function helpRouter(ctx) {
 
             // Record vote
             const voteId = `vote_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
-            query.run(
+            await query.run(
                 `INSERT INTO help_faq_votes (id, faq_id, user_id, is_helpful, created_at)
-                 VALUES (?, ?, ?, ?, datetime('now'))`,
+                 VALUES (?, ?, ?, ?, NOW())`,
                 [voteId, faqId, user.id, helpful ? 1 : 0]
             );
 
             // Update counts
             if (helpful) {
-                query.run(`UPDATE help_faq SET helpful_count = helpful_count + 1 WHERE id = ?`, [faqId]);
+                await query.run(`UPDATE help_faq SET helpful_count = helpful_count + 1 WHERE id = ?`, [faqId]);
             } else {
-                query.run(`UPDATE help_faq SET not_helpful_count = not_helpful_count + 1 WHERE id = ?`, [faqId]);
+                await query.run(`UPDATE help_faq SET not_helpful_count = not_helpful_count + 1 WHERE id = ?`, [faqId]);
             }
 
             return {
@@ -238,8 +238,7 @@ export async function helpRouter(ctx) {
                 // FTS search
                 sql = `
                     SELECT a.* FROM help_articles a
-                    JOIN help_articles_fts fts ON a.rowid = fts.rowid
-                    WHERE help_articles_fts MATCH ?
+                    WHERE a.search_vector @@ plainto_tsquery('english', ?)
                     AND a.is_published = 1
                     ORDER BY a.view_count DESC
                     LIMIT ?
@@ -259,7 +258,7 @@ export async function helpRouter(ctx) {
                 params.push(parseInt(limit));
             }
 
-            const articles = query.all(sql, params);
+            const articles = await query.all(sql, params);
 
             // Parse tags
             articles.forEach(article => {
@@ -285,7 +284,7 @@ export async function helpRouter(ctx) {
         const slug = path.split('/')[2];
 
         try {
-            const article = query.get(`SELECT * FROM help_articles WHERE slug = ? AND is_published = 1`, [slug]);
+            const article = await query.get(`SELECT * FROM help_articles WHERE slug = ? AND is_published = 1`, [slug]);
 
             if (!article) {
                 return {
@@ -328,7 +327,7 @@ export async function helpRouter(ctx) {
 
         try {
             // Check if article exists
-            const article = query.get(`SELECT id FROM help_articles WHERE id = ?`, [articleId]);
+            const article = await query.get(`SELECT id FROM help_articles WHERE id = ?`, [articleId]);
 
             if (!article) {
                 return {
@@ -338,7 +337,7 @@ export async function helpRouter(ctx) {
             }
 
             // Check if already voted
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT * FROM help_article_votes WHERE article_id = ? AND user_id = ?`,
                 [articleId, user.id]
             );
@@ -352,15 +351,15 @@ export async function helpRouter(ctx) {
 
             // Record vote
             const voteId = `vote_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
-            query.run(
+            await query.run(
                 `INSERT INTO help_article_votes (id, article_id, user_id, is_helpful, created_at)
-                 VALUES (?, ?, ?, ?, datetime('now'))`,
+                 VALUES (?, ?, ?, ?, NOW())`,
                 [voteId, articleId, user.id, helpful ? 1 : 0]
             );
 
             // Update counts
             if (helpful) {
-                query.run(`UPDATE help_articles SET helpful_count = helpful_count + 1 WHERE id = ?`, [articleId]);
+                await query.run(`UPDATE help_articles SET helpful_count = helpful_count + 1 WHERE id = ?`, [articleId]);
             }
 
             return {
@@ -404,9 +403,9 @@ export async function helpRouter(ctx) {
         try {
             const ticketId = `ticket_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO support_tickets (id, user_id, type, subject, description, screenshots, page_context, browser_info, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
                 [
                     ticketId,
                     user.id,
@@ -419,7 +418,7 @@ export async function helpRouter(ctx) {
                 ]
             );
 
-            const ticket = query.get(`SELECT * FROM support_tickets WHERE id = ?`, [ticketId]);
+            const ticket = await query.get(`SELECT * FROM support_tickets WHERE id = ?`, [ticketId]);
 
             return {
                 status: 201,
@@ -449,7 +448,7 @@ export async function helpRouter(ctx) {
 
             sql += ` ORDER BY created_at DESC LIMIT 200`;
 
-            const tickets = query.all(sql, params);
+            const tickets = await query.all(sql, params);
 
             // Parse JSON fields
             tickets.forEach(ticket => {
@@ -474,7 +473,7 @@ export async function helpRouter(ctx) {
         const ticketId = path.split('/')[2];
 
         try {
-            const ticket = query.get(
+            const ticket = await query.get(
                 `SELECT * FROM support_tickets WHERE id = ? AND user_id = ?`,
                 [ticketId, user.id]
             );
@@ -490,7 +489,7 @@ export async function helpRouter(ctx) {
             ticket.screenshots = safeJsonParse(ticket.screenshots, []);
 
             // Get replies
-            const replies = query.all(
+            const replies = await query.all(
                 `SELECT r.*, u.email as user_email
                  FROM support_ticket_replies r
                  LEFT JOIN users u ON r.user_id = u.id
@@ -526,7 +525,7 @@ export async function helpRouter(ctx) {
 
         try {
             // Verify ticket ownership
-            const ticket = query.get(
+            const ticket = await query.get(
                 `SELECT id FROM support_tickets WHERE id = ? AND user_id = ?`,
                 [ticketId, user.id]
             );
@@ -540,19 +539,19 @@ export async function helpRouter(ctx) {
 
             const replyId = `reply_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO support_ticket_replies (id, ticket_id, user_id, message, is_staff_reply, created_at)
-                 VALUES (?, ?, ?, ?, 0, datetime('now'))`,
+                 VALUES (?, ?, ?, ?, 0, NOW())`,
                 [replyId, ticketId, user.id, message]
             );
 
             // Update ticket timestamp
-            query.run(
-                `UPDATE support_tickets SET updated_at = datetime('now') WHERE id = ?`,
+            await query.run(
+                `UPDATE support_tickets SET updated_at = NOW() WHERE id = ?`,
                 [ticketId]
             );
 
-            const reply = query.get(
+            const reply = await query.get(
                 `SELECT r.*, u.email as user_email
                  FROM support_ticket_replies r
                  LEFT JOIN users u ON r.user_id = u.id
@@ -580,7 +579,7 @@ export async function helpRouter(ctx) {
 
         try {
             // Verify ticket ownership
-            const ticket = query.get(
+            const ticket = await query.get(
                 `SELECT id FROM support_tickets WHERE id = ? AND user_id = ?`,
                 [ticketId, user.id]
             );
@@ -600,7 +599,7 @@ export async function helpRouter(ctx) {
                 params.push(newStatus);
 
                 if (newStatus === 'resolved' || newStatus === 'closed') {
-                    updates.push('resolved_at = datetime("now")');
+                    updates.push('resolved_at = NOW()');
                 }
             }
 
@@ -616,15 +615,15 @@ export async function helpRouter(ctx) {
                 };
             }
 
-            updates.push('updated_at = datetime("now")');
+            updates.push('updated_at = NOW()');
             params.push(ticketId);
 
-            query.run(
+            await query.run(
                 `UPDATE support_tickets SET ${updates.join(', ')} WHERE id = ?`,
                 params
             );
 
-            const updatedTicket = query.get(`SELECT * FROM support_tickets WHERE id = ?`, [ticketId]);
+            const updatedTicket = await query.get(`SELECT * FROM support_tickets WHERE id = ?`, [ticketId]);
             updatedTicket.screenshots = safeJsonParse(updatedTicket.screenshots, []);
 
             return {
@@ -661,30 +660,29 @@ export async function helpRouter(ctx) {
             const query_safe = searchQuery.replace(/['"*(){}[\]^~\\]/g, '').replace(/-/g, ' ').replace(/\b(AND|OR|NOT|NEAR)\b/gi, '');
 
             // Search articles using FTS (wrap in quotes to treat as phrase)
-            const articles = query.all(
+            const articles = await query.all(
                 `SELECT a.id, a.title, a.slug, a.category, a.tags
                  FROM help_articles a
-                 JOIN help_articles_fts fts ON a.rowid = fts.rowid
-                 WHERE help_articles_fts MATCH '"' || ? || '"' AND a.is_published = 1
+                 WHERE a.search_vector @@ plainto_tsquery('english', ?) AND a.is_published = 1
                  LIMIT 10`,
                 [query_safe]
             );
 
             // Search FAQs
             const escapedSearch = escapeLike(searchQuery);
-            const faqs = query.all(
+            const faqs = await query.all(
                 `SELECT id, question, answer, category
                  FROM help_faq
-                 WHERE question LIKE ? ESCAPE '\\' OR answer LIKE ? ESCAPE '\\'
+                 WHERE question ILIKE ? ESCAPE '\\' OR answer ILIKE ? ESCAPE '\\'
                  LIMIT 10`,
                 [`%${escapedSearch}%`, `%${escapedSearch}%`]
             );
 
             // Search videos
-            const videos = query.all(
+            const videos = await query.all(
                 `SELECT id, title, description, category, video_url
                  FROM help_videos
-                 WHERE title LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\'
+                 WHERE title ILIKE ? ESCAPE '\\' OR description ILIKE ? ESCAPE '\\'
                  LIMIT 5`,
                 [`%${escapedSearch}%`, `%${escapedSearch}%`]
             );
@@ -723,7 +721,7 @@ export async function helpRouter(ctx) {
         const videoId = path.split('/')[2];
 
         try {
-            const video = query.get(`SELECT id FROM help_videos WHERE id = ?`, [videoId]);
+            const video = await query.get(`SELECT id FROM help_videos WHERE id = ?`, [videoId]);
 
             if (!video) {
                 return {
@@ -732,7 +730,7 @@ export async function helpRouter(ctx) {
                 };
             }
 
-            query.run(`UPDATE help_videos SET view_count = view_count + 1 WHERE id = ?`, [videoId]);
+            await query.run(`UPDATE help_videos SET view_count = view_count + 1 WHERE id = ?`, [videoId]);
 
             return {
                 status: 200,

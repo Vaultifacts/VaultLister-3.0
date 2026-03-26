@@ -13,7 +13,7 @@ export async function templatesRouter(ctx) {
 
     // GET /api/templates - Get all templates for user
     if (method === 'GET' && (path === '' || path === '/')) {
-        const templates = query.all(
+        const templates = await query.all(
             'SELECT * FROM listing_templates WHERE user_id = ? ORDER BY is_favorite DESC, use_count DESC, created_at DESC LIMIT 500',
             [user.id]
         );
@@ -30,7 +30,7 @@ export async function templatesRouter(ctx) {
     // GET /api/templates/:id - Get single template
     if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+$/) && !path.startsWith('/use')) {
         const templateId = path.substring(1);
-        const template = query.get('SELECT * FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
+        const template = await query.get('SELECT * FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
 
         if (!template) {
             return { status: 404, data: { error: 'Template not found' } };
@@ -67,7 +67,7 @@ export async function templatesRouter(ctx) {
         const id = uuidv4();
         const now = new Date().toISOString();
 
-        query.run(`
+        await query.run(`
             INSERT INTO listing_templates (
                 id, user_id, name, description, category,
                 title_pattern, description_template, tags,
@@ -85,7 +85,7 @@ export async function templatesRouter(ctx) {
             now, now
         ]);
 
-        const template = query.get('SELECT * FROM listing_templates WHERE id = ?', [id]);
+        const template = await query.get('SELECT * FROM listing_templates WHERE id = ?', [id]);
 
         // Parse JSON fields for response
         template.tags = safeJsonParse(template.tags, []);
@@ -99,7 +99,7 @@ export async function templatesRouter(ctx) {
         const templateId = path.substring(1);
 
         // Verify ownership
-        const existing = query.get('SELECT id FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
+        const existing = await query.get('SELECT id FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Template not found' } };
         }
@@ -140,12 +140,12 @@ export async function templatesRouter(ctx) {
 
         values.push(templateId, user.id);
 
-        query.run(
+        await query.run(
             `UPDATE listing_templates SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
             values
         );
 
-        const template = query.get('SELECT * FROM listing_templates WHERE id = ?', [templateId]);
+        const template = await query.get('SELECT * FROM listing_templates WHERE id = ?', [templateId]);
 
         // Parse JSON fields
         template.tags = safeJsonParse(template.tags, []);
@@ -158,7 +158,7 @@ export async function templatesRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/[a-zA-Z0-9_-]+$/)) {
         const templateId = path.substring(1);
 
-        const result = query.run('DELETE FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
+        const result = await query.run('DELETE FROM listing_templates WHERE id = ? AND user_id = ?', [templateId, user.id]);
 
         if (result.changes === 0) {
             return { status: 404, data: { error: 'Template not found' } };
@@ -171,7 +171,7 @@ export async function templatesRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-zA-Z0-9_-]+\/use$/)) {
         const templateId = path.replace('/use', '').substring(1);
 
-        query.run(
+        await query.run(
             'UPDATE listing_templates SET use_count = use_count + 1, updated_at = ? WHERE id = ? AND user_id = ?',
             [new Date().toISOString(), templateId, user.id]
         );

@@ -49,20 +49,20 @@ const _notionServiceGetConflict = (userId, conflictId) =>
 const _notionServiceGetSyncMapById = (syncMapId) =>
   mockQueryGet('SELECT * FROM notion_sync_map WHERE id = ?', [syncMapId]);
 const _notionServiceCreateSyncMap = (userId, entityType, localId, notionPageId, direction) => {
-  mockQueryRun('INSERT INTO notion_sync_map (id, user_id, entity_type, local_id, notion_page_id, sync_direction, sync_status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime("now"), datetime("now"))', []);
+  mockQueryRun('INSERT INTO notion_sync_map (id, user_id, entity_type, local_id, notion_page_id, sync_direction, sync_status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())', []);
   return { id: 'sm-new', local_id: localId, notion_page_id: notionPageId };
 };
 const _notionServiceUpdateSyncStatus = (syncMapId, status, lastSyncAt) => {
-  mockQueryRun('UPDATE notion_sync_map SET sync_status = ?, last_synced_at = ?, updated_at = datetime("now") WHERE id = ?', [status, lastSyncAt, syncMapId]);
+  mockQueryRun('UPDATE notion_sync_map SET sync_status = ?, last_synced_at = ?, updated_at = NOW() WHERE id = ?', [status, lastSyncAt, syncMapId]);
 };
 const _notionServiceUpdateSettings = (userId, updates) => {
-  mockQueryRun('UPDATE notion_settings SET last_sync_status = ?, last_sync_at = ?, last_sync_error = ?, updated_at = datetime("now") WHERE user_id = ?', [updates.last_sync_status, updates.last_sync_at, updates.last_sync_error, userId]);
+  mockQueryRun('UPDATE notion_settings SET last_sync_status = ?, last_sync_at = ?, last_sync_error = ?, updated_at = NOW() WHERE user_id = ?', [updates.last_sync_status, updates.last_sync_at, updates.last_sync_error, userId]);
 };
 const _notionServiceLogSyncHistory = (userId, syncResult) => {
-  mockQueryRun('INSERT INTO notion_sync_history (id, user_id, sync_id, direction, entity_types, started_at, completed_at, duration_ms, status, inventory_pushed, inventory_pulled, sales_pushed, sales_pulled, notes_pushed, notes_pulled, errors, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime("now"))', []);
+  mockQueryRun('INSERT INTO notion_sync_history (id, user_id, sync_id, direction, entity_types, started_at, completed_at, duration_ms, status, inventory_pushed, inventory_pulled, sales_pushed, sales_pulled, notes_pushed, notes_pulled, errors, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())', []);
 };
 const _notionServiceMarkConflictResolved = (conflictId, resolution) => {
-  mockQueryRun('UPDATE notion_conflicts SET resolved = 1, resolution = ?, resolved_at = datetime("now") WHERE id = ?', [resolution, conflictId]);
+  mockQueryRun('UPDATE notion_conflicts SET resolved = 1, resolution = ?, resolved_at = NOW() WHERE id = ?', [resolution, conflictId]);
 };
 
 mock.module('../backend/services/notionService.js', () => ({

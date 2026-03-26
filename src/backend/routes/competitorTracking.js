@@ -82,7 +82,7 @@ export async function competitorTrackingRouter(ctx) {
         const opportunityScore = data.count * (yourListingCount === 0 ? 2 : 0.5);
 
         insertPromises.push(
-          query.run(
+          await query.run(
             `INSERT INTO competitor_keywords
              (id, user_id, keyword, competitor_count, avg_price, your_listing_count, opportunity_score, last_analyzed_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,

@@ -120,13 +120,13 @@ export async function inventoryRouter(ctx) {
             if (sanitizedSearch.length > 0) {
                 try {
                     // FIXED 2026-02-24: Quote as FTS5 phrase to prevent hyphens as NOT (Issue #4)
-                    const ftsResults = query.all(`
-                        SELECT id FROM inventory_fts WHERE inventory_fts MATCH ?
-                    `, ['"' + sanitizedSearch + '"']);
+                    const ftsResults = await query.all(`
+                        SELECT id FROM inventory WHERE search_vector @@ plainto_tsquery('english', ?)
+                    `, [sanitizedSearch]);
                     ftsIds = ftsResults.map(r => r.id);
                     useFullTextSearch = true;
                 } catch (e) {
-                    // FTS5 syntax error - fall back to LIKE search
+                    // FTS5 syntax error - fall back to ILIKE search
                     useFullTextSearch = false;
                 }
             }
@@ -135,8 +135,8 @@ export async function inventoryRouter(ctx) {
                 sql += ` AND id IN (${ftsIds.map(() => '?').join(',')})`;
                 params.push(...ftsIds);
             } else {
-                // Fallback to LIKE search
-                sql += ` AND (title LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\' OR brand LIKE ? ESCAPE '\\')`;
+                // Fallback to ILIKE search
+                sql += ` AND (title ILIKE ? ESCAPE '\\' OR description ILIKE ? ESCAPE '\\' OR brand ILIKE ? ESCAPE '\\')`;
                 const searchTerm = `%${escapeLike(search)}%`;
                 params.push(searchTerm, searchTerm, searchTerm);
             }
@@ -162,16 +162,16 @@ export async function inventoryRouter(ctx) {
                 break;
             case 'title':
             case 'title_asc':
-                sql += ' ORDER BY title COLLATE NOCASE ASC';
+                sql += ' ORDER BY LOWER(title) ASC';
                 break;
             case 'title_desc':
-                sql += ' ORDER BY title COLLATE NOCASE DESC';
+                sql += ' ORDER BY LOWER(title) DESC';
                 break;
             case 'sku_asc':
-                sql += ' ORDER BY sku COLLATE NOCASE ASC';
+                sql += ' ORDER BY LOWER(sku) ASC';
                 break;
             case 'sku_desc':
-                sql += ' ORDER BY sku COLLATE NOCASE DESC';
+                sql += ' ORDER BY LOWER(sku) DESC';
                 break;
             case 'status_asc':
                 sql += ' ORDER BY status ASC';
@@ -180,16 +180,16 @@ export async function inventoryRouter(ctx) {
                 sql += ' ORDER BY status DESC';
                 break;
             case 'marketplace_asc':
-                sql += ' ORDER BY marketplace COLLATE NOCASE ASC';
+                sql += ' ORDER BY LOWER(marketplace) ASC';
                 break;
             case 'marketplace_desc':
-                sql += ' ORDER BY marketplace COLLATE NOCASE DESC';
+                sql += ' ORDER BY LOWER(marketplace) DESC';
                 break;
             case 'tags_asc':
-                sql += ' ORDER BY tags COLLATE NOCASE ASC';
+                sql += ' ORDER BY LOWER(tags::text) ASC';
                 break;
             case 'tags_desc':
-                sql += ' ORDER BY tags COLLATE NOCASE DESC';
+                sql += ' ORDER BY LOWER(tags::text) DESC';
                 break;
             default:
                 sql += ' ORDER BY created_at DESC';
@@ -199,7 +199,7 @@ export async function inventoryRouter(ctx) {
         const cappedLimit = Math.min(parseInt(limit) || 50, 200);
         params.push(cappedLimit, parseInt(offset) || 0);
 
-        const items = query.all(sql, params);
+        const items = await query.all(sql, params);
 
         // Get total count
         let countSql = 'SELECT COUNT(*) as total FROM inventory WHERE user_id = ? AND status != ?';
@@ -221,12 +221,12 @@ export async function inventoryRouter(ctx) {
                 countSql += ` AND id IN (${ftsIds.map(() => '?').join(',')})`;
                 countParams.push(...ftsIds);
             } else {
-                countSql += ` AND (title LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\' OR brand LIKE ? ESCAPE '\\')`;
+                countSql += ` AND (title ILIKE ? ESCAPE '\\' OR description ILIKE ? ESCAPE '\\' OR brand ILIKE ? ESCAPE '\\')`;
                 const searchTerm = `%${escapeLike(search)}%`;
                 countParams.push(searchTerm, searchTerm, searchTerm);
             }
         }
-        const total = query.get(countSql, countParams)?.total || 0;
+        const total = await query.get(countSql, countParams)?.total || 0;
 
         // Parse JSON fields
         items.forEach(item => {
@@ -247,13 +247,13 @@ export async function inventoryRouter(ctx) {
         const id = path.split('/')[1];
 
         // Verify item exists and belongs to user
-        const item = query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
+        const item = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!item) {
             return { status: 404, data: { error: 'Item not found' } };
         }
 
         // Get purchases associated with this item
-        const purchases = query.all(`
+        const purchases = await query.all(`
             SELECT pi.*, p.vendor_name, p.purchase_date, p.payment_method
             FROM purchase_items pi
             JOIN purchases p ON pi.purchase_id = p.id
@@ -262,7 +262,7 @@ export async function inventoryRouter(ctx) {
         `, [id, user.id]);
 
         // Get sales associated with this item
-        const sales = query.all(`
+        const sales = await query.all(`
             SELECT * FROM sales
             WHERE inventory_id = ? AND user_id = ?
             ORDER BY created_at DESC
@@ -270,11 +270,11 @@ export async function inventoryRouter(ctx) {
 
         // Get price history if table exists (check first to avoid prepared statement cache errors)
         let priceHistory = [];
-        const priceHistoryTableExists = query.get(
-            `SELECT name FROM sqlite_master WHERE type='table' AND name='price_history'`
+        const priceHistoryTableExists = await query.get(
+            `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'price_history'`
         );
         if (priceHistoryTableExists) {
-            priceHistory = query.all(`
+            priceHistory = await query.all(`
                 SELECT * FROM price_history
                 WHERE inventory_id = ? AND user_id = ?
                 ORDER BY changed_at DESC
@@ -295,7 +295,7 @@ export async function inventoryRouter(ctx) {
     // GET /api/inventory/:id - Get single item
     if (method === 'GET' && path.match(/^\/[\w-]+$/) && path !== '/stats' && path !== '/deleted') {
         const id = path.slice(1);
-        const item = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
+        const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
 
         if (!item) {
             return { status: 404, data: { error: 'Item not found' } };
@@ -307,7 +307,7 @@ export async function inventoryRouter(ctx) {
         item.custom_fields = safeJsonParse(item.custom_fields, {});
 
         // Get associated listings
-        const listings = query.all(
+        const listings = await query.all(
             'SELECT * FROM listings WHERE inventory_id = ? AND user_id = ?',
             [id, user.id]
         );
@@ -323,7 +323,7 @@ export async function inventoryRouter(ctx) {
     // POST /api/inventory - Create new item
     if (method === 'POST' && (path === '/' || path === '')) {
         // Check tier limits
-        const permission = checkTierPermission(user, 'listings');
+        const permission = await checkTierPermission(user, 'listings');
         if (!permission.allowed) {
             return {
                 status: 403,
@@ -404,14 +404,14 @@ export async function inventoryRouter(ctx) {
         let finalSku = sku;
         if (!finalSku) {
             // Check for default SKU rule
-            const defaultRule = query.get(
+            const defaultRule = await query.get(
                 'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1 AND is_active = 1',
                 [user.id]
             );
 
             if (defaultRule) {
                 // Atomically increment counter using UPDATE...RETURNING to prevent TOCTOU race condition
-                const updatedRule = query.get(
+                const updatedRule = await query.get(
                     'UPDATE sku_rules SET counter_current = counter_current + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING *',
                     [defaultRule.id]
                 );
@@ -422,7 +422,7 @@ export async function inventoryRouter(ctx) {
             }
         }
 
-        query.run(`
+        await query.run(`
             INSERT INTO inventory (
                 id, user_id, sku, title, description, brand, category, subcategory,
                 size, color, condition, cost_price, list_price, quantity, low_stock_threshold,
@@ -439,18 +439,18 @@ export async function inventoryRouter(ctx) {
 
         // Log sustainability impact
         if (sustainabilityScore) {
-            query.run(`
+            await query.run(`
                 INSERT INTO sustainability_log (id, user_id, inventory_id, category, water_saved_liters, co2_saved_kg, waste_prevented_kg)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `, [
-                uuidv4(), user.id, id, category,
-                sustainabilityScore.waterSaved,
-                sustainabilityScore.co2Saved,
-                sustainabilityScore.wastePrevented
+                uuidv4(), user.id, id, category || null,
+                sustainabilityScore.waterSaved || 0,
+                sustainabilityScore.co2Saved || 0,
+                sustainabilityScore.wastePrevented || 0
             ]);
         }
 
-        const item = query.get('SELECT * FROM inventory WHERE id = ?', [id]);
+        const item = await query.get('SELECT * FROM inventory WHERE id = ?', [id]);
         item.tags = safeJsonParse(item.tags, []);
         item.images = safeJsonParse(item.images, []);
 
@@ -461,7 +461,7 @@ export async function inventoryRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/[\w-]+$/)) {
         const id = path.slice(1);
 
-        const existing = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
+        const existing = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Item not found' } };
         }
@@ -560,13 +560,13 @@ export async function inventoryRouter(ctx) {
 
         if (updates.length > 0) {
             values.push(id, user.id);
-            query.run(
+            await query.run(
                 `UPDATE inventory SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
         }
 
-        const item = query.get('SELECT * FROM inventory WHERE id = ?', [id]);
+        const item = await query.get('SELECT * FROM inventory WHERE id = ?', [id]);
         item.tags = safeJsonParse(item.tags, []);
         item.images = safeJsonParse(item.images, []);
         item.custom_fields = safeJsonParse(item.custom_fields, {});
@@ -578,13 +578,13 @@ export async function inventoryRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/[\w-]+$/)) {
         const id = path.slice(1);
 
-        const existing = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
+        const existing = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Item not found' } };
         }
 
         // Soft delete by setting status and deleted_at timestamp
-        query.run(
+        await query.run(
             'UPDATE inventory SET status = ?, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
             ['deleted', id, user.id]
         );
@@ -594,7 +594,7 @@ export async function inventoryRouter(ctx) {
 
     // POST /api/inventory/bulk - Bulk operations
     if (method === 'POST' && path === '/bulk') {
-        const permission = checkTierPermission(user, 'bulkActions');
+        const permission = await checkTierPermission(user, 'bulkActions');
         if (!permission.allowed) {
             return { status: 403, data: { error: 'Bulk actions not available on your plan' } };
         }
@@ -613,7 +613,7 @@ export async function inventoryRouter(ctx) {
 
         switch (action) {
             case 'delete':
-                query.run(
+                await query.run(
                     `UPDATE inventory SET status = 'deleted', deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
                      WHERE id IN (${ids.map(() => '?').join(',')}) AND user_id = ?`,
                     [...ids, user.id]
@@ -628,7 +628,7 @@ export async function inventoryRouter(ctx) {
                 if (!['draft', 'active', 'sold', 'archived', 'deleted'].includes(data.status)) {
                     return { status: 400, data: { error: 'Invalid status' } };
                 }
-                query.run(
+                await query.run(
                     `UPDATE inventory SET status = ?, updated_at = CURRENT_TIMESTAMP
                      WHERE id IN (${ids.map(() => '?').join(',')}) AND user_id = ?`,
                     [data.status, ...ids, user.id]
@@ -642,13 +642,13 @@ export async function inventoryRouter(ctx) {
                 }
                 const { type, value } = data.adjustment;
                 if (type === 'percentage') {
-                    query.run(
+                    await query.run(
                         `UPDATE inventory SET list_price = ROUND(list_price * (1 + ? / 100), 2), updated_at = CURRENT_TIMESTAMP
                          WHERE id IN (${ids.map(() => '?').join(',')}) AND user_id = ?`,
                         [value, ...ids, user.id]
                     );
                 } else {
-                    query.run(
+                    await query.run(
                         `UPDATE inventory SET list_price = ROUND(list_price + ?, 2), updated_at = CURRENT_TIMESTAMP
                          WHERE id IN (${ids.map(() => '?').join(',')}) AND user_id = ?`,
                         [value, ...ids, user.id]
@@ -667,18 +667,18 @@ export async function inventoryRouter(ctx) {
     // GET /api/inventory/stats - Get inventory statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            total: query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ?', [user.id])?.count || 0,
-            active: query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active'])?.count || 0,
-            draft: query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'draft'])?.count || 0,
-            sold: query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'sold'])?.count || 0,
-            totalValue: query.get('SELECT SUM(list_price * quantity) as value FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active'])?.value || 0,
-            avgPrice: query.get('SELECT AVG(list_price) as avg FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active'])?.avg || 0,
-            topCategories: query.all(`
+            total: await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ?', [user.id])?.count || 0,
+            active: await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active'])?.count || 0,
+            draft: await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'draft'])?.count || 0,
+            sold: await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'sold'])?.count || 0,
+            totalValue: await query.get('SELECT SUM(list_price * quantity) as value FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active'])?.value || 0,
+            avgPrice: await query.get('SELECT AVG(list_price) as avg FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active'])?.avg || 0,
+            topCategories: await query.all(`
                 SELECT category, COUNT(*) as count
                 FROM inventory WHERE user_id = ? AND status != 'deleted'
                 GROUP BY category ORDER BY count DESC LIMIT 5
             `, [user.id]),
-            topBrands: query.all(`
+            topBrands: await query.all(`
                 SELECT brand, COUNT(*) as count
                 FROM inventory WHERE user_id = ? AND status != 'deleted' AND brand IS NOT NULL
                 GROUP BY brand ORDER BY count DESC LIMIT 5
@@ -692,7 +692,7 @@ export async function inventoryRouter(ctx) {
     if (method === 'GET' && path === '/deleted') {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-        let items = query.all(
+        let items = await query.all(
             `SELECT * FROM inventory
              WHERE user_id = ?
              AND status = 'deleted'
@@ -718,7 +718,7 @@ export async function inventoryRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[\w-]+\/restore$/)) {
         const id = path.split('/')[1];
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT * FROM inventory WHERE id = ? AND user_id = ? AND status = ?',
             [id, user.id, 'deleted']
         );
@@ -728,12 +728,12 @@ export async function inventoryRouter(ctx) {
         }
 
         // Restore item by setting status back to draft and clearing deleted_at
-        query.run(
+        await query.run(
             'UPDATE inventory SET status = ?, deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
             ['draft', id, user.id]
         );
 
-        const item = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
+        const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
         item.tags = safeJsonParse(item.tags, []);
         item.images = safeJsonParse(item.images, []);
         item.custom_fields = safeJsonParse(item.custom_fields, {});
@@ -745,7 +745,7 @@ export async function inventoryRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/[\w-]+\/permanent$/)) {
         const id = path.split('/')[1];
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT * FROM inventory WHERE id = ? AND user_id = ? AND status = ?',
             [id, user.id, 'deleted']
         );
@@ -755,7 +755,7 @@ export async function inventoryRouter(ctx) {
         }
 
         // Permanently delete the item
-        query.run('DELETE FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
+        await query.run('DELETE FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
 
         return { status: 200, data: { message: 'Item permanently deleted' } };
     }
@@ -764,7 +764,7 @@ export async function inventoryRouter(ctx) {
     if (method === 'POST' && path === '/cleanup-deleted') {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-        const result = query.run(
+        const result = await query.run(
             `DELETE FROM inventory
              WHERE user_id = ?
              AND status = 'deleted'
@@ -802,7 +802,7 @@ export async function inventoryRouter(ctx) {
             const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
             // Resolve username: connected shop first, then env fallback
-            const shop = query.get(
+            const shop = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
                 [user.id, 'poshmark']
             );
@@ -829,8 +829,8 @@ export async function inventoryRouter(ctx) {
                 for (const item of listings) {
                     try {
                         // Deduplicate: same pattern as poshmark_inventory_sync task
-                        const existing = query.get(
-                            'SELECT id FROM inventory WHERE user_id = ? AND title = ? AND notes LIKE ?',
+                        const existing = await query.get(
+                            'SELECT id FROM inventory WHERE user_id = ? AND title = ? AND notes ILIKE ?',
                             [user.id, item.title || '', '%poshmark.com%']
                         );
                         if (existing) { skipped++; continue; }
@@ -840,7 +840,7 @@ export async function inventoryRouter(ctx) {
                         const images = item.imageUrl ? JSON.stringify([item.imageUrl]) : '[]';
                         const notes = item.listingUrl ? `Imported from Poshmark: ${item.listingUrl}` : 'Imported from Poshmark';
 
-                        query.run(`
+                        await query.run(`
                             INSERT INTO inventory (
                                 id, user_id, title, list_price, images, notes,
                                 status, source, condition, created_at, updated_at
@@ -873,7 +873,7 @@ export async function inventoryRouter(ctx) {
             const { decryptToken } = await import('../utils/encryption.js');
             const { fetchWithTimeout } = await import('../shared/fetchWithTimeout.js');
 
-            const shop = query.get(
+            const shop = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
                 [user.id, 'ebay']
             );
@@ -939,7 +939,7 @@ export async function inventoryRouter(ctx) {
 
                         // Deduplicate by SKU
                         if (sku) {
-                            const existing = query.get(
+                            const existing = await query.get(
                                 'SELECT id FROM inventory WHERE user_id = ? AND sku = ?',
                                 [user.id, sku]
                             );
@@ -962,7 +962,7 @@ export async function inventoryRouter(ctx) {
                         const images = JSON.stringify(imageUrls);
                         const description = ebayItem.product?.description || null;
 
-                        query.run(`
+                        await query.run(`
                             INSERT INTO inventory (
                                 id, user_id, sku, title, description, list_price, quantity,
                                 condition, images, status, source, created_at, updated_at
@@ -1066,7 +1066,7 @@ export async function inventoryRouter(ctx) {
                 };
 
                 // Insert into database
-                query.run(`
+                await query.run(`
                     INSERT INTO inventory (
                         id, user_id, title, brand, category, size, color, condition,
                         cost_price, list_price, quantity, low_stock_threshold,
@@ -1219,9 +1219,9 @@ export async function inventoryRouter(ctx) {
 
     // GET /api/inventory/categories - List user categories
     if (method === 'GET' && path === '/categories') {
-        const categories = query.all('SELECT * FROM inventory_categories WHERE user_id = ? ORDER BY sort_order, name', [user.id]);
+        const categories = await query.all('SELECT * FROM inventory_categories WHERE user_id = ? ORDER BY sort_order, name', [user.id]);
         // Also get counts per category from inventory
-        const counts = query.all(`SELECT category, COUNT(*) as count FROM inventory WHERE user_id = ? AND status = 'active' GROUP BY category`, [user.id]);
+        const counts = await query.all(`SELECT category, COUNT(*) as count FROM inventory WHERE user_id = ? AND status = 'active' GROUP BY category`, [user.id]);
         const countMap = {};
         for (const c of counts) countMap[c.category || 'Uncategorized'] = c.count;
         for (const cat of categories) cat.item_count = countMap[cat.name] || 0;
@@ -1232,11 +1232,11 @@ export async function inventoryRouter(ctx) {
     if (method === 'POST' && path === '/categories') {
         const { name, color } = body;
         if (!name || !name.trim()) return { status: 400, data: { error: 'Category name required' } };
-        const existing = query.get('SELECT id FROM inventory_categories WHERE user_id = ? AND name = ?', [user.id, name.trim()]);
+        const existing = await query.get('SELECT id FROM inventory_categories WHERE user_id = ? AND name = ?', [user.id, name.trim()]);
         if (existing) return { status: 409, data: { error: 'Category already exists' } };
-        const maxOrder = query.get('SELECT MAX(sort_order) as m FROM inventory_categories WHERE user_id = ?', [user.id]);
+        const maxOrder = await query.get('SELECT MAX(sort_order) as m FROM inventory_categories WHERE user_id = ?', [user.id]);
         const id = uuidv4();
-        query.run('INSERT INTO inventory_categories (id, user_id, name, color, sort_order) VALUES (?, ?, ?, ?, ?)',
+        await query.run('INSERT INTO inventory_categories (id, user_id, name, color, sort_order) VALUES (?, ?, ?, ?, ?)',
             [id, user.id, name.trim(), color || '#6366f1', (maxOrder?.m || 0) + 1]);
         return { status: 201, data: { category: { id, name: name.trim(), color: color || '#6366f1' } } };
     }
@@ -1244,7 +1244,7 @@ export async function inventoryRouter(ctx) {
     // PUT /api/inventory/categories/:id - Update category
     if (method === 'PUT' && path.match(/^\/categories\/[a-f0-9-]+$/)) {
         const catId = path.split('/')[2];
-        const cat = query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
+        const cat = await query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
         if (!cat) return { status: 404, data: { error: 'Category not found' } };
         const { name, color, sort_order } = body;
         const updates = [];
@@ -1255,10 +1255,10 @@ export async function inventoryRouter(ctx) {
         if (updates.length > 0) {
             vals.push(catId);
             vals.push(user.id);
-            query.run(`UPDATE inventory_categories SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, vals);
+            await query.run(`UPDATE inventory_categories SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, vals);
             // If name changed, update inventory items
             if (name !== undefined && name.trim() !== cat.name) {
-                query.run('UPDATE inventory SET category = ? WHERE user_id = ? AND category = ?', [name.trim(), user.id, cat.name]);
+                await query.run('UPDATE inventory SET category = ? WHERE user_id = ? AND category = ?', [name.trim(), user.id, cat.name]);
             }
         }
         return { status: 200, data: { message: 'Category updated' } };
@@ -1267,11 +1267,11 @@ export async function inventoryRouter(ctx) {
     // DELETE /api/inventory/categories/:id - Delete category
     if (method === 'DELETE' && path.match(/^\/categories\/[a-f0-9-]+$/)) {
         const catId = path.split('/')[2];
-        const cat = query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
+        const cat = await query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
         if (!cat) return { status: 404, data: { error: 'Category not found' } };
-        query.run('DELETE FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
+        await query.run('DELETE FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
         // Clear category on items (set to null)
-        query.run('UPDATE inventory SET category = NULL WHERE user_id = ? AND category = ?', [user.id, cat.name]);
+        await query.run('UPDATE inventory SET category = NULL WHERE user_id = ? AND category = ?', [user.id, cat.name]);
         return { status: 200, data: { message: 'Category deleted' } };
     }
 
@@ -1281,7 +1281,7 @@ export async function inventoryRouter(ctx) {
 
     // GET /api/inventory/suppliers - List suppliers
     if (method === 'GET' && path === '/suppliers') {
-        const suppliers = query.all(`
+        const suppliers = await query.all(`
             SELECT s.*,
                 (SELECT COUNT(*) FROM supplier_items WHERE supplier_id = s.id) as item_count,
                 (SELECT AVG(current_price) FROM supplier_items WHERE supplier_id = s.id) as avg_price
@@ -1295,7 +1295,7 @@ export async function inventoryRouter(ctx) {
         const { name, type, website, contact_email, contact_phone, address, notes, rating } = body;
         if (!name?.trim()) return { status: 400, data: { error: 'Supplier name required' } };
         const id = uuidv4();
-        query.run(`INSERT INTO suppliers (id, user_id, name, type, website, contact_email, contact_phone, address, notes, rating)
+        await query.run(`INSERT INTO suppliers (id, user_id, name, type, website, contact_email, contact_phone, address, notes, rating)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [id, user.id, name.trim(), type || 'other', website || null, contact_email || null,
              contact_phone || null, address || null, notes || null, rating || null]);
@@ -1305,7 +1305,7 @@ export async function inventoryRouter(ctx) {
     // PUT /api/inventory/suppliers/:id - Update supplier
     if (method === 'PUT' && path.match(/^\/suppliers\/[a-f0-9-]+$/)) {
         const supId = path.split('/')[2];
-        const sup = query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
+        const sup = await query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
         if (!sup) return { status: 404, data: { error: 'Supplier not found' } };
         const fields = ['name', 'type', 'website', 'contact_email', 'contact_phone', 'address', 'notes', 'rating', 'is_active'];
         const updates = [];
@@ -1315,7 +1315,7 @@ export async function inventoryRouter(ctx) {
         }
         if (updates.length > 0) {
             vals.push(supId, user.id);
-            query.run(`UPDATE suppliers SET ${updates.join(', ')}, updated_at = datetime('now') WHERE id = ? AND user_id = ?`, vals);
+            await query.run(`UPDATE suppliers SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ? AND user_id = ?`, vals);
         }
         return { status: 200, data: { message: 'Supplier updated' } };
     }
@@ -1323,13 +1323,13 @@ export async function inventoryRouter(ctx) {
     // GET /api/inventory/suppliers/:id/performance - Supplier performance analytics
     if (method === 'GET' && path.match(/^\/suppliers\/[a-f0-9-]+\/performance$/)) {
         const supId = path.split('/')[2];
-        const sup = query.get('SELECT * FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
+        const sup = await query.get('SELECT * FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
         if (!sup) return { status: 404, data: { error: 'Supplier not found' } };
 
         // Items from this supplier
-        const items = query.all(`
+        const items = await query.all(`
             SELECT i.id, i.title, i.cost_price, i.list_price, i.status, i.created_at,
-                CAST(julianday('now') - julianday(i.created_at) AS INTEGER) as days_old,
+                CAST(EXTRACT(EPOCH FROM (NOW() - i.created_at)) / 86400 AS INTEGER) as days_old,
                 (SELECT COUNT(*) FROM sales WHERE inventory_id = i.id) as sale_count,
                 (SELECT AVG(sale_price) FROM sales WHERE inventory_id = i.id) as avg_sale_price
             FROM inventory i
@@ -1351,13 +1351,13 @@ export async function inventoryRouter(ctx) {
             : 0;
 
         // Monthly cost trends (last 6 months)
-        const costTrends = query.all(`
-            SELECT strftime('%Y-%m', i.created_at) as month,
+        const costTrends = await query.all(`
+            SELECT TO_CHAR(i.created_at, 'YYYY-MM') as month,
                 COUNT(*) as items_sourced,
                 SUM(i.cost_price) as total_cost,
                 AVG(i.cost_price) as avg_cost
             FROM inventory i
-            WHERE i.user_id = ? AND i.supplier = ? AND i.created_at >= datetime('now', '-6 months')
+            WHERE i.user_id = ? AND i.supplier = ? AND i.created_at >= NOW() - INTERVAL '6 months'
             GROUP BY month ORDER BY month
         `, [user.id, sup.name]);
 
@@ -1372,9 +1372,9 @@ export async function inventoryRouter(ctx) {
     // DELETE /api/inventory/suppliers/:id - Delete supplier
     if (method === 'DELETE' && path.match(/^\/suppliers\/[a-f0-9-]+$/)) {
         const supId = path.split('/')[2];
-        const sup = query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
+        const sup = await query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
         if (!sup) return { status: 404, data: { error: 'Supplier not found' } };
-        query.run('DELETE FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
+        await query.run('DELETE FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
         return { status: 200, data: { message: 'Supplier deleted' } };
     }
 

@@ -104,7 +104,7 @@ function ask(rl, question) {
 
 async function main() {
   // Validate required environment variables before proceeding
-  const requiredEnvVars = ['DB_PATH', 'DATA_DIR', 'NOTION_TOKEN'];
+  const requiredEnvVars = ['DATABASE_URL', 'DATA_DIR', 'NOTION_TOKEN'];
   const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
   if (missingVars.length > 0) {

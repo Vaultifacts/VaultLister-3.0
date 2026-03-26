@@ -163,7 +163,7 @@ describe('Task queue ordering', () => {
             const sql = selectCalls[0][0];
             expect(sql).toContain('ORDER BY priority DESC, scheduled_at ASC');
             expect(sql).toContain("status = 'pending'");
-            expect(sql).toContain("datetime(scheduled_at) <= datetime('now')");
+            expect(sql).toContain("scheduled_at <= NOW()");
         }
 
         stopTaskWorker();

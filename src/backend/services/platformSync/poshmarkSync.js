@@ -42,7 +42,7 @@ export async function syncPoshmarkShop(shop) {
 
         // Update shop's last sync time
         try {
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     last_sync_at = ?,
                     sync_error = NULL,
@@ -51,7 +51,7 @@ export async function syncPoshmarkShop(shop) {
             `, [results.completedAt, results.completedAt, shop.id]);
         } catch (err) {
             if (err.message.includes('no such column')) {
-                query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
                     [results.completedAt, shop.id]);
             }
         }
@@ -63,7 +63,7 @@ export async function syncPoshmarkShop(shop) {
         results.completedAt = new Date().toISOString();
 
         try {
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     sync_error = ?,
                     updated_at = ?
@@ -71,7 +71,7 @@ export async function syncPoshmarkShop(shop) {
             `, [error.message, new Date().toISOString(), shop.id]);
         } catch (err) {
             if (err.message.includes('no such column')) {
-                query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
                     [new Date().toISOString(), shop.id]);
             }
         }
@@ -93,13 +93,13 @@ async function syncPoshmarkListings(shop, accessToken, mode) {
             try {
                 const mapped = mapPoshmarkListingToVaultLister(poshListing, shop);
 
-                const existing = query.get(`
+                const existing = await query.get(`
                     SELECT id FROM listings
                     WHERE user_id = ? AND platform = 'poshmark' AND platform_listing_id = ?
                 `, [shop.user_id, poshListing.id]);
 
                 if (existing) {
-                    query.run(`
+                    await query.run(`
                         UPDATE listings SET
                             title = ?,
                             price = ?,
@@ -118,7 +118,7 @@ async function syncPoshmarkListings(shop, accessToken, mode) {
                     result.updated++;
                 } else {
                     const listingId = uuidv4();
-                    query.run(`
+                    await query.run(`
                         INSERT INTO listings (
                             id, user_id, inventory_id, platform, title, price,
                             status, platform_listing_id, platform_specific_data,
@@ -160,14 +160,14 @@ async function syncPoshmarkOrders(shop, accessToken, mode) {
             try {
                 const mapped = mapPoshmarkOrderToSale(poshOrder, shop);
 
-                const existing = query.get(`
+                const existing = await query.get(`
                     SELECT id FROM sales
                     WHERE user_id = ? AND platform_order_id = ? AND platform = 'poshmark'
                 `, [shop.user_id, poshOrder.id]);
 
                 if (!existing) {
                     const saleId = uuidv4();
-                    query.run(`
+                    await query.run(`
                         INSERT INTO sales (
                             id, user_id, listing_id, platform, platform_order_id, buyer_username,
                             sale_price, platform_fee, shipping_cost, net_profit,

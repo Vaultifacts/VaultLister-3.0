@@ -97,8 +97,8 @@ export async function skuSyncRouter(ctx) {
            platform,
            COUNT(DISTINCT inventory_id) as inventory_count,
            COUNT(DISTINCT platform_sku) as platform_sku_count,
-           GROUP_CONCAT(DISTINCT inventory_id) as inventory_ids,
-           GROUP_CONCAT(DISTINCT platform_sku) as platform_skus
+           STRING_AGG(DISTINCT inventory_id, ',') as inventory_ids,
+           STRING_AGG(DISTINCT platform_sku, ',') as platform_skus
          FROM sku_platform_links
          WHERE user_id = ?
          GROUP BY master_sku, platform
@@ -165,29 +165,29 @@ export async function skuSyncRouter(ctx) {
       for (const link of pending) {
         try {
           // Update the corresponding listing's SKU/title/price from inventory
-          const inventory = query.get(
+          const inventory = await query.get(
             'SELECT sku, title, list_price FROM inventory WHERE id = ? AND user_id = ?',
             [link.inventory_id, user.id]
           );
           if (inventory) {
-            const listing = query.get(
+            const listing = await query.get(
               'SELECT id FROM listings WHERE inventory_id = ? AND platform = ?',
               [link.inventory_id, link.platform]
             );
             if (listing) {
-              query.run(
+              await query.run(
                 `UPDATE listings SET title = ?, price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 [inventory.title, inventory.list_price, listing.id]
               );
             }
           }
-          query.run(
+          await query.run(
             `UPDATE sku_platform_links SET sync_status = 'synced', last_synced_at = CURRENT_TIMESTAMP WHERE id = ?`,
             [link.id]
           );
           synced++;
         } catch (err) {
-          query.run(
+          await query.run(
             `UPDATE sku_platform_links SET sync_status = 'error', last_synced_at = CURRENT_TIMESTAMP WHERE id = ?`,
             [link.id]
           );
@@ -202,7 +202,7 @@ export async function skuSyncRouter(ctx) {
       const tasksQueued = [];
       for (const platform of platformsToSync) {
         try {
-          const shop = query.get(
+          const shop = await query.get(
             `SELECT id FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1 AND connection_type = 'oauth'`,
             [userId, platform]
           );

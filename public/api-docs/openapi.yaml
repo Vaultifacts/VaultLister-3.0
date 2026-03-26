@@ -28,7 +28,7 @@ info:
 servers:
   - url: http://localhost:3000/api
     description: Local development
-  - url: https://api.vaultlister.com/api
+  - url: https://vaultlister.com/api
     description: Production
 
 tags:

@@ -25,7 +25,7 @@ export async function barcodeRouter(ctx) {
         }
 
         // Check local database for previously saved barcodes
-        const localResult = query.get(`
+        const localResult = await query.get(`
             SELECT * FROM barcode_lookups WHERE barcode = ?
         `, [barcode]);
 
@@ -98,10 +98,14 @@ export async function barcodeRouter(ctx) {
 
         const id = uuidv4();
         try {
-            query.run(`
-                INSERT OR REPLACE INTO barcode_lookups
+            await query.run(`
+                INSERT INTO barcode_lookups
                 (id, barcode, title, brand, category, description, image_url, created_by)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (barcode) DO UPDATE SET
+                    title = EXCLUDED.title, brand = EXCLUDED.brand,
+                    category = EXCLUDED.category, description = EXCLUDED.description,
+                    image_url = EXCLUDED.image_url, updated_at = NOW()
             `, [id, barcode, title, brand, category, description, image_url, user.id]);
 
             // Update cache
@@ -132,7 +136,7 @@ export async function barcodeRouter(ctx) {
 
         const { limit = 10 } = queryParams;
 
-        const recent = query.all(`
+        const recent = await query.all(`
             SELECT DISTINCT barcode, title, brand, category, image_url, created_at
             FROM barcode_lookups
             WHERE created_by = ?
@@ -218,13 +222,17 @@ async function lookupExternalBarcode(barcode) {
 }
 
 // Save barcode lookup to local database
-function saveBarcodeLookup(barcode, data) {
+async function saveBarcodeLookup(barcode, data) {
     try {
         const id = uuidv4();
-        query.run(`
-            INSERT OR REPLACE INTO barcode_lookups
+        await query.run(`
+            INSERT INTO barcode_lookups
             (id, barcode, title, brand, category, description, image_url, source)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (barcode) DO UPDATE SET
+                title = EXCLUDED.title, brand = EXCLUDED.brand,
+                category = EXCLUDED.category, description = EXCLUDED.description,
+                image_url = EXCLUDED.image_url, source = EXCLUDED.source, updated_at = NOW()
         `, [id, barcode, data.title, data.brand, data.category, data.description, data.image_url, data.source]);
     } catch (e) {
         // Non-critical, ignore errors

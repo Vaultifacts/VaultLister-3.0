@@ -66,7 +66,7 @@ async function runPriceChecks() {
 
     try {
         // Get items due for checking (ordered by last_checked_at)
-        const items = query.all(`
+        const items = await query.all(`
             SELECT si.*, s.name as supplier_name, s.user_id
             FROM supplier_items si
             JOIN suppliers s ON si.supplier_id = s.id
@@ -122,8 +122,8 @@ async function checkItemPrice(item) {
 
     if (newPrice === null) {
         // Couldn't get price, update last checked time only
-        query.run(`
-            UPDATE supplier_items SET last_checked_at = datetime('now')
+        await query.run(`
+            UPDATE supplier_items SET last_checked_at = NOW()
             WHERE id = ?
         `, [item.id]);
         return result;
@@ -134,29 +134,29 @@ async function checkItemPrice(item) {
     const changePercent = oldPrice > 0 ? (priceChange / oldPrice) : 0;
 
     // Update item with new price
-    query.run(`
+    await query.run(`
         UPDATE supplier_items SET
             last_price = current_price,
             current_price = ?,
             price_change = ?,
-            last_checked_at = datetime('now'),
-            updated_at = datetime('now')
+            last_checked_at = NOW(),
+            updated_at = NOW()
         WHERE id = ?
     `, [newPrice, priceChange, item.id]);
 
     // Record price history — include _source so callers can distinguish live
     // scrapes from mock/unavailable results
     try {
-        query.run(`
+        await query.run(`
             INSERT INTO supplier_price_history (id, supplier_item_id, price, source, recorded_at)
-            VALUES (?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, NOW())
         `, [uuidv4(), item.id, newPrice, priceSource]);
     } catch (err) {
         // Fallback: table may not have source column yet
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO supplier_price_history (id, supplier_item_id, price, recorded_at)
-                VALUES (?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, NOW())
             `, [uuidv4(), item.id, newPrice]);
         } catch (_) { /* Table might not exist */ }
     }
@@ -282,7 +282,7 @@ export async function triggerPriceCheck(itemIds) {
 
     for (const itemId of itemIds) {
         try {
-            const item = query.get(`
+            const item = await query.get(`
                 SELECT si.*, s.name as supplier_name, s.user_id
                 FROM supplier_items si
                 JOIN suppliers s ON si.supplier_id = s.id

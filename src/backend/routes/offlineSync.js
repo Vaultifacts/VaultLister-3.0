@@ -43,7 +43,7 @@ export async function offlineSyncRouter(ctx) {
 
             sql += ' ORDER BY created_at ASC LIMIT 1000';
 
-            const queue = query.all(sql, params);
+            const queue = await query.all(sql, params);
 
             // Parse payload JSON for each item
             const enrichedQueue = queue.map(item => ({
@@ -78,14 +78,14 @@ export async function offlineSyncRouter(ctx) {
 
             const id = uuidv4();
 
-            query.run(
+            await query.run(
                 `INSERT INTO offline_sync_queue
                 (id, user_id, action, entity_type, entity_id, payload, status)
                 VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
                 [id, user.id, action, entity_type, entity_id || null, payload ? JSON.stringify(payload) : null]
             );
 
-            const queueItem = query.get('SELECT * FROM offline_sync_queue WHERE id = ?', [id]);
+            const queueItem = await query.get('SELECT * FROM offline_sync_queue WHERE id = ?', [id]);
 
             return {
                 status: 201,
@@ -103,7 +103,7 @@ export async function offlineSyncRouter(ctx) {
     // POST /api/offline/sync - Process all pending queue items
     if (method === 'POST' && path === '/sync') {
         try {
-            const pendingItems = query.all(
+            const pendingItems = await query.all(
                 'SELECT * FROM offline_sync_queue WHERE user_id = ? AND status = ? ORDER BY created_at ASC',
                 [user.id, 'pending']
             );
@@ -132,7 +132,7 @@ export async function offlineSyncRouter(ctx) {
                     }
 
                     // Mark as synced
-                    query.run(
+                    await query.run(
                         'UPDATE offline_sync_queue SET status = ?, synced_at = CURRENT_TIMESTAMP WHERE id = ?',
                         ['synced', item.id]
                     );
@@ -140,7 +140,7 @@ export async function offlineSyncRouter(ctx) {
                     synced++;
                 } catch (syncError) {
                     // Mark as failed
-                    query.run(
+                    await query.run(
                         'UPDATE offline_sync_queue SET status = ?, error_message = ? WHERE id = ?',
                         ['failed', syncError.message, item.id]
                     );
@@ -176,7 +176,7 @@ export async function offlineSyncRouter(ctx) {
         try {
             const queueId = path.split('/')[2];
 
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT id FROM offline_sync_queue WHERE id = ? AND user_id = ?',
                 [queueId, user.id]
             );
@@ -185,7 +185,7 @@ export async function offlineSyncRouter(ctx) {
                 return { status: 404, data: { error: 'Queue item not found' } };
             }
 
-            query.run('DELETE FROM offline_sync_queue WHERE id = ? AND user_id = ?', [queueId, user.id]);
+            await query.run('DELETE FROM offline_sync_queue WHERE id = ? AND user_id = ?', [queueId, user.id]);
 
             return { status: 200, data: { message: 'Queue item removed' } };
         } catch (error) {
@@ -197,17 +197,17 @@ export async function offlineSyncRouter(ctx) {
     // GET /api/offline/status - Overall sync status
     if (method === 'GET' && path === '/status') {
         try {
-            const pendingCount = query.get(
+            const pendingCount = await query.get(
                 'SELECT COUNT(*) as count FROM offline_sync_queue WHERE user_id = ? AND status = ?',
                 [user.id, 'pending']
             );
 
-            const failedCount = query.get(
+            const failedCount = await query.get(
                 'SELECT COUNT(*) as count FROM offline_sync_queue WHERE user_id = ? AND status = ?',
                 [user.id, 'failed']
             );
 
-            const lastSync = query.get(
+            const lastSync = await query.get(
                 'SELECT MAX(synced_at) as last_sync FROM offline_sync_queue WHERE user_id = ? AND status = ?',
                 [user.id, 'synced']
             );
@@ -231,23 +231,23 @@ export async function offlineSyncRouter(ctx) {
     if (method === 'POST' && path === '/manifest') {
         try {
             // Count pending orders
-            const pendingOrders = query.get(
+            const pendingOrders = await query.get(
                 'SELECT COUNT(*) as count FROM orders WHERE user_id = ? AND status = ?',
                 [user.id, 'pending']
             );
 
             // Count low stock items
-            const lowStock = query.get(
+            const lowStock = await query.get(
                 `SELECT COUNT(*) as count FROM inventory
                 WHERE user_id = ? AND quantity > 0 AND quantity <= low_stock_threshold`,
                 [user.id]
             );
 
             // Count upcoming events (next 7 days)
-            const upcomingEvents = query.get(
+            const upcomingEvents = await query.get(
                 `SELECT COUNT(*) as count FROM calendar_events
-                WHERE user_id = ? AND start_time > datetime('now')
-                AND start_time <= datetime('now', '+7 days')`,
+                WHERE user_id = ? AND start_time > NOW()
+                AND start_time <= NOW() + INTERVAL '7 days'`,
                 [user.id]
             );
 
@@ -325,7 +325,7 @@ async function syncInventoryItem(item, payload, userId) {
             const keys = Object.keys(payload);
             const values = Object.values(payload);
             const placeholders = keys.map(() => '?').join(', ');
-            query.run(
+            await query.run(
                 `INSERT INTO inventory (${keys.join(', ')}, user_id) VALUES (${placeholders}, ?)`,
                 [...values, userId]
             );
@@ -337,7 +337,7 @@ async function syncInventoryItem(item, payload, userId) {
             if (updateKeys.length === 0) throw new Error('No valid fields to update');
             const updateValues = Object.values(payload);
             const set = updateKeys.map(k => `${k} = ?`).join(', ');
-            query.run(
+            await query.run(
                 `UPDATE inventory SET ${set}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 [...updateValues, item.entity_id, userId]
             );
@@ -345,7 +345,7 @@ async function syncInventoryItem(item, payload, userId) {
 
         case 'delete':
             if (!item.entity_id) throw new Error('entity_id required for delete');
-            query.run('DELETE FROM inventory WHERE id = ? AND user_id = ?', [item.entity_id, userId]);
+            await query.run('DELETE FROM inventory WHERE id = ? AND user_id = ?', [item.entity_id, userId]);
             break;
 
         default:
@@ -361,7 +361,7 @@ async function syncListingItem(item, payload, userId) {
             const keys = Object.keys(payload);
             const values = Object.values(payload);
             const placeholders = keys.map(() => '?').join(', ');
-            query.run(
+            await query.run(
                 `INSERT INTO listings (${keys.join(', ')}, user_id) VALUES (${placeholders}, ?)`,
                 [...values, userId]
             );
@@ -373,7 +373,7 @@ async function syncListingItem(item, payload, userId) {
             if (updateKeys.length === 0) throw new Error('No valid fields to update');
             const updateValues = Object.values(payload);
             const set = updateKeys.map(k => `${k} = ?`).join(', ');
-            query.run(
+            await query.run(
                 `UPDATE listings SET ${set}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 [...updateValues, item.entity_id, userId]
             );
@@ -381,7 +381,7 @@ async function syncListingItem(item, payload, userId) {
 
         case 'delete':
             if (!item.entity_id) throw new Error('entity_id required for delete');
-            query.run('DELETE FROM listings WHERE id = ? AND user_id = ?', [item.entity_id, userId]);
+            await query.run('DELETE FROM listings WHERE id = ? AND user_id = ?', [item.entity_id, userId]);
             break;
 
         default:
@@ -397,7 +397,7 @@ async function syncOrderItem(item, payload, userId) {
             const keys = Object.keys(payload);
             const values = Object.values(payload);
             const placeholders = keys.map(() => '?').join(', ');
-            query.run(
+            await query.run(
                 `INSERT INTO orders (${keys.join(', ')}, user_id) VALUES (${placeholders}, ?)`,
                 [...values, userId]
             );
@@ -409,7 +409,7 @@ async function syncOrderItem(item, payload, userId) {
             if (updateKeys.length === 0) throw new Error('No valid fields to update');
             const updateValues = Object.values(payload);
             const set = updateKeys.map(k => `${k} = ?`).join(', ');
-            query.run(
+            await query.run(
                 `UPDATE orders SET ${set}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 [...updateValues, item.entity_id, userId]
             );
@@ -417,7 +417,7 @@ async function syncOrderItem(item, payload, userId) {
 
         case 'delete':
             if (!item.entity_id) throw new Error('entity_id required for delete');
-            query.run('DELETE FROM orders WHERE id = ? AND user_id = ?', [item.entity_id, userId]);
+            await query.run('DELETE FROM orders WHERE id = ? AND user_id = ?', [item.entity_id, userId]);
             break;
 
         default:

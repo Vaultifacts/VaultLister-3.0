@@ -39,7 +39,7 @@ export async function salesEnhancementsRouter(ctx) {
                     COALESCE(SUM(total_amount), 0) as total_sales
                 FROM orders
                 WHERE user_id = ?
-                AND strftime('%Y', order_date) = ?
+                AND TO_CHAR(order_date, 'YYYY') = ?
                 AND buyer_state IS NOT NULL
                 GROUP BY buyer_state
             `, [user.id, currentYear.toString()]);
@@ -59,12 +59,12 @@ export async function salesEnhancementsRouter(ctx) {
                         nexus_threshold_amount, nexus_threshold_transactions,
                         has_nexus, registered, period_year, updated_at
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, datetime('now'))
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, NOW())
                     ON CONFLICT(user_id, state, period_year) DO UPDATE SET
                         total_sales = ?,
                         transaction_count = ?,
                         has_nexus = ?,
-                        updated_at = datetime('now')
+                        updated_at = NOW()
                 `, [
                     nanoid(),
                     user.id,
@@ -139,7 +139,7 @@ export async function salesEnhancementsRouter(ctx) {
 
             await query.run(`
                 UPDATE sales_tax_nexus
-                SET registered = 1, updated_at = datetime('now')
+                SET registered = 1, updated_at = NOW()
                 WHERE user_id = ? AND state = ? AND period_year = ?
             `, [user.id, state, currentYear]);
 
@@ -250,7 +250,7 @@ export async function salesEnhancementsRouter(ctx) {
                     UPDATE buyer_profiles
                     SET buyer_name = COALESCE(?, buyer_name),
                         notes = COALESCE(?, notes),
-                        updated_at = datetime('now')
+                        updated_at = NOW()
                     WHERE id = ?
                 `, [buyer_name, notes, existing.id]);
 
@@ -264,7 +264,7 @@ export async function salesEnhancementsRouter(ctx) {
                         total_returns, total_spent, avg_payment_days, communication_rating,
                         is_blocked, notes, created_at, updated_at
                     )
-                    VALUES (?, ?, ?, ?, ?, 0, 0, 0, 0, 3, 0, ?, datetime('now'), datetime('now'))
+                    VALUES (?, ?, ?, ?, ?, 0, 0, 0, 0, 3, 0, ?, NOW(), NOW())
                 `, [id, user.id, buyer_name || buyer_username, buyer_username, platform, notes || null]);
 
                 return { status: 201, data: { message: 'Buyer profile created', id } };
@@ -303,7 +303,7 @@ export async function salesEnhancementsRouter(ctx) {
                 return { status: 400, data: { error: 'No fields to update' } };
             }
 
-            updates.push('updated_at = datetime(\'now\')');
+            updates.push('updated_at = NOW()');
             params.push(buyerId, user.id);
 
             await query.run(`
@@ -337,7 +337,7 @@ export async function salesEnhancementsRouter(ctx) {
 
             await query.run(`
                 UPDATE buyer_profiles
-                SET is_blocked = ?, updated_at = datetime('now')
+                SET is_blocked = ?, updated_at = NOW()
                 WHERE id = ? AND user_id = ?
             `, [newStatus, buyerId, user.id]);
 
@@ -417,7 +417,7 @@ export async function salesEnhancementsRouter(ctx) {
                             total_returns = ?,
                             total_spent = ?,
                             last_purchase_at = ?,
-                            updated_at = datetime('now')
+                            updated_at = NOW()
                         WHERE id = ?
                     `, [
                         stats.total_purchases,
@@ -436,7 +436,7 @@ export async function salesEnhancementsRouter(ctx) {
                             communication_rating, is_blocked, last_purchase_at,
                             created_at, updated_at
                         )
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 3, 0, ?, datetime('now'), datetime('now'))
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 3, 0, ?, NOW(), NOW())
                     `, [
                         nanoid(),
                         user.id,
