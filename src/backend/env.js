@@ -25,11 +25,14 @@ const envSchema = z.object({
         : z.string().min(32, 'OAUTH_ENCRYPTION_KEY must be at least 32 characters').optional(),
 
     // ── Database ─────────────────────────────────────────────────────────
+    DATABASE_URL: z.string({ required_error: 'DATABASE_URL is required' }).url('DATABASE_URL must be a valid URL'),
     DATA_DIR: z.string().default('./data'),
 
     // ── Optional — validated for shape when present ───────────────────────
     ANTHROPIC_API_KEY: z.string().min(1).optional().or(z.literal('')),
-    REDIS_URL: z.string().url('REDIS_URL must be a valid URL').optional().or(z.literal('')),
+    REDIS_URL: IS_PROD
+        ? z.string({ required_error: 'REDIS_URL is required in production' }).url('REDIS_URL must be a valid URL')
+        : z.string().url('REDIS_URL must be a valid URL').optional().or(z.literal('')),
     FRONTEND_URL: z.string().url('FRONTEND_URL must be a valid URL').optional().or(z.literal('')),
     TRUST_PROXY: z.enum(['0', '1', 'true', 'false']).optional(),
     DISABLE_RATE_LIMIT: z.enum(['true', 'false']).optional(),

@@ -59,7 +59,8 @@ export const cspConfig = {
     'connect-src': IS_PRODUCTION ? [
         "'self'",
         'https://api.anthropic.com',   // AI API
-        'wss://*.vaultlister.com'      // WebSocket
+        'wss://vaultlister.com',       // WebSocket (bare domain — wildcard doesn't match it)
+        'wss://*.vaultlister.com'      // WebSocket (subdomains)
     ] : [
         "'self'",
         'http://localhost:*',

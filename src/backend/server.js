@@ -153,11 +153,13 @@ process.on('exit', _flushLog);
 // Log startup early (test log function)
 log('Server starting...');
 
-// Write PID file for server-manager
+// PID file (local dev only — Railway is single-process, Railway captures stdout)
 const PID_PATH = join(ROOT_DIR, 'logs', 'server.pid');
-mkdirSync(join(ROOT_DIR, 'logs'), { recursive: true });
-writeFileSync(PID_PATH, String(process.pid));
-log(`PID ${process.pid} written to ${PID_PATH}`);
+if (process.env.NODE_ENV !== 'production') {
+    mkdirSync(join(ROOT_DIR, 'logs'), { recursive: true });
+    writeFileSync(PID_PATH, String(process.pid));
+    log(`PID ${process.pid} written to ${PID_PATH}`);
+}
 
 // Hoisted for access in gracefulShutdown (declared inside main())
 let server;
@@ -1636,8 +1638,10 @@ async function gracefulShutdown(signal) {
     await closeDatabase();
     logger.info('Database connection closed.');
 
-    // Clean up PID file
-    try { unlinkSync(PID_PATH); } catch {}
+    // Clean up PID file (local dev only)
+    if (process.env.NODE_ENV !== 'production') {
+        try { unlinkSync(PID_PATH); } catch {}
+    }
     log(`Server shutdown (${signal})`);
     process.exit(0);
 }
