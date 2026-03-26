@@ -65,7 +65,7 @@ function getBackupFiles(type) {
     const dir = join(BACKUP_DIR, type);
     if (!existsSync(dir)) return [];
     return readdirSync(dir)
-        .filter(f => f.endsWith('.db') || f.endsWith('.db.gz'))
+        .filter(f => f.endsWith('.dump') || f.endsWith('.dump.gz'))
         .map(f => {
             const filePath = join(dir, f);
             const stats = statSync(filePath);
