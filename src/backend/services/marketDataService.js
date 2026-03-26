@@ -31,7 +31,7 @@ const CATEGORY_DATA = {
  * @param {string} userId - User ID
  * @returns {Array} Competitor rows
  */
-export function getCompetitorsForPlatform(platform, userId) {
+export async function getCompetitorsForPlatform(platform, userId) {
     if (!userId) return [];
     try {
         return await query.all(
@@ -164,7 +164,7 @@ export function findOpportunities(userId, options = {}) {
  * @param {string} platform - Platform filter (optional)
  * @returns {Object} Price comparison data
  */
-export function comparePricesWithCompetitors(item, platform) {
+export async function comparePricesWithCompetitors(item, platform) {
     const yourPrice = item.list_price || 0;
     const category = item.category || null;
     const brand = item.brand || null;

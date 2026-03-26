@@ -137,7 +137,7 @@ export async function duplicatesRouter(ctx) {
 
             // Batch all DB writes in a single transaction (DELETE + INSERTs)
             const detectedDuplicates = [];
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 // Clear existing pending duplicates
                 await query.run(`
                     DELETE FROM duplicate_detections

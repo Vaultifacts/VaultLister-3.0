@@ -810,7 +810,7 @@ export async function ordersRouter(ctx) {
             const now = new Date().toISOString();
 
             // Wrap split in transaction for atomicity
-            const { parent, childOrders } = await query.transaction(() => {
+            const { parent, childOrders } = await query.transaction(async () => {
                 // Mark parent as split
                 await query.run(`
                     UPDATE orders SET

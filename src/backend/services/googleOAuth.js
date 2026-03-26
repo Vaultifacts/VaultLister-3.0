@@ -42,7 +42,7 @@ export function isGoogleConfigured() {
  * @param {string} baseUrl
  * @returns {{ authorizationUrl: string, state: string }}
  */
-export function buildGoogleAuthUrl(userId, scope, baseUrl) {
+export async function buildGoogleAuthUrl(userId, scope, baseUrl) {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const redirectUri = `${baseUrl}/api/integrations/google/callback`;
     const scopes = SCOPES[scope] || SCOPES.drive;
@@ -228,7 +228,7 @@ export async function revokeGoogleToken(userId, scope) {
 /**
  * Get connection status for a user + scope (no tokens exposed)
  */
-export function getConnectionStatus(userId, scope) {
+export async function getConnectionStatus(userId, scope) {
     const record = await query.get(
         `SELECT id, email, is_connected, oauth_token_expires_at, created_at, updated_at
          FROM google_tokens WHERE user_id = ? AND scope = ?`,

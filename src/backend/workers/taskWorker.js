@@ -515,7 +515,7 @@ async function notifyTaskFailure(task, error) {
  * @param {Object} options - Task options
  * @returns {Object} Created task
  */
-export function queueTask(type, payload, options = {}) {
+export async function queueTask(type, payload, options = {}) {
     const id = uuidv4();
     const {
         priority = 0,
@@ -545,7 +545,7 @@ export function queueTask(type, payload, options = {}) {
  * @param {string} taskId - Task ID
  * @returns {Object|null} Task status
  */
-export function getTaskStatus(taskId) {
+export async function getTaskStatus(taskId) {
     const task = await query.get(`
         SELECT id, type, status, attempts, max_attempts, last_error,
                created_at, started_at, completed_at
@@ -559,7 +559,7 @@ export function getTaskStatus(taskId) {
 /**
  * Get worker status for monitoring
  */
-export function getWorkerStatus() {
+export async function getWorkerStatus() {
     const stats = await query.get(`
         SELECT
             COUNT(*) as total_tasks,
@@ -585,7 +585,7 @@ export function getWorkerStatus() {
  * @param {number} daysOld - Delete tasks older than this
  * @returns {number} Number of deleted tasks
  */
-export function cleanupOldTasks(daysOld = 7) {
+export async function cleanupOldTasks(daysOld = 7) {
     const result = await query.run(`
         DELETE FROM task_queue
         WHERE status IN ('completed', 'failed')
@@ -701,7 +701,7 @@ function calculateNextRunFromCron(cronExpr, lastRunAt) {
 }
 
 // Helper: log a single automation action to automation_logs
-function logAutomationAction(userId, ruleId, type, platform, status, actionTaken, targetId, details) {
+async function logAutomationAction(userId, ruleId, type, platform, status, actionTaken, targetId, details) {
     try {
         await query.run(`INSERT INTO automation_logs (id, user_id, rule_id, type, platform, status, action_taken, target_id, details, created_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
@@ -713,7 +713,7 @@ function logAutomationAction(userId, ruleId, type, platform, status, actionTaken
 
 // --- Automation type handlers ---
 
-function executePriceDrop(rule, conditions, actions) {
+async function executePriceDrop(rule, conditions, actions) {
     const minDays = Math.floor(conditions.minDaysListed || 7);
     const dropPct = actions.dropPercentage || 10;
     const minPrice = actions.minPrice || 0;
@@ -763,7 +763,7 @@ function executePriceDrop(rule, conditions, actions) {
     return { message: `Price drop: ${succeeded}/${processed} listings updated (-${dropPct}%, min $${minPrice})`, itemsProcessed: processed, itemsSucceeded: succeeded, itemsFailed: failed };
 }
 
-function executeRelist(rule, conditions, actions) {
+async function executeRelist(rule, conditions, actions) {
     const minDays = Math.floor(conditions.minDaysListed || 60);
     const params = [rule.user_id, String(minDays)];
     let sql = `SELECT * FROM listings WHERE user_id = ? AND status = 'active' AND listed_at <= NOW() - (?::text || ' days')::interval`;
@@ -842,7 +842,7 @@ async function executeCommunityShare(rule, conditions, actions) {
     }
 }
 
-function executeShare(rule, conditions, actions) {
+async function executeShare(rule, conditions, actions) {
 
     const minPrice = conditions.minPrice ?? 0;
     const isPartyShare = conditions.partyOnly || actions.shareToParty;
@@ -874,7 +874,7 @@ function executeShare(rule, conditions, actions) {
     return { message: `Share: ${succeeded}/${processed} listings shared${isPartyShare ? ' to party' : ''}`, itemsProcessed: processed, itemsSucceeded: succeeded, itemsFailed: failed };
 }
 
-function executeOffer(rule, conditions, actions) {
+async function executeOffer(rule, conditions, actions) {
     const params = [rule.user_id];
     let sql = `SELECT o.id AS offer_id, o.offer_amount, o.buyer_username, o.platform,
                       l.id AS listing_id, l.price AS listing_price, l.title
@@ -926,7 +926,7 @@ function executeOffer(rule, conditions, actions) {
     return { message: pendingOffers.length === 0 ? 'Offer automation: no pending offers found' : `Offer automation (${desc}): ${succeeded}/${processed} offers processed`, itemsProcessed: processed, itemsSucceeded: succeeded, itemsFailed: failed };
 }
 
-function executeFollow(rule, conditions, actions) {
+async function executeFollow(rule, conditions, actions) {
     logAutomationAction(rule.user_id, rule.id, 'follow', rule.platform, 'skipped', 'follow_noop', null, 'Follow automation requires platform API (not available offline)');
     return { message: 'Follow: requires platform API (not available offline)', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
 }
@@ -978,7 +978,7 @@ async function executeOtl(rule, conditions, actions) {
     }
 }
 
-function executeCustom(rule, conditions, actions) {
+async function executeCustom(rule, conditions, actions) {
     // Bundle discount: find users who liked multiple items, create bundle discount offers
     if (actions.bundleDiscount) {
         const minItems = conditions.minBundleItems || 2;
@@ -1411,7 +1411,7 @@ async function executeScrapeCompetitorClosetTask(payload) {
 
         let inserted = 0;
         try {
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 for (const listing of listings) {
                     await query.run(`
                         INSERT INTO competitor_listings

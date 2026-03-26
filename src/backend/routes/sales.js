@@ -134,7 +134,7 @@ export async function salesRouter(ctx) {
         let sale;
 
         try {
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 // Use FIFO costing if inventory item exists
                 if (inventoryId) {
                     // Get cost layers in FIFO order (oldest first)

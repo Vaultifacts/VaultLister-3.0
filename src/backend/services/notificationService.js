@@ -15,7 +15,7 @@ import { logger } from '../shared/logger.js';
  * @param {Object} [options.data] - Additional data to store
  * @returns {Object} Created notification
  */
-export function createNotification(userId, { type, title, message, data = null }) {
+export async function createNotification(userId, { type, title, message, data = null }) {
     const id = uuidv4();
 
     try {
@@ -46,7 +46,7 @@ export function createNotification(userId, { type, title, message, data = null }
  * @param {number} [limit=50] - Maximum notifications to return
  * @returns {Array} Unread notifications
  */
-export function getUnreadNotifications(userId, limit = 50) {
+export async function getUnreadNotifications(userId, limit = 50) {
     try {
         const notifications = await query.all(`
             SELECT * FROM notifications
@@ -72,7 +72,7 @@ export function getUnreadNotifications(userId, limit = 50) {
  * @param {Object} options - Query options
  * @returns {Object} Paginated notifications
  */
-export function getNotifications(userId, { page = 1, limit = 20 } = {}) {
+export async function getNotifications(userId, { page = 1, limit = 20 } = {}) {
     try {
         const offset = (page - 1) * limit;
 
@@ -112,7 +112,7 @@ export function getNotifications(userId, { page = 1, limit = 20 } = {}) {
  * @param {string} userId - User ID (for validation)
  * @returns {boolean} Success status
  */
-export function markAsRead(notificationId, userId) {
+export async function markAsRead(notificationId, userId) {
     try {
         const result = await query.run(`
             UPDATE notifications
@@ -132,7 +132,7 @@ export function markAsRead(notificationId, userId) {
  * @param {string} userId - User ID
  * @returns {number} Number of notifications marked as read
  */
-export function markAllAsRead(userId) {
+export async function markAllAsRead(userId) {
     try {
         const result = await query.run(`
             UPDATE notifications
@@ -153,7 +153,7 @@ export function markAllAsRead(userId) {
  * @param {string} userId - User ID (for validation)
  * @returns {boolean} Success status
  */
-export function deleteNotification(notificationId, userId) {
+export async function deleteNotification(notificationId, userId) {
     try {
         const result = await query.run(`
             DELETE FROM notifications WHERE id = ? AND user_id = ?
@@ -171,7 +171,7 @@ export function deleteNotification(notificationId, userId) {
  * @param {number} [daysOld=30] - Delete notifications older than this many days
  * @returns {number} Number of deleted notifications
  */
-export function cleanupOldNotifications(daysOld = 30) {
+export async function cleanupOldNotifications(daysOld = 30) {
     try {
         const result = await query.run(`
             DELETE FROM notifications
@@ -190,7 +190,7 @@ export function cleanupOldNotifications(daysOld = 30) {
  * @param {string} userId - User ID
  * @returns {number} Unread notification count
  */
-export function getUnreadCount(userId) {
+export async function getUnreadCount(userId) {
     try {
         const result = await query.get(`
             SELECT COUNT(*) as count FROM notifications
@@ -224,7 +224,7 @@ export const NotificationTypes = {
  * @param {string} notificationType - Type from NotificationTypes
  * @param {Object} [extraData] - Additional data
  */
-export function createOAuthNotification(userId, platform, notificationType, extraData = {}) {
+export async function createOAuthNotification(userId, platform, notificationType, extraData = {}) {
     // Sanitize external values to prevent injection
     const safePlatform = String(platform || '').replace(/[<>&"']/g, '').substring(0, 50);
     const safeError = extraData.error ? String(extraData.error).replace(/[<>&"']/g, '').substring(0, 200) : '';

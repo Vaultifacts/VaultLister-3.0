@@ -41,13 +41,13 @@ export async function roadmapRouter(ctx) {
 
             // For each feature, check if current user has voted
             if (user) {
-                features.forEach(feature => {
+                for (const feature of features) {
                     const vote = await query.get(
                         `SELECT id FROM roadmap_votes WHERE feature_id = ? AND user_id = ?`,
                         [feature.id, user.id]
                     );
                     feature.user_voted = !!vote;
-                });
+                }
             }
 
             return {

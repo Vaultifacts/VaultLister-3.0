@@ -52,7 +52,7 @@ export function stopRateLimitDashboard() {
 }
 
 // Track rate limit hit
-export function trackRateLimitHit(endpoint, ip, userId, blocked) {
+export async function trackRateLimitHit(endpoint, ip, userId, blocked) {
     const now = Date.now();
 
     // Track by endpoint

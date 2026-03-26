@@ -90,7 +90,7 @@ const monitoring = {
     },
 
     // Track error
-    trackError(error, context = {}) {
+    async trackError(error, context = {}) {
         metrics.requests.errors++;
 
         const errorRecord = {
@@ -370,7 +370,7 @@ const monitoring = {
     },
 
     // Get alerts
-    getAlerts(hours = 24) {
+    async getAlerts(hours = 24) {
         try {
             const h = Math.max(1, Math.min(Number(hours) || 24, 8760));
             return await query.all(`
@@ -408,7 +408,7 @@ export const healthChecker = {
 
 // Security monitor used by monitoring route
 export const securityMonitor = {
-    getSummary() {
+    async getSummary() {
         try {
             const failedLogins = await query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'LOGIN_FAILURE' AND created_at > NOW() - INTERVAL '24 hours'");
             const suspicious = await query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'SUSPICIOUS' AND created_at > NOW() - INTERVAL '24 hours'");

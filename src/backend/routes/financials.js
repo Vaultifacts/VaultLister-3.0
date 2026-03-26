@@ -287,7 +287,7 @@ export async function financialsRouter(ctx) {
         }
 
         try {
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 // Get items to reverse inventory updates
                 const items = await query.all('SELECT * FROM purchase_items WHERE purchase_id = ?', [id]);
 
@@ -625,7 +625,7 @@ export async function financialsRouter(ctx) {
             const dateParams = start && end ? [start, end] : [];
 
             // Get account balances by type
-            const getBalanceByTypes = (types) => {
+            const getBalanceByTypes = async (types) => {
                 const placeholders = types.map(() => '?').join(',');
                 const sql = `
                     SELECT a.id, a.account_name, a.account_type,
@@ -707,7 +707,7 @@ export async function financialsRouter(ctx) {
             const dateParams = start && end ? [start, end] : [];
 
             // Get totals by account type
-            const getTotalByTypes = (types) => {
+            const getTotalByTypes = async (types) => {
                 const placeholders = types.map(() => '?').join(',');
                 const sql = `
                     SELECT a.id, a.account_name, a.account_type,

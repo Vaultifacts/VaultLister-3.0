@@ -95,7 +95,7 @@ export function isSyncSupported(platform) {
  * @param {string} userId - User ID for validation
  * @returns {Object} Sync status
  */
-export function getSyncStatus(shopId, userId) {
+export async function getSyncStatus(shopId, userId) {
     const shop = await query.get(`
         SELECT
             id, platform, last_sync_at, sync_error,

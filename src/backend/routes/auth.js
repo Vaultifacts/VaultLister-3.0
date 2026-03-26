@@ -103,7 +103,7 @@ function maskEmail(email) {
 }
 
 // SECURITY: Check and update login attempts
-function checkLoginAttempts(email, ip) {
+async function checkLoginAttempts(email, ip) {
     // Skip lockout check in tests (or when explicitly disabled) to avoid
     // cross-suite login-attempt coupling that breaks auth-token setup.
     if (isAuthLockoutBypassed(ip)) {
@@ -135,7 +135,7 @@ function checkLoginAttempts(email, ip) {
 }
 
 // SECURITY: Log failed login attempt — stores masked email, never raw PII.
-function logFailedLogin(email, ip, userAgent) {
+async function logFailedLogin(email, ip, userAgent) {
     try {
         await query.run(`
             INSERT INTO security_logs (event_type, ip_or_user, details, created_at)
@@ -147,7 +147,7 @@ function logFailedLogin(email, ip, userAgent) {
 }
 
 // SECURITY: Clear login attempts on successful login
-function clearLoginAttempts(email, ip) {
+async function clearLoginAttempts(email, ip) {
     try {
         const lockoutEnd = new Date(Date.now() - LOCKOUT_DURATION_MINUTES * 60 * 1000);
         const masked = maskEmail(email.toLowerCase());
@@ -198,7 +198,7 @@ async function ensureTestDemoUser() {
 // SECURITY: Enforce a maximum of 10 concurrent sessions per user.
 // Deletes the oldest sessions (by created_at) when the limit is reached,
 // leaving room for one new session to be inserted by the caller.
-function enforceSessionLimit(userId) {
+async function enforceSessionLimit(userId) {
     try {
         const sessionCount = await query.get(
             'SELECT COUNT(*) as count FROM sessions WHERE user_id = ? AND is_valid = 1',

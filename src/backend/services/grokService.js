@@ -188,7 +188,7 @@ const CANNED_RESPONSES = {
 /**
  * Fetch a brief inventory/sales summary for the user to inject into Claude context.
  */
-function getUserStats(userId) {
+async function getUserStats(userId) {
     try {
         const inv = await query.get(
             `SELECT COUNT(*) as total,

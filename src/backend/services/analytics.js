@@ -168,7 +168,7 @@ const analyticsService = {
     // ==========================================
 
     // Get event counts by name
-    getEventCounts(startDate, endDate = new Date()) {
+    async getEventCounts(startDate, endDate = new Date()) {
         return await query.all(`
             SELECT
                 name,
@@ -183,7 +183,7 @@ const analyticsService = {
     },
 
     // Get page views
-    getPageViews(startDate, endDate = new Date(), groupBy = 'day') {
+    async getPageViews(startDate, endDate = new Date(), groupBy = 'day') {
         const groupFormat = groupBy === 'hour' ? 'YYYY-MM-DD HH24:00' : 'YYYY-MM-DD';
 
         return await query.all(`
@@ -201,7 +201,7 @@ const analyticsService = {
     },
 
     // Get user sessions
-    getUserSessions(userId, limit = 10) {
+    async getUserSessions(userId, limit = 10) {
         return await query.all(`
             SELECT
                 session_id,
@@ -218,7 +218,7 @@ const analyticsService = {
     },
 
     // Funnel analysis
-    analyzeFunnel(steps, startDate, endDate = new Date()) {
+    async analyzeFunnel(steps, startDate, endDate = new Date()) {
         // steps: ['page_view:signup', 'user_action:form_start', 'conversion:signup']
         const results = [];
 
@@ -271,7 +271,7 @@ const analyticsService = {
     },
 
     // Get conversion metrics
-    getConversionMetrics(type, startDate, endDate = new Date()) {
+    async getConversionMetrics(type, startDate, endDate = new Date()) {
         return await query.get(`
             SELECT
                 COUNT(*) as total_conversions,
@@ -286,7 +286,7 @@ const analyticsService = {
     },
 
     // Get user retention cohorts
-    getRetentionCohorts(startDate, endDate = new Date()) {
+    async getRetentionCohorts(startDate, endDate = new Date()) {
         // Get weekly cohorts
         return await query.all(`
             WITH cohorts AS (

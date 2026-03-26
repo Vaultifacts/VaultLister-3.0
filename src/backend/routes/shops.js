@@ -348,7 +348,7 @@ export async function shopsRouter(ctx) {
                 [user.id]
             );
 
-            const health = shops.map(shop => {
+            const health = await Promise.all(shops.map(async shop => {
                 const now = Date.now();
                 const tokenExpiry = shop.oauth_token_expires_at ? new Date(shop.oauth_token_expires_at).getTime() : null;
                 const lastSync = shop.last_sync_at ? new Date(shop.last_sync_at).getTime() : null;
@@ -429,7 +429,7 @@ export async function shopsRouter(ctx) {
                     listings: listingStats,
                     connected_since: shop.created_at
                 };
-            });
+            }));
 
             const overall = health.length > 0
                 ? Math.round(health.reduce((sum, h) => sum + h.health_score, 0) / health.length)

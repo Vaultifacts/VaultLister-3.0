@@ -689,7 +689,7 @@ export async function manualRefreshToken(shopId, userId) {
 /**
  * Get token refresh status for monitoring
  */
-export function getRefreshSchedulerStatus() {
+export async function getRefreshSchedulerStatus() {
     let stats;
     try {
         stats = await query.get(`

@@ -730,7 +730,7 @@ function hasPermission(role, permission) {
 }
 
 // Returns a 403 response object if the team is suspended/deactivated, otherwise null.
-function checkTeamActive(teamId) {
+async function checkTeamActive(teamId) {
     const team = await query.get('SELECT is_active FROM teams WHERE id = ?', [teamId]);
     if (!team) return { status: 404, data: { error: 'Team not found' } };
     if (!team.is_active) return { status: 403, data: { error: 'This team has been suspended and cannot perform operations' } };
@@ -741,7 +741,7 @@ function getRoleLevel(role) {
     return ROLE_HIERARCHY.indexOf(role);
 }
 
-function logTeamActivity(teamId, userId, action, resourceType, resourceId, details, ipAddress = null) {
+async function logTeamActivity(teamId, userId, action, resourceType, resourceId, details, ipAddress = null) {
     try {
         const id = uuidv4();
         await query.run(`

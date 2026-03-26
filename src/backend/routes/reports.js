@@ -557,7 +557,7 @@ const WIDGET_CATALOG = [
   { type: 'monthly_summary', label: 'Monthly Summary', category: 'financial', size: 'large' },
 ];
 
-function generateWidgetResult(type, userId, startDate, endDate) {
+async function generateWidgetResult(type, userId, startDate, endDate) {
   // Generate widget data from DB for the given type and date range
   const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const end = endDate || new Date().toISOString().split('T')[0];
@@ -904,7 +904,7 @@ export async function reportsRouter(ctx) {
         return { status: 404, data: { error: 'Report not found' } };
       }
 
-      await query.transaction(() => {
+      await query.transaction(async () => {
         await query.run(
           'DELETE FROM report_schedules WHERE report_id = ? AND user_id = ?',
           [reportId, user.id]

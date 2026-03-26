@@ -386,7 +386,7 @@ export async function feedbackRouter(ctx) {
                 return { status: 404, data: { error: 'Feedback not found' } };
             }
 
-            const result = await query.transaction(() => {
+            const result = await query.transaction(async () => {
                 const existingVote = await query.get(
                     `SELECT id, vote_type FROM feedback_votes WHERE feedback_id = ? AND user_id = ?`,
                     [feedbackId, user.id]

@@ -36,7 +36,7 @@ export async function qrAnalyticsRouter(ctx) {
             );
 
             // Get item details for top scanned
-            const enrichedTopScanned = topScanned.map(item => {
+            const enrichedTopScanned = await Promise.all(topScanned.map(async item => {
                 const details = await query.get(
                     'SELECT title, sku FROM inventory WHERE id = ?',
                     [item.reference_id]
@@ -46,7 +46,7 @@ export async function qrAnalyticsRouter(ctx) {
                     title: details?.title || 'Unknown',
                     sku: details?.sku || 'N/A'
                 };
-            });
+            }));
 
             // Recently scanned (last 24 hours)
             const recentScans = await query.get(

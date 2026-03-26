@@ -168,7 +168,7 @@ const featureFlags = {
     },
 
     // Set a flag (admin)
-    setFlag(name, config) {
+    async setFlag(name, config) {
         flagsCache[name] = {
             ...flagsCache[name],
             ...config
@@ -200,7 +200,7 @@ const featureFlags = {
     },
 
     // Track feature usage for analytics
-    trackUsage(flagName, user = null) {
+    async trackUsage(flagName, user = null) {
         try {
             await query.run(`
                 INSERT INTO feature_flag_usage (flag_name, user_id, timestamp)
@@ -212,7 +212,7 @@ const featureFlags = {
     },
 
     // Get usage statistics (admin)
-    getUsageStats(flagName, days = 30) {
+    async getUsageStats(flagName, days = 30) {
         try {
             return await query.all(`
                 SELECT
@@ -244,7 +244,7 @@ const abTesting = {
     },
 
     // Track conversion
-    trackConversion(experimentName, variant, user = null, value = 1) {
+    async trackConversion(experimentName, variant, user = null, value = 1) {
         try {
             await query.run(`
                 INSERT INTO ab_test_conversions (experiment, variant, user_id, value, timestamp)
@@ -256,7 +256,7 @@ const abTesting = {
     },
 
     // Get experiment results
-    getResults(experimentName) {
+    async getResults(experimentName) {
         try {
             return await query.all(`
                 SELECT

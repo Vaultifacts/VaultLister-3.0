@@ -992,7 +992,7 @@ export async function analyticsRouter(ctx) {
         }
         try {
             let updated = 0;
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 for (const item of items) {
                     if (!item.id || item.suggested_price == null) continue;
                     const existing = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [item.id, user.id]);

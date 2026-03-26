@@ -140,7 +140,7 @@ async function processJob(jobId) {
             const result = await processJobItem(item, transformations, job.user_id);
 
             // Check for cancellation and commit item results in one transaction
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 const currentJob = await query.get('SELECT status FROM batch_photo_jobs WHERE id = ?', [jobId]);
                 if (currentJob.status === 'cancelled') {
                     cancelled = true;
@@ -246,7 +246,7 @@ export async function batchPhotoRouter(context) {
             );
             const filePathMap = Object.fromEntries(imageFilePaths.map(r => [r.id, r.file_path]));
 
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 for (const imageId of imageIds) {
                     await query.run(`
                         INSERT INTO batch_photo_items (id, job_id, image_id, original_url, created_at)
@@ -351,7 +351,7 @@ export async function batchPhotoRouter(context) {
             }
 
             // Start processing in background (don't await)
-            processJob(jobId).catch(err => {
+            processJob(jobId).catch(async err => {
                 logger.error('[BatchPhoto] Batch job processing error', null, { detail: err.message });
                 await query.run(
                     "UPDATE batch_photo_jobs SET status = 'failed', error_message = ?, completed_at = ? WHERE id = ? AND user_id = ?",
@@ -421,7 +421,7 @@ export async function batchPhotoRouter(context) {
             }
 
             // Delete items and job atomically
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 await query.run('DELETE FROM batch_photo_items WHERE job_id = ?', [jobId]);
                 await query.run('DELETE FROM batch_photo_jobs WHERE id = ? AND user_id = ?', [jobId, user.id]);
             });
@@ -593,7 +593,7 @@ export async function batchPhotoRouter(context) {
             }
 
             // Clear all defaults for user, then set this one (atomic transaction)
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 await query.run('UPDATE batch_photo_presets SET is_default = 0 WHERE user_id = ?', [user.id]);
                 await query.run('UPDATE batch_photo_presets SET is_default = 1, updated_at = ? WHERE id = ? AND user_id = ?', [now(), presetId, user.id]);
             });

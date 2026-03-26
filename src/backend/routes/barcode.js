@@ -222,7 +222,7 @@ async function lookupExternalBarcode(barcode) {
 }
 
 // Save barcode lookup to local database
-function saveBarcodeLookup(barcode, data) {
+async function saveBarcodeLookup(barcode, data) {
     try {
         const id = uuidv4();
         await query.run(`

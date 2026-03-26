@@ -93,7 +93,7 @@ export async function checklistsRouter(ctx) {
 
         try {
             const itemIds = [];
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 // Create the checklist
                 await query.run(
                     `INSERT INTO checklists (id, user_id, name, description, created_at, updated_at)

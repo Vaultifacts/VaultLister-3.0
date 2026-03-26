@@ -124,7 +124,7 @@ export async function offersRouter(ctx) {
 
         // Best-effort sale creation — wrapped in transaction for atomicity
         try {
-            await query.transaction(() => {
+            await query.transaction(async () => {
                 const saleId = uuidv4();
                 await query.run(
                     `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, tax_amount, net_profit, status, created_at)

@@ -33,7 +33,7 @@ async function rateLimitedRequest(fn) {
  * @param {string} userId - User ID to check
  * @returns {boolean}
  */
-export function isConfigured(userId) {
+export async function isConfigured(userId) {
     if (!userId) {
         // Check if global env token exists
         return !!process.env.NOTION_INTEGRATION_TOKEN;
@@ -52,7 +52,7 @@ export function isConfigured(userId) {
  * @param {string} userId - User ID
  * @returns {Client} Notion client instance
  */
-export function getClient(userId) {
+export async function getClient(userId) {
     let token;
 
     if (userId) {
@@ -83,7 +83,7 @@ export function getClient(userId) {
  * @param {string} userId
  * @returns {Object|null}
  */
-export function getSettings(userId) {
+export async function getSettings(userId) {
     return await query.get(
         'SELECT * FROM notion_settings WHERE user_id = ?',
         [userId]
@@ -96,7 +96,7 @@ export function getSettings(userId) {
  * @param {Object} settings
  * @returns {Object}
  */
-export function saveSettings(userId, settings) {
+export async function saveSettings(userId, settings) {
     const existing = getSettings(userId);
     const now = new Date().toISOString();
 
@@ -194,7 +194,7 @@ export function saveSettings(userId, settings) {
  * Delete user's Notion settings (disconnect)
  * @param {string} userId
  */
-export function deleteSettings(userId) {
+export async function deleteSettings(userId) {
     // Delete sync maps
     await query.run('DELETE FROM notion_sync_map WHERE user_id = ?', [userId]);
     // Delete field mappings
@@ -769,7 +769,7 @@ export function mapNotionToSale(notionPage) {
  * @param {string} localId
  * @returns {Object|null}
  */
-export function getSyncMap(userId, entityType, localId) {
+export async function getSyncMap(userId, entityType, localId) {
     return await query.get(
         'SELECT * FROM notion_sync_map WHERE user_id = ? AND entity_type = ? AND local_id = ?',
         [userId, entityType, localId]
@@ -783,7 +783,7 @@ export function getSyncMap(userId, entityType, localId) {
  * @param {string} notionPageId
  * @returns {Object|null}
  */
-export function getSyncMapByNotionId(userId, entityType, notionPageId) {
+export async function getSyncMapByNotionId(userId, entityType, notionPageId) {
     return await query.get(
         'SELECT * FROM notion_sync_map WHERE user_id = ? AND entity_type = ? AND notion_page_id = ?',
         [userId, entityType, notionPageId]
@@ -799,7 +799,7 @@ export function getSyncMapByNotionId(userId, entityType, notionPageId) {
  * @param {Object} options
  * @returns {Object}
  */
-export function upsertSyncMap(userId, entityType, localId, notionPageId, options = {}) {
+export async function upsertSyncMap(userId, entityType, localId, notionPageId, options = {}) {
     const existing = getSyncMap(userId, entityType, localId);
     const now = new Date().toISOString();
 
@@ -859,7 +859,7 @@ export function upsertSyncMap(userId, entityType, localId, notionPageId, options
  * @param {string} status
  * @param {string} error
  */
-export function updateSyncStatus(syncMapId, status, error = null) {
+export async function updateSyncStatus(syncMapId, status, error = null) {
     const now = new Date().toISOString();
     await query.run(`
         UPDATE notion_sync_map SET
@@ -877,7 +877,7 @@ export function updateSyncStatus(syncMapId, status, error = null) {
  * @param {string} entityType
  * @returns {Array}
  */
-export function getPendingSyncItems(userId, entityType = null) {
+export async function getPendingSyncItems(userId, entityType = null) {
     const params = [userId];
     let sql = `
         SELECT * FROM notion_sync_map
@@ -902,7 +902,7 @@ export function getPendingSyncItems(userId, entityType = null) {
  * @param {Object} details
  * @returns {string} Sync history ID
  */
-export function logSyncHistory(userId, details) {
+export async function logSyncHistory(userId, details) {
     const id = uuidv4();
 
     await query.run(`
@@ -941,7 +941,7 @@ export function logSyncHistory(userId, details) {
  * @param {number} limit
  * @returns {Array}
  */
-export function getSyncHistory(userId, limit = 20) {
+export async function getSyncHistory(userId, limit = 20) {
     return await query.all(
         'SELECT * FROM notion_sync_history WHERE user_id = ? ORDER BY started_at DESC LIMIT ?',
         [userId, limit]

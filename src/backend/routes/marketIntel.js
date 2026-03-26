@@ -132,7 +132,7 @@ export async function marketIntelRouter(ctx) {
         const competitor = await query.get('SELECT id FROM competitors WHERE id = ? AND user_id = ?', [competitorId, user.id]);
         if (!competitor) return { status: 404, data: { error: 'Competitor not found' } };
 
-        await query.transaction(() => {
+        await query.transaction(async () => {
             await query.run('DELETE FROM competitor_listings WHERE competitor_id = ?', [competitorId]);
             await query.run('DELETE FROM competitors WHERE id = ? AND user_id = ?', [competitorId, user.id]);
         });

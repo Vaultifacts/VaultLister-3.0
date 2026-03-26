@@ -61,7 +61,7 @@ export async function whatnotRouter(ctx) {
         }
         const eventId = uuidv4();
         const now = new Date().toISOString();
-        const event = await query.transaction(() => {
+        const event = await query.transaction(async () => {
             await query.run(`
                 INSERT INTO whatnot_events (id, user_id, title, description, start_time, category, estimated_duration, shipping_option, notes, status, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'scheduled', ?, ?)
@@ -121,7 +121,7 @@ export async function whatnotRouter(ctx) {
         if (!inventory_id) return { status: 400, data: { error: 'Inventory ID required' } };
 
         const itemId = uuidv4();
-        const item = await query.transaction(() => {
+        const item = await query.transaction(async () => {
             const maxOrder = await query.get('SELECT MAX(sort_order) as max FROM whatnot_event_items WHERE event_id = ?', [eventId]);
             const sortOrder = (maxOrder?.max || 0) + 1;
             await query.run(`

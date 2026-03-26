@@ -373,7 +373,7 @@ async function queueEmailReceipt(account, email, detection, accessToken) {
 /**
  * Get email polling worker status
  */
-export function getEmailPollingStatus() {
+export async function getEmailPollingStatus() {
     const stats = await query.get(`
         SELECT
             COUNT(*) as total_accounts,

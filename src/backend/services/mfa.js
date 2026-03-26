@@ -179,7 +179,7 @@ export async function enableMFA(userId, setupToken, totpCode) {
 /**
  * Complete MFA setup with secret verification
  */
-export function completeSetup(userId, secret, totpCode, ip, userAgent) {
+export async function completeSetup(userId, secret, totpCode, ip, userAgent) {
     // Verify the TOTP code
     if (!verifyToken(totpCode, secret)) {
         return { success: false, error: 'Invalid verification code' };
