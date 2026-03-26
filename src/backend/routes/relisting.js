@@ -22,7 +22,7 @@ export async function relistingRouter(ctx) {
     // GET /api/relisting/rules - List all rules
     if (method === 'GET' && path === '/rules') {
         try {
-            const rules = query.all(`
+            const rules = await query.all(`
                 SELECT * FROM relisting_rules
                 WHERE user_id = ?
                 ORDER BY is_default DESC, created_at DESC
@@ -52,7 +52,7 @@ export async function relistingRouter(ctx) {
     const getRuleMatch = path.match(/^\/rules\/([a-f0-9-]+)$/i);
     if (method === 'GET' && getRuleMatch) {
         try {
-            const rule = query.get(`
+            const rule = await query.get(`
                 SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?
             `, [getRuleMatch[1], user.id]);
 
@@ -98,10 +98,10 @@ export async function relistingRouter(ctx) {
 
             // If setting as default, unset other defaults
             if (is_default) {
-                query.run('UPDATE relisting_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE relisting_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
             }
 
-            query.run(`
+            await query.run(`
                 INSERT INTO relisting_rules (
                     id, user_id, name, description, stale_days, min_views, max_views,
                     min_likes, price_strategy, price_reduction_amount, price_floor_percentage,
@@ -144,7 +144,7 @@ export async function relistingRouter(ctx) {
             const id = patchRuleMatch[1];
 
             // Verify ownership
-            const existing = query.get('SELECT id FROM relisting_rules WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT id FROM relisting_rules WHERE id = ? AND user_id = ?', [id, user.id]);
             if (!existing) {
                 return { status: 404, data: { error: 'Rule not found' } };
             }
@@ -180,7 +180,7 @@ export async function relistingRouter(ctx) {
             }
 
             if (body.is_default) {
-                query.run('UPDATE relisting_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE relisting_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
                 updates.push('is_default = 1');
             }
 
@@ -191,7 +191,7 @@ export async function relistingRouter(ctx) {
             updates.push('updated_at = CURRENT_TIMESTAMP');
             params.push(id);
 
-            query.run(`UPDATE relisting_rules SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, [...params, user.id]);
+            await query.run(`UPDATE relisting_rules SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, [...params, user.id]);
 
             return { status: 200, data: { message: 'Rule updated' } };
         } catch (error) {
@@ -204,7 +204,7 @@ export async function relistingRouter(ctx) {
     const deleteRuleMatch = path.match(/^\/rules\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteRuleMatch) {
         try {
-            const result = query.run(
+            const result = await query.run(
                 'DELETE FROM relisting_rules WHERE id = ? AND user_id = ?',
                 [deleteRuleMatch[1], user.id]
             );
@@ -229,7 +229,7 @@ export async function relistingRouter(ctx) {
         try {
             const { days = 30, limit = 50, offset = 0 } = queryParams;
 
-            const staleListings = query.all(`
+            const staleListings = await query.all(`
                 SELECT l.*, i.title, i.brand, i.category, i.list_price, i.images,
                        julianday('now') - julianday(COALESCE(l.last_refreshed_at, l.created_at)) as days_stale,
                        (SELECT COUNT(*) FROM listing_engagement WHERE listing_id = l.id) as total_views
@@ -241,7 +241,7 @@ export async function relistingRouter(ctx) {
                 LIMIT ? OFFSET ?
             `, [user.id, parseInt(days), parseInt(limit), parseInt(offset)]);
 
-            const { count } = query.get(`
+            const { count } = await query.get(`
                 SELECT COUNT(*) as count FROM listings l
                 WHERE l.user_id = ? AND l.status = 'active'
                 AND julianday('now') - julianday(COALESCE(l.last_refreshed_at, l.created_at)) >= ?
@@ -277,12 +277,12 @@ export async function relistingRouter(ctx) {
             // Get rule if specified
             let rule = null;
             if (rule_id) {
-                rule = query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [rule_id, user.id]);
+                rule = await query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [rule_id, user.id]);
             }
 
             const queued = [];
             for (const listingId of listing_ids) {
-                const listing = query.get(`
+                const listing = await query.get(`
                     SELECT l.*, i.title, i.brand, i.category, i.list_price, i.cost_price
                     FROM listings l
                     JOIN inventory i ON l.inventory_id = i.id
@@ -302,7 +302,7 @@ export async function relistingRouter(ctx) {
                 }
 
                 const id = uuidv4();
-                query.run(`
+                await query.run(`
                     INSERT INTO relisting_queue (
                         id, user_id, listing_id, inventory_id, rule_id, platform,
                         scheduled_at, original_price, new_price, price_change_reason,
@@ -353,7 +353,7 @@ export async function relistingRouter(ctx) {
             sql += ' ORDER BY rq.scheduled_at ASC LIMIT ? OFFSET ?';
             params.push(parseInt(limit), parseInt(offset));
 
-            const queue = query.all(sql, params);
+            const queue = await query.all(sql, params);
 
             return {
                 status: 200,
@@ -378,7 +378,7 @@ export async function relistingRouter(ctx) {
 
             let itemsToProcess;
             if (process_all) {
-                itemsToProcess = query.all(`
+                itemsToProcess = await query.all(`
                     SELECT * FROM relisting_queue
                     WHERE user_id = ? AND status = 'pending'
                     AND (scheduled_at IS NULL OR scheduled_at <= datetime('now'))
@@ -386,7 +386,7 @@ export async function relistingRouter(ctx) {
                 `, [user.id]);
             } else if (queue_ids && queue_ids.length > 0) {
                 const placeholders = queue_ids.map(() => '?').join(',');
-                itemsToProcess = query.all(`
+                itemsToProcess = await query.all(`
                     SELECT * FROM relisting_queue
                     WHERE id IN (${placeholders}) AND user_id = ? AND status = 'pending'
                 `, [...queue_ids, user.id]);
@@ -397,22 +397,22 @@ export async function relistingRouter(ctx) {
             const results = [];
             for (const item of itemsToProcess) {
                 try {
-                    query.transaction(() => {
+                    await query.transaction(async (tx) => {
                         // Update listing price if changed
                         const changes = [];
                         if (item.new_price && item.new_price !== item.original_price) {
-                            query.run('UPDATE inventory SET list_price = ? WHERE id = ? AND user_id = ?', [item.new_price, item.inventory_id, user.id]);
+                            await tx.run('UPDATE inventory SET list_price = ? WHERE id = ? AND user_id = ?', [item.new_price, item.inventory_id, user.id]);
                             changes.push({ field: 'price', from: item.original_price, to: item.new_price });
                         }
 
                         // Update listing refresh timestamp
-                        query.run(`
+                        await tx.run(`
                             UPDATE listings SET last_refreshed_at = datetime('now')
                             WHERE id = ? AND user_id = ?
                         `, [item.listing_id, user.id]);
 
                         // Mark as completed
-                        query.run(`
+                        await tx.run(`
                             UPDATE relisting_queue
                             SET status = 'completed', processed_at = datetime('now'), changes_made = ?
                             WHERE id = ? AND user_id = ?
@@ -420,7 +420,7 @@ export async function relistingRouter(ctx) {
 
                         // Track performance
                         const perfId = uuidv4();
-                        query.run(`
+                        await tx.run(`
                             INSERT INTO relisting_performance (
                                 id, user_id, listing_id, relist_queue_id,
                                 price_before, views_before, likes_before, days_without_sale, price_after
@@ -432,7 +432,7 @@ export async function relistingRouter(ctx) {
                         results.push({ id: item.id, status: 'completed', changes });
                     });
                 } catch (error) {
-                    query.run(`
+                    await query.run(`
                         UPDATE relisting_queue SET status = 'failed', error_message = ?
                         WHERE id = ? AND user_id = ?
                     `, [error.message, item.id, user.id]);
@@ -457,7 +457,7 @@ export async function relistingRouter(ctx) {
     const deleteQueueMatch = path.match(/^\/queue\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteQueueMatch) {
         try {
-            const result = query.run(
+            const result = await query.run(
                 'DELETE FROM relisting_queue WHERE id = ? AND user_id = ? AND status = ?',
                 [deleteQueueMatch[1], user.id, 'pending']
             );
@@ -482,7 +482,7 @@ export async function relistingRouter(ctx) {
         try {
             const { days = 30 } = queryParams;
 
-            const stats = query.get(`
+            const stats = await query.get(`
                 SELECT
                     COUNT(*) as total_relisted,
                     SUM(CASE WHEN sold = 1 THEN 1 ELSE 0 END) as sold_after_relist,
@@ -494,7 +494,7 @@ export async function relistingRouter(ctx) {
                 WHERE user_id = ? AND relisted_at >= datetime('now', '-' || ? || ' days')
             `, [user.id, days]);
 
-            const recentPerformance = query.all(`
+            const recentPerformance = await query.all(`
                 SELECT rp.*, i.title, i.brand
                 FROM relisting_performance rp
                 JOIN listings l ON rp.listing_id = l.id
@@ -532,7 +532,7 @@ export async function relistingRouter(ctx) {
         try {
             const { listing_id, rule_id } = body;
 
-            const listing = query.get(`
+            const listing = await query.get(`
                 SELECT l.*, i.title, i.brand, i.category, i.list_price, i.cost_price
                 FROM listings l
                 JOIN inventory i ON l.inventory_id = i.id
@@ -545,7 +545,7 @@ export async function relistingRouter(ctx) {
 
             let rule = null;
             if (rule_id) {
-                rule = query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [rule_id, user.id]);
+                rule = await query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [rule_id, user.id]);
             }
 
             const result = calculateNewPrice(listing, rule);
@@ -583,9 +583,9 @@ export async function relistingRouter(ctx) {
             // Get rule (or default)
             let rule;
             if (rule_id) {
-                rule = query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [rule_id, user.id]);
+                rule = await query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [rule_id, user.id]);
             } else {
-                rule = query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = 1', [user.id]);
+                rule = await query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = 1', [user.id]);
             }
 
             if (!rule) {
@@ -618,7 +618,7 @@ export async function relistingRouter(ctx) {
             }
 
             staleSQL += ' ORDER BY julianday(COALESCE(l.last_refreshed_at, l.listed_at, l.created_at)) ASC LIMIT 100';
-            const staleListings = query.all(staleSQL, staleParams);
+            const staleListings = await query.all(staleSQL, staleParams);
 
             const results = [];
             let applied = 0;
@@ -676,10 +676,10 @@ export async function relistingRouter(ctx) {
     // GET /api/relisting/schedule-preview - Preview what auto-schedule would do
     if (method === 'GET' && path === '/schedule-preview') {
         try {
-            const defaultRule = query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = 1', [user.id]);
+            const defaultRule = await query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = 1', [user.id]);
             const threshold = defaultRule ? (defaultRule.stale_days || 30) : 30;
 
-            const eligible = query.all(`
+            const eligible = await query.all(`
                 SELECT l.id, l.platform, l.price, i.title, i.list_price,
                        julianday('now') - julianday(COALESCE(l.last_refreshed_at, l.listed_at, l.created_at)) as days_stale
                 FROM listings l
