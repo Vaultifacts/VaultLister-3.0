@@ -484,7 +484,7 @@ CREATE TABLE IF NOT EXISTS oauth_accounts (
     provider_email TEXT,
     access_token TEXT,
     refresh_token TEXT,
-    token_expires_at TEXT,
+    token_expires_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -1647,7 +1647,7 @@ CREATE TABLE IF NOT EXISTS price_predictions (
     avg_days_to_sell INTEGER,
     seasonality_factor DOUBLE PRECISION DEFAULT 1.0,
     platform TEXT,
-    expires_at TEXT,
+    expires_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -3076,7 +3076,7 @@ CREATE TABLE IF NOT EXISTS google_tokens (
     email TEXT,
     oauth_token TEXT,
     oauth_refresh_token TEXT,
-    oauth_token_expires_at TEXT,
+    oauth_token_expires_at TIMESTAMPTZ,
     is_connected INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -3090,7 +3090,7 @@ CREATE TABLE IF NOT EXISTS google_oauth_states (
     scope TEXT NOT NULL,
     state_token TEXT NOT NULL UNIQUE,
     redirect_uri TEXT NOT NULL,
-    expires_at TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
