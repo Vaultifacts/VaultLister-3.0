@@ -28,7 +28,7 @@ export async function automationsRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
 
     // Check automation permission
-    const permission = checkTierPermission(user, 'automations');
+    const permission = await checkTierPermission(user, 'automations');
     if (!permission.allowed && method !== 'GET') {
         return { status: 403, data: { error: 'Automations not available on your plan' } };
     }

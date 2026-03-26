@@ -323,7 +323,7 @@ export async function inventoryRouter(ctx) {
     // POST /api/inventory - Create new item
     if (method === 'POST' && (path === '/' || path === '')) {
         // Check tier limits
-        const permission = checkTierPermission(user, 'listings');
+        const permission = await checkTierPermission(user, 'listings');
         if (!permission.allowed) {
             return {
                 status: 403,
@@ -594,7 +594,7 @@ export async function inventoryRouter(ctx) {
 
     // POST /api/inventory/bulk - Bulk operations
     if (method === 'POST' && path === '/bulk') {
-        const permission = checkTierPermission(user, 'bulkActions');
+        const permission = await checkTierPermission(user, 'bulkActions');
         if (!permission.allowed) {
             return { status: 403, data: { error: 'Bulk actions not available on your plan' } };
         }

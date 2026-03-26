@@ -1624,6 +1624,10 @@ async function gracefulShutdown(signal) {
     await analyticsService.shutdown();
     logger.info('Background services stopped.');
 
+    // Stop accepting new requests before closing dependencies
+    server.stop();
+    logger.info('Server closed.');
+
     // Close Redis connection
     await redisService.close();
     logger.info('Redis connection closed.');
@@ -1634,9 +1638,6 @@ async function gracefulShutdown(signal) {
 
     // Clean up PID file
     try { unlinkSync(PID_PATH); } catch {}
-
-    server.stop();
-    logger.info('Server closed.');
     log(`Server shutdown (${signal})`);
     process.exit(0);
 }

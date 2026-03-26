@@ -67,7 +67,7 @@ export async function shopsRouter(ctx) {
             }
 
             // Check tier limits
-            const permission = checkTierPermission(user, 'platforms');
+            const permission = await checkTierPermission(user, 'platforms');
             if (!permission.allowed) {
                 return {
                     status: 403,

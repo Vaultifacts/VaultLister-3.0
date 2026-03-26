@@ -31,7 +31,7 @@ export async function analyticsRouter(ctx) {
     // Feature flag gate (REM-17)
     if (requireFeature('FEATURE_ADVANCED_ANALYTICS', ctx)) return ctx.res;
 
-    const analyticsLevel = checkTierPermission(user, 'analytics').level;
+    const analyticsLevel = (await checkTierPermission(user, 'analytics')).level;
 
     // Tier-restricted endpoints
     const advancedEndpoints = ['/performance', '/platforms', '/inventory', '/trends', '/custom-metrics'];

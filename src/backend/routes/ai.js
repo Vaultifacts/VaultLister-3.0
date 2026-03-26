@@ -40,7 +40,7 @@ export async function aiRouter(ctx) {
     if (requireFeature('FEATURE_AI_LISTING', ctx)) return ctx.res;
 
     // Check AI permission
-    const permission = checkTierPermission(user, 'aiFeatures');
+    const permission = await checkTierPermission(user, 'aiFeatures');
     if (!permission.allowed) {
         return { status: 403, data: { error: 'AI features not available on your plan' } };
     }
