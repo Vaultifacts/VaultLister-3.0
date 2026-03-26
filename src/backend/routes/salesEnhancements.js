@@ -303,7 +303,7 @@ export async function salesEnhancementsRouter(ctx) {
                 return { status: 400, data: { error: 'No fields to update' } };
             }
 
-            updates.push('updated_at = datetime(\'now\')');
+            updates.push('updated_at = NOW()');
             params.push(buyerId, user.id);
 
             await query.run(`

@@ -819,7 +819,7 @@ export async function sizeChartsRouter(ctx) {
  * Seed brand size guide data
  * This function should be called during initialization or manually via admin endpoint
  */
-export function seedBrandSizeGuides() {
+export async function seedBrandSizeGuides() {
     try {
         // Check if already seeded
         const existing = await query.get(`SELECT COUNT(*) as count FROM brand_size_guides`);
@@ -881,15 +881,7 @@ export function seedBrandSizeGuides() {
         ];
 
         // Insert all guides
-        const insertStmt = await query.exec(`
-            INSERT INTO brand_size_guides (
-                id, brand, garment_type, size_label, us_size, uk_size, eu_size, jp_size, cn_size,
-                it_size, fr_size, au_size, chest_cm, waist_cm, hips_cm, length_cm,
-                shoulder_cm, sleeve_cm, inseam_cm, foot_length_cm
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `);
-
-        guides.forEach(guide => {
+        for (const guide of guides) {
             await query.run(
                 `INSERT INTO brand_size_guides (
                     id, brand, garment_type, size_label, us_size, uk_size, eu_size, jp_size, cn_size,
@@ -919,7 +911,7 @@ export function seedBrandSizeGuides() {
                     guide.foot_length_cm || null
                 ]
             );
-        });
+        }
 
         logger.info(`✓ Seeded ${guides.length} brand size guides`);
     } catch (error) {

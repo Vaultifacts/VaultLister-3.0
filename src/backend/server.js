@@ -471,12 +471,9 @@ const apiRoutes = {
         // Detailed health check — unauthenticated, safe for external uptime monitors
         const { query: dbQuery } = await import('./db/database.js');
         let dbConnected = false;
-        let walMode = false;
         try {
-            dbQuery.get('SELECT 1');
+            await dbQuery.get('SELECT 1');
             dbConnected = true;
-            const row = dbQuery.get('PRAGMA journal_mode');
-            walMode = row && Object.values(row)[0] === 'wal';
         } catch (_) {}
 
         const mem = process.memoryUsage();
@@ -490,7 +487,7 @@ const apiRoutes = {
                     heapUsed: Math.round(mem.heapUsed / (1024 * 1024)),
                     heapTotal: Math.round(mem.heapTotal / (1024 * 1024))
                 },
-                db: { connected: dbConnected, walMode },
+                db: { connected: dbConnected },
                 timestamp: new Date().toISOString()
             }
         };

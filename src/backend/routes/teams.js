@@ -277,7 +277,7 @@ export async function teamsRouter(ctx) {
                 return { status: 400, data: { error: 'No updates provided' } };
             }
 
-            updates.push('updated_at = datetime("now")');
+            updates.push('updated_at = NOW()');
             params.push(teamId);
 
             await query.run(`UPDATE teams SET ${updates.join(', ')} WHERE id = ?`, params);

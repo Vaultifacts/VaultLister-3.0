@@ -1484,7 +1484,7 @@ export async function automationsRouter(ctx) {
 
             const pending = await query.get('SELECT COUNT(*) as count FROM task_queue WHERE status = ?', ['pending']);
             const processing = await query.get('SELECT COUNT(*) as count FROM task_queue WHERE status = ?', ['processing']);
-            const failed = await query.get("SELECT COUNT(*) as count FROM task_queue WHERE status = 'failed' AND datetime(created_at) > NOW() - INTERVAL '24 hours'");
+            const failed = await query.get("SELECT COUNT(*) as count FROM task_queue WHERE status = 'failed' AND created_at > NOW() - INTERVAL '24 hours'");
 
             const recentRuns = await query.get(`
                 SELECT
@@ -1493,7 +1493,7 @@ export async function automationsRouter(ctx) {
                     SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
                     SUM(CASE WHEN status = 'partial' THEN 1 ELSE 0 END) as partial
                 FROM automation_runs
-                WHERE user_id = ? AND datetime(started_at) > NOW() - INTERVAL '24 hours'
+                WHERE user_id = ? AND started_at > NOW() - INTERVAL '24 hours'
             `, [user.id]);
 
             const enabledRules = await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = 1', [user.id]);

@@ -113,7 +113,7 @@ async function processQueue() {
         const pendingTasks = await query.all(`
             SELECT * FROM task_queue
             WHERE status = 'pending'
-            AND datetime(scheduled_at) <= NOW()
+            AND scheduled_at <= NOW()
             ORDER BY priority DESC, scheduled_at ASC
             LIMIT ?
         `, [availableSlots]);
@@ -1321,7 +1321,7 @@ async function executePoshmarkPublishTask(payload) {
 
         if (result.success) {
             await query.run(
-                'UPDATE listings SET status = ?, platform_url = ?, listed_at = datetime(\'now\'), updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                'UPDATE listings SET status = ?, platform_url = ?, listed_at = NOW(), updated_at = CURRENT_TIMESTAMP WHERE id = ?',
                 ['active', result.listingUrl, listingId]
             );
             auditLog('poshmark', 'publish_success', { listingId, listingUrl: result.listingUrl, userId });

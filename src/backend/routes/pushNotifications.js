@@ -268,7 +268,7 @@ export async function pushNotificationsRouter(ctx) {
                         payload
                     );
                     await query.run(
-                        'UPDATE push_subscriptions SET last_used_at = datetime(\'now\') WHERE id = ?',
+                        'UPDATE push_subscriptions SET last_used_at = NOW() WHERE id = ?',
                         [sub.id]
                     );
                     sent++;
@@ -276,7 +276,7 @@ export async function pushNotificationsRouter(ctx) {
                     logger.error('[PushNotifications] Delivery failed', targetUserId, { detail: pushError.message });
                     if (pushError.statusCode === 410 || pushError.statusCode === 404) {
                         await query.run(
-                            'UPDATE push_subscriptions SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ?',
+                            'UPDATE push_subscriptions SET is_active = 0, updated_at = NOW() WHERE id = ?',
                             [sub.id]
                         );
                     }
@@ -349,7 +349,7 @@ export async function pushNotificationsRouter(ctx) {
                             payload
                         );
                         await query.run(
-                            'UPDATE push_subscriptions SET last_used_at = datetime(\'now\') WHERE id = ?',
+                            'UPDATE push_subscriptions SET last_used_at = NOW() WHERE id = ?',
                             [sub.id]
                         );
                         userSent++;
@@ -357,7 +357,7 @@ export async function pushNotificationsRouter(ctx) {
                         logger.error('[PushNotifications] Batch delivery failed', userId, { detail: pushError.message });
                         if (pushError.statusCode === 410 || pushError.statusCode === 404) {
                             await query.run(
-                                'UPDATE push_subscriptions SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ?',
+                                'UPDATE push_subscriptions SET is_active = 0, updated_at = NOW() WHERE id = ?',
                                 [sub.id]
                             );
                         }

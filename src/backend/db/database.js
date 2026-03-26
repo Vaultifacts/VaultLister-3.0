@@ -99,29 +99,45 @@ export const query = {
     },
 
     // Transaction helper — returns a promise (callers: await query.transaction(fn))
-    async transaction(fn) {
-        return await sql.begin(async (tx) => {
-            const txQuery = {
-                async get(s, p = []) {
-                    const paramArray = Array.isArray(p) ? p : [p];
-                    const r = await tx.unsafe(convertPlaceholders(s), paramArray);
-                    return r.length > 0 ? r[0] : null;
-                },
-                async all(s, p = []) {
-                    const paramArray = Array.isArray(p) ? p : [p];
-                    return await tx.unsafe(convertPlaceholders(s), paramArray);
-                },
-                async run(s, p = []) {
-                    const paramArray = Array.isArray(p) ? p : [p];
-                    const r = await tx.unsafe(convertPlaceholders(s), paramArray);
-                    return { changes: r.count, lastInsertRowid: 0 };
-                },
-                async exec(s) {
-                    await tx.unsafe(s);
-                },
-            };
-            return await fn(txQuery);
-        });
+    // Retries on PostgreSQL deadlock (40P01) and serialization failure (40001)
+    async transaction(fn, { maxRetries = 3 } = {}) {
+        let attempt = 0;
+        while (true) {
+            try {
+                return await sql.begin(async (tx) => {
+                    const txQuery = {
+                        async get(s, p = []) {
+                            const paramArray = Array.isArray(p) ? p : [p];
+                            const r = await tx.unsafe(convertPlaceholders(s), paramArray);
+                            return r.length > 0 ? r[0] : null;
+                        },
+                        async all(s, p = []) {
+                            const paramArray = Array.isArray(p) ? p : [p];
+                            return await tx.unsafe(convertPlaceholders(s), paramArray);
+                        },
+                        async run(s, p = []) {
+                            const paramArray = Array.isArray(p) ? p : [p];
+                            const r = await tx.unsafe(convertPlaceholders(s), paramArray);
+                            return { changes: r.count, lastInsertRowid: 0 };
+                        },
+                        async exec(s) {
+                            await tx.unsafe(s);
+                        },
+                    };
+                    return await fn(txQuery);
+                });
+            } catch (err) {
+                // Retry on deadlock (40P01) or serialization failure (40001)
+                const retryable = err.code === '40P01' || err.code === '40001';
+                if (retryable && attempt < maxRetries) {
+                    attempt++;
+                    const delay = attempt * 50;
+                    await new Promise(r => setTimeout(r, delay));
+                    continue;
+                }
+                throw err;
+            }
+        }
     },
 
     // Full-text search on inventory — Phase 1 stub (ILIKE fallback; FTS5->tsvector in Phase 3)

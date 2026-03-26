@@ -55,7 +55,7 @@ async function checkAndQueueDueShops() {
                   AND sync_status != 'syncing'
                   AND (
                       last_sync_at IS NULL
-                      OR datetime(last_sync_at, '+' || auto_sync_interval_minutes || ' minutes') < NOW()
+                      OR last_sync_at + (auto_sync_interval_minutes * INTERVAL '1 minute') < NOW()
                   )
             `);
         } catch (err) {

@@ -604,7 +604,7 @@ export async function authRouter(ctx) {
 
             // Check session exists and is still valid
             const session = await query.get(
-                'SELECT * FROM sessions WHERE refresh_token = ? AND is_valid = 1 AND expires_at > datetime("now")',
+                'SELECT * FROM sessions WHERE refresh_token = ? AND is_valid = 1 AND expires_at > NOW()',
                 [refreshToken]
             );
 
@@ -934,11 +934,11 @@ export async function authRouter(ctx) {
 
             const newHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-            await query.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, record.user_id]);
-            await query.run('UPDATE password_resets SET used_at = datetime(\'now\') WHERE token = ?', [token]);
-
-            // Invalidate all existing sessions for security
-            await query.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ?', [record.user_id]);
+            await query.transaction(async (tx) => {
+                await tx.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, record.user_id]);
+                await tx.run('UPDATE password_resets SET used_at = NOW() WHERE token = ?', [token]);
+                await tx.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ?', [record.user_id]);
+            });
 
             logger.info(`[auth] Password reset completed for ${maskEmail(record.email)}`);
 
@@ -978,8 +978,10 @@ export async function authRouter(ctx) {
                 return { status: 200, data: { message: 'Your email is already verified. You can log in.' } };
             }
 
-            await query.run('UPDATE users SET email_verified = 1 WHERE id = ?', [record.user_id]);
-            await query.run('UPDATE email_verifications SET used_at = datetime(\'now\') WHERE token = ?', [token]);
+            await query.transaction(async (tx) => {
+                await tx.run('UPDATE users SET email_verified = 1 WHERE id = ?', [record.user_id]);
+                await tx.run('UPDATE email_verifications SET used_at = NOW() WHERE token = ?', [token]);
+            });
 
             return { status: 200, data: { message: 'Email verified successfully! You can now log in.' } };
         } catch (e) {

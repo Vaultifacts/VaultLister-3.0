@@ -22,7 +22,7 @@ function hashPasswordSync(password) {
     }
 }
 
-export function seedDemoData() {
+export async function seedDemoData() {
     try {
         // Check if demo user exists, create if not
         let demoUser = await query.get('SELECT id FROM users WHERE email = ?', [DEMO_USER_EMAIL]);

@@ -159,7 +159,7 @@ async function provisionLocalUserToken({ email, password, username, fullName }, 
     const refreshToken = mintLocalRefreshToken(user);
     query.run(`
         INSERT INTO sessions (id, user_id, refresh_token, device_info, ip_address, expires_at)
-        VALUES (?, ?, ?, ?, ?, datetime('now', '+7 days'))
+        VALUES (?, ?, ?, ?, ?, NOW() + INTERVAL '7 days')
     `, [uuidv4(), user.id, refreshToken, 'Test Local Provisioning', '127.0.0.1']);
 
     // In local test mode, prefer an API-issued access token so it always matches

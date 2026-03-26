@@ -25,7 +25,7 @@ beforeAll(() => {
     `);
     // Verify the table was actually created (mocked query.all returns [])
     const tables = query.all(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+      "SELECT tablename AS name FROM pg_tables WHERE schemaname='public' AND tablename=?",
       [TEST_TABLE]
     );
     if (!tables || !Array.isArray(tables) || tables.length === 0) {

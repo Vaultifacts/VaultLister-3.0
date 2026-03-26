@@ -28,7 +28,7 @@ beforeAll(() => {
     `);
     // Verify the table was actually created (detect mock contamination)
     const tables = query.all(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+      "SELECT tablename AS name FROM pg_tables WHERE schemaname='public' AND tablename=?",
       [UNIT_TABLE]
     );
     if (!tables || !Array.isArray(tables) || tables.length === 0) {
@@ -180,7 +180,7 @@ describe('query.exec', () => {
   it('executes raw DDL statements', () => {
     query.exec(`CREATE TABLE IF NOT EXISTS ${UNIT_TABLE_2} (id TEXT PRIMARY KEY, data TEXT)`);
     const tables = query.all(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+      "SELECT tablename AS name FROM pg_tables WHERE schemaname='public' AND tablename=?",
       [UNIT_TABLE_2]
     );
     expect(tables.length).toBe(1);
@@ -583,7 +583,7 @@ describe('cleanupExpiredData', () => {
     try {
       // Ensure sessions table exists
       const tableExists = query.get(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='sessions'",
+        "SELECT tablename AS name FROM pg_tables WHERE schemaname='public' AND tablename='sessions'",
         []
       );
       if (!tableExists) return; // skip if table doesn't exist in test DB
@@ -592,7 +592,7 @@ describe('cleanupExpiredData', () => {
       const expiredId = '__test_expired_session__';
       try {
         query.run(
-          `INSERT INTO sessions (id, user_id, refresh_token, expires_at) VALUES (?, ?, ?, datetime('now', '-1 day'))`,
+          `INSERT INTO sessions (id, user_id, refresh_token, expires_at) VALUES (?, ?, ?, NOW() - INTERVAL '1 day')`,
           [expiredId, '__test_user__', '__test_token_cleanup__']
         );
       } catch {
@@ -639,7 +639,7 @@ describe('initializeDatabase', () => {
   it('creates the migrations table', () => {
     initializeDatabase();
     const table = query.get(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='migrations'",
+      "SELECT tablename AS name FROM pg_tables WHERE schemaname='public' AND tablename='migrations'",
       []
     );
     expect(table).toBeTruthy();
@@ -657,7 +657,7 @@ describe('initializeDatabase', () => {
     const coreTableNames = ['users', 'sessions', 'shops', 'inventory'];
     for (const tableName of coreTableNames) {
       const table = query.get(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+        "SELECT tablename AS name FROM pg_tables WHERE schemaname='public' AND tablename=?",
         [tableName]
       );
       expect(table).toBeTruthy();

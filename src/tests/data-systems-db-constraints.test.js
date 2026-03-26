@@ -24,7 +24,7 @@ function makeUser() {
 beforeAll(() => {
     try {
         if (typeof query.exec !== 'function') { isMocked = true; return; }
-        const tables = query.all("SELECT name FROM sqlite_master WHERE type='table' AND name='users'");
+        const tables = query.all("SELECT tablename AS name FROM pg_tables WHERE schemaname='public' AND tablename='users'");
         if (!tables || tables.length === 0) { isMocked = true; return; }
 
         // Apply migrations 096 + 097 if not yet applied (these fix bugs tested below).
@@ -40,7 +40,7 @@ beforeAll(() => {
                 SELECT inventory_id FROM listings WHERE inventory_id IS NOT NULL GROUP BY inventory_id, platform HAVING COUNT(*) > 1
             )`);
             query.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_listings_inv_platform ON listings(inventory_id, platform)');
-            query.run("INSERT OR IGNORE INTO migrations (name) VALUES ('096_add_listings_unique_constraint.sql')");
+            query.run("INSERT INTO migrations (name) VALUES ('096_add_listings_unique_constraint.sql') ON CONFLICT DO NOTHING");
         }
 
         if (!appliedNames.has('097_fix_fts5_delete_trigger.sql')) {
@@ -57,7 +57,7 @@ beforeAll(() => {
                 VALUES (new.id, new.title, new.description, new.brand, new.tags);
             END`);
             query.exec("INSERT INTO inventory_fts(inventory_fts) VALUES('rebuild')");
-            query.run("INSERT OR IGNORE INTO migrations (name) VALUES ('097_fix_fts5_delete_trigger.sql')");
+            query.run("INSERT INTO migrations (name) VALUES ('097_fix_fts5_delete_trigger.sql') ON CONFLICT DO NOTHING");
         }
     } catch { isMocked = true; }
 });

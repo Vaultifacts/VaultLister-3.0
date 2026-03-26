@@ -249,8 +249,8 @@ export async function billingRouter(ctx) {
                 return { status: 400, data: { error: 'You are already on this plan' } };
             }
 
-            await query.run('UPDATE users SET subscription_tier = ?, updated_at = datetime(?) WHERE id = ?',
-                [planId, new Date().toISOString(), user.id]);
+            await query.run('UPDATE users SET subscription_tier = ?, updated_at = NOW() WHERE id = ?',
+                [planId, user.id]);
 
             logger.info(`[Billing] User ${user.id} changed plan: ${currentTier} → ${planId}`);
 
@@ -277,8 +277,8 @@ export async function billingRouter(ctx) {
                 return { status: 400, data: { error: 'You are already on this plan' } };
             }
 
-            await query.run('UPDATE users SET subscription_tier = ?, updated_at = datetime(?) WHERE id = ?',
-                [planId, new Date().toISOString(), user.id]);
+            await query.run('UPDATE users SET subscription_tier = ?, updated_at = NOW() WHERE id = ?',
+                [planId, user.id]);
 
             logger.info(`[Billing] User ${user.id} selected plan: ${currentTier} → ${planId}`);
 
@@ -334,7 +334,7 @@ export async function billingRouter(ctx) {
             await cancelSubscription(dbUser.stripe_subscription_id);
 
             await query.run(
-                'UPDATE users SET subscription_tier = \'free\', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = datetime(\'now\') WHERE id = ?',
+                'UPDATE users SET subscription_tier = \'free\', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = NOW() WHERE id = ?',
                 [user.id]
             );
 

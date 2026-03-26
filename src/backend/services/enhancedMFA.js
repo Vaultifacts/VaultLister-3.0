@@ -435,7 +435,7 @@ const enhancedMFA = {
             return { success: false, message: 'Code expired' };
         }
 
-        await query.run('UPDATE sms_codes SET used_at = datetime("now") WHERE id = ?', [smsCode.id]);
+        await query.run('UPDATE sms_codes SET used_at = NOW() WHERE id = ?', [smsCode.id]);
 
         return { success: true };
     },

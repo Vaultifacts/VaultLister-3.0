@@ -3,7 +3,7 @@
 
 import { query } from '../database.js';
 
-export function seedHelpContent() {
+export async function seedHelpContent() {
     console.log('Seeding help content...');
 
     // Video Tutorials
@@ -69,7 +69,8 @@ export function seedHelpContent() {
         try {
             await query.run(
                 `INSERT INTO help_videos (id, title, description, video_url, category, duration, thumbnail_url, view_count, position)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 ON CONFLICT DO NOTHING`,
                 [video.id, video.title, video.description, video.video_url, video.category, video.duration, video.thumbnail_url, video.view_count, video.position]
             );
         } catch (error) {
@@ -155,7 +156,8 @@ export function seedHelpContent() {
         try {
             await query.run(
                 `INSERT INTO help_faq (id, question, answer, category, position)
-                 VALUES (?, ?, ?, ?, ?)`,
+                 VALUES (?, ?, ?, ?, ?)
+                 ON CONFLICT DO NOTHING`,
                 [faq.id, faq.question, faq.answer, faq.category, faq.position]
             );
         } catch (error) {
@@ -284,7 +286,8 @@ If OAuth isn't working, you can use manual connection with API keys instead.`,
         try {
             await query.run(
                 `INSERT INTO help_articles (id, title, slug, content, category, tags, is_published)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                 VALUES (?, ?, ?, ?, ?, ?, ?)
+                 ON CONFLICT DO NOTHING`,
                 [article.id, article.title, article.slug, article.content, article.category, article.tags, article.is_published]
             );
         } catch (error) {

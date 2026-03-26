@@ -179,7 +179,7 @@ const emailMarketing = {
         for (const email of pendingEmails || []) {
             try {
                 await this.sendEmail(email.user_id, email.template_key, JSON.parse(email.data));
-                await query.run('UPDATE email_queue SET status = ?, sent_at = datetime("now") WHERE id = ?', ['sent', email.id]);
+                await query.run('UPDATE email_queue SET status = ?, sent_at = NOW() WHERE id = ?', ['sent', email.id]);
             } catch (error) {
                 await query.run('UPDATE email_queue SET status = ?, error = ? WHERE id = ?', ['failed', error.message, email.id]);
             }

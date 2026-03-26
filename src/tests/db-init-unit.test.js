@@ -566,8 +566,8 @@ describe('seeds/helpContent.js — source structure', () => {
     expect(publishedMatches.length).toBeGreaterThanOrEqual(4);
   });
 
-  test('inserts use INSERT OR IGNORE to handle re-runs', () => {
-    expect(source).toContain('INSERT OR IGNORE');
+  test('inserts use ON CONFLICT DO NOTHING to handle re-runs', () => {
+    expect(source).toContain('ON CONFLICT DO NOTHING');
   });
 
   test('logs completion message', () => {

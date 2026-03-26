@@ -164,7 +164,7 @@ export async function enableMFA(userId, setupToken, totpCode) {
     // In production, you might store it temporarily in Redis
 
     // Mark token as used
-    await query.run('UPDATE verification_tokens SET used_at = datetime(\'now\') WHERE id = ?', [tokenRecord.id]);
+    await query.run('UPDATE verification_tokens SET used_at = NOW() WHERE id = ?', [tokenRecord.id]);
 
     // Generate backup codes
     const { codes, hashedCodes } = generateBackupCodes();

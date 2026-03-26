@@ -381,7 +381,7 @@ export async function outgoingWebhooksRouter(ctx) {
         if (is_active !== undefined) { updates.push('is_active = ?'); values.push(is_active ? 1 : 0); }
 
         if (updates.length > 0) {
-            updates.push('updated_at = datetime("now")');
+            updates.push('updated_at = NOW()');
             values.push(webhookId);
             await query.run(`UPDATE user_webhooks SET ${updates.join(', ')} WHERE id = ?`, values);
         }
@@ -440,7 +440,7 @@ export async function outgoingWebhooksRouter(ctx) {
         }
 
         const newSecret = crypto.randomBytes(32).toString('hex');
-        await query.run('UPDATE user_webhooks SET secret = ?, updated_at = datetime("now") WHERE id = ?', [newSecret, webhookId]);
+        await query.run('UPDATE user_webhooks SET secret = ?, updated_at = NOW() WHERE id = ?', [newSecret, webhookId]);
 
         return {
             status: 200,

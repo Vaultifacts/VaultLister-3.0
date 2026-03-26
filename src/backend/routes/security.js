@@ -299,7 +299,7 @@ export async function securityRouter(ctx) {
             }
 
             // Mark setup token as used
-            await query.run('UPDATE verification_tokens SET used_at = datetime(\'now\') WHERE id = ?', [tokenRecord.id]);
+            await query.run('UPDATE verification_tokens SET used_at = NOW() WHERE id = ?', [tokenRecord.id]);
 
             // Send notification email
             const userData = await query.get('SELECT id, email, username, full_name FROM users WHERE id = ?', [user.id]);

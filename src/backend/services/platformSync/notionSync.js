@@ -909,7 +909,7 @@ export function startSyncScheduler() {
                 WHERE sync_enabled = 1
                 AND (
                     last_sync_at IS NULL
-                    OR datetime(last_sync_at, '+' || sync_interval_minutes || ' minutes') < NOW()
+                    OR last_sync_at + (sync_interval_minutes * INTERVAL '1 minute') < NOW()
                 )
             `);
 

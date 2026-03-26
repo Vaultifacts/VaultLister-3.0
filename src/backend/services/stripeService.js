@@ -25,7 +25,7 @@ export const TIER_FOR_PRICE = Object.fromEntries(
 export async function createCustomer(userId, email) {
     try {
         const customer = await requireStripe().customers.create({ email, metadata: { vaultlister_user_id: userId } });
-        await query.run('UPDATE users SET stripe_customer_id = ?, updated_at = datetime(\'now\') WHERE id = ?',
+        await query.run('UPDATE users SET stripe_customer_id = ?, updated_at = NOW() WHERE id = ?',
             [customer.id, userId]);
         logger.info(`[Stripe] Created customer ${customer.id} for user ${userId}`);
         return customer;

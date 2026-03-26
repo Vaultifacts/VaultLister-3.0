@@ -125,35 +125,28 @@ export async function roadmapRouter(ctx) {
                 };
             }
 
-            // Check if user already voted
-            const existingVote = await query.get(
-                `SELECT id FROM roadmap_votes WHERE feature_id = ? AND user_id = ?`,
-                [featureId, user.id]
-            );
-
-            if (existingVote) {
-                // Remove vote (toggle)
-                await query.run(`DELETE FROM roadmap_votes WHERE id = ? AND user_id = ?`, [existingVote.id, user.id]);
-                await query.run(`UPDATE roadmap_features SET votes = votes - 1 WHERE id = ?`, [featureId]);
-
-                return {
-                    status: 200,
-                    data: { message: 'Vote removed', voted: false, votes: feature.votes - 1 }
-                };
-            } else {
-                // Add vote
-                const voteId = nanoid();
-                await query.run(
-                    `INSERT INTO roadmap_votes (id, feature_id, user_id) VALUES (?, ?, ?)`,
-                    [voteId, featureId, user.id]
+            const result = await query.transaction(async (tx) => {
+                const existingVote = await tx.get(
+                    `SELECT id FROM roadmap_votes WHERE feature_id = ? AND user_id = ?`,
+                    [featureId, user.id]
                 );
-                await query.run(`UPDATE roadmap_features SET votes = votes + 1 WHERE id = ?`, [featureId]);
 
-                return {
-                    status: 200,
-                    data: { message: 'Vote added', voted: true, votes: feature.votes + 1 }
-                };
-            }
+                if (existingVote) {
+                    await tx.run(`DELETE FROM roadmap_votes WHERE id = ? AND user_id = ?`, [existingVote.id, user.id]);
+                    await tx.run(`UPDATE roadmap_features SET votes = votes - 1 WHERE id = ?`, [featureId]);
+                    return { message: 'Vote removed', voted: false, votes: feature.votes - 1 };
+                } else {
+                    const voteId = nanoid();
+                    await tx.run(
+                        `INSERT INTO roadmap_votes (id, feature_id, user_id) VALUES (?, ?, ?)`,
+                        [voteId, featureId, user.id]
+                    );
+                    await tx.run(`UPDATE roadmap_features SET votes = votes + 1 WHERE id = ?`, [featureId]);
+                    return { message: 'Vote added', voted: true, votes: feature.votes + 1 };
+                }
+            });
+
+            return { status: 200, data: result };
         } catch (error) {
             logger.error('[Roadmap] Error voting for feature', user?.id, { detail: error?.message });
             return {

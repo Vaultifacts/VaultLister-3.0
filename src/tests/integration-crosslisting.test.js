@@ -15,7 +15,7 @@ let userId;
 beforeAll(() => {
     try {
         if (typeof query.exec !== 'function') { isMocked = true; return; }
-        const tables = query.all("SELECT name FROM sqlite_master WHERE type='table' AND name='listings'");
+        const tables = query.all("SELECT tablename AS name FROM pg_tables WHERE schemaname='public' AND tablename='listings'");
         if (!tables || tables.length === 0) { isMocked = true; return; }
 
         userId = uuidv4();

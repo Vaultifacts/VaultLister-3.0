@@ -93,7 +93,7 @@ export async function webhooksRouter(ctx) {
                         // We only have the subscription ID here; price lookup happens on subscription.updated
                         // For now, mark as starter (lowest paid) — subscription.updated fires immediately after and sets the real tier
                         await query.run(
-                            'UPDATE users SET stripe_subscription_id = ?, updated_at = datetime(\'now\') WHERE id = ?',
+                            'UPDATE users SET stripe_subscription_id = ?, updated_at = NOW() WHERE id = ?',
                             [subObj, vaultUserId]
                         );
                         logger.info(`[Webhooks/Stripe] checkout.session.completed: user ${vaultUserId} subscription ${subObj}`);
@@ -109,7 +109,7 @@ export async function webhooksRouter(ctx) {
                         const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [sub.customer]);
                         if (dbUser) {
                             await query.run(
-                                'UPDATE users SET subscription_tier = ?, stripe_subscription_id = ?, updated_at = datetime(\'now\') WHERE id = ?',
+                                'UPDATE users SET subscription_tier = ?, stripe_subscription_id = ?, updated_at = NOW() WHERE id = ?',
                                 [tier, sub.id, dbUser.id]
                             );
                             logger.info(`[Webhooks/Stripe] subscription.updated: user ${dbUser.id} → tier ${tier}`);
@@ -124,7 +124,7 @@ export async function webhooksRouter(ctx) {
                         const dbUser = await query.get('SELECT id FROM users WHERE stripe_customer_id = ?', [sub.customer]);
                         if (dbUser) {
                             await query.run(
-                                'UPDATE users SET subscription_tier = \'free\', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = datetime(\'now\') WHERE id = ?',
+                                'UPDATE users SET subscription_tier = \'free\', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = NOW() WHERE id = ?',
                                 [dbUser.id]
                             );
                             logger.info(`[Webhooks/Stripe] subscription.deleted: user ${dbUser.id} downgraded to free`);
@@ -141,7 +141,7 @@ export async function webhooksRouter(ctx) {
                             // Insert notification for the user
                             try {
                                 await query.run(
-                                    'INSERT INTO notifications (id, user_id, type, title, message, is_read, created_at) VALUES (?, ?, \'billing\', \'Payment Failed\', \'Your subscription payment failed. Please update your payment method to keep your plan active.\', 0, datetime(\'now\'))',
+                                    'INSERT INTO notifications (id, user_id, type, title, message, is_read, created_at) VALUES (?, ?, \'billing\', \'Payment Failed\', \'Your subscription payment failed. Please update your payment method to keep your plan active.\', 0, NOW())',
                                     [uuidv4(), dbUser.id]
                                 );
                             } catch {
@@ -160,7 +160,7 @@ export async function webhooksRouter(ctx) {
             // Store event for audit trail — use event.id as row ID for idempotency
             try {
                 await query.run(
-                    'INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at) VALUES (?, ?, \'stripe\', ?, ?, \'processed\', datetime(\'now\'))',
+                    'INSERT INTO webhook_events (id, user_id, source, event_type, payload, status, created_at) VALUES (?, ?, \'stripe\', ?, ?, \'processed\', NOW())',
                     [event.id, STRIPE_SYSTEM_USER, event.type, JSON.stringify(event.data.object)]
                 );
             } catch {

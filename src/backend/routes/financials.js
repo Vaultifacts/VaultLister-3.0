@@ -1195,7 +1195,7 @@ export async function financialsRouter(ctx) {
             `, [txId, user.id, template.description, template.amount, template.account_id, template.category, templateId]);
 
             // Update last_executed
-            await query.run('UPDATE recurring_transaction_templates SET last_executed = datetime(\'now\') WHERE id = ?', [templateId]);
+            await query.run('UPDATE recurring_transaction_templates SET last_executed = NOW() WHERE id = ?', [templateId]);
 
             const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ?', [txId]);
             return { status: 201, data: { transaction, message: 'Recurring transaction created' } };

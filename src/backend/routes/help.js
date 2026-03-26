@@ -599,7 +599,7 @@ export async function helpRouter(ctx) {
                 params.push(newStatus);
 
                 if (newStatus === 'resolved' || newStatus === 'closed') {
-                    updates.push('resolved_at = datetime("now")');
+                    updates.push('resolved_at = NOW()');
                 }
             }
 
@@ -615,7 +615,7 @@ export async function helpRouter(ctx) {
                 };
             }
 
-            updates.push('updated_at = datetime("now")');
+            updates.push('updated_at = NOW()');
             params.push(ticketId);
 
             await query.run(

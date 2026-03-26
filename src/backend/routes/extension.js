@@ -208,7 +208,7 @@ export async function extensionRouter(ctx) {
                 params.push(targetPrice);
             }
 
-            updates.push('updated_at = datetime("now")');
+            updates.push('updated_at = NOW()');
             params.push(trackingId, user.id);
 
             await query.run(
@@ -600,7 +600,7 @@ export async function extensionRouter(ctx) {
                 params.push(targetPrice);
             }
 
-            updates.push('last_checked_at = datetime("now")');
+            updates.push('last_checked_at = NOW()');
 
             params.push(trackingId, user.id);
 
