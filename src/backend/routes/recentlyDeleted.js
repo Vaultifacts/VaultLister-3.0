@@ -44,7 +44,7 @@ export async function recentlyDeletedRouter(ctx) {
             }
 
             if (search) {
-                sql += ` AND original_data LIKE ? ESCAPE '\\'`;
+                sql += ` AND original_data ILIKE ? ESCAPE '\\'`;
                 params.push(`%${escapeLike(search)}%`);
             }
 

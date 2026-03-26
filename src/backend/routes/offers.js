@@ -40,7 +40,7 @@ export async function offersRouter(ctx) {
         sql += ' ORDER BY o.created_at DESC LIMIT ? OFFSET ?';
         params.push(Math.min(parseInt(limit) || 50, 200), parseInt(offset) || 0);
 
-        const offers = query.all(sql, params);
+        const offers = await query.all(sql, params);
 
         offers.forEach(offer => {
             offer.item_images = safeJsonParse(offer.item_images, []);
@@ -64,8 +64,8 @@ export async function offersRouter(ctx) {
             countParams.push(status);
         }
 
-        const total = query.get(countSql, countParams)?.count || 0;
-        const pending = query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0;
+        const total = await query.get(countSql, countParams)?.count || 0;
+        const pending = await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0;
 
         return { status: 200, data: { offers, total, pending } };
     }
@@ -73,7 +73,7 @@ export async function offersRouter(ctx) {
     // GET /api/offers/:id - Get single offer
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
         const id = path.slice(1);
-        const offer = query.get(`
+        const offer = await query.get(`
             SELECT o.*, l.title as listing_title, l.price as listing_price, l.description,
                    i.images as item_images, i.brand, i.category
             FROM offers o
@@ -97,7 +97,7 @@ export async function offersRouter(ctx) {
         const id = path.split('/')[1];
 
         // Check offer exists first
-        const existingOffer = query.get('SELECT id, status FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
+        const existingOffer = await query.get('SELECT id, status FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existingOffer) {
             return { status: 404, data: { error: 'Offer not found' } };
         }
@@ -106,7 +106,7 @@ export async function offersRouter(ctx) {
         }
 
         // Atomic UPDATE with WHERE status = 'pending' to prevent TOCTOU race condition
-        const result = query.run(
+        const result = await query.run(
             'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status = ?',
             ['accepted', id, user.id, 'pending']
         );
@@ -115,7 +115,7 @@ export async function offersRouter(ctx) {
             return { status: 400, data: { error: 'Offer has already been responded to' } };
         }
 
-        const offer = query.get(`
+        const offer = await query.get(`
             SELECT o.*, l.id as listing_id, l.price as listing_price
             FROM offers o
             LEFT JOIN listings l ON o.listing_id = l.id
@@ -124,14 +124,14 @@ export async function offersRouter(ctx) {
 
         // Best-effort sale creation — wrapped in transaction for atomicity
         try {
-            query.transaction(() => {
+            await query.transaction(() => {
                 const saleId = uuidv4();
-                query.run(
+                await query.run(
                     `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, tax_amount, net_profit, status, created_at)
                      VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, 'confirmed', CURRENT_TIMESTAMP)`,
                     [saleId, user.id, offer.listing_id, offer.platform, offer.buyer_username, offer.offer_amount, offer.offer_amount]
                 );
-                query.run(
+                await query.run(
                     `UPDATE listings SET status = 'sold', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status != 'sold'`,
                     [offer.listing_id]
                 );
@@ -142,7 +142,7 @@ export async function offersRouter(ctx) {
 
         // Queue automation task to accept on platform
         const taskId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
         `, [taskId, user.id, 'accept_offer', JSON.stringify({ offerId: id, platform: offer.platform }), 'pending']);
@@ -157,7 +157,7 @@ export async function offersRouter(ctx) {
         const id = path.split('/')[1];
 
         // Check offer exists first
-        const existingOffer = query.get('SELECT id, status FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
+        const existingOffer = await query.get('SELECT id, status FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existingOffer) {
             return { status: 404, data: { error: 'Offer not found' } };
         }
@@ -166,7 +166,7 @@ export async function offersRouter(ctx) {
         }
 
         // Atomic UPDATE with WHERE status = 'pending' to prevent TOCTOU race condition
-        const result = query.run(
+        const result = await query.run(
             'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status = ?',
             ['declined', id, user.id, 'pending']
         );
@@ -175,11 +175,11 @@ export async function offersRouter(ctx) {
             return { status: 400, data: { error: 'Offer has already been responded to' } };
         }
 
-        const offer = query.get('SELECT * FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
+        const offer = await query.get('SELECT * FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
 
         // Queue automation task
         const taskId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
         `, [taskId, user.id, 'decline_offer', JSON.stringify({ offerId: id, platform: offer.platform }), 'pending']);
@@ -202,7 +202,7 @@ export async function offersRouter(ctx) {
         }
 
         // Check offer exists first
-        const existingOffer = query.get('SELECT id, status FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
+        const existingOffer = await query.get('SELECT id, status FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existingOffer) {
             return { status: 404, data: { error: 'Offer not found' } };
         }
@@ -211,7 +211,7 @@ export async function offersRouter(ctx) {
         }
 
         // Atomic UPDATE with WHERE status = 'pending' to prevent TOCTOU race condition
-        const result = query.run(
+        const result = await query.run(
             'UPDATE offers SET status = ?, counter_amount = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status = ?',
             ['countered', amount, id, user.id, 'pending']
         );
@@ -220,11 +220,11 @@ export async function offersRouter(ctx) {
             return { status: 400, data: { error: 'Offer has already been responded to' } };
         }
 
-        const offer = query.get('SELECT * FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
+        const offer = await query.get('SELECT * FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
 
         // Queue automation task
         const taskId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
         `, [taskId, user.id, 'counter_offer', JSON.stringify({ offerId: id, amount, platform: offer.platform }), 'pending']);
@@ -248,19 +248,19 @@ export async function offersRouter(ctx) {
         const id = uuidv4();
         const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-        query.run(
+        await query.run(
             `INSERT INTO offers (id, user_id, listing_id, platform, offer_amount, buyer_username, status, expires_at)
              VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
             [id, user.id, listing_id, platform, offer_amount, buyer_username || 'e2e_buyer', expires]
         );
 
-        const offer = query.get('SELECT * FROM offers WHERE id = ?', [id]);
+        const offer = await query.get('SELECT * FROM offers WHERE id = ?', [id]);
         return { status: 201, data: { offer } };
     }
 
     // GET /api/offers/rules - Get offer rules
     if (method === 'GET' && path === '/rules') {
-        const rules = query.all(
+        const rules = await query.all(
             'SELECT * FROM automation_rules WHERE user_id = ? AND type = ?',
             [user.id, 'offer']
         );
@@ -283,7 +283,7 @@ export async function offersRouter(ctx) {
 
         const id = uuidv4();
 
-        query.run(`
+        await query.run(`
             INSERT INTO automation_rules (id, user_id, name, type, platform, conditions, actions, is_enabled)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `, [
@@ -292,7 +292,7 @@ export async function offersRouter(ctx) {
             isEnabled !== false ? 1 : 0
         ]);
 
-        const rule = query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
         rule.conditions = safeJsonParse(rule.conditions, []);
         rule.actions = safeJsonParse(rule.actions, {});
 
@@ -303,7 +303,7 @@ export async function offersRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/rules\/[a-f0-9-]+$/)) {
         const id = path.split('/')[2];
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT * FROM automation_rules WHERE id = ? AND user_id = ? AND type = ?',
             [id, user.id, 'offer']
         );
@@ -344,13 +344,13 @@ export async function offersRouter(ctx) {
 
         if (updates.length > 0) {
             values.push(id, user.id);
-            query.run(
+            await query.run(
                 `UPDATE automation_rules SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
         }
 
-        const rule = query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
         rule.conditions = safeJsonParse(rule.conditions, []);
         rule.actions = safeJsonParse(rule.actions, {});
 
@@ -361,7 +361,7 @@ export async function offersRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/rules\/[a-f0-9-]+$/)) {
         const id = path.split('/')[2];
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT * FROM automation_rules WHERE id = ? AND user_id = ? AND type = ?',
             [id, user.id, 'offer']
         );
@@ -370,7 +370,7 @@ export async function offersRouter(ctx) {
             return { status: 404, data: { error: 'Rule not found' } };
         }
 
-        query.run('DELETE FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
+        await query.run('DELETE FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
 
         return { status: 200, data: { message: 'Rule deleted' } };
     }
@@ -378,11 +378,11 @@ export async function offersRouter(ctx) {
     // GET /api/offers/stats - Get offer statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            total: query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ?', [user.id])?.count || 0,
-            pending: query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0,
-            accepted: query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'accepted'])?.count || 0,
-            declined: query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'declined'])?.count || 0,
-            avgOfferPercentage: query.get(`
+            total: await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ?', [user.id])?.count || 0,
+            pending: await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0,
+            accepted: await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'accepted'])?.count || 0,
+            declined: await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'declined'])?.count || 0,
+            avgOfferPercentage: await query.get(`
                 SELECT AVG(o.offer_amount * 100.0 / l.price) as avg
                 FROM offers o
                 JOIN listings l ON o.listing_id = l.id

@@ -241,7 +241,7 @@ Important:
 
             // If inventoryId provided, pull item from DB for richer context
             if (inventoryId) {
-                const item = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+                const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
                 if (!item) {
                     return { status: 404, data: { error: 'Inventory item not found' } };
                 }
@@ -481,7 +481,7 @@ Important:
             const { title, brand, category, condition, originalRetail } = body;
 
             // Get comparable sales from database first so predictor can use them
-            const comparables = query.all(`
+            const comparables = await query.all(`
                 SELECT s.sale_price, i.brand, i.category, i.condition
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
@@ -534,8 +534,8 @@ Important:
             const { listingId, inventoryId } = body;
 
             const item = inventoryId
-                ? query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id])
-                : query.get(`
+                ? await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id])
+                : await query.get(`
                     SELECT i.* FROM listings l
                     JOIN inventory i ON l.inventory_id = i.id
                     WHERE l.id = ? AND l.user_id = ?
@@ -617,7 +617,7 @@ Important:
 
             // Batch fetch all items at once instead of N+1 individual queries
             const placeholders = ids.map(() => '?').join(',');
-            const items = query.all(
+            const items = await query.all(
                 `SELECT * FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`,
                 [...ids, user.id]
             );
@@ -674,7 +674,7 @@ Important:
         try {
             const { inventoryId, threshold = AI_CONFIG.duplicateThreshold } = body;
 
-            const item = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+            const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
 
             if (!item) {
                 return { status: 404, data: { error: 'Item not found' } };
@@ -682,12 +682,12 @@ Important:
 
             // Find similar items based on title, brand, category
             const firstWord = (item.title?.split(' ')[0] || '').replace(/[%_\\]/g, '\\$&');
-            const similar = query.all(`
+            const similar = await query.all(`
                 SELECT * FROM inventory
                 WHERE user_id = ? AND id != ? AND status != 'deleted'
                 AND (
                     brand = ? OR category = ?
-                    OR title LIKE ? ESCAPE '\\'
+                    OR title ILIKE ? ESCAPE '\\'
                 )
                 LIMIT 20
             `, [user.id, inventoryId, item.brand, item.category, `%${firstWord}%`]);
@@ -722,12 +722,12 @@ Important:
     if (method === 'GET' && path === '/sourcing-suggestions') {
         try {
             // Analyze user's successful sales to suggest what to source
-            const topSellers = query.all(`
+            const topSellers = await query.all(`
                 SELECT
                     i.category, i.brand,
                     COUNT(*) as sales,
                     AVG(s.net_profit) as avg_profit,
-                    AVG(julianday(s.created_at) - julianday(i.created_at)) as avg_days_to_sell
+                    AVG(EXTRACT(EPOCH FROM (s.created_at - i.created_at)) / 86400) as avg_days_to_sell
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
                 WHERE s.user_id = ?

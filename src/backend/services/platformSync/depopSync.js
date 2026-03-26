@@ -39,13 +39,13 @@ export async function syncDepopShop(shop) {
         results.completedAt = new Date().toISOString();
 
         try {
-            query.run(`
+            await query.run(`
                 UPDATE shops SET last_sync_at = ?, sync_error = NULL, updated_at = ?
                 WHERE id = ?
             `, [results.completedAt, results.completedAt, shop.id]);
         } catch (err) {
             if (err.message.includes('no such column')) {
-                query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
                     [results.completedAt, shop.id]);
             }
         }
@@ -57,10 +57,10 @@ export async function syncDepopShop(shop) {
         results.completedAt = new Date().toISOString();
 
         try {
-            query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
+            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
                 [error.message, new Date().toISOString(), shop.id]);
         } catch (err) {
-            query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
+            await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
                 [new Date().toISOString(), shop.id]);
         }
 
@@ -78,13 +78,13 @@ async function syncDepopListings(shop, accessToken, mode) {
             try {
                 const mapped = mapDepopListingToVaultLister(depopListing, shop);
 
-                const existing = query.get(`
+                const existing = await query.get(`
                     SELECT id FROM listings
                     WHERE user_id = ? AND platform = 'depop' AND platform_listing_id = ?
                 `, [shop.user_id, depopListing.id]);
 
                 if (existing) {
-                    query.run(`
+                    await query.run(`
                         UPDATE listings SET title = ?, price = ?, status = ?,
                             platform_specific_data = ?, updated_at = ?
                         WHERE id = ?
@@ -92,7 +92,7 @@ async function syncDepopListings(shop, accessToken, mode) {
                         JSON.stringify(mapped.externalData), new Date().toISOString(), existing.id]);
                     result.updated++;
                 } else {
-                    query.run(`
+                    await query.run(`
                         INSERT INTO listings (id, user_id, inventory_id, platform, title, price,
                             status, platform_listing_id, platform_specific_data, created_at, updated_at)
                         VALUES (?, ?, ?, 'depop', ?, ?, ?, ?, ?, ?, ?)
@@ -124,12 +124,12 @@ async function syncDepopOrders(shop, accessToken, mode) {
             try {
                 const mapped = mapDepopOrderToSale(depopOrder, shop);
 
-                const existing = query.get(`
+                const existing = await query.get(`
                     SELECT id FROM sales WHERE user_id = ? AND platform_order_id = ? AND platform = 'depop'
                 `, [shop.user_id, depopOrder.id]);
 
                 if (!existing) {
-                    query.run(`
+                    await query.run(`
                         INSERT INTO sales (id, user_id, listing_id, platform, platform_order_id, buyer_username,
                             sale_price, platform_fee, shipping_cost, net_profit,
                             status, notes, created_at, updated_at)

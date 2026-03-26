@@ -50,7 +50,7 @@ export function buildGoogleAuthUrl(userId, scope, baseUrl) {
     const stateToken = generateStateToken();
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
 
-    query.run(
+    await query.run(
         `INSERT INTO google_oauth_states (id, user_id, scope, state_token, redirect_uri, expires_at)
          VALUES (?, ?, ?, ?, ?, ?)`,
         [uuidv4(), userId, scope, stateToken, redirectUri, expiresAt]
@@ -75,8 +75,8 @@ export function buildGoogleAuthUrl(userId, scope, baseUrl) {
  * @returns {{ email: string, userId: string, scope: string }}
  */
 export async function exchangeGoogleCode(code, state) {
-    const stateRecord = query.get(
-        `SELECT * FROM google_oauth_states WHERE state_token = ? AND expires_at > datetime('now')`,
+    const stateRecord = await query.get(
+        `SELECT * FROM google_oauth_states WHERE state_token = ? AND expires_at > NOW()`,
         [state]
     );
     if (!stateRecord) {
@@ -85,7 +85,7 @@ export async function exchangeGoogleCode(code, state) {
         throw err;
     }
 
-    query.run('DELETE FROM google_oauth_states WHERE id = ?', [stateRecord.id]);
+    await query.run('DELETE FROM google_oauth_states WHERE id = ?', [stateRecord.id]);
 
     const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
         method: 'POST',
@@ -119,13 +119,13 @@ export async function exchangeGoogleCode(code, state) {
     const expiresAt = new Date(Date.now() + (tokens.expires_in || 3600) * 1000).toISOString();
     const now = new Date().toISOString();
 
-    const existing = query.get(
+    const existing = await query.get(
         `SELECT id, oauth_refresh_token FROM google_tokens WHERE user_id = ? AND scope = ?`,
         [stateRecord.user_id, stateRecord.scope]
     );
 
     if (existing) {
-        query.run(
+        await query.run(
             `UPDATE google_tokens SET
                 oauth_token = ?,
                 oauth_refresh_token = COALESCE(?, oauth_refresh_token),
@@ -137,7 +137,7 @@ export async function exchangeGoogleCode(code, state) {
             [encryptedAccess, encryptedRefresh, expiresAt, userInfo.email, now, existing.id]
         );
     } else {
-        query.run(
+        await query.run(
             `INSERT INTO google_tokens
                 (id, user_id, scope, oauth_token, oauth_refresh_token, oauth_token_expires_at, email, is_connected, created_at, updated_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
@@ -154,7 +154,7 @@ export async function exchangeGoogleCode(code, state) {
  * Returns null if no connection exists
  */
 export async function getAccessToken(userId, scope) {
-    const record = query.get(
+    const record = await query.get(
         `SELECT * FROM google_tokens WHERE user_id = ? AND scope = ? AND is_connected = 1`,
         [userId, scope]
     );
@@ -186,7 +186,7 @@ export async function getAccessToken(userId, scope) {
 
         const newEncrypted = encryptToken(tokens.access_token);
         const newExpiry = new Date(Date.now() + (tokens.expires_in || 3600) * 1000).toISOString();
-        query.run(
+        await query.run(
             `UPDATE google_tokens SET oauth_token = ?, oauth_token_expires_at = ?, updated_at = ? WHERE id = ?`,
             [newEncrypted, newExpiry, new Date().toISOString(), record.id]
         );
@@ -201,7 +201,7 @@ export async function getAccessToken(userId, scope) {
  * Revoke Google tokens and mark disconnected
  */
 export async function revokeGoogleToken(userId, scope) {
-    const record = query.get(
+    const record = await query.get(
         `SELECT * FROM google_tokens WHERE user_id = ? AND scope = ?`,
         [userId, scope]
     );
@@ -219,7 +219,7 @@ export async function revokeGoogleToken(userId, scope) {
         logger.warn('[GoogleOAuth] Revoke request failed (best-effort)', userId, { detail: err.message });
     }
 
-    query.run(
+    await query.run(
         `UPDATE google_tokens SET is_connected = 0, oauth_token = NULL, oauth_refresh_token = NULL, updated_at = ? WHERE id = ?`,
         [new Date().toISOString(), record.id]
     );
@@ -229,7 +229,7 @@ export async function revokeGoogleToken(userId, scope) {
  * Get connection status for a user + scope (no tokens exposed)
  */
 export function getConnectionStatus(userId, scope) {
-    const record = query.get(
+    const record = await query.get(
         `SELECT id, email, is_connected, oauth_token_expires_at, created_at, updated_at
          FROM google_tokens WHERE user_id = ? AND scope = ?`,
         [userId, scope]

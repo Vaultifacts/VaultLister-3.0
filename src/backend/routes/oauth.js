@@ -57,7 +57,7 @@ export async function oauthRouter(ctx) {
         }
 
         // Store state in database (code_verifier stored for PKCE token exchange)
-        query.run(`
+        await query.run(`
             INSERT INTO oauth_states (id, user_id, platform, state_token, redirect_uri, expires_at, code_verifier)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `, [stateId, user.id, platform, stateToken, redirectUri, expiresAt.toISOString(), codeVerifier]);
@@ -123,7 +123,7 @@ export async function oauthRouter(ctx) {
         }
 
         // Verify state token (state_token is unique, no need to filter by platform)
-        const stateRecord = query.get(`
+        const stateRecord = await query.get(`
             SELECT * FROM oauth_states
             WHERE state_token = ? AND used = 0
         `, [state]);
@@ -137,7 +137,7 @@ export async function oauthRouter(ctx) {
         }
 
         // Mark state as used
-        query.run('UPDATE oauth_states SET used = 1 WHERE id = ?', [stateRecord.id]);
+        await query.run('UPDATE oauth_states SET used = 1 WHERE id = ?', [stateRecord.id]);
 
         // Exchange code for tokens
         const oauthMode = process.env.OAUTH_MODE || 'mock';
@@ -168,14 +168,14 @@ export async function oauthRouter(ctx) {
             );
 
             // Create or update shop connection
-            const existingShop = query.get(`
+            const existingShop = await query.get(`
                 SELECT id FROM shops WHERE user_id = ? AND platform = ?
             `, [stateRecord.user_id, platform]);
 
             const now = new Date().toISOString();
 
             if (existingShop) {
-                query.run(`
+                await query.run(`
                     UPDATE shops SET
                         connection_type = 'oauth',
                         oauth_provider = ?,
@@ -201,7 +201,7 @@ export async function oauthRouter(ctx) {
                 ]);
             } else {
                 const shopId = uuidv4();
-                query.run(`
+                await query.run(`
                     INSERT INTO shops (
                         id, user_id, platform, connection_type, oauth_provider,
                         oauth_token, oauth_refresh_token, oauth_token_expires_at,
@@ -240,7 +240,7 @@ export async function oauthRouter(ctx) {
     if (method === 'POST' && path.startsWith('/refresh/')) {
         const platform = path.split('/')[2];
 
-        const shop = query.get(`
+        const shop = await query.get(`
             SELECT * FROM shops
             WHERE user_id = ? AND platform = ? AND connection_type = 'oauth'
         `, [user.id, platform]);
@@ -263,7 +263,7 @@ export async function oauthRouter(ctx) {
 
             const expiresAt = new Date(Date.now() + (tokenResponse.expires_in || 3600) * 1000);
 
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     oauth_token = ?,
                     oauth_refresh_token = ?,
@@ -300,7 +300,7 @@ export async function oauthRouter(ctx) {
     if (method === 'POST' && path.startsWith('/reconnect/')) {
         const platform = path.split('/')[2];
 
-        const shop = query.get(`
+        const shop = await query.get(`
             SELECT * FROM shops
             WHERE user_id = ? AND platform = ? AND connection_type = 'oauth'
         `, [user.id, platform]);
@@ -312,7 +312,7 @@ export async function oauthRouter(ctx) {
         // Reset failure state
         const now = new Date().toISOString();
         try {
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     is_connected = 1,
                     consecutive_refresh_failures = 0,
@@ -323,7 +323,7 @@ export async function oauthRouter(ctx) {
             `, [now, shop.id]);
         } catch (err) {
             if (err.message.includes('no such column')) {
-                query.run(`UPDATE shops SET is_connected = 1, updated_at = ? WHERE id = ?`, [now, shop.id]);
+                await query.run(`UPDATE shops SET is_connected = 1, updated_at = ? WHERE id = ?`, [now, shop.id]);
             }
         }
 
@@ -340,7 +340,7 @@ export async function oauthRouter(ctx) {
                 : shop.oauth_refresh_token;
             const expiresAt = new Date(Date.now() + (tokenResponse.expires_in || 3600) * 1000);
 
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     oauth_token = ?,
                     oauth_refresh_token = ?,
@@ -355,7 +355,7 @@ export async function oauthRouter(ctx) {
             };
         } catch (error) {
             // Refresh failed — mark disconnected again
-            query.run(`UPDATE shops SET is_connected = 0, updated_at = ? WHERE id = ?`, [now, shop.id]);
+            await query.run(`UPDATE shops SET is_connected = 0, updated_at = ? WHERE id = ?`, [now, shop.id]);
             logger.error('[OAuth] Reconnect refresh failed', user?.id, { detail: error?.message });
             return {
                 status: 400,
@@ -368,7 +368,7 @@ export async function oauthRouter(ctx) {
     if (method === 'DELETE' && path.startsWith('/revoke/')) {
         const platform = path.split('/')[2];
 
-        const shop = query.get(`
+        const shop = await query.get(`
             SELECT * FROM shops
             WHERE user_id = ? AND platform = ? AND connection_type = 'oauth'
         `, [user.id, platform]);
@@ -386,7 +386,7 @@ export async function oauthRouter(ctx) {
             }
 
             // Remove OAuth data from shop (but keep manual connection capability)
-            query.run(`
+            await query.run(`
                 UPDATE shops SET
                     connection_type = 'manual',
                     oauth_provider = NULL,
@@ -420,7 +420,7 @@ export async function oauthRouter(ctx) {
     if (method === 'POST' && path.startsWith('/sync/')) {
         const platform = path.split('/')[2];
 
-        const shop = query.get(`
+        const shop = await query.get(`
             SELECT * FROM shops
             WHERE user_id = ? AND platform = ? AND connection_type = 'oauth' AND is_connected = 1
         `, [user.id, platform]);
@@ -460,7 +460,7 @@ export async function oauthRouter(ctx) {
         const platform = path.split('/')[2];
 
         // Query without optional columns to avoid errors on older schemas
-        const shop = query.get(`
+        const shop = await query.get(`
             SELECT id, platform, connection_type, is_connected, oauth_provider,
                    oauth_token_expires_at, platform_username, created_at, updated_at
             FROM shops
@@ -492,7 +492,7 @@ export async function oauthRouter(ctx) {
 
         // Try to get optional columns if they exist
         try {
-            const extendedShop = query.get(`
+            const extendedShop = await query.get(`
                 SELECT last_token_refresh_at, token_refresh_error,
                        last_sync_at, sync_error, consecutive_refresh_failures
                 FROM shops WHERE id = ?

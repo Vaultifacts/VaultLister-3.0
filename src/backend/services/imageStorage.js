@@ -241,7 +241,7 @@ function safeDeleteFile(relativePath) {
 export async function deleteImage(imageId, userId) {
     try {
         // Get image metadata from database
-        const image = query.get(
+        const image = await query.get(
             'SELECT * FROM image_bank WHERE id = ? AND user_id = ?',
             [imageId, userId]
         );
@@ -259,7 +259,7 @@ export async function deleteImage(imageId, userId) {
         }
 
         // Delete edited versions from edit history
-        const editHistory = query.all(
+        const editHistory = await query.all(
             'SELECT edited_path FROM image_edit_history WHERE image_id = ?',
             [imageId]
         );
@@ -269,7 +269,7 @@ export async function deleteImage(imageId, userId) {
         });
 
         // Delete from database
-        query.run('DELETE FROM image_bank WHERE id = ? AND user_id = ?', [imageId, userId]);
+        await query.run('DELETE FROM image_bank WHERE id = ? AND user_id = ?', [imageId, userId]);
 
         return { success: true };
     } catch (error) {
@@ -282,7 +282,7 @@ export async function deleteImage(imageId, userId) {
  * Get public URL for image
  */
 export function getImageUrl(imageId, userId) {
-    const image = query.get(
+    const image = await query.get(
         'SELECT file_path FROM image_bank WHERE id = ? AND user_id = ?',
         [imageId, userId]
     );
@@ -300,7 +300,7 @@ export function getImageUrl(imageId, userId) {
 export async function importFromInventory(inventoryId, userId) {
     try {
         // Get inventory item
-        const item = query.get(
+        const item = await query.get(
             'SELECT images FROM inventory WHERE id = ? AND user_id = ?',
             [inventoryId, userId]
         );
@@ -344,7 +344,7 @@ export async function importFromInventory(inventoryId, userId) {
             );
 
             // Save to image_bank table
-            query.run(`
+            await query.run(`
                 INSERT INTO image_bank (
                     id, user_id, folder_id, original_filename, stored_filename,
                     file_path, file_size, mime_type, source_inventory_id

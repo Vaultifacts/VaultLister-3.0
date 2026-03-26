@@ -402,7 +402,7 @@ const apiRoutes = {
         let dbStatus = 'ok';
         try {
             const { query } = await import('./db/database.js');
-            query.get('SELECT 1');
+            await query.get('SELECT 1');
         } catch (e) {
             dbStatus = 'error';
         }
@@ -432,7 +432,7 @@ const apiRoutes = {
         // Database check
         try {
             const { query } = await import('./db/database.js');
-            query.get('SELECT 1');
+            await query.get('SELECT 1');
             checks.database = 'ok';
         } catch (e) {
             checks.database = 'error';

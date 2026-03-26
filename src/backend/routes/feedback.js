@@ -25,14 +25,14 @@ export async function feedbackRouter(ctx) {
                 ORDER BY (f.votes_up - f.votes_down) DESC, f.created_at DESC
                 LIMIT 20`;
 
-            const feedback = query.all(sql);
+            const feedback = await query.all(sql);
 
             // If user is logged in, check their vote status
             if (user) {
                 if (feedback.length > 0) {
                     const ids = feedback.map(f => f.id);
                     const placeholders = ids.map(() => '?').join(',');
-                    const votes = query.all(
+                    const votes = await query.all(
                         `SELECT feedback_id, vote_type FROM feedback_votes WHERE feedback_id IN (${placeholders}) AND user_id = ?`,
                         [...ids, user.id]
                     );
@@ -74,28 +74,28 @@ export async function feedbackRouter(ctx) {
         }
 
         try {
-            const byType = query.all(
+            const byType = await query.all(
                 `SELECT type, COUNT(*) as count FROM feedback_submissions GROUP BY type ORDER BY count DESC`
             );
-            const byStatus = query.all(
+            const byStatus = await query.all(
                 `SELECT status, COUNT(*) as count FROM feedback_submissions GROUP BY status ORDER BY count DESC`
             );
-            const byCategory = query.all(
+            const byCategory = await query.all(
                 `SELECT COALESCE(category, 'uncategorized') as category, COUNT(*) as count
                  FROM feedback_submissions GROUP BY category ORDER BY count DESC`
             );
-            const topVoted = query.all(
+            const topVoted = await query.all(
                 `SELECT f.id, f.title, f.type, f.status, f.votes_up, f.votes_down,
                         (f.votes_up - f.votes_down) as net_votes
                  FROM feedback_submissions f
                  ORDER BY net_votes DESC LIMIT 10`
             );
-            const recentActivity = query.all(
+            const recentActivity = await query.all(
                 `SELECT f.id, f.title, f.type, f.status, f.created_at
                  FROM feedback_submissions f ORDER BY f.created_at DESC LIMIT 10`
             );
-            const totalCount = query.get(`SELECT COUNT(*) as count FROM feedback_submissions`);
-            const totalVotes = query.get(`SELECT COALESCE(SUM(votes_up + votes_down), 0) as count FROM feedback_submissions`);
+            const totalCount = await query.get(`SELECT COUNT(*) as count FROM feedback_submissions`);
+            const totalVotes = await query.get(`SELECT COALESCE(SUM(votes_up + votes_down), 0) as count FROM feedback_submissions`);
 
             return {
                 status: 200,
@@ -126,10 +126,10 @@ export async function feedbackRouter(ctx) {
 
         try {
             const searchTerm = `%${escapeLike(searchQuery.trim())}%`;
-            const feedback = query.all(
+            const feedback = await query.all(
                 `SELECT id, title, type, status, votes_up, votes_down, created_at
                  FROM feedback_submissions
-                 WHERE (title LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\')
+                 WHERE (title ILIKE ? ESCAPE '\\' OR description ILIKE ? ESCAPE '\\')
                  ORDER BY (votes_up - votes_down) DESC
                  LIMIT 5`,
                 [searchTerm, searchTerm]
@@ -178,7 +178,7 @@ export async function feedbackRouter(ctx) {
 
             sql += ` ORDER BY f.created_at DESC LIMIT 200`;
 
-            const feedback = query.all(sql, params);
+            const feedback = await query.all(sql, params);
 
             // Hide anonymous user info
             feedback.forEach(item => {
@@ -211,7 +211,7 @@ export async function feedbackRouter(ctx) {
         }
 
         try {
-            const feedback = query.all(
+            const feedback = await query.all(
                 `SELECT * FROM feedback_submissions WHERE user_id = ? ORDER BY created_at DESC LIMIT 200`,
                 [user.id]
             );
@@ -234,7 +234,7 @@ export async function feedbackRouter(ctx) {
         const feedbackId = path.split('/')[1];
 
         try {
-            const responses = query.all(
+            const responses = await query.all(
                 `SELECT r.*, COALESCE(u.full_name, u.username) as author_name
                  FROM feedback_responses r
                  LEFT JOIN users u ON r.user_id = u.id
@@ -265,7 +265,7 @@ export async function feedbackRouter(ctx) {
         }
 
         try {
-            const feedback = query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+            const feedback = await query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
             if (!feedback) {
                 return { status: 404, data: { error: 'Feedback not found' } };
             }
@@ -276,12 +276,12 @@ export async function feedbackRouter(ctx) {
             }
 
             const responseId = nanoid();
-            query.run(
+            await query.run(
                 `INSERT INTO feedback_responses (id, feedback_id, user_id, message, is_admin) VALUES (?, ?, ?, ?, ?)`,
                 [responseId, feedbackId, user.id, message.trim(), user.is_admin ? 1 : 0]
             );
 
-            const newResponse = query.get(
+            const newResponse = await query.get(
                 `SELECT r.*, COALESCE(u.full_name, u.username) as author_name
                  FROM feedback_responses r
                  LEFT JOIN users u ON r.user_id = u.id
@@ -308,7 +308,7 @@ export async function feedbackRouter(ctx) {
         }
 
         try {
-            const feedback = query.get(
+            const feedback = await query.get(
                 `SELECT f.*, COALESCE(u.full_name, u.username) as author_name
                  FROM feedback_submissions f
                  LEFT JOIN users u ON f.user_id = u.id
@@ -338,17 +338,17 @@ export async function feedbackRouter(ctx) {
             }
 
             // Increment view count
-            query.run(`UPDATE feedback_submissions SET view_count = view_count + 1 WHERE id = ?`, [feedbackId]);
+            await query.run(`UPDATE feedback_submissions SET view_count = view_count + 1 WHERE id = ?`, [feedbackId]);
 
             // Get user's vote
-            const vote = query.get(
+            const vote = await query.get(
                 `SELECT vote_type FROM feedback_votes WHERE feedback_id = ? AND user_id = ?`,
                 [feedbackId, user.id]
             );
             feedback.user_vote = vote ? vote.vote_type : null;
 
             // Get response count
-            const responseCount = query.get(
+            const responseCount = await query.get(
                 `SELECT COUNT(*) as count FROM feedback_responses WHERE feedback_id = ?`,
                 [feedbackId]
             );
@@ -381,13 +381,13 @@ export async function feedbackRouter(ctx) {
         }
 
         try {
-            const feedback = query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+            const feedback = await query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
             if (!feedback) {
                 return { status: 404, data: { error: 'Feedback not found' } };
             }
 
-            const result = query.transaction(() => {
-                const existingVote = query.get(
+            const result = await query.transaction(() => {
+                const existingVote = await query.get(
                     `SELECT id, vote_type FROM feedback_votes WHERE feedback_id = ? AND user_id = ?`,
                     [feedbackId, user.id]
                 );
@@ -395,38 +395,38 @@ export async function feedbackRouter(ctx) {
                 if (existingVote) {
                     if (existingVote.vote_type === vote_type) {
                         // Same vote = toggle off (remove vote)
-                        query.run(`DELETE FROM feedback_votes WHERE id = ? AND user_id = ?`, [existingVote.id, user.id]);
+                        await query.run(`DELETE FROM feedback_votes WHERE id = ? AND user_id = ?`, [existingVote.id, user.id]);
                         if (vote_type === 'up') {
-                            query.run(`UPDATE feedback_submissions SET votes_up = MAX(0, votes_up - 1) WHERE id = ?`, [feedbackId]);
+                            await query.run(`UPDATE feedback_submissions SET votes_up = MAX(0, votes_up - 1) WHERE id = ?`, [feedbackId]);
                         } else {
-                            query.run(`UPDATE feedback_submissions SET votes_down = MAX(0, votes_down - 1) WHERE id = ?`, [feedbackId]);
+                            await query.run(`UPDATE feedback_submissions SET votes_down = MAX(0, votes_down - 1) WHERE id = ?`, [feedbackId]);
                         }
-                        const updated = query.get(`SELECT votes_up, votes_down FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+                        const updated = await query.get(`SELECT votes_up, votes_down FROM feedback_submissions WHERE id = ?`, [feedbackId]);
                         return { voted: false, vote_type: null, votes_up: updated.votes_up, votes_down: updated.votes_down };
                     } else {
                         // Different vote = switch vote
-                        query.run(`UPDATE feedback_votes SET vote_type = ? WHERE id = ? AND user_id = ?`, [vote_type, existingVote.id, user.id]);
+                        await query.run(`UPDATE feedback_votes SET vote_type = ? WHERE id = ? AND user_id = ?`, [vote_type, existingVote.id, user.id]);
                         if (vote_type === 'up') {
-                            query.run(`UPDATE feedback_submissions SET votes_up = votes_up + 1, votes_down = MAX(0, votes_down - 1) WHERE id = ?`, [feedbackId]);
+                            await query.run(`UPDATE feedback_submissions SET votes_up = votes_up + 1, votes_down = MAX(0, votes_down - 1) WHERE id = ?`, [feedbackId]);
                         } else {
-                            query.run(`UPDATE feedback_submissions SET votes_down = votes_down + 1, votes_up = MAX(0, votes_up - 1) WHERE id = ?`, [feedbackId]);
+                            await query.run(`UPDATE feedback_submissions SET votes_down = votes_down + 1, votes_up = MAX(0, votes_up - 1) WHERE id = ?`, [feedbackId]);
                         }
-                        const updated = query.get(`SELECT votes_up, votes_down FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+                        const updated = await query.get(`SELECT votes_up, votes_down FROM feedback_submissions WHERE id = ?`, [feedbackId]);
                         return { voted: true, vote_type, votes_up: updated.votes_up, votes_down: updated.votes_down };
                     }
                 } else {
                     // New vote
                     const voteId = nanoid();
-                    query.run(
+                    await query.run(
                         `INSERT INTO feedback_votes (id, feedback_id, user_id, vote_type) VALUES (?, ?, ?, ?)`,
                         [voteId, feedbackId, user.id, vote_type]
                     );
                     if (vote_type === 'up') {
-                        query.run(`UPDATE feedback_submissions SET votes_up = votes_up + 1 WHERE id = ?`, [feedbackId]);
+                        await query.run(`UPDATE feedback_submissions SET votes_up = votes_up + 1 WHERE id = ?`, [feedbackId]);
                     } else {
-                        query.run(`UPDATE feedback_submissions SET votes_down = votes_down + 1 WHERE id = ?`, [feedbackId]);
+                        await query.run(`UPDATE feedback_submissions SET votes_down = votes_down + 1 WHERE id = ?`, [feedbackId]);
                     }
-                    const updated = query.get(`SELECT votes_up, votes_down FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+                    const updated = await query.get(`SELECT votes_up, votes_down FROM feedback_submissions WHERE id = ?`, [feedbackId]);
                     return { voted: true, vote_type, votes_up: updated.votes_up, votes_down: updated.votes_down };
                 }
             });
@@ -484,7 +484,7 @@ export async function feedbackRouter(ctx) {
 
         try {
             const feedbackId = nanoid();
-            query.run(
+            await query.run(
                 `INSERT INTO feedback_submissions (id, user_id, type, category, title, description, is_anonymous, screenshot_data, screenshot_mime)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [feedbackId, user.id, type, category || null, title, description,
@@ -493,7 +493,7 @@ export async function feedbackRouter(ctx) {
                  screenshot_mime || null]
             );
 
-            const feedback = query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+            const feedback = await query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
 
             return {
                 status: 201,
@@ -530,7 +530,7 @@ export async function feedbackRouter(ctx) {
         }
 
         try {
-            const feedback = query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+            const feedback = await query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
 
             if (!feedback) {
                 return {
@@ -539,12 +539,12 @@ export async function feedbackRouter(ctx) {
                 };
             }
 
-            query.run(
+            await query.run(
                 `UPDATE feedback_submissions SET status = ?, admin_response = ?, roadmap_feature_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 [status || feedback.status, admin_response || feedback.admin_response, roadmap_feature_id !== undefined ? roadmap_feature_id : feedback.roadmap_feature_id, feedbackId]
             );
 
-            const updatedFeedback = query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+            const updatedFeedback = await query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
 
             return {
                 status: 200,
@@ -571,7 +571,7 @@ export async function feedbackRouter(ctx) {
         }
 
         try {
-            const feedback = query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+            const feedback = await query.get(`SELECT * FROM feedback_submissions WHERE id = ?`, [feedbackId]);
 
             if (!feedback) {
                 return {
@@ -590,9 +590,9 @@ export async function feedbackRouter(ctx) {
 
             // Admin can delete any feedback; regular users can only delete their own
             if (user.is_admin) {
-                query.run(`DELETE FROM feedback_submissions WHERE id = ?`, [feedbackId]);
+                await query.run(`DELETE FROM feedback_submissions WHERE id = ?`, [feedbackId]);
             } else {
-                query.run(`DELETE FROM feedback_submissions WHERE id = ? AND user_id = ?`, [feedbackId, user.id]);
+                await query.run(`DELETE FROM feedback_submissions WHERE id = ? AND user_id = ?`, [feedbackId, user.id]);
             }
 
             return {

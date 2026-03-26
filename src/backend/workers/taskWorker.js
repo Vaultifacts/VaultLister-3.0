@@ -110,10 +110,10 @@ async function processQueue() {
             return;
         }
 
-        const pendingTasks = query.all(`
+        const pendingTasks = await query.all(`
             SELECT * FROM task_queue
             WHERE status = 'pending'
-            AND datetime(scheduled_at) <= datetime('now')
+            AND datetime(scheduled_at) <= NOW()
             ORDER BY priority DESC, scheduled_at ASC
             LIMIT ?
         `, [availableSlots]);
@@ -145,12 +145,12 @@ async function processTask(task) {
 
     try {
         // Mark task as processing
-        query.run(`
+        await query.run(`
             UPDATE task_queue SET
                 status = 'processing',
-                started_at = datetime('now'),
+                started_at = NOW(),
                 attempts = attempts + 1,
-                updated_at = datetime('now')
+                updated_at = NOW()
             WHERE id = ?
         `, [task.id]);
 
@@ -164,11 +164,11 @@ async function processTask(task) {
 
         // Mark task as completed
         const duration = Date.now() - startTime;
-        query.run(`
+        await query.run(`
             UPDATE task_queue SET
                 status = 'completed',
-                completed_at = datetime('now'),
-                updated_at = datetime('now')
+                completed_at = NOW(),
+                updated_at = NOW()
             WHERE id = ?
         `, [task.id]);
 
@@ -179,9 +179,9 @@ async function processTask(task) {
             const payload = JSON.parse(task.payload);
             const userId = payload.userId || payload.user_id;
             if (userId) {
-                query.run(`
+                await query.run(`
                     INSERT INTO automation_runs (id, user_id, automation_id, automation_name, automation_type, status, started_at, completed_at, duration_ms, items_processed, items_succeeded, items_failed, result_message, metadata)
-                    VALUES (?, ?, ?, ?, ?, 'success', datetime('now', '-' || ? || ' seconds'), datetime('now'), ?, ?, ?, ?, ?, '{}')
+                    VALUES (?, ?, ?, ?, ?, 'success', NOW() - (?::text || ' seconds')::interval, NOW(), ?, ?, ?, ?, ?, '{}')
                 `, [
                     uuidv4(), userId,
                     payload.ruleId || task.id,
@@ -208,12 +208,12 @@ async function processTask(task) {
 
         if (attempts >= maxAttempts) {
             // Mark as failed permanently
-            query.run(`
+            await query.run(`
                 UPDATE task_queue SET
                     status = 'failed',
                     last_error = ?,
-                    completed_at = datetime('now'),
-                    updated_at = datetime('now')
+                    completed_at = NOW(),
+                    updated_at = NOW()
                 WHERE id = ?
             `, [error.message, task.id]);
 
@@ -225,9 +225,9 @@ async function processTask(task) {
                 const userId = payload.userId || payload.user_id;
                 const duration = Date.now() - startTime;
                 if (userId) {
-                    query.run(`
+                    await query.run(`
                         INSERT INTO automation_runs (id, user_id, automation_id, automation_name, automation_type, status, started_at, completed_at, duration_ms, items_processed, items_succeeded, items_failed, error_message, error_code, retry_count, metadata)
-                        VALUES (?, ?, ?, ?, ?, 'failed', datetime('now', '-' || ? || ' seconds'), datetime('now'), ?, 0, 0, 0, ?, ?, ?, '{}')
+                        VALUES (?, ?, ?, ?, ?, 'failed', NOW() - (?::text || ' seconds')::interval, NOW(), ?, 0, 0, 0, ?, ?, ?, '{}')
                     `, [
                         uuidv4(), userId, task.id, task.type, task.type,
                         Math.round(duration / 1000), duration,
@@ -246,12 +246,12 @@ async function processTask(task) {
             const retryDelay = BASE_RETRY_DELAY_MS * Math.pow(2, attempts - 1);
             const scheduledAt = new Date(Date.now() + retryDelay).toISOString();
 
-            query.run(`
+            await query.run(`
                 UPDATE task_queue SET
                     status = 'pending',
                     last_error = ?,
                     scheduled_at = ?,
-                    updated_at = datetime('now')
+                    updated_at = NOW()
                 WHERE id = ?
             `, [error.message, scheduledAt, task.id]);
 
@@ -272,7 +272,7 @@ async function checkDailySummaries() {
     const currentHour = new Date().getUTCHours();
     if (currentHour !== 14) return; // Send at 2 PM UTC (~8 AM MST)
 
-    const users = query.all(`
+    const users = await query.all(`
         SELECT up.user_id, up.settings, u.email, u.username
         FROM user_preferences up
         JOIN users u ON u.id = up.user_id
@@ -288,13 +288,13 @@ async function checkDailySummaries() {
             if (!row.email) continue;
 
             const sentKey = 'daily_summary_sent';
-            const lastSent = query.get('SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?', [row.user_id, sentKey]);
+            const lastSent = await query.get('SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?', [row.user_id, sentKey]);
             if (lastSent && lastSent.settings === today) continue;
 
-            const runs = query.all(`
+            const runs = await query.all(`
                 SELECT status, COUNT(*) as count, SUM(items_processed) as total_items
                 FROM automation_runs
-                WHERE user_id = ? AND started_at >= datetime('now', '-24 hours')
+                WHERE user_id = ? AND started_at >= NOW() - INTERVAL '24 hours'
                 GROUP BY status
             `, [row.user_id]);
 
@@ -308,11 +308,11 @@ async function checkDailySummaries() {
                 if (r.status === 'failed') failedRuns = r.count;
             });
 
-            const topRules = query.all(`
+            const topRules = await query.all(`
                 SELECT automation_name, COUNT(*) as runs,
                     SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successes
                 FROM automation_runs
-                WHERE user_id = ? AND started_at >= datetime('now', '-24 hours')
+                WHERE user_id = ? AND started_at >= NOW() - INTERVAL '24 hours'
                 GROUP BY automation_name ORDER BY runs DESC LIMIT 5
             `, [row.user_id]);
 
@@ -322,11 +322,11 @@ async function checkDailySummaries() {
                 { totalRuns, successRuns, failedRuns, totalItems, topRules }
             );
 
-            const existing = query.get('SELECT id FROM user_preferences WHERE user_id = ? AND key = ?', [row.user_id, sentKey]);
+            const existing = await query.get('SELECT id FROM user_preferences WHERE user_id = ? AND key = ?', [row.user_id, sentKey]);
             if (existing) {
-                query.run('UPDATE user_preferences SET settings = ? WHERE user_id = ? AND key = ?', [today, row.user_id, sentKey]);
+                await query.run('UPDATE user_preferences SET settings = ? WHERE user_id = ? AND key = ?', [today, row.user_id, sentKey]);
             } else {
-                query.run('INSERT INTO user_preferences (id, user_id, key, settings) VALUES (?, ?, ?, ?)', [uuidv4(), row.user_id, sentKey, today]);
+                await query.run('INSERT INTO user_preferences (id, user_id, key, settings) VALUES (?, ?, ?, ?)', [uuidv4(), row.user_id, sentKey, today]);
             }
 
             logger.info(`[TaskWorker] Daily summary sent to ${row.email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
@@ -393,7 +393,7 @@ async function executeSyncShopTask(payload) {
     const result = await syncShop(shopId, userId);
 
     // Create success notification
-    const shop = query.get('SELECT platform FROM shops WHERE id = ?', [shopId]);
+    const shop = await query.get('SELECT platform FROM shops WHERE id = ?', [shopId]);
     if (shop) {
         createOAuthNotification(
             userId,
@@ -448,7 +448,7 @@ async function executeSyncEmailAccountTask(payload) {
     const { syncEmailAccount } = await import('./emailPollingWorker.js');
 
     // Get the account
-    const account = query.get(`
+    const account = await query.get(`
         SELECT * FROM email_accounts
         WHERE id = ? AND user_id = ?
     `, [accountId, userId]);
@@ -474,7 +474,7 @@ async function executeProcessWebhookTask(payload) {
     const { processWebhookEvent } = await import('../services/webhookProcessor.js');
 
     // Get the event
-    const event = query.get(`
+    const event = await query.get(`
         SELECT * FROM webhook_events WHERE id = ?
     `, [eventId]);
 
@@ -493,7 +493,7 @@ async function notifyTaskFailure(task, error) {
         const payload = JSON.parse(task.payload);
 
         if (task.type === 'sync_shop' && payload.userId) {
-            const shop = query.get('SELECT platform FROM shops WHERE id = ?', [payload.shopId]);
+            const shop = await query.get('SELECT platform FROM shops WHERE id = ?', [payload.shopId]);
             if (shop) {
                 createOAuthNotification(
                     payload.userId,
@@ -524,7 +524,7 @@ export function queueTask(type, payload, options = {}) {
         scheduledAt = new Date().toISOString().replace('T', ' ').replace('Z', '').split('.')[0]
     } = options;
 
-    query.run(`
+    await query.run(`
         INSERT INTO task_queue (id, type, payload, priority, max_attempts, scheduled_at)
         VALUES (?, ?, ?, ?, ?, ?)
     `, [id, type, JSON.stringify(payload), priority, maxAttempts, scheduledAt]);
@@ -546,7 +546,7 @@ export function queueTask(type, payload, options = {}) {
  * @returns {Object|null} Task status
  */
 export function getTaskStatus(taskId) {
-    const task = query.get(`
+    const task = await query.get(`
         SELECT id, type, status, attempts, max_attempts, last_error,
                created_at, started_at, completed_at
         FROM task_queue
@@ -560,7 +560,7 @@ export function getTaskStatus(taskId) {
  * Get worker status for monitoring
  */
 export function getWorkerStatus() {
-    const stats = query.get(`
+    const stats = await query.get(`
         SELECT
             COUNT(*) as total_tasks,
             SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_tasks,
@@ -568,7 +568,7 @@ export function getWorkerStatus() {
             SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_tasks,
             SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_tasks
         FROM task_queue
-        WHERE created_at > datetime('now', '-24 hours')
+        WHERE created_at > NOW() - INTERVAL '24 hours'
     `);
 
     return {
@@ -586,10 +586,10 @@ export function getWorkerStatus() {
  * @returns {number} Number of deleted tasks
  */
 export function cleanupOldTasks(daysOld = 7) {
-    const result = query.run(`
+    const result = await query.run(`
         DELETE FROM task_queue
         WHERE status IN ('completed', 'failed')
-        AND completed_at < datetime('now', '-' || ? || ' days')
+        AND completed_at < NOW() - (?::text || ' days')::interval
     `, [daysOld]);
 
     return result.changes;
@@ -597,7 +597,7 @@ export function cleanupOldTasks(daysOld = 7) {
 
 // FIXED 2026-02-24: Automation schedule checking functions (Issue #3)
 async function checkAutomationSchedules() {
-    const rules = query.all(`
+    const rules = await query.all(`
         SELECT id, user_id, name, type, schedule, last_run_at
         FROM automation_rules
         WHERE is_enabled = 1 AND schedule IS NOT NULL AND schedule != ''
@@ -605,10 +605,10 @@ async function checkAutomationSchedules() {
     for (const rule of rules) {
         const nextRun = calculateNextRunFromCron(rule.schedule, rule.last_run_at);
         if (nextRun && nextRun <= new Date()) {
-            const existing = query.get(`
+            const existing = await query.get(`
                 SELECT id FROM task_queue
                 WHERE type = 'run_automation'
-                  AND json_extract(payload, '$.ruleId') = ?
+                  AND payload::jsonb->>'ruleId' = ?
                   AND status IN ('pending', 'processing')
             `, [rule.id]);
             if (!existing) {
@@ -703,8 +703,8 @@ function calculateNextRunFromCron(cronExpr, lastRunAt) {
 // Helper: log a single automation action to automation_logs
 function logAutomationAction(userId, ruleId, type, platform, status, actionTaken, targetId, details) {
     try {
-        query.run(`INSERT INTO automation_logs (id, user_id, rule_id, type, platform, status, action_taken, target_id, details, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+        await query.run(`INSERT INTO automation_logs (id, user_id, rule_id, type, platform, status, action_taken, target_id, details, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
             [uuidv4(), userId, ruleId, type, platform || null, status, actionTaken, targetId || null, details]);
     } catch (e) {
         logger.error('[TaskWorker] Failed to log automation action:', e.message);
@@ -721,10 +721,10 @@ function executePriceDrop(rule, conditions, actions) {
     const params = [rule.user_id, String(minDays)];
     let sql = `SELECT id, inventory_id, platform, price, title FROM listings
                WHERE user_id = ? AND status = 'active'
-               AND listed_at <= datetime('now', '-' || ? || ' days')`;
+               AND listed_at <= NOW() - (?::text || ' days')::interval`;
     if (rule.platform) { sql += ' AND platform = ?'; params.push(rule.platform); }
 
-    const listings = query.all(sql, params);
+    const listings = await query.all(sql, params);
     let processed = 0, succeeded = 0, failed = 0;
 
     for (const listing of listings) {
@@ -739,14 +739,14 @@ function executePriceDrop(rule, conditions, actions) {
                 processed++;
                 continue;
             }
-            query.run(`UPDATE listings SET price = ?, original_price = COALESCE(original_price, ?), updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            await query.run(`UPDATE listings SET price = ?, original_price = COALESCE(original_price, ?), updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 [newPrice, oldPrice, listing.id]);
             if (listing.inventory_id) {
-                query.run(`UPDATE inventory SET list_price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+                await query.run(`UPDATE inventory SET list_price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                     [newPrice, listing.inventory_id]);
                 try {
-                    query.run(`INSERT INTO price_history (id, inventory_id, user_id, list_price, previous_list_price, change_reason, changed_at)
-                               VALUES (?, ?, ?, ?, ?, 'automation_price_drop', datetime('now'))`,
+                    await query.run(`INSERT INTO price_history (id, inventory_id, user_id, list_price, previous_list_price, change_reason, changed_at)
+                               VALUES (?, ?, ?, ?, ?, 'automation_price_drop', NOW())`,
                         [uuidv4(), listing.inventory_id, rule.user_id, newPrice, oldPrice]);
                 } catch (_) { /* price_history table may not exist */ }
             }
@@ -766,24 +766,24 @@ function executePriceDrop(rule, conditions, actions) {
 function executeRelist(rule, conditions, actions) {
     const minDays = Math.floor(conditions.minDaysListed || 60);
     const params = [rule.user_id, String(minDays)];
-    let sql = `SELECT * FROM listings WHERE user_id = ? AND status = 'active' AND listed_at <= datetime('now', '-' || ? || ' days')`;
+    let sql = `SELECT * FROM listings WHERE user_id = ? AND status = 'active' AND listed_at <= NOW() - (?::text || ' days')::interval`;
     if (rule.platform) { sql += ' AND platform = ?'; params.push(rule.platform); }
 
-    const listings = query.all(sql, params);
+    const listings = await query.all(sql, params);
     let processed = 0, succeeded = 0, failed = 0;
     const delistOnly = actions.delistOnly;
 
     for (const listing of listings) {
         try {
             if (delistOnly) {
-                query.run(`UPDATE listings SET status = 'ended', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [listing.id]);
+                await query.run(`UPDATE listings SET status = 'ended', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [listing.id]);
                 logAutomationAction(rule.user_id, rule.id, 'relist', listing.platform, 'success', 'delist', listing.id,
                     `Delisted "${listing.title}" (stale >${minDays} days)`);
             } else {
                 const newId = uuidv4();
-                query.run(`UPDATE listings SET status = 'ended', inventory_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [listing.id]);
-                query.run(`INSERT INTO listings (id, inventory_id, user_id, platform, title, description, price, original_price, shipping_price, category_path, condition_tag, status, images, platform_specific_data, views, likes, shares, listed_at, created_at, updated_at)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, 0, 0, 0, datetime('now'), datetime('now'), datetime('now'))`,
+                await query.run(`UPDATE listings SET status = 'ended', inventory_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [listing.id]);
+                await query.run(`INSERT INTO listings (id, inventory_id, user_id, platform, title, description, price, original_price, shipping_price, category_path, condition_tag, status, images, platform_specific_data, views, likes, shares, listed_at, created_at, updated_at)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, 0, 0, 0, NOW(), NOW(), NOW())`,
                     [newId, listing.inventory_id, listing.user_id, listing.platform, listing.title, listing.description,
                      listing.price, listing.original_price, listing.shipping_price || 0, listing.category_path, listing.condition_tag,
                      listing.images || '[]', listing.platform_specific_data || '{}']);
@@ -808,7 +808,7 @@ async function executeCommunityShare(rule, conditions, actions) {
 
         const maxShares = conditions.maxShares || 50;
 
-        const shop = query.get(
+        const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
             [rule.user_id, 'poshmark']
         );
@@ -852,12 +852,12 @@ function executeShare(rule, conditions, actions) {
     if (minPrice > 0) { sql += ' AND price >= ?'; params.push(minPrice); }
     sql += ' ORDER BY last_shared_at ASC NULLS FIRST';
 
-    const listings = query.all(sql, params);
+    const listings = await query.all(sql, params);
     let processed = 0, succeeded = 0, failed = 0;
 
     for (const listing of listings) {
         try {
-            query.run(`UPDATE listings SET shares = shares + 1, last_shared_at = datetime('now'), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [listing.id]);
+            await query.run(`UPDATE listings SET shares = shares + 1, last_shared_at = NOW(), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [listing.id]);
             const delayNote = actions.randomDelay ? ` (delay: ${(crypto.getRandomValues(new Uint32Array(1))[0] % 5) + 1}s)` : '';
             logAutomationAction(rule.user_id, rule.id, 'share', listing.platform, 'success', isPartyShare ? 'party_share' : 'share', listing.id,
                 `Shared "${listing.title}"${delayNote}`);
@@ -882,32 +882,32 @@ function executeOffer(rule, conditions, actions) {
                WHERE l.user_id = ? AND o.status = 'pending'`;
     if (rule.platform) { sql += ' AND o.platform = ?'; params.push(rule.platform); }
 
-    const pendingOffers = query.all(sql, params);
+    const pendingOffers = await query.all(sql, params);
     let processed = 0, succeeded = 0, failed = 0;
 
     for (const offer of pendingOffers) {
         try {
             const pct = (offer.offer_amount / offer.listing_price) * 100;
             if (actions.autoAccept && conditions.minPercentage && pct >= conditions.minPercentage) {
-                query.run(`UPDATE offers SET status = 'accepted', auto_action = 'auto_accept', responded_at = datetime('now'), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [offer.offer_id]);
+                await query.run(`UPDATE offers SET status = 'accepted', auto_action = 'auto_accept', responded_at = NOW(), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [offer.offer_id]);
                 logAutomationAction(rule.user_id, rule.id, 'offer', offer.platform, 'success', 'auto_accept', offer.offer_id,
                     `Accepted $${offer.offer_amount.toFixed(2)} (${pct.toFixed(0)}% of $${offer.listing_price.toFixed(2)}) on "${offer.title}"`);
                 processed++; succeeded++;
             } else if (actions.autoDecline && conditions.maxPercentage && pct <= conditions.maxPercentage) {
-                query.run(`UPDATE offers SET status = 'declined', auto_action = 'auto_decline', responded_at = datetime('now'), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [offer.offer_id]);
+                await query.run(`UPDATE offers SET status = 'declined', auto_action = 'auto_decline', responded_at = NOW(), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [offer.offer_id]);
                 logAutomationAction(rule.user_id, rule.id, 'offer', offer.platform, 'success', 'auto_decline', offer.offer_id,
                     `Declined $${offer.offer_amount.toFixed(2)} (${pct.toFixed(0)}% of $${offer.listing_price.toFixed(2)}) on "${offer.title}"`);
                 processed++; succeeded++;
             } else if (actions.autoCounter && conditions.counterPercentage && (!conditions.minPercentage || pct >= conditions.minPercentage)) {
                 const counterAmount = Math.round(offer.listing_price * (conditions.counterPercentage / 100) * 100) / 100;
                 if (counterAmount > offer.offer_amount) {
-                    query.run(`UPDATE offers SET status = 'countered', counter_amount = ?, auto_action = 'auto_counter', responded_at = datetime('now'), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [counterAmount, offer.offer_id]);
+                    await query.run(`UPDATE offers SET status = 'countered', counter_amount = ?, auto_action = 'auto_counter', responded_at = NOW(), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [counterAmount, offer.offer_id]);
                     logAutomationAction(rule.user_id, rule.id, 'offer', offer.platform, 'success', 'auto_counter', offer.offer_id,
                         `Countered $${offer.offer_amount.toFixed(2)} with $${counterAmount.toFixed(2)} (${conditions.counterPercentage}% of $${offer.listing_price.toFixed(2)}) on "${offer.title}"`);
                     processed++; succeeded++;
                 } else {
                     // Counter would be less than or equal to offer — accept instead
-                    query.run(`UPDATE offers SET status = 'accepted', auto_action = 'auto_accept_counter', responded_at = datetime('now'), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [offer.offer_id]);
+                    await query.run(`UPDATE offers SET status = 'accepted', auto_action = 'auto_accept_counter', responded_at = NOW(), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [offer.offer_id]);
                     logAutomationAction(rule.user_id, rule.id, 'offer', offer.platform, 'success', 'auto_accept_counter', offer.offer_id,
                         `Accepted $${offer.offer_amount.toFixed(2)} (counter $${counterAmount.toFixed(2)} <= offer) on "${offer.title}"`);
                     processed++; succeeded++;
@@ -943,7 +943,7 @@ async function executeOtl(rule, conditions, actions) {
         const maxOffers = conditions.maxOffers || 50;
 
         // Get the shop credentials
-        const shop = query.get(
+        const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
             [rule.user_id, 'poshmark']
         );
@@ -985,9 +985,9 @@ function executeCustom(rule, conditions, actions) {
         const discountPct = actions.discountPercent || 15;
 
         // Find buyers who liked multiple active listings
-        const bundleCandidates = query.all(`
+        const bundleCandidates = await query.all(`
             SELECT buyer_username, COUNT(*) as liked_count,
-                   GROUP_CONCAT(listing_id) as listing_ids,
+                   STRING_AGG(listing_id, ',') as listing_ids,
                    SUM(l.price) as total_price
             FROM offers o
             JOIN listings l ON o.listing_id = l.id
@@ -1008,7 +1008,7 @@ function executeCustom(rule, conditions, actions) {
 
     // Bundle reminder: find users with existing bundles, log reminder
     if (actions.bundleReminder) {
-        const bundles = query.all(`
+        const bundles = await query.all(`
             SELECT buyer_username, COUNT(*) as item_count, SUM(l.price) as total
             FROM offers o
             JOIN listings l ON o.listing_id = l.id
@@ -1028,9 +1028,9 @@ function executeCustom(rule, conditions, actions) {
     // Create bundle for likers: find users who liked N+ items
     if (actions.createBundle) {
         const minLikes = conditions.minLikes || 3;
-        const likers = query.all(`
+        const likers = await query.all(`
             SELECT le.source AS liker_username, COUNT(*) as like_count,
-                   GROUP_CONCAT(l.id) as listing_ids
+                   STRING_AGG(l.id, ',') as listing_ids
             FROM listing_engagement le
             JOIN listings l ON le.listing_id = l.id
             WHERE l.user_id = ? AND le.event_type = 'like' AND l.status = 'active'
@@ -1050,16 +1050,16 @@ function executeCustom(rule, conditions, actions) {
     // Error retry: find failed tasks and re-queue them
     if (actions.retryFailed) {
         const maxRetries = actions.maxRetries || 3;
-        const failedTasks = query.all(`
+        const failedTasks = await query.all(`
             SELECT * FROM task_queue
             WHERE status = 'failed' AND attempts < ?
-            AND json_extract(payload, '$.userId') = ?
+            AND payload::jsonb->>'userId' = ?
             ORDER BY completed_at DESC LIMIT 20
         `, [maxRetries, rule.user_id]);
 
         let retried = 0;
         for (const task of failedTasks) {
-            query.run(`UPDATE task_queue SET status = 'pending', scheduled_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`, [task.id]);
+            await query.run(`UPDATE task_queue SET status = 'pending', scheduled_at = NOW(), updated_at = NOW() WHERE id = ?`, [task.id]);
             logAutomationAction(rule.user_id, rule.id, 'custom', null, 'success', 'error_retry', task.id,
                 `Retried failed task: ${task.type} (attempt ${task.attempts + 1})`);
             retried++;
@@ -1091,7 +1091,7 @@ async function executeMercariBot(rule, conditions, actions) {
         const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
         const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
-        const shop = query.get(
+        const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
             [rule.user_id, 'mercari']
         );
@@ -1137,7 +1137,7 @@ async function executeDepopBot(rule, conditions, actions) {
         const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
         const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
-        const shop = query.get(
+        const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
             [rule.user_id, 'depop']
         );
@@ -1184,7 +1184,7 @@ async function executeGrailedBot(rule, conditions, actions) {
         const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
         const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
-        const shop = query.get(
+        const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
             [rule.user_id, 'grailed']
         );
@@ -1217,7 +1217,7 @@ async function executeFacebookBot(rule, conditions, actions) {
         const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
         const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
-        const shop = query.get(
+        const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
             [rule.user_id, 'facebook']
         );
@@ -1250,7 +1250,7 @@ async function executeWhatnotBot(rule, conditions, actions) {
         const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
         const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
-        const shop = query.get(
+        const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
             [rule.user_id, 'whatnot']
         );
@@ -1282,15 +1282,15 @@ async function executePoshmarkPublishTask(payload) {
     const { listingId, userId } = payload;
     if (!listingId) throw new Error('Missing listingId in publish_listing payload');
 
-    const listing = query.get(
+    const listing = await query.get(
         'SELECT l.*, i.images AS inv_images FROM listings l LEFT JOIN inventory i ON l.inventory_id = i.id WHERE l.id = ? AND l.user_id = ?',
         [listingId, userId]
     );
     if (!listing) return { message: `Listing ${listingId} not found`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
 
-    const shop = query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1', [userId, 'poshmark']);
+    const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1', [userId, 'poshmark']);
     if (!shop) {
-        query.run('UPDATE listings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', ['publish_failed', listingId]);
+        await query.run('UPDATE listings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', ['publish_failed', listingId]);
         return { message: 'No connected Poshmark shop found', itemsProcessed: 1, itemsSucceeded: 0, itemsFailed: 1 };
     }
 
@@ -1320,7 +1320,7 @@ async function executePoshmarkPublishTask(payload) {
         });
 
         if (result.success) {
-            query.run(
+            await query.run(
                 'UPDATE listings SET status = ?, platform_url = ?, listed_at = datetime(\'now\'), updated_at = CURRENT_TIMESTAMP WHERE id = ?',
                 ['active', result.listingUrl, listingId]
             );
@@ -1328,7 +1328,7 @@ async function executePoshmarkPublishTask(payload) {
             logger.info('[TaskWorker] Poshmark listing published', { listingId, url: result.listingUrl });
             return { message: `Published: ${result.listingUrl}`, itemsProcessed: 1, itemsSucceeded: 1, itemsFailed: 0 };
         } else {
-            query.run('UPDATE listings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', ['publish_failed', listingId]);
+            await query.run('UPDATE listings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', ['publish_failed', listingId]);
             auditLog('poshmark', 'publish_failure', { listingId, error: result.error, userId });
             return { message: `Publish failed: ${result.error}`, itemsProcessed: 1, itemsSucceeded: 0, itemsFailed: 1 };
         }
@@ -1357,8 +1357,8 @@ async function executePoshmarkInventorySyncTask(payload) {
         for (const item of listings) {
             try {
                 // Deduplicate by matching title + user (Poshmark URL stored in notes)
-                const existing = query.get(
-                    'SELECT id FROM inventory WHERE user_id = ? AND title = ? AND notes LIKE ?',
+                const existing = await query.get(
+                    'SELECT id FROM inventory WHERE user_id = ? AND title = ? AND notes ILIKE ?',
                     [userId, item.title || '', '%poshmark.com%']
                 );
 
@@ -1368,9 +1368,9 @@ async function executePoshmarkInventorySyncTask(payload) {
                 }
 
                 const itemId = uuidv4();
-                query.run(
+                await query.run(
                     `INSERT INTO inventory (id, user_id, title, description, list_price, brand, category, condition, images, notes, status, created_at, updated_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'), datetime('now'))`,
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW(), NOW())`,
                     [itemId, userId, item.title || '', item.description || '', item.price || 0, item.brand || '', item.category || '', item.condition || 'good', JSON.stringify(item.images || []), `Synced from Poshmark: ${item.url || ''}`]
                 );
                 synced++;
@@ -1411,13 +1411,17 @@ async function executeScrapeCompetitorClosetTask(payload) {
 
         let inserted = 0;
         try {
-            query.transaction(() => {
+            await query.transaction(() => {
                 for (const listing of listings) {
-                    query.run(`
-                        INSERT OR REPLACE INTO competitor_listings
+                    await query.run(`
+                        INSERT INTO competitor_listings
                             (id, competitor_id, external_id, title, price, original_price,
                              category, brand, condition, listed_at, sold_at, url, image_url, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                        ON CONFLICT (id) DO UPDATE SET
+                            title = EXCLUDED.title, price = EXCLUDED.price,
+                            original_price = EXCLUDED.original_price, sold_at = EXCLUDED.sold_at,
+                            url = EXCLUDED.url, image_url = EXCLUDED.image_url, updated_at = NOW()
                     `, [
                         listing.id, competitorId, listing.external_id, listing.title, listing.price,
                         listing.original_price, listing.category, listing.brand, listing.condition,
@@ -1436,9 +1440,9 @@ async function executeScrapeCompetitorClosetTask(payload) {
             const avgPrice = prices.length > 0
                 ? Math.round((prices.reduce((a, b) => a + b, 0) / prices.length) * 100) / 100
                 : null;
-            query.run(`
+            await query.run(`
                 UPDATE competitors
-                SET listing_count = ?, avg_price = COALESCE(?, avg_price), last_checked_at = datetime('now'), updated_at = datetime('now')
+                SET listing_count = ?, avg_price = COALESCE(?, avg_price), last_checked_at = NOW(), updated_at = NOW()
                 WHERE id = ?
             `, [listings.length, avgPrice, competitorId]);
         }
@@ -1464,10 +1468,10 @@ async function executePoshmarkMonitoringTask(payload) {
         const stats = await bot.getClosetStats();
 
         const id = uuidv4();
-        query.run(
+        await query.run(
             `INSERT INTO poshmark_monitoring_log
                 (id, user_id, total_listings, total_shares, total_likes, active_offers, recent_sales, closet_value, checked_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
             [id, userId, stats.totalListings, stats.totalShares, stats.totalLikes, stats.activeOffers, stats.recentSales, stats.closetValue]
         );
 
@@ -1492,7 +1496,7 @@ async function executePoshmarkMonitoringTask(payload) {
 async function executeRunAutomationTask(payload) {
     const { ruleId, userId } = payload;
     if (!ruleId) throw new Error('Missing ruleId in run_automation payload');
-    const rule = query.get('SELECT * FROM automation_rules WHERE id = ? AND is_enabled = 1', [ruleId]);
+    const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND is_enabled = 1', [ruleId]);
     if (!rule) return { message: `Automation rule ${ruleId} not found or disabled — skipping`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
 
     let conditions = {}, actions = {};
@@ -1521,7 +1525,7 @@ async function executeRunAutomationTask(payload) {
         }
     }
 
-    query.run(`UPDATE automation_rules SET last_run_at = datetime('now'), run_count = run_count + 1, error_count = error_count + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+    await query.run(`UPDATE automation_rules SET last_run_at = NOW(), run_count = run_count + 1, error_count = error_count + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
         [result.itemsFailed > 0 ? 1 : 0, ruleId]);
 
     // Send in-app notification + WebSocket push for automation results
@@ -1561,7 +1565,7 @@ async function executeRunAutomationTask(payload) {
 
             // Send email notification if user has email_enabled
             try {
-                const prefRow = query.get(
+                const prefRow = await query.get(
                     'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
                     [rule.user_id, 'automation_notifications']
                 );
@@ -1573,7 +1577,7 @@ async function executeRunAutomationTask(payload) {
                             (nType === 'error' && prefs.on_failure) ||
                             (nType === 'warning' && prefs.on_partial);
                         if (shouldEmail) {
-                            const userRow = query.get('SELECT email, username FROM users WHERE id = ?', [rule.user_id]);
+                            const userRow = await query.get('SELECT email, username FROM users WHERE id = ?', [rule.user_id]);
                             if (userRow?.email) {
                                 const { sendAutomationNotificationEmail } = await import('../services/email.js');
                                 await sendAutomationNotificationEmail(userRow, notification);

@@ -20,7 +20,7 @@ import { query } from '../../db/database.js';
  */
 export async function syncShop(shopId, userId) {
     // Get shop details
-    const shop = query.get(`
+    const shop = await query.get(`
         SELECT * FROM shops
         WHERE id = ? AND user_id = ? AND connection_type = 'oauth' AND is_connected = 1
     `, [shopId, userId]);
@@ -51,7 +51,7 @@ export async function syncShop(shopId, userId) {
     } catch (err) {
         // Update shop sync_error so the UI can surface it
         try {
-            query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
+            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
                 [err.message, new Date().toISOString(), shop.id]);
         } catch (_) { /* sync_error column may not exist */ }
         throw err;
@@ -96,7 +96,7 @@ export function isSyncSupported(platform) {
  * @returns {Object} Sync status
  */
 export function getSyncStatus(shopId, userId) {
-    const shop = query.get(`
+    const shop = await query.get(`
         SELECT
             id, platform, last_sync_at, sync_error,
             is_connected, connection_type
@@ -109,7 +109,7 @@ export function getSyncStatus(shopId, userId) {
     }
 
     // Check for pending sync tasks
-    const pendingTask = query.get(`
+    const pendingTask = await query.get(`
         SELECT id, status, created_at, started_at
         FROM task_queue
         WHERE type = 'sync_shop'

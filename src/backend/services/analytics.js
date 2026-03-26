@@ -169,7 +169,7 @@ const analyticsService = {
 
     // Get event counts by name
     getEventCounts(startDate, endDate = new Date()) {
-        return query.all(`
+        return await query.all(`
             SELECT
                 name,
                 COUNT(*) as count,
@@ -184,12 +184,12 @@ const analyticsService = {
 
     // Get page views
     getPageViews(startDate, endDate = new Date(), groupBy = 'day') {
-        const groupFormat = groupBy === 'hour' ? '%Y-%m-%d %H:00' : '%Y-%m-%d';
+        const groupFormat = groupBy === 'hour' ? 'YYYY-MM-DD HH24:00' : 'YYYY-MM-DD';
 
-        return query.all(`
+        return await query.all(`
             SELECT
-                strftime(?, timestamp) as period,
-                json_extract(properties, '$.page') as page,
+                TO_CHAR(timestamp, ?) as period,
+                properties::jsonb->>'page' as page,
                 COUNT(*) as views,
                 COUNT(DISTINCT user_id) as unique_users
             FROM analytics_events
@@ -202,13 +202,13 @@ const analyticsService = {
 
     // Get user sessions
     getUserSessions(userId, limit = 10) {
-        return query.all(`
+        return await query.all(`
             SELECT
                 session_id,
                 MIN(timestamp) as start_time,
                 MAX(timestamp) as end_time,
                 COUNT(*) as event_count,
-                GROUP_CONCAT(DISTINCT name) as events
+                STRING_AGG(DISTINCT name, ',') as events
             FROM analytics_events
             WHERE user_id = ?
             GROUP BY session_id
@@ -234,7 +234,7 @@ const analyticsService = {
             const params = [event, startDate.toISOString(), endDate.toISOString()];
 
             if (target) {
-                sql += ` AND (json_extract(properties, '$.page') = ? OR json_extract(properties, '$.type') = ? OR json_extract(properties, '$.target') = ?)`;
+                sql += ` AND (properties::jsonb->>'page' = ? OR properties::jsonb->>'type' = ? OR properties::jsonb->>'target' = ?)`;
                 params.push(target, target, target);
             }
 
@@ -251,9 +251,9 @@ const analyticsService = {
 
             // Get user IDs for next iteration
             const userIdsSql = sql.replace('COUNT(DISTINCT user_id) as users', 'DISTINCT user_id');
-            const userIds = query.all(userIdsSql, params).map(r => r.user_id).filter(Boolean);
+            const userIds = await query.all(userIdsSql, params).map(r => r.user_id).filter(Boolean);
 
-            const result = query.get(sql, params);
+            const result = await query.get(sql, params);
             const prevCount = i > 0 ? results[i - 1].users : result.users;
             const dropoff = prevCount > 0 ? ((prevCount - result.users) / prevCount * 100).toFixed(1) : 0;
 
@@ -272,15 +272,15 @@ const analyticsService = {
 
     // Get conversion metrics
     getConversionMetrics(type, startDate, endDate = new Date()) {
-        return query.get(`
+        return await query.get(`
             SELECT
                 COUNT(*) as total_conversions,
                 COUNT(DISTINCT user_id) as unique_users,
-                SUM(CAST(json_extract(properties, '$.value') AS REAL)) as total_value,
-                AVG(CAST(json_extract(properties, '$.value') AS REAL)) as avg_value
+                SUM(CAST(properties::jsonb->>'value' AS REAL)) as total_value,
+                AVG(CAST(properties::jsonb->>'value' AS REAL)) as avg_value
             FROM analytics_events
             WHERE name = 'conversion'
-            AND json_extract(properties, '$.type') = ?
+            AND properties::jsonb->>'type' = ?
             AND timestamp BETWEEN ? AND ?
         `, [type, startDate.toISOString(), endDate.toISOString()]);
     },
@@ -288,12 +288,12 @@ const analyticsService = {
     // Get user retention cohorts
     getRetentionCohorts(startDate, endDate = new Date()) {
         // Get weekly cohorts
-        return query.all(`
+        return await query.all(`
             WITH cohorts AS (
                 SELECT
                     user_id,
-                    strftime('%Y-%W', MIN(timestamp)) as cohort_week,
-                    MIN(DATE(timestamp)) as first_seen
+                    TO_CHAR(MIN(timestamp, 'YYYY-IW')) as cohort_week,
+                    MIN(timestamp::date) as first_seen
                 FROM analytics_events
                 WHERE user_id IS NOT NULL
                 AND timestamp BETWEEN ? AND ?
@@ -303,7 +303,7 @@ const analyticsService = {
                 SELECT
                     c.cohort_week,
                     c.user_id,
-                    (julianday(DATE(e.timestamp)) - julianday(c.first_seen)) / 7 as weeks_since_first
+                    (EXTRACT(EPOCH FROM (e.timestamp::date - c.first_seen)) / 86400) / 7 as weeks_since_first
                 FROM cohorts c
                 JOIN analytics_events e ON c.user_id = e.user_id
                 WHERE e.timestamp BETWEEN ? AND ?
@@ -324,7 +324,7 @@ const analyticsService = {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - ANALYTICS_CONFIG.dataRetentionDays);
 
-        const result = query.run(`
+        const result = await query.run(`
             DELETE FROM analytics_events
             WHERE timestamp < ?
         `, [cutoffDate.toISOString()]);

@@ -43,25 +43,25 @@ export async function pushNotificationsRouter(ctx) {
             }
 
             // Check if device already registered
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT id FROM push_devices WHERE token = ?',
                 [token]
             );
 
             if (existing) {
                 // Only update if device belongs to current user (prevent takeover)
-                const ownedDevice = query.get(
+                const ownedDevice = await query.get(
                     'SELECT id FROM push_devices WHERE token = ? AND user_id = ?',
                     [token, user?.id]
                 );
                 if (!ownedDevice) {
                     return { status: 409, data: { error: 'Device token already registered to another user' } };
                 }
-                query.run(`
+                await query.run(`
                     UPDATE push_devices SET
                         device_name = COALESCE(?, device_name),
-                        updated_at = datetime('now'),
-                        last_active_at = datetime('now')
+                        updated_at = NOW(),
+                        last_active_at = NOW()
                     WHERE id = ? AND user_id = ?
                 `, [deviceName, existing.id, user?.id]);
 
@@ -73,9 +73,9 @@ export async function pushNotificationsRouter(ctx) {
 
             // Register new device
             const id = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO push_devices (id, user_id, token, platform, device_id, device_name, created_at, updated_at, last_active_at)
-                VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
             `, [id, user?.id || null, token, platform, deviceId, deviceName]);
 
             return {
@@ -101,7 +101,7 @@ export async function pushNotificationsRouter(ctx) {
                 return { status: 400, data: { error: 'Token is required' } };
             }
 
-            query.run('DELETE FROM push_devices WHERE token = ? AND user_id = ?', [token, user.id]);
+            await query.run('DELETE FROM push_devices WHERE token = ? AND user_id = ?', [token, user.id]);
 
             return { status: 200, data: { message: 'Device unregistered' } };
         } catch (error) {
@@ -118,7 +118,7 @@ export async function pushNotificationsRouter(ctx) {
     // GET /api/notifications/devices - List user's registered devices
     if (method === 'GET' && path === '/devices') {
         try {
-            const devices = query.all(`
+            const devices = await query.all(`
                 SELECT id, platform, device_name, created_at, last_active_at
                 FROM push_devices
                 WHERE user_id = ?
@@ -137,7 +137,7 @@ export async function pushNotificationsRouter(ctx) {
         try {
             const deviceId = path.split('/')[2];
 
-            query.run(
+            await query.run(
                 'DELETE FROM push_devices WHERE id = ? AND user_id = ?',
                 [deviceId, user.id]
             );
@@ -165,7 +165,7 @@ export async function pushNotificationsRouter(ctx) {
                 quiet_hours_end: '08:00'
             };
 
-            const row = query.get(
+            const row = await query.get(
                 'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
                 [user.id, NOTIF_PREFS_KEY]
             );
@@ -206,12 +206,12 @@ export async function pushNotificationsRouter(ctx) {
                 quiet_hours_end: quiet_hours_end || '08:00'
             });
 
-            query.run(`
+            await query.run(`
                 INSERT INTO user_preferences (id, user_id, key, settings, created_at, updated_at)
-                VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, ?, NOW(), NOW())
                 ON CONFLICT(user_id, key) DO UPDATE SET
                     settings = excluded.settings,
-                    updated_at = datetime('now')
+                    updated_at = NOW()
             `, [uuidv4(), user.id, NOTIF_PREFS_KEY, settings]);
 
             return { status: 200, data: { message: 'Preferences updated' } };
@@ -244,7 +244,7 @@ export async function pushNotificationsRouter(ctx) {
             // SECURITY: IDOR fix — always send to the authenticated user only.
             const targetUserId = user.id;
 
-            const subscriptions = query.all(
+            const subscriptions = await query.all(
                 'SELECT * FROM push_subscriptions WHERE user_id = ? AND is_active = 1',
                 [targetUserId]
             );
@@ -267,7 +267,7 @@ export async function pushNotificationsRouter(ctx) {
                         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } },
                         payload
                     );
-                    query.run(
+                    await query.run(
                         'UPDATE push_subscriptions SET last_used_at = datetime(\'now\') WHERE id = ?',
                         [sub.id]
                     );
@@ -275,7 +275,7 @@ export async function pushNotificationsRouter(ctx) {
                 } catch (pushError) {
                     logger.error('[PushNotifications] Delivery failed', targetUserId, { detail: pushError.message });
                     if (pushError.statusCode === 410 || pushError.statusCode === 404) {
-                        query.run(
+                        await query.run(
                             'UPDATE push_subscriptions SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ?',
                             [sub.id]
                         );
@@ -284,9 +284,9 @@ export async function pushNotificationsRouter(ctx) {
             }
 
             const notificationId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO push_notification_log (id, user_id, title, body, data, channel, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
             `, [notificationId, targetUserId, title, notificationBody, JSON.stringify(data || {}), channel || 'general', sent > 0 ? 'sent' : 'failed']);
 
             logger.info(`[Push] Notification dispatched to ${sent}/${subscriptions.length} subscription(s) for user ${targetUserId}`);
@@ -334,7 +334,7 @@ export async function pushNotificationsRouter(ctx) {
 
             let usersNotified = 0;
             for (const userId of allowedIds) {
-                const subscriptions = query.all(
+                const subscriptions = await query.all(
                     'SELECT * FROM push_subscriptions WHERE user_id = ? AND is_active = 1 LIMIT 20',
                     [userId]
                 );
@@ -348,7 +348,7 @@ export async function pushNotificationsRouter(ctx) {
                             { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh_key, auth: sub.auth_key } },
                             payload
                         );
-                        query.run(
+                        await query.run(
                             'UPDATE push_subscriptions SET last_used_at = datetime(\'now\') WHERE id = ?',
                             [sub.id]
                         );
@@ -356,7 +356,7 @@ export async function pushNotificationsRouter(ctx) {
                     } catch (pushError) {
                         logger.error('[PushNotifications] Batch delivery failed', userId, { detail: pushError.message });
                         if (pushError.statusCode === 410 || pushError.statusCode === 404) {
-                            query.run(
+                            await query.run(
                                 'UPDATE push_subscriptions SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ?',
                                 [sub.id]
                             );
@@ -366,9 +366,9 @@ export async function pushNotificationsRouter(ctx) {
 
                 if (userSent > 0) {
                     const notificationId = uuidv4();
-                    query.run(`
+                    await query.run(`
                         INSERT INTO push_notification_log (id, user_id, title, body, data, channel, status, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?, 'sent', datetime('now'))
+                        VALUES (?, ?, ?, ?, ?, ?, 'sent', NOW())
                     `, [notificationId, userId, title, notificationBody, JSON.stringify(data || {}), channel || 'general']);
                     usersNotified++;
                 }

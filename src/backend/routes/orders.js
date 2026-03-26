@@ -62,7 +62,7 @@ export async function ordersRouter(ctx) {
         try {
             const { limit, offset } = parsePagination(queryParams, { maxLimit: 200, limit: 50 });
 
-            // Helper function to escape LIKE wildcards
+            // Helper function to escape ILIKE wildcards
             const escapeLike = (str) => {
                 return str.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
             };
@@ -88,13 +88,13 @@ export async function ordersRouter(ctx) {
             }
 
             if (search) {
-                countSql += ` AND (buyer_username LIKE ? ESCAPE '\\' OR item_title LIKE ? ESCAPE '\\' OR tracking_number LIKE ? ESCAPE '\\' OR order_number LIKE ? ESCAPE '\\')`;
+                countSql += ` AND (buyer_username ILIKE ? ESCAPE '\\' OR item_title ILIKE ? ESCAPE '\\' OR tracking_number ILIKE ? ESCAPE '\\' OR order_number ILIKE ? ESCAPE '\\')`;
                 const escapedSearch = escapeLike(search);
                 const searchPattern = `%${escapedSearch}%`;
                 countParams.push(searchPattern, searchPattern, searchPattern, searchPattern);
             }
 
-            const { total } = query.get(countSql, countParams);
+            const { total } = await query.get(countSql, countParams);
 
             // Now fetch paginated results
             let sql = `SELECT * FROM orders WHERE user_id = ?`;
@@ -115,7 +115,7 @@ export async function ordersRouter(ctx) {
             }
 
             if (search) {
-                sql += ` AND (buyer_username LIKE ? ESCAPE '\\' OR item_title LIKE ? ESCAPE '\\' OR tracking_number LIKE ? ESCAPE '\\' OR order_number LIKE ? ESCAPE '\\')`;
+                sql += ` AND (buyer_username ILIKE ? ESCAPE '\\' OR item_title ILIKE ? ESCAPE '\\' OR tracking_number ILIKE ? ESCAPE '\\' OR order_number ILIKE ? ESCAPE '\\')`;
                 const escapedSearch = escapeLike(search);
                 const searchPattern = `%${escapedSearch}%`;
                 params.push(searchPattern, searchPattern, searchPattern, searchPattern);
@@ -124,10 +124,10 @@ export async function ordersRouter(ctx) {
             sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
             params.push(limit, offset);
 
-            const orders = query.all(sql, params);
+            const orders = await query.all(sql, params);
 
             // Count stats from full database (not paginated results)
-            const statsRow = query.get(`
+            const statsRow = await query.get(`
                 SELECT
                     COUNT(*) as total_all,
                     SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
@@ -167,7 +167,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.slice(1);
 
         try {
-            const order = query.get(
+            const order = await query.get(
                 `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
                 [orderId, user.id]
             );
@@ -252,7 +252,7 @@ export async function ordersRouter(ctx) {
             const orderId = uuidv4();
             const now = new Date().toISOString();
 
-            query.run(`
+            await query.run(`
                 INSERT INTO orders (
                     id, user_id, order_number, platform, status,
                     buyer_username, buyer_email, buyer_address,
@@ -270,7 +270,7 @@ export async function ordersRouter(ctx) {
                 now, now
             ]);
 
-            const order = query.get('SELECT * FROM orders WHERE id = ?', [orderId]);
+            const order = await query.get('SELECT * FROM orders WHERE id = ?', [orderId]);
 
             return {
                 status: 201,
@@ -290,7 +290,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.slice(1);
 
         try {
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
                 [orderId, user.id]
             );
@@ -398,9 +398,9 @@ export async function ordersRouter(ctx) {
             params.push(orderId);
 
             params.push(user.id);
-            query.run(`UPDATE orders SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
+            await query.run(`UPDATE orders SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
 
-            const order = query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
+            const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             return {
                 status: 200,
@@ -421,7 +421,7 @@ export async function ordersRouter(ctx) {
         const { tracking_number, shipping_provider } = body;
 
         try {
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
                 [orderId, user.id]
             );
@@ -443,7 +443,7 @@ export async function ordersRouter(ctx) {
 
             const now = new Date().toISOString();
 
-            query.run(`
+            await query.run(`
                 UPDATE orders SET
                     status = 'shipped',
                     tracking_number = COALESCE(?, tracking_number),
@@ -453,7 +453,7 @@ export async function ordersRouter(ctx) {
                 WHERE id = ? AND user_id = ?
             `, [tracking_number, shipping_provider, now, now, orderId, user.id]);
 
-            const order = query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
+            const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             return {
                 status: 200,
@@ -473,7 +473,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
                 [orderId, user.id]
             );
@@ -495,7 +495,7 @@ export async function ordersRouter(ctx) {
 
             const now = new Date().toISOString();
 
-            query.run(`
+            await query.run(`
                 UPDATE orders SET
                     status = 'delivered',
                     delivered_at = ?,
@@ -504,7 +504,7 @@ export async function ordersRouter(ctx) {
                 WHERE id = ? AND user_id = ?
             `, [now, now.split('T')[0], now, orderId, user.id]);
 
-            const order = query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
+            const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             return {
                 status: 200,
@@ -524,7 +524,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.slice(1);
 
         try {
-            const result = query.run(
+            const result = await query.run(
                 `DELETE FROM orders WHERE id = ? AND user_id = ?`,
                 [orderId, user.id]
             );
@@ -554,7 +554,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const order = query.get(
+            const order = await query.get(
                 'SELECT * FROM orders WHERE id = ? AND user_id = ?',
                 [orderId, user.id]
             );
@@ -569,12 +569,12 @@ export async function ordersRouter(ctx) {
                 return { status: 400, data: { error: 'Return reason is required' } };
             }
 
-            query.run(
+            await query.run(
                 `UPDATE orders SET return_status = 'requested', return_reason = ?, refund_amount = ?, return_tracking = ?, return_requested_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 [return_reason, refund_amount || null, return_tracking || null, orderId, user.id]
             );
 
-            const updated = query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
+            const updated = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
             return { status: 200, data: { order: updated, message: 'Return initiated successfully' } };
         } catch (error) {
             logger.error('[Orders] error initiating return', user?.id, { detail: error?.message || 'Unknown error' });
@@ -587,7 +587,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const order = query.get(
+            const order = await query.get(
                 'SELECT * FROM orders WHERE id = ? AND user_id = ?',
                 [orderId, user.id]
             );
@@ -617,9 +617,9 @@ export async function ordersRouter(ctx) {
 
             params.push(orderId);
             params.push(user.id);
-            query.run(`UPDATE orders SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
+            await query.run(`UPDATE orders SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
 
-            const updated = query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
+            const updated = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
             return { status: 200, data: { order: updated, message: 'Return status updated' } };
         } catch (error) {
             logger.error('[Orders] error updating return', user?.id, { detail: error?.message || 'Unknown error' });
@@ -631,7 +631,7 @@ export async function ordersRouter(ctx) {
     if (method === 'POST' && path === '/sync-all') {
         try {
             // Find all connected shops for this user
-            const shops = query.all(
+            const shops = await query.all(
                 'SELECT id, platform FROM shops WHERE user_id = ? AND is_connected = 1',
                 [user.id]
             );
@@ -682,7 +682,7 @@ export async function ordersRouter(ctx) {
 
         try {
             if (platform === 'ebay') {
-                const shop = query.get(
+                const shop = await query.get(
                     "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = 1",
                     [user.id]
                 );
@@ -725,7 +725,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
                 [orderId, user.id]
             );
@@ -749,7 +749,7 @@ export async function ordersRouter(ctx) {
 
             const now = new Date().toISOString();
 
-            query.run(`
+            await query.run(`
                 UPDATE orders SET
                     priority = ?,
                     priority_note = ?,
@@ -757,7 +757,7 @@ export async function ordersRouter(ctx) {
                 WHERE id = ? AND user_id = ?
             `, [priority, priority_note || null, now, orderId, user.id]);
 
-            const order = query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
+            const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             return {
                 status: 200,
@@ -777,7 +777,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
                 [orderId, user.id]
             );
@@ -810,9 +810,9 @@ export async function ordersRouter(ctx) {
             const now = new Date().toISOString();
 
             // Wrap split in transaction for atomicity
-            const { parent, childOrders } = query.transaction(() => {
+            const { parent, childOrders } = await query.transaction(() => {
                 // Mark parent as split
-                query.run(`
+                await query.run(`
                     UPDATE orders SET
                         is_split_shipment = 1,
                         total_shipments = ?,
@@ -825,7 +825,7 @@ export async function ordersRouter(ctx) {
                 for (let i = 1; i <= shipment_count; i++) {
                     const childId = uuidv4();
 
-                    query.run(`
+                    await query.run(`
                         INSERT INTO orders (
                             id, user_id, order_number, platform, status,
                             buyer_username, buyer_email, buyer_address,
@@ -858,11 +858,11 @@ export async function ordersRouter(ctx) {
                         now
                     ]);
 
-                    const child = query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [childId, user.id]);
+                    const child = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [childId, user.id]);
                     children.push(child);
                 }
 
-                const p = query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
+                const p = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
                 return { parent: p, childOrders: children };
             });
 
@@ -888,7 +888,7 @@ export async function ordersRouter(ctx) {
         const orderId = path.split('/')[1];
 
         try {
-            const parent = query.get(
+            const parent = await query.get(
                 `SELECT * FROM orders WHERE id = ? AND user_id = ?`,
                 [orderId, user.id]
             );
@@ -907,7 +907,7 @@ export async function ordersRouter(ctx) {
                 };
             }
 
-            const shipments = query.all(
+            const shipments = await query.all(
                 `SELECT * FROM orders WHERE parent_order_id = ? AND user_id = ? ORDER BY shipment_number ASC`,
                 [orderId, user.id]
             );

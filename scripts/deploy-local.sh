@@ -40,22 +40,18 @@ else
     echo "✓ Dependencies already installed"
 fi
 
-# Initialize database if it doesn't exist
-if [ ! -f "data/vaultlister.db" ]; then
-    echo "📊 Initializing database..."
-    bun run db:init
-    echo "✓ Database initialized"
+# Initialize database schema (PostgreSQL — idempotent, safe to run multiple times)
+echo "📊 Initializing database..."
+bun run db:init
+echo "✓ Database ready"
 
-    # Ask if user wants to seed with demo data
-    read -p "   Seed with demo data? (y/n) " -n 1 -r
-    echo ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        bun run db:seed
-        echo "✓ Database seeded with demo data"
-        echo "   Demo credentials: demo@vaultlister.com / DemoPassword123!"
-    fi
-else
-    echo "✓ Database already exists"
+# Ask if user wants to seed with demo data
+read -p "   Seed with demo data? (y/n) " -n 1 -r
+echo ""
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    bun run db:seed
+    echo "✓ Database seeded with demo data"
+    echo "   Demo credentials: demo@vaultlister.com / DemoPassword123!"
 fi
 
 # Build frontend (optional, for production)

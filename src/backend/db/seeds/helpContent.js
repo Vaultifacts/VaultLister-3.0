@@ -67,8 +67,8 @@ export function seedHelpContent() {
 
     for (const video of videos) {
         try {
-            query.run(
-                `INSERT OR IGNORE INTO help_videos (id, title, description, video_url, category, duration, thumbnail_url, view_count, position)
+            await query.run(
+                `INSERT INTO help_videos (id, title, description, video_url, category, duration, thumbnail_url, view_count, position)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [video.id, video.title, video.description, video.video_url, video.category, video.duration, video.thumbnail_url, video.view_count, video.position]
             );
@@ -153,8 +153,8 @@ export function seedHelpContent() {
 
     for (const faq of faqs) {
         try {
-            query.run(
-                `INSERT OR IGNORE INTO help_faq (id, question, answer, category, position)
+            await query.run(
+                `INSERT INTO help_faq (id, question, answer, category, position)
                  VALUES (?, ?, ?, ?, ?)`,
                 [faq.id, faq.question, faq.answer, faq.category, faq.position]
             );
@@ -282,8 +282,8 @@ If OAuth isn't working, you can use manual connection with API keys instead.`,
 
     for (const article of articles) {
         try {
-            query.run(
-                `INSERT OR IGNORE INTO help_articles (id, title, slug, content, category, tags, is_published)
+            await query.run(
+                `INSERT INTO help_articles (id, title, slug, content, category, tags, is_published)
                  VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 [article.id, article.title, article.slug, article.content, article.category, article.tags, article.is_published]
             );

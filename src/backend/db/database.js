@@ -40,7 +40,7 @@ function validateIdentifier(name) {
     return name;
 }
 
-// Escape LIKE wildcards for safe use in LIKE clauses (use with ESCAPE '\\')
+// Escape ILIKE wildcards for safe use in ILIKE clauses (use with ESCAPE '\\')
 export function escapeLike(str) {
     return String(str).replace(/[%_\\]/g, '\\$&');
 }
@@ -354,7 +354,7 @@ export async function cleanupExpiredData() {
 
     for (const table of tables) {
         try {
-            // Check if table exists (PostgreSQL equivalent of sqlite_master)
+            // Check if table exists (PostgreSQL equivalent of information_schema.tables)
             const tableExists = await query.get(
                 "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = ?",
                 [table.name]

@@ -260,7 +260,7 @@ export async function affiliateRouter(ctx) {
             // Get earnings by month
             const byMonth = await query.all(`
                 SELECT
-                    strftime('%Y-%m', created_at) as month,
+                    TO_CHAR(created_at, 'YYYY-MM') as month,
                     SUM(amount) as total,
                     COUNT(*) as count,
                     status

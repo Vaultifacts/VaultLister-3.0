@@ -21,9 +21,9 @@ export async function whatnotRouter(ctx) {
             let sql = 'SELECT * FROM whatnot_events WHERE user_id = ?';
             const params = [user.id];
             if (status) { sql += ' AND status = ?'; params.push(status); }
-            if (upcoming === 'true') { sql += " AND start_time > datetime('now')"; }
+            if (upcoming === 'true') { sql += " AND start_time > NOW()"; }
             sql += ' ORDER BY start_time DESC LIMIT 500';
-            const events = query.all(sql, params);
+            const events = await query.all(sql, params);
             return { status: 200, data: { events } };
         } catch (error) {
             logger.error('[Whatnot] Failed to fetch events', user?.id, { detail: error?.message });
@@ -35,12 +35,12 @@ export async function whatnotRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/) && !path.startsWith('/stats')) {
         const eventId = path.slice(1);
         try {
-            const event = query.get('SELECT * FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
+            const event = await query.get('SELECT * FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
             if (!event) return { status: 404, data: { error: 'Event not found' } };
 
             let items = [];
             try {
-                items = query.all('SELECT wei.*, i.title as inventory_title, i.images FROM whatnot_event_items wei LEFT JOIN inventory i ON wei.inventory_id = i.id WHERE wei.event_id = ? ORDER BY wei.sort_order ASC', [eventId]);
+                items = await query.all('SELECT wei.*, i.title as inventory_title, i.images FROM whatnot_event_items wei LEFT JOIN inventory i ON wei.inventory_id = i.id WHERE wei.event_id = ? ORDER BY wei.sort_order ASC', [eventId]);
             } catch (error) {
                 logger.error('[Whatnot] Failed to fetch event items', user?.id, { detail: error?.message });
                 return { status: 500, data: { error: 'Failed to fetch event items' } };
@@ -61,12 +61,12 @@ export async function whatnotRouter(ctx) {
         }
         const eventId = uuidv4();
         const now = new Date().toISOString();
-        const event = query.transaction(() => {
-            query.run(`
+        const event = await query.transaction(() => {
+            await query.run(`
                 INSERT INTO whatnot_events (id, user_id, title, description, start_time, category, estimated_duration, shipping_option, notes, status, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'scheduled', ?, ?)
             `, [eventId, user.id, title, description || null, start_time, category || 'general', estimated_duration || 60, shipping_option || 'standard', notes || null, now, now]);
-            return query.get('SELECT * FROM whatnot_events WHERE id = ?', [eventId]);
+            return await query.get('SELECT * FROM whatnot_events WHERE id = ?', [eventId]);
         });
         return { status: 201, data: { event, message: 'Event created' } };
     }
@@ -74,7 +74,7 @@ export async function whatnotRouter(ctx) {
     // PUT /api/whatnot/events/:id - Update event
     if (method === 'PUT' && path.match(/^\/[a-f0-9-]+$/)) {
         const eventId = path.slice(1);
-        const existing = query.get('SELECT * FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
+        const existing = await query.get('SELECT * FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
         if (!existing) return { status: 404, data: { error: 'Event not found' } };
 
         const { title, description, start_time, category, estimated_duration, shipping_option, status, notes } = body;
@@ -89,46 +89,46 @@ export async function whatnotRouter(ctx) {
         if (notes !== undefined) { updates.push('notes = ?'); params.push(notes); }
 
         if (updates.length > 0) {
-            updates.push("updated_at = datetime('now')");
+            updates.push("updated_at = NOW()");
             params.push(eventId, user.id);
-            query.run(`UPDATE whatnot_events SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
+            await query.run(`UPDATE whatnot_events SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`, params);
         }
-        const event = query.get('SELECT * FROM whatnot_events WHERE id = ?', [eventId]);
+        const event = await query.get('SELECT * FROM whatnot_events WHERE id = ?', [eventId]);
         return { status: 200, data: { event } };
     }
 
     // DELETE /api/whatnot/events/:id - Delete event
     if (method === 'DELETE' && path.match(/^\/[a-f0-9-]+$/)) {
         const eventId = path.slice(1);
-        const event = query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
+        const event = await query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
         if (!event) return { status: 404, data: { error: 'Event not found' } };
         try {
-            query.run('DELETE FROM whatnot_event_items WHERE event_id = ?', [eventId]);
+            await query.run('DELETE FROM whatnot_event_items WHERE event_id = ?', [eventId]);
         } catch (error) {
             logger.error('[Whatnot] Failed to delete event items', user?.id, { detail: error?.message });
             return { status: 500, data: { error: 'Failed to delete event items' } };
         }
-        query.run('DELETE FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
+        await query.run('DELETE FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
         return { status: 200, data: { message: 'Event deleted' } };
     }
 
     // POST /api/whatnot/events/:id/items - Add items to event
     if (method === 'POST' && path.match(/^\/[^/]+\/items$/)) {
         const eventId = path.split('/')[1];
-        const event = query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
+        const event = await query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
         if (!event) return { status: 404, data: { error: 'Event not found' } };
         const { inventory_id, starting_price, buy_now_price, min_price } = body;
         if (!inventory_id) return { status: 400, data: { error: 'Inventory ID required' } };
 
         const itemId = uuidv4();
-        const item = query.transaction(() => {
-            const maxOrder = query.get('SELECT MAX(sort_order) as max FROM whatnot_event_items WHERE event_id = ?', [eventId]);
+        const item = await query.transaction(() => {
+            const maxOrder = await query.get('SELECT MAX(sort_order) as max FROM whatnot_event_items WHERE event_id = ?', [eventId]);
             const sortOrder = (maxOrder?.max || 0) + 1;
-            query.run(`
+            await query.run(`
                 INSERT INTO whatnot_event_items (id, event_id, inventory_id, starting_price, buy_now_price, min_price, sort_order, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
             `, [itemId, eventId, inventory_id, starting_price || 0, buy_now_price || null, min_price || 0, sortOrder]);
-            return query.get('SELECT * FROM whatnot_event_items WHERE id = ?', [itemId]);
+            return await query.get('SELECT * FROM whatnot_event_items WHERE id = ?', [itemId]);
         });
         return { status: 201, data: { item } };
     }
@@ -140,12 +140,12 @@ export async function whatnotRouter(ctx) {
         const itemId = parts[3];
 
         // Verify user owns the event
-        const event = query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
+        const event = await query.get('SELECT id FROM whatnot_events WHERE id = ? AND user_id = ?', [eventId, user.id]);
         if (!event) {
             return { status: 404, data: { error: 'Event not found' } };
         }
 
-        const result = query.run('DELETE FROM whatnot_event_items WHERE id = ? AND event_id = ?', [itemId, eventId]);
+        const result = await query.run('DELETE FROM whatnot_event_items WHERE id = ? AND event_id = ?', [itemId, eventId]);
 
         if (result.changes === 0) {
             return { status: 404, data: { error: 'Item not found' } };
@@ -158,10 +158,10 @@ export async function whatnotRouter(ctx) {
     if (method === 'GET' && path === '/stats') {
         try {
             const stats = {
-                total_events: query.get('SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ?', [user.id])?.count || 0,
-                upcoming: query.get("SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ? AND status = 'scheduled' AND start_time > datetime('now')", [user.id])?.count || 0,
-                completed: query.get("SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ? AND status = 'completed'", [user.id])?.count || 0,
-                total_items_sold: query.get("SELECT COUNT(*) as count FROM whatnot_event_items wei JOIN whatnot_events we ON wei.event_id = we.id WHERE we.user_id = ? AND wei.status = 'sold'", [user.id])?.count || 0
+                total_events: await query.get('SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ?', [user.id])?.count || 0,
+                upcoming: await query.get("SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ? AND status = 'scheduled' AND start_time > NOW()", [user.id])?.count || 0,
+                completed: await query.get("SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ? AND status = 'completed'", [user.id])?.count || 0,
+                total_items_sold: await query.get("SELECT COUNT(*) as count FROM whatnot_event_items wei JOIN whatnot_events we ON wei.event_id = we.id WHERE we.user_id = ? AND wei.status = 'sold'", [user.id])?.count || 0
             };
             return { status: 200, data: { stats } };
         } catch (error) {

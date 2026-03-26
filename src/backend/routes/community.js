@@ -63,9 +63,9 @@ export async function communityRouter(ctx) {
         try {
             const postId = `post_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO community_posts (id, user_id, type, title, body, tags, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+                 VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
                 [
                     postId,
                     user.id,
@@ -76,7 +76,7 @@ export async function communityRouter(ctx) {
                 ]
             );
 
-            const post = query.get(
+            const post = await query.get(
                 `SELECT p.*, u.username as author_name
                  FROM community_posts p
                  JOIN users u ON p.user_id = u.id
@@ -129,7 +129,7 @@ export async function communityRouter(ctx) {
 
             // Search in title/body
             if (search) {
-                sql += ` AND (p.title LIKE ? ESCAPE '\\' OR p.body LIKE ? ESCAPE '\\')`;
+                sql += ` AND (p.title ILIKE ? ESCAPE '\\' OR p.body ILIKE ? ESCAPE '\\')`;
                 params.push(`%${escapeLike(search)}%`, `%${escapeLike(search)}%`);
             }
 
@@ -145,7 +145,7 @@ export async function communityRouter(ctx) {
             sql += ` LIMIT ? OFFSET ?`;
             params.push(limit, offset);
 
-            const posts = query.all(sql, params);
+            const posts = await query.all(sql, params);
 
             // Parse JSON fields
             posts.forEach(post => {
@@ -172,7 +172,7 @@ export async function communityRouter(ctx) {
 
         try {
             // Get post (hidden posts only visible to their author)
-            const post = query.get(
+            const post = await query.get(
                 `SELECT p.*, u.username as author_name
                  FROM community_posts p
                  JOIN users u ON p.user_id = u.id
@@ -192,7 +192,7 @@ export async function communityRouter(ctx) {
             post.sale_details = post.sale_details ? safeJsonParse(post.sale_details, null) : null;
 
             // Get replies
-            const replies = query.all(
+            const replies = await query.all(
                 `SELECT r.*, u.username as author_name
                  FROM community_replies r
                  JOIN users u ON r.user_id = u.id
@@ -203,7 +203,7 @@ export async function communityRouter(ctx) {
             );
 
             // Get reactions
-            const reactions = query.all(
+            const reactions = await query.all(
                 `SELECT reaction_type, COUNT(*) as count
                  FROM community_reactions
                  WHERE target_type = 'post' AND target_id = ?
@@ -212,7 +212,7 @@ export async function communityRouter(ctx) {
             );
 
             // Check if user reacted (only if authenticated)
-            const userReaction = user ? query.get(
+            const userReaction = user ? await query.get(
                 `SELECT reaction_type FROM community_reactions
                  WHERE target_type = 'post' AND target_id = ? AND user_id = ?`,
                 [postId, user.id]
@@ -250,7 +250,7 @@ export async function communityRouter(ctx) {
 
         try {
             // Verify post exists
-            const post = query.get(
+            const post = await query.get(
                 `SELECT id FROM community_posts WHERE id = ?`,
                 [postId]
             );
@@ -264,13 +264,13 @@ export async function communityRouter(ctx) {
 
             const replyId = `reply_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO community_replies (id, post_id, user_id, parent_reply_id, body)
                  VALUES (?, ?, ?, ?, ?)`,
                 [replyId, postId, user.id, parent_reply_id || null, escapeHtml(content)]
             );
 
-            const reply = query.get(
+            const reply = await query.get(
                 `SELECT r.*, u.username as author_name
                  FROM community_replies r
                  JOIN users u ON r.user_id = u.id
@@ -305,7 +305,7 @@ export async function communityRouter(ctx) {
 
         try {
             // Check if already reacted
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT id, reaction_type FROM community_reactions
                  WHERE target_type = 'post' AND target_id = ? AND user_id = ?`,
                 [postId, user.id]
@@ -314,7 +314,7 @@ export async function communityRouter(ctx) {
             if (existing) {
                 if (existing.reaction_type === reaction_type) {
                     // Remove reaction (toggle off)
-                    query.run(
+                    await query.run(
                         `DELETE FROM community_reactions WHERE id = ? AND user_id = ?`,
                         [existing.id, user.id]
                     );
@@ -325,7 +325,7 @@ export async function communityRouter(ctx) {
                     };
                 } else {
                     // Update reaction
-                    query.run(
+                    await query.run(
                         `UPDATE community_reactions SET reaction_type = ? WHERE id = ? AND user_id = ?`,
                         [reaction_type, existing.id, user.id]
                     );
@@ -339,9 +339,9 @@ export async function communityRouter(ctx) {
 
             // Add new reaction
             const reactionId = `react_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
-            query.run(
+            await query.run(
                 `INSERT INTO community_reactions (id, user_id, target_type, target_id, reaction_type, created_at)
-                 VALUES (?, ?, 'post', ?, ?, datetime('now'))`,
+                 VALUES (?, ?, 'post', ?, ?, NOW())`,
                 [reactionId, user.id, postId, reaction_type]
             );
 
@@ -366,14 +366,14 @@ export async function communityRouter(ctx) {
         try {
             let dateFilter = '';
             if (period === '30d') {
-                dateFilter = `AND s.last_active_at >= datetime('now', '-30 days')`;
+                dateFilter = `AND s.last_active_at >= NOW() - INTERVAL '30 days'`;
             } else if (period === '90d') {
-                dateFilter = `AND s.last_active_at >= datetime('now', '-90 days')`;
+                dateFilter = `AND s.last_active_at >= NOW() - INTERVAL '90 days'`;
             } else if (period === 'year') {
-                dateFilter = `AND s.last_active_at >= datetime('now', '-1 year')`;
+                dateFilter = `AND s.last_active_at >= NOW() - INTERVAL '1 year'`;
             }
 
-            const leaderboard = query.all(
+            const leaderboard = await query.all(
                 `SELECT
                     s.user_id,
                     u.username,
@@ -419,7 +419,7 @@ export async function communityRouter(ctx) {
 
         try {
             // Check for existing flag from this user
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT id FROM community_flags WHERE user_id = ? AND target_type = 'post' AND target_id = ?`,
                 [user.id, postId]
             );
@@ -433,7 +433,7 @@ export async function communityRouter(ctx) {
 
             const flagId = `flag_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO community_flags (id, user_id, target_type, target_id, reason)
                  VALUES (?, ?, 'post', ?, ?)`,
                 [flagId, user.id, postId, reason]
@@ -466,7 +466,7 @@ export async function communityRouter(ctx) {
 
         try {
             // Verify reply exists
-            const reply = query.get(
+            const reply = await query.get(
                 `SELECT id, user_id FROM community_replies WHERE id = ?`,
                 [replyId]
             );
@@ -487,12 +487,12 @@ export async function communityRouter(ctx) {
             }
 
             // Update the reply
-            query.run(
-                `UPDATE community_replies SET body = ?, updated_at = datetime('now') WHERE id = ?`,
+            await query.run(
+                `UPDATE community_replies SET body = ?, updated_at = NOW() WHERE id = ?`,
                 [escapeHtml(content.trim()), replyId]
             );
 
-            const updatedReply = query.get(
+            const updatedReply = await query.get(
                 `SELECT r.*, u.username as author_name
                  FROM community_replies r
                  JOIN users u ON r.user_id = u.id
@@ -519,7 +519,7 @@ export async function communityRouter(ctx) {
 
         try {
             // Verify ownership
-            const post = query.get(
+            const post = await query.get(
                 `SELECT id FROM community_posts WHERE id = ? AND user_id = ?`,
                 [postId, user.id]
             );
@@ -532,7 +532,7 @@ export async function communityRouter(ctx) {
             }
 
             // Soft delete (set is_hidden = 1)
-            query.run(
+            await query.run(
                 `UPDATE community_posts SET is_hidden = 1 WHERE id = ? AND user_id = ?`,
                 [postId, user.id]
             );

@@ -93,7 +93,7 @@ export async function emailOAuthRouter(ctx) {
         const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
 
         // Store state in database
-        query.run(`
+        await query.run(`
             INSERT INTO email_oauth_states (id, user_id, provider, state_token, redirect_uri, expires_at)
             VALUES (?, ?, ?, ?, ?, ?)
         `, [uuidv4(), user.id, 'gmail', stateToken, redirectUri, expiresAt.toISOString()]);
@@ -136,9 +136,9 @@ export async function emailOAuthRouter(ctx) {
         }
 
         // Verify state token
-        const stateRecord = query.get(`
+        const stateRecord = await query.get(`
             SELECT * FROM email_oauth_states
-            WHERE state_token = ? AND expires_at > datetime('now')
+            WHERE state_token = ? AND expires_at > NOW()
         `, [state]);
 
         if (!stateRecord) {
@@ -149,7 +149,7 @@ export async function emailOAuthRouter(ctx) {
         }
 
         // Clean up used state
-        query.run('DELETE FROM email_oauth_states WHERE id = ?', [stateRecord.id]);
+        await query.run('DELETE FROM email_oauth_states WHERE id = ?', [stateRecord.id]);
 
         try {
             const clientId = process.env.GMAIL_CLIENT_ID;
@@ -182,7 +182,7 @@ export async function emailOAuthRouter(ctx) {
             const emailAddress = await getUserEmail(tokens.access_token);
 
             // Check if account already exists
-            const existing = query.get(`
+            const existing = await query.get(`
                 SELECT id FROM email_accounts
                 WHERE user_id = ? AND email_address = ?
             `, [stateRecord.user_id, emailAddress]);
@@ -199,7 +199,7 @@ export async function emailOAuthRouter(ctx) {
 
             if (existing) {
                 // Update existing account
-                query.run(`
+                await query.run(`
                     UPDATE email_accounts SET
                         oauth_token = ?,
                         oauth_refresh_token = COALESCE(?, oauth_refresh_token),
@@ -212,7 +212,7 @@ export async function emailOAuthRouter(ctx) {
                 `, [encryptedAccessToken, encryptedRefreshToken, expiresAt, now, accountId, stateRecord.user_id]);
             } else {
                 // Create new account
-                query.run(`
+                await query.run(`
                     INSERT INTO email_accounts (
                         id, user_id, email_address, provider,
                         oauth_token, oauth_refresh_token, oauth_token_expires_at,
@@ -296,7 +296,7 @@ export async function emailOAuthRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        const accounts = query.all(`
+        const accounts = await query.all(`
             SELECT id, email_address, provider, last_sync_at, sync_status,
                    consecutive_failures, last_error, is_enabled, filter_senders,
                    created_at, updated_at
@@ -329,7 +329,7 @@ export async function emailOAuthRouter(ctx) {
         const accountId = path.split('/')[2];
         const { filter_senders, is_enabled } = body;
 
-        const account = query.get(`
+        const account = await query.get(`
             SELECT id FROM email_accounts
             WHERE id = ? AND user_id = ?
         `, [accountId, user.id]);
@@ -357,7 +357,7 @@ export async function emailOAuthRouter(ctx) {
             params.push(accountId);
 
             params.push(user.id);
-            query.run(`
+            await query.run(`
                 UPDATE email_accounts SET ${updates.join(', ')}
                 WHERE id = ? AND user_id = ?
             `, params);
@@ -376,7 +376,7 @@ export async function emailOAuthRouter(ctx) {
 
         const accountId = path.split('/')[2];
 
-        const result = query.run(`
+        const result = await query.run(`
             DELETE FROM email_accounts
             WHERE id = ? AND user_id = ?
         `, [accountId, user.id]);
@@ -398,7 +398,7 @@ export async function emailOAuthRouter(ctx) {
 
         const accountId = path.split('/')[2];
 
-        const account = query.get(`
+        const account = await query.get(`
             SELECT id, email_address, provider, sync_status
             FROM email_accounts
             WHERE id = ? AND user_id = ? AND is_enabled = 1
@@ -420,7 +420,7 @@ export async function emailOAuthRouter(ctx) {
         }, { priority: 2 });
 
         // Update sync status
-        query.run(`
+        await query.run(`
             UPDATE email_accounts SET sync_status = 'syncing', updated_at = ?
             WHERE id = ? AND user_id = ?
         `, [new Date().toISOString(), accountId, user.id]);
@@ -458,7 +458,7 @@ export async function emailOAuthRouter(ctx) {
         const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
 
         // Store state in database
-        query.run(`
+        await query.run(`
             INSERT INTO email_oauth_states (id, user_id, provider, state_token, redirect_uri, expires_at)
             VALUES (?, ?, ?, ?, ?, ?)
         `, [uuidv4(), user.id, 'outlook', stateToken, redirectUri, expiresAt.toISOString()]);
@@ -500,9 +500,9 @@ export async function emailOAuthRouter(ctx) {
         }
 
         // Verify state token
-        const stateRecord = query.get(`
+        const stateRecord = await query.get(`
             SELECT * FROM email_oauth_states
-            WHERE state_token = ? AND expires_at > datetime('now')
+            WHERE state_token = ? AND expires_at > NOW()
         `, [state]);
 
         if (!stateRecord) {
@@ -513,7 +513,7 @@ export async function emailOAuthRouter(ctx) {
         }
 
         // Clean up used state
-        query.run('DELETE FROM email_oauth_states WHERE id = ?', [stateRecord.id]);
+        await query.run('DELETE FROM email_oauth_states WHERE id = ?', [stateRecord.id]);
 
         try {
             const clientId = process.env.OUTLOOK_CLIENT_ID;
@@ -547,7 +547,7 @@ export async function emailOAuthRouter(ctx) {
             const emailAddress = await getOutlookUserEmail(tokens.access_token);
 
             // Check if account already exists
-            const existing = query.get(`
+            const existing = await query.get(`
                 SELECT id FROM email_accounts
                 WHERE user_id = ? AND email_address = ?
             `, [stateRecord.user_id, emailAddress]);
@@ -564,7 +564,7 @@ export async function emailOAuthRouter(ctx) {
 
             if (existing) {
                 // Update existing account
-                query.run(`
+                await query.run(`
                     UPDATE email_accounts SET
                         oauth_token = ?,
                         oauth_refresh_token = COALESCE(?, oauth_refresh_token),
@@ -577,7 +577,7 @@ export async function emailOAuthRouter(ctx) {
                 `, [encryptedAccessToken, encryptedRefreshToken, expiresAt, now, accountId, stateRecord.user_id]);
             } else {
                 // Create new account
-                query.run(`
+                await query.run(`
                     INSERT INTO email_accounts (
                         id, user_id, email_address, provider,
                         oauth_token, oauth_refresh_token, oauth_token_expires_at,

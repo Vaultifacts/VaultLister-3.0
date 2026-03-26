@@ -53,7 +53,7 @@ export async function extensionRouter(ctx) {
         try {
             const productId = `scraped_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO scraped_products (id, user_id, title, price, images, brand, description, category, source_site, source_url)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
@@ -70,7 +70,7 @@ export async function extensionRouter(ctx) {
                 ]
             );
 
-            const product = query.get(
+            const product = await query.get(
                 `SELECT * FROM scraped_products WHERE id = ?`,
                 [productId]
             );
@@ -126,7 +126,7 @@ export async function extensionRouter(ctx) {
         try {
             const trackingId = `track_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO price_tracking (id, user_id, title, listing_url, current_price, alert_threshold, platform, alert_on_price_drop)
                  VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
                 [
@@ -140,7 +140,7 @@ export async function extensionRouter(ctx) {
                 ]
             );
 
-            const tracking = query.get(
+            const tracking = await query.get(
                 `SELECT * FROM price_tracking WHERE id = ? AND user_id = ?`,
                 [trackingId, user.id]
             );
@@ -174,7 +174,7 @@ export async function extensionRouter(ctx) {
             sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
             params.push(Math.min(parseInt(limit) || 50, 200), parseInt(offset) || 0);
 
-            const items = query.all(sql, params);
+            const items = await query.all(sql, params);
 
             return {
                 status: 200,
@@ -211,12 +211,12 @@ export async function extensionRouter(ctx) {
             updates.push('updated_at = datetime("now")');
             params.push(trackingId, user.id);
 
-            query.run(
+            await query.run(
                 `UPDATE price_tracking SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
                 params
             );
 
-            const tracking = query.get(
+            const tracking = await query.get(
                 `SELECT * FROM price_tracking WHERE id = ? AND user_id = ?`,
                 [trackingId, user.id]
             );
@@ -244,7 +244,7 @@ export async function extensionRouter(ctx) {
         const trackingId = path.split('/')[2];
 
         try {
-            query.run(
+            await query.run(
                 `DELETE FROM price_tracking WHERE id = ? AND user_id = ?`,
                 [trackingId, user.id]
             );
@@ -279,7 +279,7 @@ export async function extensionRouter(ctx) {
             const itemId = `inv_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
             const sku = `QA-${Date.now().toString(36).toUpperCase()}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO inventory (id, user_id, title, sku, brand, description, category, cost_price, list_price, quantity, status, images)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'active', ?)`,
                 [
@@ -296,7 +296,7 @@ export async function extensionRouter(ctx) {
                 ]
             );
 
-            const item = query.get(`SELECT * FROM inventory WHERE id = ?`, [itemId]);
+            const item = await query.get(`SELECT * FROM inventory WHERE id = ?`, [itemId]);
 
             item.images = safeJsonParse(item.images, []);
 
@@ -318,7 +318,7 @@ export async function extensionRouter(ctx) {
         const itemId = path.split('/')[2];
 
         try {
-            const item = query.get(
+            const item = await query.get(
                 `SELECT * FROM inventory WHERE id = ? AND user_id = ?`,
                 [itemId, user.id]
             );
@@ -372,7 +372,7 @@ export async function extensionRouter(ctx) {
         try {
             const productId = `scraped_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO scraped_products (id, user_id, title, price, images, brand, description, category, source_site, source_url)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
@@ -389,7 +389,7 @@ export async function extensionRouter(ctx) {
                 ]
             );
 
-            const product = query.get(
+            const product = await query.get(
                 `SELECT * FROM scraped_products WHERE id = ?`,
                 [productId]
             );
@@ -429,7 +429,7 @@ export async function extensionRouter(ctx) {
             sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
             params.push(Math.min(parseInt(limit) || 50, 200), parseInt(offset) || 0);
 
-            const items = query.all(sql, params);
+            const items = await query.all(sql, params);
 
             // Parse JSON fields
             items.forEach(item => {
@@ -441,7 +441,7 @@ export async function extensionRouter(ctx) {
                 ? `SELECT COUNT(*) as count FROM scraped_products WHERE user_id = ? AND source_site = ?`
                 : `SELECT COUNT(*) as count FROM scraped_products WHERE user_id = ?`;
             const countParams = source ? [user.id, source] : [user.id];
-            const countResult = query.get(countSql, countParams);
+            const countResult = await query.get(countSql, countParams);
 
             return {
                 status: 200,
@@ -466,7 +466,7 @@ export async function extensionRouter(ctx) {
         const productId = path.split('/')[2];
 
         try {
-            query.run(
+            await query.run(
                 `DELETE FROM scraped_products WHERE id = ? AND user_id = ?`,
                 [productId, user.id]
             );
@@ -498,9 +498,9 @@ export async function extensionRouter(ctx) {
         try {
             const trackingId = `track_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO price_tracking (id, user_id, product_name, source_url, current_price, target_price, source, status, last_checked_at, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'), datetime('now'))`,
+                 VALUES (?, ?, ?, ?, ?, ?, ?, 'active', NOW(), NOW())`,
                 [
                     trackingId,
                     user.id,
@@ -512,7 +512,7 @@ export async function extensionRouter(ctx) {
                 ]
             );
 
-            const tracking = query.get(
+            const tracking = await query.get(
                 `SELECT * FROM price_tracking WHERE id = ? AND user_id = ?`,
                 [trackingId, user.id]
             );
@@ -549,14 +549,14 @@ export async function extensionRouter(ctx) {
             sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
             params.push(Math.min(parseInt(limit) || 50, 200), parseInt(offset) || 0);
 
-            const items = query.all(sql, params);
+            const items = await query.all(sql, params);
 
             // Get total count
             const countSql = status
                 ? `SELECT COUNT(*) as count FROM price_tracking WHERE user_id = ? AND status = ?`
                 : `SELECT COUNT(*) as count FROM price_tracking WHERE user_id = ?`;
             const countParams = status ? [user.id, status] : [user.id];
-            const countResult = query.get(countSql, countParams);
+            const countResult = await query.get(countSql, countParams);
 
             return {
                 status: 200,
@@ -604,12 +604,12 @@ export async function extensionRouter(ctx) {
 
             params.push(trackingId, user.id);
 
-            query.run(
+            await query.run(
                 `UPDATE price_tracking SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
                 params
             );
 
-            const tracking = query.get(
+            const tracking = await query.get(
                 `SELECT * FROM price_tracking WHERE id = ? AND user_id = ?`,
                 [trackingId, user.id]
             );
@@ -632,7 +632,7 @@ export async function extensionRouter(ctx) {
         const trackingId = path.split('/')[2];
 
         try {
-            query.run(
+            await query.run(
                 `DELETE FROM price_tracking WHERE id = ? AND user_id = ?`,
                 [trackingId, user.id]
             );
@@ -666,13 +666,13 @@ export async function extensionRouter(ctx) {
         try {
             const syncId = `sync_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 
-            query.run(
+            await query.run(
                 `INSERT INTO extension_sync_queue (id, user_id, action, payload, status)
                  VALUES (?, ?, ?, ?, 'pending')`,
                 [syncId, user.id, action_type, data ? JSON.stringify(data) : '{}']
             );
 
-            const item = query.get(
+            const item = await query.get(
                 `SELECT * FROM extension_sync_queue WHERE id = ?`,
                 [syncId]
             );
@@ -713,7 +713,7 @@ export async function extensionRouter(ctx) {
             sql += ` ORDER BY created_at DESC LIMIT ?`;
             params.push(Math.min(parseInt(limit) || 50, 200));
 
-            const items = query.all(sql, params);
+            const items = await query.all(sql, params);
 
             // Parse JSON fields
             items.forEach(item => {
@@ -740,8 +740,8 @@ export async function extensionRouter(ctx) {
         const syncId = path.split('/')[2];
 
         try {
-            query.run(
-                `UPDATE extension_sync_queue SET status = 'completed', processed_at = datetime('now')
+            await query.run(
+                `UPDATE extension_sync_queue SET status = 'completed', processed_at = NOW()
                  WHERE id = ? AND user_id = ?`,
                 [syncId, user.id]
             );

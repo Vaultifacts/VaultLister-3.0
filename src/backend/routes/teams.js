@@ -68,7 +68,7 @@ export async function teamsRouter(ctx) {
     // GET /api/teams - List user's teams
     if (method === 'GET' && (path === '/' || path === '')) {
         try {
-            const teams = query.all(`
+            const teams = await query.all(`
                 SELECT t.*, tm.role as user_role,
                        (SELECT COUNT(*) FROM team_members WHERE team_id = t.id AND status = 'active') as member_count
                 FROM teams t
@@ -105,7 +105,7 @@ export async function teamsRouter(ctx) {
         }
 
         // Check team limit
-        const teamCount = query.get(`
+        const teamCount = await query.get(`
             SELECT COUNT(*) as count FROM teams WHERE owner_user_id = ?
         `, [user.id]);
 
@@ -127,15 +127,15 @@ export async function teamsRouter(ctx) {
 
         try {
             // Create team
-            query.run(`
+            await query.run(`
                 INSERT INTO teams (id, name, description, owner_user_id, subscription_tier, max_members)
                 VALUES (?, ?, ?, ?, ?, ?)
             `, [teamId, name.trim(), description || null, user.id, userTier, limits.max_members]);
 
             // Add owner as team member
-            query.run(`
+            await query.run(`
                 INSERT INTO team_members (id, team_id, user_id, role, status, accepted_at)
-                VALUES (?, ?, ?, 'owner', 'active', datetime('now'))
+                VALUES (?, ?, ?, 'owner', 'active', NOW())
             `, [memberId, teamId, user.id]);
 
             // Log activity
@@ -169,7 +169,7 @@ export async function teamsRouter(ctx) {
             const teamId = getTeamMatch[1];
 
             // Check membership
-            const membership = query.get(`
+            const membership = await query.get(`
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
             `, [teamId, user.id]);
@@ -182,7 +182,7 @@ export async function teamsRouter(ctx) {
             const suspendedCheck = checkTeamActive(teamId);
             if (suspendedCheck) return suspendedCheck;
 
-            const team = query.get(`
+            const team = await query.get(`
                 SELECT t.*,
                        (SELECT COUNT(*) FROM team_members WHERE team_id = t.id AND status = 'active') as member_count
                 FROM teams t WHERE t.id = ?
@@ -193,7 +193,7 @@ export async function teamsRouter(ctx) {
             }
 
             // Get members
-            const members = query.all(`
+            const members = await query.all(`
                 SELECT tm.*, u.email, u.full_name as user_name
                 FROM team_members tm
                 LEFT JOIN users u ON tm.user_id = u.id
@@ -211,9 +211,9 @@ export async function teamsRouter(ctx) {
             // Get pending invitations if user has permission
             let invitations = [];
             if (hasPermission(membership.role, 'manage_team')) {
-                invitations = query.all(`
+                invitations = await query.all(`
                     SELECT * FROM team_invitations
-                    WHERE team_id = ? AND status = 'pending' AND expires_at > datetime('now')
+                    WHERE team_id = ? AND status = 'pending' AND expires_at > NOW()
                     ORDER BY created_at DESC
                 `, [teamId]);
             }
@@ -244,7 +244,7 @@ export async function teamsRouter(ctx) {
             const { name, description, settings } = body;
 
             // Check permission
-            const membership = query.get(`
+            const membership = await query.get(`
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
             `, [teamId, user.id]);
@@ -280,7 +280,7 @@ export async function teamsRouter(ctx) {
             updates.push('updated_at = datetime("now")');
             params.push(teamId);
 
-            query.run(`UPDATE teams SET ${updates.join(', ')} WHERE id = ?`, params);
+            await query.run(`UPDATE teams SET ${updates.join(', ')} WHERE id = ?`, params);
 
             logTeamActivity(teamId, user.id, 'team_updated', 'team', teamId, { updates: Object.keys(body) }, ctx.ip);
 
@@ -301,7 +301,7 @@ export async function teamsRouter(ctx) {
             const teamId = deleteTeamMatch[1];
 
             // Only owner can delete
-            const team = query.get('SELECT owner_user_id, is_active FROM teams WHERE id = ?', [teamId]);
+            const team = await query.get('SELECT owner_user_id, is_active FROM teams WHERE id = ?', [teamId]);
             if (!team || team.owner_user_id !== user.id) {
                 return { status: 403, data: { error: 'Only the team owner can delete the team' } };
             }
@@ -309,7 +309,7 @@ export async function teamsRouter(ctx) {
             // Fix 3: Allow delete even when suspended (owner must be able to clean up)
             // No suspended check here — deletion is always permitted by the owner.
 
-            query.run('DELETE FROM teams WHERE id = ? AND owner_user_id = ?', [teamId, user.id]);
+            await query.run('DELETE FROM teams WHERE id = ? AND owner_user_id = ?', [teamId, user.id]);
 
             return {
                 status: 200,
@@ -339,7 +339,7 @@ export async function teamsRouter(ctx) {
             }
 
             // Check permission
-            const membership = query.get(`
+            const membership = await query.get(`
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
             `, [teamId, user.id]);
@@ -363,8 +363,8 @@ export async function teamsRouter(ctx) {
             }
 
             // Check team member limit
-            const team = query.get('SELECT max_members FROM teams WHERE id = ?', [teamId]);
-            const memberCount = query.get(`
+            const team = await query.get('SELECT max_members FROM teams WHERE id = ?', [teamId]);
+            const memberCount = await query.get(`
                 SELECT COUNT(*) as count FROM team_members WHERE team_id = ? AND status = 'active'
             `, [teamId]);
 
@@ -373,7 +373,7 @@ export async function teamsRouter(ctx) {
             }
 
             // Check if already invited or member
-            const existing = query.get(`
+            const existing = await query.get(`
                 SELECT * FROM team_invitations
                 WHERE team_id = ? AND email = ? AND status = 'pending'
             `, [teamId, email.toLowerCase()]);
@@ -383,9 +383,9 @@ export async function teamsRouter(ctx) {
             }
 
             // Check if already a member
-            const existingUser = query.get('SELECT id FROM users WHERE email = ?', [email.toLowerCase()]);
+            const existingUser = await query.get('SELECT id FROM users WHERE email = ?', [email.toLowerCase()]);
             if (existingUser) {
-                const existingMember = query.get(`
+                const existingMember = await query.get(`
                     SELECT * FROM team_members WHERE team_id = ? AND user_id = ?
                 `, [teamId, existingUser.id]);
                 if (existingMember) {
@@ -398,7 +398,7 @@ export async function teamsRouter(ctx) {
             const token = crypto.randomBytes(32).toString('hex');
             const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
 
-            query.run(`
+            await query.run(`
                 INSERT INTO team_invitations (id, team_id, email, role, token, invited_by, message, expires_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `, [invitationId, teamId, email.toLowerCase(), role, token, user.id, message || null, expiresAt]);
@@ -433,11 +433,11 @@ export async function teamsRouter(ctx) {
                 return { status: 400, data: { error: 'Invitation token is required' } };
             }
 
-            const invitation = query.get(`
+            const invitation = await query.get(`
                 SELECT ti.*, t.name as team_name
                 FROM team_invitations ti
                 JOIN teams t ON ti.team_id = t.id
-                WHERE ti.token = ? AND ti.status = 'pending' AND ti.expires_at > datetime('now')
+                WHERE ti.token = ? AND ti.status = 'pending' AND ti.expires_at > NOW()
             `, [token]);
 
             if (!invitation) {
@@ -454,8 +454,8 @@ export async function teamsRouter(ctx) {
             }
 
             // Re-check team member limit before accepting
-            const team = query.get('SELECT max_members FROM teams WHERE id = ?', [invitation.team_id]);
-            const currentCount = query.get(`
+            const team = await query.get('SELECT max_members FROM teams WHERE id = ?', [invitation.team_id]);
+            const currentCount = await query.get(`
                 SELECT COUNT(*) as count FROM team_members WHERE team_id = ? AND status = 'active'
             `, [invitation.team_id]);
 
@@ -464,15 +464,15 @@ export async function teamsRouter(ctx) {
             }
 
             // Check if already a member
-            const existingMember = query.get(`
+            const existingMember = await query.get(`
                 SELECT * FROM team_members WHERE team_id = ? AND user_id = ?
             `, [invitation.team_id, user.id]);
 
             if (existingMember) {
                 // Update status if previously removed
                 if (existingMember.status === 'removed') {
-                    query.run(`
-                        UPDATE team_members SET status = 'active', role = ?, accepted_at = datetime('now')
+                    await query.run(`
+                        UPDATE team_members SET status = 'active', role = ?, accepted_at = NOW()
                         WHERE id = ?
                     `, [invitation.role, existingMember.id]);
                 } else {
@@ -481,15 +481,15 @@ export async function teamsRouter(ctx) {
             } else {
                 // Add as new member
                 const memberId = uuidv4();
-                query.run(`
+                await query.run(`
                     INSERT INTO team_members (id, team_id, user_id, role, invited_by, status, accepted_at)
-                    VALUES (?, ?, ?, ?, ?, 'active', datetime('now'))
+                    VALUES (?, ?, ?, ?, ?, 'active', NOW())
                 `, [memberId, invitation.team_id, user.id, invitation.role, invitation.invited_by]);
             }
 
             // Update invitation status
-            query.run(`
-                UPDATE team_invitations SET status = 'accepted', responded_at = datetime('now')
+            await query.run(`
+                UPDATE team_invitations SET status = 'accepted', responded_at = NOW()
                 WHERE id = ?
             `, [invitation.id]);
 
@@ -524,7 +524,7 @@ export async function teamsRouter(ctx) {
             }
 
             // Check permission
-            const membership = query.get(`
+            const membership = await query.get(`
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
             `, [teamId, user.id]);
@@ -538,7 +538,7 @@ export async function teamsRouter(ctx) {
             if (suspendedCheck) return suspendedCheck;
 
             // Get target member and verify they belong to the same team
-            const targetMember = query.get('SELECT * FROM team_members WHERE id = ? AND team_id = ? AND status = "active"', [memberId, teamId]);
+            const targetMember = await query.get('SELECT * FROM team_members WHERE id = ? AND team_id = ? AND status = "active"', [memberId, teamId]);
             if (!targetMember) {
                 return { status: 404, data: { error: 'Member not found in this team' } };
             }
@@ -553,7 +553,7 @@ export async function teamsRouter(ctx) {
                 return { status: 403, data: { error: 'Cannot assign role equal to or higher than your own' } };
             }
 
-            query.run('UPDATE team_members SET role = ? WHERE id = ?', [role, memberId]);
+            await query.run('UPDATE team_members SET role = ? WHERE id = ?', [role, memberId]);
 
             logTeamActivity(teamId, user.id, 'member_role_updated', 'member', targetMember.user_id, {
                 old_role: targetMember.role,
@@ -577,7 +577,7 @@ export async function teamsRouter(ctx) {
             const [, teamId, memberId] = removeMemberMatch;
 
             // Check permission
-            const membership = query.get(`
+            const membership = await query.get(`
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
             `, [teamId, user.id]);
@@ -591,7 +591,7 @@ export async function teamsRouter(ctx) {
             if (suspendedCheckRemove) return suspendedCheckRemove;
 
             // Get target member
-            const targetMember = query.get('SELECT * FROM team_members WHERE id = ? AND team_id = ?', [memberId, teamId]);
+            const targetMember = await query.get('SELECT * FROM team_members WHERE id = ? AND team_id = ?', [memberId, teamId]);
             if (!targetMember) {
                 return { status: 404, data: { error: 'Member not found' } };
             }
@@ -606,12 +606,12 @@ export async function teamsRouter(ctx) {
                 return { status: 403, data: { error: 'Cannot remove member with equal or higher role' } };
             }
 
-            query.run('UPDATE team_members SET status = ? WHERE id = ?', ['removed', memberId]);
+            await query.run('UPDATE team_members SET status = ? WHERE id = ?', ['removed', memberId]);
 
             // Expire any pending invitations for the removed member's email
-            const removedUser = query.get('SELECT email FROM users WHERE id = ?', [targetMember.user_id]);
+            const removedUser = await query.get('SELECT email FROM users WHERE id = ?', [targetMember.user_id]);
             if (removedUser) {
-                query.run(`
+                await query.run(`
                     UPDATE team_invitations SET status = 'expired'
                     WHERE team_id = ? AND email = ? AND status = 'pending'
                 `, [teamId, removedUser.email.toLowerCase()]);
@@ -635,7 +635,7 @@ export async function teamsRouter(ctx) {
         try {
             const teamId = leaveMatch[1];
 
-            const membership = query.get(`
+            const membership = await query.get(`
                 SELECT * FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
             `, [teamId, user.id]);
@@ -648,7 +648,7 @@ export async function teamsRouter(ctx) {
                 return { status: 403, data: { error: 'Owner cannot leave. Transfer ownership or delete the team.' } };
             }
 
-            query.run('UPDATE team_members SET status = ? WHERE id = ?', ['removed', membership.id]);
+            await query.run('UPDATE team_members SET status = ? WHERE id = ?', ['removed', membership.id]);
 
             logTeamActivity(teamId, user.id, 'member_left', 'member', user.id, {}, ctx.ip);
 
@@ -670,7 +670,7 @@ export async function teamsRouter(ctx) {
             const { limit = 50, offset = 0 } = queryParams;
 
             // Check membership
-            const membership = query.get(`
+            const membership = await query.get(`
                 SELECT role FROM team_members
                 WHERE team_id = ? AND user_id = ? AND status = 'active'
             `, [teamId, user.id]);
@@ -683,7 +683,7 @@ export async function teamsRouter(ctx) {
             const suspendedCheckActivity = checkTeamActive(teamId);
             if (suspendedCheckActivity) return suspendedCheckActivity;
 
-            const activities = query.all(`
+            const activities = await query.all(`
                 SELECT tal.*, u.full_name as user_name, u.email as user_email
                 FROM team_activity_log tal
                 LEFT JOIN users u ON tal.user_id = u.id
@@ -731,7 +731,7 @@ function hasPermission(role, permission) {
 
 // Returns a 403 response object if the team is suspended/deactivated, otherwise null.
 function checkTeamActive(teamId) {
-    const team = query.get('SELECT is_active FROM teams WHERE id = ?', [teamId]);
+    const team = await query.get('SELECT is_active FROM teams WHERE id = ?', [teamId]);
     if (!team) return { status: 404, data: { error: 'Team not found' } };
     if (!team.is_active) return { status: 403, data: { error: 'This team has been suspended and cannot perform operations' } };
     return null;
@@ -744,7 +744,7 @@ function getRoleLevel(role) {
 function logTeamActivity(teamId, userId, action, resourceType, resourceId, details, ipAddress = null) {
     try {
         const id = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO team_activity_log (id, team_id, user_id, action, resource_type, resource_id, details, ip_address)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `, [id, teamId, userId, action, resourceType, resourceId, JSON.stringify(details), ipAddress]);
@@ -760,7 +760,7 @@ export function checkTeamPermission(permission) {
         const { user, teamId } = ctx;
         if (!teamId) return true; // No team context, allow
 
-        const membership = query.get(`
+        const membership = await query.get(`
             SELECT role FROM team_members
             WHERE team_id = ? AND user_id = ? AND status = 'active'
         `, [teamId, user.id]);

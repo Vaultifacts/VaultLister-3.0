@@ -62,7 +62,7 @@ export class AutomationRunner {
      * Process pending tasks from the queue
      */
     async processTasks() {
-        const pendingTasks = query.all(`
+        const pendingTasks = await query.all(`
             SELECT * FROM tasks
             WHERE status = 'pending' AND scheduled_at <= datetime('now')
             ORDER BY priority ASC, scheduled_at ASC
@@ -90,7 +90,7 @@ export class AutomationRunner {
         console.log(`[Runner] Executing task: ${task.type} (${task.id})`);
 
         // Mark as processing
-        query.run('UPDATE tasks SET status = ?, started_at = CURRENT_TIMESTAMP WHERE id = ?', ['processing', task.id]);
+        await query.run('UPDATE tasks SET status = ?, started_at = CURRENT_TIMESTAMP WHERE id = ?', ['processing', task.id]);
         this.currentTask = task;
 
         const payload = JSON.parse(task.payload || '{}');
@@ -101,7 +101,7 @@ export class AutomationRunner {
         if (taskPlatform) {
             if (!this.acquirePlatformLock(taskPlatform)) {
                 // Release processing state — let the task retry later
-                query.run('UPDATE tasks SET status = ? WHERE id = ?', ['pending', task.id]);
+                await query.run('UPDATE tasks SET status = ? WHERE id = ?', ['pending', task.id]);
                 this.currentTask = null;
                 throw new Error(`Automation already running for this platform: ${taskPlatform}`);
             }
@@ -146,7 +146,7 @@ export class AutomationRunner {
             }
 
             // Mark as completed
-            query.run(`
+            await query.run(`
                 UPDATE tasks SET status = ?, result = ?, completed_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `, ['completed', JSON.stringify(result), task.id]);
@@ -161,7 +161,7 @@ export class AutomationRunner {
             const attempts = (task.attempts || 0) + 1;
             const newStatus = attempts >= (task.max_attempts || 3) ? 'failed' : 'pending';
 
-            query.run(`
+            await query.run(`
                 UPDATE tasks SET status = ?, attempts = ?, error_message = ?
                 WHERE id = ?
             `, [newStatus, attempts, error.message, task.id]);
@@ -184,7 +184,7 @@ export class AutomationRunner {
      */
     async checkScheduledRules() {
         const now = new Date();
-        const rules = query.all(`
+        const rules = await query.all(`
             SELECT * FROM automation_rules
             WHERE is_enabled = 1
             AND (next_run_at IS NULL OR next_run_at <= datetime('now'))
@@ -196,7 +196,7 @@ export class AutomationRunner {
             if (this.shouldRunRule(rule, now)) {
                 // Queue task for this rule
                 const taskId = uuidv4();
-                query.run(`
+                await query.run(`
                     INSERT INTO tasks (id, user_id, type, payload, priority, status)
                     VALUES (?, ?, ?, ?, ?, ?)
                 `, [
@@ -210,7 +210,7 @@ export class AutomationRunner {
 
                 // Update next run time
                 const nextRun = this.calculateNextRun(rule.schedule);
-                query.run('UPDATE automation_rules SET next_run_at = ? WHERE id = ?', [nextRun, rule.id]);
+                await query.run('UPDATE automation_rules SET next_run_at = ? WHERE id = ?', [nextRun, rule.id]);
 
                 console.log(`[Runner] Queued rule: ${rule.name} (${rule.id}), next run: ${nextRun}`);
             }
@@ -283,7 +283,7 @@ export class AutomationRunner {
 
         if (!this.bots[key]) {
             // Get credentials from database
-            const shop = query.get(
+            const shop = await query.get(
                 'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
                 [userId, platform]
             );
@@ -365,7 +365,7 @@ export class AutomationRunner {
     async executeShareListing(userId, payload) {
         const { listingId, platform } = payload;
 
-        const listing = query.get(
+        const listing = await query.get(
             'SELECT * FROM listings WHERE id = ? AND user_id = ?',
             [listingId, userId]
         );
@@ -378,7 +378,7 @@ export class AutomationRunner {
         const success = await bot.shareItem(listing.platform_url);
 
         if (success) {
-            query.run('UPDATE listings SET last_shared_at = CURRENT_TIMESTAMP, shares = shares + 1 WHERE id = ?', [listingId]);
+            await query.run('UPDATE listings SET last_shared_at = CURRENT_TIMESTAMP, shares = shares + 1 WHERE id = ?', [listingId]);
         }
 
         return { success, listingId };
@@ -387,7 +387,7 @@ export class AutomationRunner {
     async executeShareCloset(userId, payload) {
         const { platform, maxShares = 100 } = payload;
 
-        const shop = query.get(
+        const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
             [userId, platform]
         );
@@ -414,7 +414,7 @@ export class AutomationRunner {
     async executeAcceptOffer(userId, payload) {
         const { offerId, platform } = payload;
 
-        const offer = query.get(
+        const offer = await query.get(
             'SELECT * FROM offers WHERE id = ? AND user_id = ?',
             [offerId, userId]
         );
@@ -424,7 +424,7 @@ export class AutomationRunner {
         }
 
         // In production, would use bot to accept on platform
-        query.run(
+        await query.run(
             'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP WHERE id = ?',
             ['accepted', offerId]
         );
@@ -435,7 +435,7 @@ export class AutomationRunner {
     async executeDeclineOffer(userId, payload) {
         const { offerId } = payload;
 
-        query.run(
+        await query.run(
             'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP WHERE id = ?',
             ['declined', offerId]
         );
@@ -446,7 +446,7 @@ export class AutomationRunner {
     async executeCounterOffer(userId, payload) {
         const { offerId, amount } = payload;
 
-        query.run(
+        await query.run(
             'UPDATE offers SET status = ?, counter_amount = ?, responded_at = CURRENT_TIMESTAMP WHERE id = ?',
             ['countered', amount, offerId]
         );
@@ -457,7 +457,7 @@ export class AutomationRunner {
     async executeAutomationRule(userId, payload) {
         const { ruleId } = payload;
 
-        const rule = query.get(
+        const rule = await query.get(
             'SELECT * FROM automation_rules WHERE id = ? AND user_id = ?',
             [ruleId, userId]
         );
@@ -474,7 +474,7 @@ export class AutomationRunner {
         switch (rule.type) {
             case 'share':
                 if (actions.shareAll) {
-                    const listings = query.all(
+                    const listings = await query.all(
                         'SELECT * FROM listings WHERE user_id = ? AND platform = ? AND status = ?',
                         [userId, rule.platform, 'active']
                     );
@@ -483,7 +483,7 @@ export class AutomationRunner {
                         if (conditions.minPrice && listing.price < conditions.minPrice) continue;
 
                         // Queue share task
-                        query.run(`
+                        await query.run(`
                             INSERT INTO tasks (id, user_id, type, payload, priority, status)
                             VALUES (?, ?, ?, ?, ?, ?)
                         `, [
@@ -499,7 +499,7 @@ export class AutomationRunner {
 
             case 'offer':
                 // Process pending offers according to rules
-                const offers = query.all(
+                const offers = await query.all(
                     'SELECT o.*, l.price as listing_price FROM offers o JOIN listings l ON o.listing_id = l.id WHERE o.user_id = ? AND o.status = ?',
                     [userId, 'pending']
                 );
@@ -508,7 +508,7 @@ export class AutomationRunner {
                     const percentage = (offer.offer_amount / offer.listing_price) * 100;
 
                     if (actions.autoAccept && conditions.minPercentage && percentage >= conditions.minPercentage) {
-                        query.run(`
+                        await query.run(`
                             INSERT INTO tasks (id, user_id, type, payload, priority, status)
                             VALUES (?, ?, ?, ?, ?, ?)
                         `, [uuidv4(), userId, 'accept_offer', JSON.stringify({ offerId: offer.id }), 1, 'pending']);
@@ -516,7 +516,7 @@ export class AutomationRunner {
                     }
 
                     if (actions.autoDecline && conditions.maxPercentage && percentage <= conditions.maxPercentage) {
-                        query.run(`
+                        await query.run(`
                             INSERT INTO tasks (id, user_id, type, payload, priority, status)
                             VALUES (?, ?, ?, ?, ?, ?)
                         `, [uuidv4(), userId, 'decline_offer', JSON.stringify({ offerId: offer.id }), 1, 'pending']);
@@ -536,7 +536,7 @@ export class AutomationRunner {
         }
 
         // Update rule stats
-        query.run(
+        await query.run(
             'UPDATE automation_rules SET last_run_at = CURRENT_TIMESTAMP, run_count = run_count + 1 WHERE id = ?',
             [ruleId]
         );
@@ -548,7 +548,7 @@ export class AutomationRunner {
         const { platform, shopId } = payload;
 
         // Update sync status
-        query.run('UPDATE shops SET sync_status = ?, last_sync_at = CURRENT_TIMESTAMP WHERE id = ?', ['synced', shopId]);
+        await query.run('UPDATE shops SET sync_status = ?, last_sync_at = CURRENT_TIMESTAMP WHERE id = ?', ['synced', shopId]);
 
         return { success: true, shopId, platform };
     }
@@ -557,7 +557,7 @@ export class AutomationRunner {
      * Log automation action
      */
     logAutomationAction(userId, type, status, details, errorMessage = null) {
-        query.run(`
+        await query.run(`
             INSERT INTO automation_logs (id, user_id, type, status, details, error_message)
             VALUES (?, ?, ?, ?, ?, ?)
         `, [uuidv4(), userId, type, status, JSON.stringify(details), errorMessage]);
@@ -567,7 +567,7 @@ export class AutomationRunner {
      * Log task error
      */
     logTaskError(taskId, errorMessage) {
-        query.run('UPDATE tasks SET error_message = ? WHERE id = ?', [errorMessage, taskId]);
+        await query.run('UPDATE tasks SET error_message = ? WHERE id = ?', [errorMessage, taskId]);
     }
 }
 

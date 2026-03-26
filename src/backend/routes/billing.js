@@ -31,7 +31,7 @@ export async function billingRouter(ctx) {
                 SELECT metric, current_value, plan_limit, period_start, period_end, updated_at
                 FROM plan_usage
                 WHERE user_id = ?
-                AND period_end >= datetime('now')
+                AND period_end >= NOW()
                 ORDER BY metric
             `, [user.id]);
 
@@ -205,11 +205,11 @@ export async function billingRouter(ctx) {
             for (const m of metrics) {
                 await query.run(`
                     INSERT INTO plan_usage (id, user_id, metric, current_value, plan_limit, period_start, period_end, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                    VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
                     ON CONFLICT(user_id, metric, period_start) DO UPDATE SET
                         current_value = ?,
                         plan_limit = ?,
-                        updated_at = datetime('now')
+                        updated_at = NOW()
                 `, [
                     nanoid(),
                     user.id,
@@ -249,7 +249,7 @@ export async function billingRouter(ctx) {
                 return { status: 400, data: { error: 'You are already on this plan' } };
             }
 
-            query.run('UPDATE users SET subscription_tier = ?, updated_at = datetime(?) WHERE id = ?',
+            await query.run('UPDATE users SET subscription_tier = ?, updated_at = datetime(?) WHERE id = ?',
                 [planId, new Date().toISOString(), user.id]);
 
             logger.info(`[Billing] User ${user.id} changed plan: ${currentTier} → ${planId}`);
@@ -277,7 +277,7 @@ export async function billingRouter(ctx) {
                 return { status: 400, data: { error: 'You are already on this plan' } };
             }
 
-            query.run('UPDATE users SET subscription_tier = ?, updated_at = datetime(?) WHERE id = ?',
+            await query.run('UPDATE users SET subscription_tier = ?, updated_at = datetime(?) WHERE id = ?',
                 [planId, new Date().toISOString(), user.id]);
 
             logger.info(`[Billing] User ${user.id} selected plan: ${currentTier} → ${planId}`);
@@ -311,7 +311,7 @@ export async function billingRouter(ctx) {
 
         // POST /api/billing/portal — create Stripe Customer Portal session
         if (method === 'POST' && path === '/portal') {
-            const dbUser = query.get('SELECT stripe_customer_id FROM users WHERE id = ?', [user.id]);
+            const dbUser = await query.get('SELECT stripe_customer_id FROM users WHERE id = ?', [user.id]);
             if (!dbUser?.stripe_customer_id) {
                 return { status: 400, data: { error: 'No Stripe customer found. Subscribe to a plan first.' } };
             }
@@ -326,14 +326,14 @@ export async function billingRouter(ctx) {
 
         // POST /api/billing/cancel — cancel active Stripe subscription
         if (method === 'POST' && path === '/cancel') {
-            const dbUser = query.get('SELECT stripe_subscription_id FROM users WHERE id = ?', [user.id]);
+            const dbUser = await query.get('SELECT stripe_subscription_id FROM users WHERE id = ?', [user.id]);
             if (!dbUser?.stripe_subscription_id) {
                 return { status: 400, data: { error: 'No active subscription found.' } };
             }
 
             await cancelSubscription(dbUser.stripe_subscription_id);
 
-            query.run(
+            await query.run(
                 'UPDATE users SET subscription_tier = \'free\', stripe_subscription_id = NULL, subscription_expires_at = NULL, updated_at = datetime(\'now\') WHERE id = ?',
                 [user.id]
             );
@@ -345,7 +345,7 @@ export async function billingRouter(ctx) {
 
         // GET /api/billing/subscription — get current subscription details from Stripe
         if (method === 'GET' && path === '/subscription') {
-            const dbUser = query.get(
+            const dbUser = await query.get(
                 'SELECT subscription_tier, subscription_expires_at, stripe_customer_id, stripe_subscription_id FROM users WHERE id = ?',
                 [user.id]
             );

@@ -163,7 +163,7 @@ export async function receiptParserRouter(ctx) {
             const id = uuidv4();
             const now = new Date().toISOString();
 
-            query.run(`
+            await query.run(`
                 INSERT INTO email_parse_queue (
                     id, user_id, email_subject, email_from, email_body, email_date,
                     parsed_data, status, receipt_type, confidence_score, source_file,
@@ -187,7 +187,7 @@ export async function receiptParserRouter(ctx) {
             ]);
 
             // Fetch the created record
-            const receipt = query.get('SELECT * FROM email_parse_queue WHERE id = ?', [id]);
+            const receipt = await query.get('SELECT * FROM email_parse_queue WHERE id = ?', [id]);
             receipt.parsed_data = safeJsonParse(receipt.parsed_data || '{}', {});
 
             return {
@@ -230,7 +230,7 @@ export async function receiptParserRouter(ctx) {
         sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
         params.push(parseInt(limit), parseInt(offset));
 
-        const receipts = query.all(sql, params);
+        const receipts = await query.all(sql, params);
 
         // Parse JSON fields
         receipts.forEach(r => {
@@ -238,7 +238,7 @@ export async function receiptParserRouter(ctx) {
         });
 
         // Get counts by status
-        const counts = query.get(`
+        const counts = await query.get(`
             SELECT
                 SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
                 SUM(CASE WHEN status = 'parsed' THEN 1 ELSE 0 END) as parsed,
@@ -258,7 +258,7 @@ export async function receiptParserRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-zA-Z0-9_-]+$/) && path !== '/vendors' && path !== '/queue') {
         const id = path.slice(1);
 
-        const receipt = query.get(
+        const receipt = await query.get(
             'SELECT * FROM email_parse_queue WHERE id = ? AND user_id = ?',
             [id, user.id]
         );
@@ -276,7 +276,7 @@ export async function receiptParserRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/[a-zA-Z0-9_-]+$/) && !path.startsWith('/vendors')) {
         const id = path.slice(1);
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT * FROM email_parse_queue WHERE id = ? AND user_id = ?',
             [id, user.id]
         );
@@ -287,7 +287,7 @@ export async function receiptParserRouter(ctx) {
 
         const { parsedData, receiptType } = body;
 
-        query.run(`
+        await query.run(`
             UPDATE email_parse_queue
             SET parsed_data = ?, receipt_type = ?, status = 'parsed'
             WHERE id = ?
@@ -297,7 +297,7 @@ export async function receiptParserRouter(ctx) {
             id
         ]);
 
-        const updated = query.get('SELECT * FROM email_parse_queue WHERE id = ?', [id]);
+        const updated = await query.get('SELECT * FROM email_parse_queue WHERE id = ?', [id]);
         updated.parsed_data = safeJsonParse(updated.parsed_data || '{}', {});
 
         return { status: 200, data: { receipt: updated } };
@@ -307,7 +307,7 @@ export async function receiptParserRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-zA-Z0-9_-]+\/process$/)) {
         const id = path.split('/')[1];
 
-        const receipt = query.get(
+        const receipt = await query.get(
             'SELECT * FROM email_parse_queue WHERE id = ? AND user_id = ?',
             [id, user.id]
         );
@@ -325,14 +325,14 @@ export async function receiptParserRouter(ctx) {
             if (receiptType === 'purchase') {
                 // Create purchase record
                 const purchaseId = uuidv4();
-                const purchaseNumber = `PUR-${String(query.get('SELECT COUNT(*) as count FROM purchases WHERE user_id = ?', [user.id]).count + 1).padStart(5, '0')}`;
+                const purchaseNumber = `PUR-${String(await query.get('SELECT COUNT(*) as count FROM purchases WHERE user_id = ?', [user.id]).count + 1).padStart(5, '0')}`;
 
                 // Calculate totals - Cap items at 100 to prevent DoS
                 const items = (parsedData.items || []).slice(0, 100);
                 const itemTotal = items.reduce((sum, item) => sum + (item.total || 0), 0);
                 const totalAmount = parsedData.total || (itemTotal + (parsedData.tax || 0) + (parsedData.shipping || 0) - (parsedData.discount || 0));
 
-                query.run(`
+                await query.run(`
                     INSERT INTO purchases (
                         id, user_id, purchase_number, vendor_name, purchase_date,
                         total_amount, shipping_cost, tax_amount, payment_method,
@@ -356,7 +356,7 @@ export async function receiptParserRouter(ctx) {
                 // Create purchase items
                 for (const item of items) {
                     const itemId = uuidv4();
-                    query.run(`
+                    await query.run(`
                         INSERT INTO purchase_items (
                             id, purchase_id, description, quantity, unit_cost, total_cost
                         ) VALUES (?, ?, ?, ?, ?, ?)
@@ -376,7 +376,7 @@ export async function receiptParserRouter(ctx) {
                 // Create sale record
                 const saleId = uuidv4();
 
-                query.run(`
+                await query.run(`
                     INSERT INTO sales (
                         id, user_id, platform, sale_price, platform_fee, net_profit,
                         buyer_username, platform_order_id, tracking_number, status,
@@ -402,7 +402,7 @@ export async function receiptParserRouter(ctx) {
                 const transactionId = uuidv4();
                 const category = receiptType === 'shipping' ? 'Shipping Expense' : 'Business Expense';
 
-                query.run(`
+                await query.run(`
                     INSERT INTO financial_transactions (
                         id, user_id, type, category, amount, description,
                         transaction_date, created_at
@@ -421,7 +421,7 @@ export async function receiptParserRouter(ctx) {
             }
 
             // Mark receipt as processed
-            query.run(`
+            await query.run(`
                 UPDATE email_parse_queue
                 SET status = 'processed', processed_at = CURRENT_TIMESTAMP
                 WHERE id = ?
@@ -445,7 +445,7 @@ export async function receiptParserRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-zA-Z0-9_-]+\/ignore$/)) {
         const id = path.split('/')[1];
 
-        const receipt = query.get(
+        const receipt = await query.get(
             'SELECT * FROM email_parse_queue WHERE id = ? AND user_id = ?',
             [id, user.id]
         );
@@ -454,7 +454,7 @@ export async function receiptParserRouter(ctx) {
             return { status: 404, data: { error: 'Receipt not found' } };
         }
 
-        query.run(`
+        await query.run(`
             UPDATE email_parse_queue SET status = 'ignored' WHERE id = ?
         `, [id]);
 
@@ -465,7 +465,7 @@ export async function receiptParserRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/[a-zA-Z0-9_-]+$/) && !path.startsWith('/vendors')) {
         const id = path.slice(1);
 
-        const receipt = query.get(
+        const receipt = await query.get(
             'SELECT * FROM email_parse_queue WHERE id = ? AND user_id = ?',
             [id, user.id]
         );
@@ -474,7 +474,7 @@ export async function receiptParserRouter(ctx) {
             return { status: 404, data: { error: 'Receipt not found' } };
         }
 
-        query.run('DELETE FROM email_parse_queue WHERE id = ? AND user_id = ?', [id, user.id]);
+        await query.run('DELETE FROM email_parse_queue WHERE id = ? AND user_id = ?', [id, user.id]);
 
         return { status: 200, data: { success: true } };
     }
@@ -483,7 +483,7 @@ export async function receiptParserRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-zA-Z0-9_-]+\/reparse$/)) {
         const id = path.split('/')[1];
 
-        const receipt = query.get(
+        const receipt = await query.get(
             'SELECT * FROM email_parse_queue WHERE id = ? AND user_id = ?',
             [id, user.id]
         );
@@ -499,7 +499,7 @@ export async function receiptParserRouter(ctx) {
         try {
             const parsedData = await parseReceiptWithAI(receipt.image_data, 'image/jpeg');
 
-            query.run(`
+            await query.run(`
                 UPDATE email_parse_queue
                 SET parsed_data = ?, receipt_type = ?, confidence_score = ?, status = 'parsed'
                 WHERE id = ?
@@ -510,7 +510,7 @@ export async function receiptParserRouter(ctx) {
                 id
             ]);
 
-            const updated = query.get('SELECT * FROM email_parse_queue WHERE id = ?', [id]);
+            const updated = await query.get('SELECT * FROM email_parse_queue WHERE id = ?', [id]);
             updated.parsed_data = safeJsonParse(updated.parsed_data || '{}', {});
 
             return { status: 200, data: { receipt: updated } };
@@ -522,7 +522,7 @@ export async function receiptParserRouter(ctx) {
 
     // GET /api/receipts/vendors - List saved vendors
     if (method === 'GET' && path === '/vendors') {
-        const vendors = query.all(
+        const vendors = await query.all(
             'SELECT * FROM receipt_vendors WHERE user_id = ? ORDER BY name ASC',
             [user.id]
         );
@@ -544,7 +544,7 @@ export async function receiptParserRouter(ctx) {
 
         const id = uuidv4();
 
-        query.run(`
+        await query.run(`
             INSERT INTO receipt_vendors (
                 id, user_id, name, aliases, default_category,
                 default_payment_method, is_platform, notes
@@ -560,7 +560,7 @@ export async function receiptParserRouter(ctx) {
             notes || null
         ]);
 
-        const vendor = query.get('SELECT * FROM receipt_vendors WHERE id = ?', [id]);
+        const vendor = await query.get('SELECT * FROM receipt_vendors WHERE id = ?', [id]);
         vendor.aliases = safeJsonParse(vendor.aliases || '[]', []);
 
         return { status: 201, data: { vendor } };
@@ -570,7 +570,7 @@ export async function receiptParserRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/vendors\/[a-zA-Z0-9_-]+$/)) {
         const id = path.split('/')[2];
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT * FROM receipt_vendors WHERE id = ? AND user_id = ?',
             [id, user.id]
         );
@@ -581,7 +581,7 @@ export async function receiptParserRouter(ctx) {
 
         const { name, aliases, defaultCategory, defaultPaymentMethod, isPlatform, notes } = body;
 
-        query.run(`
+        await query.run(`
             UPDATE receipt_vendors SET
                 name = COALESCE(?, name),
                 aliases = COALESCE(?, aliases),
@@ -601,7 +601,7 @@ export async function receiptParserRouter(ctx) {
             id
         ]);
 
-        const vendor = query.get('SELECT * FROM receipt_vendors WHERE id = ?', [id]);
+        const vendor = await query.get('SELECT * FROM receipt_vendors WHERE id = ?', [id]);
         vendor.aliases = safeJsonParse(vendor.aliases || '[]', []);
 
         return { status: 200, data: { vendor } };
@@ -611,7 +611,7 @@ export async function receiptParserRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/vendors\/[a-zA-Z0-9_-]+$/)) {
         const id = path.split('/')[2];
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT * FROM receipt_vendors WHERE id = ? AND user_id = ?',
             [id, user.id]
         );
@@ -620,7 +620,7 @@ export async function receiptParserRouter(ctx) {
             return { status: 404, data: { error: 'Vendor not found' } };
         }
 
-        query.run('DELETE FROM receipt_vendors WHERE id = ? AND user_id = ?', [id, user.id]);
+        await query.run('DELETE FROM receipt_vendors WHERE id = ? AND user_id = ?', [id, user.id]);
 
         return { status: 200, data: { success: true } };
     }

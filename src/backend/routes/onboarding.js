@@ -66,7 +66,7 @@ export async function onboardingRouter(ctx) {
     // GET /api/onboarding/progress - Get user's onboarding progress
     if (method === 'GET' && path === '/progress') {
         try {
-            const progress = query.get(
+            const progress = await query.get(
                 `SELECT * FROM onboarding_progress WHERE user_id = ?`,
                 [user.id]
             );
@@ -113,14 +113,14 @@ export async function onboardingRouter(ctx) {
             }
 
             // Check if progress already exists
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT id FROM onboarding_progress WHERE user_id = ?',
                 [user.id]
             );
 
             if (existing) {
                 // Reset progress
-                query.run(
+                await query.run(
                     `UPDATE onboarding_progress
                     SET role = ?, current_step = 'welcome', completed_steps = '[]',
                     badges = '[]', points = 0, updated_at = CURRENT_TIMESTAMP
@@ -128,21 +128,21 @@ export async function onboardingRouter(ctx) {
                     [role, user.id]
                 );
 
-                const updated = query.get('SELECT * FROM onboarding_progress WHERE user_id = ?', [user.id]);
+                const updated = await query.get('SELECT * FROM onboarding_progress WHERE user_id = ?', [user.id]);
 
                 return { status: 200, data: updated };
             } else {
                 // Create new progress
                 const id = uuidv4();
 
-                query.run(
+                await query.run(
                     `INSERT INTO onboarding_progress
                     (id, user_id, role, current_step, completed_steps, badges, points)
                     VALUES (?, ?, ?, 'welcome', '[]', '[]', 0)`,
                     [id, user.id, role]
                 );
 
-                const progress = query.get('SELECT * FROM onboarding_progress WHERE id = ?', [id]);
+                const progress = await query.get('SELECT * FROM onboarding_progress WHERE id = ?', [id]);
 
                 return { status: 201, data: progress };
             }
@@ -161,7 +161,7 @@ export async function onboardingRouter(ctx) {
                 return { status: 400, data: { error: 'step_id required' } };
             }
 
-            const progress = query.get(
+            const progress = await query.get(
                 'SELECT * FROM onboarding_progress WHERE user_id = ?',
                 [user.id]
             );
@@ -194,7 +194,7 @@ export async function onboardingRouter(ctx) {
             const newPoints = (progress.points || 0) + pointsAwarded;
 
             // Update progress
-            query.run(
+            await query.run(
                 `UPDATE onboarding_progress
                 SET completed_steps = ?, badges = ?, points = ?,
                 current_step = ?, updated_at = CURRENT_TIMESTAMP
@@ -202,7 +202,7 @@ export async function onboardingRouter(ctx) {
                 [JSON.stringify(completedSteps), JSON.stringify(badges), newPoints, step_id, user.id]
             );
 
-            const updated = query.get('SELECT * FROM onboarding_progress WHERE user_id = ?', [user.id]);
+            const updated = await query.get('SELECT * FROM onboarding_progress WHERE user_id = ?', [user.id]);
 
             return {
                 status: 200,
@@ -238,7 +238,7 @@ export async function onboardingRouter(ctx) {
     // GET /api/onboarding/badges - Get all available badges and which user has earned
     if (method === 'GET' && path === '/badges') {
         try {
-            const progress = query.get(
+            const progress = await query.get(
                 'SELECT badges, points FROM onboarding_progress WHERE user_id = ?',
                 [user.id]
             );
@@ -282,7 +282,7 @@ export async function onboardingRouter(ctx) {
                 return { status: 404, data: { error: 'Badge not found' } };
             }
 
-            const progress = query.get(
+            const progress = await query.get(
                 'SELECT * FROM onboarding_progress WHERE user_id = ?',
                 [user.id]
             );

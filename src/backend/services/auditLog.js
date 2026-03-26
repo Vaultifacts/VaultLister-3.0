@@ -90,7 +90,7 @@ const auditLog = {
         const safeDetails = redactSensitive(details);
         const safeMetadata = redactSensitive(metadata);
 
-        query.run(`
+        await query.run(`
             INSERT INTO audit_logs (
                 id, user_id, action, category, severity,
                 resource_type, resource_id, details, metadata,
@@ -218,7 +218,7 @@ const auditLog = {
             params.push(severity);
         }
         if (action) {
-            sql += " AND action LIKE ? ESCAPE '\\'";
+            sql += " AND action ILIKE ? ESCAPE '\\'";
             params.push(`%${action.replace(/[%_\\]/g, '\\$&')}%`);
         }
         if (resourceType) {
@@ -241,7 +241,7 @@ const auditLog = {
         sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
         params.push(limit, offset);
 
-        return query.all(sql, params) || [];
+        return await query.all(sql, params) || [];
     },
 
     // Get user activity timeline
@@ -249,7 +249,7 @@ const auditLog = {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 
-        return query.all(`
+        return await query.all(`
             SELECT
                 action,
                 category,
@@ -269,7 +269,7 @@ const auditLog = {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 
-        return query.all(`
+        return await query.all(`
             SELECT
                 al.*,
                 u.email as user_email,
@@ -292,7 +292,7 @@ const auditLog = {
         };
 
         // Summary by category
-        report.summary.byCategory = query.all(`
+        report.summary.byCategory = await query.all(`
             SELECT
                 category,
                 COUNT(*) as count
@@ -302,7 +302,7 @@ const auditLog = {
         `, [startDate, endDate]) || [];
 
         // Summary by severity
-        report.summary.bySeverity = query.all(`
+        report.summary.bySeverity = await query.all(`
             SELECT
                 severity,
                 COUNT(*) as count
@@ -313,31 +313,31 @@ const auditLog = {
 
         // Authentication events
         report.details.authentication = {
-            totalLogins: query.get(`
+            totalLogins: await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE category = 'authentication' AND action = 'login_success'
                 AND created_at BETWEEN ? AND ?
             `, [startDate, endDate])?.count || 0,
-            failedLogins: query.get(`
+            failedLogins: await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE category = 'authentication' AND action = 'login_failed'
                 AND created_at BETWEEN ? AND ?
             `, [startDate, endDate])?.count || 0,
-            passwordResets: query.get(`
+            passwordResets: await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
-                WHERE action LIKE '%password_reset%'
+                WHERE action ILIKE '%password_reset%'
                 AND created_at BETWEEN ? AND ?
             `, [startDate, endDate])?.count || 0
         };
 
         // Security events
         report.details.security = {
-            mfaEnrollments: query.get(`
+            mfaEnrollments: await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
-                WHERE action LIKE '%mfa_enabled%'
+                WHERE action ILIKE '%mfa_enabled%'
                 AND created_at BETWEEN ? AND ?
             `, [startDate, endDate])?.count || 0,
-            suspiciousActivity: query.get(`
+            suspiciousActivity: await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE severity IN ('warning', 'critical')
                 AND category = 'security'
@@ -346,7 +346,7 @@ const auditLog = {
         };
 
         // Data access patterns
-        report.details.dataAccess = query.all(`
+        report.details.dataAccess = await query.all(`
             SELECT
                 action,
                 COUNT(*) as count,
@@ -360,7 +360,7 @@ const auditLog = {
         `, [startDate, endDate]) || [];
 
         // Admin actions
-        report.details.adminActions = query.all(`
+        report.details.adminActions = await query.all(`
             SELECT
                 al.action,
                 al.details,
@@ -381,7 +381,7 @@ const auditLog = {
         const startDate = new Date();
         startDate.setHours(startDate.getHours() - hours);
 
-        return query.all(`
+        return await query.all(`
             SELECT
                 al.*,
                 u.email as user_email
@@ -402,7 +402,7 @@ const auditLog = {
         criticalCutoffDate.setDate(criticalCutoffDate.getDate() - criticalRetentionDays);
 
         // Delete standard logs older than retentionDays
-        const result = query.run(`
+        const result = await query.run(`
             DELETE FROM audit_logs
             WHERE created_at < ?
             AND severity NOT IN ('critical')
@@ -410,7 +410,7 @@ const auditLog = {
         `, [cutoffDate.toISOString()]);
 
         // Delete critical/security logs older than 2 years
-        const criticalResult = query.run(`
+        const criticalResult = await query.run(`
             DELETE FROM audit_logs
             WHERE created_at < ?
             AND (severity = 'critical' OR category = 'security')
@@ -501,26 +501,26 @@ export async function auditLogRouter(ctx) {
         startDate.setDate(startDate.getDate() - days);
 
         const stats = {
-            totalEvents: query.get(`
+            totalEvents: await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE created_at >= ?
             `, [startDate.toISOString()])?.count || 0,
 
-            byCategory: query.all(`
+            byCategory: await query.all(`
                 SELECT category, COUNT(*) as count
                 FROM audit_logs
                 WHERE created_at >= ?
                 GROUP BY category
             `, [startDate.toISOString()]) || [],
 
-            bySeverity: query.all(`
+            bySeverity: await query.all(`
                 SELECT severity, COUNT(*) as count
                 FROM audit_logs
                 WHERE created_at >= ?
                 GROUP BY severity
             `, [startDate.toISOString()]) || [],
 
-            topActions: query.all(`
+            topActions: await query.all(`
                 SELECT action, COUNT(*) as count
                 FROM audit_logs
                 WHERE created_at >= ?
@@ -529,7 +529,7 @@ export async function auditLogRouter(ctx) {
                 LIMIT 10
             `, [startDate.toISOString()]) || [],
 
-            uniqueUsers: query.get(`
+            uniqueUsers: await query.get(`
                 SELECT COUNT(DISTINCT user_id) as count
                 FROM audit_logs
                 WHERE created_at >= ?

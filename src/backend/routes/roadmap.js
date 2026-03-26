@@ -37,12 +37,12 @@ export async function roadmapRouter(ctx) {
 
             sql += ` ORDER BY votes DESC, created_at DESC LIMIT 200`;
 
-            const features = query.all(sql, params);
+            const features = await query.all(sql, params);
 
             // For each feature, check if current user has voted
             if (user) {
                 features.forEach(feature => {
-                    const vote = query.get(
+                    const vote = await query.get(
                         `SELECT id FROM roadmap_votes WHERE feature_id = ? AND user_id = ?`,
                         [feature.id, user.id]
                     );
@@ -69,7 +69,7 @@ export async function roadmapRouter(ctx) {
         const featureId = path.split('/')[1];
 
         try {
-            const feature = query.get(`SELECT * FROM roadmap_features WHERE id = ?`, [featureId]);
+            const feature = await query.get(`SELECT * FROM roadmap_features WHERE id = ?`, [featureId]);
 
             if (!feature) {
                 return {
@@ -80,7 +80,7 @@ export async function roadmapRouter(ctx) {
 
             // Check if current user has voted
             if (user) {
-                const vote = query.get(
+                const vote = await query.get(
                     `SELECT id FROM roadmap_votes WHERE feature_id = ? AND user_id = ?`,
                     [feature.id, user.id]
                 );
@@ -116,7 +116,7 @@ export async function roadmapRouter(ctx) {
 
         try {
             // Check if feature exists
-            const feature = query.get(`SELECT * FROM roadmap_features WHERE id = ?`, [featureId]);
+            const feature = await query.get(`SELECT * FROM roadmap_features WHERE id = ?`, [featureId]);
 
             if (!feature) {
                 return {
@@ -126,15 +126,15 @@ export async function roadmapRouter(ctx) {
             }
 
             // Check if user already voted
-            const existingVote = query.get(
+            const existingVote = await query.get(
                 `SELECT id FROM roadmap_votes WHERE feature_id = ? AND user_id = ?`,
                 [featureId, user.id]
             );
 
             if (existingVote) {
                 // Remove vote (toggle)
-                query.run(`DELETE FROM roadmap_votes WHERE id = ? AND user_id = ?`, [existingVote.id, user.id]);
-                query.run(`UPDATE roadmap_features SET votes = votes - 1 WHERE id = ?`, [featureId]);
+                await query.run(`DELETE FROM roadmap_votes WHERE id = ? AND user_id = ?`, [existingVote.id, user.id]);
+                await query.run(`UPDATE roadmap_features SET votes = votes - 1 WHERE id = ?`, [featureId]);
 
                 return {
                     status: 200,
@@ -143,11 +143,11 @@ export async function roadmapRouter(ctx) {
             } else {
                 // Add vote
                 const voteId = nanoid();
-                query.run(
+                await query.run(
                     `INSERT INTO roadmap_votes (id, feature_id, user_id) VALUES (?, ?, ?)`,
                     [voteId, featureId, user.id]
                 );
-                query.run(`UPDATE roadmap_features SET votes = votes + 1 WHERE id = ?`, [featureId]);
+                await query.run(`UPDATE roadmap_features SET votes = votes + 1 WHERE id = ?`, [featureId]);
 
                 return {
                     status: 200,
@@ -183,12 +183,12 @@ export async function roadmapRouter(ctx) {
 
         try {
             const featureId = nanoid();
-            query.run(
+            await query.run(
                 `INSERT INTO roadmap_features (id, title, description, category, eta, status) VALUES (?, ?, ?, ?, ?, ?)`,
                 [featureId, title, description || null, category || null, eta || null, status || 'planned']
             );
 
-            const feature = query.get(`SELECT * FROM roadmap_features WHERE id = ?`, [featureId]);
+            const feature = await query.get(`SELECT * FROM roadmap_features WHERE id = ?`, [featureId]);
 
             return {
                 status: 201,

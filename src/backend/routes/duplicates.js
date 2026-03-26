@@ -50,7 +50,7 @@ export async function duplicatesRouter(ctx) {
             sql += ' ORDER BY d.created_at DESC LIMIT ? OFFSET ?';
             params.push(parseInt(limit), parseInt(offset));
 
-            const duplicates = query.all(sql, params);
+            const duplicates = await query.all(sql, params);
 
             // Get total count
             let countSql = 'SELECT COUNT(*) as count FROM duplicate_detections WHERE user_id = ?';
@@ -59,7 +59,7 @@ export async function duplicatesRouter(ctx) {
                 countSql += ' AND user_action = ?';
                 countParams.push(status);
             }
-            const { count } = query.get(countSql, countParams);
+            const { count } = await query.get(countSql, countParams);
 
             return {
                 status: 200,
@@ -86,7 +86,7 @@ export async function duplicatesRouter(ctx) {
     if (method === 'POST' && path === '/scan') {
         try {
             // Get all active inventory items
-            const items = query.all(`
+            const items = await query.all(`
                 SELECT id, title, sku, brand, size, blockchain_hash
                 FROM inventory
                 WHERE user_id = ? AND status NOT IN ('deleted', 'sold')
@@ -137,9 +137,9 @@ export async function duplicatesRouter(ctx) {
 
             // Batch all DB writes in a single transaction (DELETE + INSERTs)
             const detectedDuplicates = [];
-            query.transaction(() => {
+            await query.transaction(() => {
                 // Clear existing pending duplicates
-                query.run(`
+                await query.run(`
                     DELETE FROM duplicate_detections
                     WHERE user_id = ? AND user_action = 'pending'
                 `, [user.id]);
@@ -147,7 +147,7 @@ export async function duplicatesRouter(ctx) {
                 // Insert all matches
                 for (const m of matches) {
                     try {
-                        query.run(`
+                        await query.run(`
                             INSERT INTO duplicate_detections
                             (id, user_id, primary_item_id, duplicate_item_id, detection_type, confidence_score)
                             VALUES (?, ?, ?, ?, ?, ?)
@@ -199,7 +199,7 @@ export async function duplicatesRouter(ctx) {
                     sql += ' AND id != ?';
                     params.push(exclude_id);
                 }
-                const skuMatches = query.all(sql, params);
+                const skuMatches = await query.all(sql, params);
                 skuMatches.forEach(item => {
                     potentialDuplicates.push({
                         item,
@@ -217,7 +217,7 @@ export async function duplicatesRouter(ctx) {
                     sql += ' AND id != ?';
                     params.push(exclude_id);
                 }
-                const hashMatches = query.all(sql, params);
+                const hashMatches = await query.all(sql, params);
                 hashMatches.forEach(item => {
                     if (!potentialDuplicates.find(d => d.item.id === item.id)) {
                         potentialDuplicates.push({
@@ -243,7 +243,7 @@ export async function duplicatesRouter(ctx) {
                     sql += ' AND id != ?';
                     params.push(exclude_id);
                 }
-                const titleBrandSizeMatches = query.all(sql, params);
+                const titleBrandSizeMatches = await query.all(sql, params);
                 titleBrandSizeMatches.forEach(item => {
                     if (!potentialDuplicates.find(d => d.item.id === item.id)) {
                         potentialDuplicates.push({
@@ -267,7 +267,7 @@ export async function duplicatesRouter(ctx) {
                     sql += ' AND id != ?';
                     params.push(exclude_id);
                 }
-                const titleMatches = query.all(sql, params);
+                const titleMatches = await query.all(sql, params);
                 titleMatches.forEach(item => {
                     if (!potentialDuplicates.find(d => d.item.id === item.id)) {
                         potentialDuplicates.push({
@@ -307,7 +307,7 @@ export async function duplicatesRouter(ctx) {
             }
 
             // Verify ownership
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT id FROM duplicate_detections WHERE id = ? AND user_id = ?',
                 [id, user.id]
             );
@@ -321,7 +321,7 @@ export async function duplicatesRouter(ctx) {
 
             const resolved_at = user_action !== 'pending' ? new Date().toISOString() : null;
 
-            query.run(`
+            await query.run(`
                 UPDATE duplicate_detections
                 SET user_action = ?, resolved_at = ?
                 WHERE id = ?
@@ -344,7 +344,7 @@ export async function duplicatesRouter(ctx) {
 
     // GET /api/duplicates/stats - Get duplicate statistics (must be before :id catch-all)
     if (method === 'GET' && path === '/stats') {
-        const stats = query.get(`
+        const stats = await query.get(`
             SELECT
                 COUNT(*) as total,
                 SUM(CASE WHEN user_action = 'pending' THEN 1 ELSE 0 END) as pending,
@@ -370,7 +370,7 @@ export async function duplicatesRouter(ctx) {
         const id = deleteMatch[1];
 
         // Verify ownership
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id FROM duplicate_detections WHERE id = ? AND user_id = ?',
             [id, user.id]
         );
@@ -382,7 +382,7 @@ export async function duplicatesRouter(ctx) {
             };
         }
 
-        query.run('DELETE FROM duplicate_detections WHERE id = ? AND user_id = ?', [id, user.id]);
+        await query.run('DELETE FROM duplicate_detections WHERE id = ? AND user_id = ?', [id, user.id]);
 
         return {
             status: 200,

@@ -108,14 +108,14 @@ async function scheduleAccountDeletion(userId, reason) {
 
     await query.run(`
         INSERT INTO account_deletion_requests (id, user_id, reason, scheduled_for, status, created_at)
-        VALUES (?, ?, ?, ?, 'pending', datetime('now'))
+        VALUES (?, ?, ?, ?, 'pending', NOW())
     `, [uuidv4(), userId, reason, deletionDate.toISOString()]);
 
     // Mark user as pending deletion
     await query.run(`
         UPDATE users SET
             deletion_scheduled_at = ?,
-            updated_at = datetime('now')
+            updated_at = NOW()
         WHERE id = ?
     `, [deletionDate.toISOString(), userId]);
 
@@ -126,14 +126,14 @@ async function scheduleAccountDeletion(userId, reason) {
 async function cancelAccountDeletion(userId) {
     await query.run(`
         UPDATE account_deletion_requests
-        SET status = 'cancelled', updated_at = datetime('now')
+        SET status = 'cancelled', updated_at = NOW()
         WHERE user_id = ? AND status = 'pending'
     `, [userId]);
 
     await query.run(`
         UPDATE users SET
             deletion_scheduled_at = NULL,
-            updated_at = datetime('now')
+            updated_at = NOW()
         WHERE id = ?
     `, [userId]);
 }
@@ -172,7 +172,7 @@ async function executeAccountDeletion(userId) {
         // Mark deletion request as completed
         await tx.run(`
             UPDATE account_deletion_requests
-            SET status = 'completed', completed_at = datetime('now')
+            SET status = 'completed', completed_at = NOW()
             WHERE user_id = ?
         `, [userId]);
     });
@@ -197,7 +197,7 @@ export async function gdprRouter(ctx) {
 
             await query.run(`
                 INSERT INTO data_export_requests (id, user_id, status, created_at)
-                VALUES (?, ?, 'processing', datetime('now'))
+                VALUES (?, ?, 'processing', NOW())
             `, [requestId, user.id]);
 
             // Export data
@@ -206,7 +206,7 @@ export async function gdprRouter(ctx) {
             // Store export
             await query.run(`
                 UPDATE data_export_requests
-                SET status = 'completed', export_data = ?, completed_at = datetime('now')
+                SET status = 'completed', export_data = ?, completed_at = NOW()
                 WHERE id = ?
             `, [JSON.stringify(exportData), requestId]);
 
@@ -395,10 +395,10 @@ export async function gdprRouter(ctx) {
             if (!VALID_CONSENT_TYPES.has(type)) continue;
             await query.run(`
                 INSERT INTO user_consents (id, user_id, consent_type, granted, granted_at, updated_at)
-                VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, ?, NOW(), NOW())
                 ON CONFLICT(user_id, consent_type) DO UPDATE SET
                     granted = excluded.granted,
-                    updated_at = datetime('now')
+                    updated_at = NOW()
             `, [uuidv4(), user.id, type, granted ? 1 : 0]);
         }
 
@@ -416,7 +416,7 @@ export async function gdprRouter(ctx) {
         // Log the rectification request
         await query.run(`
             INSERT INTO data_rectification_requests (id, user_id, corrections, status, created_at)
-            VALUES (?, ?, ?, 'pending', datetime('now'))
+            VALUES (?, ?, ?, 'pending', NOW())
         `, [uuidv4(), user.id, JSON.stringify(corrections)]);
 
         // Apply corrections to user profile with strict field mapping
@@ -439,7 +439,7 @@ export async function gdprRouter(ctx) {
 
         if (updates.length > 0) {
             values.push(user.id);
-            await query.run(`UPDATE users SET ${updates.join(', ')}, updated_at = datetime('now') WHERE id = ?`, values);
+            await query.run(`UPDATE users SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ?`, values);
         }
 
         return { status: 200, data: { message: 'Profile updated' } };

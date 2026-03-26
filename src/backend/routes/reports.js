@@ -38,7 +38,7 @@ const ALLOWED_COLUMNS = {
 };
 
 // Strict operator whitelist
-const ALLOWED_OPERATORS = ['=', '!=', '<', '>', '<=', '>=', 'LIKE', 'NOT LIKE', 'IN', 'NOT IN', 'IS NULL', 'IS NOT NULL'];
+const ALLOWED_OPERATORS = ['=', '!=', '<', '>', '<=', '>=', 'ILIKE', 'NOT ILIKE', 'IN', 'NOT IN', 'IS NULL', 'IS NOT NULL'];
 
 // Calculate next run date based on frequency
 function calculateNextRun(frequency) {
@@ -99,7 +99,8 @@ function validateCustomQuery(sql, userId) {
   const dangerousKeywords = [
     'INSERT', 'UPDATE', 'DELETE', 'DROP', 'ALTER', 'CREATE',
     'TRUNCATE', 'REPLACE', 'MERGE', 'EXEC', 'EXECUTE',
-    'PRAGMA', 'ATTACH', 'DETACH', 'LOAD_EXTENSION', 'RANDOMBLOB'
+    'COPY', 'LISTEN', 'NOTIFY', 'SET ROLE', 'GRANT', 'REVOKE',
+    'LOAD', 'ATTACH', 'DETACH', 'LOAD_EXTENSION', 'RANDOMBLOB'
   ];
 
   for (const keyword of dangerousKeywords) {
@@ -198,7 +199,7 @@ function validateSelectColumn(column, table) {
     return;
   }
 
-  // Allow expressions like "strftime('%Y-%m', created_at) as month" — these come
+  // Allow expressions like "TO_CHAR(created_at, 'YYYY-MM') as month" — these come
   // only from REPORT_TEMPLATES which are server-controlled strings, not user input.
   // For user-supplied SELECT columns we require bare identifier or table.identifier.
   if (/\(/.test(bare)) {
@@ -377,7 +378,7 @@ async function generatePnL(userId, startDate, endDate, groupBy) {
         groupLabel = 'Brand';
         break;
       case 'month':
-        groupColumn = "strftime('%Y-%m', s.created_at)";
+        groupColumn = "TO_CHAR(s.created_at, 'YYYY-MM')";
         groupLabel = 'Month';
         break;
       default:
@@ -447,13 +448,13 @@ const REPORT_TEMPLATES = [
     config: {
       tables: ['sales'],
       columns: [
-        "strftime('%Y-%m', created_at) as month",
+        "TO_CHAR(created_at, 'YYYY-MM') as month",
         'COUNT(*) as total_sales',
         'SUM(sale_price) as revenue',
         'AVG(sale_price) as avg_sale_price'
       ],
       filters: [],
-      groupBy: ["strftime('%Y-%m', created_at)"],
+      groupBy: ["TO_CHAR(created_at, 'YYYY-MM')"],
       orderBy: ['month DESC']
     }
   },
@@ -466,9 +467,9 @@ const REPORT_TEMPLATES = [
       tables: ['inventory'],
       columns: [
         'CASE ' +
-        'WHEN julianday("now") - julianday(acquired_date) < 30 THEN "0-30 days" ' +
-        'WHEN julianday("now") - julianday(acquired_date) < 90 THEN "30-90 days" ' +
-        'WHEN julianday("now") - julianday(acquired_date) < 180 THEN "90-180 days" ' +
+        'WHEN EXTRACT(EPOCH FROM (NOW() - acquired_date)) / 86400 < 30 THEN "0-30 days" ' +
+        'WHEN EXTRACT(EPOCH FROM (NOW() - acquired_date)) / 86400 < 90 THEN "30-90 days" ' +
+        'WHEN EXTRACT(EPOCH FROM (NOW() - acquired_date)) / 86400 < 180 THEN "90-180 days" ' +
         'ELSE "180+ days" END as age_bracket',
         'COUNT(*) as item_count',
         'SUM(cost_price) as total_cost',
@@ -564,8 +565,8 @@ function generateWidgetResult(type, userId, startDate, endDate) {
   try {
     switch (type) {
       case 'revenue_chart': {
-        const rows = query.all(
-          `SELECT strftime('%Y-%m', created_at) as month, SUM(sale_price) as revenue
+        const rows = await query.all(
+          `SELECT TO_CHAR(created_at, 'YYYY-MM') as month, SUM(sale_price) as revenue
            FROM sales WHERE user_id = ? AND created_at BETWEEN ? AND ?
            GROUP BY month ORDER BY month`,
           [userId, start, end]
@@ -577,8 +578,8 @@ function generateWidgetResult(type, userId, startDate, endDate) {
         };
       }
       case 'profit_chart': {
-        const rows = query.all(
-          `SELECT strftime('%Y-%m', s.created_at) as month,
+        const rows = await query.all(
+          `SELECT TO_CHAR(s.created_at, 'YYYY-MM') as month,
                   SUM(s.sale_price - COALESCE(i.cost_price,0) - COALESCE(s.platform_fee,0)) as profit
            FROM sales s LEFT JOIN inventory i ON s.inventory_id = i.id
            WHERE s.user_id = ? AND s.created_at BETWEEN ? AND ?
@@ -592,7 +593,7 @@ function generateWidgetResult(type, userId, startDate, endDate) {
         };
       }
       case 'sales_by_platform': {
-        const rows = query.all(
+        const rows = await query.all(
           `SELECT platform, COUNT(*) as count, SUM(sale_price) as revenue
            FROM sales WHERE user_id = ? AND created_at BETWEEN ? AND ?
            GROUP BY platform`,
@@ -605,7 +606,7 @@ function generateWidgetResult(type, userId, startDate, endDate) {
         };
       }
       case 'inventory_value': {
-        const row = query.get(
+        const row = await query.get(
           `SELECT SUM(cost_price * quantity) as total_value, COUNT(*) as item_count
            FROM inventory WHERE user_id = ? AND status != 'sold' AND status != 'deleted'`,
           [userId]
@@ -618,7 +619,7 @@ function generateWidgetResult(type, userId, startDate, endDate) {
         };
       }
       case 'top_sellers': {
-        const rows = query.all(
+        const rows = await query.all(
           `SELECT i.title as name, i.sku, COUNT(s.id) as times_sold, SUM(s.sale_price) as revenue
            FROM sales s JOIN inventory i ON s.inventory_id = i.id
            WHERE s.user_id = ? AND s.created_at BETWEEN ? AND ?
@@ -632,13 +633,13 @@ function generateWidgetResult(type, userId, startDate, endDate) {
         };
       }
       case 'sell_through_rate': {
-        const total = query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ?', [userId]);
-        const sold = query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [userId, 'sold']);
+        const total = await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ?', [userId]);
+        const sold = await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [userId, 'sold']);
         const rate = total?.count ? Math.round(((sold?.count || 0) / total.count) * 100) : 0;
         return { type: 'stat', value: rate, label: 'Sell Through Rate', unit: '%' };
       }
       case 'profit_margin': {
-        const row = query.get(
+        const row = await query.get(
           `SELECT SUM(sale_price) as revenue,
                   SUM(sale_price - COALESCE(platform_fee, 0) - COALESCE(
                     (SELECT cost_price FROM inventory WHERE id = sales.inventory_id), 0
@@ -651,17 +652,17 @@ function generateWidgetResult(type, userId, startDate, endDate) {
           secondary: { label: 'Revenue', value: row?.revenue || 0 } };
       }
       case 'listing_age': {
-        const rows = query.all(
+        const rows = await query.all(
           `SELECT
             CASE
-              WHEN julianday('now') - julianday(created_at) < 7 THEN '< 1 week'
-              WHEN julianday('now') - julianday(created_at) < 30 THEN '1-4 weeks'
-              WHEN julianday('now') - julianday(created_at) < 90 THEN '1-3 months'
+              WHEN EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400 < 7 THEN '< 1 week'
+              WHEN EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400 < 30 THEN '1-4 weeks'
+              WHEN EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400 < 90 THEN '1-3 months'
               ELSE '3+ months'
             END as bracket,
             COUNT(*) as count
            FROM inventory WHERE user_id = ? AND status NOT IN ('sold', 'deleted')
-           GROUP BY bracket ORDER BY MIN(julianday('now') - julianday(created_at))`,
+           GROUP BY bracket ORDER BY MIN(EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400)`,
           [userId]
         );
         return {
@@ -671,7 +672,7 @@ function generateWidgetResult(type, userId, startDate, endDate) {
         };
       }
       case 'platform_fees': {
-        const row = query.get(
+        const row = await query.get(
           `SELECT SUM(COALESCE(platform_fee, 0)) as total_fees, COUNT(*) as sale_count
            FROM sales WHERE user_id = ? AND created_at BETWEEN ? AND ?`,
           [userId, start, end]
@@ -680,8 +681,8 @@ function generateWidgetResult(type, userId, startDate, endDate) {
           secondary: { label: 'Sales', value: row?.sale_count || 0 } };
       }
       case 'monthly_summary': {
-        const rows = query.all(
-          `SELECT strftime('%Y-%m', s.created_at) as month,
+        const rows = await query.all(
+          `SELECT TO_CHAR(s.created_at, 'YYYY-MM') as month,
                   COUNT(*) as sales_count,
                   SUM(s.sale_price) as revenue,
                   SUM(COALESCE(s.platform_fee, 0)) as fees,
@@ -903,12 +904,12 @@ export async function reportsRouter(ctx) {
         return { status: 404, data: { error: 'Report not found' } };
       }
 
-      query.transaction(() => {
-        query.run(
+      await query.transaction(() => {
+        await query.run(
           'DELETE FROM report_schedules WHERE report_id = ? AND user_id = ?',
           [reportId, user.id]
         );
-        query.run(
+        await query.run(
           'DELETE FROM saved_reports WHERE id = ? AND user_id = ?',
           [reportId, user.id]
         );

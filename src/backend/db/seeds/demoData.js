@@ -25,7 +25,7 @@ function hashPasswordSync(password) {
 export function seedDemoData() {
     try {
         // Check if demo user exists, create if not
-        let demoUser = query.get('SELECT id FROM users WHERE email = ?', [DEMO_USER_EMAIL]);
+        let demoUser = await query.get('SELECT id FROM users WHERE email = ?', [DEMO_USER_EMAIL]);
 
         if (!demoUser) {
             console.log('  Creating demo user...');
@@ -37,9 +37,9 @@ export function seedDemoData() {
                 return;
             }
 
-            query.run(`
+            await query.run(`
                 INSERT INTO users (id, email, password_hash, username, full_name, subscription_tier, email_verified, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
             `, [userId, DEMO_USER_EMAIL, passwordHash, DEMO_USER_USERNAME, 'Demo User', 'pro']);
 
             demoUser = { id: userId };
@@ -49,46 +49,46 @@ export function seedDemoData() {
         const userId = demoUser.id;
 
         // Ensure demo user has 'pro' tier for full feature access
-        query.run('UPDATE users SET subscription_tier = ? WHERE id = ?', ['pro', userId]);
+        await query.run('UPDATE users SET subscription_tier = ? WHERE id = ?', ['pro', userId]);
 
         console.log('Checking demo data...');
 
         // Always reseed inventory items for demo user
         console.log('  Reseeding inventory items...');
-        query.run('DELETE FROM inventory WHERE user_id = ?', [userId]);
+        await query.run('DELETE FROM inventory WHERE user_id = ?', [userId]);
         seedInventoryItems(userId);
 
         // Always reseed orders for demo user to ensure they exist
         console.log('  Reseeding orders for demo user...');
-        query.run('DELETE FROM orders WHERE user_id = ?', [userId]);
+        await query.run('DELETE FROM orders WHERE user_id = ?', [userId]);
         seedOrders(userId);
 
         // Always reseed listings for demo user to ensure they exist
         console.log('  Reseeding listings for demo user...');
-        query.run('DELETE FROM listings WHERE user_id = ?', [userId]);
+        await query.run('DELETE FROM listings WHERE user_id = ?', [userId]);
         const listingIds = seedListings(userId);
 
         // Always reseed offers for demo user
         if (listingIds.length > 0) {
             console.log('  Reseeding offers for demo user...');
-            query.run('DELETE FROM offers WHERE user_id = ?', [userId]);
+            await query.run('DELETE FROM offers WHERE user_id = ?', [userId]);
             seedOffers(userId, listingIds);
         }
 
         // Always reseed sales for demo user (for dashboard analytics)
         console.log('  Reseeding sales for demo user...');
-        query.run('DELETE FROM sales WHERE user_id = ?', [userId]);
+        await query.run('DELETE FROM sales WHERE user_id = ?', [userId]);
         seedSales(userId, listingIds);
 
         // Seed roadmap features (global, not user-specific)
         seedRoadmapFeatures();
 
         // Seed calendar events for demo user
-        const existingEvents = query.get('SELECT COUNT(*) as count FROM calendar_events WHERE user_id = ?', [userId]);
+        const existingEvents = await query.get('SELECT COUNT(*) as count FROM calendar_events WHERE user_id = ?', [userId]);
         if (!existingEvents?.count) seedCalendarEvents(userId);
 
         // Seed teams for demo user
-        const existingTeams = query.get('SELECT COUNT(*) as count FROM team_members WHERE user_id = ?', [userId]);
+        const existingTeams = await query.get('SELECT COUNT(*) as count FROM team_members WHERE user_id = ?', [userId]);
         if (!existingTeams?.count) seedTeams(userId);
 
         console.log('✓ Demo data seeded successfully');
@@ -353,12 +353,12 @@ function seedInventoryItems(userId) {
 
     for (const item of items) {
         try {
-            query.run(`
-                INSERT OR IGNORE INTO inventory (
+            await query.run(`
+                INSERT INTO inventory (
                     id, user_id, title, description, brand, category, size, color,
                     condition, sku, cost_price, list_price, quantity, status,
                     low_stock_threshold, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             `, [
                 item.id, userId, item.title, item.description, item.brand,
                 item.category, item.size, item.color, item.condition, item.sku,
@@ -482,12 +482,12 @@ function seedOrders(userId) {
 
     for (const order of orders) {
         try {
-            query.run(`
-                INSERT OR IGNORE INTO orders (
+            await query.run(`
+                INSERT INTO orders (
                     id, user_id, platform, order_number, buyer_username, item_title,
                     sale_price, status, tracking_number, shipping_provider,
                     shipped_at, delivered_at, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             `, [
                 order.id, userId, order.platform, order.order_number,
                 order.buyer_username, order.item_title, order.sale_price,
@@ -636,11 +636,11 @@ function seedListings(userId) {
 
     for (const listing of listings) {
         try {
-            query.run(`
-                INSERT OR IGNORE INTO listings (
+            await query.run(`
+                INSERT INTO listings (
                     id, user_id, platform, title, description, price,
                     status, views, likes, listed_at, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             `, [
                 listing.id, userId, listing.platform, listing.title,
                 listing.description, listing.price, listing.status,
@@ -751,12 +751,12 @@ function seedOffers(userId, listingIds) {
 
     for (const offer of offers) {
         try {
-            query.run(`
-                INSERT OR IGNORE INTO offers (
+            await query.run(`
+                INSERT INTO offers (
                     id, user_id, listing_id, platform, buyer_username,
                     offer_amount, status, counter_amount,
                     expires_at, responded_at, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             `, [
                 offer.id, userId, offer.listing_id, offer.platform,
                 offer.buyer_username || offer.buyer_name, offer.offer_amount,
@@ -909,12 +909,12 @@ function seedSales(userId, listingIds) {
 
     for (const sale of sales) {
         try {
-            query.run(`
-                INSERT OR IGNORE INTO sales (
+            await query.run(`
+                INSERT INTO sales (
                     id, user_id, listing_id, platform, buyer_username,
                     sale_price, platform_fee, shipping_cost, status,
                     created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `, [
                 sale.id, userId, sale.listing_id || null, sale.platform,
                 sale.buyer_username, sale.sale_price, sale.platform_fee,
@@ -956,9 +956,9 @@ function seedCalendarEvents(userId) {
 
     for (const e of events) {
         try {
-            query.run(
-                `INSERT OR IGNORE INTO calendar_events (id, user_id, title, description, date, time, type, color, all_day, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'), datetime('now'))`,
+            await query.run(
+                `INSERT INTO calendar_events (id, user_id, title, description, date, time, type, color, all_day, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW())`,
                 [uuidv4(), userId, e.title, e.description, e.date, e.time, e.type, e.color]
             );
         } catch (err) {
@@ -971,27 +971,27 @@ function seedCalendarEvents(userId) {
 function seedTeams(userId) {
     const teamId = uuidv4();
     try {
-        query.run(
-            `INSERT OR IGNORE INTO teams (id, name, description, owner_user_id, subscription_tier, max_members, is_active, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, 1, datetime('now', '-45 days'), datetime('now', '-45 days'))`,
+        await query.run(
+            `INSERT INTO teams (id, name, description, owner_user_id, subscription_tier, max_members, is_active, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, 1, NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days')`,
             [teamId, 'Vault Crew', 'Main reselling team — cross-listing, pricing, and automation coordination.', userId, 'pro', 5]
         );
-        query.run(
-            `INSERT OR IGNORE INTO team_members (id, team_id, user_id, role, invited_by, invited_at, accepted_at, status, permissions)
-             VALUES (?, ?, ?, ?, ?, datetime('now', '-45 days'), datetime('now', '-45 days'), ?, ?)`,
+        await query.run(
+            `INSERT INTO team_members (id, team_id, user_id, role, invited_by, invited_at, accepted_at, status, permissions)
+             VALUES (?, ?, ?, ?, ?, NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days', ?, ?)`,
             [uuidv4(), teamId, userId, 'owner', userId, 'active', JSON.stringify({ manage_listings: true, manage_inventory: true, view_analytics: true, manage_automations: true })]
         );
 
         // Add a second team
         const team2Id = uuidv4();
-        query.run(
-            `INSERT OR IGNORE INTO teams (id, name, description, owner_user_id, subscription_tier, max_members, is_active, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, 1, datetime('now', '-12 days'), datetime('now', '-12 days'))`,
+        await query.run(
+            `INSERT INTO teams (id, name, description, owner_user_id, subscription_tier, max_members, is_active, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, 1, NOW() - INTERVAL '12 days', NOW() - INTERVAL '12 days')`,
             [team2Id, 'eBay Specialists', 'Dedicated eBay listing and shipping team.', userId, 'pro', 3]
         );
-        query.run(
-            `INSERT OR IGNORE INTO team_members (id, team_id, user_id, role, invited_by, invited_at, accepted_at, status, permissions)
-             VALUES (?, ?, ?, ?, ?, datetime('now', '-12 days'), datetime('now', '-12 days'), ?, ?)`,
+        await query.run(
+            `INSERT INTO team_members (id, team_id, user_id, role, invited_by, invited_at, accepted_at, status, permissions)
+             VALUES (?, ?, ?, ?, ?, NOW() - INTERVAL '12 days', NOW() - INTERVAL '12 days', ?, ?)`,
             [uuidv4(), team2Id, userId, 'owner', userId, 'active', JSON.stringify({ manage_listings: true, manage_inventory: true, view_analytics: true, manage_automations: false })]
         );
 
@@ -1002,7 +1002,7 @@ function seedTeams(userId) {
 }
 
 function seedRoadmapFeatures() {
-    const existing = query.get('SELECT COUNT(*) as count FROM roadmap_features');
+    const existing = await query.get('SELECT COUNT(*) as count FROM roadmap_features');
     if (existing?.count > 0) return;
 
     const features = [
@@ -1021,9 +1021,9 @@ function seedRoadmapFeatures() {
 
     for (const f of features) {
         try {
-            query.run(
-                `INSERT OR IGNORE INTO roadmap_features (id, title, description, status, category, eta, votes, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+            await query.run(
+                `INSERT INTO roadmap_features (id, title, description, status, category, eta, votes, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
                 [f.id, f.title, f.description, f.status, f.category, f.eta, f.votes]
             );
         } catch (e) {

@@ -93,9 +93,9 @@ export async function checklistsRouter(ctx) {
 
         try {
             const itemIds = [];
-            query.transaction(() => {
+            await query.transaction(() => {
                 // Create the checklist
-                query.run(
+                await query.run(
                     `INSERT INTO checklists (id, user_id, name, description, created_at, updated_at)
                      VALUES (?, ?, ?, ?, ?, ?)`,
                     [checklistId, user.id, name || template.name, template.description, now, now]
@@ -104,7 +104,7 @@ export async function checklistsRouter(ctx) {
                 // Create all items from template
                 for (const item of template.items) {
                     const itemId = uuidv4();
-                    query.run(
+                    await query.run(
                         `INSERT INTO checklist_items
                          (id, checklist_id, user_id, title, priority, due_date, recurring_interval, notes, attachments, created_at, updated_at)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -123,7 +123,7 @@ export async function checklistsRouter(ctx) {
     // GET /api/checklists/shares - List shares for current user
     if (method === 'GET' && path === '/shares') {
         try {
-            const shares = query.all(
+            const shares = await query.all(
                 `SELECT * FROM checklist_shares WHERE user_id = ? ORDER BY created_at DESC`,
                 [user.id]
             );
@@ -142,7 +142,7 @@ export async function checklistsRouter(ctx) {
         const id = uuidv4();
         const now = new Date().toISOString();
         try {
-            query.run(
+            await query.run(
                 'INSERT INTO checklist_shares (id, user_id, shared_with, permission, created_at) VALUES (?, ?, ?, ?, ?)',
                 [id, user.id, shared_with, permission || 'view', now]
             );
@@ -156,7 +156,7 @@ export async function checklistsRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/shares\/[a-f0-9-]+$/)) {
         const shareId = path.split('/')[2];
         try {
-            const result = query.run(
+            const result = await query.run(
                 `DELETE FROM checklist_shares WHERE id = ? AND user_id = ?`,
                 [shareId, user.id]
             );
@@ -172,7 +172,7 @@ export async function checklistsRouter(ctx) {
     // GET /api/checklists/items - Get all checklist items (no checklist grouping for now)
     if (method === 'GET' && path === '/items') {
         try {
-            const items = query.all(
+            const items = await query.all(
                 `SELECT * FROM checklist_items
                  WHERE user_id = ?
                  ORDER BY completed ASC, priority DESC, created_at ASC
@@ -193,7 +193,7 @@ export async function checklistsRouter(ctx) {
             const id = uuidv4();
             const now = new Date().toISOString();
 
-            query.run(
+            await query.run(
                 `INSERT INTO checklist_items
                  (id, checklist_id, user_id, title, priority, due_date, recurring_interval, notes, attachments, created_at, updated_at)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -251,7 +251,7 @@ export async function checklistsRouter(ctx) {
             params.push(now);
             params.push(itemId, user.id);
 
-            query.run(
+            await query.run(
                 `UPDATE checklist_items SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
                 params
             );
@@ -268,7 +268,7 @@ export async function checklistsRouter(ctx) {
         try {
             const itemId = path.split('/')[2];
 
-            query.run(
+            await query.run(
                 `DELETE FROM checklist_items WHERE id = ? AND user_id = ?`,
                 [itemId, user.id]
             );
@@ -284,7 +284,7 @@ export async function checklistsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[^\/]+\/items$/)) {
         try {
             const checklistId = path.match(/^\/([^\/]+)\/items$/)[1];
-            const items = query.all(
+            const items = await query.all(
                 `SELECT * FROM checklist_items
                  WHERE checklist_id = ? AND user_id = ?
                  ORDER BY completed ASC, priority DESC, created_at ASC`,
@@ -300,7 +300,7 @@ export async function checklistsRouter(ctx) {
     // GET /api/checklists - List user's checklists
     if (method === 'GET' && (path === '/' || path === '')) {
         try {
-            const checklists = query.all(
+            const checklists = await query.all(
                 `SELECT * FROM checklists WHERE user_id = ? ORDER BY created_at DESC`,
                 [user.id]
             );
@@ -318,7 +318,7 @@ export async function checklistsRouter(ctx) {
             const id = uuidv4();
             const now = new Date().toISOString();
 
-            query.run(
+            await query.run(
                 `INSERT INTO checklists (id, user_id, name, description, created_at, updated_at)
                  VALUES (?, ?, ?, ?, ?, ?)`,
                 [id, user.id, name, description, now, now]

@@ -34,7 +34,7 @@ const CATEGORY_DATA = {
 export function getCompetitorsForPlatform(platform, userId) {
     if (!userId) return [];
     try {
-        return query.all(
+        return await query.all(
             'SELECT * FROM competitors WHERE user_id = ? AND platform = ? AND is_active = 1 ORDER BY listing_count DESC',
             [userId, platform.toLowerCase()]
         );
@@ -189,7 +189,7 @@ export function comparePricesWithCompetitors(item, platform) {
             params.push(platform);
         }
 
-        historyRows = query.all(`
+        historyRows = await query.all(`
             SELECT s.sale_price
             FROM sales s
             JOIN inventory i ON i.id = s.inventory_id
@@ -210,7 +210,7 @@ export function comparePricesWithCompetitors(item, platform) {
                 extra = ' AND LOWER(c.platform) = LOWER(?)';
                 params.push(platform);
             }
-            const competitorRows = query.all(`
+            const competitorRows = await query.all(`
                 SELECT cl.price as sale_price
                 FROM competitor_listings cl
                 JOIN competitors c ON c.id = cl.competitor_id

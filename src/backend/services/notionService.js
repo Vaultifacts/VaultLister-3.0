@@ -39,7 +39,7 @@ export function isConfigured(userId) {
         return !!process.env.NOTION_INTEGRATION_TOKEN;
     }
 
-    const settings = query.get(
+    const settings = await query.get(
         'SELECT encrypted_token FROM notion_settings WHERE user_id = ?',
         [userId]
     );
@@ -56,7 +56,7 @@ export function getClient(userId) {
     let token;
 
     if (userId) {
-        const settings = query.get(
+        const settings = await query.get(
             'SELECT encrypted_token FROM notion_settings WHERE user_id = ?',
             [userId]
         );
@@ -84,7 +84,7 @@ export function getClient(userId) {
  * @returns {Object|null}
  */
 export function getSettings(userId) {
-    return query.get(
+    return await query.get(
         'SELECT * FROM notion_settings WHERE user_id = ?',
         [userId]
     );
@@ -153,7 +153,7 @@ export function saveSettings(userId, settings) {
         values.push(now);
         values.push(userId);
 
-        query.run(
+        await query.run(
             `UPDATE notion_settings SET ${updates.join(', ')} WHERE user_id = ?`,
             values
         );
@@ -161,7 +161,7 @@ export function saveSettings(userId, settings) {
         return getSettings(userId);
     } else {
         const id = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO notion_settings (
                 id, user_id, encrypted_token, workspace_id, workspace_name,
                 workspace_icon, bot_id, inventory_database_id, sales_database_id,
@@ -196,13 +196,13 @@ export function saveSettings(userId, settings) {
  */
 export function deleteSettings(userId) {
     // Delete sync maps
-    query.run('DELETE FROM notion_sync_map WHERE user_id = ?', [userId]);
+    await query.run('DELETE FROM notion_sync_map WHERE user_id = ?', [userId]);
     // Delete field mappings
-    query.run('DELETE FROM notion_field_mappings WHERE user_id = ?', [userId]);
+    await query.run('DELETE FROM notion_field_mappings WHERE user_id = ?', [userId]);
     // Delete conflicts
-    query.run('DELETE FROM notion_sync_conflicts WHERE user_id = ?', [userId]);
+    await query.run('DELETE FROM notion_sync_conflicts WHERE user_id = ?', [userId]);
     // Delete settings
-    query.run('DELETE FROM notion_settings WHERE user_id = ?', [userId]);
+    await query.run('DELETE FROM notion_settings WHERE user_id = ?', [userId]);
 }
 
 /**
@@ -770,7 +770,7 @@ export function mapNotionToSale(notionPage) {
  * @returns {Object|null}
  */
 export function getSyncMap(userId, entityType, localId) {
-    return query.get(
+    return await query.get(
         'SELECT * FROM notion_sync_map WHERE user_id = ? AND entity_type = ? AND local_id = ?',
         [userId, entityType, localId]
     );
@@ -784,7 +784,7 @@ export function getSyncMap(userId, entityType, localId) {
  * @returns {Object|null}
  */
 export function getSyncMapByNotionId(userId, entityType, notionPageId) {
-    return query.get(
+    return await query.get(
         'SELECT * FROM notion_sync_map WHERE user_id = ? AND entity_type = ? AND notion_page_id = ?',
         [userId, entityType, notionPageId]
     );
@@ -804,7 +804,7 @@ export function upsertSyncMap(userId, entityType, localId, notionPageId, options
     const now = new Date().toISOString();
 
     if (existing) {
-        query.run(`
+        await query.run(`
             UPDATE notion_sync_map SET
                 notion_page_id = ?,
                 local_updated_at = ?,
@@ -828,7 +828,7 @@ export function upsertSyncMap(userId, entityType, localId, notionPageId, options
         return getSyncMap(userId, entityType, localId);
     } else {
         const id = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO notion_sync_map (
                 id, user_id, entity_type, local_id, notion_page_id,
                 local_updated_at, notion_updated_at, sync_status,
@@ -861,7 +861,7 @@ export function upsertSyncMap(userId, entityType, localId, notionPageId, options
  */
 export function updateSyncStatus(syncMapId, status, error = null) {
     const now = new Date().toISOString();
-    query.run(`
+    await query.run(`
         UPDATE notion_sync_map SET
             sync_status = ?,
             sync_error = ?,
@@ -889,7 +889,7 @@ export function getPendingSyncItems(userId, entityType = null) {
         params.push(entityType);
     }
 
-    return query.all(sql, params);
+    return await query.all(sql, params);
 }
 
 // ============================================
@@ -905,7 +905,7 @@ export function getPendingSyncItems(userId, entityType = null) {
 export function logSyncHistory(userId, details) {
     const id = uuidv4();
 
-    query.run(`
+    await query.run(`
         INSERT INTO notion_sync_history (
             id, user_id, sync_type, direction, items_processed,
             items_created, items_updated, items_deleted, items_skipped,
@@ -942,7 +942,7 @@ export function logSyncHistory(userId, details) {
  * @returns {Array}
  */
 export function getSyncHistory(userId, limit = 20) {
-    return query.all(
+    return await query.all(
         'SELECT * FROM notion_sync_history WHERE user_id = ? ORDER BY started_at DESC LIMIT ?',
         [userId, limit]
     );

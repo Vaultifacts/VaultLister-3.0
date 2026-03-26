@@ -14,7 +14,7 @@ export async function shippingProfilesRouter(ctx) {
     // GET /api/shipping-profiles - List user's shipping profiles
     if (method === 'GET' && (path === '/' || path === '')) {
         try {
-            const profiles = query.all(
+            const profiles = await query.all(
                 `SELECT * FROM shipping_profiles WHERE user_id = ? ORDER BY is_default DESC, name ASC`,
                 [user.id]
             );
@@ -36,7 +36,7 @@ export async function shippingProfilesRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
         try {
             const profileId = path.slice(1);
-            const profile = query.get(
+            const profile = await query.get(
                 `SELECT * FROM shipping_profiles WHERE id = ? AND user_id = ?`,
                 [profileId, user.id]
             );
@@ -90,13 +90,13 @@ export async function shippingProfilesRouter(ctx) {
 
             // If setting as default, clear existing default first
             if (isDefault) {
-                query.run(
+                await query.run(
                     `UPDATE shipping_profiles SET is_default = 0 WHERE user_id = ?`,
                     [user.id]
                 );
             }
 
-            query.run(
+            await query.run(
                 `INSERT INTO shipping_profiles
                  (id, user_id, name, carrier, service_type, package_type, weight_oz, length, width, height,
                   handling_time_days, domestic_cost, international_cost, free_shipping_threshold,
@@ -131,7 +131,7 @@ export async function shippingProfilesRouter(ctx) {
             const profileId = path.slice(1);
 
             // Verify ownership
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT id FROM shipping_profiles WHERE id = ? AND user_id = ?`,
                 [profileId, user.id]
             );
@@ -160,7 +160,7 @@ export async function shippingProfilesRouter(ctx) {
 
             // If setting as default, clear existing default first
             if (isDefault) {
-                query.run(
+                await query.run(
                     `UPDATE shipping_profiles SET is_default = 0 WHERE user_id = ?`,
                     [user.id]
                 );
@@ -168,7 +168,7 @@ export async function shippingProfilesRouter(ctx) {
 
             const now = new Date().toISOString();
 
-            query.run(
+            await query.run(
                 `UPDATE shipping_profiles SET
                  name = ?, carrier = ?, service_type = ?, package_type = ?,
                  weight_oz = ?, length = ?, width = ?, height = ?,
@@ -198,7 +198,7 @@ export async function shippingProfilesRouter(ctx) {
             const profileId = path.match(/^\/([a-f0-9-]+)\/set-default$/)[1];
 
             // Verify ownership
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT id FROM shipping_profiles WHERE id = ? AND user_id = ?`,
                 [profileId, user.id]
             );
@@ -208,13 +208,13 @@ export async function shippingProfilesRouter(ctx) {
             }
 
             // Clear all defaults for this user
-            query.run(
+            await query.run(
                 `UPDATE shipping_profiles SET is_default = 0 WHERE user_id = ?`,
                 [user.id]
             );
 
             // Set this one as default
-            query.run(
+            await query.run(
                 `UPDATE shipping_profiles SET is_default = 1, updated_at = ? WHERE id = ?`,
                 [new Date().toISOString(), profileId]
             );
@@ -232,7 +232,7 @@ export async function shippingProfilesRouter(ctx) {
             const profileId = path.slice(1);
 
             // Verify ownership
-            const existing = query.get(
+            const existing = await query.get(
                 `SELECT id FROM shipping_profiles WHERE id = ? AND user_id = ?`,
                 [profileId, user.id]
             );
@@ -241,7 +241,7 @@ export async function shippingProfilesRouter(ctx) {
                 return { status: 404, data: { error: 'Shipping profile not found' } };
             }
 
-            query.run(
+            await query.run(
                 `DELETE FROM shipping_profiles WHERE id = ? AND user_id = ?`,
                 [profileId, user.id]
             );

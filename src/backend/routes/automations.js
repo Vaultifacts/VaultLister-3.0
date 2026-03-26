@@ -57,7 +57,7 @@ export async function automationsRouter(ctx) {
 
         sql += ' ORDER BY created_at DESC LIMIT 500';
 
-        const rules = query.all(sql, params);
+        const rules = await query.all(sql, params);
 
         rules.forEach(rule => {
             try {
@@ -103,9 +103,9 @@ export async function automationsRouter(ctx) {
         const safeParsedLimit = Math.min(parsedLimit, 200);
         params.push(Math.floor(safeParsedLimit), Math.floor(parsedOffset));
 
-        const logs = query.all(sql, params);
+        const logs = await query.all(sql, params);
 
-        const total = query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ?', [user.id])?.count || 0;
+        const total = await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ?', [user.id])?.count || 0;
 
         return { status: 200, data: { logs, total } };
     }
@@ -114,14 +114,14 @@ export async function automationsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/run\/[a-f0-9-]+\/logs$/)) {
         const runId = path.split('/')[2];
         try {
-            const run = query.get('SELECT * FROM automation_runs WHERE id = ? AND user_id = ?', [runId, user.id]);
+            const run = await query.get('SELECT * FROM automation_runs WHERE id = ? AND user_id = ?', [runId, user.id]);
             if (!run) return { status: 404, data: { error: 'Run not found' } };
 
             // Match logs by rule_id + time window of the run
-            const logs = query.all(`
+            const logs = await query.all(`
                 SELECT * FROM automation_logs
                 WHERE user_id = ? AND rule_id = ?
-                    AND created_at >= ? AND created_at <= COALESCE(?, datetime('now'))
+                    AND created_at >= ? AND created_at <= COALESCE(?, NOW())
                 ORDER BY created_at ASC
             `, [user.id, run.automation_id, run.started_at, run.completed_at]);
 
@@ -159,17 +159,17 @@ export async function automationsRouter(ctx) {
         params.push(Math.floor(safeHistLimit), Math.floor(parsedHistOffset));
 
         try {
-            const runs = query.all(sql, params);
+            const runs = await query.all(sql, params);
 
             // Parse metadata JSON for each run
             runs.forEach(run => {
                 run.metadata = safeJsonParse(run.metadata, {});
             });
 
-            const total = query.get('SELECT COUNT(*) as count FROM automation_runs WHERE user_id = ?', [user.id])?.count || 0;
+            const total = await query.get('SELECT COUNT(*) as count FROM automation_runs WHERE user_id = ?', [user.id])?.count || 0;
 
             // Get summary stats
-            const stats = query.get(`
+            const stats = await query.get(`
                 SELECT
                     COUNT(*) as total_runs,
                     SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_runs,
@@ -190,7 +190,7 @@ export async function automationsRouter(ctx) {
     // GET /api/automations/history/export - Export run history as CSV
     if (method === 'GET' && path === '/history/export') {
         try {
-            const runs = query.all(
+            const runs = await query.all(
                 'SELECT * FROM automation_runs WHERE user_id = ? ORDER BY started_at DESC LIMIT 10000',
                 [user.id]
             );
@@ -236,7 +236,7 @@ export async function automationsRouter(ctx) {
     // DELETE /api/automations/history - Clear automation run history
     if (method === 'DELETE' && path === '/history') {
         try {
-            query.run('DELETE FROM automation_runs WHERE user_id = ?', [user.id]);
+            await query.run('DELETE FROM automation_runs WHERE user_id = ?', [user.id]);
             return { status: 200, data: { message: 'History cleared' } };
         } catch (error) {
             logger.error('[Automations] failed to clear history', user?.id, { detail: error?.message || 'Unknown error' });
@@ -247,7 +247,7 @@ export async function automationsRouter(ctx) {
     // GET /api/automations/:id - Get single rule
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
         const id = path.slice(1);
-        const rule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
 
         if (!rule) {
             return { status: 404, data: { error: 'Rule not found' } };
@@ -267,7 +267,7 @@ export async function automationsRouter(ctx) {
         }
 
         // Get recent logs for this rule (scoped to user's rule via JOIN)
-        const logs = query.all(
+        const logs = await query.all(
             `SELECT al.* FROM automation_logs al
              JOIN automations a ON al.rule_id = a.id
              WHERE al.rule_id = ? AND a.user_id = ?
@@ -326,7 +326,7 @@ export async function automationsRouter(ctx) {
         };
         const maxRules = AUTOMATION_LIMITS[user.subscription_tier] || AUTOMATION_LIMITS.free;
         if (maxRules !== -1) {
-            const currentCount = query.get(
+            const currentCount = await query.get(
                 'SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ?',
                 [user.id]
             );
@@ -341,7 +341,7 @@ export async function automationsRouter(ctx) {
 
         const id = uuidv4();
 
-        query.run(`
+        await query.run(`
             INSERT INTO automation_rules (
                 id, user_id, name, type, platform, schedule, conditions, actions, is_enabled
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -352,7 +352,7 @@ export async function automationsRouter(ctx) {
             isEnabled !== false ? 1 : 0
         ]);
 
-        const rule = query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
         try {
             rule.conditions = JSON.parse(rule.conditions || '{}');
         } catch (e) {
@@ -373,7 +373,7 @@ export async function automationsRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/[a-f0-9-]+$/)) {
         const id = path.slice(1);
 
-        const existing = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
+        const existing = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Rule not found' } };
         }
@@ -382,7 +382,7 @@ export async function automationsRouter(ctx) {
 
         // Save version snapshot before update
         try {
-            const maxVer = query.get('SELECT MAX(version) as v FROM automation_rule_versions WHERE rule_id = ?', [id]);
+            const maxVer = await query.get('SELECT MAX(version) as v FROM automation_rule_versions WHERE rule_id = ?', [id]);
             const nextVersion = (maxVer?.v || 0) + 1;
             const changes = [];
             if (name !== undefined && name !== existing.name) changes.push('name');
@@ -391,7 +391,7 @@ export async function automationsRouter(ctx) {
             if (conditions !== undefined) changes.push('conditions');
             if (actions !== undefined) changes.push('actions');
             if (changes.length > 0) {
-                query.run(`INSERT INTO automation_rule_versions (id, rule_id, user_id, version, name, type, platform, schedule, conditions, actions, change_summary)
+                await query.run(`INSERT INTO automation_rule_versions (id, rule_id, user_id, version, name, type, platform, schedule, conditions, actions, change_summary)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [uuidv4(), id, user.id, nextVersion, existing.name, existing.type, existing.platform, existing.schedule,
                      existing.conditions, existing.actions, 'Changed: ' + changes.join(', ')]);
@@ -447,13 +447,13 @@ export async function automationsRouter(ctx) {
 
         if (updates.length > 0) {
             values.push(id, user.id);
-            query.run(
+            await query.run(
                 `UPDATE automation_rules SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
         }
 
-        const rule = query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
         try {
             rule.conditions = JSON.parse(rule.conditions);
         } catch (error) {
@@ -474,12 +474,12 @@ export async function automationsRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/[a-f0-9-]+$/)) {
         const id = path.slice(1);
 
-        const existing = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
+        const existing = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Rule not found' } };
         }
 
-        const result = query.run('DELETE FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
+        const result = await query.run('DELETE FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
 
         if (result.changes === 0) {
             return { status: 404, data: { error: 'Rule not found' } };
@@ -491,15 +491,15 @@ export async function automationsRouter(ctx) {
     // POST /api/automations/:id/clone - Clone/duplicate a rule
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/clone$/)) {
         const ruleId = path.split('/')[1];
-        const rule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
         if (!rule) return { status: 404, data: { error: 'Rule not found' } };
 
         const newId = uuidv4();
-        query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled)
+        await query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
             [newId, user.id, rule.name + ' (Copy)', rule.type, rule.platform, rule.schedule, rule.conditions, rule.actions]);
 
-        const cloned = query.get('SELECT * FROM automation_rules WHERE id = ?', [newId]);
+        const cloned = await query.get('SELECT * FROM automation_rules WHERE id = ?', [newId]);
         cloned.conditions = safeJsonParse(cloned.conditions, {});
         cloned.actions = safeJsonParse(cloned.actions, {});
         return { status: 201, data: { rule: cloned } };
@@ -509,18 +509,18 @@ export async function automationsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/run$/)) {
         const id = path.split('/')[1];
 
-        const rule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!rule) {
             return { status: 404, data: { error: 'Rule not found' } };
         }
 
         // FIXED 2026-02-24: Use task_queue table instead of tasks (Issue #3)
-        const recentRun = query.get(`
+        const recentRun = await query.get(`
             SELECT id FROM task_queue
             WHERE type = 'run_automation'
-              AND json_extract(payload, '$.ruleId') = ?
-              AND json_extract(payload, '$.userId') = ?
-              AND created_at > datetime('now', '-60 seconds')
+              AND payload::jsonb->>'ruleId' = ?
+              AND payload::jsonb->>'userId' = ?
+              AND created_at > NOW() - INTERVAL '60 seconds'
             LIMIT 1
         `, [id, user.id]);
         if (recentRun) {
@@ -529,9 +529,9 @@ export async function automationsRouter(ctx) {
 
         // FIXED 2026-02-24: Use task_queue table with correct schema (Issue #3)
         const taskId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO task_queue (id, type, payload, priority, max_attempts, scheduled_at)
-            VALUES (?, ?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, ?, NOW())
         `, [taskId, 'run_automation', JSON.stringify({ ruleId: id, userId: user.id }), 1, 3]);
 
         return { status: 200, data: { message: 'Automation queued', taskId } };
@@ -541,13 +541,13 @@ export async function automationsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/toggle$/)) {
         const id = path.split('/')[1];
 
-        const rule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!rule) {
             return { status: 404, data: { error: 'Rule not found' } };
         }
 
         const newStatus = rule.is_enabled ? 0 : 1;
-        query.run('UPDATE automation_rules SET is_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [newStatus, id, user.id]);
+        await query.run('UPDATE automation_rules SET is_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [newStatus, id, user.id]);
 
         return { status: 200, data: { isEnabled: newStatus === 1 } };
     }
@@ -935,7 +935,7 @@ export async function automationsRouter(ctx) {
         };
         const maxRulesPreset = AUTOMATION_LIMITS_PRESET[user.subscription_tier] || AUTOMATION_LIMITS_PRESET.free;
         if (maxRulesPreset !== -1) {
-            const currentCountPreset = query.get(
+            const currentCountPreset = await query.get(
                 'SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ?',
                 [user.id]
             );
@@ -957,7 +957,7 @@ export async function automationsRouter(ctx) {
             finalRule.type = preset.type; // Fall back to preset type
         }
 
-        query.run(`
+        await query.run(`
             INSERT INTO automation_rules (
                 id, user_id, name, type, platform, schedule, conditions, actions, is_enabled
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -972,7 +972,7 @@ export async function automationsRouter(ctx) {
             1
         ]);
 
-        const rule = query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
         try {
             rule.conditions = JSON.parse(rule.conditions || '{}');
         } catch (e) {
@@ -992,17 +992,17 @@ export async function automationsRouter(ctx) {
     // GET /api/automations/stats - Get automation statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            totalRules: query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ?', [user.id])?.count || 0,
-            activeRules: query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = 1', [user.id])?.count || 0,
-            totalRuns: query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ?', [user.id])?.count || 0,
-            successfulRuns: query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ? AND status = ?', [user.id, 'success'])?.count || 0,
-            failedRuns: query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ? AND status = ?', [user.id, 'failure'])?.count || 0,
-            byType: query.all(`
+            totalRules: await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ?', [user.id])?.count || 0,
+            activeRules: await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = 1', [user.id])?.count || 0,
+            totalRuns: await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ?', [user.id])?.count || 0,
+            successfulRuns: await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ? AND status = ?', [user.id, 'success'])?.count || 0,
+            failedRuns: await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ? AND status = ?', [user.id, 'failure'])?.count || 0,
+            byType: await query.all(`
                 SELECT type, COUNT(*) as count
                 FROM automation_rules WHERE user_id = ?
                 GROUP BY type
             `, [user.id]),
-            recentActivity: query.all(`
+            recentActivity: await query.all(`
                 SELECT * FROM automation_logs
                 WHERE user_id = ?
                 ORDER BY created_at DESC LIMIT 10
@@ -1014,7 +1014,7 @@ export async function automationsRouter(ctx) {
 
     // GET /api/automations/schedule-settings - Get schedule settings
     if (method === 'GET' && path === '/schedule-settings') {
-        const row = query.get(
+        const row = await query.get(
             'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
             [user.id, 'automation_schedule']
         );
@@ -1051,18 +1051,18 @@ export async function automationsRouter(ctx) {
         const settings = JSON.stringify({ frequency, startTime, endTime, daysOfWeek, timezone });
 
         // Upsert into user_preferences
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id FROM user_preferences WHERE user_id = ? AND key = ?',
             [user.id, 'automation_schedule']
         );
 
         if (existing) {
-            query.run(
+            await query.run(
                 'UPDATE user_preferences SET settings = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND key = ?',
                 [settings, user.id, 'automation_schedule']
             );
         } else {
-            query.run(
+            await query.run(
                 'INSERT INTO user_preferences (id, user_id, key, settings) VALUES (?, ?, ?, ?)',
                 [uuidv4(), user.id, 'automation_schedule', settings]
             );
@@ -1073,7 +1073,7 @@ export async function automationsRouter(ctx) {
 
     // GET /api/automations/notification-prefs - Get notification preferences
     if (method === 'GET' && path === '/notification-prefs') {
-        const row = query.get(
+        const row = await query.get(
             'SELECT settings FROM user_preferences WHERE user_id = ? AND key = ?',
             [user.id, 'automation_notifications']
         );
@@ -1097,18 +1097,18 @@ export async function automationsRouter(ctx) {
 
         const prefs = JSON.stringify({ on_success, on_failure, on_partial, daily_summary, desktop_enabled, email_enabled });
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT id FROM user_preferences WHERE user_id = ? AND key = ?',
             [user.id, 'automation_notifications']
         );
 
         if (existing) {
-            query.run(
+            await query.run(
                 'UPDATE user_preferences SET settings = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND key = ?',
                 [prefs, user.id, 'automation_notifications']
             );
         } else {
-            query.run(
+            await query.run(
                 'INSERT INTO user_preferences (id, user_id, key, settings) VALUES (?, ?, ?, ?)',
                 [uuidv4(), user.id, 'automation_notifications', prefs]
             );
@@ -1124,7 +1124,7 @@ export async function automationsRouter(ctx) {
     // GET /api/automations/experiments - List experiments
     if (method === 'GET' && path === '/experiments') {
         try {
-            const experiments = query.all(`
+            const experiments = await query.all(`
                 SELECT e.*,
                     br.name as base_name, br.schedule as base_schedule, br.run_count as base_runs,
                     vr.name as variant_name, vr.schedule as variant_schedule, vr.run_count as variant_runs
@@ -1137,14 +1137,14 @@ export async function automationsRouter(ctx) {
 
             // Enrich with run stats
             for (const exp of experiments) {
-                exp.base_stats = query.get(`
+                exp.base_stats = await query.get(`
                     SELECT COUNT(*) as runs,
                         SUM(CASE WHEN status='success' THEN 1 ELSE 0 END) as successes,
                         AVG(items_processed) as avg_items,
                         AVG(duration_ms) as avg_duration
                     FROM automation_runs WHERE automation_id = ? AND started_at >= ?
                 `, [exp.base_rule_id, exp.started_at]) || {};
-                exp.variant_stats = query.get(`
+                exp.variant_stats = await query.get(`
                     SELECT COUNT(*) as runs,
                         SUM(CASE WHEN status='success' THEN 1 ELSE 0 END) as successes,
                         AVG(items_processed) as avg_items,
@@ -1166,12 +1166,12 @@ export async function automationsRouter(ctx) {
         if (!baseRuleId) return { status: 400, data: { error: 'baseRuleId required' } };
 
         try {
-            const baseRule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [baseRuleId, user.id]);
+            const baseRule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [baseRuleId, user.id]);
             if (!baseRule) return { status: 404, data: { error: 'Base rule not found' } };
 
             // Clone the base rule as the variant
             const variantId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
             `, [
@@ -1185,7 +1185,7 @@ export async function automationsRouter(ctx) {
 
             // Create experiment record
             const experimentId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO automation_experiments (id, user_id, name, base_rule_id, variant_rule_id, status)
                 VALUES (?, ?, ?, ?, ?, 'running')
             `, [experimentId, user.id, `${baseRule.name}: A vs B`, baseRuleId, variantId]);
@@ -1202,20 +1202,20 @@ export async function automationsRouter(ctx) {
         const experimentId = path.split('/')[2];
         const { status: newStatus, winner } = body;
         try {
-            const exp = query.get('SELECT * FROM automation_experiments WHERE id = ? AND user_id = ?', [experimentId, user.id]);
+            const exp = await query.get('SELECT * FROM automation_experiments WHERE id = ? AND user_id = ?', [experimentId, user.id]);
             if (!exp) return { status: 404, data: { error: 'Experiment not found' } };
 
             if (newStatus === 'completed' && winner) {
-                query.run(`
+                await query.run(`
                     UPDATE automation_experiments SET status = 'completed', winner = ?, completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
                 `, [winner, experimentId]);
 
                 // Disable the loser
                 const loserId = winner === 'base' ? exp.variant_rule_id : exp.base_rule_id;
-                query.run('UPDATE automation_rules SET is_enabled = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [loserId]);
+                await query.run('UPDATE automation_rules SET is_enabled = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [loserId]);
             } else if (newStatus) {
-                query.run('UPDATE automation_experiments SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newStatus, experimentId]);
+                await query.run('UPDATE automation_experiments SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newStatus, experimentId]);
             }
 
             return { status: 200, data: { message: 'Experiment updated' } };
@@ -1228,7 +1228,7 @@ export async function automationsRouter(ctx) {
     // GET /api/automations/export - Export all rules as JSON
     if (method === 'GET' && path === '/export') {
         try {
-            const rules = query.all('SELECT name, type, platform, schedule, conditions, actions FROM automation_rules WHERE user_id = ? ORDER BY name', [user.id]);
+            const rules = await query.all('SELECT name, type, platform, schedule, conditions, actions FROM automation_rules WHERE user_id = ? ORDER BY name', [user.id]);
             const parsed = rules.map(r => ({
                 ...r,
                 conditions: safeJsonParse(r.conditions, r.conditions),
@@ -1251,9 +1251,9 @@ export async function automationsRouter(ctx) {
             let imported = 0, skipped = 0;
             for (const r of rules) {
                 if (!r.name || !r.type) { skipped++; continue; }
-                const existing = query.get('SELECT id FROM automation_rules WHERE user_id = ? AND name = ? AND platform = ?', [user.id, r.name, r.platform || 'all']);
+                const existing = await query.get('SELECT id FROM automation_rules WHERE user_id = ? AND name = ? AND platform = ?', [user.id, r.name, r.platform || 'all']);
                 if (existing) { skipped++; continue; }
-                query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+                await query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
                     [uuidv4(), user.id, r.name, r.type, r.platform || 'all', r.schedule || null,
                      typeof r.conditions === 'string' ? r.conditions : JSON.stringify(r.conditions || {}),
                      typeof r.actions === 'string' ? r.actions : JSON.stringify(r.actions || {})]);
@@ -1269,7 +1269,7 @@ export async function automationsRouter(ctx) {
     // GET /api/automations/templates/shared - Browse shared templates
     if (method === 'GET' && path === '/templates/shared') {
         try {
-            const templates = query.all(`
+            const templates = await query.all(`
                 SELECT t.*, u.username as author_name,
                     (SELECT COUNT(*) FROM automation_template_installs WHERE template_id = t.id) as install_count
                 FROM automation_templates t
@@ -1295,10 +1295,10 @@ export async function automationsRouter(ctx) {
         const { ruleId, description, tags } = body;
         if (!ruleId) return { status: 400, data: { error: 'ruleId required' } };
         try {
-            const rule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+            const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
             if (!rule) return { status: 404, data: { error: 'Rule not found' } };
             const templateId = uuidv4();
-            query.run(`INSERT INTO automation_templates (id, author_id, name, type, platform, schedule, conditions, actions, description, tags, is_public)
+            await query.run(`INSERT INTO automation_templates (id, author_id, name, type, platform, schedule, conditions, actions, description, tags, is_public)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
                 [templateId, user.id, rule.name, rule.type, rule.platform, rule.schedule, rule.conditions, rule.actions,
                  description || rule.name, typeof tags === 'string' ? tags : JSON.stringify(tags || [])]);
@@ -1314,12 +1314,12 @@ export async function automationsRouter(ctx) {
         const { templateId } = body;
         if (!templateId) return { status: 400, data: { error: 'templateId required' } };
         try {
-            const tpl = query.get('SELECT * FROM automation_templates WHERE id = ? AND is_public = 1', [templateId]);
+            const tpl = await query.get('SELECT * FROM automation_templates WHERE id = ? AND is_public = 1', [templateId]);
             if (!tpl) return { status: 404, data: { error: 'Template not found' } };
             const ruleId = uuidv4();
-            query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+            await query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
                 [ruleId, user.id, tpl.name, tpl.type, tpl.platform, tpl.schedule, tpl.conditions, tpl.actions]);
-            query.run('INSERT OR IGNORE INTO automation_template_installs (template_id, user_id) VALUES (?, ?)', [templateId, user.id]);
+            await query.run('INSERT INTO automation_template_installs (template_id, user_id) VALUES (?, ?)', [templateId, user.id]);
             return { status: 201, data: { rule: { id: ruleId, name: tpl.name } } };
         } catch (error) {
             logger.error('[Automations] install template failed', user?.id, { detail: error?.message });
@@ -1330,14 +1330,14 @@ export async function automationsRouter(ctx) {
     // GET /api/automations/duration-trends - Run duration trends by day
     if (method === 'GET' && path === '/duration-trends') {
         try {
-            const trends = query.all(`
+            const trends = await query.all(`
                 SELECT date(started_at) as day,
                     automation_name as name,
                     AVG(duration_ms) as avg_duration,
                     COUNT(*) as run_count,
                     SUM(CASE WHEN status='success' THEN 1 ELSE 0 END) as successes
                 FROM automation_runs
-                WHERE user_id = ? AND started_at >= datetime('now', '-30 days') AND duration_ms IS NOT NULL
+                WHERE user_id = ? AND started_at >= NOW() - INTERVAL '30 days' AND duration_ms IS NOT NULL
                 GROUP BY day, automation_name
                 ORDER BY day DESC
             `, [user.id]);
@@ -1354,7 +1354,7 @@ export async function automationsRouter(ctx) {
         if (!Array.isArray(order)) return { status: 400, data: { error: 'order array required' } };
         try {
             for (let i = 0; i < order.length; i++) {
-                query.run('UPDATE automation_rules SET sort_order = ? WHERE id = ? AND user_id = ?', [i, order[i], user.id]);
+                await query.run('UPDATE automation_rules SET sort_order = ? WHERE id = ? AND user_id = ?', [i, order[i], user.id]);
             }
             return { status: 200, data: { message: 'Order updated', count: order.length } };
         } catch (error) {
@@ -1367,9 +1367,9 @@ export async function automationsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+\/versions$/)) {
         const ruleId = path.split('/')[1];
         try {
-            const rule = query.get('SELECT id FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+            const rule = await query.get('SELECT id FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
             if (!rule) return { status: 404, data: { error: 'Rule not found' } };
-            const versions = query.all('SELECT * FROM automation_rule_versions WHERE rule_id = ? ORDER BY version DESC LIMIT 50', [ruleId]);
+            const versions = await query.all('SELECT * FROM automation_rule_versions WHERE rule_id = ? ORDER BY version DESC LIMIT 50', [ruleId]);
             for (const v of versions) {
                 v.conditions = safeJsonParse(v.conditions, v.conditions);
                 v.actions = safeJsonParse(v.actions, v.actions);
@@ -1387,19 +1387,19 @@ export async function automationsRouter(ctx) {
         const { versionId } = body;
         if (!versionId) return { status: 400, data: { error: 'versionId required' } };
         try {
-            const rule = query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
+            const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [ruleId, user.id]);
             if (!rule) return { status: 404, data: { error: 'Rule not found' } };
-            const ver = query.get('SELECT * FROM automation_rule_versions WHERE id = ? AND rule_id = ?', [versionId, ruleId]);
+            const ver = await query.get('SELECT * FROM automation_rule_versions WHERE id = ? AND rule_id = ?', [versionId, ruleId]);
             if (!ver) return { status: 404, data: { error: 'Version not found' } };
 
             // Save current state as a new version before rollback
-            const maxVer = query.get('SELECT MAX(version) as v FROM automation_rule_versions WHERE rule_id = ?', [ruleId]);
-            query.run(`INSERT INTO automation_rule_versions (id, rule_id, user_id, version, name, type, platform, schedule, conditions, actions, change_summary)
+            const maxVer = await query.get('SELECT MAX(version) as v FROM automation_rule_versions WHERE rule_id = ?', [ruleId]);
+            await query.run(`INSERT INTO automation_rule_versions (id, rule_id, user_id, version, name, type, platform, schedule, conditions, actions, change_summary)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [uuidv4(), ruleId, user.id, (maxVer?.v || 0) + 1, rule.name, rule.type, rule.platform, rule.schedule, rule.conditions, rule.actions, 'Pre-rollback snapshot']);
 
             // Apply the old version
-            query.run(`UPDATE automation_rules SET name = ?, platform = ?, schedule = ?, conditions = ?, actions = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            await query.run(`UPDATE automation_rules SET name = ?, platform = ?, schedule = ?, conditions = ?, actions = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 [ver.name, ver.platform, ver.schedule, ver.conditions, ver.actions, ruleId]);
 
             return { status: 200, data: { message: 'Rolled back to version ' + ver.version } };
@@ -1437,7 +1437,7 @@ export async function automationsRouter(ctx) {
             for (const tpl of rules) {
                 if (!tpl.name || !tpl.type) continue;
                 const ruleId = uuidv4();
-                query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled, tags)
+                await query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled, tags)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
                     [ruleId, user.id, tpl.name, tpl.type, tpl.platform || 'all', tpl.schedule || null,
                      typeof tpl.conditions === 'string' ? tpl.conditions : JSON.stringify(tpl.conditions || {}),
@@ -1463,7 +1463,7 @@ export async function automationsRouter(ctx) {
 
         try {
             const taskId = uuidv4();
-            query.run(
+            await query.run(
                 `INSERT INTO task_queue (id, type, payload, priority, max_attempts)
                  VALUES (?, 'poshmark_inventory_sync', ?, 1, 3)`,
                 [taskId, JSON.stringify({ userId: user.id, username: poshmarkUsername, maxItems })]
@@ -1482,23 +1482,23 @@ export async function automationsRouter(ctx) {
             const { getTaskWorkerStatus } = await import('../workers/taskWorker.js');
             const workerStatus = getTaskWorkerStatus();
 
-            const pending = query.get('SELECT COUNT(*) as count FROM task_queue WHERE status = ?', ['pending']);
-            const processing = query.get('SELECT COUNT(*) as count FROM task_queue WHERE status = ?', ['processing']);
-            const failed = query.get("SELECT COUNT(*) as count FROM task_queue WHERE status = 'failed' AND datetime(created_at) > datetime('now', '-24 hours')");
+            const pending = await query.get('SELECT COUNT(*) as count FROM task_queue WHERE status = ?', ['pending']);
+            const processing = await query.get('SELECT COUNT(*) as count FROM task_queue WHERE status = ?', ['processing']);
+            const failed = await query.get("SELECT COUNT(*) as count FROM task_queue WHERE status = 'failed' AND datetime(created_at) > NOW() - INTERVAL '24 hours'");
 
-            const recentRuns = query.get(`
+            const recentRuns = await query.get(`
                 SELECT
                     COUNT(*) as total,
                     SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as succeeded,
                     SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
                     SUM(CASE WHEN status = 'partial' THEN 1 ELSE 0 END) as partial
                 FROM automation_runs
-                WHERE user_id = ? AND datetime(started_at) > datetime('now', '-24 hours')
+                WHERE user_id = ? AND datetime(started_at) > NOW() - INTERVAL '24 hours'
             `, [user.id]);
 
-            const enabledRules = query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = 1', [user.id]);
+            const enabledRules = await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = 1', [user.id]);
 
-            const nextScheduled = query.get(`
+            const nextScheduled = await query.get(`
                 SELECT name, schedule, last_run_at FROM automation_rules
                 WHERE user_id = ? AND is_enabled = 1 AND schedule IS NOT NULL
                 ORDER BY last_run_at ASC LIMIT 1

@@ -93,9 +93,9 @@ export function trackRateLimitHit(endpoint, ip, userId, blocked) {
     // Persist blocked requests to database for audit
     if (blocked) {
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO rate_limit_logs (endpoint, ip, user_id, timestamp)
-                VALUES (?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, NOW())
             `, [endpoint, ip, userId]);
         } catch (e) {
             // Table might not exist
@@ -170,7 +170,7 @@ export async function rateLimitDashboardRouter(ctx) {
         for (const [userId, stats] of rateLimitStats.userBlocks.entries()) {
             if (stats.lastBlocked > oneHourAgo) {
                 // Get user info
-                const userInfo = query.get('SELECT email, username FROM users WHERE id = ?', [userId]);
+                const userInfo = await query.get('SELECT email, username FROM users WHERE id = ?', [userId]);
 
                 blockedUsers.push({
                     userId,
@@ -199,25 +199,25 @@ export async function rateLimitDashboardRouter(ctx) {
         const hours = Math.min(Math.max(hoursRaw, 1), 720);
 
         try {
-            const history = query.all(`
+            const history = await query.all(`
                 SELECT
                     endpoint,
                     ip,
                     user_id,
                     timestamp
                 FROM rate_limit_logs
-                WHERE timestamp > datetime('now', '-' || ? || ' hours')
+                WHERE timestamp > NOW() - (?::text || ' hours')::interval
                 ORDER BY timestamp DESC
                 LIMIT 1000
             `, [hours]);
 
-            const hourlyStats = query.all(`
+            const hourlyStats = await query.all(`
                 SELECT
-                    strftime('%Y-%m-%d %H:00', timestamp) as hour,
+                    TO_CHAR(timestamp, 'YYYY-MM-DD HH24:00') as hour,
                     endpoint,
                     COUNT(*) as blocked_count
                 FROM rate_limit_logs
-                WHERE timestamp > datetime('now', '-' || ? || ' hours')
+                WHERE timestamp > NOW() - (?::text || ' hours')::interval
                 GROUP BY hour, endpoint
                 ORDER BY hour DESC
             `, [hours]);

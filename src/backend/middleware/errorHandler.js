@@ -109,7 +109,7 @@ function logErrorToDb(error, context = {}) {
     try {
         const { method = 'UNKNOWN', path = 'UNKNOWN', userId = null, ip = 'UNKNOWN' } = context;
 
-        query.run(`
+        await query.run(`
             INSERT INTO error_logs (
                 id, error_type, message, stack_trace, method, path,
                 user_id, ip_address, context, created_at

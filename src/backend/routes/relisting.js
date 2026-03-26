@@ -231,12 +231,12 @@ export async function relistingRouter(ctx) {
 
             const staleListings = await query.all(`
                 SELECT l.*, i.title, i.brand, i.category, i.list_price, i.images,
-                       julianday('now') - julianday(COALESCE(l.last_refreshed_at, l.created_at)) as days_stale,
+                       EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.created_at))) / 86400 as days_stale,
                        (SELECT COUNT(*) FROM listing_engagement WHERE listing_id = l.id) as total_views
                 FROM listings l
                 JOIN inventory i ON l.inventory_id = i.id
                 WHERE l.user_id = ? AND l.status = 'active'
-                AND julianday('now') - julianday(COALESCE(l.last_refreshed_at, l.created_at)) >= ?
+                AND EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.created_at))) / 86400 >= ?
                 ORDER BY days_stale DESC
                 LIMIT ? OFFSET ?
             `, [user.id, parseInt(days), parseInt(limit), parseInt(offset)]);
@@ -244,7 +244,7 @@ export async function relistingRouter(ctx) {
             const { count } = await query.get(`
                 SELECT COUNT(*) as count FROM listings l
                 WHERE l.user_id = ? AND l.status = 'active'
-                AND julianday('now') - julianday(COALESCE(l.last_refreshed_at, l.created_at)) >= ?
+                AND EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.created_at))) / 86400 >= ?
             `, [user.id, parseInt(days)]);
 
             return {
@@ -381,7 +381,7 @@ export async function relistingRouter(ctx) {
                 itemsToProcess = await query.all(`
                     SELECT * FROM relisting_queue
                     WHERE user_id = ? AND status = 'pending'
-                    AND (scheduled_at IS NULL OR scheduled_at <= datetime('now'))
+                    AND (scheduled_at IS NULL OR scheduled_at <= NOW())
                     LIMIT 50
                 `, [user.id]);
             } else if (queue_ids && queue_ids.length > 0) {
@@ -407,14 +407,14 @@ export async function relistingRouter(ctx) {
 
                         // Update listing refresh timestamp
                         await tx.run(`
-                            UPDATE listings SET last_refreshed_at = datetime('now')
+                            UPDATE listings SET last_refreshed_at = NOW()
                             WHERE id = ? AND user_id = ?
                         `, [item.listing_id, user.id]);
 
                         // Mark as completed
                         await tx.run(`
                             UPDATE relisting_queue
-                            SET status = 'completed', processed_at = datetime('now'), changes_made = ?
+                            SET status = 'completed', processed_at = NOW(), changes_made = ?
                             WHERE id = ? AND user_id = ?
                         `, [JSON.stringify(changes), item.id, user.id]);
 
@@ -491,7 +491,7 @@ export async function relistingRouter(ctx) {
                     SUM(CASE WHEN price_after < price_before THEN 1 ELSE 0 END) as price_reductions,
                     AVG(views_after - views_before) as avg_view_increase
                 FROM relisting_performance
-                WHERE user_id = ? AND relisted_at >= datetime('now', '-' || ? || ' days')
+                WHERE user_id = ? AND relisted_at >= NOW() - (?::text || ' days')::interval
             `, [user.id, days]);
 
             const recentPerformance = await query.all(`
@@ -604,7 +604,7 @@ export async function relistingRouter(ctx) {
                 FROM listings l
                 JOIN inventory i ON l.inventory_id = i.id
                 WHERE l.user_id = ? AND l.status = 'active'
-                AND julianday('now') - julianday(COALESCE(l.last_refreshed_at, l.listed_at, l.created_at)) >= ?
+                AND EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.listed_at, l.created_at))) / 86400 >= ?
             `;
             const staleParams = [user.id, threshold];
 
@@ -617,7 +617,7 @@ export async function relistingRouter(ctx) {
                 staleParams.push(...rule.platforms);
             }
 
-            staleSQL += ' ORDER BY julianday(COALESCE(l.last_refreshed_at, l.listed_at, l.created_at)) ASC LIMIT 100';
+            staleSQL += ' ORDER BY COALESCE(l.last_refreshed_at, l.listed_at, l.created_at) ASC LIMIT 100';
             const staleListings = await query.all(staleSQL, staleParams);
 
             const results = [];
@@ -681,11 +681,11 @@ export async function relistingRouter(ctx) {
 
             const eligible = await query.all(`
                 SELECT l.id, l.platform, l.price, i.title, i.list_price,
-                       julianday('now') - julianday(COALESCE(l.last_refreshed_at, l.listed_at, l.created_at)) as days_stale
+                       EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.listed_at, l.created_at))) / 86400 as days_stale
                 FROM listings l
                 JOIN inventory i ON l.inventory_id = i.id
                 WHERE l.user_id = ? AND l.status = 'active'
-                AND julianday('now') - julianday(COALESCE(l.last_refreshed_at, l.listed_at, l.created_at)) >= ?
+                AND EXTRACT(EPOCH FROM (NOW() - COALESCE(l.last_refreshed_at, l.listed_at, l.created_at))) / 86400 >= ?
                 ORDER BY days_stale DESC LIMIT 20
             `, [user.id, threshold]);
 

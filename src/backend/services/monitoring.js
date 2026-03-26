@@ -109,9 +109,9 @@ const monitoring = {
 
         // Log to database
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO error_logs (id, message, stack, context, created_at)
-                VALUES (?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, NOW())
             `, [
                 crypto.randomUUID(),
                 error.message,
@@ -217,9 +217,9 @@ const monitoring = {
 
         // Store alert
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO alerts (id, type, data, created_at)
-                VALUES (?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, NOW())
             `, [
                 crypto.randomUUID(),
                 type,
@@ -269,7 +269,7 @@ const monitoring = {
 
         // Database check
         try {
-            query.get('SELECT 1');
+            await query.get('SELECT 1');
             checks.database = true;
         } catch (e) {}
 
@@ -373,9 +373,9 @@ const monitoring = {
     getAlerts(hours = 24) {
         try {
             const h = Math.max(1, Math.min(Number(hours) || 24, 8760));
-            return query.all(`
+            return await query.all(`
                 SELECT * FROM alerts
-                WHERE created_at > datetime('now', '-' || ? || ' hours')
+                WHERE created_at > NOW() - (?::text || ' hours')::interval
                 ORDER BY created_at DESC
                 LIMIT 100
             `, [h]) || [];
@@ -410,9 +410,9 @@ export const healthChecker = {
 export const securityMonitor = {
     getSummary() {
         try {
-            const failedLogins = query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'LOGIN_FAILURE' AND created_at > datetime('now', '-24 hours')");
-            const suspicious = query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'SUSPICIOUS' AND created_at > datetime('now', '-24 hours')");
-            const blocked = query.get("SELECT COUNT(DISTINCT ip_or_user) as count FROM security_logs WHERE event_type = 'RATE_LIMIT_BLOCK' AND created_at > datetime('now', '-24 hours')");
+            const failedLogins = await query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'LOGIN_FAILURE' AND created_at > NOW() - INTERVAL '24 hours'");
+            const suspicious = await query.get("SELECT COUNT(*) as count FROM security_logs WHERE event_type = 'SUSPICIOUS' AND created_at > NOW() - INTERVAL '24 hours'");
+            const blocked = await query.get("SELECT COUNT(DISTINCT ip_or_user) as count FROM security_logs WHERE event_type = 'RATE_LIMIT_BLOCK' AND created_at > NOW() - INTERVAL '24 hours'");
             return {
                 failedLogins: failedLogins?.count || 0,
                 suspiciousActivity: suspicious?.count || 0,

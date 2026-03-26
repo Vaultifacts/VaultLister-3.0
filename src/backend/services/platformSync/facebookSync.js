@@ -34,13 +34,13 @@ export async function syncFacebookShop(shop) {
         results.completedAt = new Date().toISOString();
 
         try {
-            query.run(`
+            await query.run(`
                 UPDATE shops SET last_sync_at = ?, sync_error = NULL, updated_at = ?
                 WHERE id = ?
             `, [results.completedAt, results.completedAt, shop.id]);
         } catch (err) {
             if (err.message.includes('no such column')) {
-                query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
+                await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
                     [results.completedAt, shop.id]);
             }
         }
@@ -52,10 +52,10 @@ export async function syncFacebookShop(shop) {
         results.completedAt = new Date().toISOString();
 
         try {
-            query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
+            await query.run(`UPDATE shops SET sync_error = ?, updated_at = ? WHERE id = ?`,
                 [error.message, new Date().toISOString(), shop.id]);
         } catch (err) {
-            query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
+            await query.run(`UPDATE shops SET updated_at = ? WHERE id = ?`,
                 [new Date().toISOString(), shop.id]);
         }
 
@@ -73,13 +73,13 @@ async function syncFacebookListings(shop, accessToken, mode) {
             try {
                 const mapped = mapFacebookListingToVaultLister(fbListing, shop);
 
-                const existing = query.get(`
+                const existing = await query.get(`
                     SELECT id FROM listings
                     WHERE user_id = ? AND platform = 'facebook' AND platform_listing_id = ?
                 `, [shop.user_id, fbListing.id]);
 
                 if (existing) {
-                    query.run(`
+                    await query.run(`
                         UPDATE listings SET title = ?, price = ?, status = ?,
                             platform_specific_data = ?, updated_at = ?
                         WHERE id = ?
@@ -87,7 +87,7 @@ async function syncFacebookListings(shop, accessToken, mode) {
                         JSON.stringify(mapped.externalData), new Date().toISOString(), existing.id]);
                     result.updated++;
                 } else {
-                    query.run(`
+                    await query.run(`
                         INSERT INTO listings (id, user_id, inventory_id, platform, title, price,
                             status, platform_listing_id, platform_specific_data, created_at, updated_at)
                         VALUES (?, ?, ?, 'facebook', ?, ?, ?, ?, ?, ?, ?)
@@ -119,12 +119,12 @@ async function syncFacebookOrders(shop, accessToken, mode) {
             try {
                 const mapped = mapFacebookOrderToSale(fbOrder, shop);
 
-                const existing = query.get(`
+                const existing = await query.get(`
                     SELECT id FROM sales WHERE user_id = ? AND platform_order_id = ? AND platform = 'facebook'
                 `, [shop.user_id, fbOrder.id]);
 
                 if (!existing) {
-                    query.run(`
+                    await query.run(`
                         INSERT INTO sales (id, user_id, listing_id, platform, platform_order_id, buyer_username,
                             sale_price, platform_fee, shipping_cost, net_profit,
                             status, notes, created_at, updated_at)

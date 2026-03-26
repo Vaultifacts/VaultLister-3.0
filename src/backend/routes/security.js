@@ -32,17 +32,17 @@ export async function securityRouter(ctx) {
                 return { status: 401, data: { error: 'Authentication required' } };
             }
 
-            const userData = query.get('SELECT id, email, username, full_name, email_verified FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get('SELECT id, email, username, full_name, email_verified FROM users WHERE id = ?', [user.id]);
 
             if (userData.email_verified) {
                 return { status: 400, data: { error: 'Email already verified' } };
             }
 
             // Check for existing pending token
-            const existingToken = query.get(`
+            const existingToken = await query.get(`
                 SELECT * FROM verification_tokens
                 WHERE user_id = ? AND type = 'email_verification'
-                AND expires_at > datetime('now') AND used_at IS NULL
+                AND expires_at > NOW() AND used_at IS NULL
             `, [user.id]);
 
             if (existingToken) {
@@ -52,9 +52,9 @@ export async function securityRouter(ctx) {
             // Generate verification token
             const token = crypto.randomBytes(32).toString('hex');
 
-            query.run(`
+            await query.run(`
                 INSERT INTO verification_tokens (id, user_id, token, type, expires_at)
-                VALUES (?, ?, ?, 'email_verification', datetime('now', '+24 hours'))
+                VALUES (?, ?, ?, 'email_verification', NOW() + INTERVAL '24 hours')
             `, [uuidv4(), user.id, token]);
 
             // Send verification email
@@ -83,10 +83,10 @@ export async function securityRouter(ctx) {
             }
 
             // SECURITY: Atomically mark token as used to prevent TOCTOU race condition
-            const updated = query.run(`
-                UPDATE verification_tokens SET used_at = datetime('now')
+            const updated = await query.run(`
+                UPDATE verification_tokens SET used_at = NOW()
                 WHERE token = ? AND type = 'email_verification'
-                AND expires_at > datetime('now') AND used_at IS NULL
+                AND expires_at > NOW() AND used_at IS NULL
             `, [token]);
 
             if (updated.changes === 0) {
@@ -94,16 +94,16 @@ export async function securityRouter(ctx) {
             }
 
             // Get the token record (already marked as used, safe from reuse)
-            const tokenRecord = query.get(`
+            const tokenRecord = await query.get(`
                 SELECT vt.*, u.email FROM verification_tokens vt
                 JOIN users u ON vt.user_id = u.id
                 WHERE vt.token = ? AND vt.type = 'email_verification'
             `, [token]);
 
             // Mark email as verified
-            query.run(`
+            await query.run(`
                 UPDATE users
-                SET email_verified = 1, email_verified_at = datetime('now'), updated_at = CURRENT_TIMESTAMP
+                SET email_verified = 1, email_verified_at = NOW(), updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `, [tokenRecord.user_id]);
 
@@ -138,24 +138,24 @@ export async function securityRouter(ctx) {
                 data: { message: 'If an account exists with that email, you will receive a password reset link.' }
             };
 
-            const userData = query.get('SELECT id, email, username, full_name FROM users WHERE email = ?', [email.toLowerCase()]);
+            const userData = await query.get('SELECT id, email, username, full_name FROM users WHERE email = ?', [email.toLowerCase()]);
 
             if (!userData) {
                 return successResponse;
             }
 
             // Invalidate any existing reset tokens
-            query.run(`
-                UPDATE verification_tokens SET used_at = datetime('now')
+            await query.run(`
+                UPDATE verification_tokens SET used_at = NOW()
                 WHERE user_id = ? AND type = 'password_reset' AND used_at IS NULL
             `, [userData.id]);
 
             // Generate reset token
             const token = crypto.randomBytes(32).toString('hex');
 
-            query.run(`
+            await query.run(`
                 INSERT INTO verification_tokens (id, user_id, token, type, expires_at)
-                VALUES (?, ?, ?, 'password_reset', datetime('now', '+1 hour'))
+                VALUES (?, ?, ?, 'password_reset', NOW() + INTERVAL '1 hour')
             `, [uuidv4(), userData.id, token]);
 
             // Send reset email
@@ -187,10 +187,10 @@ export async function securityRouter(ctx) {
             }
 
             // SECURITY: Atomically mark token as used to prevent TOCTOU race condition
-            const updated = query.run(`
-                UPDATE verification_tokens SET used_at = datetime('now')
+            const updated = await query.run(`
+                UPDATE verification_tokens SET used_at = NOW()
                 WHERE token = ? AND type = 'password_reset'
-                AND expires_at > datetime('now') AND used_at IS NULL
+                AND expires_at > NOW() AND used_at IS NULL
             `, [token]);
 
             if (updated.changes === 0) {
@@ -198,7 +198,7 @@ export async function securityRouter(ctx) {
             }
 
             // Get the token record (already marked as used, safe from reuse)
-            const tokenRecord = query.get(`
+            const tokenRecord = await query.get(`
                 SELECT * FROM verification_tokens
                 WHERE token = ? AND type = 'password_reset'
             `, [token]);
@@ -211,15 +211,15 @@ export async function securityRouter(ctx) {
             const passwordHash = await bcrypt.hash(password, 12);
 
             // Update password
-            query.run(`
+            await query.run(`
                 UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
             `, [passwordHash, tokenRecord.user_id]);
 
             // Invalidate all sessions
-            query.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ?', [tokenRecord.user_id]);
+            await query.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ?', [tokenRecord.user_id]);
 
             // Send security alert
-            const userData = query.get('SELECT id, email, username, full_name FROM users WHERE id = ?', [tokenRecord.user_id]);
+            const userData = await query.get('SELECT id, email, username, full_name FROM users WHERE id = ?', [tokenRecord.user_id]);
             await emailService.sendSecurityAlertEmail(userData, 'password_changed', { ip, time: new Date().toISOString() });
 
             return {
@@ -241,7 +241,7 @@ export async function securityRouter(ctx) {
                 return { status: 401, data: { error: 'Authentication required' } };
             }
 
-            const userData = query.get('SELECT id, email, username, full_name, mfa_enabled FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get('SELECT id, email, username, full_name, mfa_enabled FROM users WHERE id = ?', [user.id]);
 
             if (userData.mfa_enabled) {
                 return { status: 400, data: { error: 'MFA is already enabled' } };
@@ -281,10 +281,10 @@ export async function securityRouter(ctx) {
             }
 
             // Verify the setup token
-            const tokenRecord = query.get(`
+            const tokenRecord = await query.get(`
                 SELECT * FROM verification_tokens
                 WHERE user_id = ? AND token = ? AND type = 'mfa_setup'
-                AND expires_at > datetime('now') AND used_at IS NULL
+                AND expires_at > NOW() AND used_at IS NULL
             `, [user.id, setupToken]);
 
             if (!tokenRecord) {
@@ -299,10 +299,10 @@ export async function securityRouter(ctx) {
             }
 
             // Mark setup token as used
-            query.run('UPDATE verification_tokens SET used_at = datetime(\'now\') WHERE id = ?', [tokenRecord.id]);
+            await query.run('UPDATE verification_tokens SET used_at = datetime(\'now\') WHERE id = ?', [tokenRecord.id]);
 
             // Send notification email
-            const userData = query.get('SELECT id, email, username, full_name FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get('SELECT id, email, username, full_name FROM users WHERE id = ?', [user.id]);
             await emailService.sendMFAEnabledEmail(userData);
 
             return {
@@ -332,7 +332,7 @@ export async function securityRouter(ctx) {
                 return { status: 400, data: { error: 'Password required to disable MFA' } };
             }
 
-            const userData = query.get('SELECT id, email, username, full_name, mfa_enabled, password_hash FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get('SELECT id, email, username, full_name, mfa_enabled, password_hash FROM users WHERE id = ?', [user.id]);
 
             if (!userData.mfa_enabled) {
                 return { status: 400, data: { error: 'MFA is not enabled' } };
@@ -381,7 +381,7 @@ export async function securityRouter(ctx) {
                 return { status: 400, data: { error: 'Password required' } };
             }
 
-            const userData = query.get('SELECT id, email, username, full_name, mfa_enabled, password_hash FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get('SELECT id, email, username, full_name, mfa_enabled, password_hash FROM users WHERE id = ?', [user.id]);
 
             if (!userData.mfa_enabled) {
                 return { status: 400, data: { error: 'MFA is not enabled' } };
@@ -414,7 +414,7 @@ export async function securityRouter(ctx) {
                 return { status: 401, data: { error: 'Authentication required' } };
             }
 
-            const userData = query.get('SELECT mfa_enabled, mfa_backup_codes FROM users WHERE id = ?', [user.id]);
+            const userData = await query.get('SELECT mfa_enabled, mfa_backup_codes FROM users WHERE id = ?', [user.id]);
             const backupCodes = safeJsonParse(userData.mfa_backup_codes, []);
             const remainingCodes = backupCodes.filter(c => c !== null).length;
 
@@ -440,7 +440,7 @@ export async function securityRouter(ctx) {
                 return { status: 401, data: { error: 'Authentication required' } };
             }
 
-            const events = query.all(`
+            const events = await query.all(`
                 SELECT event_type, ip_address, user_agent, created_at
                 FROM mfa_events
                 WHERE user_id = ?
@@ -453,10 +453,10 @@ export async function securityRouter(ctx) {
                 ? user.email[0] + '***' + user.email.slice(user.email.indexOf('@'))
                 : '***';
             const escapedEmail = maskedEmail.replace(/[%_\\]/g, '\\$&');
-            const loginEvents = query.all(`
+            const loginEvents = await query.all(`
                 SELECT 'login' as event_type, ip_or_user as ip_address, details, created_at
                 FROM security_logs
-                WHERE details LIKE ? ESCAPE '\\'
+                WHERE details ILIKE ? ESCAPE '\\'
                 ORDER BY created_at DESC
                 LIMIT 50
             `, [`%"email":"${escapedEmail}"%`]);

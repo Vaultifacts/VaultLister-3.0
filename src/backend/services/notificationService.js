@@ -19,7 +19,7 @@ export function createNotification(userId, { type, title, message, data = null }
     const id = uuidv4();
 
     try {
-        query.run(`
+        await query.run(`
             INSERT INTO notifications (id, user_id, type, title, message, data)
             VALUES (?, ?, ?, ?, ?, ?)
         `, [id, userId, type, title, message, data ? JSON.stringify(data) : null]);
@@ -48,7 +48,7 @@ export function createNotification(userId, { type, title, message, data = null }
  */
 export function getUnreadNotifications(userId, limit = 50) {
     try {
-        const notifications = query.all(`
+        const notifications = await query.all(`
             SELECT * FROM notifications
             WHERE user_id = ? AND is_read = 0
             ORDER BY created_at DESC
@@ -76,14 +76,14 @@ export function getNotifications(userId, { page = 1, limit = 20 } = {}) {
     try {
         const offset = (page - 1) * limit;
 
-        const notifications = query.all(`
+        const notifications = await query.all(`
             SELECT * FROM notifications
             WHERE user_id = ?
             ORDER BY created_at DESC
             LIMIT ? OFFSET ?
         `, [userId, limit, offset]);
 
-        const total = query.get(`
+        const total = await query.get(`
             SELECT COUNT(*) as count FROM notifications WHERE user_id = ?
         `, [userId])?.count || 0;
 
@@ -114,7 +114,7 @@ export function getNotifications(userId, { page = 1, limit = 20 } = {}) {
  */
 export function markAsRead(notificationId, userId) {
     try {
-        const result = query.run(`
+        const result = await query.run(`
             UPDATE notifications
             SET is_read = 1, read_at = CURRENT_TIMESTAMP
             WHERE id = ? AND user_id = ?
@@ -134,7 +134,7 @@ export function markAsRead(notificationId, userId) {
  */
 export function markAllAsRead(userId) {
     try {
-        const result = query.run(`
+        const result = await query.run(`
             UPDATE notifications
             SET is_read = 1, read_at = CURRENT_TIMESTAMP
             WHERE user_id = ? AND is_read = 0
@@ -155,7 +155,7 @@ export function markAllAsRead(userId) {
  */
 export function deleteNotification(notificationId, userId) {
     try {
-        const result = query.run(`
+        const result = await query.run(`
             DELETE FROM notifications WHERE id = ? AND user_id = ?
         `, [notificationId, userId]);
 
@@ -173,9 +173,9 @@ export function deleteNotification(notificationId, userId) {
  */
 export function cleanupOldNotifications(daysOld = 30) {
     try {
-        const result = query.run(`
+        const result = await query.run(`
             DELETE FROM notifications
-            WHERE is_read = 1 AND created_at < datetime('now', '-' || ? || ' days')
+            WHERE is_read = 1 AND created_at < NOW() - (?::text || ' days')::interval
         `, [daysOld]);
 
         return result.changes;
@@ -192,7 +192,7 @@ export function cleanupOldNotifications(daysOld = 30) {
  */
 export function getUnreadCount(userId) {
     try {
-        const result = query.get(`
+        const result = await query.get(`
             SELECT COUNT(*) as count FROM notifications
             WHERE user_id = ? AND is_read = 0
         `, [userId]);

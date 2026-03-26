@@ -126,13 +126,13 @@ export async function setupMFA(userId, email) {
     // Store setup token for verification
     const setupToken = crypto.randomBytes(32).toString('hex');
 
-    query.run(`
+    await query.run(`
         INSERT INTO verification_tokens (id, user_id, token, type, expires_at)
-        VALUES (?, ?, ?, 'mfa_setup', datetime('now', '+10 minutes'))
+        VALUES (?, ?, ?, 'mfa_setup', NOW() + INTERVAL '10 minutes')
     `, [uuidv4(), userId, setupToken]);
 
     // Store secret temporarily on user record (not yet activated — mfa_enabled stays 0)
-    query.run('UPDATE users SET mfa_secret = ? WHERE id = ?', [secret, userId]);
+    await query.run('UPDATE users SET mfa_secret = ? WHERE id = ?', [secret, userId]);
 
     return {
         setupToken,
@@ -147,10 +147,10 @@ export async function setupMFA(userId, email) {
  */
 export async function enableMFA(userId, setupToken, totpCode) {
     // Get setup token
-    const tokenRecord = query.get(`
+    const tokenRecord = await query.get(`
         SELECT * FROM verification_tokens
         WHERE user_id = ? AND token = ? AND type = 'mfa_setup'
-        AND expires_at > datetime('now') AND used_at IS NULL
+        AND expires_at > NOW() AND used_at IS NULL
     `, [userId, setupToken]);
 
     if (!tokenRecord) {
@@ -158,13 +158,13 @@ export async function enableMFA(userId, setupToken, totpCode) {
     }
 
     // Get user's temporary secret (stored in a temp field or cache)
-    const user = query.get('SELECT mfa_secret FROM users WHERE id = ?', [userId]);
+    const user = await query.get('SELECT mfa_secret FROM users WHERE id = ?', [userId]);
 
     // For now, we need to get the secret from the request since we don't store it yet
     // In production, you might store it temporarily in Redis
 
     // Mark token as used
-    query.run('UPDATE verification_tokens SET used_at = datetime(\'now\') WHERE id = ?', [tokenRecord.id]);
+    await query.run('UPDATE verification_tokens SET used_at = datetime(\'now\') WHERE id = ?', [tokenRecord.id]);
 
     // Generate backup codes
     const { codes, hashedCodes } = generateBackupCodes();
@@ -189,7 +189,7 @@ export function completeSetup(userId, secret, totpCode, ip, userAgent) {
     const { codes, hashedCodes } = generateBackupCodes();
 
     // Store MFA settings
-    query.run(`
+    await query.run(`
         UPDATE users
         SET mfa_enabled = 1,
             mfa_secret = ?,
@@ -199,7 +199,7 @@ export function completeSetup(userId, secret, totpCode, ip, userAgent) {
     `, [secret, JSON.stringify(hashedCodes), userId]);
 
     // Log MFA event
-    query.run(`
+    await query.run(`
         INSERT INTO mfa_events (user_id, event_type, ip_address, user_agent)
         VALUES (?, 'enabled', ?, ?)
     `, [userId, ip, userAgent]);
@@ -220,7 +220,7 @@ export async function disableMFA(userId, password, userPasswordHash, ip, userAge
     }
 
     // Clear MFA settings
-    query.run(`
+    await query.run(`
         UPDATE users
         SET mfa_enabled = 0,
             mfa_secret = NULL,
@@ -230,7 +230,7 @@ export async function disableMFA(userId, password, userPasswordHash, ip, userAge
     `, [userId]);
 
     // Log MFA event
-    query.run(`
+    await query.run(`
         INSERT INTO mfa_events (user_id, event_type, ip_address, user_agent)
         VALUES (?, 'disabled', ?, ?)
     `, [userId, ip, userAgent]);
@@ -245,7 +245,7 @@ export async function verifyMFA(userId, code, secret, backupCodesJson, ip, userA
     // Try TOTP first
     if (verifyToken(code, secret)) {
         // Log successful verification
-        query.run(`
+        await query.run(`
             INSERT INTO mfa_events (user_id, event_type, ip_address, user_agent)
             VALUES (?, 'verified', ?, ?)
         `, [userId, ip, userAgent]);
@@ -259,12 +259,12 @@ export async function verifyMFA(userId, code, secret, backupCodesJson, ip, userA
 
     if (backupResult.valid) {
         // Update backup codes (mark used code as null)
-        query.run(`
+        await query.run(`
             UPDATE users SET mfa_backup_codes = ? WHERE id = ?
         `, [JSON.stringify(backupResult.updatedCodes), userId]);
 
         // Log backup code usage
-        query.run(`
+        await query.run(`
             INSERT INTO mfa_events (user_id, event_type, ip_address, user_agent)
             VALUES (?, 'backup_used', ?, ?)
         `, [userId, ip, userAgent]);
@@ -281,7 +281,7 @@ export async function verifyMFA(userId, code, secret, backupCodesJson, ip, userA
     }
 
     // Log failed attempt
-    query.run(`
+    await query.run(`
         INSERT INTO mfa_events (user_id, event_type, ip_address, user_agent)
         VALUES (?, 'failed', ?, ?)
     `, [userId, ip, userAgent]);
@@ -301,7 +301,7 @@ export async function regenerateBackupCodes(userId, password, userPasswordHash, 
     const { codes, hashedCodes } = generateBackupCodes();
 
     // Update backup codes
-    query.run(`
+    await query.run(`
         UPDATE users SET mfa_backup_codes = ? WHERE id = ?
     `, [JSON.stringify(hashedCodes), userId]);
 

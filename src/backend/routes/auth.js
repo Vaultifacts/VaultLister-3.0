@@ -89,7 +89,7 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-// SECURITY: Escape LIKE wildcards
+// SECURITY: Escape ILIKE wildcards
 function escapeLike(str) {
     return str.replace(/[%_]/g, '\\$&');
 }
@@ -116,10 +116,10 @@ function checkLoginAttempts(email, ip) {
     // Check for lockout using existing security_logs schema.
     // Query uses the masked email (stored form) to avoid matching raw PII.
     const masked = maskEmail(email.toLowerCase());
-    const attempts = query.get(`
+    const attempts = await query.get(`
         SELECT COUNT(*) as count, MAX(created_at) as last_attempt
         FROM security_logs
-        WHERE (details LIKE ? ESCAPE '\\' OR ip_or_user = ?)
+        WHERE (details ILIKE ? ESCAPE '\\' OR ip_or_user = ?)
         AND event_type = 'login_failed'
         AND created_at > ?
     `, [`%${escapeLike(masked)}%`, ip, lockoutEnd.toISOString()]);
@@ -137,9 +137,9 @@ function checkLoginAttempts(email, ip) {
 // SECURITY: Log failed login attempt — stores masked email, never raw PII.
 function logFailedLogin(email, ip, userAgent) {
     try {
-        query.run(`
+        await query.run(`
             INSERT INTO security_logs (event_type, ip_or_user, details, created_at)
-            VALUES ('login_failed', ?, ?, datetime('now'))
+            VALUES ('login_failed', ?, ?, NOW())
         `, [ip, JSON.stringify({ email: maskEmail(email.toLowerCase()), userAgent: userAgent || 'unknown' })]);
     } catch (e) {
         logger.error('[auth] Failed to log security event', null, { detail: e.message });
@@ -151,9 +151,9 @@ function clearLoginAttempts(email, ip) {
     try {
         const lockoutEnd = new Date(Date.now() - LOCKOUT_DURATION_MINUTES * 60 * 1000);
         const masked = maskEmail(email.toLowerCase());
-        query.run(`
+        await query.run(`
             DELETE FROM security_logs
-            WHERE (details LIKE ? ESCAPE '\\' OR ip_or_user = ?)
+            WHERE (details ILIKE ? ESCAPE '\\' OR ip_or_user = ?)
             AND event_type = 'login_failed'
             AND created_at > ?
         `, [`%${escapeLike(masked)}%`, ip, lockoutEnd.toISOString()]);
@@ -173,7 +173,7 @@ async function ensureTestDemoUser() {
     const demoFullName = 'Demo User';
     const demoPassword = process.env.DEMO_PASSWORD || 'DemoPassword123!';
 
-    let existing = query.get(
+    let existing = await query.get(
         'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ?',
         [demoEmail]
     );
@@ -181,15 +181,15 @@ async function ensureTestDemoUser() {
     if (!existing) {
         const id = uuidv4();
         const passwordHash = await bcrypt.hash(demoPassword, BCRYPT_ROUNDS);
-        query.run(`
+        await query.run(`
             INSERT INTO users (id, email, password_hash, username, full_name, is_active)
             VALUES (?, ?, ?, ?, ?, 1)
         `, [id, demoEmail, passwordHash, demoUsername, demoFullName]);
     } else if (!existing.is_active) {
-        query.run('UPDATE users SET is_active = 1 WHERE id = ?', [existing.id]);
+        await query.run('UPDATE users SET is_active = 1 WHERE id = ?', [existing.id]);
     }
 
-    return query.get(
+    return await query.get(
         'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = 1',
         [demoEmail]
     );
@@ -200,13 +200,13 @@ async function ensureTestDemoUser() {
 // leaving room for one new session to be inserted by the caller.
 function enforceSessionLimit(userId) {
     try {
-        const sessionCount = query.get(
+        const sessionCount = await query.get(
             'SELECT COUNT(*) as count FROM sessions WHERE user_id = ? AND is_valid = 1',
             [userId]
         );
         if (sessionCount && sessionCount.count >= 10) {
             const excess = sessionCount.count - 9; // keep 9, caller inserts the 10th
-            query.run(`
+            await query.run(`
                 DELETE FROM sessions WHERE id IN (
                     SELECT id FROM sessions
                     WHERE user_id = ? AND is_valid = 1
@@ -247,7 +247,7 @@ export async function authRouter(ctx) {
             }
 
             // Check if user exists
-            const existing = query.get(
+            const existing = await query.get(
                 'SELECT id FROM users WHERE email = ? OR username = ?',
                 [email.toLowerCase(), username.toLowerCase()]
             );
@@ -261,12 +261,12 @@ export async function authRouter(ctx) {
             const userId = uuidv4();
             const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-            query.run(`
+            await query.run(`
                 INSERT INTO users (id, email, password_hash, username, full_name)
                 VALUES (?, ?, ?, ?, ?)
             `, [userId, email.toLowerCase(), passwordHash, username.toLowerCase(), fullName || username]);
 
-            const user = query.get('SELECT id, email, username, full_name, is_active, email_verified, created_at FROM users WHERE id = ?', [userId]);
+            const user = await query.get('SELECT id, email, username, full_name, is_active, email_verified, created_at FROM users WHERE id = ?', [userId]);
 
             const token = generateToken(user);
             const refreshToken = generateRefreshToken(user);
@@ -275,18 +275,18 @@ export async function authRouter(ctx) {
             enforceSessionLimit(userId);
 
             // Store session
-            query.run(`
+            await query.run(`
                 INSERT INTO sessions (id, user_id, refresh_token, expires_at)
-                VALUES (?, ?, ?, datetime('now', '+7 days'))
+                VALUES (?, ?, ?, NOW() + INTERVAL '7 days')
             `, [uuidv4(), userId, refreshToken]);
 
             // Send verification email (non-blocking — registration succeeds even if email fails)
             if (!IS_TEST_RUNTIME) {
                 const verificationToken = crypto.randomBytes(32).toString('hex');
                 const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-                query.run(
-                    `INSERT OR REPLACE INTO email_verifications (user_id, token, expires_at, created_at)
-                     VALUES (?, ?, ?, datetime('now'))`,
+                await query.run(
+                    `INSERT INTO email_verifications (user_id, token, expires_at, created_at)
+                     VALUES (?, ?, ?, NOW())`,
                     [userId, verificationToken, expiresAt]
                 );
                 emailService.sendVerificationEmail(user, verificationToken).catch(err =>
@@ -338,7 +338,7 @@ export async function authRouter(ctx) {
                 && normalizedEmail === 'demo@vaultlister.com'
                 && password === (process.env.DEMO_PASSWORD || 'DemoPassword123!');
 
-            let user = query.get(
+            let user = await query.get(
                 'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = 1',
                 [normalizedEmail]
             );
@@ -393,9 +393,9 @@ export async function authRouter(ctx) {
                 const mfaToken = crypto.randomBytes(32).toString('hex');
 
                 // Store MFA token for verification
-                query.run(`
+                await query.run(`
                     INSERT INTO verification_tokens (id, user_id, token, type, expires_at)
-                    VALUES (?, ?, ?, 'mfa_login', datetime('now', '+5 minutes'))
+                    VALUES (?, ?, ?, 'mfa_login', NOW() + INTERVAL '5 minutes')
                 `, [uuidv4(), user.id, mfaToken]);
 
                 return {
@@ -409,7 +409,7 @@ export async function authRouter(ctx) {
             }
 
             // Update last login
-            query.run('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
+            await query.run('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
 
             delete user.password_hash;
             delete user.mfa_secret;
@@ -422,9 +422,9 @@ export async function authRouter(ctx) {
             enforceSessionLimit(user.id);
 
             // Store session with device info
-            query.run(`
+            await query.run(`
                 INSERT INTO sessions (id, user_id, refresh_token, device_info, ip_address, expires_at)
-                VALUES (?, ?, ?, ?, ?, datetime('now', '+7 days'))
+                VALUES (?, ?, ?, ?, ?, NOW() + INTERVAL '7 days')
             `, [uuidv4(), user.id, refreshToken, userAgent, ip]);
 
             const loginResponse = { user, token, refreshToken };
@@ -458,7 +458,7 @@ export async function authRouter(ctx) {
                 return { status: 404, data: { error: 'Not found' } };
             }
 
-            const demoUser = query.get('SELECT * FROM users WHERE email = ?', [demoEmail]);
+            const demoUser = await query.get('SELECT * FROM users WHERE email = ?', [demoEmail]);
             if (!demoUser) {
                 return { status: 404, data: { error: 'Not found' } };
             }
@@ -471,9 +471,9 @@ export async function authRouter(ctx) {
             const token = generateToken(demoUser);
             const refreshToken = generateRefreshToken(demoUser);
 
-            query.run(`
+            await query.run(`
                 INSERT INTO sessions (id, user_id, refresh_token, device_info, ip_address, expires_at)
-                VALUES (?, ?, ?, ?, ?, datetime('now', '+7 days'))
+                VALUES (?, ?, ?, ?, ?, NOW() + INTERVAL '7 days')
             `, [uuidv4(), demoUser.id, refreshToken, 'Demo Auto-Login', ctx.ip || 'unknown']);
 
             const { password_hash, mfa_secret, mfa_backup_codes, ...safeUser } = demoUser;
@@ -502,10 +502,10 @@ export async function authRouter(ctx) {
             }
 
             // SECURITY: Atomically mark token as used to prevent TOCTOU race condition
-            const updated = query.run(`
-                UPDATE verification_tokens SET used_at = datetime('now')
+            const updated = await query.run(`
+                UPDATE verification_tokens SET used_at = NOW()
                 WHERE token = ? AND type = 'mfa_login'
-                AND expires_at > datetime('now') AND used_at IS NULL
+                AND expires_at > NOW() AND used_at IS NULL
             `, [mfaToken]);
 
             if (updated.changes === 0) {
@@ -513,7 +513,7 @@ export async function authRouter(ctx) {
             }
 
             // Get the token record (already marked as used, safe from reuse)
-            const tokenRecord = query.get(`
+            const tokenRecord = await query.get(`
                 SELECT vt.*, u.* FROM verification_tokens vt
                 JOIN users u ON vt.user_id = u.id
                 WHERE vt.token = ? AND vt.type = 'mfa_login'
@@ -538,7 +538,7 @@ export async function authRouter(ctx) {
             }
 
             // Update last login
-            query.run('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?', [tokenRecord.user_id]);
+            await query.run('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?', [tokenRecord.user_id]);
 
             // Prepare user object (remove sensitive fields)
             const user = {
@@ -558,9 +558,9 @@ export async function authRouter(ctx) {
             enforceSessionLimit(user.id);
 
             // Store session with device info
-            query.run(`
+            await query.run(`
                 INSERT INTO sessions (id, user_id, refresh_token, device_info, ip_address, expires_at)
-                VALUES (?, ?, ?, ?, ?, datetime('now', '+7 days'))
+                VALUES (?, ?, ?, ?, ?, NOW() + INTERVAL '7 days')
             `, [uuidv4(), user.id, refreshToken, userAgent, ip]);
 
             const response = {
@@ -603,7 +603,7 @@ export async function authRouter(ctx) {
             }
 
             // Check session exists and is still valid
-            const session = query.get(
+            const session = await query.get(
                 'SELECT * FROM sessions WHERE refresh_token = ? AND is_valid = 1 AND expires_at > datetime("now")',
                 [refreshToken]
             );
@@ -612,7 +612,7 @@ export async function authRouter(ctx) {
                 return { status: 401, data: { error: 'Session expired' } };
             }
 
-            const user = query.get(
+            const user = await query.get(
                 'SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled FROM users WHERE id = ? AND is_active = 1',
                 [decoded.userId]
             );
@@ -622,7 +622,7 @@ export async function authRouter(ctx) {
 
             // SECURITY: Refresh token rotation — invalidate the old session immediately
             // to prevent replay attacks. A new session with a fresh refresh token is issued.
-            query.run('UPDATE sessions SET is_valid = 0 WHERE id = ?', [session.id]);
+            await query.run('UPDATE sessions SET is_valid = 0 WHERE id = ?', [session.id]);
 
             const newToken = generateToken(user);
             const newRefreshToken = generateRefreshToken(user);
@@ -630,9 +630,9 @@ export async function authRouter(ctx) {
             // SECURITY: Cap concurrent sessions before inserting the new one
             enforceSessionLimit(user.id);
 
-            query.run(`
+            await query.run(`
                 INSERT INTO sessions (id, user_id, refresh_token, device_info, ip_address, expires_at)
-                VALUES (?, ?, ?, ?, ?, datetime('now', '+7 days'))
+                VALUES (?, ?, ?, ?, ?, NOW() + INTERVAL '7 days')
             `, [uuidv4(), user.id, newRefreshToken, session.device_info || userAgent, session.ip_address || ip]);
 
             return {
@@ -655,14 +655,14 @@ export async function authRouter(ctx) {
                 // Verify the refresh token belongs to the requesting user (if authenticated)
                 // before invalidating. This prevents cross-user session invalidation.
                 if (ctx.user) {
-                    query.run('UPDATE sessions SET is_valid = 0 WHERE refresh_token = ? AND user_id = ? AND is_valid = 1', [refreshToken, ctx.user.id]);
+                    await query.run('UPDATE sessions SET is_valid = 0 WHERE refresh_token = ? AND user_id = ? AND is_valid = 1', [refreshToken, ctx.user.id]);
                 } else {
                     // Unauthenticated logout (expired access token) — refresh token is bearer credential
-                    query.run('UPDATE sessions SET is_valid = 0 WHERE refresh_token = ? AND is_valid = 1', [refreshToken]);
+                    await query.run('UPDATE sessions SET is_valid = 0 WHERE refresh_token = ? AND is_valid = 1', [refreshToken]);
                 }
             } else if (ctx.user) {
                 // No refresh token provided but user is authenticated — invalidate all their sessions
-                query.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ? AND is_valid = 1', [ctx.user.id]);
+                await query.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ? AND is_valid = 1', [ctx.user.id]);
             }
 
             // Close any active WebSocket connections for this user
@@ -695,7 +695,7 @@ export async function authRouter(ctx) {
             return { status: 401, data: { error: 'Invalid token' } };
         }
 
-        const user = query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, subscription_tier, subscription_expires_at, created_at, last_login_at FROM users WHERE id = ?', [decoded.userId]);
+        const user = await query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, subscription_tier, subscription_expires_at, created_at, last_login_at FROM users WHERE id = ?', [decoded.userId]);
         if (!user) {
             return { status: 404, data: { error: 'User not found' } };
         }
@@ -729,13 +729,13 @@ export async function authRouter(ctx) {
 
         if (updates.length > 0) {
             values.push(user.id);
-            query.run(
+            await query.run(
                 `UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
                 values
             );
         }
 
-        const updatedUser = query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, timezone, locale, preferences, created_at, updated_at FROM users WHERE id = ?', [user.id]);
+        const updatedUser = await query.get('SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, timezone, locale, preferences, created_at, updated_at FROM users WHERE id = ?', [user.id]);
 
         return { status: 200, data: { user: updatedUser } };
     }
@@ -757,7 +757,7 @@ export async function authRouter(ctx) {
         }
 
         // SECURITY: Need password_hash for verification
-        const pwUser = query.get('SELECT id, password_hash FROM users WHERE id = ?', [user.id]);
+        const pwUser = await query.get('SELECT id, password_hash FROM users WHERE id = ?', [user.id]);
 
         // SECURITY: User null check
         if (!pwUser) {
@@ -771,7 +771,7 @@ export async function authRouter(ctx) {
 
         // SECURITY: Use async bcrypt with BCRYPT_ROUNDS constant
         const newHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-        query.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, user.id]);
+        await query.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, user.id]);
 
         // SECURITY: Invalidate all other sessions after password change to prevent
         // session hijacking with a stolen pre-change refresh token.
@@ -780,14 +780,14 @@ export async function authRouter(ctx) {
         // invalidate ALL sessions and force re-login.
         const currentRefreshToken = ctx.refreshToken || null;
         if (currentRefreshToken) {
-            const invalidated = query.run(
+            const invalidated = await query.run(
                 `UPDATE sessions SET is_valid = 0
                  WHERE user_id = ? AND refresh_token != ?`,
                 [user.id, currentRefreshToken]
             );
             logger.info(`[auth] Password changed for user ${user.id}; invalidated ${invalidated.changes} other session(s)`);
         } else {
-            const invalidated = query.run(
+            const invalidated = await query.run(
                 'UPDATE sessions SET is_valid = 0 WHERE user_id = ?',
                 [user.id]
             );
@@ -804,11 +804,11 @@ export async function authRouter(ctx) {
         const decoded = verifyToken(authHeader.split(' ')[1]);
         if (!decoded) return { status: 401, data: { error: 'Invalid token' } };
 
-        const sessions = query.all(
+        const sessions = await query.all(
             `SELECT id, device_info, ip_address, created_at, expires_at,
                     CASE WHEN refresh_token = ? THEN 1 ELSE 0 END as current
              FROM sessions
-             WHERE user_id = ? AND is_valid = 1 AND expires_at > datetime('now')
+             WHERE user_id = ? AND is_valid = 1 AND expires_at > NOW()
              ORDER BY created_at DESC`,
             [ctx.refreshToken || '', decoded.userId]
         );
@@ -825,7 +825,7 @@ export async function authRouter(ctx) {
 
         const sessionId = path.split('/')[2];
 
-        const result = query.run(
+        const result = await query.run(
             'UPDATE sessions SET is_valid = 0 WHERE id = ? AND user_id = ?',
             [sessionId, decoded.userId]
         );
@@ -844,7 +844,7 @@ export async function authRouter(ctx) {
         const decoded = verifyToken(authHeader.split(' ')[1]);
         if (!decoded) return { status: 401, data: { error: 'Invalid token' } };
 
-        const result = query.run(
+        const result = await query.run(
             `UPDATE sessions SET is_valid = 0
              WHERE user_id = ? AND is_valid = 1
              AND refresh_token != ?`,
@@ -870,7 +870,7 @@ export async function authRouter(ctx) {
 
         try {
             // Check if user exists (but don't reveal this to the caller)
-            const user = query.get('SELECT id, email FROM users WHERE LOWER(email) = LOWER(?)', [email]);
+            const user = await query.get('SELECT id, email FROM users WHERE LOWER(email) = LOWER(?)', [email]);
 
             if (user) {
                 // Generate a reset token
@@ -878,9 +878,9 @@ export async function authRouter(ctx) {
                 const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
 
                 // Store the reset token
-                query.run(`
-                    INSERT OR REPLACE INTO password_resets (user_id, token, expires_at, created_at)
-                    VALUES (?, ?, ?, datetime('now'))
+                await query.run(`
+                    INSERT INTO password_resets (user_id, token, expires_at, created_at)
+                    VALUES (?, ?, ?, NOW())
                 `, [user.id, resetToken, expiresAt]);
 
                 // Send password reset email (falls back to console.log if SMTP not configured)
@@ -914,7 +914,7 @@ export async function authRouter(ctx) {
         }
 
         try {
-            const record = query.get(
+            const record = await query.get(
                 `SELECT pr.id, pr.user_id, pr.expires_at, pr.used_at, u.email, u.username
                  FROM password_resets pr
                  JOIN users u ON u.id = pr.user_id
@@ -934,11 +934,11 @@ export async function authRouter(ctx) {
 
             const newHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-            query.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, record.user_id]);
-            query.run('UPDATE password_resets SET used_at = datetime(\'now\') WHERE token = ?', [token]);
+            await query.run('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, record.user_id]);
+            await query.run('UPDATE password_resets SET used_at = datetime(\'now\') WHERE token = ?', [token]);
 
             // Invalidate all existing sessions for security
-            query.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ?', [record.user_id]);
+            await query.run('UPDATE sessions SET is_valid = 0 WHERE user_id = ?', [record.user_id]);
 
             logger.info(`[auth] Password reset completed for ${maskEmail(record.email)}`);
 
@@ -957,7 +957,7 @@ export async function authRouter(ctx) {
         }
 
         try {
-            const record = query.get(
+            const record = await query.get(
                 `SELECT ev.user_id, ev.expires_at, ev.used_at, u.email, u.username, u.email_verified
                  FROM email_verifications ev
                  JOIN users u ON u.id = ev.user_id
@@ -978,8 +978,8 @@ export async function authRouter(ctx) {
                 return { status: 200, data: { message: 'Your email is already verified. You can log in.' } };
             }
 
-            query.run('UPDATE users SET email_verified = 1 WHERE id = ?', [record.user_id]);
-            query.run('UPDATE email_verifications SET used_at = datetime(\'now\') WHERE token = ?', [token]);
+            await query.run('UPDATE users SET email_verified = 1 WHERE id = ?', [record.user_id]);
+            await query.run('UPDATE email_verifications SET used_at = datetime(\'now\') WHERE token = ?', [token]);
 
             return { status: 200, data: { message: 'Email verified successfully! You can now log in.' } };
         } catch (e) {
@@ -998,16 +998,16 @@ export async function authRouter(ctx) {
         }
 
         try {
-            const user = query.get('SELECT id, email, email_verified FROM users WHERE LOWER(email) = LOWER(?)', [email]);
+            const user = await query.get('SELECT id, email, email_verified FROM users WHERE LOWER(email) = LOWER(?)', [email]);
 
             if (user && !user.email_verified) {
                 // Generate a verification token
                 const verificationToken = crypto.randomBytes(32).toString('hex');
                 const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
 
-                query.run(`
-                    INSERT OR REPLACE INTO email_verifications (user_id, token, expires_at, created_at)
-                    VALUES (?, ?, ?, datetime('now'))
+                await query.run(`
+                    INSERT INTO email_verifications (user_id, token, expires_at, created_at)
+                    VALUES (?, ?, ?, NOW())
                 `, [user.id, verificationToken, expiresAt]);
 
                 await emailService.sendVerificationEmail(user, verificationToken);

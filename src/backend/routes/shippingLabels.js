@@ -34,8 +34,8 @@ export async function shippingLabelsRouter(ctx) {
             sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
             params.push(parseInt(limit), parseInt(offset));
 
-            const labels = query.all(sql, params);
-            const { count } = query.get(
+            const labels = await query.all(sql, params);
+            const { count } = await query.get(
                 'SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ?',
                 [user.id]
             );
@@ -54,7 +54,7 @@ export async function shippingLabelsRouter(ctx) {
     const getLabelMatch = path.match(/^\/([a-f0-9-]+)$/i);
     if (method === 'GET' && getLabelMatch && !path.startsWith('/addresses') && !path.startsWith('/batches') && !path.startsWith('/rates')) {
         try {
-            const label = query.get(
+            const label = await query.get(
                 'SELECT * FROM shipping_labels WHERE id = ? AND user_id = ?',
                 [getLabelMatch[1], user.id]
             );
@@ -89,7 +89,7 @@ export async function shippingLabelsRouter(ctx) {
 
             const id = uuidv4();
 
-            query.run(`
+            await query.run(`
                 INSERT INTO shipping_labels (
                     id, user_id, order_id, sale_id, carrier, service_type,
                     weight_oz, length_in, width_in, height_in, package_type,
@@ -118,7 +118,7 @@ export async function shippingLabelsRouter(ctx) {
         try {
             const id = patchLabelMatch[1];
 
-            const existing = query.get('SELECT id FROM shipping_labels WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT id FROM shipping_labels WHERE id = ? AND user_id = ?', [id, user.id]);
             if (!existing) {
                 return { status: 404, data: { error: 'Label not found' } };
             }
@@ -164,7 +164,7 @@ export async function shippingLabelsRouter(ctx) {
             updates.push('updated_at = CURRENT_TIMESTAMP');
             params.push(id);
 
-            query.run(`UPDATE shipping_labels SET ${updates.join(', ')} WHERE id = ?`, params);
+            await query.run(`UPDATE shipping_labels SET ${updates.join(', ')} WHERE id = ?`, params);
 
             return { status: 200, data: { message: 'Label updated' } };
         } catch (error) {
@@ -177,7 +177,7 @@ export async function shippingLabelsRouter(ctx) {
     const deleteLabelMatch = path.match(/^\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteLabelMatch && !path.startsWith('/addresses') && !path.startsWith('/batches')) {
         try {
-            const result = query.run(
+            const result = await query.run(
                 'DELETE FROM shipping_labels WHERE id = ? AND user_id = ? AND status = ?',
                 [deleteLabelMatch[1], user.id, 'draft']
             );
@@ -200,7 +200,7 @@ export async function shippingLabelsRouter(ctx) {
     // GET /api/shipping-labels/addresses - List return addresses
     if (method === 'GET' && path === '/addresses') {
         try {
-            const addresses = query.all(
+            const addresses = await query.all(
                 'SELECT * FROM return_addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC',
                 [user.id]
             );
@@ -224,10 +224,10 @@ export async function shippingLabelsRouter(ctx) {
             const id = uuidv4();
 
             if (is_default) {
-                query.run('UPDATE return_addresses SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE return_addresses SET is_default = 0 WHERE user_id = ?', [user.id]);
             }
 
-            query.run(`
+            await query.run(`
                 INSERT INTO return_addresses (id, user_id, name, company, street1, street2, city, state, zip, country, phone, is_default)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [id, user.id, name, company, street1, street2, city, state, zip, country, phone, is_default ? 1 : 0]);
@@ -244,7 +244,7 @@ export async function shippingLabelsRouter(ctx) {
     if (method === 'PATCH' && patchAddrMatch) {
         try {
             const id = patchAddrMatch[1];
-            const existing = query.get('SELECT id FROM return_addresses WHERE id = ? AND user_id = ?', [id, user.id]);
+            const existing = await query.get('SELECT id FROM return_addresses WHERE id = ? AND user_id = ?', [id, user.id]);
             if (!existing) {
                 return { status: 404, data: { error: 'Address not found' } };
             }
@@ -260,7 +260,7 @@ export async function shippingLabelsRouter(ctx) {
             });
 
             if (body.is_default) {
-                query.run('UPDATE return_addresses SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE return_addresses SET is_default = 0 WHERE user_id = ?', [user.id]);
                 updates.push('is_default = 1');
             }
 
@@ -269,7 +269,7 @@ export async function shippingLabelsRouter(ctx) {
             }
 
             params.push(id);
-            query.run(`UPDATE return_addresses SET ${updates.join(', ')} WHERE id = ?`, params);
+            await query.run(`UPDATE return_addresses SET ${updates.join(', ')} WHERE id = ?`, params);
 
             return { status: 200, data: { message: 'Address updated' } };
         } catch (error) {
@@ -282,7 +282,7 @@ export async function shippingLabelsRouter(ctx) {
     const deleteAddrMatch = path.match(/^\/addresses\/([a-f0-9-]+)$/i);
     if (method === 'DELETE' && deleteAddrMatch) {
         try {
-            const result = query.run(
+            const result = await query.run(
                 'DELETE FROM return_addresses WHERE id = ? AND user_id = ?',
                 [deleteAddrMatch[1], user.id]
             );
@@ -305,7 +305,7 @@ export async function shippingLabelsRouter(ctx) {
     // GET /api/shipping-labels/batches - List batches
     if (method === 'GET' && path === '/batches') {
         try {
-            const batches = query.all(
+            const batches = await query.all(
                 'SELECT * FROM label_batches WHERE user_id = ? ORDER BY created_at DESC LIMIT 50',
                 [user.id]
             );
@@ -328,14 +328,14 @@ export async function shippingLabelsRouter(ctx) {
 
             const id = uuidv4();
 
-            query.run(`
+            await query.run(`
                 INSERT INTO label_batches (id, user_id, name, total_labels)
                 VALUES (?, ?, ?, ?)
             `, [id, user.id, name || `Batch ${new Date().toLocaleDateString()}`, label_ids.length]);
 
             // Associate labels with batch
             for (const labelId of label_ids) {
-                query.run(
+                await query.run(
                     'UPDATE shipping_labels SET batch_id = ? WHERE id = ? AND user_id = ?',
                     [id, labelId, user.id]
                 );
@@ -354,7 +354,7 @@ export async function shippingLabelsRouter(ctx) {
       try {
         const batchId = processBatchMatch[1];
 
-        const batch = query.get(
+        const batch = await query.get(
             'SELECT * FROM label_batches WHERE id = ? AND user_id = ?',
             [batchId, user.id]
         );
@@ -363,12 +363,12 @@ export async function shippingLabelsRouter(ctx) {
             return { status: 404, data: { error: 'Batch not found' } };
         }
 
-        query.run(
+        await query.run(
             "UPDATE label_batches SET status = 'processing' WHERE id = ?",
             [batchId]
         );
 
-        const labels = query.all(
+        const labels = await query.all(
             "SELECT * FROM shipping_labels WHERE batch_id = ? AND user_id = ? AND status = 'draft'",
             [batchId, user.id]
         );
@@ -381,7 +381,7 @@ export async function shippingLabelsRouter(ctx) {
             try {
                 // Purchase label via Shippo if configured, else mark as purchased locally
                 const shippoKey = process.env.SHIPPO_API_KEY;
-                const rateRecord = label.rate_id ? query.get('SELECT * FROM shipping_rates WHERE rate_id = ?', [label.rate_id]) : null;
+                const rateRecord = label.rate_id ? await query.get('SELECT * FROM shipping_rates WHERE rate_id = ?', [label.rate_id]) : null;
                 let postage = label.postage_cost || 0;
 
                 if (shippoKey && rateRecord?.rate_id) {
@@ -398,12 +398,12 @@ export async function shippingLabelsRouter(ctx) {
                     const txn = await purchaseRes.json();
                     if (txn.status !== 'SUCCESS') throw new Error('Shippo transaction status: ' + txn.status);
                     postage = parseFloat(txn.rate?.amount || postage);
-                    query.run(
+                    await query.run(
                         "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, tracking_number = ?, label_url = ?, total_cost = ? WHERE id = ?",
                         [txn.tracking_number || null, txn.label_url || null, postage, label.id]
                     );
                 } else {
-                    query.run(
+                    await query.run(
                         "UPDATE shipping_labels SET status = 'purchased', purchased_at = CURRENT_TIMESTAMP, total_cost = COALESCE(postage_cost, 0) + COALESCE(insurance_cost, 0) WHERE id = ?",
                         [label.id]
                     );
@@ -412,7 +412,7 @@ export async function shippingLabelsRouter(ctx) {
                 totalPostage += postage;
                 completed++;
             } catch (error) {
-                query.run(
+                await query.run(
                     "UPDATE shipping_labels SET status = 'draft' WHERE id = ?",
                     [label.id]
                 );
@@ -422,7 +422,7 @@ export async function shippingLabelsRouter(ctx) {
 
         const finalStatus = failed === labels.length ? 'failed' : (failed > 0 ? 'partial' : 'completed');
 
-        query.run(`
+        await query.run(`
             UPDATE label_batches
             SET status = ?, completed_labels = ?, failed_labels = ?, total_postage = ?, completed_at = CURRENT_TIMESTAMP
             WHERE id = ?
@@ -527,8 +527,8 @@ export async function shippingLabelsRouter(ctx) {
                 const carrier = (r.provider || '').toLowerCase();
                 const service = (r.servicelevel && r.servicelevel.name) || '';
 
-                query.run(
-                    "INSERT INTO shipping_rates (id, user_id, carrier, service, rate, delivery_days, rate_id, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', '+1 hour'))",
+                await query.run(
+                    "INSERT INTO shipping_rates (id, user_id, carrier, service, rate, delivery_days, rate_id, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW() + INTERVAL '1 hour')",
                     [rateId, user.id, carrier, service, rate, days, r.object_id]
                 );
 
@@ -570,9 +570,9 @@ export async function shippingLabelsRouter(ctx) {
 
             let printed = 0;
             for (const labelId of label_ids) {
-                const result = query.run(`
+                const result = await query.run(`
                     UPDATE shipping_labels
-                    SET printed_at = datetime('now'), label_format = ?, status = CASE WHEN status = 'purchased' THEN 'printed' ELSE status END
+                    SET printed_at = NOW(), label_format = ?, status = CASE WHEN status = 'purchased' THEN 'printed' ELSE status END
                     WHERE id = ? AND user_id = ?
                 `, [format, labelId, user.id]);
                 if (result.changes > 0) printed++;
@@ -603,7 +603,7 @@ export async function shippingLabelsRouter(ctx) {
 
             const ids = typeof label_ids === 'string' ? label_ids.split(',') : label_ids;
             const placeholders = ids.map(() => '?').join(',');
-            const labels = query.all(
+            const labels = await query.all(
                 `SELECT id, label_url, label_data, carrier, tracking_number FROM shipping_labels WHERE id IN (${placeholders}) AND user_id = ?`,
                 [...ids, user.id]
             );
@@ -633,7 +633,7 @@ export async function shippingLabelsRouter(ctx) {
             }
 
             const placeholders = label_ids.map(() => '?').join(',');
-            const labels = query.all(`
+            const labels = await query.all(`
                 SELECT id, to_name, to_company, to_street1, to_street2, to_city, to_state, to_zip, to_country,
                        from_name, from_company, from_street1, from_city, from_state, from_zip,
                        carrier, service_type, tracking_number, weight_oz, total_cost, label_url, label_data,
@@ -698,9 +698,9 @@ export async function shippingLabelsRouter(ctx) {
 
             // Mark labels as part of a batch PDF
             const batchId = `pdf-${Date.now()}`;
-            query.run(`
+            await query.run(`
                 UPDATE shipping_labels
-                SET batch_id = ?, updated_at = datetime('now')
+                SET batch_id = ?, updated_at = NOW()
                 WHERE id IN (${placeholders}) AND user_id = ?
             `, [batchId, ...label_ids, user.id]);
 
@@ -726,27 +726,27 @@ export async function shippingLabelsRouter(ctx) {
 
         try {
             const stats = {
-                total_labels: query.get(
+                total_labels: await query.get(
                     'SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ?',
                     [user.id, dateStart, dateEnd + 'T23:59:59']
                 )?.count || 0,
-                printed_labels: query.get(
+                printed_labels: await query.get(
                     'SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND printed_at IS NOT NULL AND created_at BETWEEN ? AND ?',
                     [user.id, dateStart, dateEnd + 'T23:59:59']
                 )?.count || 0,
-                shipped_labels: query.get(
+                shipped_labels: await query.get(
                     "SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND status = 'shipped' AND created_at BETWEEN ? AND ?",
                     [user.id, dateStart, dateEnd + 'T23:59:59']
                 )?.count || 0,
-                total_postage: query.get(
+                total_postage: await query.get(
                     'SELECT SUM(total_cost) as total FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ?',
                     [user.id, dateStart, dateEnd + 'T23:59:59']
                 )?.total || 0,
-                by_carrier: query.all(
+                by_carrier: await query.all(
                     'SELECT carrier, COUNT(*) as count, SUM(total_cost) as cost FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ? GROUP BY carrier',
                     [user.id, dateStart, dateEnd + 'T23:59:59']
                 ),
-                by_status: query.all(
+                by_status: await query.all(
                     'SELECT status, COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ? GROUP BY status',
                     [user.id, dateStart, dateEnd + 'T23:59:59']
                 )

@@ -73,7 +73,7 @@ const featureFlags = {
     // Load flags from database
     async loadFlags() {
         try {
-            const dbFlags = query.all('SELECT * FROM feature_flags WHERE is_active = 1') || [];
+            const dbFlags = await query.all('SELECT * FROM feature_flags WHERE is_active = 1') || [];
 
             for (const flag of dbFlags) {
                 flagsCache[flag.name] = {
@@ -176,16 +176,16 @@ const featureFlags = {
 
         // Persist to database
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO feature_flags (name, enabled, rollout_percentage, description, target_users, target_tiers, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, NOW())
                 ON CONFLICT(name) DO UPDATE SET
                     enabled = excluded.enabled,
                     rollout_percentage = excluded.rollout_percentage,
                     description = excluded.description,
                     target_users = excluded.target_users,
                     target_tiers = excluded.target_tiers,
-                    updated_at = datetime('now')
+                    updated_at = NOW()
             `, [
                 name,
                 config.enabled ? 1 : 0,
@@ -202,9 +202,9 @@ const featureFlags = {
     // Track feature usage for analytics
     trackUsage(flagName, user = null) {
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO feature_flag_usage (flag_name, user_id, timestamp)
-                VALUES (?, ?, datetime('now'))
+                VALUES (?, ?, NOW())
             `, [flagName, user?.id || null]);
         } catch (error) {
             // Non-critical, ignore
@@ -214,16 +214,16 @@ const featureFlags = {
     // Get usage statistics (admin)
     getUsageStats(flagName, days = 30) {
         try {
-            return query.all(`
+            return await query.all(`
                 SELECT
                     flag_name,
                     COUNT(*) as total_uses,
                     COUNT(DISTINCT user_id) as unique_users,
-                    DATE(timestamp) as date
+                    timestamp::date as date
                 FROM feature_flag_usage
                 WHERE flag_name = ?
-                AND timestamp > datetime('now', '-' || ? || ' days')
-                GROUP BY DATE(timestamp)
+                AND timestamp > NOW() - (?::text || ' days')::interval
+                GROUP BY timestamp::date
                 ORDER BY date DESC
             `, [flagName, days]);
         } catch (error) {
@@ -246,9 +246,9 @@ const abTesting = {
     // Track conversion
     trackConversion(experimentName, variant, user = null, value = 1) {
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO ab_test_conversions (experiment, variant, user_id, value, timestamp)
-                VALUES (?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, NOW())
             `, [experimentName, variant, user?.id || null, value]);
         } catch (error) {
             // Non-critical
@@ -258,7 +258,7 @@ const abTesting = {
     // Get experiment results
     getResults(experimentName) {
         try {
-            return query.all(`
+            return await query.all(`
                 SELECT
                     variant,
                     COUNT(*) as conversions,

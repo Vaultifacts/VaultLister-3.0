@@ -190,25 +190,25 @@ const CANNED_RESPONSES = {
  */
 function getUserStats(userId) {
     try {
-        const inv = query.get(
+        const inv = await query.get(
             `SELECT COUNT(*) as total,
                     SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
                     SUM(CASE WHEN status = 'sold' THEN 1 ELSE 0 END) as sold
              FROM inventory WHERE user_id = ? AND deleted_at IS NULL`,
             [userId]
         );
-        const sales = query.get(
+        const sales = await query.get(
             `SELECT COUNT(*) as count, ROUND(COALESCE(SUM(net_profit), 0), 2) as profit
-             FROM sales WHERE user_id = ? AND created_at > datetime('now', '-30 days')`,
+             FROM sales WHERE user_id = ? AND created_at > NOW() - INTERVAL '30 days'`,
             [userId]
         );
-        const platformCounts = query.all(
+        const platformCounts = await query.all(
             `SELECT platform, COUNT(*) as c FROM listings
              WHERE user_id = ? AND deleted_at IS NULL AND status != 'ended'
              GROUP BY platform ORDER BY c DESC LIMIT 5`,
             [userId]
         );
-        const connectedShops = query.all(
+        const connectedShops = await query.all(
             `SELECT platform, platform_username FROM shops
              WHERE user_id = ? AND is_connected = 1
              ORDER BY platform`,

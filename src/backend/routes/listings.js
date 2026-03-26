@@ -45,19 +45,19 @@ export async function listingsRouter(ctx) {
             const params = [user.id];
 
             if (search) {
-                sql += ` AND name LIKE ? ESCAPE '\\'`;
+                sql += ` AND name ILIKE ? ESCAPE '\\'`;
                 params.push(`%${escapeLike(search)}%`);
             }
 
             // Get total count
             const countSql = sql.replace('SELECT *', 'SELECT COUNT(*) as count');
-            const countResult = query.get(countSql, params);
+            const countResult = await query.get(countSql, params);
             const total = countResult?.count || 0;
 
             sql += ' ORDER BY name LIMIT ? OFFSET ?';
             params.push(limitNum, offsetNum);
 
-            const folders = query.all(sql, params);
+            const folders = await query.all(sql, params);
 
             return {
                 status: 200,
@@ -102,12 +102,12 @@ export async function listingsRouter(ctx) {
         try {
             const id = uuidv4();
 
-            query.run(
+            await query.run(
                 `INSERT INTO listings_folders (id, user_id, name, color, icon) VALUES (?, ?, ?, ?, ?)`,
                 [id, user.id, name.trim(), color || '#6366f1', icon || 'folder']
             );
 
-            const folder = query.get('SELECT * FROM listings_folders WHERE id = ?', [id]);
+            const folder = await query.get('SELECT * FROM listings_folders WHERE id = ?', [id]);
 
             return { status: 201, data: folder };
         } catch (error) {
@@ -120,7 +120,7 @@ export async function listingsRouter(ctx) {
     if (method === 'PATCH' && path.match(/^\/folders\/[a-f0-9-]+$/)) {
         const folderId = path.split('/')[2];
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT * FROM listings_folders WHERE id = ? AND user_id = ?',
             [folderId, user.id]
         );
@@ -160,13 +160,13 @@ export async function listingsRouter(ctx) {
 
         if (updates.length > 0) {
             values.push(folderId, user.id);
-            query.run(
+            await query.run(
                 `UPDATE listings_folders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 values
             );
         }
 
-        const folder = query.get('SELECT * FROM listings_folders WHERE id = ?', [folderId]);
+        const folder = await query.get('SELECT * FROM listings_folders WHERE id = ?', [folderId]);
 
         return { status: 200, data: folder };
     }
@@ -175,7 +175,7 @@ export async function listingsRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/folders\/[a-f0-9-]+$/)) {
         const folderId = path.split('/')[2];
 
-        const existing = query.get(
+        const existing = await query.get(
             'SELECT * FROM listings_folders WHERE id = ? AND user_id = ?',
             [folderId, user.id]
         );
@@ -186,7 +186,7 @@ export async function listingsRouter(ctx) {
 
         // Delete folder (listings will have folder_id set to NULL due to ON DELETE SET NULL)
         // SECURITY: Include user_id in DELETE to prevent TOCTOU race
-        query.run('DELETE FROM listings_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
+        await query.run('DELETE FROM listings_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
 
         return { status: 200, data: { message: 'Folder deleted' } };
     }
@@ -227,7 +227,7 @@ export async function listingsRouter(ctx) {
         const cappedOffset = Math.max(parseInt(offset) || 0, 0);
         params.push(cappedLimit, cappedOffset);
 
-        const listings = query.all(sql, params);
+        const listings = await query.all(sql, params);
 
         // Parse JSON fields safely
         listings.forEach(listing => {
@@ -264,7 +264,7 @@ export async function listingsRouter(ctx) {
             }
         }
 
-        const total = query.get(countSql, countParams)?.count || 0;
+        const total = await query.get(countSql, countParams)?.count || 0;
 
         return { status: 200, data: { listings, total } };
     }
@@ -272,7 +272,7 @@ export async function listingsRouter(ctx) {
     // GET /api/listings/:id - Get single listing
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+$/)) {
         const id = path.slice(1);
-        const listing = query.get(`
+        const listing = await query.get(`
             SELECT l.*, i.* FROM listings l
             LEFT JOIN inventory i ON l.inventory_id = i.id
             WHERE l.id = ? AND l.user_id = ?
@@ -304,7 +304,7 @@ export async function listingsRouter(ctx) {
         }
 
         // Check inventory item exists
-        const item = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
+        const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
         if (!item) {
             return { status: 404, data: { error: 'Inventory item not found' } };
         }
@@ -313,7 +313,7 @@ export async function listingsRouter(ctx) {
 
         // Use atomic insert to prevent race condition - rely on unique constraint
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO listings (
                     id, inventory_id, user_id, platform, title, description,
                     price, original_price, shipping_price, category_path, images,
@@ -328,7 +328,7 @@ export async function listingsRouter(ctx) {
         } catch (error) {
             // If unique constraint violation, listing already exists
             if (error.message && error.message.includes('UNIQUE constraint')) {
-                const existingListing = query.get(
+                const existingListing = await query.get(
                     'SELECT id FROM listings WHERE inventory_id = ? AND platform = ? AND user_id = ?',
                     [inventoryId, platform, user.id]
                 );
@@ -337,7 +337,7 @@ export async function listingsRouter(ctx) {
             throw error;
         }
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
         listing.images = safeJsonParse(listing.images, []);
         listing.platform_specific_data = safeJsonParse(listing.platform_specific_data, {});
 
@@ -362,7 +362,7 @@ export async function listingsRouter(ctx) {
 
         // Batch-fetch all inventory items in one query instead of N+1
         const placeholders = inventoryIds.map(() => '?').join(',');
-        const allItems = query.all(
+        const allItems = await query.all(
             `SELECT * FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`,
             [...inventoryIds, user.id]
         );
@@ -423,7 +423,7 @@ export async function listingsRouter(ctx) {
                     }
 
                     // Use atomic insert to prevent race condition - rely on unique constraint
-                    query.run(`
+                    await query.run(`
                         INSERT INTO listings (
                             id, inventory_id, user_id, platform, title, description,
                             price, images, status
@@ -437,7 +437,7 @@ export async function listingsRouter(ctx) {
                 } catch (error) {
                     // If unique constraint violation, listing already exists - skip instead of error
                     if (error.message && error.message.includes('UNIQUE constraint')) {
-                        const existing = query.get(
+                        const existing = await query.get(
                             'SELECT id FROM listings WHERE inventory_id = ? AND platform = ? AND user_id = ?',
                             [invId, platform, user.id]
                         );
@@ -457,7 +457,7 @@ export async function listingsRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/[a-f0-9-]+$/)) {
         const id = path.slice(1);
 
-        const existing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const existing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Listing not found' } };
         }
@@ -519,13 +519,13 @@ export async function listingsRouter(ctx) {
 
         if (updates.length > 0) {
             values.push(id);
-            query.run(
+            await query.run(
                 `UPDATE listings SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
                 [...values, user.id]
             );
         }
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
         listing.images = safeJsonParse(listing.images, []);
         listing.platform_specific_data = safeJsonParse(listing.platform_specific_data, {});
 
@@ -536,19 +536,19 @@ export async function listingsRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/[a-f0-9-]+$/)) {
         const id = path.slice(1);
 
-        const existing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const existing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
             return { status: 404, data: { error: 'Listing not found' } };
         }
 
         // Check for affected offers before deleting
-        const affectedOffers = query.get(
+        const affectedOffers = await query.get(
             'SELECT COUNT(*) as count FROM offers WHERE listing_id = ? AND status = ?',
             [id, 'pending']
         )?.count || 0;
 
         // SECURITY: Include user_id in DELETE to prevent TOCTOU race
-        query.run('DELETE FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        await query.run('DELETE FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
 
         const message = affectedOffers > 0
             ? `Listing deleted. ${affectedOffers} pending offer${affectedOffers > 1 ? 's were' : ' was'} also removed.`
@@ -560,20 +560,20 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/share$/)) {
         const id = path.split('/')[1];
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
             return { status: 404, data: { error: 'Listing not found' } };
         }
 
         // Queue share task
         const taskId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO tasks (id, user_id, type, payload, status)
             VALUES (?, ?, ?, ?, ?)
         `, [taskId, user.id, 'share_listing', JSON.stringify({ listingId: id, platform: listing.platform }), 'pending']);
 
         // Update last shared
-        query.run('UPDATE listings SET last_shared_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [id, user.id]);
+        await query.run('UPDATE listings SET last_shared_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [id, user.id]);
 
         return { status: 200, data: { message: 'Share queued', taskId } };
     }
@@ -581,19 +581,19 @@ export async function listingsRouter(ctx) {
     // GET /api/listings/stats - Get listing statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            total: query.get('SELECT COUNT(*) as count FROM listings WHERE user_id = ?', [user.id])?.count || 0,
-            byPlatform: query.all(`
+            total: await query.get('SELECT COUNT(*) as count FROM listings WHERE user_id = ?', [user.id])?.count || 0,
+            byPlatform: await query.all(`
                 SELECT platform, COUNT(*) as count, SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active
                 FROM listings WHERE user_id = ?
                 GROUP BY platform
             `, [user.id]),
-            byStatus: query.all(`
+            byStatus: await query.all(`
                 SELECT status, COUNT(*) as count
                 FROM listings WHERE user_id = ?
                 GROUP BY status
             `, [user.id]),
-            totalViews: query.get('SELECT SUM(views) as total FROM listings WHERE user_id = ?', [user.id])?.total || 0,
-            totalLikes: query.get('SELECT SUM(likes) as total FROM listings WHERE user_id = ?', [user.id])?.total || 0
+            totalViews: await query.get('SELECT SUM(views) as total FROM listings WHERE user_id = ?', [user.id])?.total || 0,
+            totalLikes: await query.get('SELECT SUM(likes) as total FROM listings WHERE user_id = ?', [user.id])?.total || 0
         };
 
         return { status: 200, data: { stats } };
@@ -619,14 +619,14 @@ export async function listingsRouter(ctx) {
             }
 
             // Check inventory item exists
-            const item = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventory_id, user.id]);
+            const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventory_id, user.id]);
             if (!item) {
                 errors.push({ listing, error: 'Inventory item not found' });
                 continue;
             }
 
             // Check if listing already exists for this platform
-            const existingListing = query.get(
+            const existingListing = await query.get(
                 'SELECT id FROM listings WHERE inventory_id = ? AND platform = ? AND user_id = ?',
                 [inventory_id, platform, user.id]
             );
@@ -634,7 +634,7 @@ export async function listingsRouter(ctx) {
             if (existingListing) {
                 // Update existing listing
                 try {
-                    query.run(`
+                    await query.run(`
                         UPDATE listings
                         SET title = ?, description = ?, price = ?, status = 'active', updated_at = CURRENT_TIMESTAMP
                         WHERE id = ? AND user_id = ?
@@ -654,7 +654,7 @@ export async function listingsRouter(ctx) {
                 const images = safeJsonParse(item.images, []);
 
                 try {
-                    query.run(`
+                    await query.run(`
                         INSERT INTO listings (
                             id, inventory_id, user_id, platform, title, description, price,
                             images, status, listed_at, created_at, updated_at
@@ -699,9 +699,9 @@ export async function listingsRouter(ctx) {
             WHERE l.user_id = ?
               AND l.status = 'active'
               AND (
-                  l.last_relisted_at IS NULL AND julianday('now') - julianday(COALESCE(l.listed_at, l.created_at)) >= ?
+                  l.last_relisted_at IS NULL AND EXTRACT(EPOCH FROM (NOW() - COALESCE(l.listed_at, l.created_at))) / 86400 >= ?
                   OR
-                  l.last_relisted_at IS NOT NULL AND julianday('now') - julianday(l.last_relisted_at) >= ?
+                  l.last_relisted_at IS NOT NULL AND EXTRACT(EPOCH FROM (NOW() - l.last_relisted_at)) / 86400 >= ?
               )
         `;
         const params = [user.id, parseInt(daysThreshold), parseInt(daysThreshold)];
@@ -713,7 +713,7 @@ export async function listingsRouter(ctx) {
 
         sql += ' ORDER BY COALESCE(l.last_relisted_at, l.listed_at, l.created_at) ASC LIMIT 200';
 
-        const staleListings = query.all(sql, params);
+        const staleListings = await query.all(sql, params);
 
         staleListings.forEach(listing => {
             listing.images = safeJsonParse(listing.images, []);
@@ -731,7 +731,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/delist$/)) {
         const id = path.split('/')[1];
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
             return { status: 404, data: { error: 'Listing not found' } };
         }
@@ -741,7 +741,7 @@ export async function listingsRouter(ctx) {
 
         // For Facebook Marketplace, use "mark as sold" instead
         if (listing.platform === 'facebook') {
-            query.run(`
+            await query.run(`
                 UPDATE listings
                 SET status = 'ended', marked_as_sold = 1, last_delisted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ?
@@ -749,19 +749,19 @@ export async function listingsRouter(ctx) {
 
             // Log the action as "mark_sold"
             const historyId = uuidv4();
-            query.run(`
+            await query.run(`
                 INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
                 VALUES (?, ?, ?, ?, 'mark_sold', ?, ?, 'ended')
             `, [historyId, id, user.id, listing.platform, reason, previousStatus]);
 
-            const updated = query.get('SELECT * FROM listings WHERE id = ?', [id]);
+            const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
             updated.images = safeJsonParse(updated.images, []);
 
             return { status: 200, data: { listing: updated, action: 'mark_sold', message: 'Listing marked as sold on Facebook Marketplace' } };
         }
 
         // For other platforms, delist normally
-        query.run(`
+        await query.run(`
             UPDATE listings
             SET status = 'ended', last_delisted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND user_id = ?
@@ -769,12 +769,12 @@ export async function listingsRouter(ctx) {
 
         // Log the action
         const historyId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
             VALUES (?, ?, ?, ?, 'delist', ?, ?, 'ended')
         `, [historyId, id, user.id, listing.platform, reason, previousStatus]);
 
-        const updated = query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
         updated.images = safeJsonParse(updated.images, []);
 
         return { status: 200, data: { listing: updated, action: 'delist', message: 'Listing delisted successfully' } };
@@ -784,7 +784,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/relist$/)) {
         const id = path.split('/')[1];
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
             return { status: 404, data: { error: 'Listing not found' } };
         }
@@ -798,7 +798,7 @@ export async function listingsRouter(ctx) {
         const reason = body.reason || 'manual';
 
         // Relist the item
-        query.run(`
+        await query.run(`
             UPDATE listings
             SET status = 'active', last_relisted_at = CURRENT_TIMESTAMP, listed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND user_id = ?
@@ -806,12 +806,12 @@ export async function listingsRouter(ctx) {
 
         // Log the action
         const historyId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
             VALUES (?, ?, ?, ?, 'relist', ?, ?, 'active')
         `, [historyId, id, user.id, listing.platform, reason, previousStatus]);
 
-        const updated = query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
         updated.images = safeJsonParse(updated.images, []);
 
         return { status: 200, data: { listing: updated, action: 'relist', message: 'Listing relisted successfully' } };
@@ -821,7 +821,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/refresh$/)) {
         const id = path.split('/')[1];
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
             return { status: 404, data: { error: 'Listing not found' } };
         }
@@ -835,7 +835,7 @@ export async function listingsRouter(ctx) {
         const reason = body.reason || 'refresh';
 
         // Refresh = delist + relist
-        query.run(`
+        await query.run(`
             UPDATE listings
             SET status = 'active',
                 last_delisted_at = CURRENT_TIMESTAMP,
@@ -847,18 +847,18 @@ export async function listingsRouter(ctx) {
 
         // Log both actions
         const delistHistoryId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
             VALUES (?, ?, ?, ?, 'delist', ?, ?, 'ended')
         `, [delistHistoryId, id, user.id, listing.platform, reason, previousStatus]);
 
         const relistHistoryId = uuidv4();
-        query.run(`
+        await query.run(`
             INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
             VALUES (?, ?, ?, ?, 'relist', ?, 'ended', 'active')
         `, [relistHistoryId, id, user.id, listing.platform, reason]);
 
-        const updated = query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
         updated.images = safeJsonParse(updated.images, []);
 
         return { status: 200, data: { listing: updated, action: 'refresh', message: 'Listing refreshed (delisted and relisted)' } };
@@ -879,7 +879,7 @@ export async function listingsRouter(ctx) {
         const results = { refreshed: [], skipped: [], errors: [] };
 
         for (const listingId of listingIds) {
-            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
 
             if (!listing) {
                 results.errors.push({ id: listingId, error: 'Listing not found' });
@@ -896,7 +896,7 @@ export async function listingsRouter(ctx) {
 
             try {
                 // Refresh the listing
-                query.run(`
+                await query.run(`
                     UPDATE listings
                     SET status = 'active',
                         last_delisted_at = CURRENT_TIMESTAMP,
@@ -908,14 +908,14 @@ export async function listingsRouter(ctx) {
 
                 // Log delist
                 const delistHistoryId = uuidv4();
-                query.run(`
+                await query.run(`
                     INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
                     VALUES (?, ?, ?, ?, 'delist', ?, ?, 'ended')
                 `, [delistHistoryId, listingId, user.id, listing.platform, reason, previousStatus]);
 
                 // Log relist
                 const relistHistoryId = uuidv4();
-                query.run(`
+                await query.run(`
                     INSERT INTO listing_refresh_history (id, listing_id, user_id, platform, action, reason, previous_status, new_status)
                     VALUES (?, ?, ?, ?, 'relist', ?, 'ended', 'active')
                 `, [relistHistoryId, listingId, user.id, listing.platform, reason]);
@@ -943,12 +943,12 @@ export async function listingsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+\/refresh-history$/)) {
         const id = path.split('/')[1];
 
-        const listing = query.get('SELECT id FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT id FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
             return { status: 404, data: { error: 'Listing not found' } };
         }
 
-        const history = query.all(`
+        const history = await query.all(`
             SELECT * FROM listing_refresh_history
             WHERE listing_id = ?
             ORDER BY created_at DESC
@@ -962,7 +962,7 @@ export async function listingsRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/[a-f0-9-]+\/staleness-settings$/)) {
         const id = path.split('/')[1];
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
             return { status: 404, data: { error: 'Listing not found' } };
         }
@@ -985,10 +985,10 @@ export async function listingsRouter(ctx) {
         if (updates.length > 0) {
             values.push(id);
             values.push(user.id);
-            query.run(`UPDATE listings SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, values);
+            await query.run(`UPDATE listings SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`, values);
         }
 
-        const updated = query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
         updated.images = safeJsonParse(updated.images, []);
 
         return { status: 200, data: { listing: updated } };
@@ -998,20 +998,20 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/archive$/)) {
         const id = path.split('/')[1];
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
             return { status: 404, data: { error: 'Listing not found' } };
         }
 
         // Try to archive with 'archived' status first
         try {
-            query.run(`
+            await query.run(`
                 UPDATE listings
                 SET status = 'archived', deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ?
             `, [id, user.id]);
 
-            const updated = query.get('SELECT * FROM listings WHERE id = ?', [id]);
+            const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
             updated.images = safeJsonParse(updated.images, []);
             updated.platform_specific_data = safeJsonParse(updated.platform_specific_data, {});
 
@@ -1022,14 +1022,14 @@ export async function listingsRouter(ctx) {
                 logger.warn(`[Listings] Archive failed for listing ${id}, using 'ended' status fallback. Migration 035 may not be applied.`);
 
                 try {
-                    query.run(`
+                    await query.run(`
                         UPDATE listings
                         SET status = 'ended', deleted_at = CURRENT_TIMESTAMP, notes = COALESCE(notes || ' | ', '') || '[ARCHIVED] User archived this listing',
                             updated_at = CURRENT_TIMESTAMP
                         WHERE id = ? AND user_id = ?
                     `, [id, user.id]);
 
-                    const updated = query.get('SELECT * FROM listings WHERE id = ?', [id]);
+                    const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
                     updated.images = safeJsonParse(updated.images, []);
                     updated.platform_specific_data = safeJsonParse(updated.platform_specific_data, {});
 
@@ -1056,7 +1056,7 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/unarchive$/)) {
         const id = path.split('/')[1];
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
             return { status: 404, data: { error: 'Listing not found' } };
         }
@@ -1076,13 +1076,13 @@ export async function listingsRouter(ctx) {
                 }
             }
 
-            query.run(`
+            await query.run(`
                 UPDATE listings
                 SET status = 'draft', deleted_at = NULL, notes = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ? AND user_id = ?
             `, [cleanedNotes || null, id, user.id]);
 
-            const updated = query.get('SELECT * FROM listings WHERE id = ?', [id]);
+            const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
             updated.images = safeJsonParse(updated.images, []);
             updated.platform_specific_data = safeJsonParse(updated.platform_specific_data, {});
 
@@ -1102,7 +1102,7 @@ export async function listingsRouter(ctx) {
         const id = path.split('/')[1];
         const { drop_amount, new_price, scheduled_date, recurring, max_drops, floor_price } = body;
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
         if (!drop_amount || drop_amount <= 0) {
@@ -1129,14 +1129,14 @@ export async function listingsRouter(ctx) {
                 created_at: new Date().toISOString()
             };
 
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_specific_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
                 [JSON.stringify(platformData), id, user.id]
             );
 
             // If scheduled for now, apply immediately
             if (scheduled_date && new Date(scheduled_date) <= new Date()) {
-                query.run(
+                await query.run(
                     'UPDATE listings SET price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
                     [new_price, id, user.id]
                 );
@@ -1157,7 +1157,7 @@ export async function listingsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+\/competitor-pricing$/)) {
         const id = path.split('/')[1];
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
         try {
@@ -1165,7 +1165,7 @@ export async function listingsRouter(ctx) {
             const category = listing.category || '';
             const brand = listing.brand || '';
 
-            const similarSales = query.all(`
+            const similarSales = await query.all(`
                 SELECT s.sale_price, s.created_at, i.title, i.brand, i.category, i.condition
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
@@ -1211,7 +1211,7 @@ export async function listingsRouter(ctx) {
     if (method === 'GET' && path.match(/^\/[a-f0-9-]+\/time-to-sell$/)) {
         const id = path.split('/')[1];
 
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
         try {
@@ -1220,16 +1220,16 @@ export async function listingsRouter(ctx) {
             const price = parseFloat(listing.price) || 0;
 
             // Get historical time-to-sell for similar items
-            const historicalData = query.all(`
+            const historicalData = await query.all(`
                 SELECT
-                    julianday(s.created_at) - julianday(i.listed_at) as days_to_sell,
+                    EXTRACT(EPOCH FROM (s.created_at - i.listed_at)) / 86400 as days_to_sell,
                     s.sale_price, i.category, i.brand, i.condition
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
                 WHERE s.user_id = ?
                 AND i.listed_at IS NOT NULL
                 AND (i.category = ? OR i.brand = ?)
-                AND julianday(s.created_at) - julianday(i.listed_at) > 0
+                AND EXTRACT(EPOCH FROM (s.created_at - i.listed_at)) / 86400 > 0
                 ORDER BY s.created_at DESC
                 LIMIT 20
             `, [user.id, category, brand]);
@@ -1269,13 +1269,13 @@ export async function listingsRouter(ctx) {
         const listingId = path.slice(1).replace('/publish-ebay', '');
 
         try {
-            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
-            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
 
-            const shop = query.get(
+            const shop = await query.get(
                 "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = 1",
                 [user.id]
             );
@@ -1285,7 +1285,7 @@ export async function listingsRouter(ctx) {
             const result = await publishListingToEbay(shop, listing, inventory);
 
             // Update listing record with eBay listing ID and URL
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
@@ -1311,13 +1311,13 @@ export async function listingsRouter(ctx) {
         const listingId = path.slice(1).replace('/publish-etsy', '');
 
         try {
-            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
-            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
 
-            const shop = query.get(
+            const shop = await query.get(
                 "SELECT * FROM shops WHERE user_id = ? AND platform = 'etsy' AND is_connected = 1",
                 [user.id]
             );
@@ -1326,7 +1326,7 @@ export async function listingsRouter(ctx) {
 
             const result = await publishListingToEtsy(shop, listing, inventory);
 
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
@@ -1350,15 +1350,15 @@ export async function listingsRouter(ctx) {
         const listingId = path.slice(1).replace('/publish-poshmark', '');
 
         try {
-            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
-            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
 
             const result = await publishListingToPoshmark(null, listing, inventory);
 
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
@@ -1380,11 +1380,11 @@ export async function listingsRouter(ctx) {
     // POST /api/listings/:id/publish — publish a listing to its platform
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish$/)) {
         const id = path.split('/')[1];
-        const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) return { status: 404, data: { error: 'Listing not found' } };
         if (listing.status === 'active') return { status: 400, data: { error: 'Listing is already active' } };
 
-        const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+        const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
         if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
 
         const publishers = {
@@ -1402,11 +1402,11 @@ export async function listingsRouter(ctx) {
         const publisher = publishers[listing.platform];
         if (!publisher) return { status: 400, data: { error: `Platform '${listing.platform}' does not support publish` } };
 
-        const shop = query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1', [user.id, listing.platform]) || null;
+        const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1', [user.id, listing.platform]) || null;
 
         try {
             const result = await publisher(shop, listing, inventory);
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), id, user.id]
             );
@@ -1445,15 +1445,15 @@ export async function listingsRouter(ctx) {
         const listingId = path.slice(1).replace('/publish-mercari', '');
 
         try {
-            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
-            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
 
             const result = await publishListingToMercari(null, listing, inventory);
 
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
@@ -1477,15 +1477,15 @@ export async function listingsRouter(ctx) {
         const listingId = path.slice(1).replace('/publish-depop', '');
 
         try {
-            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
-            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
 
             const result = await publishListingToDepop(null, listing, inventory);
 
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
@@ -1509,15 +1509,15 @@ export async function listingsRouter(ctx) {
         const listingId = path.slice(1).replace('/publish-grailed', '');
 
         try {
-            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
-            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
 
             const result = await publishListingToGrailed(null, listing, inventory);
 
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
@@ -1541,15 +1541,15 @@ export async function listingsRouter(ctx) {
         const listingId = path.slice(1).replace('/publish-facebook', '');
 
         try {
-            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
-            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
 
             const result = await publishListingToFacebook(null, listing, inventory);
 
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
@@ -1569,15 +1569,15 @@ export async function listingsRouter(ctx) {
         const listingId = path.slice(1).replace('/publish-whatnot', '');
 
         try {
-            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
-            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
 
             const result = await publishListingToWhatnot(null, listing, inventory);
 
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
@@ -1597,15 +1597,15 @@ export async function listingsRouter(ctx) {
         const listingId = path.slice(1).replace('/publish-shopify', '');
 
         try {
-            const listing = query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
             if (!listing) return { status: 404, data: { error: 'Listing not found' } };
 
-            const inventory = query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
+            const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
             if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
 
             const result = await publishListingToShopify(null, listing, inventory);
 
-            query.run(
+            await query.run(
                 'UPDATE listings SET platform_listing_id = ?, platform_url = ?, status = ?, updated_at = ? WHERE id = ? AND user_id = ?',
                 [result.listingId, result.listingUrl, 'active', new Date().toISOString(), listingId, user.id]
             );
