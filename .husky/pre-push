@@ -70,8 +70,27 @@ if [ -f "$BASELINE_FILE" ]; then
 fi
 
 echo "Running unit tests (named baseline: $(echo "$KNOWN_FAIL_NAMES" | grep -c . || echo 0) known failures)..."
+
+# PostgreSQL check: unit tests require a running PostgreSQL (database.js now uses postgres.js).
+# Skip unit test gate locally if DATABASE_URL is not set — CI always verifies with a real PG service.
+_DB_URL=""
+if [ -f .env ]; then
+    _DB_URL=$(grep "^DATABASE_URL=" .env 2>/dev/null | cut -d'=' -f2 || true)
+fi
+_DB_URL="${DATABASE_URL:-$_DB_URL}"
+if [ -z "$_DB_URL" ]; then
+    echo "WARNING: DATABASE_URL not set — skipping unit tests locally (PostgreSQL required)."
+    echo "  Unit tests will run in CI against a managed PostgreSQL service."
+    echo "  To run locally: set DATABASE_URL in .env and start PostgreSQL (docker-compose up postgres)."
+    _SKIP_UNIT_TESTS=1
+else
+    _SKIP_UNIT_TESTS=0
+fi
+
 PORT="${PORT:-3000}"
-if curl -s --ipv4 "http://localhost:${PORT}/api/health" > /dev/null 2>&1 || curl -s "http://127.0.0.1:${PORT}/api/health" > /dev/null 2>&1; then
+if [ "${_SKIP_UNIT_TESTS:-0}" -eq 1 ]; then
+    echo "Unit test gate skipped (no DATABASE_URL)."
+elif curl -s --ipv4 "http://localhost:${PORT}/api/health" > /dev/null 2>&1 || curl -s "http://127.0.0.1:${PORT}/api/health" > /dev/null 2>&1; then
     BUN_BIN=$(command -v bun 2>/dev/null || echo "/home/openclawuser/.bun/bin/bun")
     TEST_OUTPUT=$(DISABLE_CSRF=true DISABLE_RATE_LIMIT=true timeout 300 "$BUN_BIN" test src/tests/ 2>&1) || true
 
@@ -125,7 +144,8 @@ else
     echo "ERROR: Server not running on port ${PORT}. Cannot run tests."
     echo "Start the server with 'bun run dev:bg' then try the push again."
     exit 1
-fi
+fi # end server-running check
+fi # end _SKIP_UNIT_TESTS check
 
 # Notion API health check — block push if Notion errors detected
 NOTION_ERR_LOG=".notion-errors.log"
