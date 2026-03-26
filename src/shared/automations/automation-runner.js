@@ -1,10 +1,20 @@
 // Automation Runner - Orchestrates all automation tasks
+// Bot-based tasks (share, follow) are delegated to the Playwright worker via BullMQ.
 import { query } from '../../backend/db/database.js';
 import { v4 as uuidv4 } from 'uuid';
-import { PoshmarkBot, getPoshmarkBot, closePoshmarkBot } from './poshmark-bot.js';
+import { Queue } from 'bullmq';
 import { logger } from '../../backend/shared/logger.js';
 import { auditLog } from '../../backend/services/platformSync/platformAuditLog.js';
-import RATE_LIMITS from './rate-limits.js';
+
+// BullMQ queue for Playwright worker tasks (lazy-initialized)
+let _automationQueue = null;
+function getAutomationQueue() {
+    if (_automationQueue) return _automationQueue;
+    _automationQueue = new Queue('automation-jobs', {
+        connection: { url: process.env.REDIS_URL },
+    });
+    return _automationQueue;
+}
 
 // Platform-level mutex: prevents two automations running against the same platform simultaneously.
 // Maps platformName -> boolean (true = running).
@@ -18,7 +28,6 @@ export class AutomationRunner {
     constructor() {
         this.isRunning = false;
         this.currentTask = null;
-        this.bots = {};
     }
 
     /**
@@ -48,13 +57,7 @@ export class AutomationRunner {
     async stop() {
         this.isRunning = false;
         logger.automation('[Runner] Stopping automation runner...');
-
-        // Close all bots
-        for (const bot of Object.values(this.bots)) {
-            await bot.close();
-        }
-        this.bots = {};
-
+        if (_automationQueue) await _automationQueue.close();
         logger.automation('[Runner] Automation runner stopped');
     }
 
@@ -64,7 +67,7 @@ export class AutomationRunner {
     async processTasks() {
         const pendingTasks = await query.all(`
             SELECT * FROM tasks
-            WHERE status = 'pending' AND scheduled_at <= datetime('now')
+            WHERE status = 'pending' AND scheduled_at <= NOW()
             ORDER BY priority ASC, scheduled_at ASC
             LIMIT 10
         `);
@@ -109,17 +112,17 @@ export class AutomationRunner {
 
         try {
             switch (task.type) {
+                // Bot tasks — delegate to Playwright worker via BullMQ
                 case 'share_listing':
-                    result = await this.executeShareListing(task.user_id, payload);
-                    break;
-
                 case 'share_closet':
-                    result = await this.executeShareCloset(task.user_id, payload);
-                    break;
-
-                case 'follow_user':
-                    result = await this.executeFollowUser(task.user_id, payload);
-                    break;
+                case 'follow_user': {
+                    const queue = getAutomationQueue();
+                    await queue.add(task.type, { taskId: task.id, userId: task.user_id, type: task.type, payload });
+                    // Task remains 'processing'; worker updates status on completion
+                    this.currentTask = null;
+                    if (taskPlatform) this.releasePlatformLock(taskPlatform);
+                    return null;
+                }
 
                 case 'accept_offer':
                     result = await this.executeAcceptOffer(task.user_id, payload);
@@ -187,7 +190,7 @@ export class AutomationRunner {
         const rules = await query.all(`
             SELECT * FROM automation_rules
             WHERE is_enabled = 1
-            AND (next_run_at IS NULL OR next_run_at <= datetime('now'))
+            AND (next_run_at IS NULL OR next_run_at <= NOW())
         `);
 
         console.log(`[Runner] Found ${rules.length} rules to check`);
@@ -275,141 +278,7 @@ export class AutomationRunner {
         platformLocks.delete(platform);
     }
 
-    /**
-     * Get or create bot for a platform
-     */
-    async getBot(userId, platform) {
-        const key = `${userId}-${platform}`;
-
-        if (!this.bots[key]) {
-            // Get credentials from database
-            const shop = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
-                [userId, platform]
-            );
-
-            if (!shop) {
-                throw new Error(`No connected ${platform} account found`);
-            }
-
-            // Create bot instance
-            switch (platform) {
-                case 'poshmark':
-                    this.bots[key] = await getPoshmarkBot({ headless: true });
-                    if (shop.credentials) {
-                        const creds = JSON.parse(shop.credentials);
-                        await this.bots[key].login(creds.username, creds.password);
-                    }
-                    break;
-
-                case 'mercari': {
-                    const { getMercariBot } = await import('./mercari-bot.js');
-                    this.bots[key] = await getMercariBot({ headless: true });
-                    if (shop.credentials) {
-                        const creds = JSON.parse(shop.credentials);
-                        await this.bots[key].login(creds.username, creds.password);
-                    }
-                    break;
-                }
-
-                case 'depop': {
-                    const { getDepopBot } = await import('./depop-bot.js');
-                    this.bots[key] = await getDepopBot({ headless: true });
-                    if (shop.credentials) {
-                        const creds = JSON.parse(shop.credentials);
-                        await this.bots[key].login(creds.username, creds.password);
-                    }
-                    break;
-                }
-
-                case 'grailed': {
-                    const { getGrailedBot } = await import('./grailed-bot.js');
-                    this.bots[key] = await getGrailedBot({ headless: true });
-                    if (shop.credentials) {
-                        const creds = JSON.parse(shop.credentials);
-                        await this.bots[key].login(creds.username, creds.password);
-                    }
-                    break;
-                }
-
-                case 'facebook': {
-                    const { getFacebookBot } = await import('./facebook-bot.js');
-                    this.bots[key] = await getFacebookBot({ headless: true });
-                    if (shop.credentials) {
-                        const creds = JSON.parse(shop.credentials);
-                        await this.bots[key].login(creds.username, creds.password);
-                    }
-                    break;
-                }
-
-                case 'whatnot': {
-                    const { getWhatnotBot } = await import('./whatnot-bot.js');
-                    this.bots[key] = await getWhatnotBot({ headless: true });
-                    if (shop.credentials) {
-                        const creds = JSON.parse(shop.credentials);
-                        await this.bots[key].login(creds.username, creds.password);
-                    }
-                    break;
-                }
-
-                default:
-                    throw new Error(`Bot not implemented for platform: ${platform}`);
-            }
-        }
-
-        return this.bots[key];
-    }
-
     // Task execution methods
-
-    async executeShareListing(userId, payload) {
-        const { listingId, platform } = payload;
-
-        const listing = await query.get(
-            'SELECT * FROM listings WHERE id = ? AND user_id = ?',
-            [listingId, userId]
-        );
-
-        if (!listing) {
-            throw new Error('Listing not found');
-        }
-
-        const bot = await this.getBot(userId, platform || listing.platform);
-        const success = await bot.shareItem(listing.platform_url);
-
-        if (success) {
-            await query.run('UPDATE listings SET last_shared_at = CURRENT_TIMESTAMP, shares = shares + 1 WHERE id = ?', [listingId]);
-        }
-
-        return { success, listingId };
-    }
-
-    async executeShareCloset(userId, payload) {
-        const { platform, maxShares = 100 } = payload;
-
-        const shop = await query.get(
-            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
-            [userId, platform]
-        );
-
-        if (!shop) {
-            throw new Error('Shop not connected');
-        }
-
-        const bot = await this.getBot(userId, platform);
-        const shared = await bot.shareCloset(shop.platform_username, { maxShares });
-
-        return { success: true, shared };
-    }
-
-    async executeFollowUser(userId, payload) {
-        const { platform, username } = payload;
-
-        const bot = await this.getBot(userId, platform);
-        const success = await bot.followUser(username);
-
-        return { success, username };
-    }
 
     async executeAcceptOffer(userId, payload) {
         const { offerId, platform } = payload;
@@ -526,11 +395,14 @@ export class AutomationRunner {
                 break;
 
             case 'follow':
-                // Follow back followers
+                // Follow back followers — delegate to Playwright worker
                 if (actions.followBack) {
-                    const bot = await this.getBot(userId, rule.platform);
-                    const followed = await bot.followBackFollowers(conditions.maxFollows || 50);
-                    result.actions.push({ action: 'follow_back', count: followed });
+                    const queue = getAutomationQueue();
+                    await queue.add('follow_back', {
+                        userId, ruleId, platform: rule.platform,
+                        maxFollows: conditions.maxFollows || 50,
+                    });
+                    result.actions.push({ action: 'follow_back', queued: true });
                 }
                 break;
         }
@@ -556,7 +428,7 @@ export class AutomationRunner {
     /**
      * Log automation action
      */
-    logAutomationAction(userId, type, status, details, errorMessage = null) {
+    async logAutomationAction(userId, type, status, details, errorMessage = null) {
         await query.run(`
             INSERT INTO automation_logs (id, user_id, type, status, details, error_message)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -566,7 +438,7 @@ export class AutomationRunner {
     /**
      * Log task error
      */
-    logTaskError(taskId, errorMessage) {
+    async logTaskError(taskId, errorMessage) {
         await query.run('UPDATE tasks SET error_message = ? WHERE id = ?', [errorMessage, taskId]);
     }
 }
