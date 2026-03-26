@@ -299,20 +299,7 @@ export async function rateLimitDashboardRouter(ctx) {
     return { status: 404, data: { error: 'Not found' } };
 }
 
-// Database migration
-export const migration = `
--- Rate limit logs table
-CREATE TABLE IF NOT EXISTS rate_limit_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    endpoint TEXT NOT NULL,
-    ip TEXT,
-    user_id TEXT,
-    timestamp TEXT DEFAULT (datetime('now'))
-);
-
-CREATE INDEX IF NOT EXISTS idx_rl_logs_timestamp ON rate_limit_logs(timestamp);
-CREATE INDEX IF NOT EXISTS idx_rl_logs_ip ON rate_limit_logs(ip, timestamp);
-CREATE INDEX IF NOT EXISTS idx_rl_logs_endpoint ON rate_limit_logs(endpoint, timestamp);
-`;
+// Table created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 export default rateLimitDashboardRouter;

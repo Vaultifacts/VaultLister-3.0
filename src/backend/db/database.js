@@ -1,6 +1,6 @@
 // Database connection and utilities for VaultLister — PostgreSQL adapter (Phase 1)
 import postgres from 'postgres';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, readdirSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { seedHelpContent } from './seeds/helpContent.js';
@@ -229,7 +229,7 @@ export const models = {
     }
 };
 
-// Migration system
+// Migration system — PostgreSQL consolidated schema + incremental pg/ migrations
 async function runMigrations() {
     try {
         // Create migrations table if it doesn't exist
@@ -241,160 +241,58 @@ async function runMigrations() {
             )
         `);
 
-        const MIGRATIONS_DIR = join(__dirname, 'migrations');
+        // Step 1: Apply consolidated pg-schema.sql as migration 001
+        const schemaName = '001_pg_schema.sql';
+        const schemaApplied = await query.get('SELECT id FROM migrations WHERE name = ?', [schemaName]);
 
-        // List of migration files in order
-        const migrationFiles = [
-            '001_add_deleted_at.sql',
-            '002_add_low_stock_threshold.sql',
-            '003_add_listing_templates.sql',
-            '004_add_oauth_fields.sql',
-            '005_add_image_bank.sql',
-            '006_add_chatbot.sql',
-            '007_add_community.sql',
-            '008_add_extension_support.sql',
-            '009_add_support_features.sql',
-            '010_add_help_votes.sql',
-            '011_roadmap.sql',
-            '012_feedback.sql',
-            '013_calendar.sql',
-            '014_inventory_enhancements.sql',
-            '015_changelog.sql',
-            '016_add_listing_folders.sql',
-            '017_add_checklists.sql',
-            '018_add_financial_accounting.sql',
-            '019_enhance_sales_columns.sql',
-            '020_add_listing_refresh_tracking.sql',
-            '021_add_shipping_profiles.sql',
-            '022_add_sku_rules.sql',
-            '023_add_receipt_parsing.sql',
-            '024_add_batch_processing.sql',
-            '025_oauth_enhancements.sql',
-            '026_add_orders_table.sql',
-            '027_add_email_accounts.sql',
-            '028_add_outlook_support.sql',
-            '029_add_webhooks.sql',
-            '030_add_push_subscriptions.sql',
-            '031_add_engagement_tracking.sql',
-            '032_add_predictive_analytics.sql',
-            '033_add_supplier_monitoring.sql',
-            '034_add_competitor_monitoring.sql',
-            '035_allow_archived_status.sql',
-            '036_duplicate_detections.sql',
-            '037_teams.sql',
-            '038_smart_relisting.sql',
-            '039_shipping_labels.sql',
-            '040_inventory_import.sql',
-            '041_add_categorization_rules.sql',
-            '042_whatnot_live_events.sql',
-            '043_custom_reports.sql',
-            '044_shipping_labels_print.sql',
-            '045_add_token_refresh_tracking.sql',
-            '046_add_performance_indexes.sql',
-            '047_add_security_features.sql',
-            '048_add_gdpr_tables.sql',
-            '049_add_notion_sync.sql',
-            '050_monitoring_tables.sql',
-            '051_performance_indexes.sql',
-            '052_enhanced_features.sql',
-            '053_add_bin_location.sql',
-            '054_add_automation_history.sql',
-            '055_add_price_history.sql',
-            '056_add_checklist_notes.sql',
-            '057_add_return_fields.sql',
-            '058_add_calendar_dependencies.sql',
-            '059_feedback_enhancements.sql',
-            '060_transaction_enhancements.sql',
-            '061_analytics_and_checklist_enhancements.sql',
-            '062_calendar_sync_settings.sql',
-            '063_fix_missing_schema.sql',
-            '064_new_features_schema.sql',
-            '065_batch3_features.sql',
-            '066_push_notifications.sql',
-            '067_add_checklist_indexes.sql',
-            '068_fix_checklist_user_id_type.sql',
-            '069_add_team_is_active.sql',
-            '070_add_auth_tokens.sql',
-            '071_add_business_tier.sql',
-            '072_fix_affiliate_slug_unique.sql',
-            '073_fix_team_members_fk.sql',
-            '074_fix_nullable_user_ids.sql',
-            '075_add_listings_compound_index.sql',
-            '076_fix_teams_owner_fk.sql',
-            '077_fix_users_old_rename.sql',
-            '078_add_brand_size_guides.sql',
-            '079_add_engagement_heatmap_index.sql',
-            '080_add_offers_table.sql',
-            '081_add_enhanced_mfa_tables.sql',
-            '082_add_service_tables.sql',
-            '083_add_audit_log_table.sql',
-            '084_add_missing_columns.sql',
-            '085_add_missing_indexes.sql',
-            '086_rum_metrics.sql',
-            '087_oauth_pkce.sql',
-            '088_automation_experiments.sql',
-            '089_automation_templates.sql',
-            '090_automation_rule_versions.sql',
-            '091_inventory_categories.sql',
-            '092_inventory_cost_tracking.sql',
-            '093_automation_sort_order.sql',
-            '094_automation_rule_tags.sql',
-            '095_add_user_preferences.sql',
-            '096_add_listings_unique_constraint.sql',
-            '097_fix_fts5_delete_trigger.sql',
-            '098_add_is_admin.sql',
-            '099_optimize_query_indexes.sql',
-            '100_add_app_settings.sql',
-            '101_add_auto_sync.sql',
-            '102_add_stripe_columns.sql',
-            '103_add_google_integrations.sql',
-            '104_fix_listings_folders_user_id.sql',
-            '105_add_composite_indexes.sql',
-            '106_fix_purchase_number_unique.sql',
-            '107_document_security_logs_id_design.sql',
-            '108_add_offers_soft_delete.sql',
-            '109_document_mfa_events_id_design.sql',
-            '110_add_sync_error_to_shops.sql',
-            '111_add_poshmark_monitoring_log.sql',
-            '112_add_csrf_tokens_table.sql'
-        ];
+        if (!schemaApplied) {
+            const schemaPath = join(__dirname, 'pg-schema.sql');
+            if (!existsSync(schemaPath)) {
+                throw new Error('pg-schema.sql not found — cannot initialize database');
+            }
 
-        for (const migrationFile of migrationFiles) {
-            // Check if migration has already been applied
-            const applied = await query.get('SELECT id FROM migrations WHERE name = ?', [migrationFile]);
+            logger.info('  Applying consolidated PostgreSQL schema (pg-schema.sql)...');
+            const schemaSQL = readFileSync(schemaPath, 'utf-8');
 
-            if (!applied) {
-                const migrationPath = join(MIGRATIONS_DIR, migrationFile);
+            await query.exec(schemaSQL);
+            await query.run('INSERT INTO migrations (name) VALUES (?)', [schemaName]);
 
-                if (existsSync(migrationPath)) {
+            logger.info('  Applied consolidated PostgreSQL schema');
+        }
+
+        // Step 2: Apply incremental migrations from migrations/pg/ directory
+        const pgMigrationsDir = join(__dirname, 'migrations', 'pg');
+        if (existsSync(pgMigrationsDir)) {
+            const pgFiles = readdirSync(pgMigrationsDir)
+                .filter(f => f.endsWith('.sql'))
+                .sort();
+
+            for (const migrationFile of pgFiles) {
+                const applied = await query.get('SELECT id FROM migrations WHERE name = ?', [migrationFile]);
+
+                if (!applied) {
+                    const migrationPath = join(pgMigrationsDir, migrationFile);
                     try {
                         logger.info(`  Running migration: ${migrationFile}`);
                         const migrationSQL = readFileSync(migrationPath, 'utf-8');
 
-                        // Run migration in transaction
                         await query.transaction(async (tx) => {
                             await tx.exec(migrationSQL);
                             await tx.run('INSERT INTO migrations (name) VALUES (?)', [migrationFile]);
                         });
 
-                        logger.info(`  ✓ Applied migration: ${migrationFile}`);
+                        logger.info(`  Applied migration: ${migrationFile}`);
                     } catch (migrationError) {
                         const errorMsg = migrationError.message || '';
-                        if (errorMsg.includes('duplicate column') ||
-                            errorMsg.includes('already exists') ||
-                            errorMsg.includes('unique constraint') ||
-                            errorMsg.includes('does not exist')) {
-                            // Mark as applied — schema differs from what migration expects
+                        if (errorMsg.includes('already exists') ||
+                            errorMsg.includes('duplicate column') ||
+                            errorMsg.includes('unique constraint')) {
                             await query.run('INSERT INTO migrations (name) VALUES (?) ON CONFLICT (name) DO NOTHING', [migrationFile]);
-                            logger.info(`  ⚠ Migration ${migrationFile} skipped (schema mismatch: ${errorMsg.slice(0, 60)})`);
+                            logger.info(`  Migration ${migrationFile} skipped (schema mismatch: ${errorMsg.slice(0, 60)})`);
                         } else {
                             throw migrationError;
                         }
                     }
-                } else {
-                    // File not found - mark as applied if it's an old migration
-                    await query.run('INSERT INTO migrations (name) VALUES (?) ON CONFLICT (name) DO NOTHING', [migrationFile]);
-                    logger.info(`  ⚠ Migration file not found: ${migrationFile} (marked as applied)`);
                 }
             }
         }

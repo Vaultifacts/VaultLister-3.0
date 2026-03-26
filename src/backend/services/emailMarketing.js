@@ -376,36 +376,8 @@ export async function emailMarketingRouter(ctx) {
     return { status: 404, data: { error: 'Not found' } };
 }
 
-// Database migration
-export const migration = `
--- Email queue
-CREATE TABLE IF NOT EXISTS email_queue (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    template_key TEXT NOT NULL,
-    data TEXT,
-    scheduled_for TEXT NOT NULL,
-    status TEXT DEFAULT 'pending',
-    sent_at TEXT,
-    error TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_email_queue_status ON email_queue(status, scheduled_for);
-
--- Email log
-CREATE TABLE IF NOT EXISTS email_log (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    template_key TEXT NOT NULL,
-    subject TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_email_log_user ON email_log(user_id, created_at DESC);
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 export { emailMarketing };
 export default emailMarketing;

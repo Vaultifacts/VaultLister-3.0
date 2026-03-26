@@ -650,56 +650,8 @@ export async function enhancedMFARouter(ctx) {
     return { status: 404, data: { error: 'Not found' } };
 }
 
-// Database migration
-export const migration = `
--- WebAuthn credentials
-CREATE TABLE IF NOT EXISTS webauthn_credentials (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    credential_id TEXT NOT NULL UNIQUE,
-    public_key TEXT NOT NULL,
-    sign_count INTEGER DEFAULT 0,
-    device_name TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    last_used_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_webauthn_user ON webauthn_credentials(user_id);
-
--- Backup codes
-CREATE TABLE IF NOT EXISTS backup_codes (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    code_hash TEXT NOT NULL,
-    batch_id TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    used_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_backup_codes_user ON backup_codes(user_id, used_at);
-
--- SMS verification codes
-CREATE TABLE IF NOT EXISTS sms_codes (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    code TEXT NOT NULL,
-    expires_at TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now')),
-    used_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_sms_codes_user ON sms_codes(user_id, expires_at);
-
--- Add phone columns to users table
-ALTER TABLE users ADD COLUMN phone_number TEXT;
-ALTER TABLE users ADD COLUMN phone_verified INTEGER DEFAULT 0;
-ALTER TABLE users ADD COLUMN pending_phone TEXT;
-ALTER TABLE users ADD COLUMN phone_verification_code TEXT;
-ALTER TABLE users ADD COLUMN phone_verification_expires TEXT;
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 export { enhancedMFA };
 export default enhancedMFA;

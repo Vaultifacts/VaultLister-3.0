@@ -454,41 +454,8 @@ export async function outgoingWebhooksRouter(ctx) {
     return { status: 404, data: { error: 'Not found' } };
 }
 
-// Database migration
-export const migration = `
--- User webhooks table
-CREATE TABLE IF NOT EXISTS user_webhooks (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    name TEXT NOT NULL,
-    url TEXT NOT NULL,
-    secret TEXT NOT NULL,
-    events TEXT NOT NULL,
-    headers TEXT,
-    is_active INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_webhooks_user ON user_webhooks(user_id, is_active);
-
--- Webhook deliveries log
-CREATE TABLE IF NOT EXISTS webhook_deliveries (
-    id TEXT PRIMARY KEY,
-    webhook_id TEXT NOT NULL,
-    event_type TEXT NOT NULL,
-    payload TEXT,
-    status TEXT NOT NULL,
-    status_code INTEGER,
-    response_body TEXT,
-    attempt INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (webhook_id) REFERENCES user_webhooks(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_webhook_deliveries ON webhook_deliveries(webhook_id, created_at DESC);
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 export { outgoingWebhooks };
 export default outgoingWebhooks;

@@ -333,25 +333,8 @@ const analyticsService = {
     }
 };
 
-// Database migration
-const migration = `
--- Analytics events table
-CREATE TABLE IF NOT EXISTS analytics_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    properties TEXT,
-    user_id TEXT,
-    session_id TEXT,
-    timestamp TEXT NOT NULL,
-    ip TEXT,
-    user_agent TEXT
-);
-
-CREATE INDEX IF NOT EXISTS idx_analytics_name ON analytics_events(name, timestamp);
-CREATE INDEX IF NOT EXISTS idx_analytics_user ON analytics_events(user_id, timestamp);
-CREATE INDEX IF NOT EXISTS idx_analytics_session ON analytics_events(session_id);
-CREATE INDEX IF NOT EXISTS idx_analytics_timestamp ON analytics_events(timestamp);
-`;
+// Table created by pg-schema.sql (managed by migration system)
+const migration = '';
 
 export { analyticsService, migration };
 export default analyticsService;

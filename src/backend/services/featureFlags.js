@@ -274,42 +274,8 @@ const abTesting = {
     }
 };
 
-// Database migration for feature flags
-const migration = `
--- Feature flags table
-CREATE TABLE IF NOT EXISTS feature_flags (
-    name TEXT PRIMARY KEY,
-    enabled INTEGER DEFAULT 1,
-    rollout_percentage INTEGER DEFAULT 100,
-    description TEXT,
-    target_users TEXT,
-    target_tiers TEXT,
-    is_active INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
-);
-
--- Feature flag usage tracking
-CREATE TABLE IF NOT EXISTS feature_flag_usage (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    flag_name TEXT NOT NULL,
-    user_id TEXT,
-    timestamp TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (flag_name) REFERENCES feature_flags(name)
-);
-CREATE INDEX IF NOT EXISTS idx_ff_usage_flag ON feature_flag_usage(flag_name, timestamp);
-
--- A/B test conversions
-CREATE TABLE IF NOT EXISTS ab_test_conversions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    experiment TEXT NOT NULL,
-    variant TEXT NOT NULL,
-    user_id TEXT,
-    value REAL DEFAULT 1,
-    timestamp TEXT DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_ab_experiment ON ab_test_conversions(experiment, variant);
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+const migration = '';
 
 export { featureFlags, abTesting, migration };
 export default featureFlags;

@@ -420,24 +420,5 @@ export async function socialAuthRouter(ctx) {
     return { status: 404, data: { error: 'Not found' } };
 }
 
-// Database migration
-export const migration = `
--- OAuth accounts table
-CREATE TABLE IF NOT EXISTS oauth_accounts (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    provider TEXT NOT NULL,
-    provider_user_id TEXT NOT NULL,
-    provider_email TEXT,
-    access_token TEXT,
-    refresh_token TEXT,
-    token_expires_at TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE(provider, provider_user_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_oauth_user ON oauth_accounts(user_id);
-CREATE INDEX IF NOT EXISTS idx_oauth_provider ON oauth_accounts(provider, provider_user_id);
-`;
+// Table created by pg-schema.sql (managed by migration system)
+export const migration = '';

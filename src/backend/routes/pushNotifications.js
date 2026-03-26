@@ -389,38 +389,7 @@ export async function pushNotificationsRouter(ctx) {
 
 // Database migration — push_devices and push_notification_log only.
 // Notification preferences are stored in user_preferences (migration 095).
-export const migration = `
--- Push notification devices
-CREATE TABLE IF NOT EXISTS push_devices (
-    id TEXT PRIMARY KEY,
-    user_id TEXT,
-    token TEXT NOT NULL UNIQUE,
-    platform TEXT NOT NULL,
-    device_id TEXT,
-    device_name TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
-    last_active_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_push_devices_user ON push_devices(user_id);
-CREATE INDEX IF NOT EXISTS idx_push_devices_token ON push_devices(token);
-
--- Push notification log
-CREATE TABLE IF NOT EXISTS push_notification_log (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    title TEXT NOT NULL,
-    body TEXT NOT NULL,
-    data TEXT,
-    channel TEXT DEFAULT 'general',
-    status TEXT DEFAULT 'pending',
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_push_log_user ON push_notification_log(user_id, created_at DESC);
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 export default pushNotificationsRouter;

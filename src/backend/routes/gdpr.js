@@ -449,55 +449,7 @@ export async function gdprRouter(ctx) {
 }
 
 // Database migration
-export const migration = `
--- Data export requests
-CREATE TABLE IF NOT EXISTS data_export_requests (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    status TEXT DEFAULT 'pending',
-    export_data TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    completed_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Account deletion requests
-CREATE TABLE IF NOT EXISTS account_deletion_requests (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    reason TEXT,
-    scheduled_for TEXT NOT NULL,
-    status TEXT DEFAULT 'pending',
-    created_at TEXT DEFAULT (datetime('now')),
-    completed_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- User consents
-CREATE TABLE IF NOT EXISTS user_consents (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    consent_type TEXT NOT NULL,
-    granted INTEGER DEFAULT 0,
-    granted_at TEXT,
-    updated_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE(user_id, consent_type)
-);
-
--- Data rectification requests
-CREATE TABLE IF NOT EXISTS data_rectification_requests (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    corrections TEXT,
-    status TEXT DEFAULT 'pending',
-    created_at TEXT DEFAULT (datetime('now')),
-    completed_at TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Add deletion_scheduled_at to users table
-ALTER TABLE users ADD COLUMN deletion_scheduled_at TEXT;
-`;
+// Tables created by pg-schema.sql (managed by migration system)
+export const migration = '';
 
 export default gdprRouter;
