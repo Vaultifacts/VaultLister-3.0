@@ -263,10 +263,10 @@ export async function ordersRouter(ctx) {
                 ) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 orderId, user.id, order_number || `ORD-${Date.now()}`, platform,
-                buyer_username, buyer_email, buyer_address,
-                item_id, item_title, item_sku, sale_price || 0,
-                shipping_cost || 0, platform_fee || 0, shipping_provider,
-                expected_delivery, notes, priority || 'normal', priority_note,
+                buyer_username || null, buyer_email || null, buyer_address || null,
+                item_id || null, item_title, item_sku || null, sale_price || 0,
+                shipping_cost || 0, platform_fee || 0, shipping_provider || null,
+                expected_delivery || null, notes || null, priority || 'normal', priority_note || null,
                 now, now
             ]);
 

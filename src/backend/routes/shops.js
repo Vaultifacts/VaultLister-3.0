@@ -99,7 +99,7 @@ export async function shopsRouter(ctx) {
                 INSERT INTO shops (id, user_id, platform, platform_username, credentials, is_connected)
                 VALUES (?, ?, ?, ?, ?, ?)
             `, [
-                id, user.id, platform, username,
+                id, user.id, platform, username || null,
                 credentials ? encryptToken(JSON.stringify(credentials)) : null,
                 1
             ]);

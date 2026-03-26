@@ -346,7 +346,7 @@ export async function automationsRouter(ctx) {
                 id, user_id, name, type, platform, schedule, conditions, actions, is_enabled
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
-            id, user.id, name, type, platform, schedule,
+            id, user.id, name, type, platform || null, schedule || null,
             conditionsStr,
             actionsStr,
             isEnabled !== false ? 1 : 0
