@@ -195,16 +195,16 @@ async function storeRequestLog(ctx, status, duration, error = null) {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             generateId(),
-            ctx.requestId,
+            ctx.requestId || null,
             ctx.method,
             ctx.path,
             status,
             duration,
             ctx.user?.id || null,
-            anonymizeIP(ctx.ip),
+            anonymizeIP(ctx.ip) || null,
             ctx.userAgent?.substring(0, 500) || null,
             error?.message || null,
-            ctx.timestamp
+            ctx.timestamp || now()
         ]);
     } catch (dbError) {
         // Silently fail

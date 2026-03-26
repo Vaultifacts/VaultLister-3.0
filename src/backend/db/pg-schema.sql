@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS inventory (
     location TEXT,
     notes TEXT,
     blockchain_hash TEXT,
-    sustainability_score DOUBLE PRECISION,
+    sustainability_score JSONB,
     ai_generated_data JSONB DEFAULT '{}'::jsonb,
     custom_fields JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW(),
