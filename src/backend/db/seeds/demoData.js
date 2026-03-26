@@ -98,7 +98,7 @@ export async function seedDemoData() {
     }
 }
 
-function seedInventoryItems(userId) {
+async function seedInventoryItems(userId) {
     // Valid condition values: 'new', 'like_new', 'good', 'fair', 'poor'
     // Valid status values: 'draft', 'active', 'sold', 'archived', 'deleted'
     const items = [
@@ -373,7 +373,7 @@ function seedInventoryItems(userId) {
     console.log(`  ✓ Seeded ${items.length} inventory items`);
 }
 
-function seedOrders(userId) {
+async function seedOrders(userId) {
     const now = new Date();
     const orders = [
         // Delivered orders (with tracking)
@@ -502,7 +502,7 @@ function seedOrders(userId) {
     console.log(`  ✓ Seeded ${orders.length} orders`);
 }
 
-function seedListings(userId) {
+async function seedListings(userId) {
     const now = new Date();
 
     // Helper to create date X days ago
@@ -657,7 +657,7 @@ function seedListings(userId) {
     return listings.map(l => l.id);
 }
 
-function seedOffers(userId, listingIds) {
+async function seedOffers(userId, listingIds) {
     const now = new Date();
     const offers = [
         // Pending offers (need response)
@@ -771,7 +771,7 @@ function seedOffers(userId, listingIds) {
     console.log(`  ✓ Seeded ${offers.length} offers`);
 }
 
-function seedSales(userId, listingIds) {
+async function seedSales(userId, listingIds) {
     const now = new Date();
 
     // Generate sales spread over the last 30 days for analytics
@@ -928,7 +928,7 @@ function seedSales(userId, listingIds) {
     console.log(`  ✓ Seeded ${sales.length} sales`);
 }
 
-function seedCalendarEvents(userId) {
+async function seedCalendarEvents(userId) {
     const now = new Date();
     const day = (offset) => {
         const d = new Date(now);
@@ -968,7 +968,7 @@ function seedCalendarEvents(userId) {
     console.log(`  ✓ Seeded ${events.length} calendar events`);
 }
 
-function seedTeams(userId) {
+async function seedTeams(userId) {
     const teamId = uuidv4();
     try {
         await query.run(
@@ -1001,7 +1001,7 @@ function seedTeams(userId) {
     }
 }
 
-function seedRoadmapFeatures() {
+async function seedRoadmapFeatures() {
     const existing = await query.get('SELECT COUNT(*) as count FROM roadmap_features');
     if (existing?.count > 0) return;
 
