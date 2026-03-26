@@ -43,6 +43,10 @@ const APPLE_KEY_ID = process.env.APPLE_KEY_ID;
 const APPLE_PRIVATE_KEY = process.env.APPLE_PRIVATE_KEY;
 const APPLE_REDIRECT_URI = process.env.APPLE_REDIRECT_URI || 'http://localhost:3000/api/social-auth/apple/callback';
 
+// Cookie security flags — matches auth.js pattern
+const SECURE_FLAG = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+const COOKIE_BASE = `HttpOnly; SameSite=Strict${SECURE_FLAG}`;
+
 async function generateStateToken() {
     const state = crypto.randomBytes(32).toString('hex');
     await redis.setJson('oauth:state:' + state, { created: Date.now() }, 600);
@@ -69,7 +73,7 @@ async function findOrCreateUser(provider, profile) {
 
     if (user) {
         // Update last login
-        await query.run('UPDATE users SET last_login_at = datetime("now") WHERE id = ?', [user.id]);
+        await query.run('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
         return user;
     }
 
@@ -83,7 +87,7 @@ async function findOrCreateUser(provider, profile) {
             VALUES (?, ?, ?, ?, ?, NOW())
         `, [uuidv4(), user.id, provider, providerId, email]);
 
-        await query.run('UPDATE users SET last_login_at = datetime("now") WHERE id = ?', [user.id]);
+        await query.run('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
         return user;
     }
 
@@ -228,8 +232,8 @@ export async function socialAuthRouter(ctx) {
                 headers: {
                     'Location': '/#/auth/callback',
                     'Set-Cookie': [
-                        `auth_token=${token}; HttpOnly; Secure; SameSite=Lax; Max-Age=${24 * 60 * 60}; Path=/`,
-                        `refresh_token=${refreshToken}; HttpOnly; Secure; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}; Path=/`
+                        `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
+                        `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`
                     ]
                 },
                 data: {}
@@ -371,8 +375,8 @@ export async function socialAuthRouter(ctx) {
                 headers: {
                     'Location': '/#/auth/callback',
                     'Set-Cookie': [
-                        `auth_token=${token}; HttpOnly; Secure; SameSite=Lax; Max-Age=${24 * 60 * 60}; Path=/`,
-                        `refresh_token=${refreshToken}; HttpOnly; Secure; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}; Path=/`
+                        `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
+                        `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`
                     ]
                 },
                 data: {}
