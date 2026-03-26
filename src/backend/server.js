@@ -7,7 +7,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { join, dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
-import { initializeDatabase, cleanupExpiredData, getStatementCacheStats } from './db/database.js';
+import { initializeDatabase, closeDatabase, cleanupExpiredData, getStatementCacheStats } from './db/database.js';
 import { authRouter } from './routes/auth.js';
 import { inventoryRouter } from './routes/inventory.js';
 import { listingsRouter } from './routes/listings.js';
@@ -159,8 +159,14 @@ mkdirSync(join(ROOT_DIR, 'logs'), { recursive: true });
 writeFileSync(PID_PATH, String(process.pid));
 log(`PID ${process.pid} written to ${PID_PATH}`);
 
+// Hoisted for access in gracefulShutdown (declared inside main())
+let server;
+let cleanupInterval;
+
+async function main() {
+
 // Initialize database
-initializeDatabase();
+await initializeDatabase();
 log('Database initialized');
 
 // Initialize Redis service (with in-memory fallback)
@@ -865,7 +871,7 @@ function withRequestTimeout(handlerPromise, timeoutMs) {
 }
 
 // Main server handler
-const server = Bun.serve({
+server = Bun.serve({
     port: process.env.PORT || 3000,
     hostname: '0.0.0.0',
 
@@ -1273,7 +1279,7 @@ const server = Bun.serve({
             }
 
             // Apply CSRF protection for state-changing requests
-            const csrfError = applyCSRFProtection(context);
+            const csrfError = await applyCSRFProtection(context);
             if (csrfError) {
                 return new Response(JSON.stringify(csrfError.data), {
                     status: csrfError.status,
@@ -1282,7 +1288,7 @@ const server = Bun.serve({
             }
 
             // Generate CSRF token for response
-            addCSRFToken(context);
+            await addCSRFToken(context);
 
             // Idempotency — check/store for POST, PUT, PATCH
             const idempotencyKey = request.headers.get('Idempotency-Key');
@@ -1576,10 +1582,17 @@ log('Background services started (including GDPR worker and monitoring)');
 
 // Start cleanup scheduler (delayed startup call + daily interval)
 setTimeout(() => cleanupExpiredData(), 30 * 1000); // 30-second delay on startup
-const cleanupInterval = setInterval(() => {
+cleanupInterval = setInterval(() => {
     cleanupExpiredData();
 }, 24 * 60 * 60 * 1000); // 24 hours
 log('Database cleanup scheduler started (runs daily, first run in 30s)');
+
+} // end async function main()
+
+main().catch((err) => {
+    logger.error('Fatal startup error:', err);
+    process.exit(1);
+});
 
 // Graceful shutdown helper
 async function gracefulShutdown(signal) {
@@ -1614,6 +1627,10 @@ async function gracefulShutdown(signal) {
     // Close Redis connection
     await redisService.close();
     logger.info('Redis connection closed.');
+
+    // Close database connection pool
+    await closeDatabase();
+    logger.info('Database connection closed.');
 
     // Clean up PID file
     try { unlinkSync(PID_PATH); } catch {}

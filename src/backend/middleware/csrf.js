@@ -14,33 +14,33 @@ class CSRFManager {
         this._cleanupInterval = setInterval(() => this.cleanup(), 10 * 60 * 1000);
     }
 
-    generateToken(sessionId = null) {
+    async generateToken(sessionId = null) {
         const token = crypto.randomBytes(32).toString('hex');
         const expiresAt = Date.now() + (4 * 60 * 60 * 1000);
-        query.run(
+        await query.run(
             'INSERT INTO csrf_tokens (token, session_id, expires_at) VALUES (?, ?, ?)',
             [token, sessionId ?? '', expiresAt]
         );
         return token;
     }
 
-    validateToken(token, sessionId = null) {
+    async validateToken(token, sessionId = null) {
         if (!token) return false;
-        const row = query.get(
+        const row = await query.get(
             'SELECT session_id, expires_at FROM csrf_tokens WHERE token = ?',
             [token]
         );
         if (!row) return false;
         if (Date.now() > row.expires_at) {
-            query.run('DELETE FROM csrf_tokens WHERE token = ?', [token]);
+            await query.run('DELETE FROM csrf_tokens WHERE token = ?', [token]);
             return false;
         }
         if (sessionId && row.session_id && row.session_id !== sessionId) return false;
         return true;
     }
 
-    consumeToken(token) {
-        query.run('DELETE FROM csrf_tokens WHERE token = ?', [token]);
+    async consumeToken(token) {
+        await query.run('DELETE FROM csrf_tokens WHERE token = ?', [token]);
     }
 
     stop() {
@@ -48,16 +48,16 @@ class CSRFManager {
         this._cleanupInterval = null;
     }
 
-    clearTokens() {
-        query.run('DELETE FROM csrf_tokens', []);
+    async clearTokens() {
+        await query.run('DELETE FROM csrf_tokens', []);
     }
 
-    cleanup() {
-        query.run('DELETE FROM csrf_tokens WHERE expires_at < ?', [Date.now()]);
+    async cleanup() {
+        await query.run('DELETE FROM csrf_tokens WHERE expires_at < ?', [Date.now()]);
     }
 
-    getStats() {
-        const row = query.get('SELECT COUNT(*) as total, MIN(created_at) as oldest FROM csrf_tokens', []);
+    async getStats() {
+        const row = await query.get('SELECT COUNT(*) as total, MIN(created_at) as oldest FROM csrf_tokens', []);
         return {
             totalTokens: row?.total ?? 0,
             oldestToken: row?.oldest ? Date.now() - row.oldest : 0
@@ -77,12 +77,12 @@ if (process.env.DISABLE_CSRF === 'true' && process.env.NODE_ENV !== 'test') {
  * CSRF middleware for generating tokens
  * Add CSRF token to responses that will need it
  */
-export function addCSRFToken(ctx) {
+export async function addCSRFToken(ctx) {
     // B-08: bind to ip:userId when authenticated so tokens aren't shared across
     // users behind the same NAT/proxy. Pre-login calls use ip only; those routes
     // (login, register) are in skipPaths so CSRF is not enforced on them.
     const sessionId = ctx.user?.id ? `${ctx.ip}:${ctx.user.id}` : ctx.ip;
-    const token = csrfManager.generateToken(sessionId);
+    const token = await csrfManager.generateToken(sessionId);
 
     // Add to response headers
     ctx.csrfToken = token;
@@ -94,7 +94,7 @@ export function addCSRFToken(ctx) {
  * CSRF middleware for validating tokens
  * Protect state-changing operations (POST, PUT, DELETE)
  */
-export function validateCSRF(ctx) {
+export async function validateCSRF(ctx) {
     const { method, headers, user, ip } = ctx;
 
     // Disable CSRF only when explicitly requested in test environment
@@ -142,7 +142,7 @@ export function validateCSRF(ctx) {
 
     // B-08: match the session ID scheme used in addCSRFToken
     const sessionId = user?.id ? `${ip}:${user.id}` : ip;
-    const isValid = csrfManager.validateToken(token, sessionId);
+    const isValid = await csrfManager.validateToken(token, sessionId);
 
     if (!isValid) {
         return {
@@ -153,7 +153,7 @@ export function validateCSRF(ctx) {
     }
 
     // Consume token after successful validation (one-time use)
-    csrfManager.consumeToken(token);
+    await csrfManager.consumeToken(token);
 
     return { valid: true };
 }
@@ -161,8 +161,8 @@ export function validateCSRF(ctx) {
 /**
  * Apply CSRF protection to request
  */
-export function applyCSRFProtection(ctx) {
-    const validation = validateCSRF(ctx);
+export async function applyCSRFProtection(ctx) {
+    const validation = await validateCSRF(ctx);
 
     if (!validation.valid) {
         return {

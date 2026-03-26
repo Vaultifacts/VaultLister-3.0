@@ -113,7 +113,7 @@ export async function authenticateToken(request) {
     }
 
     // Get user from database (exclude password_hash for security)
-    const user = query.get(
+    const user = await query.get(
         'SELECT id, email, full_name, username, subscription_tier, subscription_expires_at, avatar_url, is_active, is_admin, email_verified, created_at, updated_at FROM users WHERE id = ? AND is_active = 1',
         [decoded.userId]
     );

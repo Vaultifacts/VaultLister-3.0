@@ -146,7 +146,7 @@ class RateLimiter {
                 await redis.set('rl:block:' + key, String(blockedUntil), Math.ceil(RateLimiter.config.blockDuration / 1000));
 
                 // Log security event
-                this.logSecurityEvent('RATE_LIMIT_BLOCK', key, {
+                await this.logSecurityEvent('RATE_LIMIT_BLOCK', key, {
                     violations: entry.violations,
                     blockedUntil
                 });
@@ -182,9 +182,9 @@ class RateLimiter {
     /**
      * Log security events to database
      */
-    logSecurityEvent(eventType, key, details) {
+    async logSecurityEvent(eventType, key, details) {
         try {
-            query.run(`
+            await query.run(`
                 INSERT INTO security_logs (event_type, ip_or_user, details, created_at)
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP)
             `, [eventType, key, JSON.stringify(details)]);
@@ -204,7 +204,7 @@ class RateLimiter {
     async block(key, durationMs = RateLimiter.config.blockDuration) {
         const blockedUntil = Date.now() + durationMs;
         await redis.set('rl:block:' + key, String(blockedUntil), Math.ceil(durationMs / 1000));
-        this.logSecurityEvent('MANUAL_BLOCK', key, { blockedUntil });
+        await this.logSecurityEvent('MANUAL_BLOCK', key, { blockedUntil });
     }
 
     /**
@@ -212,7 +212,7 @@ class RateLimiter {
      */
     async unblock(key) {
         await redis.del('rl:block:' + key);
-        this.logSecurityEvent('MANUAL_UNBLOCK', key, {});
+        await this.logSecurityEvent('MANUAL_UNBLOCK', key, {});
     }
 
     /**
@@ -284,7 +284,7 @@ export function createRateLimiter(limitType = 'default') {
             ctx.rateLimitHeaders['Retry-After'] = result.retryAfter;
 
             // Log rate limit violation
-            rateLimiter.logSecurityEvent('RATE_LIMIT_EXCEEDED', key, {
+            await rateLimiter.logSecurityEvent('RATE_LIMIT_EXCEEDED', key, {
                 path,
                 method,
                 limitType: actualLimitType,
