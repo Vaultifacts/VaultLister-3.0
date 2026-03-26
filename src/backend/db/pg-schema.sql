@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS users (
     phone_verified INTEGER DEFAULT 0,
     pending_phone TEXT,
     phone_verification_code TEXT,
-    phone_verification_expires TEXT,
+    phone_verification_expires TIMESTAMPTZ,
     -- 098: admin flag
     is_admin INTEGER NOT NULL DEFAULT 0,
     -- 102: Stripe
@@ -413,8 +413,8 @@ CREATE TABLE IF NOT EXISTS password_resets (
     id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     token TEXT NOT NULL UNIQUE,
-    expires_at TEXT NOT NULL,
-    used_at TEXT,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -424,8 +424,8 @@ CREATE TABLE IF NOT EXISTS email_verifications (
     id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     token TEXT NOT NULL UNIQUE,
-    expires_at TEXT NOT NULL,
-    used_at TEXT,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -459,7 +459,7 @@ CREATE TABLE IF NOT EXISTS sms_codes (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     code TEXT NOT NULL,
-    expires_at TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     used_at TIMESTAMPTZ,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -579,7 +579,7 @@ CREATE TABLE IF NOT EXISTS analytics_events (
     properties TEXT,
     user_id TEXT,
     session_id TEXT,
-    timestamp TEXT NOT NULL,
+    timestamp TIMESTAMPTZ DEFAULT NOW(),
     ip TEXT,
     user_agent TEXT
 );
@@ -3581,6 +3581,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS inventory_search_vector_trigger ON inventory;
 CREATE TRIGGER inventory_search_vector_trigger
     BEFORE INSERT OR UPDATE ON inventory
     FOR EACH ROW EXECUTE FUNCTION inventory_search_vector_update();
@@ -3596,6 +3597,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS image_bank_search_vector_trigger ON image_bank;
 CREATE TRIGGER image_bank_search_vector_trigger
     BEFORE INSERT OR UPDATE ON image_bank
     FOR EACH ROW EXECUTE FUNCTION image_bank_search_vector_update();
@@ -3611,6 +3613,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS community_posts_search_vector_trigger ON community_posts;
 CREATE TRIGGER community_posts_search_vector_trigger
     BEFORE INSERT OR UPDATE ON community_posts
     FOR EACH ROW EXECUTE FUNCTION community_posts_search_vector_update();
@@ -3626,6 +3629,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS help_articles_search_vector_trigger ON help_articles;
 CREATE TRIGGER help_articles_search_vector_trigger
     BEFORE INSERT OR UPDATE ON help_articles
     FOR EACH ROW EXECUTE FUNCTION help_articles_search_vector_update();

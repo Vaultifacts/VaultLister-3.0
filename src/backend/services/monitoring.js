@@ -171,8 +171,8 @@ const monitoring = {
     // Start metrics collection
     startMetricsCollection() {
         // Check DB size immediately on init, then every hour
-        this.checkDatabaseSize();
-        this._dbSizeInterval = setInterval(() => this.checkDatabaseSize(), 60 * 60 * 1000);
+        this.checkDatabaseSize().catch(err => logger.error('DB size check failed:', err.message));
+        this._dbSizeInterval = setInterval(() => this.checkDatabaseSize().catch(err => logger.error('DB size check failed:', err.message)), 60 * 60 * 1000);
 
         // Collect metrics every 30 seconds
         this._metricsInterval = setInterval(() => {

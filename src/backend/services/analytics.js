@@ -129,22 +129,23 @@ const analyticsService = {
         const events = eventQueue.splice(0, eventQueue.length);
 
         try {
-            const stmt = query.prepare(`
-                INSERT INTO analytics_events (name, properties, user_id, session_id, timestamp, ip, user_agent)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            `);
-
-            for (const event of events) {
-                stmt.run(
-                    event.name,
-                    JSON.stringify(event.properties),
-                    event.userId,
-                    event.sessionId,
-                    event.timestamp,
-                    event.ip,
-                    event.userAgent
-                );
-            }
+            await query.transaction(async (tx) => {
+                for (const event of events) {
+                    await tx.run(
+                        `INSERT INTO analytics_events (name, properties, user_id, session_id, timestamp, ip, user_agent)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                        [
+                            event.name,
+                            JSON.stringify(event.properties),
+                            event.userId,
+                            event.sessionId,
+                            event.timestamp,
+                            event.ip,
+                            event.userAgent
+                        ]
+                    );
+                }
+            });
         } catch (error) {
             logger.error('[Analytics] Flush failed:', error.message);
             // Re-queue failed events (only if queue hasn't grown too large)
