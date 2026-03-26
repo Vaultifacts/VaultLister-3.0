@@ -13,7 +13,6 @@
 --   FTS5 virtual   → tsvector column + GIN index + trigger
 --   Booleans kept as INTEGER (Phase 3+ cleanup)
 
-BEGIN;
 
 -- ============================================================
 -- CORE TABLES
@@ -3645,6 +3644,11 @@ INSERT INTO affiliate_tiers (id, name, min_referrals, commission_rate) VALUES
     ('tier-gold', 'Gold', 25, 0.20)
 ON CONFLICT (id) DO NOTHING;
 
+-- System user (required for default expense categories FK)
+INSERT INTO users (id, email, password_hash, username, is_active) VALUES
+    ('system', 'system@internal.vaultlister', 'x', 'system', 0)
+ON CONFLICT (id) DO NOTHING;
+
 -- Default expense categories
 INSERT INTO expense_categories (id, user_id, name, type, tax_deductible) VALUES
     ('exp-shipping', 'system', 'Shipping Supplies', 'expense', 1),
@@ -3664,4 +3668,3 @@ INSERT INTO tos_versions (id, version, title, content, effective_date) VALUES
      '2026-03-01')
 ON CONFLICT (id) DO NOTHING;
 
-COMMIT;
