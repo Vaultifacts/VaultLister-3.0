@@ -144,8 +144,7 @@ else
     echo "ERROR: Server not running on port ${PORT}. Cannot run tests."
     echo "Start the server with 'bun run dev:bg' then try the push again."
     exit 1
-fi # end server-running check
-fi # end _SKIP_UNIT_TESTS check
+fi
 
 # Notion API health check — block push if Notion errors detected
 NOTION_ERR_LOG=".notion-errors.log"
