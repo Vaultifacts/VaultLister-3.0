@@ -21,8 +21,8 @@ const RETENTION = {
 const WARN_AGE_MS     = 25 * 60 * 60 * 1000;  // 25 hours
 const CRITICAL_AGE_MS = 49 * 60 * 60 * 1000;  // 49 hours
 
-// SQLite file header magic bytes: "SQLite format 3\000" (18 bytes)
-const SQLITE_MAGIC = Buffer.from('53514c69746520666f726d6174203300', 'hex');
+// pg_dump custom format magic bytes: "PGDMP" (5 bytes)
+const PGDUMP_MAGIC = Buffer.from([0x50, 0x47, 0x44, 0x4D, 0x50]);
 
 // Gzip magic bytes: 0x1f 0x8b
 const GZIP_MAGIC = Buffer.from([0x1f, 0x8b]);
@@ -43,10 +43,10 @@ function readFileHeader(filePath, length) {
     return buf;
 }
 
-function isValidSqliteFile(filePath) {
+function isValidPgDumpFile(filePath) {
     try {
-        const header = readFileHeader(filePath, 16);
-        return header.slice(0, 16).equals(SQLITE_MAGIC.slice(0, 16));
+        const header = readFileHeader(filePath, 5);
+        return header.equals(PGDUMP_MAGIC);
     } catch {
         return false;
     }
@@ -170,7 +170,7 @@ function checkFileIntegrity() {
         const isGzip = newest.name.endsWith('.gz');
         const valid = isGzip
             ? isValidGzipFile(newest.path)
-            : isValidSqliteFile(newest.path);
+            : isValidPgDumpFile(newest.path);
 
         if (!valid) {
             failures.push({ tier: type, file: newest.name, compressed: isGzip });
