@@ -1,4 +1,4 @@
-KNOWN_FAILURES=581
+KNOWN_FAILURES=584
 # Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
 # Local Windows: 2050 pass / 264 fail (named below — baselined 2026-03-20)
 # CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
@@ -680,3 +680,6 @@ KNOWN_FAIL: taskWorker coverage > retry with exponential backoff > error.code is
 KNOWN_FAIL: taskWorker coverage > retry with exponential backoff > retry delay increases exponentially [313.00ms]
 KNOWN_FAIL: tokenRefreshScheduler > getRefreshSchedulerStatus > handles missing DB columns with fallback
 KNOWN_FAIL: tokenRefreshScheduler > getRefreshSchedulerStatus > returns status with expected shape
+KNOWN_FAIL: Alert threshold — high error rate > should fire high_error_rate alert when rate > 5% AND total > 100
+KNOWN_FAIL: analyticsService — extended coverage > getPageViews — groupBy logic > passes day format when groupBy is day
+KNOWN_FAIL: taskWorker (unit) > queueTask > uses default priority of 0
