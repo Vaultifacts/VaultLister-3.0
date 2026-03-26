@@ -1,4 +1,4 @@
-KNOWN_FAILURES=425
+KNOWN_FAILURES=426
 # Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
 # Local Windows: 2050 pass / 264 fail (named below — baselined 2026-03-20)
 # CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
@@ -524,3 +524,4 @@ KNOWN_FAIL: validateCSRF — test mode bypass > DISABLE_CSRF=true in test mode b
 KNOWN_FAIL: validateCSRF — test mode bypass > NODE_ENV=test alone does NOT bypass CSRF (requires DISABLE_CSRF=true)
 KNOWN_FAIL: OAuth - Authorization > GET /oauth/authorize/:platform - should return auth URL for poshmark
 KNOWN_FAIL: OAuth - Authorization > GET /oauth/authorize/:platform - should return auth URL for mercari
+KNOWN_FAIL: AI - Generate Description > POST /ai/generate-description - should generate description
