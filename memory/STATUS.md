@@ -29,6 +29,32 @@
 ## Pending Review
 <!-- Post-commit hook auto-adds Bot commits here -->
 
+## Current State (2026-03-26)
+
+### postgres-migration branch — CI passing ✅
+- **Branch:** `feature/postgres-migration` — all commits pushed, CI green on `7b72df0`
+- **Latest commits pushing through CI:** Phase 4 route fixes (71de0f8, 2e06169)
+- **Migration plan status:** All 8 phases reviewed + verified
+
+#### Phase 4 fixes (this session) — undefined || null in postgres.js INSERTs:
+- `inventory.js`: COLLATE NOCASE → LOWER() (8x), sustainability_log || null
+- `listings.js`: originalPrice || null, categoryPath || null
+- `sales.js`: listingId, inventoryId, platformOrderId, buyerUsername, buyerAddress, notes → || null
+- `socialAuth.js`: email?.toLowerCase() ?? null, name ?? null, picture ?? null, oauth email ?? null
+- `shops.js`: username || null
+- `automations.js`: platform || null, schedule || null
+- `orders.js`: 9 optional body fields → || null
+
+#### All phases verified:
+- Phase 1-1b: database.js (postgres.js adapter), async server startup ✅
+- Phase 2: pg-schema.sql consolidated DDL ✅
+- Phase 3: All SQLite syntax converted (COLLATE NOCASE, datetime, julianday, etc.) ✅
+- Phase 4: Key route files fixed for undefined values ✅
+- Phase 5: worker/ Playwright + BullMQ (index.js, Dockerfile, bots/) ✅
+- Phase 6: Dockerfile (libvips42, no SQLite), email.js (Resend), CSP (wss://vaultlister.com) ✅
+- Phase 7: ci.yml (PostgreSQL services), deploy.yml (Railway auto-deploy) ✅
+- Phase 8: pg-backup.js, pg-restore.js, monitoring.js pg_database_size ✅
+
 ## Current State (2026-03-25)
 - **Last commit:** `455ea8e` on master (pending push)
 - **E2E suite: 2429 pass / 179 fail** (full suite with Redis wiring; all 179 failures are pre-existing baseline)
@@ -64,6 +90,30 @@
   - manifest.json: host_permissions + content_scripts updated for all new platforms
 - `41267ea`: chore: M11 — trivy-action bump 0.32.0→0.35.0; closed Dependabot PR #17
 - `455ea8e`: feat(redis): wire Redis into all 7 in-memory consumers (rateLimiter, enhancedMFA, socialAuth, receiptParser, barcode, analytics, idempotency)
+
+## Active Branch: feature/postgres-migration
+- **Worktree:** `.worktrees/postgres-migration`
+- **Phase 1 COMPLETE** (2026-03-25):
+  - `b9b8d36`: feat(db): Phase 1 — replace bun:sqlite with postgres.js adapter
+  - `6117b07`: [AUTO] fix(db): add missing await to query calls in Phase 1 modified route files
+  - database.js rewritten; connectionPool.js deleted; 4 transaction bugs fixed; bun add postgres / bun remove better-sqlite3
+  - **Phase 3 note:** 18 unawaited `query.transaction()` calls in 14 files — Phase 3a scope
+- **Phase 1b COMPLETE** (2026-03-25):
+  - `23a1804`: feat(server): Phase 1b — async main() + middleware async conversion
+  - `b0dc892`: fix(server): Phase 1b corrections — shutdown order + checkTierPermission async
+  - async main(), await initializeDatabase() before Bun.serve(), closeDatabase() in shutdown (correct order: stop→Redis→DB)
+  - csrf.js/auth.js/requestLogger.js/rateLimiter.js all async
+  - checkTierPermission made async + 6 callers updated (ai, analytics, automations, inventory×2, shops)
+  - Unit test baseline maintained: 55 pass / 3 fail
+- **Phase 2 COMPLETE** (2026-03-25):
+  - `b452a7e`: feat(db): Phase 2 — consolidated PostgreSQL schema (189 tables, FTS→tsvector)
+  - `efc2c5e`: fix(db): Phase 2 corrections — trigger idempotency, analytics prepare, TIMESTAMPTZ
+  - `f58c7a8`: fix(db): remaining TEXT→TIMESTAMPTZ in oauth_accounts/price_predictions/google_tokens
+  - pg-schema.sql: 3663 lines, BEGIN/COMMIT, 4 tsvector+GIN triggers, all types converted
+  - 11 service/route files: embedded CREATE TABLE removed
+  - docker-compose.yml: postgres:17-alpine added
+  - **Phase 3 note:** FTS query sites (inventory.js, imageBank.js, help.js) deferred — Phase 3 query migration
+  - **Next:** Phase 3 (query migration — 119 files: await, datetime→NOW(), LIKE→ILIKE, etc.)
 
 ## Next Tasks
 1. **Sprint Board P0/P1 config (user action required):**
