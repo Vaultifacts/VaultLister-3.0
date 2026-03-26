@@ -253,7 +253,7 @@ async function runMigrations() {
             CREATE TABLE IF NOT EXISTS migrations (
                 id SERIAL PRIMARY KEY,
                 name TEXT UNIQUE NOT NULL,
-                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                applied_at TIMESTAMPTZ DEFAULT NOW()
             )
         `);
 
