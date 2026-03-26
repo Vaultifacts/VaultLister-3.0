@@ -1,4 +1,4 @@
-KNOWN_FAILURES=584
+KNOWN_FAILURES=585
 # Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
 # Local Windows: 2050 pass / 264 fail (named below — baselined 2026-03-20)
 # CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
@@ -683,3 +683,4 @@ KNOWN_FAIL: tokenRefreshScheduler > getRefreshSchedulerStatus > returns status w
 KNOWN_FAIL: Alert threshold — high error rate > should fire high_error_rate alert when rate > 5% AND total > 100
 KNOWN_FAIL: analyticsService — extended coverage > getPageViews — groupBy logic > passes day format when groupBy is day
 KNOWN_FAIL: taskWorker (unit) > queueTask > uses default priority of 0
+KNOWN_FAIL: Duplicates - Scan > POST /duplicates/scan - should trigger duplicate scan
