@@ -443,10 +443,10 @@ export async function inventoryRouter(ctx) {
                 INSERT INTO sustainability_log (id, user_id, inventory_id, category, water_saved_liters, co2_saved_kg, waste_prevented_kg)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `, [
-                uuidv4(), user.id, id, category,
-                sustainabilityScore.waterSaved,
-                sustainabilityScore.co2Saved,
-                sustainabilityScore.wastePrevented
+                uuidv4(), user.id, id, category || null,
+                sustainabilityScore.waterSaved || 0,
+                sustainabilityScore.co2Saved || 0,
+                sustainabilityScore.wastePrevented || 0
             ]);
         }
 
