@@ -371,15 +371,15 @@ const router = {
                 if (isInitialLoad && err.message === '__route_timeout__') {
                     console.warn(`[Router] Timeout loading '${path}', rendering without data`);
                     try {
-                        const pageRenderer = pages[path] || pages[path.replace(/-/g, '')] || pages.dashboard;
+                        const pageRenderer = window.pages[path] || window.pages[path.replace(/-/g, '')] || window.pages.dashboard;
                         if (typeof pageRenderer === 'function') {
                             renderApp(pageRenderer());
                         } else {
-                            renderApp(pages.dashboard());
+                            renderApp(window.pages.dashboard());
                         }
                     } catch (renderErr) {
                         console.error('[Router] Fallback render failed:', renderErr);
-                        renderApp(pages.dashboard());
+                        renderApp(window.pages.dashboard());
                     }
                 } else {
                     console.error(`[Router] Error rendering page '${path}':`, err);
@@ -455,8 +455,8 @@ const router = {
         this.handleRoute(true).catch(err => {
             console.error('[Router] Unhandled init error:', err);
             hideLoadingScreen();
-            try { renderApp(pages.dashboard()); } catch (_) {
-                try { render(pages.login()); } catch (__) {}
+            try { renderApp(window.pages.dashboard()); } catch (_) {
+                try { render(window.pages.login()); } catch (__) {}
             }
         });
     }

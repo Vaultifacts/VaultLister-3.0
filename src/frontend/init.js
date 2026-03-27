@@ -99,28 +99,28 @@ async function initApp() {
     }
 
     // Register routes
-    router.register('login', () => render(pages.login()));
-    router.register('register', () => render(pages.register()));
-    router.register('forgot-password', () => render(pages.forgotPassword()));
-    router.register('reset-password', () => render(pages.resetPassword({ mode: 'form' })));
-    router.register('email-verification', () => render(pages.emailVerification()));
+    router.register('login', () => render(window.pages.login()));
+    router.register('register', () => render(window.pages.register()));
+    router.register('forgot-password', () => render(window.pages.forgotPassword()));
+    router.register('reset-password', () => render(window.pages.resetPassword({ mode: 'form' })));
+    router.register('email-verification', () => render(window.pages.emailVerification()));
     router.register('verify-email', async () => {
         const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
         const token = params.get('token');
         if (!token) {
-            render(pages.verifyEmail(false, 'No verification token found in the link.'));
+            render(window.pages.verifyEmail(false, 'No verification token found in the link.'));
             return;
         }
-        render(pages.verifyEmail(null, 'Verifying your email\u2026'));
+        render(window.pages.verifyEmail(null, 'Verifying your email\u2026'));
         try {
             const data = await api.get(`/auth/verify-email?token=${encodeURIComponent(token)}`);
-            render(pages.verifyEmail(true, data.message || 'Email verified successfully! You can now log in.'));
+            render(window.pages.verifyEmail(true, data.message || 'Email verified successfully! You can now log in.'));
         } catch (err) {
-            render(pages.verifyEmail(false, err.message || 'Verification failed. Please try again.'));
+            render(window.pages.verifyEmail(false, err.message || 'Verification failed. Please try again.'));
         }
     });
     router.register('dashboard', () => {
-        renderApp(pages.dashboard());
+        renderApp(window.pages.dashboard());
         // Initialize resize handles and animations after DOM update
         setTimeout(() => {
             widgetManager.initResize();
@@ -134,219 +134,219 @@ async function initApp() {
         }, 100);
     });
     router.register('inventory', async () => {
-        renderApp(pages.inventory());
+        renderApp(window.pages.inventory());
         await handlers.loadInventory();
-        renderApp(pages.inventory());
+        renderApp(window.pages.inventory());
     });
     router.register('listings', async () => {
-        renderApp(pages.listings());
+        renderApp(window.pages.listings());
         store.setState({ listingsTab: 'listings' });
         await Promise.all([
             handlers.loadListings(),
             handlers.loadListingFolders()
         ]);
-        renderApp(pages.listings());
+        renderApp(window.pages.listings());
     });
     router.register('crosslist', () => router.navigate('listings'));
     router.register('templates', () => {
         store.setState({ listingsTab: 'templates' });
-        renderApp(pages.listings());
+        renderApp(window.pages.listings());
     });
-    router.register('automations', () => renderApp(pages.automations()));
+    router.register('automations', () => renderApp(window.pages.automations()));
     router.register('offers', async () => {
-        renderApp(pages.offers());
+        renderApp(window.pages.offers());
         await handlers.loadOffers();
-        renderApp(pages.offers());
+        renderApp(window.pages.offers());
     });
-    router.register('sales', () => renderApp(pages.sales()));
-    router.register('analytics', () => renderApp(pages.analytics()));
-    router.register('financials', () => renderApp(pages.financials()));
-    router.register('shops', () => renderApp(pages.shops()));
+    router.register('sales', () => renderApp(window.pages.sales()));
+    router.register('analytics', () => renderApp(window.pages.analytics()));
+    router.register('financials', () => renderApp(window.pages.financials()));
+    router.register('shops', () => renderApp(window.pages.shops()));
     router.register('platform-health', async () => {
-        renderApp(pages.platformHealth());
+        renderApp(window.pages.platformHealth());
         await handlers.loadPlatformHealth();
-        renderApp(pages.platformHealth());
+        renderApp(window.pages.platformHealth());
     });
     router.register('recently-deleted', async () => {
-        renderApp(pages.recentlyDeleted());
+        renderApp(window.pages.recentlyDeleted());
         await handlers.loadDeletedItems();
-        renderApp(pages.recentlyDeleted());
+        renderApp(window.pages.recentlyDeleted());
     });
     router.register('report-builder', async () => {
-        renderApp(pages.reportBuilder());
+        renderApp(window.pages.reportBuilder());
         await handlers.loadReports();
-        renderApp(pages.reportBuilder());
+        renderApp(window.pages.reportBuilder());
     });
-    router.register('settings', () => renderApp(pages.settings()));
-    router.register('account', () => renderApp(pages.account()));
+    router.register('settings', () => renderApp(window.pages.settings()));
+    router.register('account', () => renderApp(window.pages.account()));
     router.register('admin-metrics', async () => {
-        renderApp(pages.adminMetrics());
+        renderApp(window.pages.adminMetrics());
         await handlers.refreshAdminMetrics?.();
-        renderApp(pages.adminMetrics());
+        renderApp(window.pages.adminMetrics());
     });
-    router.register('community', () => renderApp(pages.community()));
-    router.register('help', () => renderApp(pages.help()));
+    router.register('community', () => renderApp(window.pages.community()));
+    router.register('help', () => renderApp(window.pages.help()));
 
     // Main section pages
     router.register('orders', async () => {
-        renderApp(pages.orders());
+        renderApp(window.pages.orders());
         await handlers.loadOrders();
-        renderApp(pages.orders());
+        renderApp(window.pages.orders());
     });
     // Consolidated: Orders & Sales page
     router.register('orders-sales', async () => {
-        renderApp(pages.orders());
+        renderApp(window.pages.orders());
         await Promise.all([handlers.loadOrders(), handlers.loadSales()]);
-        renderApp(pages.orders());
+        renderApp(window.pages.orders());
     });
-    router.register('checklist', () => renderApp(pages.checklist()));
-    router.register('calendar', () => renderApp(pages.calendar()));
+    router.register('checklist', () => renderApp(window.pages.checklist()));
+    router.register('calendar', () => renderApp(window.pages.calendar()));
     // Consolidated: Planner page
     router.register('planner', async () => {
-        renderApp(pages.checklist());
+        renderApp(window.pages.checklist());
         await handlers.loadChecklistItems();
-        renderApp(pages.checklist());
+        renderApp(window.pages.checklist());
     });
-    router.register('size-charts', () => renderApp(pages.sizeCharts()));
+    router.register('size-charts', () => renderApp(window.pages.sizeCharts()));
     router.register('image-bank', async () => {
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
         await handlers.loadImageStorageStats();
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     });
 
     // Tools section pages
     router.register('sku-rules', async () => {
-        renderApp(pages.skuRules());
+        renderApp(window.pages.skuRules());
         await handlers.loadSkuRules();
-        renderApp(pages.skuRules());
+        renderApp(window.pages.skuRules());
     });
 
     // Business section pages
     router.register('receipt-parser', async () => {
-        renderApp(pages.receiptParser());
+        renderApp(window.pages.receiptParser());
         await handlers.loadReceiptQueue();
         await handlers.loadReceiptVendors();
         await handlers.loadEmailAccounts();
-        renderApp(pages.receiptParser());
+        renderApp(window.pages.receiptParser());
     });
 
     // Intelligence section pages
     router.register('heatmaps', async () => {
-        renderApp(pages.heatmaps());
+        renderApp(window.pages.heatmaps());
         await handlers.loadHeatmapData();
-        renderApp(pages.heatmaps());
+        renderApp(window.pages.heatmaps());
     });
     router.register('predictions', async () => {
-        renderApp(pages.predictions());
+        renderApp(window.pages.predictions());
         await handlers.loadPredictions();
-        renderApp(pages.predictions());
+        renderApp(window.pages.predictions());
     });
     router.register('suppliers', async () => {
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
         await handlers.loadSuppliers();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     });
     router.register('market-intel', async () => {
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
         await handlers.loadMarketIntel();
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     });
 
     // Integrations section pages
     router.register('webhooks', async () => {
-        renderApp(pages.webhooks());
+        renderApp(window.pages.webhooks());
         await handlers.loadWebhooks();
-        renderApp(pages.webhooks());
+        renderApp(window.pages.webhooks());
     });
     router.register('push-notifications', async () => {
-        renderApp(pages.pushNotifications());
+        renderApp(window.pages.pushNotifications());
         await handlers.loadPushStatus();
-        renderApp(pages.pushNotifications());
+        renderApp(window.pages.pushNotifications());
     });
 
     // Settings section pages
     router.register('shipping-profiles', async () => {
-        renderApp(pages.shippingProfiles());
+        renderApp(window.pages.shippingProfiles());
         await handlers.loadShippingProfiles();
-        renderApp(pages.shippingProfiles());
+        renderApp(window.pages.shippingProfiles());
     });
     router.register('teams', async () => {
-        renderApp(pages.teams());
+        renderApp(window.pages.teams());
         await handlers.loadTeamsPage();
-        renderApp(pages.teams());
+        renderApp(window.pages.teams());
     });
-    router.register('plans-billing', () => renderApp(pages.plansBilling()));
-    router.register('affiliate', () => renderApp(pages.affiliate()));
-    router.register('notifications', () => renderApp(pages.notifications()));
-    router.register('connections', () => renderApp(pages.connections()));
-    router.register('terms-of-service', () => renderApp(pages.termsOfService()));
-    router.register('privacy-policy', () => renderApp(pages.privacyPolicy()));
-    router.register('refer-friend', () => renderApp(pages.referFriend()));
+    router.register('plans-billing', () => renderApp(window.pages.plansBilling()));
+    router.register('affiliate', () => renderApp(window.pages.affiliate()));
+    router.register('notifications', () => renderApp(window.pages.notifications()));
+    router.register('connections', () => renderApp(window.pages.connections()));
+    router.register('terms-of-service', () => renderApp(window.pages.termsOfService()));
+    router.register('privacy-policy', () => renderApp(window.pages.privacyPolicy()));
+    router.register('refer-friend', () => renderApp(window.pages.referFriend()));
 
     // Help section pages
     router.register('support-articles', async () => {
-        renderApp(pages.supportArticles());
+        renderApp(window.pages.supportArticles());
         await Promise.all([handlers.loadFAQs(), handlers.loadArticles()]);
-        renderApp(pages.supportArticles());
+        renderApp(window.pages.supportArticles());
     });
-    router.register('report-bug', () => renderApp(pages.reportBug()));
-    router.register('tutorials', () => renderApp(pages.tutorials()));
+    router.register('report-bug', () => renderApp(window.pages.reportBug()));
+    router.register('tutorials', () => renderApp(window.pages.tutorials()));
 
     // Other section pages
     router.register('roadmap', async () => {
-        renderApp(pages.roadmap());
+        renderApp(window.pages.roadmap());
         await handlers.loadRoadmapFeatures();
-        renderApp(pages.roadmap());
+        renderApp(window.pages.roadmap());
     });
-    router.register('suggest-features', () => renderApp(pages.suggestFeatures()));
+    router.register('suggest-features', () => renderApp(window.pages.suggestFeatures()));
     router.register('submit-feedback', async () => {
-        renderApp(pages.submitFeedback());
+        renderApp(window.pages.submitFeedback());
         await handlers.loadUserFeedback();
-        renderApp(pages.submitFeedback());
+        renderApp(window.pages.submitFeedback());
     });
-    router.register('changelog', () => renderApp(pages.changelog()));
+    router.register('changelog', () => renderApp(window.pages.changelog()));
 
     // Help & Support, Feedback, and Transactions pages
-    router.register('help-support', () => renderApp(pages.helpSupport()));
+    router.register('help-support', () => renderApp(window.pages.helpSupport()));
     router.register('feedback-suggestions', async () => {
-        renderApp(pages.feedbackSuggestions());
+        renderApp(window.pages.feedbackSuggestions());
         await handlers.loadTrendingFeedback();
-        renderApp(pages.feedbackSuggestions());
+        renderApp(window.pages.feedbackSuggestions());
     });
     router.register('feedback-analytics', async () => {
-        renderApp(pages.feedbackAnalytics());
+        renderApp(window.pages.feedbackAnalytics());
         await handlers.loadFeedbackAnalytics();
-        renderApp(pages.feedbackAnalytics());
+        renderApp(window.pages.feedbackAnalytics());
     });
-    router.register('transactions', () => renderApp(pages.transactions()));
+    router.register('transactions', () => renderApp(window.pages.transactions()));
 
     // Phase 5 feature pages
     router.register('smart-relisting', async () => {
-        renderApp(pages.smartRelisting());
+        renderApp(window.pages.smartRelisting());
         await handlers.loadRelistingData();
-        renderApp(pages.smartRelisting());
+        renderApp(window.pages.smartRelisting());
     });
     router.register('shipping-labels', async () => {
-        renderApp(pages.shippingLabelsPage());
+        renderApp(window.pages.shippingLabelsPage());
         await handlers.loadShippingLabelsData();
-        renderApp(pages.shippingLabelsPage());
+        renderApp(window.pages.shippingLabelsPage());
     });
     router.register('inventory-import', async () => {
-        renderApp(pages.inventoryImport());
+        renderApp(window.pages.inventoryImport());
         await handlers.loadImportData();
-        renderApp(pages.inventoryImport());
+        renderApp(window.pages.inventoryImport());
     });
 
     // Phase 6 feature pages
     router.register('whatnot-live', async () => {
-        renderApp(pages.whatnotLive());
+        renderApp(window.pages.whatnotLive());
         await handlers.loadWhatnotData();
-        renderApp(pages.whatnotLive());
+        renderApp(window.pages.whatnotLive());
     });
     router.register('reports', async () => {
-        renderApp(pages.reports());
+        renderApp(window.pages.reports());
         await handlers.loadReportsData();
-        renderApp(pages.reports());
+        renderApp(window.pages.reports());
     });
 
     // AR Preview
@@ -354,15 +354,15 @@ async function initApp() {
         if (!store.state.inventory || store.state.inventory.length === 0) {
             await handlers.loadInventory().catch(() => {});
         }
-        renderApp(pages.arPreview());
+        renderApp(window.pages.arPreview());
     });
 
     // Company section pages
-    router.register('about', () => renderApp(pages.about()));
-    router.register('terms', () => renderApp(pages.terms()));
-    router.register('privacy', () => renderApp(pages.privacy()));
+    router.register('about', () => renderApp(window.pages.about()));
+    router.register('terms', () => renderApp(window.pages.terms()));
+    router.register('privacy', () => renderApp(window.pages.privacy()));
 
-    router.register('404', () => renderApp(pages.notFound()));
+    router.register('404', () => renderApp(window.pages.notFound()));
 
     // Initialize voice commands - disabled
     // voiceCommands.init();
@@ -484,7 +484,7 @@ async function initApp() {
     console.error('App initialization error:', error);
     // On fatal init error, force-show login page so user isn't stuck
     hideLoadingScreen();
-    try { render(pages.login()); } catch (_) {}
+    try { render(window.pages.login()); } catch (_) {}
   } finally {
     hideLoadingScreen();
   }
