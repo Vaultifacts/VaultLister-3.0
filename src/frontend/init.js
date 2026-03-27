@@ -693,6 +693,7 @@ window.widgetManager = widgetManager;
 window.tablePrefs = tablePrefs;
 window.renderApp = renderApp;
 window.pages = pages;
+window.components = components;
 window.pomodoroTimer = pomodoroTimer;
 window.kanbanBoard = kanbanBoard;
 window.taskTemplates = taskTemplates;

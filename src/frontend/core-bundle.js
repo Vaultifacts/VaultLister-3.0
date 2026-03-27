@@ -34,10 +34,12 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, m => map[m]);
 }
 
-// For INTERNAL template HTML only — allows event handler attributes.
-// NEVER pass user-supplied content to this function.
+// For INTERNAL template HTML only — allows event handler attributes so inline
+// onclick/onchange patterns in page templates continue to work.
+// NEVER pass user-supplied content (search input, item titles, usernames, etc.)
+// directly to this function — use sanitizeUserContent() for that.
 function sanitizeHTML(html) {
-    if (typeof DOMPurify === 'undefined') return String(html).replace(/<[^>]*>/g, '');
+    if (typeof DOMPurify === 'undefined') return html;
     return DOMPurify.sanitize(html, {
         SANITIZE_DOM: false,
         ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
@@ -46,7 +48,9 @@ function sanitizeHTML(html) {
     });
 }
 
-// For USER-SUPPLIED content — strict mode, strips all event handlers.
+// For USER-SUPPLIED content — strict mode, strips all event handlers and
+// dangerous attributes. Use whenever rendering data from API responses,
+// search results, user profile fields, item titles, notes, etc.
 function sanitizeUserContent(html) {
     if (typeof DOMPurify === 'undefined') return escapeHtml(html);
     return DOMPurify.sanitize(html);
@@ -15172,7 +15176,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '2468dff8';
+    const v = 'a1f1463b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27509,6 +27513,7 @@ window.widgetManager = widgetManager;
 window.tablePrefs = tablePrefs;
 window.renderApp = renderApp;
 window.pages = pages;
+window.components = components;
 window.pomodoroTimer = pomodoroTimer;
 window.kanbanBoard = kanbanBoard;
 window.taskTemplates = taskTemplates;
