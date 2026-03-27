@@ -144,7 +144,7 @@ PRs are squash-merged to keep `master` history clean.
 
 ## Agent Boundaries
 
-Eight specialized agents operate in this repo. Direct work to the right agent to avoid scope conflicts:
+Eleven specialized agents operate in this repo. Direct work to the right agent to avoid scope conflicts:
 
 | Agent | Owns | Never touches |
 |-------|------|--------------|
@@ -156,5 +156,8 @@ Eight specialized agents operate in this repo. Direct work to the right agent to
 | **Testing** | Bun:test unit tests, Playwright E2E, visual tests, coverage | Application code |
 | **DevOps-Deployment** | Docker, CI/CD, `.env.example`, backups, scaling, logging | `src/`, `tests/`, `e2e/` |
 | **NoCode-Workflow** | n8n, webhooks, JSON exports, external triggers | JavaScript code |
+| **Marketplace-Integration** | `src/shared/marketplaces/`, per-platform OAuth/API/bots, rate limiting, credential encryption | Frontend, general routes, sync orchestration, AI pipeline |
+| **Data-Sync-Orchestrator** | `src/backend/services/syncOrchestrator/`, sync state machine, conflict resolution, audit trail, rollback | Platform API calls, frontend, general routes |
+| **AI-Listing-Pipeline** | `src/shared/ai/listing-pipeline/`, prompt versioning, cost tracking, quality validation, batch generation | Marketplace API calls, inventory sync, frontend, general routes |
 
 If a change spans two agents (e.g. a new API endpoint that also needs a UI page), make two separate commits and describe the boundary in the PR.
