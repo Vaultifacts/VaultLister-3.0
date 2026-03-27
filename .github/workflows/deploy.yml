@@ -41,11 +41,11 @@ jobs:
       DISABLE_RATE_LIMIT: 'true'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: latest
+          bun-version: '1.3.9'
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -113,3 +113,36 @@ jobs:
         run: |
           echo "Tests passed — Railway will auto-deploy commit ${{ github.sha }} from GitHub source"
           echo "Monitor deployment at https://railway.app/project/73f90c33-83db-4301-a138-b5ca5a2c8de4"
+
+  notify-failure:
+    name: Notify Deploy Failure
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: failure()
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const title = `[Deploy Failure] ${context.sha.substring(0, 7)} — Run #${context.runNumber}`;
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'deploy-failure',
+              per_page: 10
+            });
+            const existing = issues.data.find(i => i.title.startsWith('[Deploy Failure]'));
+            if (existing) {
+              core.notice(`Deploy failure detected, existing issue: ${existing.html_url}`);
+              return;
+            }
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: `Production deploy failed.\n\n**Commit:** \`${context.sha}\`\n**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nPlease investigate and close this issue once resolved.`,
+              labels: ['deploy-failure', 'automated']
+            });
+            core.notice(`Created deploy failure issue: ${issue.data.html_url}`);
