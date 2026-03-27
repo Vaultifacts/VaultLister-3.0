@@ -20403,7 +20403,7 @@ const pages = {
                                     <div class="text-sm text-gray-500">${rule.description}</div>
                                     ${(() => {
                                         const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
-                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/\/g, '\\').replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
+                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
                                     })()}
                                     <div class="automation-card-stats">
                                         ${(() => {
@@ -20422,7 +20422,7 @@ const pages = {
                                                 return Math.round(ago / 86400000) + 'd ago';
                                             })();
                                             return `
-                                        <span class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/\/g, '\\').replace(/'/g, "\\'")}', '${rule.id}')" title="View run history">
+                                        <span class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${rule.id}')" title="View run history">
                                             ${components.icon('activity', 12)} ${runCount} runs
                                         </span>
                                         <span class="automation-card-stat">
@@ -20442,22 +20442,22 @@ const pages = {
                                     <button class="btn btn-secondary" onclick="handlers.testAutomation('${rule.id}')" title="Test Run" style="padding: 10px 16px;">
                                         ${components.icon('play', 16)} Test
                                     </button>
-                                    <button class="btn btn-ghost" onclick="handlers.editRuleSchedule('${rule.id}', '${escapeHtml(rule.name)}', '${(rule.schedule || '').replace(/\/g, '\\').replace(/'/g, "\\'")}')" title="Schedule" style="padding: 10px;">
+                                    <button class="btn btn-ghost" onclick="handlers.editRuleSchedule('${rule.id}', '${escapeHtml(rule.name)}', '${(rule.schedule || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Schedule" style="padding: 10px;">
                                         ${components.icon('clock', 20)}
                                     </button>
                                     <button class="btn btn-ghost" onclick="handlers.configureAutomation('${rule.id}', '${escapeHtml(rule.name)}', '${escapeHtml(rule.description)}', '${rule.platform}', '${rule.category}')" title="Configure" style="padding: 10px;">
                                         ${components.icon('settings', 20)}
                                     </button>
-                                    <button class="btn btn-ghost" onclick="handlers.shareAutomationAsTemplate('${rule.id}', '${escapeHtml(rule.name).replace(/\/g, '\\').replace(/'/g, "\\'")}')" title="Share as Template" style="padding: 10px;">
+                                    <button class="btn btn-ghost" onclick="handlers.shareAutomationAsTemplate('${rule.id}', '${escapeHtml(rule.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Share as Template" style="padding: 10px;">
                                         ${components.icon('share-2', 20)}
                                     </button>
-                                    <button class="btn btn-ghost" onclick="handlers.showRuleVersionHistory('${rule.id}', '${escapeHtml(rule.name).replace(/\/g, '\\').replace(/'/g, "\\'")}')" title="Version History" style="padding: 10px;">
+                                    <button class="btn btn-ghost" onclick="handlers.showRuleVersionHistory('${rule.id}', '${escapeHtml(rule.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Version History" style="padding: 10px;">
                                         ${components.icon('git-commit', 20)}
                                     </button>
-                                    <button class="btn btn-ghost" onclick="handlers.showRuleTagEditor('${rule.id}', '${escapeHtml(rule.name).replace(/\/g, '\\').replace(/'/g, "\\'")}')" title="Tags" style="padding: 10px;">
+                                    <button class="btn btn-ghost" onclick="handlers.showRuleTagEditor('${rule.id}', '${escapeHtml(rule.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Tags" style="padding: 10px;">
                                         ${components.icon('tag', 20)}
                                     </button>
-                                    <button class="btn btn-ghost" onclick="handlers.cloneAutomationRule('${rule.id}', '${escapeHtml(rule.name).replace(/\/g, '\\').replace(/'/g, "\\'")}')" title="Clone Rule" style="padding: 10px;">
+                                    <button class="btn btn-ghost" onclick="handlers.cloneAutomationRule('${rule.id}', '${escapeHtml(rule.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Clone Rule" style="padding: 10px;">
                                         ${components.icon('copy', 20)}
                                     </button>
                                     <label class="switch switch-lg switch-success" style="transform: scale(1.3);">
@@ -32599,7 +32599,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <div class="sku-rule-example mt-3">
                                     <span class="text-xs text-gray-400">Preview with sample data:</span>
                                     <div class="sku-preview" id="sku-preview-${rule.id}">
-                                        <button class="btn btn-sm btn-ghost" onclick="handlers.previewSkuPatternForRule('${rule.id}', '${escapeHtml(rule.pattern).replace(/\/g, '\\').replace(/'/g, "\\'")}')">
+                                        <button class="btn btn-sm btn-ghost" onclick="handlers.previewSkuPatternForRule('${rule.id}', '${escapeHtml(rule.pattern).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">
                                             Generate Preview
                                         </button>
                                     </div>
@@ -50900,7 +50900,7 @@ const handlers = {
                     <div class="followup-type-grid">
                         ${reminderTypes.map(t => `
                             <button type="button" class="followup-type-btn ${existingReminder?.type === t.id ? 'selected' : ''}"
-                                    onclick="handlers.selectFollowUpType('${t.id}', '${t.message.replace(/\/g, '\\').replace(/'/g, "\\'")}')">
+                                    onclick="handlers.selectFollowUpType('${t.id}', '${t.message.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">
                                 ${components.icon(t.icon, 18)}
                                 <span>${t.label}</span>
                             </button>
@@ -57929,7 +57929,7 @@ const handlers = {
                 const items = r.items_processed != null ? `${r.items_succeeded || 0}/${r.items_processed}` : '—';
                 const msg = escapeHtml(r.result_message || r.error_message || r.result || '');
                 const runId = r.id || '';
-                return `<tr style="cursor:pointer;" onclick="handlers.showRunDetail('${runId}', '${escapeHtml(ruleName).replace(/\/g, '\\').replace(/'/g, "\\'")}')">
+                return `<tr style="cursor:pointer;" onclick="handlers.showRunDetail('${runId}', '${escapeHtml(ruleName).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">
                     <td style="white-space:nowrap;">${date}</td>
                     <td><span style="color:${statusColor}; font-weight:600; text-transform:capitalize;">${status}</span></td>
                     <td>${items}</td>
@@ -58368,8 +58368,8 @@ const handlers = {
                 '<div class="flex-1"><span class="font-semibold text-sm">' + escapeHtml(c.name) + '</span>' +
                 '<span class="text-xs text-gray-400 ml-2">' + (c.item_count || 0) + ' items</span></div>' +
                 '<input type="color" value="' + (c.color || '#6366f1') + '" onchange="handlers.updateCategory(\'' + c.id + '\', { color: this.value })" style="width:28px;height:28px;border:none;cursor:pointer;" title="Change color">' +
-                '<button class="btn btn-xs btn-ghost" onclick="handlers.renameCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/\/g, '\\').replace(/'/g, "\\'") + '\')" title="Rename">' + components.icon('edit-2', 12) + '</button>' +
-                '<button class="btn btn-xs btn-ghost" style="color:var(--error);" onclick="handlers.deleteCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/\/g, '\\').replace(/'/g, "\\'") + '\')" title="Delete">' + components.icon('trash-2', 12) + '</button></div>'
+                '<button class="btn btn-xs btn-ghost" onclick="handlers.renameCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')" title="Rename">' + components.icon('edit-2', 12) + '</button>' +
+                '<button class="btn btn-xs btn-ghost" style="color:var(--error);" onclick="handlers.deleteCategory(\'' + c.id + '\', \'' + escapeHtml(c.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')" title="Delete">' + components.icon('trash-2', 12) + '</button></div>'
             ).join('') + '</div>';
         };
 
@@ -58708,7 +58708,7 @@ const handlers = {
             </div>
             <div class="modal-body">
                 <div id="rule-tags-list" class="flex flex-wrap gap-2 mb-4">
-                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/\/g, '\\').replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
+                    ${tags.map(t => '<span class="badge" style="font-size:12px;padding:4px 10px;background:var(--primary-100);color:var(--primary-700);">' + escapeHtml(t) + ' <span style="cursor:pointer;margin-left:4px;" onclick="handlers.removeRuleTag(\'' + ruleId + '\', \'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">&times;</span></span>').join('')}
                     ${tags.length === 0 ? '<span class="text-gray-400 text-sm">No tags yet</span>' : ''}
                 </div>
                 <div class="flex gap-2">
@@ -58800,7 +58800,7 @@ const handlers = {
                 <div id="supplier-list">
                     ${suppliers.length === 0 ? '<p class="text-gray-500 text-sm text-center py-4">No suppliers yet</p>' :
                     '<table class="table table-sm"><thead><tr><th>Name</th><th>Items</th><th>Avg Price</th><th>Actions</th></tr></thead><tbody>' +
-                    suppliers.map(s => '<tr><td class="font-semibold">' + escapeHtml(s.name) + '</td><td>' + (s.item_count || 0) + '</td><td>$' + (s.avg_price || 0).toFixed(2) + '</td><td class="flex gap-1"><button class="btn btn-xs btn-ghost" onclick="handlers.showSupplierPerformance(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/\/g, '\\').replace(/'/g, "\\'") + '\')" title="Performance">' + components.icon('trending-up', 12) + '</button><button class="btn btn-xs btn-danger" onclick="handlers.deleteSupplier(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/\/g, '\\').replace(/'/g, "\\'") + '\')">' + components.icon('trash', 12) + '</button></td></tr>').join('') +
+                    suppliers.map(s => '<tr><td class="font-semibold">' + escapeHtml(s.name) + '</td><td>' + (s.item_count || 0) + '</td><td>$' + (s.avg_price || 0).toFixed(2) + '</td><td class="flex gap-1"><button class="btn btn-xs btn-ghost" onclick="handlers.showSupplierPerformance(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')" title="Performance">' + components.icon('trending-up', 12) + '</button><button class="btn btn-xs btn-danger" onclick="handlers.deleteSupplier(\'' + s.id + '\', \'' + escapeHtml(s.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + components.icon('trash', 12) + '</button></td></tr>').join('') +
                     '</tbody></table>'}
                 </div>
             </div>
@@ -59110,7 +59110,7 @@ const handlers = {
         if (!templates || templates.length === 0) return '<div class="text-center py-6"><p class="text-gray-500 mb-2">No shared templates yet</p><p class="text-xs text-gray-400">Share your automation rules to see them here</p></div>';
         return '<div class="grid grid-cols-2 gap-3">' + templates.map(t => {
             const tags = (() => { try { return JSON.parse(t.tags); } catch { return []; } })();
-            return '<div class="card"><div class="card-body"><div class="flex justify-between items-start mb-2"><h4 class="font-semibold text-sm">' + escapeHtml(t.name) + '</h4><span class="badge badge-sm">' + escapeHtml(t.platform || 'all') + '</span></div><p class="text-xs text-gray-500 mb-2">' + escapeHtml(t.description || '') + '</p><div class="flex items-center gap-2 mb-2"><span class="text-xs text-gray-400">' + components.icon('user', 10) + ' ' + escapeHtml(t.author_name || 'Unknown') + '</span><span class="text-xs text-gray-400">' + components.icon('download', 10) + ' ' + (t.install_count || 0) + '</span></div>' + (tags.length > 0 ? '<div class="flex gap-1 mb-2">' + tags.slice(0, 3).map(tag => '<span class="badge badge-sm" style="font-size:10px;">' + escapeHtml(tag) + '</span>').join('') + '</div>' : '') + '<button class="btn btn-xs btn-primary" onclick="handlers.installTemplate(\'' + t.id + '\', \'' + escapeHtml(t.name).replace(/\/g, '\\').replace(/'/g, "\\'") + '\')">' + components.icon('download', 12) + ' Install</button></div></div>';
+            return '<div class="card"><div class="card-body"><div class="flex justify-between items-start mb-2"><h4 class="font-semibold text-sm">' + escapeHtml(t.name) + '</h4><span class="badge badge-sm">' + escapeHtml(t.platform || 'all') + '</span></div><p class="text-xs text-gray-500 mb-2">' + escapeHtml(t.description || '') + '</p><div class="flex items-center gap-2 mb-2"><span class="text-xs text-gray-400">' + components.icon('user', 10) + ' ' + escapeHtml(t.author_name || 'Unknown') + '</span><span class="text-xs text-gray-400">' + components.icon('download', 10) + ' ' + (t.install_count || 0) + '</span></div>' + (tags.length > 0 ? '<div class="flex gap-1 mb-2">' + tags.slice(0, 3).map(tag => '<span class="badge badge-sm" style="font-size:10px;">' + escapeHtml(tag) + '</span>').join('') + '</div>' : '') + '<button class="btn btn-xs btn-primary" onclick="handlers.installTemplate(\'' + t.id + '\', \'' + escapeHtml(t.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + components.icon('download', 12) + ' Install</button></div></div>';
         }).join('') + '</div>';
     },
 
@@ -67596,10 +67596,10 @@ const handlers = {
                 </div>
             </div>
             <div class="modal-footer">
-                ${!isFirst ? `<button class="btn btn-secondary" onclick="handlers._showWalkthroughStep('${page}', ${stepIndex - 1}, ${JSON.stringify(steps).replace(/\/g, '\\').replace(/'/g, "\\'")})">Previous</button>` : '<span></span>'}
+                ${!isFirst ? `<button class="btn btn-secondary" onclick="handlers._showWalkthroughStep('${page}', ${stepIndex - 1}, ${JSON.stringify(steps).replace(/\\/g, '\\\\').replace(/'/g, "\\'")})">Previous</button>` : '<span></span>'}
                 ${isLast
                     ? `<button class="btn btn-success" onclick="modals.close(); router.navigate('${page}'); toast.success('Walkthrough complete!');">Go to ${page.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</button>`
-                    : `<button class="btn btn-primary" onclick="handlers._showWalkthroughStep('${page}', ${stepIndex + 1}, ${JSON.stringify(steps).replace(/\/g, '\\').replace(/'/g, "\\'")})">Next Step</button>`
+                    : `<button class="btn btn-primary" onclick="handlers._showWalkthroughStep('${page}', ${stepIndex + 1}, ${JSON.stringify(steps).replace(/\\/g, '\\\\').replace(/'/g, "\\'")})">Next Step</button>`
                 }
             </div>
         `);

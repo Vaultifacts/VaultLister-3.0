@@ -2125,7 +2125,7 @@ Object.assign(pages, {
                                     <div class="text-sm text-gray-500">${rule.description}</div>
                                     ${(() => {
                                         const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
-                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/\/g, '\\').replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
+                                        return ruleTags.length > 0 ? '<div class="flex flex-wrap gap-1 mt-1">' + ruleTags.slice(0, 5).map(t => '<span class="badge badge-sm" style="font-size:10px;padding:1px 6px;background:var(--primary-100);color:var(--primary-700);cursor:pointer;" onclick="event.stopPropagation();handlers.filterByRuleTag(\'' + escapeHtml(t).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' + escapeHtml(t) + '</span>').join('') + (ruleTags.length > 5 ? '<span class="text-xs text-gray-400">+' + (ruleTags.length - 5) + '</span>' : '') + '</div>' : '';
                                     })()}
                                     <div class="automation-card-stats">
                                         ${(() => {
@@ -2144,7 +2144,7 @@ Object.assign(pages, {
                                                 return Math.round(ago / 86400000) + 'd ago';
                                             })();
                                             return `
-                                        <span class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/\/g, '\\').replace(/'/g, "\\'")}', '${rule.id}')" title="View run history">
+                                        <span class="automation-card-stat" style="cursor:pointer; text-decoration:underline dotted;" onclick="handlers.showAutomationRunHistory('${rule.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${rule.id}')" title="View run history">
                                             ${components.icon('activity', 12)} ${runCount} runs
                                         </span>
                                         <span class="automation-card-stat">
@@ -2164,22 +2164,22 @@ Object.assign(pages, {
                                     <button class="btn btn-secondary" onclick="handlers.testAutomation('${rule.id}')" title="Test Run" style="padding: 10px 16px;">
                                         ${components.icon('play', 16)} Test
                                     </button>
-                                    <button class="btn btn-ghost" onclick="handlers.editRuleSchedule('${rule.id}', '${escapeHtml(rule.name)}', '${(rule.schedule || '').replace(/\/g, '\\').replace(/'/g, "\\'")}')" title="Schedule" style="padding: 10px;">
+                                    <button class="btn btn-ghost" onclick="handlers.editRuleSchedule('${rule.id}', '${escapeHtml(rule.name)}', '${(rule.schedule || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Schedule" style="padding: 10px;">
                                         ${components.icon('clock', 20)}
                                     </button>
                                     <button class="btn btn-ghost" onclick="handlers.configureAutomation('${rule.id}', '${escapeHtml(rule.name)}', '${escapeHtml(rule.description)}', '${rule.platform}', '${rule.category}')" title="Configure" style="padding: 10px;">
                                         ${components.icon('settings', 20)}
                                     </button>
-                                    <button class="btn btn-ghost" onclick="handlers.shareAutomationAsTemplate('${rule.id}', '${escapeHtml(rule.name).replace(/\/g, '\\').replace(/'/g, "\\'")}')" title="Share as Template" style="padding: 10px;">
+                                    <button class="btn btn-ghost" onclick="handlers.shareAutomationAsTemplate('${rule.id}', '${escapeHtml(rule.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Share as Template" style="padding: 10px;">
                                         ${components.icon('share-2', 20)}
                                     </button>
-                                    <button class="btn btn-ghost" onclick="handlers.showRuleVersionHistory('${rule.id}', '${escapeHtml(rule.name).replace(/\/g, '\\').replace(/'/g, "\\'")}')" title="Version History" style="padding: 10px;">
+                                    <button class="btn btn-ghost" onclick="handlers.showRuleVersionHistory('${rule.id}', '${escapeHtml(rule.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Version History" style="padding: 10px;">
                                         ${components.icon('git-commit', 20)}
                                     </button>
-                                    <button class="btn btn-ghost" onclick="handlers.showRuleTagEditor('${rule.id}', '${escapeHtml(rule.name).replace(/\/g, '\\').replace(/'/g, "\\'")}')" title="Tags" style="padding: 10px;">
+                                    <button class="btn btn-ghost" onclick="handlers.showRuleTagEditor('${rule.id}', '${escapeHtml(rule.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Tags" style="padding: 10px;">
                                         ${components.icon('tag', 20)}
                                     </button>
-                                    <button class="btn btn-ghost" onclick="handlers.cloneAutomationRule('${rule.id}', '${escapeHtml(rule.name).replace(/\/g, '\\').replace(/'/g, "\\'")}')" title="Clone Rule" style="padding: 10px;">
+                                    <button class="btn btn-ghost" onclick="handlers.cloneAutomationRule('${rule.id}', '${escapeHtml(rule.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" title="Clone Rule" style="padding: 10px;">
                                         ${components.icon('copy', 20)}
                                     </button>
                                     <label class="switch switch-lg switch-success" style="transform: scale(1.3);">
@@ -12334,7 +12334,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <div class="sku-rule-example mt-3">
                                     <span class="text-xs text-gray-400">Preview with sample data:</span>
                                     <div class="sku-preview" id="sku-preview-${rule.id}">
-                                        <button class="btn btn-sm btn-ghost" onclick="handlers.previewSkuPatternForRule('${rule.id}', '${escapeHtml(rule.pattern).replace(/\/g, '\\').replace(/'/g, "\\'")}')">
+                                        <button class="btn btn-sm btn-ghost" onclick="handlers.previewSkuPatternForRule('${rule.id}', '${escapeHtml(rule.pattern).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">
                                             Generate Preview
                                         </button>
                                     </div>
