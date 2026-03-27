@@ -47,8 +47,14 @@ jobs:
       - name: Initialize test database
         run: bun run db:init
 
+      - name: Start server
+        run: |
+          bun run start &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/api/health > /dev/null && break; sleep 1; done
+          curl -sf http://localhost:3000/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+
       - name: Run unit tests
-        run: bun run test:unit
+        run: bun test src/tests/
 
   deploy:
     name: Deploy to Railway
