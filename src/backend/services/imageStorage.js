@@ -186,7 +186,9 @@ export async function saveImage(fileData, userId, originalFilename, mimeType = '
             filePath = r2Key;
             thumbnailPath = await generateThumbnail(buffer, userId, imageId);
         } else {
-            const userDir = join(UPLOADS_DIR, 'original', userId);
+            const safeUserId = String(userId).replace(/[^a-zA-Z0-9\-_]/g, '');
+            const userDir = join(UPLOADS_DIR, 'original', safeUserId);
+            if (!resolve(userDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');
             if (!existsSync(userDir)) {
                 mkdirSync(userDir, { recursive: true });
             }
@@ -240,7 +242,9 @@ export async function generateThumbnail(pathOrBuffer, userId, imageId, extension
         return r2Key;
     }
 
-    const userThumbDir = join(UPLOADS_DIR, 'thumbnails', userId);
+    const safeUserId = String(userId).replace(/[^a-zA-Z0-9\-_]/g, '');
+    const userThumbDir = join(UPLOADS_DIR, 'thumbnails', safeUserId);
+    if (!resolve(userThumbDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');
     if (!existsSync(userThumbDir)) {
         mkdirSync(userThumbDir, { recursive: true });
     }

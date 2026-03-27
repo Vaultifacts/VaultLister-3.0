@@ -340,7 +340,7 @@ const i18n = {
 
         // Replace placeholders
         for (const [param, value] of Object.entries(params)) {
-            translation = translation.replace(new RegExp(`\\{${param}\\}`, 'g'), value);
+            translation = translation.replace(new RegExp(`\\{${param.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\}`, 'g'), value); // nosemgrep: javascript.lang.security.detect-non-literal-regexp
         }
 
         return translation;

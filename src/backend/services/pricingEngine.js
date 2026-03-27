@@ -11,7 +11,7 @@ function secureRandomFloat() {
     return crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000;
 }
 function secureRandomInt(max) {
-    return crypto.getRandomValues(new Uint32Array(1))[0] % max;
+    return Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * max);
 }
 
 // Seasonality factors by month (index 0 = January)

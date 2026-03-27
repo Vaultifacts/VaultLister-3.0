@@ -29,7 +29,7 @@ const auth = {
         // Loading state
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="auth-spinner"></span> Signing in...';
+            submitBtn.innerHTML = sanitizeHTML('<span class="auth-spinner"></span> Signing in...');
         }
         inputs.forEach(i => i.disabled = true);
 
@@ -82,7 +82,7 @@ const auth = {
                     if (isIpBan) {
                         let secondsLeft = retryAfter || 900;
                         const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-                        alertDiv.innerHTML = `<strong>Too many failed attempts.</strong> Login is temporarily locked for security. Try again in <span id="login-ban-countdown">${fmt(secondsLeft)}</span>.`;
+                        alertDiv.innerHTML = sanitizeHTML(`<strong>Too many failed attempts.</strong> Login is temporarily locked for security. Try again in <span id="login-ban-countdown">${fmt(secondsLeft)}</span>.`);
                         alertDiv.className = 'login-alert alert-danger';
                         alertDiv.style.display = 'block';
                         if (window._loginBanCountdown) clearInterval(window._loginBanCountdown);
@@ -99,7 +99,7 @@ const auth = {
                     } else {
                         const mins = retryAfter ? Math.ceil(retryAfter / 60) : null;
                         const msg = mins ? `Too many login attempts. Please wait ${mins} minute${mins !== 1 ? 's' : ''}.` : 'Too many login attempts. Please wait a moment.';
-                        alertDiv.innerHTML = `<strong>Rate limited.</strong> ${msg}`;
+                        alertDiv.innerHTML = sanitizeHTML(`<strong>Rate limited.</strong> ${msg}`);
                         alertDiv.className = 'login-alert alert-warning';
                         alertDiv.style.display = 'block';
                     }
@@ -112,7 +112,7 @@ const auth = {
             if (alertDiv && error.data) {
                 if (error.data.locked) {
                     const mins = Math.ceil((error.data.retryAfter || 900) / 60);
-                    alertDiv.innerHTML = `<strong>Account locked.</strong> Too many failed attempts. Try again in ${mins} minute${mins !== 1 ? 's' : ''}.`;
+                    alertDiv.innerHTML = sanitizeHTML(`<strong>Account locked.</strong> Too many failed attempts. Try again in ${mins} minute${mins !== 1 ? 's' : ''}.`);
                     alertDiv.className = 'login-alert alert-danger';
                     alertDiv.style.display = 'block';
                     // Start countdown
@@ -127,10 +127,10 @@ const auth = {
                         }
                         const m = Math.floor(secondsLeft / 60);
                         const s = secondsLeft % 60;
-                        alertDiv.innerHTML = `<strong>Account locked.</strong> Try again in ${m}:${s.toString().padStart(2, '0')}`;
+                        alertDiv.innerHTML = sanitizeHTML(`<strong>Account locked.</strong> Try again in ${m}:${s.toString().padStart(2, '0')}`);
                     }, 1000);
                 } else if (typeof error.data.remainingAttempts === 'number' && error.data.remainingAttempts <= 3) {
-                    alertDiv.innerHTML = `<strong>Warning:</strong> ${error.data.remainingAttempts} attempt${error.data.remainingAttempts !== 1 ? 's' : ''} remaining before lockout.`;
+                    alertDiv.innerHTML = sanitizeHTML(`<strong>Warning:</strong> ${error.data.remainingAttempts} attempt${error.data.remainingAttempts !== 1 ? 's' : ''} remaining before lockout.`);
                     alertDiv.className = 'login-alert alert-warning';
                     alertDiv.style.display = 'block';
                 } else {
@@ -143,7 +143,7 @@ const auth = {
             // Restore form state
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Sign In';
+                submitBtn.innerHTML = sanitizeHTML('Sign In');
             }
             inputs.forEach(i => i.disabled = false);
         }
@@ -197,7 +197,7 @@ const auth = {
         // Loading state
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="auth-spinner"></span> Creating account...';
+            submitBtn.innerHTML = sanitizeHTML('<span class="auth-spinner"></span> Creating account...');
         }
         inputs.forEach(i => i.disabled = true);
 
@@ -218,7 +218,7 @@ const auth = {
             // Restore form state
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Create Account';
+                submitBtn.innerHTML = sanitizeHTML('Create Account');
             }
             inputs.forEach(i => i.disabled = false);
         }

@@ -440,7 +440,7 @@ Object.assign(handlers, {
         store.setState({ supplierSearchQuery: query });
         if (store.state.currentPage === 'suppliers') {
             const pageContent = pages.suppliers();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             const input = document.getElementById('supplier-search-input');
             if (input) input.focus();
         }
@@ -453,7 +453,7 @@ Object.assign(handlers, {
         store.setState({ supplierSortBy: sortBy });
         if (store.state.currentPage === 'suppliers') {
             const pageContent = pages.suppliers();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -600,7 +600,7 @@ Object.assign(handlers, {
                 </div>
             `;
 
-            document.getElementById('csv-preview').innerHTML = preview;
+            document.getElementById('csv-preview').innerHTML = sanitizeHTML(preview);
             document.getElementById('import-suppliers-btn').style.display = 'block';
         };
         reader.readAsText(file);
@@ -1403,7 +1403,7 @@ Object.assign(handlers, {
 
         toast.info('Analyzing market data...');
         const resultEl = document.getElementById('price-suggestion-result');
-        if (resultEl) resultEl.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 8px; color: var(--gray-500);">Analyzing comparable sales...</p></div>';
+        if (resultEl) resultEl.innerHTML = sanitizeHTML('<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 8px; color: var(--gray-500);">Analyzing comparable sales...</p></div>');
 
         setTimeout(() => {
             const basePrice = Math.floor(Math.random() * 80) + 20;
@@ -1414,7 +1414,7 @@ Object.assign(handlers, {
             const avgDays = Math.floor(Math.random() * 14) + 3;
 
             if (resultEl) {
-                resultEl.innerHTML = `
+                resultEl.innerHTML = sanitizeHTML(`
                     <div style="padding: 16px; background: var(--primary-50); border-radius: 8px; border: 1px solid var(--primary-200);">
                         <div style="text-align: center; margin-bottom: 16px;">
                             <div style="font-size: 12px; color: var(--gray-600);">Suggested Price Range</div>
@@ -1427,7 +1427,7 @@ Object.assign(handlers, {
                             <div><div style="font-size: 18px; font-weight: 700;">85%</div><div style="font-size: 11px; color: var(--gray-500);">Confidence</div></div>
                         </div>
                     </div>
-                `;
+                `);
             }
             toast.success('Price suggestion ready');
         }, 1500);
@@ -1646,7 +1646,7 @@ Object.assign(handlers, {
             if (!res.ok) throw new Error('Failed to run scenario');
             const data = await res.json();
             const r = data.results || {};
-            document.getElementById('scenario-results').innerHTML = `
+            document.getElementById('scenario-results').innerHTML = sanitizeHTML(`
                 <div class="card" style="padding: 16px;">
                     <h4>Scenario Results</h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
@@ -1656,8 +1656,8 @@ Object.assign(handlers, {
                         <div><strong>Impact:</strong> <span class="badge">${r.impact_level || 'moderate'}</span></div>
                     </div>
                 </div>
-            `;
-        } catch (err) { document.getElementById('scenario-results').innerHTML = '<p style="color: var(--text-error);">Failed to run scenario</p>'; }
+            `);
+        } catch (err) { document.getElementById('scenario-results').innerHTML = sanitizeHTML('<p style="color: var(--text-error);">Failed to run scenario</p>'); }
     },
 
     // Set Acquired Date for Inventory Item,

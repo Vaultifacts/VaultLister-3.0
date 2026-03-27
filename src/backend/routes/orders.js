@@ -12,7 +12,7 @@ const ALLOWED_RETURN_FIELDS = new Set(['return_status', 'return_tracking']);
 
 // Cryptographically secure random helpers (replaces Math.random())
 function secureRandomInt(max) {
-    return crypto.getRandomValues(new Uint32Array(1))[0] % max;
+    return Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * max);
 }
 function secureRandomFloat() {
     return crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000;

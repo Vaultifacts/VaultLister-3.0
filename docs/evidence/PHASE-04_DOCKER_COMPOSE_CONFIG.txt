@@ -16,7 +16,7 @@ services:
       EMAIL_FROM: noreply@vaultlister.com
       GOOGLE_CLIENT_ID: ""
       GOOGLE_CLIENT_SECRET: ""
-      JWT_SECRET: 8f98a67a3a8b8b3d2861fae2abd9a4ff1e8cf2a6ee49d5bc1e8bb25a8edc4cc0
+      JWT_SECRET: <REDACTED>
       LOG_DIR: /app/logs
       NODE_ENV: development
       OPENAI_API_KEY: '[CONFIGURE]'

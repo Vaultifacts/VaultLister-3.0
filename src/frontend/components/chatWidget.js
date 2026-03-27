@@ -165,7 +165,7 @@ const ChatWidget = {
         const container = document.getElementById('chat-widget-container');
         if (!container) return;
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <!-- Floating Button -->
             <button class="chat-widget-button ${this.isOpen ? 'active' : ''}"
                     onclick="ChatWidget.toggle()"
@@ -220,7 +220,7 @@ const ChatWidget = {
                     </div>
                 </div>
             ` : ''}
-        `;
+        `);
     },
 
     // Render single message

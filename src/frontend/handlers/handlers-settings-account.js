@@ -362,7 +362,7 @@ Object.assign(handlers, {
 
         if (!query || query.trim().length === 0) {
             resultsEl.style.display = 'none';
-            resultsEl.innerHTML = sanitizeHTML('');
+            resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(''));
             return;
         }
 
@@ -385,12 +385,12 @@ Object.assign(handlers, {
         );
 
         if (matches.length === 0) {
-            resultsEl.innerHTML = sanitizeHTML('<div style="padding:12px 16px; color:var(--gray-500); font-size:13px;">No matching settings found</div>');
+            resultsEl.innerHTML =sanitizeHTML( sanitizeHTML('<div style="padding:12px 16px; color:var(--gray-500); font-size:13px;">No matching settings found</div>'));
             resultsEl.style.display = 'block';
             return;
         }
 
-        resultsEl.innerHTML = sanitizeHTML(matches.map(m => `
+        resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(matches.map(m => `
             <div class="settings-search-result" onclick="handlers.setSettingsTab('${m.tab}'); document.getElementById('settings-search-input').value=''; document.getElementById('settings-search-results').style.display='none';"
                 style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--gray-100);"
                 onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
@@ -400,7 +400,7 @@ Object.assign(handlers, {
                     <div style="font-size:11px; color:var(--gray-500); text-transform:capitalize;">${m.tab} tab</div>
                 </div>
             </div>
-        `).join(''));
+        `).join('')));
         resultsEl.style.display = 'block';
     },
 
@@ -1218,12 +1218,12 @@ Object.assign(handlers, {
         if (!select) return;
 
         if (!carrier || !serviceTypes[carrier]) {
-            select.innerHTML = sanitizeHTML('<option value="">Select carrier first</option>');
+            select.innerHTML =sanitizeHTML( sanitizeHTML('<option value="">Select carrier first</option>'));
             return;
         }
 
-        select.innerHTML = sanitizeHTML('<option value="">Select Service</option>' +
-            serviceTypes[carrier].map(s => `<option value="${s}">${s}</option>`).join(''));
+        select.innerHTML =sanitizeHTML( sanitizeHTML('<option value="">Select Service</option>' +
+            serviceTypes[carrier].map(s => `<option value="${s}">${s}</option>`).join('')));
     },
 
 
@@ -1260,7 +1260,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
             }
         } catch (error) {
             toast.error('Failed to create profile: ' + error.message);
@@ -1441,7 +1441,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
             }
         } catch (error) {
             toast.error('Failed to update profile: ' + error.message);
@@ -1459,7 +1459,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
             }
         } catch (error) {
             toast.error('Failed to set default: ' + error.message);
@@ -1479,7 +1479,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
             }
         } catch (error) {
             toast.error('Failed to delete profile: ' + error.message);
@@ -1507,7 +1507,7 @@ Object.assign(handlers, {
             await handlers.loadAutomations();
             if (store.state.currentPage === 'automations') {
                 const pageContent = pages.automations();
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
             }
         } catch (error) {
             toast.error(error.message);
@@ -1520,7 +1520,7 @@ Object.assign(handlers, {
         try { localStorage.setItem('vaultlister_automation_platform_filter', platform); } catch (e) { console.warn('Failed to save filter preference:', e); }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
         }
     },
 
@@ -1531,7 +1531,7 @@ Object.assign(handlers, {
         else if (!checked) { const idx = selected.indexOf(ruleId); if (idx > -1) selected.splice(idx, 1); }
         store.setState({ selectedAutomationIds: selected });
         if (store.state.currentPage === 'automations') {
-            document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());
+            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pages.automations()));
         }
     },
 
@@ -1539,7 +1539,7 @@ Object.assign(handlers, {
     clearAutomationSelection: function() {
         store.setState({ selectedAutomationIds: [] });
         if (store.state.currentPage === 'automations') {
-            document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());
+            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pages.automations()));
         }
     },
 
@@ -1557,7 +1557,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());
+                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pages.automations()));
             }
         } catch (e) {
             showToast('Bulk action failed: ' + (e.message || e), 'error');
@@ -1610,7 +1610,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());
+                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pages.automations()));
             }
         } catch (e) {
             showToast('Failed to apply schedule: ' + (e.message || e), 'error');
@@ -1623,7 +1623,7 @@ Object.assign(handlers, {
         try { localStorage.setItem('vaultlister_automation_sort', value); } catch (_) {}
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
         }
     },
 
@@ -1692,7 +1692,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());
+                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pages.automations()));
             }
         } catch (e) {
             showToast('Failed to save schedule: ' + (e.message || e), 'error');
@@ -1726,7 +1726,7 @@ Object.assign(handlers, {
         }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
         }
     },
 
@@ -1926,7 +1926,7 @@ Object.assign(handlers, {
             // Force re-render
             if (store.state.currentPage === 'shops') {
                 const pageContent = pages.shops();
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
             }
         } catch (error) {
             console.error('Shop connection error:', error);
@@ -1952,7 +1952,7 @@ Object.assign(handlers, {
             // Force page re-render
             if (store.state.currentPage === 'shops') {
                 const pageContent = pages.shops();
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
             }
         } catch (error) {
             toast.error(error.message);
@@ -2030,7 +2030,7 @@ Object.assign(handlers, {
                     }
                     if (store.state.currentPage === 'shops') {
                         const pageContent = pages.shops();
-                        document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
+                        document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
                     }
                 }
             }, 500);
@@ -2644,8 +2644,8 @@ Object.assign(handlers, {
         customSizeInput?.classList.add('hidden');
 
         const options = sizeOptions[sizeType] || sizeOptions.clothing;
-        sizeSelect.innerHTML = sanitizeHTML('<option value="">Select size...</option>' +
-            options.map(size => `<option value="${size}">${size}</option>`).join(''));
+        sizeSelect.innerHTML =sanitizeHTML( sanitizeHTML('<option value="">Select size...</option>' +
+            options.map(size => `<option value="${size}">${size}</option>`).join('')));
     },
 
 
@@ -2891,7 +2891,7 @@ Object.assign(handlers, {
             { type: 'action', title: 'Keyboard Shortcuts', subtitle: 'View all shortcuts', action: 'handlers.showKeyboardShortcuts()', icon: 'help' }
         ];
 
-        overlay.innerHTML = sanitizeHTML(`
+        overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="global-search-modal">
                 <div class="global-search-input-wrapper">
                     ${components.icon('search', 20)}
@@ -2920,7 +2920,7 @@ Object.assign(handlers, {
                     <span>Esc Close</span>
                 </div>
             </div>
-        `);
+        `));
 
         document.body.appendChild(overlay);
 
@@ -2963,7 +2963,7 @@ Object.assign(handlers, {
         const resultsEl = document.getElementById('global-search-results');
         if (!resultsEl) return;
 
-        resultsEl.innerHTML = sanitizeHTML(`
+        resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="global-search-section">
                 <div class="global-search-section-title">${query ? 'Results' : 'Quick Actions'}</div>
                 ${filtered.length > 0 ? filtered.map((item, idx) => `
@@ -2976,7 +2976,7 @@ Object.assign(handlers, {
                     </div>
                 `).join('') : '<div class="p-4 text-center text-gray-500">No results found</div>'}
             </div>
-        `);
+        `));
 
         store.setState({ globalSearchFiltered: filtered, globalSearchIndex: 0 });
     },
@@ -3100,7 +3100,7 @@ Object.assign(handlers, {
                         const pageContent = pages.receiptParser();
                         const pageElement = document.querySelector('.page-content');
                         if (pageElement) {
-                            pageElement.innerHTML = sanitizeHTML(pageContent);
+                            pageElement.innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
                         }
                     }
                 } else if (event.data && event.data.type === 'email-oauth-error') {
@@ -3145,7 +3145,7 @@ Object.assign(handlers, {
                 const pageContent = pages.receiptParser();
                 const pageElement = document.querySelector('.page-content');
                 if (pageElement) {
-                    pageElement.innerHTML = sanitizeHTML(pageContent);
+                    pageElement.innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
                 }
             }
         } catch (error) {
@@ -3199,7 +3199,7 @@ Object.assign(handlers, {
                             const pageContent = pages.receiptParser();
                             const pageElement = document.querySelector('.page-content');
                             if (pageElement) {
-                                pageElement.innerHTML = sanitizeHTML(pageContent);
+                                pageElement.innerHTML =sanitizeHTML( sanitizeHTML(pageContent));
                             }
                         }
                     }
@@ -3239,7 +3239,7 @@ Object.assign(handlers, {
             const teams = data.teams || [];
 
             if (teams.length === 0) {
-                contentEl.innerHTML = sanitizeHTML(`
+                contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`
                     <div style="text-align: center; padding: 48px;">
                         ${components.icon('users', 48)}
                         <h3 style="margin-top: 16px; color: var(--gray-700);">No Teams Yet</h3>
@@ -3248,11 +3248,11 @@ Object.assign(handlers, {
                             ${components.icon('plus', 16)} Create Your First Team
                         </button>
                     </div>
-                `);
+                `));
                 return;
             }
 
-            contentEl.innerHTML = sanitizeHTML(`
+            contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="team-members-grid">
                     ${teams.map(team => `
                         <div class="team-member-card" style="cursor: pointer;" onclick="handlers.viewTeam('${team.id}')">
@@ -3267,9 +3267,9 @@ Object.assign(handlers, {
                         </div>
                     `).join('')}
                 </div>
-            `);
+            `));
         } catch (error) {
-            contentEl.innerHTML = sanitizeHTML(`<p style="color: var(--error);">Error loading teams: ${error.message}</p>`);
+            contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`<p style="color: var(--error);">Error loading teams: ${error.message}</p>`));
         }
     },
 
@@ -3278,19 +3278,19 @@ Object.assign(handlers, {
         const contentEl = document.getElementById('team-content');
         if (!contentEl) return;
 
-        contentEl.innerHTML = sanitizeHTML(`
+        contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div style="text-align: center; padding: 32px;">
                 <div class="spinner"></div>
                 <p style="margin-top: 12px; color: var(--gray-600);">Loading team...</p>
             </div>
-        `);
+        `));
 
         try {
             const data = await api.get(`/teams/${teamId}`);
             const team = data.team;
             const members = data.members || [];
 
-            contentEl.innerHTML = sanitizeHTML(`
+            contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div style="margin-bottom: 24px;">
                     <button class="btn btn-sm btn-ghost" onclick="handlers.loadTeams()">
                         ${components.icon('arrow-left', 14)} Back to Teams
@@ -3339,9 +3339,9 @@ Object.assign(handlers, {
                         </button>
                     </div>
                 ` : ''}
-            `);
+            `));
         } catch (error) {
-            contentEl.innerHTML = sanitizeHTML(`<p style="color: var(--error);">Error: ${error.message}</p>`);
+            contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`<p style="color: var(--error);">Error: ${error.message}</p>`));
         }
     },
 
@@ -4455,7 +4455,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-conditions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 condition-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');
+        row.innerHTML =sanitizeHTML( sanitizeHTML('<select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>'));
         container.appendChild(row);
     },
 
@@ -4464,7 +4464,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-actions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 action-row';
-        row.innerHTML = sanitizeHTML('<select class="form-select action-type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');
+        row.innerHTML =sanitizeHTML( sanitizeHTML('<select class="form-select action-type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>'));
         container.appendChild(row);
     },
 
@@ -4546,7 +4546,7 @@ Object.assign(handlers, {
         if (tabName === 'analytics' && !store.state.inventoryAnalytics) {
             handlers.loadInventoryAnalytics().then(() => {
                 const pane = document.querySelector('.inv-tab-pane[data-tab="analytics"]');
-                if (pane) pane.innerHTML = sanitizeHTML(handlers._renderInventoryAnalyticsContent());
+                if (pane) pane.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderInventoryAnalyticsContent()));
             });
         }
     },
@@ -4579,7 +4579,7 @@ Object.assign(handlers, {
             const salesData = (data.salesData || []).reverse();
             store.setState({ plTimeline: salesData });
             const el = document.getElementById('pl-timeline-chart');
-            if (el) el.innerHTML = sanitizeHTML(handlers._renderPLChart(salesData));
+            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderPLChart(salesData)));
         } catch (e) {
             toast.error('Failed to load P&L data');
         }
@@ -4630,7 +4630,7 @@ Object.assign(handlers, {
             const data = res.data || res;
             store.setState({ automationExperiments: data.experiments || data || [] });
             const el = document.getElementById('experiments-list');
-            if (el) el.innerHTML = sanitizeHTML(handlers._renderExperimentsList(store.state.automationExperiments));
+            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderExperimentsList(store.state.automationExperiments)));
         } catch (e) {
             toast.error('Failed to load experiments');
         }
@@ -4763,7 +4763,7 @@ Object.assign(handlers, {
             const data = res.data || res;
             store.setState({ inventoryForecast: data });
             const el = document.getElementById('forecast-content');
-            if (el) el.innerHTML = sanitizeHTML(handlers._renderForecastContent(data));
+            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderForecastContent(data)));
         } catch (e) { toast.error('Failed to load forecast'); }
     },
 
@@ -4786,7 +4786,7 @@ Object.assign(handlers, {
             const data = res.data || res;
             store.setState({ automationTemplates: data.templates || [] });
             const el = document.getElementById('template-marketplace');
-            if (el) el.innerHTML = sanitizeHTML(handlers._renderTemplateMarketplace(store.state.automationTemplates));
+            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderTemplateMarketplace(store.state.automationTemplates)));
         } catch (e) { toast.error('Failed to load templates'); }
     },
 
@@ -5371,7 +5371,7 @@ Object.assign(handlers, {
             const trends = data.trends || [];
             store.setState({ durationTrends: trends });
             const el = document.getElementById('duration-trends-chart');
-            if (el) el.innerHTML = sanitizeHTML(handlers._renderDurationTrendsChart(trends));
+            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderDurationTrendsChart(trends)));
         } catch (e) {
             toast.error('Failed to load duration trends');
         }
@@ -5444,7 +5444,7 @@ Object.assign(handlers, {
             const data = res.data || res;
             store.setState({ priceSuggestions: data.suggestions || [] });
             const el = document.getElementById('price-suggestions-content');
-            if (el) el.innerHTML = sanitizeHTML(handlers._renderPriceSuggestions(data.suggestions || []));
+            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderPriceSuggestions(data.suggestions || [])));
         } catch (e) {
             toast.error('Failed to load price suggestions');
         }
@@ -5557,7 +5557,7 @@ Object.assign(handlers, {
             const suggestions = (store.state.priceSuggestions || []).filter(s => s.id !== itemId);
             store.setState({ priceSuggestions: suggestions });
             const el = document.getElementById('price-suggestions-content');
-            if (el) el.innerHTML = sanitizeHTML(handlers._renderPriceSuggestions(suggestions));
+            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderPriceSuggestions(suggestions)));
         } catch (e) {
             toast.error('Failed to update price');
         }
@@ -5725,7 +5725,7 @@ Object.assign(handlers, {
             } catch (err) {
                 const loadingEl = document.getElementById('ar-preview-loading');
                 if (loadingEl) {
-                    loadingEl.innerHTML = sanitizeHTML(`<div style="text-align:center;padding:1rem;color:#fca5a5;">${components.icon('alert-circle', 24)}<p class="text-sm mt-2">Could not start preview</p><p class="text-xs mt-1" style="color:#9ca3af;">${escapeHtml(err.message || 'Unknown error')}</p></div>`);
+                    loadingEl.innerHTML =sanitizeHTML( sanitizeHTML(`<div style="text-align:center;padding:1rem;color:#fca5a5;">${components.icon('alert-circle', 24)}<p class="text-sm mt-2">Could not start preview</p><p class="text-xs mt-1" style="color:#9ca3af;">${escapeHtml(err.message || 'Unknown error')}</p></div>`));
                 }
                 console.error('[AR] Preview error:', err);
             }

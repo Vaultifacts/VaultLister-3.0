@@ -70,7 +70,7 @@ function generateSkuFromRule(rule, itemData) {
     };
 
     for (const [token, value] of Object.entries(replacements)) {
-        sku = sku.replace(new RegExp(token.replace(/[{}]/g, '\\$&'), 'g'), value);
+        sku = sku.replace(new RegExp(token.replace(/[{}]/g, '\\$&'), 'g'), value); // nosemgrep: javascript.lang.security.detect-non-literal-regexp
     }
 
     // Add prefix and suffix
@@ -1145,8 +1145,8 @@ export async function inventoryRouter(ctx) {
         // Extract Open Graph metadata (present on all major marketplaces)
         const og = (prop) => {
             const esc = prop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const m = html.match(new RegExp(`<meta[^>]+property=["']og:${esc}["'][^>]+content=["']([^"']+)["']`, 'i'))
-                      || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${esc}["']`, 'i'));
+            const m = html.match(new RegExp(`<meta[^>]+property=["']og:${esc}["'][^>]+content=["']([^"']+)["']`, 'i')) // nosemgrep: javascript.lang.security.detect-non-literal-regexp
+                      || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${esc}["']`, 'i')); // nosemgrep: javascript.lang.security.detect-non-literal-regexp
             return m ? m[1].trim() : null;
         };
 

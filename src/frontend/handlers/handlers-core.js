@@ -57,10 +57,10 @@ const handlers = {
             const icon = item.querySelector('.req-icon');
             if (met) {
                 item.classList.add('met');
-                if (icon) icon.innerHTML = '&#10003;';
+                if (icon) icon.innerHTML = sanitizeHTML('&#10003;');
             } else {
                 item.classList.remove('met');
-                if (icon) icon.innerHTML = '&#9675;';
+                if (icon) icon.innerHTML = sanitizeHTML('&#9675;');
             }
         });
 
@@ -188,7 +188,7 @@ const handlers = {
         });
 
         const files = this._selectedFiles[mode] || [];
-        container.innerHTML = files.map((file, index) => {
+        container.innerHTML = sanitizeHTML(files.map((file, index) => {
             const url = URL.createObjectURL(file);
             const isVideo = file.type.startsWith('video/');
 
@@ -205,7 +205,7 @@ const handlers = {
                     <button type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
                 </div>
             `;
-        }).join('');
+        }).join(''));
 
         // Update file input to enable form submission with files
         const inputId = mode === 'add' ? 'item-images-input' : 'edit-item-images-input';
@@ -474,7 +474,7 @@ const handlers = {
                         container.style.display = items.length > 0 ? 'block' : 'none';
                         const list = document.getElementById('similar-feedback-list');
                         if (list && items.length > 0) {
-                            list.innerHTML = items.map(item => `
+                            list.innerHTML = sanitizeHTML(items.map(item => `
                                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
                                     <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                     <div style="display: flex; align-items: center; gap: 8px;">
@@ -482,7 +482,7 @@ const handlers = {
                                         <span style="font-size: 12px; color: var(--gray-500);">${(item.votes_up || 0) - (item.votes_down || 0)} votes</span>
                                     </div>
                                 </div>
-                            `).join('');
+                            `).join(''));
                         }
                     }
                 } catch (error) {
@@ -676,7 +676,7 @@ const handlers = {
         const menu = document.createElement('div');
         menu.id = 'dashboard-fab-menu';
         menu.className = 'dashboard-fab-menu';
-        menu.innerHTML = `
+        menu.innerHTML = sanitizeHTML(`
             <button class="fab-action-item" onclick="router.navigate('inventory'); setTimeout(() => modals.addItem(), 100); document.getElementById('dashboard-fab-menu')?.remove();">
                 ${components.icon('plus', 16)} Add Item
             </button>
@@ -689,7 +689,7 @@ const handlers = {
             <button class="fab-action-item" onclick="handlers.refreshDashboard(); document.getElementById('dashboard-fab-menu')?.remove();">
                 ${components.icon('refresh-cw', 16)} Refresh
             </button>
-        `;
+        `);
         document.body.appendChild(menu);
         // Close on outside click
         setTimeout(() => {

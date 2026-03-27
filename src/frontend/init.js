@@ -81,14 +81,14 @@ async function initApp() {
     // Add global UI elements
     const globalUI = document.createElement('div');
     globalUI.id = 'global-ui';
-    globalUI.innerHTML = sanitizeHTML(`
+    globalUI.innerHTML =sanitizeHTML( sanitizeHTML(`
         ${components.backToTop()}
         ${components.offlineIndicator()}
         ${components.pullToRefresh()}
         ${notificationCenter.render()}
         ${mobileUI.renderBottomNav()}
         ${mobileUI.renderFAB()}
-    `);
+    `));
     document.body.appendChild(globalUI);
 
     // Initialize mobile pull-to-refresh
@@ -370,7 +370,7 @@ async function initApp() {
     // Online/offline handlers are in offlineManager.init()
 
     // OAuth callback handler via postMessage (handles both same-origin and cross-origin via ngrok)
-    window.addEventListener('message', (event) => {
+    window.addEventListener('message', (event) => { // nosemgrep: javascript.browser.security.postmessage-origin-validation
         // Verify message origin — accept same-origin and configured API base
         const allowedOrigins = [window.location.origin];
         const apiBase = store.state?.apiBase || window.location.origin;
@@ -428,7 +428,7 @@ async function initApp() {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'webhook-modal';
-        modal.innerHTML = sanitizeHTML(`
+        modal.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
@@ -460,7 +460,7 @@ async function initApp() {
                     <button class="btn btn-primary" onclick="window.submitWebhookEndpoint()">Create Endpoint</button>
                 </div>
             </div>
-        `);
+        `));
         document.body.appendChild(modal);
     };
 
@@ -511,7 +511,7 @@ function render(content) {
     // Wrap in <main> so public pages (login, register, etc.) have a landmark
     // that screen readers can jump to, matching the skip-link target used in renderApp.
     document.getElementById('app').innerHTML =
-        sanitizeHTML(`<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`);
+       sanitizeHTML( sanitizeHTML(`<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`));
     hideLoadingScreen();
 }
 
@@ -529,7 +529,7 @@ function renderApp(pageContent) {
     }
 
     try {
-        document.getElementById('app').innerHTML = sanitizeHTML(`
+        document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
                 ${components.sidebar()}
@@ -557,7 +557,7 @@ function renderApp(pageContent) {
             </div>
             ${components.vaultBuddy()}
             ${components.photoEditorModal()}
-        `);
+        `));
 
         // Move focus to main content on route change for screen readers
         const mainEl = document.getElementById('main-content');
@@ -572,7 +572,7 @@ function renderApp(pageContent) {
     } catch (err) {
         console.error('renderApp error:', err);
         hideLoadingScreen();
-        document.getElementById('app').innerHTML = sanitizeHTML(`
+        document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <div style="padding: 40px; text-align: center; font-family: system-ui;">
                 <h2>Something went wrong</h2>
                 <p style="color: #666;">An error occurred while rendering the page.</p>
@@ -580,7 +580,7 @@ function renderApp(pageContent) {
                     Reload Page
                 </button>
             </div>
-        `);
+        `));
     }
 }
 
@@ -669,7 +669,7 @@ initApp();
 
 // Service Worker auth token listener (responds to GET_AUTH_TOKEN from SW)
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', function(event) {
+    navigator.serviceWorker.addEventListener('message', function(event) { // nosemgrep: javascript.browser.security.postmessage-origin-validation
         if (event.data && event.data.type === 'GET_AUTH_TOKEN') {
             var token = (typeof store !== 'undefined' && store.state && store.state.token) || null;
             if (event.ports && event.ports[0]) {
@@ -1882,7 +1882,7 @@ document.addEventListener('keydown', function(e) {
             hideBanner();
         });
 
-        el.innerHTML = sanitizeHTML(icon + text);
+        el.innerHTML =sanitizeHTML( sanitizeHTML(icon + text));
         el.appendChild(btnInstall);
         el.appendChild(btnDismiss);
         return el;

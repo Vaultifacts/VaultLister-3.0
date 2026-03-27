@@ -64,7 +64,7 @@ function highlightText(text, query) {
     if (!text || !query) return escapeHtml(text);
     const escaped = escapeHtml(text);
     const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return escaped.replace(new RegExp(`(${q})`, 'gi'), '<mark class="search-highlight">$1</mark>');
+    return escaped.replace(new RegExp(`(${q})`, 'gi'), '<mark class="search-highlight">$1</mark>'); // nosemgrep: javascript.lang.security.detect-non-literal-regexp
 }
 
 // Format a Date as YYYY-MM-DD in the LOCAL timezone (not UTC)
@@ -738,13 +738,13 @@ const inlineEdit = {
         const originalContent = element.textContent;
         element.classList.add('editing');
 
-        element.innerHTML = `
+        element.innerHTML = sanitizeHTML(`
             <input type="text" class="inline-edit-input" value="${escapeHtml(currentValue)}" aria-label="Edit value">
             <div class="inline-edit-actions">
                 <button class="inline-edit-save">Save</button>
                 <button class="inline-edit-cancel">Cancel</button>
             </div>
-        `;
+        `);
 
         const input = element.querySelector('input');
         const saveBtn = element.querySelector('.inline-edit-save');
@@ -1132,11 +1132,11 @@ const snackbar = {
         snackbarEl.className = `snackbar ${type}`;
         snackbarEl.setAttribute('role', 'status');
         snackbarEl.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
-        snackbarEl.innerHTML = `
+        snackbarEl.innerHTML = sanitizeHTML(`
             <span class="snackbar-message">${escapeHtml(message)}</span>
             ${action ? `<button class="snackbar-action" type="button">${escapeHtml(actionLabel)}</button>` : ''}
             <button class="snackbar-close" type="button" aria-label="Dismiss">&times;</button>
-        `;
+        `);
 
         container.appendChild(snackbarEl);
 
@@ -1217,7 +1217,7 @@ const tagInput = {
         const tagsContainer = container.querySelector('.tag-input-tags');
         const tagEl = document.createElement('span');
         tagEl.className = 'tag-input-tag';
-        tagEl.innerHTML = `${escapeHtml(tag)}<button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>`;
+        tagEl.innerHTML = sanitizeHTML(`${escapeHtml(tag)}<button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>`);
         tagsContainer.appendChild(tagEl);
 
         container.dispatchEvent(new CustomEvent('tagschange', { detail: { tags } }));
@@ -1346,20 +1346,20 @@ const commentThread = {
     showReplyForm(commentId) {
         const form = document.getElementById(`reply-form-${commentId}`);
         form.style.display = 'block';
-        form.innerHTML = `
+        form.innerHTML = sanitizeHTML(`
             <textarea class="comment-input" placeholder="Write a reply..." rows="2"></textarea>
             <div class="comment-form-actions">
                 <button class="btn btn-sm" onclick="commentThread.cancelReply('${commentId}')">Cancel</button>
                 <button class="btn btn-sm btn-primary" onclick="commentThread.submitReply('${commentId}')">Reply</button>
             </div>
-        `;
+        `);
         form.querySelector('textarea').focus();
     },
 
     cancelReply(commentId) {
         const form = document.getElementById(`reply-form-${commentId}`);
         form.style.display = 'none';
-        form.innerHTML = '';
+        form.innerHTML = sanitizeHTML('');
     },
 
     submitReply(commentId) {
@@ -1407,11 +1407,11 @@ const copyButton = {
 
     showFeedback(element, success) {
         const originalHtml = element.innerHTML;
-        element.innerHTML = success ? `${components.icon('check', 16)} Copied!` : `${components.icon('x', 16)} Failed`;
+        element.innerHTML = sanitizeHTML(success ? `${components.icon('check', 16)} Copied!` : `${components.icon('x', 16)} Failed`);
         element.classList.add(success ? 'copy-success' : 'copy-error');
 
         setTimeout(() => {
-            element.innerHTML = originalHtml;
+            element.innerHTML = sanitizeHTML(originalHtml);
             element.classList.remove('copy-success', 'copy-error');
         }, 2000);
     }
@@ -1584,7 +1584,7 @@ const onboardingTour = {
         const isLast = this.currentStep === this.currentTour.steps.length - 1;
         const progress = this.currentTour.showProgress ? `<span class="tour-progress">${this.currentStep + 1}/${this.currentTour.steps.length}</span>` : '';
 
-        tooltipEl.innerHTML = `
+        tooltipEl.innerHTML = sanitizeHTML(`
             <div class="tour-tooltip-content">
                 ${step.title ? `<div class="tour-tooltip-title">${escapeHtml(step.title)}</div>` : ''}
                 <div class="tour-tooltip-text">${escapeHtml(step.content)}</div>
@@ -1597,7 +1597,7 @@ const onboardingTour = {
                     </div>
                 </div>
             </div>
-        `;
+        `);
 
         tooltipEl.className = `tour-tooltip ${position} show`;
 
@@ -2203,17 +2203,17 @@ const fileUpload = {
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    preview.innerHTML = `
+                    preview.innerHTML = sanitizeHTML(`
                         <img src="${e.target.result}" alt="${escapeHtml(file.name)}">
                         <button class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
-                    `;
+                    `);
                 };
                 reader.readAsDataURL(file);
             } else {
-                preview.innerHTML = `
+                preview.innerHTML = sanitizeHTML(`
                     <div class="file-icon">${components.icon('file', 32)}</div>
                     <button class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
-                `;
+                `);
             }
 
             previewsEl.appendChild(preview);
@@ -2979,7 +2979,7 @@ const inlineCellEdit = {
 
         const currentValue = cell.textContent.trim();
         cell.classList.add('editing');
-        cell.innerHTML = `<input type="text" value="${escapeHtml(currentValue)}" aria-label="Edit cell value" onblur="inlineCellEdit.save(this, ${onSave ? 'true' : 'false'})" onkeydown="inlineCellEdit.handleKey(event)">`;
+        cell.innerHTML = sanitizeHTML(`<input type="text" value="${escapeHtml(currentValue)}" aria-label="Edit cell value" onblur="inlineCellEdit.save(this, ${onSave ? 'true' : 'false'})" onkeydown="inlineCellEdit.handleKey(event)">`);
         const input = cell.querySelector('input');
         input.focus();
         input.select();
@@ -2992,7 +2992,7 @@ const inlineCellEdit = {
         } else if (event.key === 'Escape') {
             const cell = event.target.closest('.editable-cell');
             cell.classList.remove('editing');
-            cell.innerHTML = cell._originalValue || event.target.defaultValue;
+            cell.innerHTML = sanitizeHTML(cell._originalValue || event.target.defaultValue);
         }
     },
 
@@ -3296,7 +3296,7 @@ const emailListInput = {
             const chip = document.createElement('span');
             chip.className = `email-chip ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'invalid'}`;
             chip.dataset.email = email;
-            chip.innerHTML = `${escapeHtml(email)}<button class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`;
+            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`);
             container.insertBefore(chip, input);
             input.value = '';
             this.updateData(id);
@@ -3445,7 +3445,7 @@ const successCheckmark = {
     show(containerId) {
         const container = document.getElementById(containerId);
         if (container) {
-            container.innerHTML = this.create();
+            container.innerHTML = sanitizeHTML(this.create());
             ariaAnnounce.polite('Success');
         }
     }
@@ -3664,13 +3664,13 @@ const achievementToast = {
 
         const toast = document.createElement('div');
         toast.className = 'achievement-toast';
-        toast.innerHTML = `
+        toast.innerHTML = sanitizeHTML(`
             <div class="achievement-badge-icon">${icon}</div>
             <div class="achievement-content">
                 <div class="achievement-label">${escapeHtml(label)}</div>
                 <div class="achievement-title">${escapeHtml(title)}</div>
             </div>
-        `;
+        `);
 
         document.body.appendChild(toast);
         ariaAnnounce.assertive(`${label}: ${title}`);
@@ -3689,7 +3689,7 @@ const milestoneCelebration = {
 
         const overlay = document.createElement('div');
         overlay.className = 'milestone-overlay';
-        overlay.innerHTML = `
+        overlay.innerHTML = sanitizeHTML(`
             <div class="milestone-card">
                 <div class="milestone-icon">${icon}</div>
                 <h2 class="milestone-title">${escapeHtml(title)}</h2>
@@ -3700,7 +3700,7 @@ const milestoneCelebration = {
                 ` : ''}
                 <button class="btn btn-primary" style="margin-top: 24px;" onclick="milestoneCelebration.close()">Continue</button>
             </div>
-        `;
+        `);
 
         overlay._onClose = onClose;
         document.body.appendChild(overlay);
@@ -3767,11 +3767,11 @@ const audioPlayer = {
 
         if (audio.paused) {
             audio.play();
-            btn.innerHTML = components.icon('pause', 20);
+            btn.innerHTML = sanitizeHTML(components.icon('pause', 20));
             btn.setAttribute('aria-label', 'Pause');
         } else {
             audio.pause();
-            btn.innerHTML = components.icon('play', 20);
+            btn.innerHTML = sanitizeHTML(components.icon('play', 20));
             btn.setAttribute('aria-label', 'Play');
         }
     },
@@ -3812,7 +3812,7 @@ const audioPlayer = {
     onEnded(id) {
         const container = document.getElementById(id);
         const btn = container.querySelector('.audio-player-btn');
-        btn.innerHTML = components.icon('play', 20);
+        btn.innerHTML = sanitizeHTML(components.icon('play', 20));
         btn.setAttribute('aria-label', 'Play');
     },
 
@@ -4038,9 +4038,9 @@ const dateShortcuts = {
 
         const dropdown = document.createElement('div');
         dropdown.className = 'date-shortcuts-dropdown';
-        dropdown.innerHTML = Object.keys(this.shortcuts).map(key =>
+        dropdown.innerHTML = sanitizeHTML(Object.keys(this.shortcuts).map(key =>
             `<div class="date-shortcut-item" data-shortcut="${key}">${key}</div>`
-        ).join('');
+        ).join(''));
         input.parentElement?.appendChild(dropdown);
 
         input.addEventListener('focus', () => dropdown.classList.add('show'));
@@ -4179,7 +4179,7 @@ const autoSaveIndicator = {
     createIndicator(form) {
         const indicator = document.createElement('div');
         indicator.className = 'auto-save-indicator';
-        indicator.innerHTML = '<span class="auto-save-text">All changes saved</span>';
+        indicator.innerHTML = sanitizeHTML('<span class="auto-save-text">All changes saved</span>');
         form.appendChild(indicator);
         return indicator;
     },
@@ -4490,11 +4490,11 @@ const rowHoverActions = {
         table.querySelectorAll('tbody tr').forEach(row => {
             const actionsContainer = document.createElement('div');
             actionsContainer.className = 'row-hover-actions';
-            actionsContainer.innerHTML = actions.map(action => `
+            actionsContainer.innerHTML = sanitizeHTML(actions.map(action => `
                 <button class="row-action-btn" title="${action.label}" data-action="${action.id}">
                     ${components.icon(action.icon, 14)}
                 </button>
-            `).join('');
+            `).join(''));
 
             const lastCell = row.querySelector('td:last-child');
             if (lastCell) {
@@ -4524,10 +4524,10 @@ const pullToRefresh = {
 
         const indicator = document.createElement('div');
         indicator.className = 'pull-to-refresh-indicator';
-        indicator.innerHTML = `
+        indicator.innerHTML = sanitizeHTML(`
             <div class="pull-refresh-spinner"></div>
             <span class="pull-refresh-text">Pull to refresh</span>
-        `;
+        `);
         container.insertBefore(indicator, container.firstChild);
 
         container.addEventListener('touchstart', (e) => {
@@ -4725,7 +4725,7 @@ const smartAutocomplete = {
 
         const clearBtn = document.createElement('button');
         clearBtn.className = 'autocomplete-clear';
-        clearBtn.innerHTML = '×';
+        clearBtn.innerHTML = sanitizeHTML('×');
         clearBtn.type = 'button';
         container.appendChild(clearBtn);
 
@@ -4743,7 +4743,7 @@ const smartAutocomplete = {
             }
 
             // Show loading
-            dropdown.innerHTML = '<div class="autocomplete-loading"><div class="autocomplete-loading-spinner"></div></div>';
+            dropdown.innerHTML = sanitizeHTML('<div class="autocomplete-loading"><div class="autocomplete-loading-spinner"></div></div>');
             dropdown.classList.add('show');
 
             // Get results
@@ -4759,7 +4759,7 @@ const smartAutocomplete = {
             results = results.slice(0, maxResults);
 
             if (results.length === 0) {
-                dropdown.innerHTML = '<div class="autocomplete-empty">No results found</div>';
+                dropdown.innerHTML = sanitizeHTML('<div class="autocomplete-empty">No results found</div>');
                 return;
             }
 
@@ -4783,7 +4783,7 @@ const smartAutocomplete = {
                 html = results.map((item, i) => this.renderItem(item, query, renderItem)).join('');
             }
 
-            dropdown.innerHTML = html;
+            dropdown.innerHTML = sanitizeHTML(html);
             highlightedIndex = -1;
         };
 
@@ -4892,7 +4892,7 @@ const categorySelector = {
         let selectedValue = value;
 
         const render = () => {
-            dropdown.innerHTML = `
+            dropdown.innerHTML = sanitizeHTML(`
                 <div class="category-selector-search">
                     <input type="text" placeholder="Search categories..." aria-label="Search categories" />
                 </div>
@@ -4909,7 +4909,7 @@ const categorySelector = {
                 <div class="category-selector-tree">
                     ${this.renderTree(categories, selectedValue)}
                 </div>
-            `;
+            `);
         };
 
         render();
@@ -4983,14 +4983,14 @@ const categorySelector = {
 
     updateTrigger(trigger, categories, value) {
         const path = this.findPath(categories, value);
-        trigger.innerHTML = `
+        trigger.innerHTML = sanitizeHTML(`
             <span class="category-selector-value">
                 <span class="category-selector-breadcrumb">
                     ${path.map(p => `<span>${p}</span>`).join(' / ')}
                 </span>
             </span>
             ${components.icon('chevron-down', 14)}
-        `;
+        `);
     },
 
     findPath(categories, value, path = []) {
@@ -5022,20 +5022,20 @@ const inlineFieldEdit = {
 
         const editIcon = document.createElement('span');
         editIcon.className = 'inline-editable-icon';
-        editIcon.innerHTML = components.icon('edit-2', 12);
+        editIcon.innerHTML = sanitizeHTML(components.icon('edit-2', 12));
         element.appendChild(editIcon);
 
         element.addEventListener('click', () => {
             if (element.classList.contains('editing')) return;
 
             element.classList.add('editing');
-            element.innerHTML = `
+            element.innerHTML = sanitizeHTML(`
                 <input type="${type}" class="inline-editable-input" value="${value}" aria-label="Edit value" />
                 <div class="inline-editable-actions">
                     <button class="inline-editable-btn save" aria-label="Save">${components.icon('check', 12)}</button>
                     <button class="inline-editable-btn cancel" aria-label="Cancel">${components.icon('x', 12)}</button>
                 </div>
-            `;
+            `);
 
             const input = element.querySelector('input');
             input.focus();
@@ -5049,7 +5049,7 @@ const inlineFieldEdit = {
                     return;
                 }
 
-                element.innerHTML = '<div class="inline-editable-saving">Saving...</div>';
+                element.innerHTML = sanitizeHTML('<div class="inline-editable-saving">Saving...</div>');
 
                 try {
                     if (onSave) await onSave(newValue);
@@ -5106,18 +5106,18 @@ const tagPicker = {
         const dropdown = document.createElement('div');
         dropdown.className = 'tag-picker-dropdown';
 
-        container.innerHTML = '';
+        container.innerHTML = sanitizeHTML('');
         container.classList.add('tag-picker');
         container.appendChild(inputContainer);
         container.appendChild(dropdown);
 
         const render = () => {
-            inputContainer.innerHTML = selectedTags.map(tag => `
+            inputContainer.innerHTML = sanitizeHTML(selectedTags.map(tag => `
                 <span class="tag-picker-tag">
                     ${escapeHtml(tag)}
                     <span class="tag-picker-tag-remove" data-tag="${escapeHtml(tag)}">×</span>
                 </span>
-            `).join('');
+            `).join(''));
             inputContainer.appendChild(input);
         };
 
@@ -5127,7 +5127,7 @@ const tagPicker = {
                 s.label.toLowerCase().includes(query.toLowerCase())
             );
 
-            dropdown.innerHTML = `
+            dropdown.innerHTML = sanitizeHTML(`
                 ${recentTags.length ? `
                     <div class="tag-picker-section">
                         <div class="tag-picker-section-label">Recent</div>
@@ -5152,7 +5152,7 @@ const tagPicker = {
                         + Create "${escapeHtml(query)}"
                     </div>
                 ` : ''}
-            `;
+            `);
 
             dropdown.classList.add('show');
         };
@@ -5254,7 +5254,7 @@ const toastQueue = {
             info: 'info'
         };
 
-        toast.innerHTML = `
+        toast.innerHTML = sanitizeHTML(`
             <div class="toast-icon">${components.icon(iconMap[type], 14)}</div>
             <div class="toast-content">
                 ${title ? `<div class="toast-title">${title}</div>` : ''}
@@ -5270,7 +5270,7 @@ const toastQueue = {
             </div>
             ${dismissible ? '<div class="toast-close">×</div>' : ''}
             ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
-        `;
+        `);
 
         this.container.appendChild(toast);
         this.queue.push({ id, toast, duration });
@@ -5754,10 +5754,10 @@ const keyboardNavIndicator = {
         // Add indicator element
         const indicator = document.createElement('div');
         indicator.className = 'keyboard-nav-indicator';
-        indicator.innerHTML = `
+        indicator.innerHTML = sanitizeHTML(`
             ${components.icon('navigation', 14)}
             <span>Keyboard navigation active</span>
-        `;
+        `);
         document.body.appendChild(indicator);
     }
 };
@@ -5852,11 +5852,11 @@ const bubbleChart = {
             `;
         }).join('');
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="bubble-chart" style="width: ${width}px; height: ${height}px;">
                 <div class="bubble-chart-area">${bubbles}</div>
             </div>
-        `;
+        `);
     }
 };
 
@@ -5893,12 +5893,12 @@ const heatmapGrid = {
             `).join('')
         ).join('');
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="heatmap-grid" style="grid-template-columns: repeat(${cols}, 1fr);">
                 ${cells}
             </div>
             ${xLabels.length ? `<div class="heatmap-labels-x">${xLabels.map(l => `<span>${l}</span>`).join('')}</div>` : ''}
-        `;
+        `);
     }
 };
 
@@ -5949,7 +5949,7 @@ const multiLineChart = {
             </div>
         ` : '';
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="multi-line-chart">
                 <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
                     ${gridLines}
@@ -5957,7 +5957,7 @@ const multiLineChart = {
                 </svg>
             </div>
             ${legend}
-        `;
+        `);
     }
 };
 
@@ -5978,13 +5978,13 @@ const numericSpinner = {
         let currentValue = value;
 
         const render = () => {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="numeric-spinner">
                     <button class="numeric-spinner-btn decrease" ${currentValue <= min ? 'disabled' : ''}>−</button>
                     <input type="text" class="numeric-spinner-input" value="${format(currentValue)}" aria-label="Number value" />
                     <button class="numeric-spinner-btn increase" ${currentValue >= max ? 'disabled' : ''}>+</button>
                 </div>
-            `;
+            `);
 
             const input = container.querySelector('.numeric-spinner-input');
             const decreaseBtn = container.querySelector('.decrease');
@@ -6042,7 +6042,7 @@ const colorPicker = {
         let currentColor = value;
 
         const render = () => {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="color-picker">
                     <div class="color-picker-trigger">
                         <div class="color-picker-swatch" style="background: ${currentColor}"></div>
@@ -6060,7 +6060,7 @@ const colorPicker = {
                         </div>
                     </div>
                 </div>
-            `;
+            `);
 
             const trigger = container.querySelector('.color-picker-trigger');
             const dropdown = container.querySelector('.color-picker-dropdown');
@@ -6114,14 +6114,14 @@ const timeInput = {
         if (!use24Hour && hours === 0) hours = 12;
 
         const render = () => {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="time-input">
                     <input type="text" class="time-input-segment hour" value="${String(hours).padStart(2, '0')}" maxlength="2" aria-label="Hours" />
                     <span class="time-input-separator">:</span>
                     <input type="text" class="time-input-segment minute" value="${String(minutes).padStart(2, '0')}" maxlength="2" aria-label="Minutes" />
                     ${!use24Hour ? `<button class="time-input-period">${period}</button>` : ''}
                 </div>
-            `;
+            `);
 
             const hourInput = container.querySelector('.hour');
             const minuteInput = container.querySelector('.minute');
@@ -6211,7 +6211,7 @@ const quantityAdjuster = {
         let currentValue = value;
 
         const render = () => {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="quantity-adjuster">
                     <div class="quantity-adjuster-controls">
                         <button class="quantity-adjuster-btn decrease" ${currentValue <= min ? 'disabled' : ''}>−</button>
@@ -6224,7 +6224,7 @@ const quantityAdjuster = {
                         `).join('')}
                     </div>
                 </div>
-            `;
+            `);
 
             const input = container.querySelector('.quantity-adjuster-value');
             const decreaseBtn = container.querySelector('.decrease');
@@ -6293,7 +6293,7 @@ const priceRangeSlider = {
             const minPercent = ((currentMin - min) / (max - min)) * 100;
             const maxPercent = ((currentMax - min) / (max - min)) * 100;
 
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="price-range-slider">
                     <div class="price-range-track">
                         <div class="price-range-fill" style="left: ${minPercent}%; width: ${maxPercent - minPercent}%"></div>
@@ -6315,7 +6315,7 @@ const priceRangeSlider = {
                         <span>${format(max)}</span>
                     </div>
                 </div>
-            `;
+            `);
 
             const track = container.querySelector('.price-range-track');
             const thumbs = container.querySelectorAll('.price-range-thumb');
@@ -6577,7 +6577,7 @@ const inlineDatePicker = {
                 days.push({ day: i, otherMonth: true });
             }
 
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="inline-date-picker">
                     <div class="date-picker-header">
                         <div class="date-picker-nav">
@@ -6600,7 +6600,7 @@ const inlineDatePicker = {
                         `).join('')}
                     </div>
                 </div>
-            `;
+            `);
 
             container.querySelector('.prev-month').addEventListener('click', () => {
                 viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
@@ -6670,7 +6670,7 @@ const facetedSearch = {
         facets.forEach(f => selected.set(f.key, new Set()));
 
         const render = () => {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="faceted-search">
                     <div class="faceted-search-header">
                         <span class="faceted-search-title">Filters</span>
@@ -6691,7 +6691,7 @@ const facetedSearch = {
                         </div>
                     `).join('')}
                 </div>
-            `;
+            `);
 
             container.querySelectorAll('.faceted-option').forEach(opt => {
                 opt.addEventListener('click', () => {
@@ -6887,7 +6887,7 @@ const formPersistence = {
     showRecoveryBanner(form, saved, formId, onRestore) {
         const banner = document.createElement('div');
         banner.className = 'form-recovery-banner';
-        banner.innerHTML = `
+        banner.innerHTML = sanitizeHTML(`
             <span class="form-recovery-icon">${components.icon('save', 20)}</span>
             <div class="form-recovery-content">
                 <div class="form-recovery-title">Unsaved changes found</div>
@@ -6897,7 +6897,7 @@ const formPersistence = {
                 <button class="form-recovery-btn restore">Restore</button>
                 <button class="form-recovery-btn discard">Discard</button>
             </div>
-        `;
+        `);
 
         form.insertBefore(banner, form.firstChild);
 
@@ -6993,7 +6993,7 @@ const advancedSearch = {
         if (showHelp) {
             const help = document.createElement('div');
             help.className = 'search-operators-help';
-            help.innerHTML = `
+            help.innerHTML = sanitizeHTML(`
                 <div class="search-operator">
                     <span class="search-operator-key">"exact phrase"</span>
                     <span class="search-operator-desc">Search for exact match</span>
@@ -7006,7 +7006,7 @@ const advancedSearch = {
                     <span class="search-operator-key">AND / OR / NOT</span>
                     <span class="search-operator-desc">Combine search terms</span>
                 </div>
-            `;
+            `);
             input.parentElement?.appendChild(help);
         }
 
@@ -7030,7 +7030,7 @@ const columnManager = {
         dropdown.className = 'column-manager-dropdown';
 
         const render = () => {
-            dropdown.innerHTML = `
+            dropdown.innerHTML = sanitizeHTML(`
                 <div class="column-manager-header">
                     <span class="column-manager-title">Columns</span>
                     <span class="column-manager-reset">Reset</span>
@@ -7047,7 +7047,7 @@ const columnManager = {
                         </div>
                     `).join('')}
                 </div>
-            `;
+            `);
 
             dropdown.querySelector('.column-manager-reset').addEventListener('click', () => {
                 visibleColumns = new Set(columns.filter(c => c.visible !== false).map(c => c.id));
@@ -7184,14 +7184,14 @@ const cartDrawer = {
         if (!drawer) return;
 
         if (this.items.length === 0) {
-            drawer.innerHTML = `
+            drawer.innerHTML = sanitizeHTML(`
                 <div class="cart-drawer-empty">
                     <div class="cart-drawer-empty-icon">${components.icon('shopping-cart', 64)}</div>
                     <p>Your cart is empty</p>
                 </div>
-            `;
+            `);
         } else {
-            drawer.innerHTML = this.items.map((item, i) => `
+            drawer.innerHTML = sanitizeHTML(this.items.map((item, i) => `
                 <div class="cart-item">
                     <img class="cart-item-image" src="${item.image}" alt="${item.title}" />
                     <div class="cart-item-details">
@@ -7203,7 +7203,7 @@ const cartDrawer = {
                         ${components.icon('x', 16)}
                     </span>
                 </div>
-            `).join('');
+            `).join(''));
         }
 
         const total = document.querySelector('.cart-summary-row.total span:last-child');
@@ -7232,7 +7232,7 @@ const reactionPicker = {
 
         const { onReact = null, reactions = {} } = options;
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="reaction-picker">
                 <button class="reaction-picker-trigger">
                     ${components.icon('smile', 14)} React
@@ -7260,7 +7260,7 @@ const reactionPicker = {
                     </span>
                 `).join('')}
             </div>
-        `;
+        `);
 
         const trigger = container.querySelector('.reaction-picker-trigger');
         const dropdown = container.querySelector('.reaction-picker-dropdown');
@@ -7274,9 +7274,9 @@ const reactionPicker = {
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 const category = tab.dataset.category;
-                grid.innerHTML = this.categories[category].map(e => `
+                grid.innerHTML = sanitizeHTML(this.categories[category].map(e => `
                     <span class="reaction-emoji" data-emoji="${e}">${e}</span>
-                `).join('');
+                `).join(''));
             });
         });
 
@@ -7379,7 +7379,7 @@ const mentionAutocomplete = {
     },
 
     showSuggestions(container, users, highlighted) {
-        container.innerHTML = users.map((u, i) => `
+        container.innerHTML = sanitizeHTML(users.map((u, i) => `
             <div class="mention-suggestion ${i === highlighted ? 'highlighted' : ''}" data-handle="${escapeHtml(u.handle)}">
                 <div class="mention-avatar">${u.avatar || escapeHtml(u.name.charAt(0).toUpperCase())}</div>
                 <div class="mention-user-info">
@@ -7387,7 +7387,7 @@ const mentionAutocomplete = {
                     <div class="mention-user-handle">@${escapeHtml(u.handle)}</div>
                 </div>
             </div>
-        `).join('');
+        `).join(''));
         container.classList.add('show');
     },
 
@@ -7460,7 +7460,7 @@ const productTour = {
         this.spotlight.style.height = `${rect.height + 16}px`;
 
         // Render tooltip
-        this.tooltip.innerHTML = `
+        this.tooltip.innerHTML = sanitizeHTML(`
             <div class="tour-tooltip-header">
                 <div class="tour-tooltip-step">Step ${this.currentStep + 1} of ${this.steps.length}</div>
                 <div class="tour-tooltip-title">${step.title}</div>
@@ -7479,7 +7479,7 @@ const productTour = {
                     </button>
                 </div>
             </div>
-        `;
+        `);
 
         // Position tooltip
         const tooltipRect = this.tooltip.getBoundingClientRect();
@@ -7575,14 +7575,14 @@ const featureDiscovery = {
 
         const callout = document.createElement('div');
         callout.className = 'feature-callout';
-        callout.innerHTML = `
+        callout.innerHTML = sanitizeHTML(`
             <span class="feature-badge feature-callout-badge">New</span>
             <div class="feature-callout-title">${title}</div>
             <div class="feature-callout-text">${description}</div>
             <button class="feature-callout-dismiss" onclick="featureDiscovery.dismiss('${featureId}', this)">
                 ${components.icon('x', 16)}
             </button>
-        `;
+        `);
 
         element.parentElement?.insertBefore(callout, element);
 
@@ -8390,7 +8390,7 @@ const loadingState = {
             if (loading) {
                 btn.disabled = true;
                 btn.dataset.originalText = btn.textContent;
-                btn.innerHTML = '<span class="loading-spinner"></span> Loading...';
+                btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...');
             } else {
                 btn.disabled = false;
                 if (btn.dataset.originalText) {
@@ -8411,7 +8411,7 @@ const loadingState = {
         if (loading) {
             btn.disabled = true;
             btn.dataset.originalText = btn.textContent;
-            btn.innerHTML = '<span class="loading-spinner"></span> Loading...';
+            btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...');
         } else {
             btn.disabled = false;
             if (btn.dataset.originalText) {
@@ -8617,7 +8617,7 @@ const toast = {
         toastEl.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
         toastEl.setAttribute('aria-atomic', 'true');
 
-        toastEl.innerHTML = `
+        toastEl.innerHTML = sanitizeHTML(`
             <span class="toast-icon">${this.getIcon(type)}</span>
             <div class="toast-content">
                 <p class="toast-message">${escapeHtml(message)}</p>
@@ -8629,7 +8629,7 @@ const toast = {
             </div>
             <button class="toast-close" aria-label="Dismiss notification" onclick="toast.dismiss('${toastId}')">${components.icon('close', 14)}</button>
             ${showProgress && duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
-        `;
+        `);
 
         container.appendChild(toastEl);
         this.activeToasts.push(toastEl);
@@ -8757,7 +8757,7 @@ const globalSearch = {
         const results = this.getResults(query);
         const resultsContainer = document.getElementById('global-search-results');
         if (resultsContainer) {
-            resultsContainer.innerHTML = sanitizeHTML(this.renderResults(results, query));
+            resultsContainer.innerHTML =sanitizeHTML( sanitizeHTML(this.renderResults(results, query)));
             this.selectedIndex = 0;
             const items = document.querySelectorAll('.search-result-item');
             if (items.length > 0) items[0].classList.add('selected');
@@ -8988,7 +8988,7 @@ const globalSearch = {
             if (e.target === overlay) this.close();
         };
 
-        overlay.innerHTML = sanitizeHTML(`
+        overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="global-search-modal">
                 <div class="global-search-input-wrapper">
                     <span class="global-search-icon">${components.icon('search', 20)}</span>
@@ -9028,7 +9028,7 @@ const globalSearch = {
                     </div>
                 </div>
             </div>
-        `);
+        `));
 
         document.body.appendChild(overlay);
         setTimeout(() => overlay.querySelector('.global-search-input').focus(), 50);
@@ -9128,7 +9128,7 @@ const formValidation = {
         }
 
         if (iconEl) {
-            iconEl.innerHTML = sanitizeHTML(isValid)
+            iconEl.innerHTML =sanitizeHTML( sanitizeHTML(isValid))
                 ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
                 : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
             iconEl.classList.remove('success', 'error');
@@ -9145,7 +9145,7 @@ const formValidation = {
 
         if (formGroup) formGroup.classList.remove('has-error');
         if (errorEl) errorEl.classList.add('hidden');
-        if (iconEl) iconEl.innerHTML = sanitizeHTML('');
+        if (iconEl) iconEl.innerHTML =sanitizeHTML( sanitizeHTML(''));
     },
 
     validateForm(formId) {
@@ -9318,11 +9318,11 @@ const autocomplete = {
         if (!dropdown) return;
 
         if (items.length === 0) {
-            dropdown.innerHTML = sanitizeHTML('<div class="autocomplete-empty">No matches found</div>');
+            dropdown.innerHTML =sanitizeHTML( sanitizeHTML('<div class="autocomplete-empty">No matches found</div>'));
             return;
         }
 
-        dropdown.innerHTML = sanitizeHTML(items.slice(0, 10).map((item, idx) => {
+        dropdown.innerHTML =sanitizeHTML( sanitizeHTML(items.slice(0, 10).map((item, idx) => {
             const escapedItem = escapeHtml(item);
             const highlighted = query
                 ? escapedItem.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<span class="autocomplete-item-highlight">$1</span>')
@@ -9333,7 +9333,7 @@ const autocomplete = {
                     ${highlighted}
                 </div>
             `;
-        }).join(''));
+        }).join('')));
     },
 
     select(fieldName, value) {
@@ -9561,7 +9561,7 @@ const autoSave = {
         }
 
         indicator.className = `autosave-indicator ${status}`;
-        indicator.innerHTML = sanitizeHTML(status === 'saving')
+        indicator.innerHTML =sanitizeHTML( sanitizeHTML(status === 'saving'))
             ? `<span class="autosave-spinner"></span> ${text}`
             : `${components.icon('check', 12)} ${text}`;
 
@@ -9804,7 +9804,7 @@ const widgetManager = {
             if (el) {
                 el.classList.toggle('collapsed', widget.collapsed);
                 const btn = el.querySelector('.widget-collapse-btn');
-                if (btn) btn.innerHTML = sanitizeHTML(widget.collapsed ? '▼' : '▲');
+                if (btn) btn.innerHTML =sanitizeHTML( sanitizeHTML(widget.collapsed ? '▼' : '▲'));
             }
         }
     },
@@ -10250,10 +10250,10 @@ const imageUploader = {
             const thumb = document.createElement('div');
             thumb.className = 'image-thumbnail';
             thumb.draggable = true;
-            thumb.innerHTML = sanitizeHTML(`
+            thumb.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <img src="${e.target.result}" alt="${file.name}">
                 <button class="image-thumbnail-remove" onclick="this.parentElement.remove()">×</button>
-            `);
+            `));
 
             // Drag reorder
             thumb.addEventListener('dragstart', (ev) => {
@@ -10288,7 +10288,7 @@ const imageUploader = {
             progress.className = 'image-upload-progress';
             zone?.appendChild(progress);
         }
-        progress.innerHTML = sanitizeHTML(components.progressBar(percent, 'Uploading...', 'primary'));
+        progress.innerHTML =sanitizeHTML( sanitizeHTML(components.progressBar(percent, 'Uploading...', 'primary')));
     },
 
     hideProgress(zoneId) {
@@ -10549,7 +10549,7 @@ const commandPalette = {
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         overlay.setAttribute('aria-label', 'Command Palette');
-        overlay.innerHTML = sanitizeHTML(`
+        overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="command-palette">
                 <div class="command-palette-input-wrapper">
                     <span class="command-palette-icon">${components.icon('search', 20)}</span>
@@ -10566,7 +10566,7 @@ const commandPalette = {
                     <span><kbd>ESC</kbd> Close</span>
                 </div>
             </div>
-        `);
+        `));
         document.body.appendChild(overlay);
         this.renderResults();
     },
@@ -10581,7 +10581,7 @@ const commandPalette = {
             groups[cmd.category].push(cmd);
         });
 
-        container.innerHTML = sanitizeHTML(Object.entries(groups).map(([category, cmds]) => `
+        container.innerHTML =sanitizeHTML( sanitizeHTML(Object.entries(groups).map(([category, cmds]) => `
             <div class="command-palette-group">
                 <div class="command-palette-group-title">${category}</div>
                 ${cmds.map((cmd, idx) => {
@@ -10600,7 +10600,7 @@ const commandPalette = {
                     `;
                 }).join('')}
             </div>
-        `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>');
+        `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>'));
     }
 };
 
@@ -10689,7 +10689,7 @@ const keyboardShortcuts = {
         const panel = document.createElement('div');
         panel.id = 'shortcuts-panel';
         panel.className = 'shortcuts-panel';
-        panel.innerHTML = sanitizeHTML(`
+        panel.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="shortcuts-panel-header">
                 <span class="shortcuts-panel-title">Keyboard Shortcuts</span>
                 <button class="shortcuts-panel-close" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">${components.icon('close', 16)}</button>
@@ -10704,7 +10704,7 @@ const keyboardShortcuts = {
                     </div>
                 `).join('')}
             </div>
-        `);
+        `));
         document.body.appendChild(panel);
     },
 
@@ -10758,13 +10758,13 @@ const sessionMonitor = {
         const banner = document.createElement('div');
         banner.id = 'session-timeout-warning';
         banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10001;background:var(--warning-500);color:white;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
-        banner.innerHTML = sanitizeHTML(`
+        banner.innerHTML =sanitizeHTML( sanitizeHTML(`
             <span>Your session will expire in 5 minutes due to inactivity.</span>
             <div style="display:flex;gap:8px;">
                 <button onclick="sessionMonitor.resetTimer()" style="background:white;color:var(--warning-700);border:none;padding:6px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Stay Logged In</button>
                 <button onclick="handlers.logout()" style="background:transparent;color:white;border:1px solid white;padding:6px 16px;border-radius:6px;cursor:pointer;">Log Out</button>
             </div>
-        `);
+        `));
         document.body.appendChild(banner);
     },
 
@@ -10816,7 +10816,7 @@ const contextMenu = {
         menu.style.left = `${x}px`;
         menu.style.top = `${y}px`;
 
-        menu.innerHTML = sanitizeHTML(items.map(item => {
+        menu.innerHTML =sanitizeHTML( sanitizeHTML(items.map(item => {
             if (item.divider) return '<div class="context-menu-divider"></div>';
             return `
                 <div class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
@@ -10825,7 +10825,7 @@ const contextMenu = {
                     ${item.shortcut ? `<span class="context-menu-item-shortcut">${escapeHtml(item.shortcut)}</span>` : ''}
                 </div>
             `;
-        }).join(''));
+        }).join('')));
 
         document.body.appendChild(menu);
 
@@ -10908,7 +10908,7 @@ const bulkSelection = {
             document.body.appendChild(toolbar);
         }
 
-        toolbar.innerHTML = sanitizeHTML(`
+        toolbar.innerHTML =sanitizeHTML( sanitizeHTML(`
             <span class="bulk-toolbar-count">${this.selected.size} selected</span>
             <div class="bulk-toolbar-actions">
                 <button class="bulk-toolbar-btn" onclick="bulkSelection.action('export')">
@@ -10927,7 +10927,7 @@ const bulkSelection = {
             <button class="bulk-toolbar-close" onclick="bulkSelection.clearAll()">
                 ${components.icon('close', 16)}
             </button>
-        `);
+        `));
     },
 
     async action(type) {
@@ -11120,7 +11120,7 @@ const lightbox = {
         overlay.className = 'lightbox-overlay';
         overlay.onclick = (e) => { if (e.target === overlay) this.close(); };
 
-        overlay.innerHTML = sanitizeHTML(`
+        overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="lightbox-container">
                 <button class="lightbox-close" aria-label="Close" onclick="lightbox.close()">×</button>
                 ${this.images.length > 1 ? `
@@ -11142,7 +11142,7 @@ const lightbox = {
                     </button>
                 </div>
             </div>
-        `);
+        `));
         document.body.appendChild(overlay);
     }
 };
@@ -11338,7 +11338,7 @@ const richTextEditor = {
 
         const { maxLength = 5000, placeholder = 'Enter description...', onChange } = options;
 
-        container.innerHTML = sanitizeHTML(`
+        container.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="rich-text-editor">
                 <div class="rich-text-toolbar">
                     <button class="rich-text-btn" onclick="richTextEditor.format('bold')" title="Bold"><b>B</b></button>
@@ -11359,7 +11359,7 @@ const richTextEditor = {
                     <span>Supports basic formatting</span>
                 </div>
             </div>
-        `);
+        `));
     },
 
     format(command) {
@@ -11403,7 +11403,7 @@ const richTextEditor = {
 
     setValue(containerId, html) {
         const content = document.getElementById(`${containerId}-content`);
-        if (content) content.innerHTML = sanitizeHTML(html);
+        if (content) content.innerHTML =sanitizeHTML( sanitizeHTML(html));
     }
 };
 
@@ -11536,10 +11536,10 @@ const focusMode = {
             const bar = document.createElement('div');
             bar.id = 'focus-mode-bar';
             bar.className = 'focus-mode-bar';
-            bar.innerHTML = sanitizeHTML(`
+            bar.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <span class="focus-mode-title">${components.icon('maximize', 16)} Focus Mode</span>
                 <button class="focus-mode-exit" onclick="focusMode.toggle()">Exit Focus Mode</button>
-            `);
+            `));
             document.body.prepend(bar);
         } else {
             document.getElementById('focus-mode-bar')?.remove();
@@ -11849,12 +11849,12 @@ const toastWithUndo = {
         toastEl.className = 'toast toast-info';
         toastEl.setAttribute('role', 'status');
         toastEl.setAttribute('aria-live', 'polite');
-        toastEl.innerHTML = sanitizeHTML(`
+        toastEl.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="toast-undo">
                 <span>${message}</span>
                 <button class="toast-undo-btn" onclick="(${undoAction})(); this.closest('.toast').remove();">Undo</button>
             </div>
-        `);
+        `));
         document.getElementById('toast-container')?.appendChild(toastEl);
         setTimeout(() => toastEl.remove(), duration);
     }
@@ -12180,7 +12180,7 @@ const countdownTimer = {
         this._intervalId = setInterval(() => {
             document.querySelectorAll('[data-countdown-target]').forEach(el => {
                 const target = el.dataset.countdownTarget;
-                el.innerHTML = sanitizeHTML(this.render(target));
+                el.innerHTML =sanitizeHTML( sanitizeHTML(this.render(target)));
             });
         }, 60000);
     },
@@ -13442,7 +13442,7 @@ const imageComparison = {
     _rerender(beforeUrl, afterUrl) {
         const container = document.querySelector('.image-comparison-wrapper');
         if (container) {
-            container.innerHTML = sanitizeHTML(this.render(beforeUrl, afterUrl));
+            container.innerHTML =sanitizeHTML( sanitizeHTML(this.render(beforeUrl, afterUrl)));
         }
     }
 };
@@ -13714,7 +13714,7 @@ const sizeConverter = {
 
         const resultsEl = document.getElementById('conversion-results');
         if (resultsEl && index >= 0) {
-            resultsEl.innerHTML = sanitizeHTML(Object.entries(chart).map(([r, sizes]) => `
+            resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(Object.entries(chart).map(([r, sizes]) => `
                 <div class="conversion-result-card ${r === region ? 'selected' : ''}">
                     <div class="conversion-result-flag">${this.regionFlags[r]}</div>
                     <div class="conversion-result-info">
@@ -13723,7 +13723,7 @@ const sizeConverter = {
                     </div>
                     <div class="conversion-result-size">${sizes[index] || 'N/A'}</div>
                 </div>
-            `).join(''));
+            `).join('')));
         }
     },
 
@@ -13734,7 +13734,7 @@ const sizeConverter = {
         const chart = this.charts[category];
 
         if (sizeSelect && chart[region]) {
-            sizeSelect.innerHTML = sanitizeHTML(chart[region].map(size => `<option value="${size}">${size}</option>`).join(''));
+            sizeSelect.innerHTML =sanitizeHTML( sanitizeHTML(chart[region].map(size => `<option value="${size}">${size}</option>`).join('')));
             this.convert();
         }
     },
@@ -13822,7 +13822,7 @@ const toolSearch = {
 
         const resultsEl = document.getElementById('tool-search-results');
         if (resultsEl) {
-            resultsEl.innerHTML = sanitizeHTML(results.map(t => `
+            resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(results.map(t => `
                 <div class="tool-search-result" onclick="router.navigate('${t.path}')">
                     <div class="tool-search-result-icon">${components.icon(t.icon, 16)}</div>
                     <div>
@@ -13830,7 +13830,7 @@ const toolSearch = {
                         <div class="tool-search-result-path">Tools / ${t.name}</div>
                     </div>
                 </div>
-            `).join('') || '<div class="p-4 text-gray-500 text-sm">No results found</div>');
+            `).join('') || '<div class="p-4 text-gray-500 text-sm">No results found</div>'));
         }
     },
 
@@ -13909,7 +13909,7 @@ const toolTips = {
 
             const popover = document.createElement('div');
             popover.className = 'tool-tip-popover bottom';
-            popover.innerHTML = sanitizeHTML(`
+            popover.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="tool-tip-title">${tip.title}</div>
                 <div class="tool-tip-description">${tip.description}</div>
                 <div class="tool-tip-progress">
@@ -13921,7 +13921,7 @@ const toolTips = {
                         ${this.currentIndex === this.tips.length - 1 ? 'Finish' : 'Next'}
                     </button>
                 </div>
-            `);
+            `));
 
             const rect = target.getBoundingClientRect();
             popover.style.position = 'fixed';
@@ -20930,7 +20930,7 @@ const auth = {
         // Loading state
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="auth-spinner"></span> Signing in...';
+            submitBtn.innerHTML = sanitizeHTML('<span class="auth-spinner"></span> Signing in...');
         }
         inputs.forEach(i => i.disabled = true);
 
@@ -20983,7 +20983,7 @@ const auth = {
                     if (isIpBan) {
                         let secondsLeft = retryAfter || 900;
                         const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-                        alertDiv.innerHTML = `<strong>Too many failed attempts.</strong> Login is temporarily locked for security. Try again in <span id="login-ban-countdown">${fmt(secondsLeft)}</span>.`;
+                        alertDiv.innerHTML = sanitizeHTML(`<strong>Too many failed attempts.</strong> Login is temporarily locked for security. Try again in <span id="login-ban-countdown">${fmt(secondsLeft)}</span>.`);
                         alertDiv.className = 'login-alert alert-danger';
                         alertDiv.style.display = 'block';
                         if (window._loginBanCountdown) clearInterval(window._loginBanCountdown);
@@ -21000,7 +21000,7 @@ const auth = {
                     } else {
                         const mins = retryAfter ? Math.ceil(retryAfter / 60) : null;
                         const msg = mins ? `Too many login attempts. Please wait ${mins} minute${mins !== 1 ? 's' : ''}.` : 'Too many login attempts. Please wait a moment.';
-                        alertDiv.innerHTML = `<strong>Rate limited.</strong> ${msg}`;
+                        alertDiv.innerHTML = sanitizeHTML(`<strong>Rate limited.</strong> ${msg}`);
                         alertDiv.className = 'login-alert alert-warning';
                         alertDiv.style.display = 'block';
                     }
@@ -21013,7 +21013,7 @@ const auth = {
             if (alertDiv && error.data) {
                 if (error.data.locked) {
                     const mins = Math.ceil((error.data.retryAfter || 900) / 60);
-                    alertDiv.innerHTML = `<strong>Account locked.</strong> Too many failed attempts. Try again in ${mins} minute${mins !== 1 ? 's' : ''}.`;
+                    alertDiv.innerHTML = sanitizeHTML(`<strong>Account locked.</strong> Too many failed attempts. Try again in ${mins} minute${mins !== 1 ? 's' : ''}.`);
                     alertDiv.className = 'login-alert alert-danger';
                     alertDiv.style.display = 'block';
                     // Start countdown
@@ -21028,10 +21028,10 @@ const auth = {
                         }
                         const m = Math.floor(secondsLeft / 60);
                         const s = secondsLeft % 60;
-                        alertDiv.innerHTML = `<strong>Account locked.</strong> Try again in ${m}:${s.toString().padStart(2, '0')}`;
+                        alertDiv.innerHTML = sanitizeHTML(`<strong>Account locked.</strong> Try again in ${m}:${s.toString().padStart(2, '0')}`);
                     }, 1000);
                 } else if (typeof error.data.remainingAttempts === 'number' && error.data.remainingAttempts <= 3) {
-                    alertDiv.innerHTML = `<strong>Warning:</strong> ${error.data.remainingAttempts} attempt${error.data.remainingAttempts !== 1 ? 's' : ''} remaining before lockout.`;
+                    alertDiv.innerHTML = sanitizeHTML(`<strong>Warning:</strong> ${error.data.remainingAttempts} attempt${error.data.remainingAttempts !== 1 ? 's' : ''} remaining before lockout.`);
                     alertDiv.className = 'login-alert alert-warning';
                     alertDiv.style.display = 'block';
                 } else {
@@ -21044,7 +21044,7 @@ const auth = {
             // Restore form state
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Sign In';
+                submitBtn.innerHTML = sanitizeHTML('Sign In');
             }
             inputs.forEach(i => i.disabled = false);
         }
@@ -21098,7 +21098,7 @@ const auth = {
         // Loading state
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="auth-spinner"></span> Creating account...';
+            submitBtn.innerHTML = sanitizeHTML('<span class="auth-spinner"></span> Creating account...');
         }
         inputs.forEach(i => i.disabled = true);
 
@@ -21119,7 +21119,7 @@ const auth = {
             // Restore form state
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Create Account';
+                submitBtn.innerHTML = sanitizeHTML('Create Account');
             }
             inputs.forEach(i => i.disabled = false);
         }
@@ -21207,13 +21207,13 @@ const modals = {
         this._previouslyFocused = document.activeElement;
         const container = document.getElementById('modal-container');
         const modalClass = sizeClass ? `modal ${sizeClass}` : 'modal';
-        container.innerHTML = sanitizeHTML(`
+        container.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="modal-overlay" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
                 <div class="${modalClass}" onclick="event.stopPropagation()" role="document">
                     ${content}
                 </div>
             </div>
-        `);
+        `));
         // Set id on first modal-title for aria-labelledby reference
         const titleEl = container.querySelector('.modal-title');
         if (titleEl) titleEl.id = 'modal-title';
@@ -21258,7 +21258,7 @@ const modals = {
     close() {
         // Remove inert BEFORE focus restore (element must be interactive first)
         document.getElementById('main-content')?.removeAttribute('inert');
-        document.getElementById('modal-container').innerHTML = sanitizeHTML('');
+        document.getElementById('modal-container').innerHTML =sanitizeHTML( sanitizeHTML(''));
         // Remove keyboard handlers
         if (this._escapeHandler) {
             document.removeEventListener('keydown', this._escapeHandler);
@@ -21291,7 +21291,7 @@ const modals = {
             this._confirmReject = () => resolve(false);
             const btnClass = danger ? 'btn btn-danger' : 'btn btn-primary';
             const container = document.getElementById('modal-container');
-            container.innerHTML = sanitizeHTML(`
+            container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
@@ -21307,7 +21307,7 @@ const modals = {
                         </div>
                     </div>
                 </div>
-            `);
+            `));
             document.getElementById('main-content')?.setAttribute('inert', '');
             document.getElementById('confirm-cancel-btn').onclick = () => {
                 this._confirmResolve = null;
@@ -21343,16 +21343,16 @@ const modals = {
             const submitFn = () => {
                 const val = document.getElementById('prompt-input')?.value || '';
                 this._promptResolve = null;
-                container.innerHTML = sanitizeHTML('');
+                container.innerHTML =sanitizeHTML( sanitizeHTML(''));
                 resolve(val);
             };
             const cancelFn = () => {
                 this._promptResolve = null;
-                container.innerHTML = sanitizeHTML('');
+                container.innerHTML =sanitizeHTML( sanitizeHTML(''));
                 resolve(null);
             };
 
-            container.innerHTML = sanitizeHTML(`
+            container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" id="prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
@@ -21369,7 +21369,7 @@ const modals = {
                         </div>
                     </div>
                 </div>
-            `);
+            `));
 
             document.getElementById('prompt-overlay').onclick = (e) => { if (e.target === e.currentTarget) cancelFn(); };
             document.getElementById('prompt-close-btn').onclick = cancelFn;
@@ -24729,7 +24729,7 @@ const modals = {
         }
 
         const container = document.getElementById('modal-container');
-        container.innerHTML = sanitizeHTML(`
+        container.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="ar-preview-backdrop" id="ar-backdrop" role="dialog" aria-modal="true" aria-label="AR Preview">
                 <video id="ar-video" class="ar-video" autoplay playsinline muted aria-hidden="true"></video>
                 <canvas id="ar-canvas" class="ar-canvas" style="display:none;" aria-hidden="true"></canvas>
@@ -24762,7 +24762,7 @@ const modals = {
                     Camera not available. Point your device at the scene and use the overlay below.
                 </div>
             </div>
-        `);
+        `));
 
         let stream = null;
         const video = document.getElementById('ar-video');
@@ -24810,7 +24810,7 @@ const modals = {
         // Close handler — stop camera tracks
         const cleanup = () => {
             if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-            container.innerHTML = sanitizeHTML('');
+            container.innerHTML =sanitizeHTML( sanitizeHTML(''));
             document.removeEventListener('keydown', escHandler);
         };
         const escHandler = (e) => { if (e.key === 'Escape') cleanup(); };
@@ -25013,10 +25013,10 @@ const handlers = {
             const icon = item.querySelector('.req-icon');
             if (met) {
                 item.classList.add('met');
-                if (icon) icon.innerHTML = '&#10003;';
+                if (icon) icon.innerHTML = sanitizeHTML('&#10003;');
             } else {
                 item.classList.remove('met');
-                if (icon) icon.innerHTML = '&#9675;';
+                if (icon) icon.innerHTML = sanitizeHTML('&#9675;');
             }
         });
 
@@ -25144,7 +25144,7 @@ const handlers = {
         });
 
         const files = this._selectedFiles[mode] || [];
-        container.innerHTML = files.map((file, index) => {
+        container.innerHTML = sanitizeHTML(files.map((file, index) => {
             const url = URL.createObjectURL(file);
             const isVideo = file.type.startsWith('video/');
 
@@ -25161,7 +25161,7 @@ const handlers = {
                     <button type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
                 </div>
             `;
-        }).join('');
+        }).join(''));
 
         // Update file input to enable form submission with files
         const inputId = mode === 'add' ? 'item-images-input' : 'edit-item-images-input';
@@ -25430,7 +25430,7 @@ const handlers = {
                         container.style.display = items.length > 0 ? 'block' : 'none';
                         const list = document.getElementById('similar-feedback-list');
                         if (list && items.length > 0) {
-                            list.innerHTML = items.map(item => `
+                            list.innerHTML = sanitizeHTML(items.map(item => `
                                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
                                     <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                     <div style="display: flex; align-items: center; gap: 8px;">
@@ -25438,7 +25438,7 @@ const handlers = {
                                         <span style="font-size: 12px; color: var(--gray-500);">${(item.votes_up || 0) - (item.votes_down || 0)} votes</span>
                                     </div>
                                 </div>
-                            `).join('');
+                            `).join(''));
                         }
                     }
                 } catch (error) {
@@ -25632,7 +25632,7 @@ const handlers = {
         const menu = document.createElement('div');
         menu.id = 'dashboard-fab-menu';
         menu.className = 'dashboard-fab-menu';
-        menu.innerHTML = `
+        menu.innerHTML = sanitizeHTML(`
             <button class="fab-action-item" onclick="router.navigate('inventory'); setTimeout(() => modals.addItem(), 100); document.getElementById('dashboard-fab-menu')?.remove();">
                 ${components.icon('plus', 16)} Add Item
             </button>
@@ -25645,7 +25645,7 @@ const handlers = {
             <button class="fab-action-item" onclick="handlers.refreshDashboard(); document.getElementById('dashboard-fab-menu')?.remove();">
                 ${components.icon('refresh-cw', 16)} Refresh
             </button>
-        `;
+        `);
         document.body.appendChild(menu);
         // Close on outside click
         setTimeout(() => {
@@ -26901,14 +26901,14 @@ async function initApp() {
     // Add global UI elements
     const globalUI = document.createElement('div');
     globalUI.id = 'global-ui';
-    globalUI.innerHTML = sanitizeHTML(`
+    globalUI.innerHTML =sanitizeHTML( sanitizeHTML(`
         ${components.backToTop()}
         ${components.offlineIndicator()}
         ${components.pullToRefresh()}
         ${notificationCenter.render()}
         ${mobileUI.renderBottomNav()}
         ${mobileUI.renderFAB()}
-    `);
+    `));
     document.body.appendChild(globalUI);
 
     // Initialize mobile pull-to-refresh
@@ -27248,7 +27248,7 @@ async function initApp() {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'webhook-modal';
-        modal.innerHTML = sanitizeHTML(`
+        modal.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
@@ -27280,7 +27280,7 @@ async function initApp() {
                     <button class="btn btn-primary" onclick="window.submitWebhookEndpoint()">Create Endpoint</button>
                 </div>
             </div>
-        `);
+        `));
         document.body.appendChild(modal);
     };
 
@@ -27331,7 +27331,7 @@ function render(content) {
     // Wrap in <main> so public pages (login, register, etc.) have a landmark
     // that screen readers can jump to, matching the skip-link target used in renderApp.
     document.getElementById('app').innerHTML =
-        sanitizeHTML(`<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`);
+       sanitizeHTML( sanitizeHTML(`<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`));
     hideLoadingScreen();
 }
 
@@ -27349,7 +27349,7 @@ function renderApp(pageContent) {
     }
 
     try {
-        document.getElementById('app').innerHTML = sanitizeHTML(`
+        document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
                 ${components.sidebar()}
@@ -27377,7 +27377,7 @@ function renderApp(pageContent) {
             </div>
             ${components.vaultBuddy()}
             ${components.photoEditorModal()}
-        `);
+        `));
 
         // Move focus to main content on route change for screen readers
         const mainEl = document.getElementById('main-content');
@@ -27392,7 +27392,7 @@ function renderApp(pageContent) {
     } catch (err) {
         console.error('renderApp error:', err);
         hideLoadingScreen();
-        document.getElementById('app').innerHTML = sanitizeHTML(`
+        document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <div style="padding: 40px; text-align: center; font-family: system-ui;">
                 <h2>Something went wrong</h2>
                 <p style="color: #666;">An error occurred while rendering the page.</p>
@@ -27400,7 +27400,7 @@ function renderApp(pageContent) {
                     Reload Page
                 </button>
             </div>
-        `);
+        `));
     }
 }
 
@@ -28702,7 +28702,7 @@ document.addEventListener('keydown', function(e) {
             hideBanner();
         });
 
-        el.innerHTML = sanitizeHTML(icon + text);
+        el.innerHTML =sanitizeHTML( sanitizeHTML(icon + text));
         el.appendChild(btnInstall);
         el.appendChild(btnDismiss);
         return el;

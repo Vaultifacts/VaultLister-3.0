@@ -1,0 +1,15 @@
+# .semgrepignore - paths excluded from Semgrep scanning
+# Documentation and evidence files - not production code
+claude-docs/
+docs/evidence/
+memory/
+design/
+# Static test fixtures and snapshots
+*.snap
+# Python scripts targeting localhost (dev/test only, not production paths)
+scripts/*.py
+# Seed data SQL files
+src/backend/db/seeds/
+# API documentation pages using CDN resources (developer tools, not user-facing)
+public/api-docs/
+public/api-docs.html

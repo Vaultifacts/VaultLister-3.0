@@ -92,7 +92,7 @@ Object.assign(handlers, {
         }
 
         if (images.length === 0) {
-            grid.innerHTML = `
+            grid.innerHTML = sanitizeHTML(`
                 <div class="text-center text-gray-500 py-6" style="grid-column: 1 / -1;">
                     <div style="font-size: 32px; margin-bottom: 8px;">${components.icon('image', 32)}</div>
                     <p style="font-weight: 500;">No images in your Image Bank</p>
@@ -101,11 +101,11 @@ Object.assign(handlers, {
                         Go to Image Bank
                     </button>
                 </div>
-            `;
+            `);
             return;
         }
 
-        grid.innerHTML = images.slice(0, 50).map(img => `
+        grid.innerHTML = sanitizeHTML(images.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
                  onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
@@ -116,7 +116,7 @@ Object.assign(handlers, {
                     ${components.icon('check', 12)}
                 </div>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     // Toggle selection of an image in the inline image bank picker,
@@ -158,11 +158,11 @@ Object.assign(handlers, {
         previewItem.className = 'media-preview-item';
         previewItem.setAttribute('data-imagebank-id', imageId);
         previewItem.setAttribute('data-imagebank-url', imageUrl);
-        previewItem.innerHTML = `
+        previewItem.innerHTML = sanitizeHTML(`
             <img src="${escapeHtml(imageUrl)}" alt="Image from Image Bank" style="width: 100%; height: 100%; object-fit: cover;">
             <button type="button" class="media-preview-remove" onclick="handlers.removeImageBankImageFromPreview('${mode}', '${imageId}')">×</button>
             <span class="media-preview-source" style="position: absolute; bottom: 2px; left: 2px; background: var(--primary-600); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px;">Bank</span>
-        `;
+        `);
         previewContainer.appendChild(previewItem);
     },
 
@@ -203,15 +203,15 @@ Object.assign(handlers, {
         if (!grid) return;
 
         if (filtered.length === 0) {
-            grid.innerHTML = `
+            grid.innerHTML = sanitizeHTML(`
                 <div class="text-center text-gray-500 py-4" style="grid-column: 1 / -1;">
                     No images found matching "${escapeHtml(query)}"
                 </div>
-            `;
+            `);
             return;
         }
 
-        grid.innerHTML = filtered.slice(0, 50).map(img => `
+        grid.innerHTML = sanitizeHTML(filtered.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
                  onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
@@ -222,7 +222,7 @@ Object.assign(handlers, {
                     ${components.icon('check', 12)}
                 </div>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     // Add image from URL,
@@ -332,11 +332,11 @@ Object.assign(handlers, {
         const variations = store.state.itemVariations || [];
 
         if (variations.length === 0) {
-            variationsList.innerHTML = '<p style="font-size: 13px; color: var(--gray-500); font-style: italic;">No variations added yet</p>';
+            variationsList.innerHTML = sanitizeHTML('<p style="font-size: 13px; color: var(--gray-500); font-style: italic;">No variations added yet</p>');
             return;
         }
 
-        variationsList.innerHTML = variations.map(variation => `
+        variationsList.innerHTML = sanitizeHTML(variations.map(variation => `
             <div style="display: flex; gap: 8px; align-items: center;">
                 <input type="text"
                        class="form-input"
@@ -351,7 +351,7 @@ Object.assign(handlers, {
                     ${components.icon('trash', 16)}
                 </button>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     // Update variation value,
@@ -535,7 +535,7 @@ Object.assign(handlers, {
             // Re-render inventory page to show new item
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -645,7 +645,7 @@ Object.assign(handlers, {
                 await handlers.loadInventory();
                 if (store.state.currentPage === 'inventory') {
                     const pageContent = pages.inventory();
-                    document.querySelector('.page-content').innerHTML = pageContent;
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                     // Restore focus to search input after DOM update
                     requestAnimationFrame(() => {
                         const searchInput = document.getElementById('inventory-search');
@@ -666,7 +666,7 @@ Object.assign(handlers, {
             // Re-render inventory page without triggering router
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 // Restore focus to search input after DOM update
                 requestAnimationFrame(() => {
                     const searchInput = document.getElementById('inventory-search');
@@ -1723,7 +1723,7 @@ Object.assign(handlers, {
             // Re-render inventory page if currently viewing it
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -1739,7 +1739,7 @@ Object.assign(handlers, {
         const countEl = bar.querySelector('.bulk-actions-count');
         if (countEl && loading) {
             countEl.dataset.origText = countEl.textContent;
-            countEl.innerHTML = '<span class="spinner sm"></span> Processing...';
+            countEl.innerHTML = sanitizeHTML('<span class="spinner sm"></span> Processing...');
         } else if (countEl && countEl.dataset.origText) {
             countEl.textContent = countEl.dataset.origText;
         }
@@ -1761,7 +1761,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
 
             const menu = document.getElementById('selection-menu');
@@ -1789,7 +1789,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
 
             const menu = document.getElementById('selection-menu');
@@ -1852,7 +1852,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
 
             const menu = document.getElementById('selection-menu');
@@ -1987,7 +1987,7 @@ Object.assign(handlers, {
         if (!container) return;
 
         if (action === 'updateStatus') {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label">New Status</label>
                     <select class="form-select" name="status" required>
@@ -1997,9 +1997,9 @@ Object.assign(handlers, {
                         <option value="archived">Archived</option>
                     </select>
                 </div>
-            `;
+            `);
         } else if (action === 'updatePrice') {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label">Price Adjustment</label>
                     <select class="form-select" name="adjustmentType" required>
@@ -2011,9 +2011,9 @@ Object.assign(handlers, {
                     <label class="form-label">Amount</label>
                     <input type="number" class="form-input" name="adjustmentValue" required step="0.01">
                 </div>
-            `;
+            `);
         } else {
-            container.innerHTML = '';
+            container.innerHTML = sanitizeHTML('');
         }
     },
 
@@ -2110,7 +2110,7 @@ Object.assign(handlers, {
             // Re-render inventory page
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
 
                 // Keep menu open if it was visible
                 if (wasMenuVisible) {
@@ -2156,11 +2156,11 @@ Object.assign(handlers, {
 
         const activeFilters = store.state.activeFilters;
         if (Object.keys(activeFilters).length === 0) {
-            container.innerHTML = '<div style="font-size: 12px; color: var(--gray-500); padding: 8px;">No active filters</div>';
+            container.innerHTML = sanitizeHTML('<div style="font-size: 12px; color: var(--gray-500); padding: 8px;">No active filters</div>');
             return;
         }
 
-        container.innerHTML = Object.entries(activeFilters).map(([column, value]) => `
+        container.innerHTML = sanitizeHTML(Object.entries(activeFilters).map(([column, value]) => `
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 4px;">
                 <div style="font-size: 12px;">
                     <span style="font-weight: 600; text-transform: capitalize;">${column}:</span>
@@ -2170,7 +2170,7 @@ Object.assign(handlers, {
                     ${components.icon('close', 12)}
                 </button>
             </div>
-        `).join('');
+        `).join(''));
     },
 
 
@@ -2185,7 +2185,7 @@ Object.assign(handlers, {
         // Re-render the inventory page
         if (store.state.currentPage === 'inventory') {
             const pageContent = pages.inventory();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
 
         // Keep menu open if it was visible
@@ -2264,7 +2264,7 @@ Object.assign(handlers, {
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
                 const container = document.querySelector('.page-content');
-                if (container) container.innerHTML = pageContent;
+                if (container) container.innerHTML = sanitizeHTML(pageContent);
 
             }
         } catch (error) {
@@ -2479,7 +2479,7 @@ Object.assign(handlers, {
             });
             tableHTML += '</tbody></table>';
 
-            previewContent.innerHTML = tableHTML;
+            previewContent.innerHTML = sanitizeHTML(tableHTML);
             itemCount.textContent = `Found ${dataRows.length} items${dataRows.length > 5 ? ' (showing first 5)' : ''}`;
             preview.style.display = 'block';
             importBtn.disabled = false;
@@ -2510,7 +2510,7 @@ Object.assign(handlers, {
 
         try {
             importBtn.disabled = true;
-            importBtn.innerHTML = `${components.icon('upload', 16)} Importing...`;
+            importBtn.innerHTML = sanitizeHTML(`${components.icon('upload', 16)} Importing...`);
 
             // Convert rows to objects
             const items = rows.map(row => {
@@ -2538,7 +2538,7 @@ Object.assign(handlers, {
         } finally {
             if (importBtn) {
                 importBtn.disabled = false;
-                importBtn.innerHTML = originalText;
+                importBtn.innerHTML = sanitizeHTML(originalText);
             }
         }
     },
@@ -2591,7 +2591,7 @@ Object.assign(handlers, {
         // Re-render listings page
         if (store.state.currentPage === 'listings') {
             const pageContent = pages.listings();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -2613,7 +2613,7 @@ Object.assign(handlers, {
         // Re-render listings page
         if (store.state.currentPage === 'listings') {
             const pageContent = pages.listings();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -2781,7 +2781,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'listings') {
                 const pageContent = pages.listings();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to update listing: ' + error.message);
@@ -2859,7 +2859,7 @@ Object.assign(handlers, {
             // Re-render listings page
             if (store.state.currentPage === 'listings') {
                 const pageContent = pages.listings();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to delete listing: ' + error.message);
@@ -3122,13 +3122,13 @@ Object.assign(handlers, {
 
     loadCompetitorPricing: async function(listingId) {
         const container = document.getElementById(`competitor-pricing-${listingId}`);
-        if (container) container.innerHTML = '<span class="text-gray-400">Loading...</span>';
+        if (container) container.innerHTML = sanitizeHTML('<span class="text-gray-400">Loading...</span>');
 
         try {
             const data = await api.get(`/listings/${listingId}/competitor-pricing`);
             if (container) {
                 const recColor = data.recommendation === 'competitive' ? 'success' : data.recommendation === 'underpriced' ? 'warning' : 'error';
-                container.innerHTML = `
+                container.innerHTML = sanitizeHTML(`
                     <div class="space-y-1">
                         <div class="flex justify-between"><span class="text-gray-500">Avg Sale Price:</span><span class="font-medium">$${data.avg_price}</span></div>
                         <div class="flex justify-between"><span class="text-gray-500">Range:</span><span class="font-medium">$${data.min_price} - $${data.max_price}</span></div>
@@ -3136,10 +3136,10 @@ Object.assign(handlers, {
                         <div class="flex justify-between"><span class="text-gray-500">Status:</span><span class="badge badge-${recColor} badge-sm">${data.recommendation}</span></div>
                         <div class="text-xs text-gray-400">Based on ${data.similar_sales} similar sales</div>
                     </div>
-                `;
+                `);
             }
         } catch (error) {
-            if (container) container.innerHTML = '<span class="text-gray-400">No pricing data available</span>';
+            if (container) container.innerHTML = sanitizeHTML('<span class="text-gray-400">No pricing data available</span>');
         }
     },
 
@@ -3148,27 +3148,27 @@ Object.assign(handlers, {
 
     loadTimeToSell: async function(listingId) {
         const container = document.getElementById(`time-to-sell-${listingId}`);
-        if (container) container.innerHTML = '<span class="text-gray-400">Calculating...</span>';
+        if (container) container.innerHTML = sanitizeHTML('<span class="text-gray-400">Calculating...</span>');
 
         try {
             const data = await api.get(`/listings/${listingId}/time-to-sell`);
             if (container) {
                 if (data.estimated_days !== null) {
                     const confColor = data.confidence === 'high' ? 'success' : data.confidence === 'medium' ? 'warning' : 'gray';
-                    container.innerHTML = `
+                    container.innerHTML = sanitizeHTML(`
                         <div class="space-y-1">
                             <div class="flex justify-between"><span class="text-gray-500">Estimate:</span><span class="font-bold text-lg">${data.estimated_days} days</span></div>
                             <div class="flex justify-between"><span class="text-gray-500">Range:</span><span class="font-medium">${data.min_days} - ${data.max_days} days</span></div>
                             <div class="flex justify-between"><span class="text-gray-500">Confidence:</span><span class="badge badge-${confColor} badge-sm">${data.confidence}</span></div>
                             <div class="text-xs text-gray-400">Based on ${data.data_points} historical sales</div>
                         </div>
-                    `;
+                    `);
                 } else {
-                    container.innerHTML = '<span class="text-gray-400">Not enough data to estimate</span>';
+                    container.innerHTML = sanitizeHTML('<span class="text-gray-400">Not enough data to estimate</span>');
                 }
             }
         } catch (error) {
-            if (container) container.innerHTML = '<span class="text-gray-400">Unable to calculate</span>';
+            if (container) container.innerHTML = sanitizeHTML('<span class="text-gray-400">Unable to calculate</span>');
         }
     },
 
@@ -3413,7 +3413,7 @@ Object.assign(handlers, {
             // Re-render if on listings page
             if (store.state.currentPage === 'listings') {
                 const pageContent = pages.listings();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to create folder: ' + error.message);
@@ -3437,7 +3437,7 @@ Object.assign(handlers, {
         // Re-render table
         if (store.state.currentPage === 'listings') {
             const pageContent = pages.listings();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -3851,14 +3851,14 @@ Object.assign(handlers, {
 
         const previewEl = document.getElementById('bulk-price-preview-list');
         if (previewEl) {
-            previewEl.innerHTML = previewItems.map(p => `
+            previewEl.innerHTML = sanitizeHTML(previewItems.map(p => `
                 <div class="preview-row">
                     <span class="preview-title">${escapeHtml(p.title)}</span>
                     <span class="preview-old">$${p.oldPrice.toFixed(2)}</span>
                     <span class="preview-arrow">→</span>
                     <span class="preview-new ${p.newPrice < p.oldPrice ? 'decrease' : p.newPrice > p.oldPrice ? 'increase' : ''}">$${p.newPrice.toFixed(2)}</span>
                 </div>
-            `).join('') + (items.length > 5 ? `<div class="preview-more">...and ${items.length - 5} more items</div>` : '');
+            `).join('') + (items.length > 5 ? `<div class="preview-more">...and ${items.length - 5} more items</div>` : ''));
         }
     },
 
@@ -4605,13 +4605,13 @@ Object.assign(handlers, {
 
         const container = document.getElementById('bundle-available');
         if (container) {
-            container.innerHTML = filtered.map(item => `
+            container.innerHTML = sanitizeHTML(filtered.map(item => `
                 <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
                     <span class="item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                     <span class="add-icon">${components.icon('plus', 14)}</span>
                 </div>
-            `).join('') || '<div class="empty-state">No items found</div>';
+            `).join('') || '<div class="empty-state">No items found</div>');
         }
     },
 
@@ -4806,7 +4806,7 @@ Object.assign(handlers, {
         if (!resultsEl) return;
 
         if (query.length < 2) {
-            resultsEl.innerHTML = '<div class="lookup-empty">Enter at least 2 characters</div>';
+            resultsEl.innerHTML = sanitizeHTML('<div class="lookup-empty">Enter at least 2 characters</div>');
             return;
         }
 
@@ -4829,11 +4829,11 @@ Object.assign(handlers, {
         ).slice(0, 5);
 
         if (invResults.length === 0 && listResults.length === 0) {
-            resultsEl.innerHTML = '<div class="lookup-empty">No items found</div>';
+            resultsEl.innerHTML = sanitizeHTML('<div class="lookup-empty">No items found</div>');
             return;
         }
 
-        resultsEl.innerHTML = `
+        resultsEl.innerHTML = sanitizeHTML(`
             ${invResults.length > 0 ? `
                 <div class="lookup-section">
                     <h4 class="lookup-section-title">Inventory (${invResults.length})</h4>
@@ -4868,7 +4868,7 @@ Object.assign(handlers, {
                     `).join('')}
                 </div>
             ` : ''}
-        `;
+        `);
     },
 
 
@@ -4905,7 +4905,7 @@ Object.assign(handlers, {
             // Re-render the page
             if (store.state.currentPage === 'recently-deleted') {
                 const pageContent = pages.recentlyDeleted();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message || 'Failed to restore item');
@@ -4927,7 +4927,7 @@ Object.assign(handlers, {
             // Re-render the page
             if (store.state.currentPage === 'recently-deleted') {
                 const pageContent = pages.recentlyDeleted();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message || 'Failed to delete item');
@@ -5043,13 +5043,13 @@ Object.assign(handlers, {
             await handlers.loadAutomations();
             if (store.state.currentPage === 'automations') {
                 const pageContent = pages.automations();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
             if (store.state.currentPage === 'automations') {
                 const pageContent = pages.automations();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         }
     },
@@ -5059,7 +5059,7 @@ Object.assign(handlers, {
         store.setState({ automationSearchQuery: query });
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             // Restore focus to search input
             const input = document.querySelector('.card-header input[placeholder="Search automations..."]');
             if (input) { input.focus(); input.setSelectionRange(query.length, query.length); }
@@ -5073,7 +5073,7 @@ Object.assign(handlers, {
         try { localStorage.setItem('vaultlister_automation_category_filter', category); } catch (e) { console.warn('Failed to save filter preference:', e); }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -5148,7 +5148,7 @@ Object.assign(handlers, {
         // Re-render the page
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -5474,7 +5474,7 @@ Object.assign(handlers, {
         if (!container) return;
         const row = document.createElement('div');
         row.className = 'condition-row flex items-center gap-2 p-3 bg-gray-50 rounded-lg';
-        row.innerHTML = `
+        row.innerHTML = sanitizeHTML(`
             <select class="form-select" style="width: 140px;">
                 <option value="and">AND</option>
                 <option value="or">OR</option>
@@ -5491,7 +5491,7 @@ Object.assign(handlers, {
             <button class="btn btn-xs btn-ghost" onclick="handlers.removeAutomationCondition(this)" title="Remove">
                 ${components.icon('x', 14)}
             </button>
-        `;
+        `);
         container.appendChild(row);
     },
 
@@ -5557,7 +5557,7 @@ Object.assign(handlers, {
             // Re-render automations page to show new rule
             if (store.state.currentPage === 'automations') {
                 const pageContent = pages.automations();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -5708,7 +5708,7 @@ Object.assign(handlers, {
             // Re-render if on templates page
             if (store.state.currentPage === 'templates') {
                 const pageContent = pages.templates();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -5726,7 +5726,7 @@ Object.assign(handlers, {
             // Re-render if on templates page
             if (store.state.currentPage === 'templates') {
                 const pageContent = pages.templates();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -5856,7 +5856,7 @@ Object.assign(handlers, {
             // Re-render if on templates page
             if (store.state.currentPage === 'templates') {
                 const pageContent = pages.templates();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -5893,7 +5893,7 @@ Object.assign(handlers, {
             // Re-render if on templates page
             if (store.state.currentPage === 'templates') {
                 const pageContent = pages.templates();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -6082,7 +6082,7 @@ Object.assign(handlers, {
         const progressText = document.getElementById(`${platform}-progress-text`);
         if (!container || !input.files) return;
 
-        container.innerHTML = '';
+        container.innerHTML = sanitizeHTML('');
         let files = Array.from(input.files);
         if (files.length === 0) { if (progressContainer) progressContainer.style.display = 'none'; return; }
 
@@ -6101,8 +6101,8 @@ Object.assign(handlers, {
             reader.onload = (e) => {
                 const img = document.createElement('div');
                 img.style.cssText = 'width:64px;height:64px;border-radius:6px;overflow:hidden;position:relative;border:2px solid var(--gray-200);';
-                img.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">
-                    <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:10px;text-align:center;padding:1px;">${idx + 1}</span>`;
+                img.innerHTML = sanitizeHTML(`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">
+                    <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:10px;text-align:center;padding:1px;">${idx + 1}</span>`);
                 container.appendChild(img);
 
                 loaded++;
@@ -6258,7 +6258,7 @@ Object.assign(handlers, {
         }
         const confidenceBadge = confidence === 'high' ? 'badge-success' : confidence === 'medium' ? 'badge-warning' : 'badge-gray';
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="mb-4 flex items-center gap-3">
                 <span class="badge ${confidenceBadge}">Confidence: ${confidence.toUpperCase()}</span>
                 ${data.aiProvider ? `<span class="text-xs text-gray-500">Powered by ${data.aiProvider}</span>` : ''}
@@ -6331,7 +6331,7 @@ Object.assign(handlers, {
                     </ul>
                 </div>
             ` : ''}
-        `;
+        `);
     },
 
 
@@ -6655,11 +6655,11 @@ Object.assign(handlers, {
                     preview.className = 'selected-image-preview';
                     preview.dataset.imageId = imageId;
                     preview.dataset.imageUrl = imageUrl;
-                    preview.innerHTML = `
+                    preview.innerHTML = sanitizeHTML(`
                         <img src="${escapeHtml(imageUrl)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" alt="Selected image preview">
                         <button type="button" class="btn btn-xs btn-ghost" style="position: absolute; top: -8px; right: -8px; background: white; border-radius: 50%; padding: 2px;"
                                 onclick="this.parentElement.remove()" aria-label="Remove image">×</button>
-                    `;
+                    `);
                     preview.style.position = 'relative';
                     preview.style.display = 'inline-block';
                     container.appendChild(preview);
@@ -6971,7 +6971,7 @@ Object.assign(handlers, {
             const previewEl = document.getElementById(`sku-preview-${ruleId}`);
 
             if (previewEl && previewSku) {
-                previewEl.innerHTML = `<code class="bg-primary-100 text-primary-700 px-2 py-1 rounded">${escapeHtml(previewSku)}</code>`;
+                previewEl.innerHTML = sanitizeHTML(`<code class="bg-primary-100 text-primary-700 px-2 py-1 rounded">${escapeHtml(previewSku)}</code>`);
             }
         } catch (error) {
             console.error('Preview error:', error);
@@ -7026,15 +7026,15 @@ Object.assign(handlers, {
         if (!listEl) return;
 
         if (duplicates.length === 0) {
-            listEl.innerHTML = `
+            listEl.innerHTML = sanitizeHTML(`
                 <p style="text-align: center; color: var(--gray-500); padding: 32px;">
                     No pending duplicates to review.
                 </p>
-            `;
+            `);
             return;
         }
 
-        listEl.innerHTML = duplicates.map(d => `
+        listEl.innerHTML = sanitizeHTML(duplicates.map(d => `
             <div class="duplicate-card" data-id="${d.id}">
                 <div class="duplicate-card-items">
                     <div class="duplicate-item-preview">
@@ -7059,7 +7059,7 @@ Object.assign(handlers, {
                     </button>
                 </div>
             </div>
-        `).join('');
+        `).join(''));
     },
 
 
@@ -7078,7 +7078,7 @@ Object.assign(handlers, {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'relisting-rule-modal';
-        modal.innerHTML = `
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width:550px;">
                 <div class="modal-header">
                     <h3>New Relisting Rule</h3>
@@ -7121,7 +7121,7 @@ Object.assign(handlers, {
                     <button class="btn btn-primary" onclick="handlers.createRelistingRule()">Create Rule</button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(modal);
     },
 
@@ -7466,7 +7466,7 @@ Object.assign(handlers, {
             if (btn) {
                 const iconSpan = btn.querySelector('span');
                 const iconHtml = iconSpan ? iconSpan.outerHTML : '';
-                btn.innerHTML = iconHtml + ' Columns (' + checkedCount + '/' + totalCount + ')';
+                btn.innerHTML = sanitizeHTML(iconHtml + ' Columns (' + checkedCount + '/' + totalCount + ')');
             }
         }
     },

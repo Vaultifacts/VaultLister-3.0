@@ -139,7 +139,7 @@ Object.assign(handlers, {
         if (formCard) {
             const successDiv = document.createElement('div');
             successDiv.className = 'feedback-success-animation';
-            successDiv.innerHTML = '<svg class="feedback-success-check" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="none" stroke="var(--success)" stroke-width="2"/><path class="feedback-success-path" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg><p>Feedback submitted!</p>';
+            successDiv.innerHTML = sanitizeHTML('<svg class="feedback-success-check" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="none" stroke="var(--success)" stroke-width="2"/><path class="feedback-success-path" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg><p>Feedback submitted!</p>');
             formCard.appendChild(successDiv);
             setTimeout(() => { if (successDiv.parentNode) successDiv.remove(); }, 2500);
         }
@@ -243,12 +243,12 @@ Object.assign(handlers, {
             // Re-render the screenshot section
             const dropZone = document.getElementById('screenshot-drop-zone');
             if (dropZone) {
-                dropZone.innerHTML = `
+                dropZone.innerHTML = sanitizeHTML(`
                     <div style="position: relative; display: inline-block;">
                         <img src="${e.target.result}" style="max-width: 300px; max-height: 200px; border-radius: 4px;" alt="Screenshot preview">
                         <button type="button" onclick="event.stopPropagation(); handlers.clearScreenshot();" style="position: absolute; top: -8px; right: -8px; background: var(--danger-600); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;">x</button>
                     </div>
-                `;
+                `);
             }
         };
         reader.readAsDataURL(file);
@@ -265,7 +265,7 @@ Object.assign(handlers, {
         if (input) input.value = '';
         const dropZone = document.getElementById('screenshot-drop-zone');
         if (dropZone) {
-            dropZone.innerHTML = `
+            dropZone.innerHTML = sanitizeHTML(`
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="margin-bottom: 8px;">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -273,7 +273,7 @@ Object.assign(handlers, {
                 </svg>
                 <p style="margin: 0; color: var(--gray-500); font-size: 14px;">Click to upload a screenshot</p>
                 <p style="margin: 4px 0 0 0; color: var(--gray-400); font-size: 12px;">PNG, JPEG, GIF, or WebP (max 2MB)</p>
-            `;
+            `);
         }
     },
 
@@ -1155,7 +1155,7 @@ Object.assign(handlers, {
         // Add user message
         const userMsg = document.createElement('div');
         userMsg.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px; justify-content: flex-end;';
-        userMsg.innerHTML = `<div style="background: var(--primary-500); color: white; padding: 10px 14px; border-radius: 12px 0 12px 12px; max-width: 80%;"><p class="text-sm">${escapeHtml(text)}</p><span class="text-xs" style="opacity: 0.7;">Just now</span></div>`;
+        userMsg.innerHTML = sanitizeHTML(`<div style="background: var(--primary-500); color: white; padding: 10px 14px; border-radius: 12px 0 12px 12px; max-width: 80%;"><p class="text-sm">${escapeHtml(text)}</p><span class="text-xs" style="opacity: 0.7;">Just now</span></div>`);
         messages.appendChild(userMsg);
         messages.scrollTop = messages.scrollHeight;
 
@@ -1163,7 +1163,7 @@ Object.assign(handlers, {
         setTimeout(() => {
             const botMsg = document.createElement('div');
             botMsg.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px;';
-            botMsg.innerHTML = `<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Thanks for reaching out! A support agent will be with you shortly. In the meantime, you can check our knowledge base or tutorials for quick answers.</p><span class="text-xs text-gray-400">Just now</span></div>`;
+            botMsg.innerHTML = sanitizeHTML(`<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Thanks for reaching out! A support agent will be with you shortly. In the meantime, you can check our knowledge base or tutorials for quick answers.</p><span class="text-xs text-gray-400">Just now</span></div>`);
             messages.appendChild(botMsg);
             messages.scrollTop = messages.scrollHeight;
         }, 1000);

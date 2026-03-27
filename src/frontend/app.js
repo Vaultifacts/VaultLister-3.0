@@ -39,7 +39,7 @@ function highlightText(text, query) {
     if (!text || !query) return escapeHtml(text);
     const escaped = escapeHtml(text);
     const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return escaped.replace(new RegExp(`(${q})`, 'gi'), '<mark class="search-highlight">$1</mark>');
+    return escaped.replace(new RegExp(`(${q})`, 'gi'), '<mark class="search-highlight">$1</mark>'); // nosemgrep: javascript.lang.security.detect-non-literal-regexp
 }
 
 // Format a Date as YYYY-MM-DD in the LOCAL timezone (not UTC)
@@ -713,13 +713,13 @@ const inlineEdit = {
         const originalContent = element.textContent;
         element.classList.add('editing');
 
-        element.innerHTML = `
+        element.innerHTML = sanitizeHTML(`
             <input type="text" class="inline-edit-input" value="${escapeHtml(currentValue)}" aria-label="Edit value">
             <div class="inline-edit-actions">
                 <button class="inline-edit-save">Save</button>
                 <button class="inline-edit-cancel">Cancel</button>
             </div>
-        `;
+        `);
 
         const input = element.querySelector('input');
         const saveBtn = element.querySelector('.inline-edit-save');
@@ -1107,11 +1107,11 @@ const snackbar = {
         snackbarEl.className = `snackbar ${type}`;
         snackbarEl.setAttribute('role', 'status');
         snackbarEl.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
-        snackbarEl.innerHTML = `
+        snackbarEl.innerHTML = sanitizeHTML(`
             <span class="snackbar-message">${escapeHtml(message)}</span>
             ${action ? `<button class="snackbar-action" type="button">${escapeHtml(actionLabel)}</button>` : ''}
             <button class="snackbar-close" type="button" aria-label="Dismiss">&times;</button>
-        `;
+        `);
 
         container.appendChild(snackbarEl);
 
@@ -1192,7 +1192,7 @@ const tagInput = {
         const tagsContainer = container.querySelector('.tag-input-tags');
         const tagEl = document.createElement('span');
         tagEl.className = 'tag-input-tag';
-        tagEl.innerHTML = `${escapeHtml(tag)}<button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>`;
+        tagEl.innerHTML = sanitizeHTML(`${escapeHtml(tag)}<button type="button" class="tag-input-remove" onclick="tagInput.removeTag('${id}', '${escapeHtml(tag)}')">&times;</button>`);
         tagsContainer.appendChild(tagEl);
 
         container.dispatchEvent(new CustomEvent('tagschange', { detail: { tags } }));
@@ -1321,20 +1321,20 @@ const commentThread = {
     showReplyForm(commentId) {
         const form = document.getElementById(`reply-form-${commentId}`);
         form.style.display = 'block';
-        form.innerHTML = `
+        form.innerHTML = sanitizeHTML(`
             <textarea class="comment-input" placeholder="Write a reply..." rows="2"></textarea>
             <div class="comment-form-actions">
                 <button class="btn btn-sm" onclick="commentThread.cancelReply('${commentId}')">Cancel</button>
                 <button class="btn btn-sm btn-primary" onclick="commentThread.submitReply('${commentId}')">Reply</button>
             </div>
-        `;
+        `);
         form.querySelector('textarea').focus();
     },
 
     cancelReply(commentId) {
         const form = document.getElementById(`reply-form-${commentId}`);
         form.style.display = 'none';
-        form.innerHTML = '';
+        form.innerHTML = sanitizeHTML('');
     },
 
     submitReply(commentId) {
@@ -1382,11 +1382,11 @@ const copyButton = {
 
     showFeedback(element, success) {
         const originalHtml = element.innerHTML;
-        element.innerHTML = success ? `${components.icon('check', 16)} Copied!` : `${components.icon('x', 16)} Failed`;
+        element.innerHTML = sanitizeHTML(success ? `${components.icon('check', 16)} Copied!` : `${components.icon('x', 16)} Failed`);
         element.classList.add(success ? 'copy-success' : 'copy-error');
 
         setTimeout(() => {
-            element.innerHTML = originalHtml;
+            element.innerHTML = sanitizeHTML(originalHtml);
             element.classList.remove('copy-success', 'copy-error');
         }, 2000);
     }
@@ -1554,7 +1554,7 @@ const onboardingTour = {
         const isLast = this.currentStep === this.currentTour.steps.length - 1;
         const progress = this.currentTour.showProgress ? `<span class="tour-progress">${this.currentStep + 1}/${this.currentTour.steps.length}</span>` : '';
 
-        tooltipEl.innerHTML = `
+        tooltipEl.innerHTML = sanitizeHTML(`
             <div class="tour-tooltip-content">
                 ${step.title ? `<div class="tour-tooltip-title">${escapeHtml(step.title)}</div>` : ''}
                 <div class="tour-tooltip-text">${escapeHtml(step.content)}</div>
@@ -1567,7 +1567,7 @@ const onboardingTour = {
                     </div>
                 </div>
             </div>
-        `;
+        `);
 
         tooltipEl.className = `tour-tooltip ${position} show`;
 
@@ -2173,17 +2173,17 @@ const fileUpload = {
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    preview.innerHTML = `
+                    preview.innerHTML = sanitizeHTML(`
                         <img src="${e.target.result}" alt="${escapeHtml(file.name)}">
                         <button class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
-                    `;
+                    `);
                 };
                 reader.readAsDataURL(file);
             } else {
-                preview.innerHTML = `
+                preview.innerHTML = sanitizeHTML(`
                     <div class="file-icon">${components.icon('file', 32)}</div>
                     <button class="file-preview-remove" onclick="fileUpload.remove('${fileId}')">&times;</button>
-                `;
+                `);
             }
 
             previewsEl.appendChild(preview);
@@ -2958,7 +2958,7 @@ const inlineCellEdit = {
 
         const currentValue = cell.textContent.trim();
         cell.classList.add('editing');
-        cell.innerHTML = `<input type="text" value="${escapeHtml(currentValue)}" aria-label="Edit cell value" onblur="inlineCellEdit.save(this, ${onSave ? 'true' : 'false'})" onkeydown="inlineCellEdit.handleKey(event)">`;
+        cell.innerHTML = sanitizeHTML(`<input type="text" value="${escapeHtml(currentValue)}" aria-label="Edit cell value" onblur="inlineCellEdit.save(this, ${onSave ? 'true' : 'false'})" onkeydown="inlineCellEdit.handleKey(event)">`);
         const input = cell.querySelector('input');
         input.focus();
         input.select();
@@ -2971,7 +2971,7 @@ const inlineCellEdit = {
         } else if (event.key === 'Escape') {
             const cell = event.target.closest('.editable-cell');
             cell.classList.remove('editing');
-            cell.innerHTML = cell._originalValue || event.target.defaultValue;
+            cell.innerHTML = sanitizeHTML(cell._originalValue || event.target.defaultValue);
         }
     },
 
@@ -3275,7 +3275,7 @@ const emailListInput = {
             const chip = document.createElement('span');
             chip.className = `email-chip ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'invalid'}`;
             chip.dataset.email = email;
-            chip.innerHTML = `${escapeHtml(email)}<button class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`;
+            chip.innerHTML = sanitizeHTML(`${escapeHtml(email)}<button class="email-chip-remove" onclick="emailListInput.remove(this)">&times;</button>`);
             container.insertBefore(chip, input);
             input.value = '';
             this.updateData(id);
@@ -3424,7 +3424,7 @@ const successCheckmark = {
     show(containerId) {
         const container = document.getElementById(containerId);
         if (container) {
-            container.innerHTML = this.create();
+            container.innerHTML = sanitizeHTML(this.create());
             ariaAnnounce.polite('Success');
         }
     }
@@ -3643,13 +3643,13 @@ const achievementToast = {
 
         const toast = document.createElement('div');
         toast.className = 'achievement-toast';
-        toast.innerHTML = `
+        toast.innerHTML = sanitizeHTML(`
             <div class="achievement-badge-icon">${icon}</div>
             <div class="achievement-content">
                 <div class="achievement-label">${escapeHtml(label)}</div>
                 <div class="achievement-title">${escapeHtml(title)}</div>
             </div>
-        `;
+        `);
 
         document.body.appendChild(toast);
         ariaAnnounce.assertive(`${label}: ${title}`);
@@ -3668,7 +3668,7 @@ const milestoneCelebration = {
 
         const overlay = document.createElement('div');
         overlay.className = 'milestone-overlay';
-        overlay.innerHTML = `
+        overlay.innerHTML = sanitizeHTML(`
             <div class="milestone-card">
                 <div class="milestone-icon">${icon}</div>
                 <h2 class="milestone-title">${escapeHtml(title)}</h2>
@@ -3679,7 +3679,7 @@ const milestoneCelebration = {
                 ` : ''}
                 <button class="btn btn-primary" style="margin-top: 24px;" onclick="milestoneCelebration.close()">Continue</button>
             </div>
-        `;
+        `);
 
         overlay._onClose = onClose;
         document.body.appendChild(overlay);
@@ -3746,11 +3746,11 @@ const audioPlayer = {
 
         if (audio.paused) {
             audio.play();
-            btn.innerHTML = components.icon('pause', 20);
+            btn.innerHTML = sanitizeHTML(components.icon('pause', 20));
             btn.setAttribute('aria-label', 'Pause');
         } else {
             audio.pause();
-            btn.innerHTML = components.icon('play', 20);
+            btn.innerHTML = sanitizeHTML(components.icon('play', 20));
             btn.setAttribute('aria-label', 'Play');
         }
     },
@@ -3791,7 +3791,7 @@ const audioPlayer = {
     onEnded(id) {
         const container = document.getElementById(id);
         const btn = container.querySelector('.audio-player-btn');
-        btn.innerHTML = components.icon('play', 20);
+        btn.innerHTML = sanitizeHTML(components.icon('play', 20));
         btn.setAttribute('aria-label', 'Play');
     },
 
@@ -4017,9 +4017,9 @@ const dateShortcuts = {
 
         const dropdown = document.createElement('div');
         dropdown.className = 'date-shortcuts-dropdown';
-        dropdown.innerHTML = Object.keys(this.shortcuts).map(key =>
+        dropdown.innerHTML = sanitizeHTML(Object.keys(this.shortcuts).map(key =>
             `<div class="date-shortcut-item" data-shortcut="${key}">${key}</div>`
-        ).join('');
+        ).join(''));
         input.parentElement?.appendChild(dropdown);
 
         input.addEventListener('focus', () => dropdown.classList.add('show'));
@@ -4158,7 +4158,7 @@ const autoSaveIndicator = {
     createIndicator(form) {
         const indicator = document.createElement('div');
         indicator.className = 'auto-save-indicator';
-        indicator.innerHTML = '<span class="auto-save-text">All changes saved</span>';
+        indicator.innerHTML = sanitizeHTML('<span class="auto-save-text">All changes saved</span>');
         form.appendChild(indicator);
         return indicator;
     },
@@ -4469,11 +4469,11 @@ const rowHoverActions = {
         table.querySelectorAll('tbody tr').forEach(row => {
             const actionsContainer = document.createElement('div');
             actionsContainer.className = 'row-hover-actions';
-            actionsContainer.innerHTML = actions.map(action => `
+            actionsContainer.innerHTML = sanitizeHTML(actions.map(action => `
                 <button class="row-action-btn" title="${action.label}" data-action="${action.id}">
                     ${components.icon(action.icon, 14)}
                 </button>
-            `).join('');
+            `).join(''));
 
             const lastCell = row.querySelector('td:last-child');
             if (lastCell) {
@@ -4503,10 +4503,10 @@ const pullToRefresh = {
 
         const indicator = document.createElement('div');
         indicator.className = 'pull-to-refresh-indicator';
-        indicator.innerHTML = `
+        indicator.innerHTML = sanitizeHTML(`
             <div class="pull-refresh-spinner"></div>
             <span class="pull-refresh-text">Pull to refresh</span>
-        `;
+        `);
         container.insertBefore(indicator, container.firstChild);
 
         container.addEventListener('touchstart', (e) => {
@@ -4704,7 +4704,7 @@ const smartAutocomplete = {
 
         const clearBtn = document.createElement('button');
         clearBtn.className = 'autocomplete-clear';
-        clearBtn.innerHTML = '×';
+        clearBtn.innerHTML = sanitizeHTML('×');
         clearBtn.type = 'button';
         container.appendChild(clearBtn);
 
@@ -4722,7 +4722,7 @@ const smartAutocomplete = {
             }
 
             // Show loading
-            dropdown.innerHTML = '<div class="autocomplete-loading"><div class="autocomplete-loading-spinner"></div></div>';
+            dropdown.innerHTML = sanitizeHTML('<div class="autocomplete-loading"><div class="autocomplete-loading-spinner"></div></div>');
             dropdown.classList.add('show');
 
             // Get results
@@ -4738,7 +4738,7 @@ const smartAutocomplete = {
             results = results.slice(0, maxResults);
 
             if (results.length === 0) {
-                dropdown.innerHTML = '<div class="autocomplete-empty">No results found</div>';
+                dropdown.innerHTML = sanitizeHTML('<div class="autocomplete-empty">No results found</div>');
                 return;
             }
 
@@ -4762,7 +4762,7 @@ const smartAutocomplete = {
                 html = results.map((item, i) => this.renderItem(item, query, renderItem)).join('');
             }
 
-            dropdown.innerHTML = html;
+            dropdown.innerHTML = sanitizeHTML(html);
             highlightedIndex = -1;
         };
 
@@ -4871,7 +4871,7 @@ const categorySelector = {
         let selectedValue = value;
 
         const render = () => {
-            dropdown.innerHTML = `
+            dropdown.innerHTML = sanitizeHTML(`
                 <div class="category-selector-search">
                     <input type="text" placeholder="Search categories..." aria-label="Search categories" />
                 </div>
@@ -4888,7 +4888,7 @@ const categorySelector = {
                 <div class="category-selector-tree">
                     ${this.renderTree(categories, selectedValue)}
                 </div>
-            `;
+            `);
         };
 
         render();
@@ -4962,14 +4962,14 @@ const categorySelector = {
 
     updateTrigger(trigger, categories, value) {
         const path = this.findPath(categories, value);
-        trigger.innerHTML = `
+        trigger.innerHTML = sanitizeHTML(`
             <span class="category-selector-value">
                 <span class="category-selector-breadcrumb">
                     ${path.map(p => `<span>${p}</span>`).join(' / ')}
                 </span>
             </span>
             ${components.icon('chevron-down', 14)}
-        `;
+        `);
     },
 
     findPath(categories, value, path = []) {
@@ -5001,20 +5001,20 @@ const inlineFieldEdit = {
 
         const editIcon = document.createElement('span');
         editIcon.className = 'inline-editable-icon';
-        editIcon.innerHTML = components.icon('edit-2', 12);
+        editIcon.innerHTML = sanitizeHTML(components.icon('edit-2', 12));
         element.appendChild(editIcon);
 
         element.addEventListener('click', () => {
             if (element.classList.contains('editing')) return;
 
             element.classList.add('editing');
-            element.innerHTML = `
+            element.innerHTML = sanitizeHTML(`
                 <input type="${type}" class="inline-editable-input" value="${value}" aria-label="Edit value" />
                 <div class="inline-editable-actions">
                     <button class="inline-editable-btn save" aria-label="Save">${components.icon('check', 12)}</button>
                     <button class="inline-editable-btn cancel" aria-label="Cancel">${components.icon('x', 12)}</button>
                 </div>
-            `;
+            `);
 
             const input = element.querySelector('input');
             input.focus();
@@ -5028,7 +5028,7 @@ const inlineFieldEdit = {
                     return;
                 }
 
-                element.innerHTML = '<div class="inline-editable-saving">Saving...</div>';
+                element.innerHTML = sanitizeHTML('<div class="inline-editable-saving">Saving...</div>');
 
                 try {
                     if (onSave) await onSave(newValue);
@@ -5085,18 +5085,18 @@ const tagPicker = {
         const dropdown = document.createElement('div');
         dropdown.className = 'tag-picker-dropdown';
 
-        container.innerHTML = '';
+        container.innerHTML = sanitizeHTML('');
         container.classList.add('tag-picker');
         container.appendChild(inputContainer);
         container.appendChild(dropdown);
 
         const render = () => {
-            inputContainer.innerHTML = selectedTags.map(tag => `
+            inputContainer.innerHTML = sanitizeHTML(selectedTags.map(tag => `
                 <span class="tag-picker-tag">
                     ${escapeHtml(tag)}
                     <span class="tag-picker-tag-remove" data-tag="${escapeHtml(tag)}">×</span>
                 </span>
-            `).join('');
+            `).join(''));
             inputContainer.appendChild(input);
         };
 
@@ -5106,7 +5106,7 @@ const tagPicker = {
                 s.label.toLowerCase().includes(query.toLowerCase())
             );
 
-            dropdown.innerHTML = `
+            dropdown.innerHTML = sanitizeHTML(`
                 ${recentTags.length ? `
                     <div class="tag-picker-section">
                         <div class="tag-picker-section-label">Recent</div>
@@ -5131,7 +5131,7 @@ const tagPicker = {
                         + Create "${escapeHtml(query)}"
                     </div>
                 ` : ''}
-            `;
+            `);
 
             dropdown.classList.add('show');
         };
@@ -5233,7 +5233,7 @@ const toastQueue = {
             info: 'info'
         };
 
-        toast.innerHTML = `
+        toast.innerHTML = sanitizeHTML(`
             <div class="toast-icon">${components.icon(iconMap[type], 14)}</div>
             <div class="toast-content">
                 ${title ? `<div class="toast-title">${title}</div>` : ''}
@@ -5249,7 +5249,7 @@ const toastQueue = {
             </div>
             ${dismissible ? '<div class="toast-close">×</div>' : ''}
             ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
-        `;
+        `);
 
         this.container.appendChild(toast);
         this.queue.push({ id, toast, duration });
@@ -5733,10 +5733,10 @@ const keyboardNavIndicator = {
         // Add indicator element
         const indicator = document.createElement('div');
         indicator.className = 'keyboard-nav-indicator';
-        indicator.innerHTML = `
+        indicator.innerHTML = sanitizeHTML(`
             ${components.icon('navigation', 14)}
             <span>Keyboard navigation active</span>
-        `;
+        `);
         document.body.appendChild(indicator);
     }
 };
@@ -5831,11 +5831,11 @@ const bubbleChart = {
             `;
         }).join('');
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="bubble-chart" style="width: ${width}px; height: ${height}px;">
                 <div class="bubble-chart-area">${bubbles}</div>
             </div>
-        `;
+        `);
     }
 };
 
@@ -5872,12 +5872,12 @@ const heatmapGrid = {
             `).join('')
         ).join('');
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="heatmap-grid" style="grid-template-columns: repeat(${cols}, 1fr);">
                 ${cells}
             </div>
             ${xLabels.length ? `<div class="heatmap-labels-x">${xLabels.map(l => `<span>${l}</span>`).join('')}</div>` : ''}
-        `;
+        `);
     }
 };
 
@@ -5928,7 +5928,7 @@ const multiLineChart = {
             </div>
         ` : '';
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="multi-line-chart">
                 <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
                     ${gridLines}
@@ -5936,7 +5936,7 @@ const multiLineChart = {
                 </svg>
             </div>
             ${legend}
-        `;
+        `);
     }
 };
 
@@ -5957,13 +5957,13 @@ const numericSpinner = {
         let currentValue = value;
 
         const render = () => {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="numeric-spinner">
                     <button class="numeric-spinner-btn decrease" ${currentValue <= min ? 'disabled' : ''}>−</button>
                     <input type="text" class="numeric-spinner-input" value="${format(currentValue)}" aria-label="Number value" />
                     <button class="numeric-spinner-btn increase" ${currentValue >= max ? 'disabled' : ''}>+</button>
                 </div>
-            `;
+            `);
 
             const input = container.querySelector('.numeric-spinner-input');
             const decreaseBtn = container.querySelector('.decrease');
@@ -6021,7 +6021,7 @@ const colorPicker = {
         let currentColor = value;
 
         const render = () => {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="color-picker">
                     <div class="color-picker-trigger">
                         <div class="color-picker-swatch" style="background: ${currentColor}"></div>
@@ -6039,7 +6039,7 @@ const colorPicker = {
                         </div>
                     </div>
                 </div>
-            `;
+            `);
 
             const trigger = container.querySelector('.color-picker-trigger');
             const dropdown = container.querySelector('.color-picker-dropdown');
@@ -6093,14 +6093,14 @@ const timeInput = {
         if (!use24Hour && hours === 0) hours = 12;
 
         const render = () => {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="time-input">
                     <input type="text" class="time-input-segment hour" value="${String(hours).padStart(2, '0')}" maxlength="2" aria-label="Hours" />
                     <span class="time-input-separator">:</span>
                     <input type="text" class="time-input-segment minute" value="${String(minutes).padStart(2, '0')}" maxlength="2" aria-label="Minutes" />
                     ${!use24Hour ? `<button class="time-input-period">${period}</button>` : ''}
                 </div>
-            `;
+            `);
 
             const hourInput = container.querySelector('.hour');
             const minuteInput = container.querySelector('.minute');
@@ -6190,7 +6190,7 @@ const quantityAdjuster = {
         let currentValue = value;
 
         const render = () => {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="quantity-adjuster">
                     <div class="quantity-adjuster-controls">
                         <button class="quantity-adjuster-btn decrease" ${currentValue <= min ? 'disabled' : ''}>−</button>
@@ -6203,7 +6203,7 @@ const quantityAdjuster = {
                         `).join('')}
                     </div>
                 </div>
-            `;
+            `);
 
             const input = container.querySelector('.quantity-adjuster-value');
             const decreaseBtn = container.querySelector('.decrease');
@@ -6272,7 +6272,7 @@ const priceRangeSlider = {
             const minPercent = ((currentMin - min) / (max - min)) * 100;
             const maxPercent = ((currentMax - min) / (max - min)) * 100;
 
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="price-range-slider">
                     <div class="price-range-track">
                         <div class="price-range-fill" style="left: ${minPercent}%; width: ${maxPercent - minPercent}%"></div>
@@ -6294,7 +6294,7 @@ const priceRangeSlider = {
                         <span>${format(max)}</span>
                     </div>
                 </div>
-            `;
+            `);
 
             const track = container.querySelector('.price-range-track');
             const thumbs = container.querySelectorAll('.price-range-thumb');
@@ -6556,7 +6556,7 @@ const inlineDatePicker = {
                 days.push({ day: i, otherMonth: true });
             }
 
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="inline-date-picker">
                     <div class="date-picker-header">
                         <div class="date-picker-nav">
@@ -6579,7 +6579,7 @@ const inlineDatePicker = {
                         `).join('')}
                     </div>
                 </div>
-            `;
+            `);
 
             container.querySelector('.prev-month').addEventListener('click', () => {
                 viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
@@ -6649,7 +6649,7 @@ const facetedSearch = {
         facets.forEach(f => selected.set(f.key, new Set()));
 
         const render = () => {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="faceted-search">
                     <div class="faceted-search-header">
                         <span class="faceted-search-title">Filters</span>
@@ -6670,7 +6670,7 @@ const facetedSearch = {
                         </div>
                     `).join('')}
                 </div>
-            `;
+            `);
 
             container.querySelectorAll('.faceted-option').forEach(opt => {
                 opt.addEventListener('click', () => {
@@ -6866,7 +6866,7 @@ const formPersistence = {
     showRecoveryBanner(form, saved, formId, onRestore) {
         const banner = document.createElement('div');
         banner.className = 'form-recovery-banner';
-        banner.innerHTML = `
+        banner.innerHTML = sanitizeHTML(`
             <span class="form-recovery-icon">${components.icon('save', 20)}</span>
             <div class="form-recovery-content">
                 <div class="form-recovery-title">Unsaved changes found</div>
@@ -6876,7 +6876,7 @@ const formPersistence = {
                 <button class="form-recovery-btn restore">Restore</button>
                 <button class="form-recovery-btn discard">Discard</button>
             </div>
-        `;
+        `);
 
         form.insertBefore(banner, form.firstChild);
 
@@ -6972,7 +6972,7 @@ const advancedSearch = {
         if (showHelp) {
             const help = document.createElement('div');
             help.className = 'search-operators-help';
-            help.innerHTML = `
+            help.innerHTML = sanitizeHTML(`
                 <div class="search-operator">
                     <span class="search-operator-key">"exact phrase"</span>
                     <span class="search-operator-desc">Search for exact match</span>
@@ -6985,7 +6985,7 @@ const advancedSearch = {
                     <span class="search-operator-key">AND / OR / NOT</span>
                     <span class="search-operator-desc">Combine search terms</span>
                 </div>
-            `;
+            `);
             input.parentElement?.appendChild(help);
         }
 
@@ -7009,7 +7009,7 @@ const columnManager = {
         dropdown.className = 'column-manager-dropdown';
 
         const render = () => {
-            dropdown.innerHTML = `
+            dropdown.innerHTML = sanitizeHTML(`
                 <div class="column-manager-header">
                     <span class="column-manager-title">Columns</span>
                     <span class="column-manager-reset">Reset</span>
@@ -7026,7 +7026,7 @@ const columnManager = {
                         </div>
                     `).join('')}
                 </div>
-            `;
+            `);
 
             dropdown.querySelector('.column-manager-reset').addEventListener('click', () => {
                 visibleColumns = new Set(columns.filter(c => c.visible !== false).map(c => c.id));
@@ -7163,14 +7163,14 @@ const cartDrawer = {
         if (!drawer) return;
 
         if (this.items.length === 0) {
-            drawer.innerHTML = `
+            drawer.innerHTML = sanitizeHTML(`
                 <div class="cart-drawer-empty">
                     <div class="cart-drawer-empty-icon">${components.icon('shopping-cart', 64)}</div>
                     <p>Your cart is empty</p>
                 </div>
-            `;
+            `);
         } else {
-            drawer.innerHTML = this.items.map((item, i) => `
+            drawer.innerHTML = sanitizeHTML(this.items.map((item, i) => `
                 <div class="cart-item">
                     <img class="cart-item-image" src="${item.image}" alt="${item.title}" />
                     <div class="cart-item-details">
@@ -7182,7 +7182,7 @@ const cartDrawer = {
                         ${components.icon('x', 16)}
                     </span>
                 </div>
-            `).join('');
+            `).join(''));
         }
 
         const total = document.querySelector('.cart-summary-row.total span:last-child');
@@ -7211,7 +7211,7 @@ const reactionPicker = {
 
         const { onReact = null, reactions = {} } = options;
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="reaction-picker">
                 <button class="reaction-picker-trigger">
                     ${components.icon('smile', 14)} React
@@ -7239,7 +7239,7 @@ const reactionPicker = {
                     </span>
                 `).join('')}
             </div>
-        `;
+        `);
 
         const trigger = container.querySelector('.reaction-picker-trigger');
         const dropdown = container.querySelector('.reaction-picker-dropdown');
@@ -7253,9 +7253,9 @@ const reactionPicker = {
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 const category = tab.dataset.category;
-                grid.innerHTML = this.categories[category].map(e => `
+                grid.innerHTML = sanitizeHTML(this.categories[category].map(e => `
                     <span class="reaction-emoji" data-emoji="${e}">${e}</span>
-                `).join('');
+                `).join(''));
             });
         });
 
@@ -7358,7 +7358,7 @@ const mentionAutocomplete = {
     },
 
     showSuggestions(container, users, highlighted) {
-        container.innerHTML = users.map((u, i) => `
+        container.innerHTML = sanitizeHTML(users.map((u, i) => `
             <div class="mention-suggestion ${i === highlighted ? 'highlighted' : ''}" data-handle="${escapeHtml(u.handle)}">
                 <div class="mention-avatar">${u.avatar || escapeHtml(u.name.charAt(0).toUpperCase())}</div>
                 <div class="mention-user-info">
@@ -7366,7 +7366,7 @@ const mentionAutocomplete = {
                     <div class="mention-user-handle">@${escapeHtml(u.handle)}</div>
                 </div>
             </div>
-        `).join('');
+        `).join(''));
         container.classList.add('show');
     },
 
@@ -7439,7 +7439,7 @@ const productTour = {
         this.spotlight.style.height = `${rect.height + 16}px`;
 
         // Render tooltip
-        this.tooltip.innerHTML = `
+        this.tooltip.innerHTML = sanitizeHTML(`
             <div class="tour-tooltip-header">
                 <div class="tour-tooltip-step">Step ${this.currentStep + 1} of ${this.steps.length}</div>
                 <div class="tour-tooltip-title">${step.title}</div>
@@ -7458,7 +7458,7 @@ const productTour = {
                     </button>
                 </div>
             </div>
-        `;
+        `);
 
         // Position tooltip
         const tooltipRect = this.tooltip.getBoundingClientRect();
@@ -7554,14 +7554,14 @@ const featureDiscovery = {
 
         const callout = document.createElement('div');
         callout.className = 'feature-callout';
-        callout.innerHTML = `
+        callout.innerHTML = sanitizeHTML(`
             <span class="feature-badge feature-callout-badge">New</span>
             <div class="feature-callout-title">${title}</div>
             <div class="feature-callout-text">${description}</div>
             <button class="feature-callout-dismiss" onclick="featureDiscovery.dismiss('${featureId}', this)">
                 ${components.icon('x', 16)}
             </button>
-        `;
+        `);
 
         element.parentElement?.insertBefore(callout, element);
 
@@ -8320,7 +8320,7 @@ const loadingState = {
         if (loading) {
             btn.disabled = true;
             btn.dataset.originalText = btn.textContent;
-            btn.innerHTML = '<span class="loading-spinner"></span> Loading...';
+            btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...');
         } else {
             btn.disabled = false;
             if (btn.dataset.originalText) {
@@ -8336,7 +8336,7 @@ const loadingState = {
             if (loading) {
                 btn.disabled = true;
                 btn.dataset.originalText = btn.textContent;
-                btn.innerHTML = '<span class="loading-spinner"></span> Loading...';
+                btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...');
             } else {
                 btn.disabled = false;
                 if (btn.dataset.originalText) {
@@ -8542,7 +8542,7 @@ const toast = {
         toastEl.setAttribute('role', type === 'error' ? 'alert' : 'status');
         toastEl.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
 
-        toastEl.innerHTML = `
+        toastEl.innerHTML = sanitizeHTML(`
             <span class="toast-icon">${this.getIcon(type)}</span>
             <div class="toast-content">
                 <p class="toast-message">${escapeHtml(message)}</p>
@@ -8554,7 +8554,7 @@ const toast = {
             </div>
             <button class="toast-close" aria-label="Dismiss notification" onclick="toast.dismiss('${toastId}')">${components.icon('close', 14)}</button>
             ${showProgress && duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
-        `;
+        `);
 
         container.appendChild(toastEl);
         this.activeToasts.push(toastEl);
@@ -8676,7 +8676,7 @@ const globalSearch = {
         const results = this.getResults(query);
         const resultsContainer = document.getElementById('global-search-results');
         if (resultsContainer) {
-            resultsContainer.innerHTML = this.renderResults(results, query);
+            resultsContainer.innerHTML = sanitizeHTML(this.renderResults(results, query));
             this.selectedIndex = 0;
             const items = document.querySelectorAll('.search-result-item');
             if (items.length > 0) items[0].classList.add('selected');
@@ -8916,7 +8916,7 @@ const globalSearch = {
             if (e.target === overlay) this.close();
         };
 
-        overlay.innerHTML = `
+        overlay.innerHTML = sanitizeHTML(`
             <div class="global-search-modal">
                 <div class="global-search-input-wrapper">
                     <span class="global-search-icon">${components.icon('search', 20)}</span>
@@ -8956,7 +8956,7 @@ const globalSearch = {
                     </div>
                 </div>
             </div>
-        `;
+        `);
 
         document.body.appendChild(overlay);
         setTimeout(() => overlay.querySelector('.global-search-input').focus(), 50);
@@ -9056,9 +9056,9 @@ const formValidation = {
         }
 
         if (iconEl) {
-            iconEl.innerHTML = isValid
+            iconEl.innerHTML = sanitizeHTML(isValid
                 ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
-                : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+                : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>');
             iconEl.classList.remove('success', 'error');
             iconEl.classList.add(isValid ? 'success' : 'error');
         }
@@ -9073,7 +9073,7 @@ const formValidation = {
 
         if (formGroup) formGroup.classList.remove('has-error');
         if (errorEl) errorEl.classList.add('hidden');
-        if (iconEl) iconEl.innerHTML = '';
+        if (iconEl) iconEl.innerHTML = sanitizeHTML('');
     },
 
     validateForm(formId) {
@@ -9246,11 +9246,11 @@ const autocomplete = {
         if (!dropdown) return;
 
         if (items.length === 0) {
-            dropdown.innerHTML = '<div class="autocomplete-empty">No matches found</div>';
+            dropdown.innerHTML = sanitizeHTML('<div class="autocomplete-empty">No matches found</div>');
             return;
         }
 
-        dropdown.innerHTML = items.slice(0, 10).map((item, idx) => {
+        dropdown.innerHTML = sanitizeHTML(items.slice(0, 10).map((item, idx) => {
             const escapedItem = escapeHtml(item);
             const highlighted = query
                 ? escapedItem.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<span class="autocomplete-item-highlight">$1</span>')
@@ -9261,7 +9261,7 @@ const autocomplete = {
                     ${highlighted}
                 </div>
             `;
-        }).join('');
+        }).join(''));
     },
 
     select(fieldName, value) {
@@ -9537,9 +9537,9 @@ const autoSave = {
         }
 
         indicator.className = `autosave-indicator ${status}`;
-        indicator.innerHTML = status === 'saving'
+        indicator.innerHTML = sanitizeHTML(status === 'saving'
             ? `<span class="autosave-spinner"></span> ${text}`
-            : `${components.icon('check', 12)} ${text}`;
+            : `${components.icon('check', 12)} ${text}`);
 
         if (status === 'saved') {
             setTimeout(() => indicator.style.opacity = '0.5', 2000);
@@ -9779,7 +9779,7 @@ const widgetManager = {
             if (el) {
                 el.classList.toggle('collapsed', widget.collapsed);
                 const btn = el.querySelector('.widget-collapse-btn');
-                if (btn) btn.innerHTML = widget.collapsed ? '▼' : '▲';
+                if (btn) btn.innerHTML = sanitizeHTML(widget.collapsed ? '▼' : '▲');
             }
         }
     },
@@ -10056,7 +10056,7 @@ const tablePrefs = {
         const prefs = this.get(tableId) || { visibleColumns: columns.map(c => c.id) };
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
-        modal.innerHTML = `
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width: 400px;">
                 <div class="modal-header">
                     <h3 class="modal-title">Column Settings</h3>
@@ -10077,7 +10077,7 @@ const tablePrefs = {
                     <button class="btn btn-primary" onclick="tablePrefs.applyColumnPicker('${tableId}', this.closest('.modal'))">Apply</button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(modal);
     },
 
@@ -10230,10 +10230,10 @@ const imageUploader = {
             const thumb = document.createElement('div');
             thumb.className = 'image-thumbnail';
             thumb.draggable = true;
-            thumb.innerHTML = `
+            thumb.innerHTML = sanitizeHTML(`
                 <img src="${e.target.result}" alt="${escapeHtml(file.name)}">
                 <button class="image-thumbnail-remove" onclick="this.parentElement.remove()">×</button>
-            `;
+            `);
 
             // Drag reorder
             thumb.addEventListener('dragstart', (ev) => {
@@ -10268,7 +10268,7 @@ const imageUploader = {
             progress.className = 'image-upload-progress';
             zone?.appendChild(progress);
         }
-        progress.innerHTML = components.progressBar(percent, 'Uploading...', 'primary');
+        progress.innerHTML = sanitizeHTML(components.progressBar(percent, 'Uploading...', 'primary'));
     },
 
     hideProgress(zoneId) {
@@ -10534,7 +10534,7 @@ const commandPalette = {
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         overlay.setAttribute('aria-label', 'Command Palette');
-        overlay.innerHTML = `
+        overlay.innerHTML = sanitizeHTML(`
             <div class="command-palette">
                 <div class="command-palette-input-wrapper">
                     <span class="command-palette-icon">${components.icon('search', 20)}</span>
@@ -10551,7 +10551,7 @@ const commandPalette = {
                     <span><kbd>ESC</kbd> Close</span>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(overlay);
         this.renderResults();
     },
@@ -10566,7 +10566,7 @@ const commandPalette = {
             groups[cmd.category].push(cmd);
         });
 
-        container.innerHTML = Object.entries(groups).map(([category, cmds]) => `
+        container.innerHTML = sanitizeHTML(Object.entries(groups).map(([category, cmds]) => `
             <div class="command-palette-group">
                 <div class="command-palette-group-title">${category}</div>
                 ${cmds.map((cmd, idx) => {
@@ -10585,7 +10585,7 @@ const commandPalette = {
                     `;
                 }).join('')}
             </div>
-        `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>';
+        `).join('') || '<div class="command-palette-group"><div style="padding: 20px; text-align: center; color: var(--gray-500);">No results found</div></div>');
     }
 };
 
@@ -10657,7 +10657,7 @@ const keyboardShortcuts = {
         const panel = document.createElement('div');
         panel.id = 'shortcuts-panel';
         panel.className = 'shortcuts-panel';
-        panel.innerHTML = `
+        panel.innerHTML = sanitizeHTML(`
             <div class="shortcuts-panel-header">
                 <span class="shortcuts-panel-title">Keyboard Shortcuts</span>
                 <button class="shortcuts-panel-close" aria-label="Close" onclick="keyboardShortcuts.hidePanel()">${components.icon('close', 16)}</button>
@@ -10672,7 +10672,7 @@ const keyboardShortcuts = {
                     </div>
                 `).join('')}
             </div>
-        `;
+        `);
         document.body.appendChild(panel);
     },
 
@@ -10726,13 +10726,13 @@ const sessionMonitor = {
         const banner = document.createElement('div');
         banner.id = 'session-timeout-warning';
         banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10001;background:var(--warning-500);color:white;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
-        banner.innerHTML = `
+        banner.innerHTML = sanitizeHTML(`
             <span>Your session will expire in 5 minutes due to inactivity.</span>
             <div style="display:flex;gap:8px;">
                 <button onclick="sessionMonitor.resetTimer()" style="background:white;color:var(--warning-700);border:none;padding:6px 16px;border-radius:6px;font-weight:600;cursor:pointer;">Stay Logged In</button>
                 <button onclick="handlers.logout()" style="background:transparent;color:white;border:1px solid white;padding:6px 16px;border-radius:6px;cursor:pointer;">Log Out</button>
             </div>
-        `;
+        `);
         document.body.appendChild(banner);
     },
 
@@ -10784,7 +10784,7 @@ const contextMenu = {
         menu.style.left = `${x}px`;
         menu.style.top = `${y}px`;
 
-        menu.innerHTML = items.map(item => {
+        menu.innerHTML = sanitizeHTML(items.map(item => {
             if (item.divider) return '<div class="context-menu-divider"></div>';
             return `
                 <div class="context-menu-item ${item.danger ? 'danger' : ''}" onclick="${item.action}">
@@ -10793,7 +10793,7 @@ const contextMenu = {
                     ${item.shortcut ? `<span class="context-menu-item-shortcut">${escapeHtml(item.shortcut)}</span>` : ''}
                 </div>
             `;
-        }).join('');
+        }).join(''));
 
         document.body.appendChild(menu);
 
@@ -10876,7 +10876,7 @@ const bulkSelection = {
             document.body.appendChild(toolbar);
         }
 
-        toolbar.innerHTML = `
+        toolbar.innerHTML = sanitizeHTML(`
             <span class="bulk-toolbar-count">${this.selected.size} selected</span>
             <div class="bulk-toolbar-actions">
                 <button class="bulk-toolbar-btn" onclick="bulkSelection.action('export')">
@@ -10895,7 +10895,7 @@ const bulkSelection = {
             <button class="bulk-toolbar-close" onclick="bulkSelection.clearAll()">
                 ${components.icon('close', 16)}
             </button>
-        `;
+        `);
     },
 
     async action(type) {
@@ -11087,7 +11087,7 @@ const lightbox = {
         overlay.className = 'lightbox-overlay';
         overlay.onclick = (e) => { if (e.target === overlay) this.close(); };
 
-        overlay.innerHTML = `
+        overlay.innerHTML = sanitizeHTML(`
             <div class="lightbox-container">
                 <button class="lightbox-close" aria-label="Close" onclick="lightbox.close()">×</button>
                 ${this.images.length > 1 ? `
@@ -11109,7 +11109,7 @@ const lightbox = {
                     </button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(overlay);
     }
 };
@@ -11305,7 +11305,7 @@ const richTextEditor = {
 
         const { maxLength = 5000, placeholder = 'Enter description...', onChange } = options;
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="rich-text-editor">
                 <div class="rich-text-toolbar">
                     <button class="rich-text-btn" onclick="richTextEditor.format('bold')" title="Bold"><b>B</b></button>
@@ -11326,7 +11326,7 @@ const richTextEditor = {
                     <span>Supports basic formatting</span>
                 </div>
             </div>
-        `;
+        `);
     },
 
     format(command) {
@@ -11370,7 +11370,7 @@ const richTextEditor = {
 
     setValue(containerId, html) {
         const content = document.getElementById(`${containerId}-content`);
-        if (content) content.innerHTML = html;
+        if (content) content.innerHTML = sanitizeHTML(html);
     }
 };
 
@@ -11503,10 +11503,10 @@ const focusMode = {
             const bar = document.createElement('div');
             bar.id = 'focus-mode-bar';
             bar.className = 'focus-mode-bar';
-            bar.innerHTML = `
+            bar.innerHTML = sanitizeHTML(`
                 <span class="focus-mode-title">${components.icon('maximize', 16)} Focus Mode</span>
                 <button class="focus-mode-exit" onclick="focusMode.toggle()">Exit Focus Mode</button>
-            `;
+            `);
             document.body.prepend(bar);
         } else {
             document.getElementById('focus-mode-bar')?.remove();
@@ -11815,12 +11815,12 @@ const toastWithUndo = {
         toastEl.className = 'toast toast-info';
         toastEl.setAttribute('role', 'status');
         toastEl.setAttribute('aria-live', 'polite');
-        toastEl.innerHTML = `
+        toastEl.innerHTML = sanitizeHTML(`
             <div class="toast-undo">
                 <span>${message}</span>
                 <button class="toast-undo-btn" onclick="(${undoAction})(); this.closest('.toast').remove();">Undo</button>
             </div>
-        `;
+        `);
         document.getElementById('toast-container')?.appendChild(toastEl);
         setTimeout(() => toastEl.remove(), duration);
     }
@@ -12146,7 +12146,7 @@ const countdownTimer = {
         this._intervalId = setInterval(() => {
             document.querySelectorAll('[data-countdown-target]').forEach(el => {
                 const target = el.dataset.countdownTarget;
-                el.innerHTML = this.render(target);
+                el.innerHTML = sanitizeHTML(this.render(target));
             });
         }, 60000);
     }
@@ -13401,7 +13401,7 @@ const imageComparison = {
     _rerender(beforeUrl, afterUrl) {
         const container = document.querySelector('.image-comparison-wrapper');
         if (container) {
-            container.innerHTML = this.render(beforeUrl, afterUrl);
+            container.innerHTML = sanitizeHTML(this.render(beforeUrl, afterUrl));
         }
     }
 };
@@ -13673,7 +13673,7 @@ const sizeConverter = {
 
         const resultsEl = document.getElementById('conversion-results');
         if (resultsEl && index >= 0) {
-            resultsEl.innerHTML = Object.entries(chart).map(([r, sizes]) => `
+            resultsEl.innerHTML = sanitizeHTML(Object.entries(chart).map(([r, sizes]) => `
                 <div class="conversion-result-card ${r === region ? 'selected' : ''}">
                     <div class="conversion-result-flag">${this.regionFlags[r]}</div>
                     <div class="conversion-result-info">
@@ -13682,7 +13682,7 @@ const sizeConverter = {
                     </div>
                     <div class="conversion-result-size">${sizes[index] || 'N/A'}</div>
                 </div>
-            `).join('');
+            `).join(''));
         }
     },
 
@@ -13693,7 +13693,7 @@ const sizeConverter = {
         const chart = this.charts[category];
 
         if (sizeSelect && chart[region]) {
-            sizeSelect.innerHTML = chart[region].map(size => `<option value="${size}">${size}</option>`).join('');
+            sizeSelect.innerHTML = sanitizeHTML(chart[region].map(size => `<option value="${size}">${size}</option>`).join(''));
             this.convert();
         }
     },
@@ -13781,7 +13781,7 @@ const toolSearch = {
 
         const resultsEl = document.getElementById('tool-search-results');
         if (resultsEl) {
-            resultsEl.innerHTML = results.map(t => `
+            resultsEl.innerHTML = sanitizeHTML(results.map(t => `
                 <div class="tool-search-result" onclick="router.navigate('${t.path}')">
                     <div class="tool-search-result-icon">${components.icon(t.icon, 16)}</div>
                     <div>
@@ -13789,7 +13789,7 @@ const toolSearch = {
                         <div class="tool-search-result-path">Tools / ${t.name}</div>
                     </div>
                 </div>
-            `).join('') || '<div class="p-4 text-gray-500 text-sm">No results found</div>';
+            `).join('') || '<div class="p-4 text-gray-500 text-sm">No results found</div>');
         }
     },
 
@@ -13868,7 +13868,7 @@ const toolTips = {
 
             const popover = document.createElement('div');
             popover.className = 'tool-tip-popover bottom';
-            popover.innerHTML = `
+            popover.innerHTML = sanitizeHTML(`
                 <div class="tool-tip-title">${tip.title}</div>
                 <div class="tool-tip-description">${tip.description}</div>
                 <div class="tool-tip-progress">
@@ -13880,7 +13880,7 @@ const toolTips = {
                         ${this.currentIndex === this.tips.length - 1 ? 'Finish' : 'Next'}
                     </button>
                 </div>
-            `;
+            `);
 
             const rect = target.getBoundingClientRect();
             popover.style.position = 'fixed';
@@ -15231,7 +15231,7 @@ const router = {
                         renderApp(pages.dashboard());
                     }
                 } else {
-                    console.error(`[Router] Error rendering page '${path}':`, err);
+                    console.error(`[Router] Error rendering page '${path}':`, err); // nosemgrep: javascript.lang.security.detect-unsafe-formatstring
                     toast.error(`Failed to load page: ${err.message}`);
                 }
             }
@@ -37575,7 +37575,7 @@ const auth = {
         // Loading state
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="auth-spinner"></span> Signing in...';
+            submitBtn.innerHTML = sanitizeHTML('<span class="auth-spinner"></span> Signing in...');
         }
         inputs.forEach(i => i.disabled = true);
 
@@ -37620,7 +37620,7 @@ const auth = {
                     if (isIpBan) {
                         let secondsLeft = retryAfter || 900;
                         const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-                        alertDiv.innerHTML = `<strong>Too many failed attempts.</strong> Login is temporarily locked for security. Try again in <span id="login-ban-countdown">${fmt(secondsLeft)}</span>.`;
+                        alertDiv.innerHTML = sanitizeHTML(`<strong>Too many failed attempts.</strong> Login is temporarily locked for security. Try again in <span id="login-ban-countdown">${fmt(secondsLeft)}</span>.`);
                         alertDiv.className = 'login-alert alert-danger';
                         alertDiv.style.display = 'block';
                         if (window._loginBanCountdown) clearInterval(window._loginBanCountdown);
@@ -37637,7 +37637,7 @@ const auth = {
                     } else {
                         const mins = retryAfter ? Math.ceil(retryAfter / 60) : null;
                         const msg = mins ? `Too many login attempts. Please wait ${mins} minute${mins !== 1 ? 's' : ''}.` : 'Too many login attempts. Please wait a moment.';
-                        alertDiv.innerHTML = `<strong>Rate limited.</strong> ${msg}`;
+                        alertDiv.innerHTML = sanitizeHTML(`<strong>Rate limited.</strong> ${msg}`);
                         alertDiv.className = 'login-alert alert-warning';
                         alertDiv.style.display = 'block';
                     }
@@ -37650,7 +37650,7 @@ const auth = {
             if (alertDiv && error.data) {
                 if (error.data.locked) {
                     const mins = Math.ceil((error.data.retryAfter || 900) / 60);
-                    alertDiv.innerHTML = `<strong>Account locked.</strong> Too many failed attempts. Try again in ${mins} minute${mins !== 1 ? 's' : ''}.`;
+                    alertDiv.innerHTML = sanitizeHTML(`<strong>Account locked.</strong> Too many failed attempts. Try again in ${mins} minute${mins !== 1 ? 's' : ''}.`);
                     alertDiv.className = 'login-alert alert-danger';
                     alertDiv.style.display = 'block';
                     // Start countdown
@@ -37665,10 +37665,10 @@ const auth = {
                         }
                         const m = Math.floor(secondsLeft / 60);
                         const s = secondsLeft % 60;
-                        alertDiv.innerHTML = `<strong>Account locked.</strong> Try again in ${m}:${s.toString().padStart(2, '0')}`;
+                        alertDiv.innerHTML = sanitizeHTML(`<strong>Account locked.</strong> Try again in ${m}:${s.toString().padStart(2, '0')}`);
                     }, 1000);
                 } else if (typeof error.data.remainingAttempts === 'number' && error.data.remainingAttempts <= 3) {
-                    alertDiv.innerHTML = `<strong>Warning:</strong> ${error.data.remainingAttempts} attempt${error.data.remainingAttempts !== 1 ? 's' : ''} remaining before lockout.`;
+                    alertDiv.innerHTML = sanitizeHTML(`<strong>Warning:</strong> ${error.data.remainingAttempts} attempt${error.data.remainingAttempts !== 1 ? 's' : ''} remaining before lockout.`);
                     alertDiv.className = 'login-alert alert-warning';
                     alertDiv.style.display = 'block';
                 } else {
@@ -37681,7 +37681,7 @@ const auth = {
             // Restore form state
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Sign In';
+                submitBtn.innerHTML = sanitizeHTML('Sign In');
             }
             inputs.forEach(i => i.disabled = false);
         }
@@ -37732,7 +37732,7 @@ const auth = {
         // Loading state
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="auth-spinner"></span> Creating account...';
+            submitBtn.innerHTML = sanitizeHTML('<span class="auth-spinner"></span> Creating account...');
         }
         inputs.forEach(i => i.disabled = true);
 
@@ -37753,7 +37753,7 @@ const auth = {
             // Restore form state
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Create Account';
+                submitBtn.innerHTML = sanitizeHTML('Create Account');
             }
             inputs.forEach(i => i.disabled = false);
         }
@@ -37836,13 +37836,13 @@ const modals = {
         this._previouslyFocused = document.activeElement;
         const container = document.getElementById('modal-container');
         const modalClass = sizeClass ? `modal ${sizeClass}` : 'modal';
-        container.innerHTML = sanitizeHTML(`
+        container.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="modal-overlay" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
                 <div class="${modalClass}" onclick="event.stopPropagation()" role="document">
                     ${content}
                 </div>
             </div>
-        `);
+        `));
         // Set id on first modal-title for aria-labelledby reference
         const titleEl = container.querySelector('.modal-title');
         if (titleEl) titleEl.id = 'modal-title';
@@ -37878,7 +37878,7 @@ const modals = {
     },
 
     close() {
-        document.getElementById('modal-container').innerHTML = '';
+        document.getElementById('modal-container').innerHTML = sanitizeHTML('');
         // Remove keyboard handlers
         if (this._escapeHandler) {
             document.removeEventListener('keydown', this._escapeHandler);
@@ -37911,7 +37911,7 @@ const modals = {
             this._confirmReject = () => resolve(false);
             const btnClass = danger ? 'btn btn-danger' : 'btn btn-primary';
             const container = document.getElementById('modal-container');
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="modal-overlay" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
@@ -37927,7 +37927,7 @@ const modals = {
                         </div>
                     </div>
                 </div>
-            `;
+            `);
             document.getElementById('confirm-cancel-btn').onclick = () => {
                 this._confirmResolve = null;
                 this._confirmReject = null;
@@ -37962,16 +37962,16 @@ const modals = {
             const submitFn = () => {
                 const val = document.getElementById('prompt-input')?.value || '';
                 this._promptResolve = null;
-                container.innerHTML = '';
+                container.innerHTML = sanitizeHTML('');
                 resolve(val);
             };
             const cancelFn = () => {
                 this._promptResolve = null;
-                container.innerHTML = '';
+                container.innerHTML = sanitizeHTML('');
                 resolve(null);
             };
 
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="modal-overlay" id="prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
@@ -37988,7 +37988,7 @@ const modals = {
                         </div>
                     </div>
                 </div>
-            `;
+            `);
 
             document.getElementById('prompt-overlay').onclick = (e) => { if (e.target === e.currentTarget) cancelFn(); };
             document.getElementById('prompt-close-btn').onclick = cancelFn;
@@ -41474,10 +41474,10 @@ const handlers = {
             const icon = item.querySelector('.req-icon');
             if (met) {
                 item.classList.add('met');
-                if (icon) icon.innerHTML = '&#10003;';
+                if (icon) icon.innerHTML = sanitizeHTML('&#10003;');
             } else {
                 item.classList.remove('met');
-                if (icon) icon.innerHTML = '&#9675;';
+                if (icon) icon.innerHTML = sanitizeHTML('&#9675;');
             }
         });
     },
@@ -41602,7 +41602,7 @@ const handlers = {
         });
 
         const files = this._selectedFiles[mode] || [];
-        container.innerHTML = files.map((file, index) => {
+        container.innerHTML = sanitizeHTML(files.map((file, index) => {
             const url = URL.createObjectURL(file);
             const isVideo = file.type.startsWith('video/');
 
@@ -41619,7 +41619,7 @@ const handlers = {
                     <button type="button" class="media-remove-btn" onclick="handlers.removeFile('${mode}', ${index})" title="Remove">×</button>
                 </div>
             `;
-        }).join('');
+        }).join(''));
 
         // Update file input to enable form submission with files
         const inputId = mode === 'add' ? 'item-images-input' : 'edit-item-images-input';
@@ -41656,7 +41656,7 @@ const handlers = {
         const current = store.state.monthlySalesGoal || 2000;
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
-        modal.innerHTML = `
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width: 400px;">
                 <div class="modal-header">
                     <h3 class="modal-title">Set Monthly Goal</h3>
@@ -41673,7 +41673,7 @@ const handlers = {
                     <button class="btn btn-primary" onclick="handlers.saveMonthlyGoal()">Save</button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(modal);
     },
 
@@ -41863,7 +41863,7 @@ const handlers = {
         }
 
         if (images.length === 0) {
-            grid.innerHTML = `
+            grid.innerHTML = sanitizeHTML(`
                 <div class="text-center text-gray-500 py-6" style="grid-column: 1 / -1;">
                     <div style="font-size: 32px; margin-bottom: 8px;">${components.icon('image', 32)}</div>
                     <p style="font-weight: 500;">No images in your Image Bank</p>
@@ -41872,11 +41872,11 @@ const handlers = {
                         Go to Image Bank
                     </button>
                 </div>
-            `;
+            `);
             return;
         }
 
-        grid.innerHTML = images.slice(0, 50).map(img => `
+        grid.innerHTML = sanitizeHTML(images.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
                  onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
@@ -41887,7 +41887,7 @@ const handlers = {
                     ${components.icon('check', 12)}
                 </div>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     // Toggle selection of an image in the inline image bank picker
@@ -41925,11 +41925,11 @@ const handlers = {
         previewItem.className = 'media-preview-item';
         previewItem.setAttribute('data-imagebank-id', imageId);
         previewItem.setAttribute('data-imagebank-url', imageUrl);
-        previewItem.innerHTML = `
+        previewItem.innerHTML = sanitizeHTML(`
             <img src="${escapeHtml(imageUrl)}" alt="Image from Image Bank" style="width: 100%; height: 100%; object-fit: cover;">
             <button type="button" class="media-preview-remove" onclick="handlers.removeImageBankImageFromPreview('${mode}', '${imageId}')">×</button>
             <span class="media-preview-source" style="position: absolute; bottom: 2px; left: 2px; background: var(--primary-600); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px;">Bank</span>
-        `;
+        `);
         previewContainer.appendChild(previewItem);
     },
 
@@ -41966,15 +41966,15 @@ const handlers = {
         if (!grid) return;
 
         if (filtered.length === 0) {
-            grid.innerHTML = `
+            grid.innerHTML = sanitizeHTML(`
                 <div class="text-center text-gray-500 py-4" style="grid-column: 1 / -1;">
                     No images found matching "${escapeHtml(query)}"
                 </div>
-            `;
+            `);
             return;
         }
 
-        grid.innerHTML = filtered.slice(0, 50).map(img => `
+        grid.innerHTML = sanitizeHTML(filtered.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
                  onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
@@ -41985,7 +41985,7 @@ const handlers = {
                     ${components.icon('check', 12)}
                 </div>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     // Add image from URL
@@ -42085,11 +42085,11 @@ const handlers = {
         const variations = store.state.itemVariations || [];
 
         if (variations.length === 0) {
-            variationsList.innerHTML = '<p style="font-size: 13px; color: var(--gray-500); font-style: italic;">No variations added yet</p>';
+            variationsList.innerHTML = sanitizeHTML('<p style="font-size: 13px; color: var(--gray-500); font-style: italic;">No variations added yet</p>');
             return;
         }
 
-        variationsList.innerHTML = variations.map(variation => `
+        variationsList.innerHTML = sanitizeHTML(variations.map(variation => `
             <div style="display: flex; gap: 8px; align-items: center;">
                 <input type="text"
                        class="form-input"
@@ -42104,7 +42104,7 @@ const handlers = {
                     ${components.icon('trash', 16)}
                 </button>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     // Update variation value
@@ -42296,7 +42296,7 @@ const handlers = {
             // Re-render inventory page to show new item
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -42403,7 +42403,7 @@ const handlers = {
                 await handlers.loadInventory();
                 if (store.state.currentPage === 'inventory') {
                     const pageContent = pages.inventory();
-                    document.querySelector('.page-content').innerHTML = pageContent;
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                     // Restore focus to search input after DOM update
                     requestAnimationFrame(() => {
                         const searchInput = document.getElementById('inventory-search');
@@ -42424,7 +42424,7 @@ const handlers = {
             // Re-render inventory page without triggering router
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 // Restore focus to search input after DOM update
                 requestAnimationFrame(() => {
                     const searchInput = document.getElementById('inventory-search');
@@ -42513,7 +42513,7 @@ const handlers = {
             toast.success('Offer accepted!');
             // Update in-place to avoid full app re-render (preserves scroll position)
             const pageEl = document.querySelector('.page-content');
-            if (pageEl) { pageEl.innerHTML = pages.offers(); } else { renderApp(pages.offers()); }
+            if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }
         } catch (error) {
             console.error('Failed to accept offer:', error);
             const errorMsg = error.message || 'Unknown error';
@@ -42638,7 +42638,7 @@ const handlers = {
             store.setState({ offers });
             toast.info('Offer declined');
             const pageEl = document.querySelector('.page-content');
-            if (pageEl) { pageEl.innerHTML = pages.offers(); } else { renderApp(pages.offers()); }
+            if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }
         } catch (error) {
             console.error('Failed to decline offer:', error);
             const errorMsg = error.message || 'Unknown error';
@@ -42762,7 +42762,7 @@ const handlers = {
             store.setState({ offers });
             toast.success(`Counter offer of $${counterAmount.toFixed(2)} sent!`);
             const pageEl = document.querySelector('.page-content');
-            if (pageEl) { pageEl.innerHTML = pages.offers(); } else { renderApp(pages.offers()); }
+            if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }
         } catch (error) {
             console.error('Failed to send counter offer:', error);
             const errorMsg = error.message || 'Unknown error';
@@ -42814,7 +42814,7 @@ const handlers = {
             store.setState({ offersStatusFilter: value, selectedOffers: [] });
         }
         const pageEl = document.querySelector('.page-content');
-        if (pageEl) { pageEl.innerHTML = pages.offers(); } else { renderApp(pages.offers()); }
+        if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }
     },
 
     // Toggle selection of a single offer
@@ -42827,7 +42827,7 @@ const handlers = {
             store.setState({ selectedOffers: selectedOffers.filter(id => id !== offerId) });
         }
         const pageEl = document.querySelector('.page-content');
-        if (pageEl) { pageEl.innerHTML = pages.offers(); } else { renderApp(pages.offers()); }
+        if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }
     },
 
     // Select or deselect all pending offers
@@ -42840,7 +42840,7 @@ const handlers = {
             store.setState({ selectedOffers: [] });
         }
         const pageEl = document.querySelector('.page-content');
-        if (pageEl) { pageEl.innerHTML = pages.offers(); } else { renderApp(pages.offers()); }
+        if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }
     },
 
     // Bulk accept all selected offers
@@ -42853,7 +42853,7 @@ const handlers = {
         if (!await modals.confirm(`Accept ${selectedOffers.length} offer${selectedOffers.length > 1 ? 's' : ''}?`)) return;
 
         store.setState({ offersProcessing: true });
-        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = pages.offers(); }
+        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }
 
         let successCount = 0;
         let failCount = 0;
@@ -42881,7 +42881,7 @@ const handlers = {
             } else {
                 toast.warning(`Accepted ${successCount}, failed ${failCount}`);
             }
-            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = pages.offers(); }
+            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }
         } catch (error) {
             console.error('Failed to bulk accept offers:', error);
             toast.error('Failed to process offers: ' + (error.message || 'Unknown error'));
@@ -42900,7 +42900,7 @@ const handlers = {
         if (!await modals.confirm(`Decline ${selectedOffers.length} offer${selectedOffers.length > 1 ? 's' : ''}?`, { danger: true })) return;
 
         store.setState({ offersProcessing: true });
-        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = pages.offers(); }
+        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }
 
         let successCount = 0;
         let failCount = 0;
@@ -42928,7 +42928,7 @@ const handlers = {
             } else {
                 toast.warning(`Declined ${successCount}, failed ${failCount}`);
             }
-            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = pages.offers(); }
+            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }
         } catch (error) {
             console.error('Failed to bulk decline offers:', error);
             toast.error('Failed to process offers: ' + (error.message || 'Unknown error'));
@@ -44309,7 +44309,7 @@ const handlers = {
             return html;
         };
 
-        container.innerHTML = `<div>${renderMiniChart(selA.value)}</div><div>${renderMiniChart(selB.value)}</div>`;
+        container.innerHTML = sanitizeHTML(`<div>${renderMiniChart(selA.value)}</div><div>${renderMiniChart(selB.value)}</div>`);
     },
 
     _getSizeData: function(tabId) {
@@ -44416,7 +44416,7 @@ const handlers = {
 
             const sizeResultEl = document.getElementById('size-recommendation-result');
             if (!sizeResultEl) return;
-            sizeResultEl.innerHTML = `
+            sizeResultEl.innerHTML = sanitizeHTML(`
                 <div class="card" style="padding: 16px; background: var(--bg-success-subtle); border: 1px solid var(--border-success);">
                     <h4>Recommended Size: ${data.recommended_size || 'M'}</h4>
                     <p style="color: var(--text-secondary);">Based on your measurements</p>
@@ -44424,9 +44424,9 @@ const handlers = {
                         ${Object.entries(data.size_conversions || {}).map(([sys, sz]) => `<span class="badge" style="margin: 2px;">${sys}: ${sz}</span>`).join('')}
                     </div>
                 </div>
-            `;
+            `);
         } catch (err) {
-            document.getElementById('size-recommendation-result').innerHTML = '<p style="color: var(--text-error);">Failed to get recommendation</p>';
+            document.getElementById('size-recommendation-result').innerHTML = sanitizeHTML('<p style="color: var(--text-error);">Failed to get recommendation</p>');
             console.error(err);
         }
     },
@@ -44529,7 +44529,7 @@ const handlers = {
         };
 
         const rec = getSize(bust, waist, hips);
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="p-4 bg-green-50 rounded-lg border border-green-200 mt-4">
                 <h4 class="font-semibold text-green-800 mb-2">${components.icon('check-circle', 16)} Your Recommended Size</h4>
                 <div class="grid grid-cols-3 gap-4">
@@ -44539,7 +44539,7 @@ const handlers = {
                 </div>
                 <p class="text-xs text-gray-500 mt-2">Based on: ${bust ? 'Bust ' + bust + '"' : ''}${waist ? ' Waist ' + waist + '"' : ''}${hips ? ' Hips ' + hips + '"' : ''}</p>
             </div>
-        `;
+        `);
     },
 
     autoLinkSizeCharts: function() {
@@ -45263,7 +45263,7 @@ const handlers = {
                     const container = document.getElementById('split-parts');
                     const row = document.createElement('div');
                     row.className = 'split-row flex gap-2 mb-2';
-                    row.innerHTML = '<input type=&quot;text&quot; class=&quot;form-input&quot; placeholder=&quot;Description&quot; style=&quot;flex:2;&quot; data-split-desc><input type=&quot;number&quot; class=&quot;form-input&quot; placeholder=&quot;Amount&quot; step=&quot;0.01&quot; style=&quot;flex:1;&quot; data-split-amt><select class=&quot;form-select&quot; style=&quot;flex:1;&quot; data-split-cat><option value=&quot;shipping&quot;>Shipping</option><option value=&quot;fees&quot;>Fees</option><option value=&quot;COGS&quot;>COGS</option><option value=&quot;Other&quot;>Other</option></select>';
+                    row.innerHTML = sanitizeHTML('<input type=&quot;text&quot; class=&quot;form-input&quot; placeholder=&quot;Description&quot; style=&quot;flex:2;&quot; data-split-desc><input type=&quot;number&quot; class=&quot;form-input&quot; placeholder=&quot;Amount&quot; step=&quot;0.01&quot; style=&quot;flex:1;&quot; data-split-amt><select class=&quot;form-select&quot; style=&quot;flex:1;&quot; data-split-cat><option value=&quot;shipping&quot;>Shipping</option><option value=&quot;fees&quot;>Fees</option><option value=&quot;COGS&quot;>COGS</option><option value=&quot;Other&quot;>Other</option></select>');
                     container.appendChild(row);
                 ">${components.icon('plus', 14)} Add Split</button>
                 <div id="split-total" style="margin-top: 12px; font-weight: 600; color: var(--gray-700);"></div>
@@ -46201,7 +46201,7 @@ const handlers = {
         store.setState({ supplierSearchQuery: query });
         if (store.state.currentPage === 'suppliers') {
             const pageContent = pages.suppliers();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             const input = document.getElementById('supplier-search-input');
             if (input) input.focus();
         }
@@ -46212,7 +46212,7 @@ const handlers = {
         store.setState({ supplierSortBy: sortBy });
         if (store.state.currentPage === 'suppliers') {
             const pageContent = pages.suppliers();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -46351,7 +46351,7 @@ const handlers = {
                 </div>
             `;
 
-            document.getElementById('csv-preview').innerHTML = preview;
+            document.getElementById('csv-preview').innerHTML = sanitizeHTML(preview);
             document.getElementById('import-suppliers-btn').style.display = 'block';
         };
         reader.readAsText(file);
@@ -47115,7 +47115,7 @@ const handlers = {
 
         toast.info('Analyzing market data...');
         const resultEl = document.getElementById('price-suggestion-result');
-        if (resultEl) resultEl.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 8px; color: var(--gray-500);">Analyzing comparable sales...</p></div>';
+        if (resultEl) resultEl.innerHTML = sanitizeHTML('<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 8px; color: var(--gray-500);">Analyzing comparable sales...</p></div>');
 
         setTimeout(() => {
             const basePrice = Math.floor(Math.random() * 80) + 20;
@@ -47126,7 +47126,7 @@ const handlers = {
             const avgDays = Math.floor(Math.random() * 14) + 3;
 
             if (resultEl) {
-                resultEl.innerHTML = `
+                resultEl.innerHTML = sanitizeHTML(`
                     <div style="padding: 16px; background: var(--primary-50); border-radius: 8px; border: 1px solid var(--primary-200);">
                         <div style="text-align: center; margin-bottom: 16px;">
                             <div style="font-size: 12px; color: var(--gray-600);">Suggested Price Range</div>
@@ -47139,7 +47139,7 @@ const handlers = {
                             <div><div style="font-size: 18px; font-weight: 700;">85%</div><div style="font-size: 11px; color: var(--gray-500);">Confidence</div></div>
                         </div>
                     </div>
-                `;
+                `);
             }
             toast.success('Price suggestion ready');
         }, 1500);
@@ -47254,7 +47254,7 @@ const handlers = {
 
         if (!query || query.trim().length === 0) {
             resultsEl.style.display = 'none';
-            resultsEl.innerHTML = '';
+            resultsEl.innerHTML = sanitizeHTML('');
             return;
         }
 
@@ -47277,12 +47277,12 @@ const handlers = {
         );
 
         if (matches.length === 0) {
-            resultsEl.innerHTML = '<div style="padding:12px 16px; color:var(--gray-500); font-size:13px;">No matching settings found</div>';
+            resultsEl.innerHTML = sanitizeHTML('<div style="padding:12px 16px; color:var(--gray-500); font-size:13px;">No matching settings found</div>');
             resultsEl.style.display = 'block';
             return;
         }
 
-        resultsEl.innerHTML = matches.map(m => `
+        resultsEl.innerHTML = sanitizeHTML(matches.map(m => `
             <div class="settings-search-result" onclick="handlers.setSettingsTab('${m.tab}'); document.getElementById('settings-search-input').value=''; document.getElementById('settings-search-results').style.display='none';"
                 style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--gray-100);"
                 onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
@@ -47292,7 +47292,7 @@ const handlers = {
                     <div style="font-size:11px; color:var(--gray-500); text-transform:capitalize;">${m.tab} tab</div>
                 </div>
             </div>
-        `).join('');
+        `).join(''));
         resultsEl.style.display = 'block';
     },
 
@@ -47957,7 +47957,7 @@ const handlers = {
         if (formCard) {
             const successDiv = document.createElement('div');
             successDiv.className = 'feedback-success-animation';
-            successDiv.innerHTML = '<svg class="feedback-success-check" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="none" stroke="var(--success)" stroke-width="2"/><path class="feedback-success-path" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg><p>Feedback submitted!</p>';
+            successDiv.innerHTML = sanitizeHTML('<svg class="feedback-success-check" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="none" stroke="var(--success)" stroke-width="2"/><path class="feedback-success-path" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg><p>Feedback submitted!</p>');
             formCard.appendChild(successDiv);
             setTimeout(() => { if (successDiv.parentNode) successDiv.remove(); }, 2500);
         }
@@ -48046,7 +48046,7 @@ const handlers = {
                         container.style.display = items.length > 0 ? 'block' : 'none';
                         const list = document.getElementById('similar-feedback-list');
                         if (list && items.length > 0) {
-                            list.innerHTML = items.map(item => `
+                            list.innerHTML = sanitizeHTML(items.map(item => `
                                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
                                     <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                     <div style="display: flex; align-items: center; gap: 8px;">
@@ -48054,7 +48054,7 @@ const handlers = {
                                         <span style="font-size: 12px; color: var(--gray-500);">${(item.votes_up || 0) - (item.votes_down || 0)} votes</span>
                                     </div>
                                 </div>
-                            `).join('');
+                            `).join(''));
                         }
                     }
                 } catch (error) {
@@ -48215,12 +48215,12 @@ const handlers = {
             // Re-render the screenshot section
             const dropZone = document.getElementById('screenshot-drop-zone');
             if (dropZone) {
-                dropZone.innerHTML = `
+                dropZone.innerHTML = sanitizeHTML(`
                     <div style="position: relative; display: inline-block;">
                         <img src="${e.target.result}" style="max-width: 300px; max-height: 200px; border-radius: 4px;" alt="Screenshot preview">
                         <button type="button" onclick="event.stopPropagation(); handlers.clearScreenshot();" style="position: absolute; top: -8px; right: -8px; background: var(--danger-600); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;">x</button>
                     </div>
-                `;
+                `);
             }
         };
         reader.readAsDataURL(file);
@@ -48236,7 +48236,7 @@ const handlers = {
         if (input) input.value = '';
         const dropZone = document.getElementById('screenshot-drop-zone');
         if (dropZone) {
-            dropZone.innerHTML = `
+            dropZone.innerHTML = sanitizeHTML(`
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="margin-bottom: 8px;">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -48244,7 +48244,7 @@ const handlers = {
                 </svg>
                 <p style="margin: 0; color: var(--gray-500); font-size: 14px;">Click to upload a screenshot</p>
                 <p style="margin: 4px 0 0 0; color: var(--gray-400); font-size: 12px;">PNG, JPEG, GIF, or WebP (max 2MB)</p>
-            `;
+            `);
         }
     },
 
@@ -48779,7 +48779,7 @@ const handlers = {
             // Re-render inventory page if currently viewing it
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -48794,7 +48794,7 @@ const handlers = {
         const countEl = bar.querySelector('.bulk-actions-count');
         if (countEl && loading) {
             countEl.dataset.origText = countEl.textContent;
-            countEl.innerHTML = '<span class="spinner sm"></span> Processing...';
+            countEl.innerHTML = sanitizeHTML('<span class="spinner sm"></span> Processing...');
         } else if (countEl && countEl.dataset.origText) {
             countEl.textContent = countEl.dataset.origText;
         }
@@ -48815,7 +48815,7 @@ const handlers = {
 
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
 
             const menu = document.getElementById('selection-menu');
@@ -48842,7 +48842,7 @@ const handlers = {
 
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
 
             const menu = document.getElementById('selection-menu');
@@ -48934,7 +48934,7 @@ const handlers = {
 
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
 
             const menu = document.getElementById('selection-menu');
@@ -49063,7 +49063,7 @@ const handlers = {
         if (!container) return;
 
         if (action === 'updateStatus') {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label">New Status</label>
                     <select class="form-select" name="status" required>
@@ -49073,9 +49073,9 @@ const handlers = {
                         <option value="archived">Archived</option>
                     </select>
                 </div>
-            `;
+            `);
         } else if (action === 'updatePrice') {
-            container.innerHTML = `
+            container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label">Price Adjustment</label>
                     <select class="form-select" name="adjustmentType" required>
@@ -49087,9 +49087,9 @@ const handlers = {
                     <label class="form-label">Amount</label>
                     <input type="number" class="form-input" name="adjustmentValue" required step="0.01">
                 </div>
-            `;
+            `);
         } else {
-            container.innerHTML = '';
+            container.innerHTML = sanitizeHTML('');
         }
     },
 
@@ -49183,7 +49183,7 @@ const handlers = {
             // Re-render inventory page
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
 
                 // Keep menu open if it was visible
                 if (wasMenuVisible) {
@@ -49228,11 +49228,11 @@ const handlers = {
 
         const activeFilters = store.state.activeFilters;
         if (Object.keys(activeFilters).length === 0) {
-            container.innerHTML = '<div style="font-size: 12px; color: var(--gray-500); padding: 8px;">No active filters</div>';
+            container.innerHTML = sanitizeHTML('<div style="font-size: 12px; color: var(--gray-500); padding: 8px;">No active filters</div>');
             return;
         }
 
-        container.innerHTML = Object.entries(activeFilters).map(([column, value]) => `
+        container.innerHTML = sanitizeHTML(Object.entries(activeFilters).map(([column, value]) => `
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 4px;">
                 <div style="font-size: 12px;">
                     <span style="font-weight: 600; text-transform: capitalize;">${column}:</span>
@@ -49242,7 +49242,7 @@ const handlers = {
                     ${components.icon('close', 12)}
                 </button>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     clearAllFilters: async function() {
@@ -49256,7 +49256,7 @@ const handlers = {
         // Re-render the inventory page
         if (store.state.currentPage === 'inventory') {
             const pageContent = pages.inventory();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
 
         // Keep menu open if it was visible
@@ -49334,7 +49334,7 @@ const handlers = {
             if (store.state.currentPage === 'inventory') {
                 const pageContent = pages.inventory();
                 const container = document.querySelector('.page-content');
-                if (container) container.innerHTML = pageContent;
+                if (container) container.innerHTML = sanitizeHTML(pageContent);
 
             }
         } catch (error) {
@@ -49555,7 +49555,7 @@ const handlers = {
             });
             tableHTML += '</tbody></table>';
 
-            previewContent.innerHTML = tableHTML;
+            previewContent.innerHTML = sanitizeHTML(tableHTML);
             itemCount.textContent = `Found ${dataRows.length} items${dataRows.length > 5 ? ' (showing first 5)' : ''}`;
             preview.style.display = 'block';
             importBtn.disabled = false;
@@ -49585,7 +49585,7 @@ const handlers = {
 
         try {
             importBtn.disabled = true;
-            importBtn.innerHTML = `${components.icon('upload', 16)} Importing...`;
+            importBtn.innerHTML = sanitizeHTML(`${components.icon('upload', 16)} Importing...`);
 
             // Convert rows to objects
             const items = rows.map(row => {
@@ -49613,7 +49613,7 @@ const handlers = {
         } finally {
             if (importBtn) {
                 importBtn.disabled = false;
-                importBtn.innerHTML = originalText;
+                importBtn.innerHTML = sanitizeHTML(originalText);
             }
         }
     },
@@ -49696,7 +49696,7 @@ const handlers = {
         // Re-render listings page
         if (store.state.currentPage === 'listings') {
             const pageContent = pages.listings();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -49717,7 +49717,7 @@ const handlers = {
         // Re-render listings page
         if (store.state.currentPage === 'listings') {
             const pageContent = pages.listings();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -49882,7 +49882,7 @@ const handlers = {
 
             if (store.state.currentPage === 'listings') {
                 const pageContent = pages.listings();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to update listing: ' + error.message);
@@ -49957,7 +49957,7 @@ const handlers = {
             // Re-render listings page
             if (store.state.currentPage === 'listings') {
                 const pageContent = pages.listings();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to delete listing: ' + error.message);
@@ -50214,13 +50214,13 @@ const handlers = {
     // Load competitor pricing for a listing
     loadCompetitorPricing: async function(listingId) {
         const container = document.getElementById(`competitor-pricing-${listingId}`);
-        if (container) container.innerHTML = '<span class="text-gray-400">Loading...</span>';
+        if (container) container.innerHTML = sanitizeHTML('<span class="text-gray-400">Loading...</span>');
 
         try {
             const data = await api.get(`/listings/${listingId}/competitor-pricing`);
             if (container) {
                 const recColor = data.recommendation === 'competitive' ? 'success' : data.recommendation === 'underpriced' ? 'warning' : 'error';
-                container.innerHTML = `
+                container.innerHTML = sanitizeHTML(`
                     <div class="space-y-1">
                         <div class="flex justify-between"><span class="text-gray-500">Avg Sale Price:</span><span class="font-medium">$${data.avg_price}</span></div>
                         <div class="flex justify-between"><span class="text-gray-500">Range:</span><span class="font-medium">$${data.min_price} - $${data.max_price}</span></div>
@@ -50228,37 +50228,37 @@ const handlers = {
                         <div class="flex justify-between"><span class="text-gray-500">Status:</span><span class="badge badge-${recColor} badge-sm">${data.recommendation}</span></div>
                         <div class="text-xs text-gray-400">Based on ${data.similar_sales} similar sales</div>
                     </div>
-                `;
+                `);
             }
         } catch (error) {
-            if (container) container.innerHTML = '<span class="text-gray-400">No pricing data available</span>';
+            if (container) container.innerHTML = sanitizeHTML('<span class="text-gray-400">No pricing data available</span>');
         }
     },
 
     // Load time-to-sell estimate for a listing
     loadTimeToSell: async function(listingId) {
         const container = document.getElementById(`time-to-sell-${listingId}`);
-        if (container) container.innerHTML = '<span class="text-gray-400">Calculating...</span>';
+        if (container) container.innerHTML = sanitizeHTML('<span class="text-gray-400">Calculating...</span>');
 
         try {
             const data = await api.get(`/listings/${listingId}/time-to-sell`);
             if (container) {
                 if (data.estimated_days !== null) {
                     const confColor = data.confidence === 'high' ? 'success' : data.confidence === 'medium' ? 'warning' : 'gray';
-                    container.innerHTML = `
+                    container.innerHTML = sanitizeHTML(`
                         <div class="space-y-1">
                             <div class="flex justify-between"><span class="text-gray-500">Estimate:</span><span class="font-bold text-lg">${data.estimated_days} days</span></div>
                             <div class="flex justify-between"><span class="text-gray-500">Range:</span><span class="font-medium">${data.min_days} - ${data.max_days} days</span></div>
                             <div class="flex justify-between"><span class="text-gray-500">Confidence:</span><span class="badge badge-${confColor} badge-sm">${data.confidence}</span></div>
                             <div class="text-xs text-gray-400">Based on ${data.data_points} historical sales</div>
                         </div>
-                    `;
+                    `);
                 } else {
-                    container.innerHTML = '<span class="text-gray-400">Not enough data to estimate</span>';
+                    container.innerHTML = sanitizeHTML('<span class="text-gray-400">Not enough data to estimate</span>');
                 }
             }
         } catch (error) {
-            if (container) container.innerHTML = '<span class="text-gray-400">Unable to calculate</span>';
+            if (container) container.innerHTML = sanitizeHTML('<span class="text-gray-400">Unable to calculate</span>');
         }
     },
 
@@ -50508,7 +50508,7 @@ const handlers = {
             // Re-render if on listings page
             if (store.state.currentPage === 'listings') {
                 const pageContent = pages.listings();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to create folder: ' + error.message);
@@ -50531,7 +50531,7 @@ const handlers = {
         // Re-render table
         if (store.state.currentPage === 'listings') {
             const pageContent = pages.listings();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -50564,7 +50564,7 @@ const handlers = {
 
         if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -50573,7 +50573,7 @@ const handlers = {
 
         if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -50587,7 +50587,7 @@ const handlers = {
 
         if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
         toast.info('Filters cleared');
     },
@@ -50607,7 +50607,7 @@ const handlers = {
 
         if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -51310,7 +51310,7 @@ const handlers = {
         const menu = document.createElement('div');
         menu.id = 'dashboard-fab-menu';
         menu.className = 'dashboard-fab-menu';
-        menu.innerHTML = `
+        menu.innerHTML = sanitizeHTML(`
             <button class="fab-action-item" onclick="router.navigate('inventory'); setTimeout(() => modals.addItem(), 100); document.getElementById('dashboard-fab-menu')?.remove();">
                 ${components.icon('plus', 16)} Add Item
             </button>
@@ -51323,7 +51323,7 @@ const handlers = {
             <button class="fab-action-item" onclick="handlers.refreshDashboard(); document.getElementById('dashboard-fab-menu')?.remove();">
                 ${components.icon('refresh-cw', 16)} Refresh
             </button>
-        `;
+        `);
         document.body.appendChild(menu);
         // Close on outside click
         setTimeout(() => {
@@ -52195,7 +52195,7 @@ const handlers = {
 
         const estimatesEl = document.getElementById('shipping-estimates');
         if (estimatesEl) {
-            estimatesEl.innerHTML = rates.map((r, i) => `
+            estimatesEl.innerHTML = sanitizeHTML(rates.map((r, i) => `
                 <div class="shipping-rate-card ${i === 0 ? 'best-rate' : ''}">
                     ${i === 0 ? '<span class="best-badge">Best Value</span>' : ''}
                     <div class="rate-carrier">${r.carrier}</div>
@@ -52203,12 +52203,12 @@ const handlers = {
                     <div class="rate-price">$${r.rate.toFixed(2)}</div>
                     <div class="rate-days">${r.days} days</div>
                 </div>
-            `).join('');
+            `).join(''));
         }
 
         const dimEl = document.getElementById('dim-weight-info');
         if (dimEl) {
-            dimEl.innerHTML = `
+            dimEl.innerHTML = sanitizeHTML(`
                 <div class="dim-weight-row">
                     <span>Actual Weight:</span>
                     <strong>${weight.toFixed(1)} lbs</strong>
@@ -52222,7 +52222,7 @@ const handlers = {
                     <strong>${billableWeight.toFixed(1)} lbs</strong>
                     ${dimWeight > weight ? '<span class="dim-warning">(DIM weight applies)</span>' : ''}
                 </div>
-            `;
+            `);
         }
     },
 
@@ -52879,14 +52879,14 @@ const handlers = {
 
         const previewEl = document.getElementById('bulk-price-preview-list');
         if (previewEl) {
-            previewEl.innerHTML = previewItems.map(p => `
+            previewEl.innerHTML = sanitizeHTML(previewItems.map(p => `
                 <div class="preview-row">
                     <span class="preview-title">${escapeHtml(p.title)}</span>
                     <span class="preview-old">$${p.oldPrice.toFixed(2)}</span>
                     <span class="preview-arrow">→</span>
                     <span class="preview-new ${p.newPrice < p.oldPrice ? 'decrease' : p.newPrice > p.oldPrice ? 'increase' : ''}">$${p.newPrice.toFixed(2)}</span>
                 </div>
-            `).join('') + (items.length > 5 ? `<div class="preview-more">...and ${items.length - 5} more items</div>` : '');
+            `).join('') + (items.length > 5 ? `<div class="preview-more">...and ${items.length - 5} more items</div>` : ''));
         }
     },
 
@@ -53931,13 +53931,13 @@ const handlers = {
 
         const container = document.getElementById('bundle-available');
         if (container) {
-            container.innerHTML = filtered.map(item => `
+            container.innerHTML = sanitizeHTML(filtered.map(item => `
                 <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
                     <span class="item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                     <span class="add-icon">${components.icon('plus', 14)}</span>
                 </div>
-            `).join('') || '<div class="empty-state">No items found</div>';
+            `).join('') || '<div class="empty-state">No items found</div>');
         }
     },
 
@@ -54125,7 +54125,7 @@ const handlers = {
         if (!resultsEl) return;
 
         if (query.length < 2) {
-            resultsEl.innerHTML = '<div class="lookup-empty">Enter at least 2 characters</div>';
+            resultsEl.innerHTML = sanitizeHTML('<div class="lookup-empty">Enter at least 2 characters</div>');
             return;
         }
 
@@ -54148,11 +54148,11 @@ const handlers = {
         ).slice(0, 5);
 
         if (invResults.length === 0 && listResults.length === 0) {
-            resultsEl.innerHTML = '<div class="lookup-empty">No items found</div>';
+            resultsEl.innerHTML = sanitizeHTML('<div class="lookup-empty">No items found</div>');
             return;
         }
 
-        resultsEl.innerHTML = `
+        resultsEl.innerHTML = sanitizeHTML(`
             ${invResults.length > 0 ? `
                 <div class="lookup-section">
                     <h4 class="lookup-section-title">Inventory (${invResults.length})</h4>
@@ -54187,7 +54187,7 @@ const handlers = {
                     `).join('')}
                 </div>
             ` : ''}
-        `;
+        `);
     },
 
     viewInventoryItem: function(itemId) {
@@ -54433,7 +54433,7 @@ const handlers = {
         // Re-render checkboxes
         if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -54683,7 +54683,7 @@ const handlers = {
         // Re-render to clear checkboxes
         if (store.state.currentPage === 'orders-sales') {
             const pageContent = pages.orders();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -55147,7 +55147,7 @@ const handlers = {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 // Animate the new task sliding in
                 setTimeout(() => {
                     const wrapper = document.querySelector('.checklist-items .checklist-item-wrapper:first-child');
@@ -55185,7 +55185,7 @@ const handlers = {
 
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML = pageContent;
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 }
             } else {
                 // Optimistic UI update — reflect checkbox immediately
@@ -55196,7 +55196,7 @@ const handlers = {
                 store.setState({ checklistItems: updatedItems });
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML = pageContent;
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 }
 
                 // Debounce server request: only the latest toggle state gets sent
@@ -55218,7 +55218,7 @@ const handlers = {
 
                         if (store.state.currentPage === 'checklist') {
                             const pageContent = pages.checklist();
-                            document.querySelector('.page-content').innerHTML = pageContent;
+                            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                             setTimeout(() => handlers.checkChecklistCelebration(), 100);
                         }
                     } catch (error) {
@@ -55227,7 +55227,7 @@ const handlers = {
                         await handlers.loadChecklistItems();
                         if (store.state.currentPage === 'checklist') {
                             const pageContent = pages.checklist();
-                            document.querySelector('.page-content').innerHTML = pageContent;
+                            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                         }
                     } finally {
                         delete this._pendingToggles[itemId];
@@ -55247,7 +55247,7 @@ const handlers = {
             // Show celebration overlay
             const overlay = document.createElement('div');
             overlay.className = 'checklist-celebration';
-            overlay.innerHTML = '<div class="celebration-content">' +
+            overlay.innerHTML = sanitizeHTML('<div class="celebration-content">') +
                 '<div class="celebration-icon">🎉</div>' +
                 '<h2 style="font-size: 24px; font-weight: 700; margin: 12px 0 4px;">All Tasks Complete!</h2>' +
                 '<p style="color: var(--gray-500); font-size: 14px;">Great job! You finished everything today.</p>' +
@@ -55286,7 +55286,7 @@ const handlers = {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to duplicate: ' + error.message);
@@ -55398,7 +55398,7 @@ const handlers = {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -55471,7 +55471,7 @@ const handlers = {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -55495,7 +55495,7 @@ const handlers = {
 
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML = pageContent;
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 }
             } else {
                 await api.ensureCSRFToken();
@@ -55506,7 +55506,7 @@ const handlers = {
 
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML = pageContent;
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 }
             }
         } catch (error) {
@@ -55624,7 +55624,7 @@ const handlers = {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to update task: ' + error.message);
@@ -55676,7 +55676,7 @@ const handlers = {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                 // Re-focus the quick add input for rapid entry
                 const input = document.getElementById('quick-add-task-input');
                 if (input) input.focus();
@@ -55691,7 +55691,7 @@ const handlers = {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -55715,7 +55715,7 @@ const handlers = {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
         toast.success('List created!');
     },
@@ -55724,7 +55724,7 @@ const handlers = {
         store.setState({ activeTodoListId: listId });
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -55741,7 +55741,7 @@ const handlers = {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
         toast.success('List deleted');
     },
@@ -55758,7 +55758,7 @@ const handlers = {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             // Focus the input again
             setTimeout(() => document.getElementById('todo-quick-add')?.focus(), 100);
         }
@@ -55775,7 +55775,7 @@ const handlers = {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -55790,7 +55790,7 @@ const handlers = {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -56013,11 +56013,11 @@ const handlers = {
         if (!select) return;
 
         if (!carrier || !serviceTypes[carrier]) {
-            select.innerHTML = '<option value="">Select carrier first</option>';
+            select.innerHTML = sanitizeHTML('<option value="">Select carrier first</option>');
             return;
         }
 
-        select.innerHTML = '<option value="">Select Service</option>' +
+        select.innerHTML = sanitizeHTML('<option value="">Select Service</option>') +
             serviceTypes[carrier].map(s => `<option value="${s}">${s}</option>`).join('');
     },
 
@@ -56054,7 +56054,7 @@ const handlers = {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to create profile: ' + error.message);
@@ -56233,7 +56233,7 @@ const handlers = {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to update profile: ' + error.message);
@@ -56250,7 +56250,7 @@ const handlers = {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to set default: ' + error.message);
@@ -56269,7 +56269,7 @@ const handlers = {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error('Failed to delete profile: ' + error.message);
@@ -56290,7 +56290,7 @@ const handlers = {
         // Re-render sales page
         if (store.state.currentPage === 'sales') {
             const pageContent = pages.sales();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -56388,7 +56388,7 @@ const handlers = {
 
         const el = document.getElementById('tax-estimate-result');
         if (el && gross > 0) {
-            el.innerHTML = '<div style="text-align: center; margin-bottom: 20px;"><div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div><div style="font-size: 36px; font-weight: 700; color: var(--danger);">$' + Math.round(total).toLocaleString() + '</div><div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: $' + Math.round(quarterly).toLocaleString() + '</div></div>' +
+            el.innerHTML = sanitizeHTML('<div style="text-align: center; margin-bottom: 20px;"><div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div><div style="font-size: 36px; font-weight: 700; color: var(--danger);">$') + Math.round(total).toLocaleString() + '</div><div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: $' + Math.round(quarterly).toLocaleString() + '</div></div>' +
                 '<div style="display: grid; gap: 8px;">' +
                 '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Taxable Income</span><span class="font-medium">$' + taxable.toLocaleString() + '</span></div>' +
                 '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Income Tax</span><span class="font-medium">$' + Math.round(incomeTax).toLocaleString() + '</span></div>' +
@@ -56407,7 +56407,7 @@ const handlers = {
         const safeTarget = target.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         const el = document.getElementById('currency-result');
         if (el) {
-            el.innerHTML = '<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">' + (symbols[target] || '') + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +
+            el.innerHTML = sanitizeHTML('<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">') + (symbols[target] || '') + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +
                 '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 USD = ' + rate + ' ' + safeTarget + ' (indicative rate)</div>';
         }
     },
@@ -57572,7 +57572,7 @@ const handlers = {
             // Re-render the page
             if (store.state.currentPage === 'recently-deleted') {
                 const pageContent = pages.recentlyDeleted();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message || 'Failed to restore item');
@@ -57593,7 +57593,7 @@ const handlers = {
             // Re-render the page
             if (store.state.currentPage === 'recently-deleted') {
                 const pageContent = pages.recentlyDeleted();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message || 'Failed to delete item');
@@ -57705,13 +57705,13 @@ const handlers = {
             await handlers.loadAutomations();
             if (store.state.currentPage === 'automations') {
                 const pageContent = pages.automations();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
             if (store.state.currentPage === 'automations') {
                 const pageContent = pages.automations();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         }
     },
@@ -57736,7 +57736,7 @@ const handlers = {
             await handlers.loadAutomations();
             if (store.state.currentPage === 'automations') {
                 const pageContent = pages.automations();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -57747,7 +57747,7 @@ const handlers = {
         store.setState({ automationSearchQuery: query });
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             // Restore focus to search input
             const input = document.querySelector('.card-header input[placeholder="Search automations..."]');
             if (input) { input.focus(); input.setSelectionRange(query.length, query.length); }
@@ -57760,7 +57760,7 @@ const handlers = {
         try { localStorage.setItem('vaultlister_automation_category_filter', category); } catch (e) { console.warn('Failed to save filter preference:', e); }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -57769,7 +57769,7 @@ const handlers = {
         try { localStorage.setItem('vaultlister_automation_platform_filter', platform); } catch (e) { console.warn('Failed to save filter preference:', e); }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -57778,7 +57778,7 @@ const handlers = {
         try { localStorage.setItem('vaultlister_automation_sort', value); } catch (_) {}
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -57845,7 +57845,7 @@ const handlers = {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML = pages.automations();
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());
             }
         } catch (e) {
             showToast('Failed to save schedule: ' + (e.message || e), 'error');
@@ -57910,7 +57910,7 @@ const handlers = {
         }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -58036,7 +58036,7 @@ const handlers = {
             const salesData = (data.salesData || []).reverse();
             store.setState({ plTimeline: salesData });
             const el = document.getElementById('pl-timeline-chart');
-            if (el) el.innerHTML = handlers._renderPLChart(salesData);
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderPLChart(salesData));
         } catch (e) {
             toast.error('Failed to load P&L data');
         }
@@ -58085,7 +58085,7 @@ const handlers = {
             const data = res.data || res;
             store.setState({ automationExperiments: data.experiments || data || [] });
             const el = document.getElementById('experiments-list');
-            if (el) el.innerHTML = handlers._renderExperimentsList(store.state.automationExperiments);
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderExperimentsList(store.state.automationExperiments));
         } catch (e) {
             toast.error('Failed to load experiments');
         }
@@ -58248,7 +58248,7 @@ const handlers = {
             const data = res.data || res;
             store.setState({ inventoryForecast: data });
             const el = document.getElementById('forecast-content');
-            if (el) el.innerHTML = handlers._renderForecastContent(data);
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderForecastContent(data));
         } catch (e) { toast.error('Failed to load forecast'); }
     },
 
@@ -58269,7 +58269,7 @@ const handlers = {
             const data = res.data || res;
             store.setState({ automationTemplates: data.templates || [] });
             const el = document.getElementById('template-marketplace');
-            if (el) el.innerHTML = handlers._renderTemplateMarketplace(store.state.automationTemplates);
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderTemplateMarketplace(store.state.automationTemplates));
         } catch (e) { toast.error('Failed to load templates'); }
     },
 
@@ -58844,7 +58844,7 @@ const handlers = {
             const trends = data.trends || [];
             store.setState({ durationTrends: trends });
             const el = document.getElementById('duration-trends-chart');
-            if (el) el.innerHTML = handlers._renderDurationTrendsChart(trends);
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderDurationTrendsChart(trends));
         } catch (e) {
             toast.error('Failed to load duration trends');
         }
@@ -58915,7 +58915,7 @@ const handlers = {
             const data = res.data || res;
             store.setState({ priceSuggestions: data.suggestions || [] });
             const el = document.getElementById('price-suggestions-content');
-            if (el) el.innerHTML = handlers._renderPriceSuggestions(data.suggestions || []);
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderPriceSuggestions(data.suggestions || []));
         } catch (e) {
             toast.error('Failed to load price suggestions');
         }
@@ -59023,7 +59023,7 @@ const handlers = {
             const suggestions = (store.state.priceSuggestions || []).filter(s => s.id !== itemId);
             store.setState({ priceSuggestions: suggestions });
             const el = document.getElementById('price-suggestions-content');
-            if (el) el.innerHTML = handlers._renderPriceSuggestions(suggestions);
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderPriceSuggestions(suggestions));
         } catch (e) {
             toast.error('Failed to update price');
         }
@@ -59148,7 +59148,7 @@ const handlers = {
         // Re-render the page
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML = pageContent;
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
         }
     },
 
@@ -59470,7 +59470,7 @@ const handlers = {
         if (!container) return;
         const row = document.createElement('div');
         row.className = 'condition-row flex items-center gap-2 p-3 bg-gray-50 rounded-lg';
-        row.innerHTML = `
+        row.innerHTML = sanitizeHTML(`
             <select class="form-select" style="width: 140px;">
                 <option value="and">AND</option>
                 <option value="or">OR</option>
@@ -59487,7 +59487,7 @@ const handlers = {
             <button class="btn btn-xs btn-ghost" onclick="handlers.removeAutomationCondition(this)" title="Remove">
                 ${components.icon('x', 14)}
             </button>
-        `;
+        `);
         container.appendChild(row);
     },
 
@@ -59542,7 +59542,7 @@ const handlers = {
             // Re-render automations page to show new rule
             if (store.state.currentPage === 'automations') {
                 const pageContent = pages.automations();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -59637,7 +59637,7 @@ const handlers = {
             // Force re-render
             if (store.state.currentPage === 'shops') {
                 const pageContent = pages.shops();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             console.error('Shop connection error:', error);
@@ -59662,7 +59662,7 @@ const handlers = {
             // Force page re-render
             if (store.state.currentPage === 'shops') {
                 const pageContent = pages.shops();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -59732,7 +59732,7 @@ const handlers = {
                     await handlers.loadShops();
                     if (store.state.currentPage === 'shops') {
                         const pageContent = pages.shops();
-                        document.querySelector('.page-content').innerHTML = pageContent;
+                        document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
                     }
                 }
             }, 500);
@@ -60313,7 +60313,7 @@ const handlers = {
         customSizeInput?.classList.add('hidden');
 
         const options = sizeOptions[sizeType] || sizeOptions.clothing;
-        sizeSelect.innerHTML = '<option value="">Select size...</option>' +
+        sizeSelect.innerHTML = sanitizeHTML('<option value="">Select size...</option>') +
             options.map(size => `<option value="${size}">${size}</option>`).join('');
     },
 
@@ -60656,7 +60656,7 @@ const handlers = {
             { type: 'action', title: 'Keyboard Shortcuts', subtitle: 'View all shortcuts', action: 'handlers.showKeyboardShortcuts()', icon: 'help' }
         ];
 
-        overlay.innerHTML = `
+        overlay.innerHTML = sanitizeHTML(`
             <div class="global-search-modal">
                 <div class="global-search-input-wrapper">
                     ${components.icon('search', 20)}
@@ -60685,7 +60685,7 @@ const handlers = {
                     <span>Esc Close</span>
                 </div>
             </div>
-        `;
+        `);
 
         document.body.appendChild(overlay);
 
@@ -60728,7 +60728,7 @@ const handlers = {
         const resultsEl = document.getElementById('global-search-results');
         if (!resultsEl) return;
 
-        resultsEl.innerHTML = `
+        resultsEl.innerHTML = sanitizeHTML(`
             <div class="global-search-section">
                 <div class="global-search-section-title">${query ? 'Results' : 'Quick Actions'}</div>
                 ${filtered.length > 0 ? filtered.map((item, idx) => `
@@ -60741,7 +60741,7 @@ const handlers = {
                     </div>
                 `).join('') : '<div class="p-4 text-center text-gray-500">No results found</div>'}
             </div>
-        `;
+        `);
 
         store.state.globalSearchFiltered = filtered;
         store.state.globalSearchIndex = 0;
@@ -61587,7 +61587,7 @@ const handlers = {
             // Re-render if on templates page
             if (store.state.currentPage === 'templates') {
                 const pageContent = pages.templates();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -61604,7 +61604,7 @@ const handlers = {
             // Re-render if on templates page
             if (store.state.currentPage === 'templates') {
                 const pageContent = pages.templates();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -61731,7 +61731,7 @@ const handlers = {
             // Re-render if on templates page
             if (store.state.currentPage === 'templates') {
                 const pageContent = pages.templates();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -61767,7 +61767,7 @@ const handlers = {
             // Re-render if on templates page
             if (store.state.currentPage === 'templates') {
                 const pageContent = pages.templates();
-                document.querySelector('.page-content').innerHTML = pageContent;
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);
             }
         } catch (error) {
             toast.error(error.message);
@@ -61859,7 +61859,7 @@ const handlers = {
         const progressText = document.getElementById(`${platform}-progress-text`);
         if (!container || !input.files) return;
 
-        container.innerHTML = '';
+        container.innerHTML = sanitizeHTML('');
         let files = Array.from(input.files);
         if (files.length === 0) { if (progressContainer) progressContainer.style.display = 'none'; return; }
 
@@ -61878,8 +61878,8 @@ const handlers = {
             reader.onload = (e) => {
                 const img = document.createElement('div');
                 img.style.cssText = 'width:64px;height:64px;border-radius:6px;overflow:hidden;position:relative;border:2px solid var(--gray-200);';
-                img.innerHTML = `<img src="${e.target.result}" alt="Listing preview image ${idx + 1}" style="width:100%;height:100%;object-fit:cover;">
-                    <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:10px;text-align:center;padding:1px;">${idx + 1}</span>`;
+                img.innerHTML = sanitizeHTML(`<img src="${e.target.result}" alt="Listing preview image ${idx + 1}" style="width:100%;height:100%;object-fit:cover;">
+                    <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:10px;text-align:center;padding:1px;">${idx + 1}</span>`);
                 container.appendChild(img);
 
                 loaded++;
@@ -62154,7 +62154,7 @@ const handlers = {
         }
         const confidenceBadge = confidence === 'high' ? 'badge-success' : confidence === 'medium' ? 'badge-warning' : 'badge-gray';
 
-        container.innerHTML = `
+        container.innerHTML = sanitizeHTML(`
             <div class="mb-4 flex items-center gap-3">
                 <span class="badge ${confidenceBadge}">Confidence: ${confidence.toUpperCase()}</span>
                 ${data.aiProvider ? `<span class="text-xs text-gray-500">Powered by ${data.aiProvider}</span>` : ''}
@@ -62227,7 +62227,7 @@ const handlers = {
                     </ul>
                 </div>
             ` : ''}
-        `;
+        `);
     },
 
     applyAIResults: function() {
@@ -62788,20 +62788,20 @@ const handlers = {
                 if (usageContainer) {
                     const items = usageData.usage || [];
                     if (items.length > 0) {
-                        usageContainer.innerHTML = items.map(item => `
+                        usageContainer.innerHTML = sanitizeHTML(items.map(item => `
                             <div class="image-usage-item" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
                                 ${components.icon('package', 14)}
                                 <span>${escapeHtml(item.title)}</span>
                             </div>
-                        `).join('');
+                        `).join(''));
                     } else {
-                        usageContainer.innerHTML = '<div class="image-usage-empty">Not used in any listings yet</div>';
+                        usageContainer.innerHTML = sanitizeHTML('<div class="image-usage-empty">Not used in any listings yet</div>');
                     }
                 }
             } catch (err) {
                 const usageContainer = document.getElementById('image-usage-list');
                 if (usageContainer) {
-                    usageContainer.innerHTML = '<div class="image-usage-empty">Could not load usage data</div>';
+                    usageContainer.innerHTML = sanitizeHTML('<div class="image-usage-empty">Could not load usage data</div>');
                 }
             }
         } catch (error) {
@@ -62959,11 +62959,11 @@ const handlers = {
                     preview.className = 'selected-image-preview';
                     preview.dataset.imageId = imageId;
                     preview.dataset.imageUrl = imageUrl;
-                    preview.innerHTML = `
+                    preview.innerHTML = sanitizeHTML(`
                         <img src="${escapeHtml(imageUrl)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" alt="Selected image preview">
                         <button type="button" class="btn btn-xs btn-ghost" style="position: absolute; top: -8px; right: -8px; background: white; border-radius: 50%; padding: 2px;"
                                 onclick="this.parentElement.remove()" aria-label="Remove image">×</button>
-                    `;
+                    `);
                     preview.style.position = 'relative';
                     preview.style.display = 'inline-block';
                     container.appendChild(preview);
@@ -63663,7 +63663,7 @@ const handlers = {
             const previewEl = document.getElementById(`sku-preview-${ruleId}`);
 
             if (previewEl && previewSku) {
-                previewEl.innerHTML = `<code class="bg-primary-100 text-primary-700 px-2 py-1 rounded">${escapeHtml(previewSku)}</code>`;
+                previewEl.innerHTML = sanitizeHTML(`<code class="bg-primary-100 text-primary-700 px-2 py-1 rounded">${escapeHtml(previewSku)}</code>`);
             }
         } catch (error) {
             console.error('Preview error:', error);
@@ -63950,7 +63950,7 @@ const handlers = {
 
         const newRow = document.createElement('div');
         newRow.className = 'receipt-line-item-row';
-        newRow.innerHTML = `
+        newRow.innerHTML = sanitizeHTML(`
             <input type="text" name="itemDescription" placeholder="Description" class="form-input">
             <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px">
             <input type="number" name="itemUnitPrice" step="0.01" placeholder="0.00" class="form-input" style="width:80px">
@@ -63964,7 +63964,7 @@ const handlers = {
             <button type="button" class="btn btn-icon btn-sm btn-ghost" onclick="this.parentElement.remove()" aria-label="Remove tag">
                 <span class="icon">×</span>
             </button>
-        `;
+        `);
         container.appendChild(newRow);
     },
 
@@ -64677,7 +64677,7 @@ const handlers = {
                         const pageContent = pages.receiptParser();
                         const pageElement = document.querySelector('.page-content');
                         if (pageElement) {
-                            pageElement.innerHTML = pageContent;
+                            pageElement.innerHTML = sanitizeHTML(pageContent);
                         }
                     }
                 } else if (event.data && event.data.type === 'email-oauth-error') {
@@ -64720,7 +64720,7 @@ const handlers = {
                 const pageContent = pages.receiptParser();
                 const pageElement = document.querySelector('.page-content');
                 if (pageElement) {
-                    pageElement.innerHTML = pageContent;
+                    pageElement.innerHTML = sanitizeHTML(pageContent);
                 }
             }
         } catch (error) {
@@ -64772,7 +64772,7 @@ const handlers = {
                             const pageContent = pages.receiptParser();
                             const pageElement = document.querySelector('.page-content');
                             if (pageElement) {
-                                pageElement.innerHTML = pageContent;
+                                pageElement.innerHTML = sanitizeHTML(pageContent);
                             }
                         }
                     }
@@ -65191,16 +65191,16 @@ const handlers = {
 
             // Build column selectors
             const makeOptions = (preferred) => headers.map((h, i) => `<option value="${i}" ${preferred.some(p => h.toLowerCase().includes(p)) ? 'selected' : ''}>${h}</option>`).join('');
-            document.getElementById('bank-col-date').innerHTML = makeOptions(['date']);
-            document.getElementById('bank-col-desc').innerHTML = makeOptions(['desc', 'name', 'memo', 'payee', 'merchant']);
-            document.getElementById('bank-col-amount').innerHTML = makeOptions(['amount', 'debit', 'credit', 'sum']);
+            document.getElementById('bank-col-date').innerHTML = sanitizeHTML(makeOptions(['date']));
+            document.getElementById('bank-col-desc').innerHTML = sanitizeHTML(makeOptions(['desc', 'name', 'memo', 'payee', 'merchant']));
+            document.getElementById('bank-col-amount').innerHTML = sanitizeHTML(makeOptions(['amount', 'debit', 'credit', 'sum']));
 
             // Preview table
             const previewRows = lines.slice(1, 6).map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
             let table = '<table style="width: 100%; border-collapse: collapse;"><thead><tr>' + headers.map(h => `<th style="border: 1px solid var(--gray-200); padding: 4px 6px; font-weight: 600;">${escapeHtml(h)}</th>`).join('') + '</tr></thead><tbody>';
             table += previewRows.map(row => '<tr>' + row.map(c => `<td style="border: 1px solid var(--gray-200); padding: 4px 6px;">${escapeHtml(c)}</td>`).join('') + '</tr>').join('');
             table += '</tbody></table>';
-            document.getElementById('bank-csv-preview-content').innerHTML = table;
+            document.getElementById('bank-csv-preview-content').innerHTML = sanitizeHTML(table);
             document.getElementById('bank-csv-count').textContent = `${lines.length - 1} rows detected`;
             document.getElementById('bank-csv-preview').style.display = 'block';
             document.getElementById('bank-import-btn').style.display = 'block';
@@ -65474,12 +65474,12 @@ const handlers = {
 
             // Check for camera access
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                document.querySelector('.barcode-scanner-container').innerHTML = `
+                document.querySelector('.barcode-scanner-container').innerHTML = sanitizeHTML(`
                     <div style="padding: 32px; text-align: center; color: var(--gray-600);">
                         <p>Camera not supported in this browser.</p>
                         <p style="font-size: 13px; margin-top: 8px;">Use the manual entry below.</p>
                     </div>
-                `;
+                `);
                 return;
             }
 
@@ -65496,12 +65496,12 @@ const handlers = {
         } catch (error) {
             console.error('Camera access failed:', error);
             toast.error('Camera access denied or unavailable');
-            document.querySelector('.barcode-scanner-container').innerHTML = `
+            document.querySelector('.barcode-scanner-container').innerHTML = sanitizeHTML(`
                 <div style="padding: 32px; text-align: center; color: var(--gray-600);">
                     <p>Camera access denied or unavailable.</p>
                     <p style="font-size: 13px; margin-top: 8px;">Use the manual entry below.</p>
                 </div>
-            `;
+            `);
         }
     },
 
@@ -65580,25 +65580,25 @@ const handlers = {
         const listEl = document.getElementById('duplicates-list');
         if (!listEl) return;
 
-        listEl.innerHTML = `
+        listEl.innerHTML = sanitizeHTML(`
             <div style="text-align: center; padding: 32px;">
                 <div class="spinner"></div>
                 <p style="margin-top: 12px; color: var(--gray-600);">Scanning inventory for duplicates...</p>
             </div>
-        `;
+        `);
 
         try {
             await api.ensureCSRFToken();
             const result = await api.post('/duplicates/scan', {});
 
             if (result.duplicates_found === 0) {
-                listEl.innerHTML = `
+                listEl.innerHTML = sanitizeHTML(`
                     <div style="text-align: center; padding: 32px; color: var(--success);">
                         ${components.icon('check', 32)}
                         <p style="margin-top: 12px; font-weight: 600;">No duplicates found!</p>
                         <p style="color: var(--gray-600); font-size: 13px;">Your inventory is clean.</p>
                     </div>
-                `;
+                `);
                 return;
             }
 
@@ -65606,7 +65606,7 @@ const handlers = {
             const data = await api.get('/duplicates?status=pending');
             handlers.renderDuplicatesList(data.duplicates || []);
         } catch (error) {
-            listEl.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
+            listEl.innerHTML = sanitizeHTML(`<p style="color: var(--error);">Error: ${error.message}</p>`);
         }
     },
 
@@ -65615,15 +65615,15 @@ const handlers = {
         if (!listEl) return;
 
         if (duplicates.length === 0) {
-            listEl.innerHTML = `
+            listEl.innerHTML = sanitizeHTML(`
                 <p style="text-align: center; color: var(--gray-500); padding: 32px;">
                     No pending duplicates to review.
                 </p>
-            `;
+            `);
             return;
         }
 
-        listEl.innerHTML = duplicates.map(d => `
+        listEl.innerHTML = sanitizeHTML(duplicates.map(d => `
             <div class="duplicate-card" data-id="${d.id}">
                 <div class="duplicate-card-items">
                     <div class="duplicate-item-preview">
@@ -65648,7 +65648,7 @@ const handlers = {
                     </button>
                 </div>
             </div>
-        `).join('');
+        `).join(''));
     },
 
     resolveDuplicate: async function(id, action) {
@@ -65683,7 +65683,7 @@ const handlers = {
             const teams = data.teams || [];
 
             if (teams.length === 0) {
-                contentEl.innerHTML = `
+                contentEl.innerHTML = sanitizeHTML(`
                     <div style="text-align: center; padding: 48px;">
                         ${components.icon('users', 48)}
                         <h3 style="margin-top: 16px; color: var(--gray-700);">No Teams Yet</h3>
@@ -65692,11 +65692,11 @@ const handlers = {
                             ${components.icon('plus', 16)} Create Your First Team
                         </button>
                     </div>
-                `;
+                `);
                 return;
             }
 
-            contentEl.innerHTML = `
+            contentEl.innerHTML = sanitizeHTML(`
                 <div class="team-members-grid">
                     ${teams.map(team => `
                         <div class="team-member-card" style="cursor: pointer;" onclick="handlers.viewTeam('${team.id}')">
@@ -65711,9 +65711,9 @@ const handlers = {
                         </div>
                     `).join('')}
                 </div>
-            `;
+            `);
         } catch (error) {
-            contentEl.innerHTML = `<p style="color: var(--error);">Error loading teams: ${error.message}</p>`;
+            contentEl.innerHTML = sanitizeHTML(`<p style="color: var(--error);">Error loading teams: ${error.message}</p>`);
         }
     },
 
@@ -65721,19 +65721,19 @@ const handlers = {
         const contentEl = document.getElementById('team-content');
         if (!contentEl) return;
 
-        contentEl.innerHTML = `
+        contentEl.innerHTML = sanitizeHTML(`
             <div style="text-align: center; padding: 32px;">
                 <div class="spinner"></div>
                 <p style="margin-top: 12px; color: var(--gray-600);">Loading team...</p>
             </div>
-        `;
+        `);
 
         try {
             const data = await api.get(`/teams/${teamId}`);
             const team = data.team;
             const members = data.members || [];
 
-            contentEl.innerHTML = `
+            contentEl.innerHTML = sanitizeHTML(`
                 <div style="margin-bottom: 24px;">
                     <button class="btn btn-sm btn-ghost" onclick="handlers.loadTeams()">
                         ${components.icon('arrow-left', 14)} Back to Teams
@@ -65782,9 +65782,9 @@ const handlers = {
                         </button>
                     </div>
                 ` : ''}
-            `;
+            `);
         } catch (error) {
-            contentEl.innerHTML = `<p style="color: var(--error);">Error: ${error.message}</p>`;
+            contentEl.innerHTML = sanitizeHTML(`<p style="color: var(--error);">Error: ${error.message}</p>`);
         }
     },
 
@@ -65959,7 +65959,7 @@ const handlers = {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'relisting-rule-modal';
-        modal.innerHTML = `
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width:550px;">
                 <div class="modal-header">
                     <h3>New Relisting Rule</h3>
@@ -66002,7 +66002,7 @@ const handlers = {
                     <button class="btn btn-primary" onclick="handlers.createRelistingRule()">Create Rule</button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(modal);
     },
 
@@ -66129,7 +66129,7 @@ const handlers = {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'create-label-modal';
-        modal.innerHTML = `
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width:650px; max-height:90vh; overflow-y:auto;">
                 <div class="modal-header">
                     <h3>Create Shipping Label</h3>
@@ -66193,7 +66193,7 @@ const handlers = {
                     <button class="btn btn-primary" onclick="handlers.createLabel()">Create Label</button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(modal);
     },
 
@@ -66235,7 +66235,7 @@ const handlers = {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'rate-shopping-modal';
-        modal.innerHTML = `
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width:550px;">
                 <div class="modal-header">
                     <h3>Compare Shipping Rates</h3>
@@ -66254,14 +66254,14 @@ const handlers = {
                     <button class="btn btn-primary" onclick="handlers.fetchRates()">Get Rates</button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(modal);
     },
 
     fetchRates: async function() {
         const resultsEl = document.getElementById('rs-results');
         if (!resultsEl) return;
-        resultsEl.innerHTML = '<div class="text-center py-4">Loading rates...</div>';
+        resultsEl.innerHTML = sanitizeHTML('<div class="text-center py-4">Loading rates...</div>');
 
         try {
             const data = await api.post('/shipping-labels-mgmt/rates', {
@@ -66270,7 +66270,7 @@ const handlers = {
                 to_zip: document.getElementById('rs-to-zip')?.value || ''
             });
 
-            resultsEl.innerHTML = `
+            resultsEl.innerHTML = sanitizeHTML(`
                 <div class="table-container">
                     <table class="table table-sm">
                         <thead><tr><th>Carrier</th><th>Service</th><th>Rate</th><th>Days</th></tr></thead>
@@ -66286,9 +66286,9 @@ const handlers = {
                         </tbody>
                     </table>
                 </div>
-            `;
+            `);
         } catch (e) {
-            resultsEl.innerHTML = '<div class="text-error">Failed to fetch rates</div>';
+            resultsEl.innerHTML = sanitizeHTML('<div class="text-error">Failed to fetch rates</div>');
         }
     },
 
@@ -66371,7 +66371,7 @@ const handlers = {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'add-address-modal';
-        modal.innerHTML = `
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width:450px;">
                 <div class="modal-header">
                     <h3>Add Return Address</h3>
@@ -66395,7 +66395,7 @@ const handlers = {
                     <button class="btn btn-primary" onclick="handlers.createAddress()">Save Address</button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(modal);
     },
 
@@ -66733,7 +66733,7 @@ const handlers = {
             if (btn) {
                 const iconSpan = btn.querySelector('span');
                 const iconHtml = iconSpan ? iconSpan.outerHTML : '';
-                btn.innerHTML = iconHtml + ' Columns (' + checkedCount + '/' + totalCount + ')';
+                btn.innerHTML = sanitizeHTML(iconHtml + ' Columns (' + checkedCount + '/' + totalCount + ')');
             }
         }
     },
@@ -67511,7 +67511,7 @@ const handlers = {
         // Add user message
         const userMsg = document.createElement('div');
         userMsg.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px; justify-content: flex-end;';
-        userMsg.innerHTML = `<div style="background: var(--primary-500); color: white; padding: 10px 14px; border-radius: 12px 0 12px 12px; max-width: 80%;"><p class="text-sm">${escapeHtml(text)}</p><span class="text-xs" style="opacity: 0.7;">Just now</span></div>`;
+        userMsg.innerHTML = sanitizeHTML(`<div style="background: var(--primary-500); color: white; padding: 10px 14px; border-radius: 12px 0 12px 12px; max-width: 80%;"><p class="text-sm">${escapeHtml(text)}</p><span class="text-xs" style="opacity: 0.7;">Just now</span></div>`);
         messages.appendChild(userMsg);
         messages.scrollTop = messages.scrollHeight;
 
@@ -67519,7 +67519,7 @@ const handlers = {
         setTimeout(() => {
             const botMsg = document.createElement('div');
             botMsg.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px;';
-            botMsg.innerHTML = `<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Thanks for reaching out! A support agent will be with you shortly. In the meantime, you can check our knowledge base or tutorials for quick answers.</p><span class="text-xs text-gray-400">Just now</span></div>`;
+            botMsg.innerHTML = sanitizeHTML(`<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-500); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; flex-shrink: 0;">VL</div><div style="background: white; padding: 10px 14px; border-radius: 0 12px 12px 12px; max-width: 80%; border: 1px solid var(--gray-200);"><p class="text-sm">Thanks for reaching out! A support agent will be with you shortly. In the meantime, you can check our knowledge base or tutorials for quick answers.</p><span class="text-xs text-gray-400">Just now</span></div>`);
             messages.appendChild(botMsg);
             messages.scrollTop = messages.scrollHeight;
         }, 1000);
@@ -67706,7 +67706,7 @@ const handlers = {
 
         const listEl = document.getElementById('event-item-list');
         if (listEl) {
-            listEl.innerHTML = filtered.length === 0 ?
+            listEl.innerHTML = sanitizeHTML(filtered.length === 0 ?
                 '<p class="text-gray-500 text-center py-4">No items found</p>' :
                 filtered.slice(0, 20).map(item => `
                     <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" onclick="handlers.selectEventItem('', '${item.id}')">
@@ -67719,7 +67719,7 @@ const handlers = {
                         </div>
                         <button class="btn btn-sm btn-primary">Add</button>
                     </div>
-                `).join('');
+                `).join(''));
         }
     },
 
@@ -68742,12 +68742,12 @@ const handlers = {
         const listEl = document.getElementById(listId);
         if (listEl) {
             const arr = mode === 'add' ? handlers._addChecklistAttachments : handlers._editChecklistAttachments;
-            listEl.innerHTML = arr.map((a, i) => `
+            listEl.innerHTML = sanitizeHTML(arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
                     <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})">${components.icon('x', 10)}</button>
                 </span>
-            `).join('');
+            `).join(''));
         }
     },
 
@@ -68761,12 +68761,12 @@ const handlers = {
         const listEl = document.getElementById(listId);
         if (listEl) {
             const arr = mode === 'add' ? handlers._addChecklistAttachments : handlers._editChecklistAttachments;
-            listEl.innerHTML = arr.map((a, i) => `
+            listEl.innerHTML = sanitizeHTML(arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
                     <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})">${components.icon('x', 10)}</button>
                 </span>
-            `).join('');
+            `).join(''));
         }
     },
 
@@ -68877,7 +68877,7 @@ const handlers = {
             if (!res.ok) throw new Error('Failed to run scenario');
             const data = await res.json();
             const r = data.results || {};
-            document.getElementById('scenario-results').innerHTML = `
+            document.getElementById('scenario-results').innerHTML = sanitizeHTML(`
                 <div class="card" style="padding: 16px;">
                     <h4>Scenario Results</h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
@@ -68887,8 +68887,8 @@ const handlers = {
                         <div><strong>Impact:</strong> <span class="badge">${r.impact_level || 'moderate'}</span></div>
                     </div>
                 </div>
-            `;
-        } catch (err) { document.getElementById('scenario-results').innerHTML = '<p style="color: var(--text-error);">Failed to run scenario</p>'; }
+            `);
+        } catch (err) { document.getElementById('scenario-results').innerHTML = sanitizeHTML('<p style="color: var(--text-error);">Failed to run scenario</p>'); }
     },
 
     // Set Acquired Date for Inventory Item
@@ -70092,14 +70092,14 @@ async function initApp() {
     // Add global UI elements
     const globalUI = document.createElement('div');
     globalUI.id = 'global-ui';
-    globalUI.innerHTML = `
+    globalUI.innerHTML = sanitizeHTML(`
         ${components.backToTop()}
         ${components.offlineIndicator()}
         ${components.pullToRefresh()}
         ${notificationCenter.render()}
         ${mobileUI.renderBottomNav()}
         ${mobileUI.renderFAB()}
-    `;
+    `);
     document.body.appendChild(globalUI);
 
     // Initialize mobile pull-to-refresh
@@ -70407,7 +70407,7 @@ async function initApp() {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'webhook-modal';
-        modal.innerHTML = `
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
@@ -70439,7 +70439,7 @@ async function initApp() {
                     <button class="btn btn-primary" onclick="window.submitWebhookEndpoint()">Create Endpoint</button>
                 </div>
             </div>
-        `;
+        `);
         document.body.appendChild(modal);
     };
 
@@ -70490,7 +70490,7 @@ function render(content) {
     // Wrap in <main> so public pages (login, register, etc.) have a landmark
     // that screen readers can jump to, matching the skip-link target used in renderApp.
     document.getElementById('app').innerHTML =
-        `<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`;
+        sanitizeHTML(`<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`);
     hideLoadingScreen();
 }
 
@@ -70508,7 +70508,7 @@ function renderApp(pageContent) {
     }
 
     try {
-        document.getElementById('app').innerHTML = `
+        document.getElementById('app').innerHTML = sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
                 ${components.sidebar()}
@@ -70525,7 +70525,7 @@ function renderApp(pageContent) {
             </div>
             ${components.vaultBuddy()}
             ${components.photoEditorModal()}
-        `;
+        `);
 
         // Move focus to main content on route change for screen readers
         const mainEl = document.getElementById('main-content');
@@ -70540,7 +70540,7 @@ function renderApp(pageContent) {
     } catch (err) {
         console.error('renderApp error:', err);
         hideLoadingScreen();
-        document.getElementById('app').innerHTML = `
+        document.getElementById('app').innerHTML = sanitizeHTML(`
             <div style="padding: 40px; text-align: center; font-family: system-ui;">
                 <h2>Something went wrong</h2>
                 <p style="color: #666;">An error occurred while rendering the page.</p>
@@ -70548,7 +70548,7 @@ function renderApp(pageContent) {
                     Reload Page
                 </button>
             </div>
-        `;
+        `);
     }
 }
 

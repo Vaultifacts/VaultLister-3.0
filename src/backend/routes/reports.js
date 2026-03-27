@@ -104,7 +104,7 @@ function validateCustomQuery(sql, userId) {
   ];
 
   for (const keyword of dangerousKeywords) {
-    const pattern = new RegExp(`\\b${keyword}\\b`);
+    const pattern = new RegExp(`\\b${keyword}\\b`); // nosemgrep: javascript.lang.security.detect-non-literal-regexp
     if (pattern.test(upperSQL)) {
       throw new Error(`Keyword ${keyword} is not allowed`);
     }

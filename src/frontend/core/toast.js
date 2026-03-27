@@ -27,7 +27,7 @@ const toast = {
         toastEl.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
         toastEl.setAttribute('aria-atomic', 'true');
 
-        toastEl.innerHTML = `
+        toastEl.innerHTML = sanitizeHTML(`
             <span class="toast-icon">${this.getIcon(type)}</span>
             <div class="toast-content">
                 <p class="toast-message">${escapeHtml(message)}</p>
@@ -39,7 +39,7 @@ const toast = {
             </div>
             <button class="toast-close" aria-label="Dismiss notification" onclick="toast.dismiss('${toastId}')">${components.icon('close', 14)}</button>
             ${showProgress && duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
-        `;
+        `);
 
         container.appendChild(toastEl);
         this.activeToasts.push(toastEl);

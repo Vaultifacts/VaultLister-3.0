@@ -44,7 +44,7 @@ export function encryptToken(token) {
 
     try {
         const iv = crypto.randomBytes(12); // 96-bit IV for GCM
-        const cipher = crypto.createCipheriv(ALGORITHM_GCM, KEY_BUFFER, iv);
+        const cipher = crypto.createCipheriv(ALGORITHM_GCM, KEY_BUFFER, iv, { authTagLength: 16 });
 
         let encrypted = cipher.update(token, 'utf8', 'hex');
         encrypted += cipher.final('hex');
@@ -94,7 +94,7 @@ function _decryptWithKey(encrypted, keyBuffer) {
         const authTag = Buffer.from(parts[1], 'hex');
         const ciphertext = parts[2];
 
-        const decipher = crypto.createDecipheriv(ALGORITHM_GCM, keyBuffer, iv);
+        const decipher = crypto.createDecipheriv(ALGORITHM_GCM, keyBuffer, iv, { authTagLength: 16 });
         decipher.setAuthTag(authTag);
 
         let decrypted = decipher.update(ciphertext, 'hex', 'utf8');

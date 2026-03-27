@@ -14,13 +14,13 @@ const modals = {
         this._previouslyFocused = document.activeElement;
         const container = document.getElementById('modal-container');
         const modalClass = sizeClass ? `modal ${sizeClass}` : 'modal';
-        container.innerHTML = sanitizeHTML(`
+        container.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="modal-overlay" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
                 <div class="${modalClass}" onclick="event.stopPropagation()" role="document">
                     ${content}
                 </div>
             </div>
-        `);
+        `));
         // Set id on first modal-title for aria-labelledby reference
         const titleEl = container.querySelector('.modal-title');
         if (titleEl) titleEl.id = 'modal-title';
@@ -65,7 +65,7 @@ const modals = {
     close() {
         // Remove inert BEFORE focus restore (element must be interactive first)
         document.getElementById('main-content')?.removeAttribute('inert');
-        document.getElementById('modal-container').innerHTML = sanitizeHTML('');
+        document.getElementById('modal-container').innerHTML =sanitizeHTML( sanitizeHTML(''));
         // Remove keyboard handlers
         if (this._escapeHandler) {
             document.removeEventListener('keydown', this._escapeHandler);
@@ -98,7 +98,7 @@ const modals = {
             this._confirmReject = () => resolve(false);
             const btnClass = danger ? 'btn btn-danger' : 'btn btn-primary';
             const container = document.getElementById('modal-container');
-            container.innerHTML = sanitizeHTML(`
+            container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
@@ -114,7 +114,7 @@ const modals = {
                         </div>
                     </div>
                 </div>
-            `);
+            `));
             document.getElementById('main-content')?.setAttribute('inert', '');
             document.getElementById('confirm-cancel-btn').onclick = () => {
                 this._confirmResolve = null;
@@ -150,16 +150,16 @@ const modals = {
             const submitFn = () => {
                 const val = document.getElementById('prompt-input')?.value || '';
                 this._promptResolve = null;
-                container.innerHTML = sanitizeHTML('');
+                container.innerHTML =sanitizeHTML( sanitizeHTML(''));
                 resolve(val);
             };
             const cancelFn = () => {
                 this._promptResolve = null;
-                container.innerHTML = sanitizeHTML('');
+                container.innerHTML =sanitizeHTML( sanitizeHTML(''));
                 resolve(null);
             };
 
-            container.innerHTML = sanitizeHTML(`
+            container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" id="prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
@@ -176,7 +176,7 @@ const modals = {
                         </div>
                     </div>
                 </div>
-            `);
+            `));
 
             document.getElementById('prompt-overlay').onclick = (e) => { if (e.target === e.currentTarget) cancelFn(); };
             document.getElementById('prompt-close-btn').onclick = cancelFn;
@@ -3536,7 +3536,7 @@ const modals = {
         }
 
         const container = document.getElementById('modal-container');
-        container.innerHTML = sanitizeHTML(`
+        container.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="ar-preview-backdrop" id="ar-backdrop" role="dialog" aria-modal="true" aria-label="AR Preview">
                 <video id="ar-video" class="ar-video" autoplay playsinline muted aria-hidden="true"></video>
                 <canvas id="ar-canvas" class="ar-canvas" style="display:none;" aria-hidden="true"></canvas>
@@ -3569,7 +3569,7 @@ const modals = {
                     Camera not available. Point your device at the scene and use the overlay below.
                 </div>
             </div>
-        `);
+        `));
 
         let stream = null;
         const video = document.getElementById('ar-video');
@@ -3617,7 +3617,7 @@ const modals = {
         // Close handler — stop camera tracks
         const cleanup = () => {
             if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-            container.innerHTML = sanitizeHTML('');
+            container.innerHTML =sanitizeHTML( sanitizeHTML(''));
             document.removeEventListener('keydown', escHandler);
         };
         const escHandler = (e) => { if (e.key === 'Escape') cleanup(); };
