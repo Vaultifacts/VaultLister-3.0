@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { existsSync, readFileSync } from 'fs';
+import { randomBytes } from 'crypto';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { query } from '../../backend/db/database.js';
@@ -245,7 +246,7 @@ export async function getAuthToken(email = 'demo@vaultlister.com', password = 'D
 export async function createTestUserWithToken(overrides = {}) {
     let provisioningError = null;
     const now = Date.now();
-    const rand = Math.random().toString(36).slice(2, 10);
+    const rand = randomBytes(6).toString('hex');
     const email = overrides.email || `test${now}${rand}@example.com`;
     const password = overrides.password || 'TestPassword123!';
     const username = overrides.username || `testuser${now}${rand}`;

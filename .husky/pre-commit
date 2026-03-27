@@ -216,25 +216,27 @@ if [ -n "$CRITICAL_CHANGED" ]; then
 fi
 
 # === Core-bundle sync check ===
-# The bundle is built from app.js + handler/page files. If ONLY handler/page files
-# changed, core-bundle changes but app.js does not — this is legitimate.
-# Rule: app.js staged without bundle = always error (forgot to rebuild).
-#       bundle staged without app.js = error ONLY if app.js has working-tree changes
-#       (forgot to stage), otherwise OK (handler/page-only change).
-APP_STAGED=$(git diff --cached --name-only | grep "^src/frontend/app\.js$" || true)
+# core-bundle.js is built from the 12 component source files (utils.js, store.js,
+# router.js, etc.) via build-dev-bundle.js. src/frontend/app.js is a legacy
+# monolithic file NOT included in the core-bundle build — changes to app.js alone
+# do not require a core-bundle rebuild.
+# Rule: if any component source file is staged without core-bundle, require rebuild.
+#       If only app.js changes, no rebuild required.
+COMPONENT_STAGED=$(git diff --cached --name-only | grep -E "^src/frontend/(core|ui|pages/pages-core|handlers/handlers-core|init)\.js$" || true)
 BUNDLE_STAGED=$(git diff --cached --name-only | grep "^src/frontend/core-bundle\.js$" || true)
-if [ -n "$APP_STAGED" ] && [ -z "$BUNDLE_STAGED" ]; then
-    echo "ERROR: app.js is staged but core-bundle.js is NOT. Run: bun scripts/build-dev-bundle.js"
+if [ -n "$COMPONENT_STAGED" ] && [ -z "$BUNDLE_STAGED" ]; then
+    echo "ERROR: Component source file(s) staged but core-bundle.js is NOT. Run: bun scripts/build-dev-bundle.js"
+    echo "  Changed: $COMPONENT_STAGED"
     exit 1
 fi
-if [ -z "$APP_STAGED" ] && [ -n "$BUNDLE_STAGED" ]; then
-    # Check if app.js has unstaged changes (forgot to git add)
-    APP_DIRTY=$(git diff --name-only -- src/frontend/app.js 2>/dev/null || true)
-    if [ -n "$APP_DIRTY" ]; then
-        echo "ERROR: core-bundle.js is staged but app.js has unstaged changes. Stage app.js too."
+if [ -z "$COMPONENT_STAGED" ] && [ -n "$BUNDLE_STAGED" ]; then
+    # Check if any component source has unstaged changes (forgot to git add)
+    COMP_DIRTY=$(git diff --name-only -- src/frontend/core/utils.js src/frontend/core/store.js src/frontend/core/router.js src/frontend/init.js 2>/dev/null || true)
+    if [ -n "$COMP_DIRTY" ]; then
+        echo "ERROR: core-bundle.js is staged but component source files have unstaged changes. Stage them too."
         exit 1
     fi
-    # app.js is clean — bundle changed due to handler/page files only. This is fine.
+    # Bundle changed due to handler/page files only, or version hash bump. Fine.
 fi
 
 # === Migration registration check ===

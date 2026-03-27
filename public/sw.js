@@ -8,21 +8,21 @@ const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 // Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=5214a1dc',
-    '/styles/main.css?v=5214a1dc',
+    '/core-bundle.js?v=d4d0be7e',
+    '/styles/main.css?v=d4d0be7e',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/favicon.svg',
-    '/chunk-inventory.js?v=5214a1dc',
+    '/chunk-inventory.js?v=d4d0be7e',
 ];
 
 // Secondary chunks — fetched in the background during activate
 const BACKGROUND_CACHE_URLS = [
-    '/chunk-sales.js?v=5214a1dc',
-    '/chunk-tools.js?v=5214a1dc',
-    '/chunk-intelligence.js?v=5214a1dc',
-    '/chunk-settings.js?v=5214a1dc',
-    '/chunk-community.js?v=5214a1dc',
+    '/chunk-sales.js?v=d4d0be7e',
+    '/chunk-tools.js?v=d4d0be7e',
+    '/chunk-intelligence.js?v=d4d0be7e',
+    '/chunk-settings.js?v=d4d0be7e',
+    '/chunk-community.js?v=d4d0be7e',
 ];
 
 // â”€â”€â”€ Install: pre-cache app shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

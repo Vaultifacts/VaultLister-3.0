@@ -2,6 +2,7 @@
 
 ## Commit Log
 <!-- Most recent 10 commits — run `git log --oneline` for full history -->
+- **2026-03-27 CLI** (41e1cbf): fix(security): resolve remaining CodeQL alerts — incomplete-sanitization, URL-check, biased-crypto, router hasOwnProperty, TOTP bias-free, skuRules metachar; rebuilt core-bundle
 - **2026-03-27 CLI** (2159560): fix(security): correct backslash-escape regex — /\\/g not /\/g — 45 instances across 5 files; rebuilt core-bundle
 - **2026-03-27 CLI** (1a4f0cb): fix(security): resolve CodeQL incomplete-sanitization/XSS/insecure-randomness — 27 onclick backslash fixes, escapeLike, replace(/g flag, chrome-ext URL checks, sanitize.js, email.js, router.js, deploy.yml permissions, Math.random->crypto
 - **2026-03-27 CLI** (2be43d9): fix(security): resolve 12 CodeQL XSS and regex-injection alerts — escapeHtml on tag picker, oauth-callback platform, currency target; regex escape in search-issues + visual-test; rebuilt core-bundle + dist
@@ -38,20 +39,16 @@
 ## Current State (2026-03-27) — Updated
 
 ### CodeQL Security Alert Progress
-- **Fixed (3 commits)**: ~87 alerts resolved
+- **Fixed (4 commits)**: ~120+ alerts resolved
   - 12 XSS + regex-injection (2be43d9)
   - 27+ incomplete-sanitization onclick, escapeLike, replace(/g, URL-substring, sanitize.js, email.js, Math.random, router.js, deploy.yml (1a4f0cb)
   - 45 backslash-regex correction /\\/g (2159560)
-- **Remaining CodeQL alerts** (current baseline ~100, will drop after CI rescan):
-  - `js/incomplete-sanitization` (51) — should drop significantly after rescan
-  - `js/incomplete-multi-character-sanitization` (13) — partially fixed
-  - `js/incomplete-url-substring-sanitization` (13) — fixed in chrome-ext
-  - `js/insecure-randomness` (8) — fixed in source; legacy app.js + core-bundle fixed
-  - `js/biased-cryptographic-random` (6) — already using crypto.getRandomValues
-  - `actions/missing-workflow-permissions` (2) — fixed in deploy.yml
-  - `js/xss-through-dom` (2) — fixed in app.js
-  - `js/bad-tag-filter` (1) — fixed in sanitize.js
-  - `js/incomplete-url-scheme-check` (1) — fixed in sanitize.js
+  - incomplete-multi-char-sanitization (7 files), src/extension URL checks (16 patterns), biased-crypto (6 files), router.js hasOwnProperty, TOTP bias-free, skuRules metachar, security-audit /g flag (41e1cbf)
+- **Remaining CodeQL alerts** (will drop after CI rescan):
+  - `js/incomplete-sanitization` — test-report.mjs shell escape (1, deferred — hook blocked)
+  - `js/insecure-randomness` — auth.helper.js test file (2 instances, low priority)
+  - `js/xss-through-dom` — app.js:5109 tag picker legacy (1 instance)
+  - `js/unvalidated-dynamic-method-call` — core-bundle self-heals; app.js legacy
 - **Next**: Semgrep alerts (497): 267×insecure-document-method, 60×path-join-resolve-traversal, 52×detected-bcrypt-hash (FP), 24×detected-jwt-token (FP)
 
 ### Railway Production Deployment — FULLY LIVE ✅

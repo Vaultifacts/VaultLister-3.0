@@ -89,7 +89,7 @@ function logResult(entry) {
 
 function notify(msg) {
     try {
-        execSync(`bash "${TG_NOTIFY}" "${msg.replace(/"/g, '\\"')}"`, { stdio: 'ignore' });
+        execSync(`bash "${TG_NOTIFY}" "${msg.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`, { stdio: 'ignore' });
     } catch {}
 }
 

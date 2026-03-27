@@ -5119,16 +5119,16 @@ const tagPicker = {
                     <div class="tag-picker-section">
                         <div class="tag-picker-section-label">Suggestions</div>
                         ${filtered.slice(0, 8).map(s => `
-                            <div class="tag-picker-suggestion" data-tag="${s.label}">
-                                ${s.label}
-                                ${s.count ? `<span class="tag-picker-suggestion-count">${s.count}</span>` : ''}
+                            <div class="tag-picker-suggestion" data-tag="${escapeHtml(s.label)}">
+                                ${escapeHtml(s.label)}
+                                ${s.count ? `<span class="tag-picker-suggestion-count">${escapeHtml(String(s.count))}</span>` : ''}
                             </div>
                         `).join('')}
                     </div>
                 ` : ''}
                 ${allowCreate && query && !suggestions.some(s => s.label.toLowerCase() === query.toLowerCase()) ? `
-                    <div class="tag-picker-create" data-tag="${query}">
-                        + Create "${query}"
+                    <div class="tag-picker-create" data-tag="${escapeHtml(query)}">
+                        + Create "${escapeHtml(query)}"
                     </div>
                 ` : ''}
             `;
