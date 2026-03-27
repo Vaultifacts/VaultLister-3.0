@@ -814,9 +814,9 @@ function serveStatic(pathname, request) {
                 content.toString().replace(/CACHE_VERSION\s*=\s*'[^']*'/, `CACHE_VERSION = '${BUILD_HASH}'`)
             );
         }
-        // app.js URL never changes — must not be cached long-term (content changes on deploy)
-        // Versioned chunk-*.js?v=hash files can be cached long-term (URL changes on rebuild)
-        const isVersionedAsset = pathname.includes('?v=') || pathname.match(/chunk-[^.]+\.js/);
+        // app.js?v=HASH and chunk-*.js?v=HASH: content-addressed → cache forever
+        // Everything else in prod: no-cache (URL is mutable, content may change on deploy)
+        const isVersionedAsset = request.url.includes('?v=');
         const cacheControl = isServiceWorker
             ? 'no-cache, no-store, must-revalidate'
             : isVersionedAsset && IS_PROD
@@ -1538,7 +1538,7 @@ function generateDevHTML() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VaultLister</title>
-    <script type="module" src="/app.js"></script>
+    <script type="module" src="/app.js?v=${BUILD_HASH}"></script>
     <link rel="stylesheet" href="/styles/main.css">
     <link rel="manifest" href="/manifest.webmanifest">
 </head>
