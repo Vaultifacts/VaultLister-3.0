@@ -1938,7 +1938,7 @@ Object.assign(handlers, {
         let type, value;
         if (input.includes('%')) {
             type = 'percentage';
-            value = parseFloat(input.replace('%', '').replace('+', ''));
+            value = parseFloat(input.replace(/%/g, '').replace('+', ''));
             if (isNaN(value)) return toast.error('Invalid percentage');
         } else {
             type = 'amount';

@@ -95,7 +95,7 @@ export async function processWebhookEvent(event) {
  */
 export async function dispatchToUserEndpoints(userId, eventType, payload) {
     // Escape ILIKE wildcards to prevent injection
-    const escapedEvent = eventType.replace(/[%_]/g, '\\$&');
+    const escapedEvent = eventType.replace(/\/g, '\\').replace(/[%_]/g, '\\$&');
     const endpoints = await query.all(`
         SELECT * FROM webhook_endpoints
         WHERE user_id = ? AND is_enabled = 1

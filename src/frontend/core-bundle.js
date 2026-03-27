@@ -15176,7 +15176,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '3e72ef0e';
+    const v = '8c47e343';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15423,7 +15423,7 @@ const router = {
             }
         }
 
-        const handler = this.routes[path] || this.routes['404'];
+        const handler = (Object.prototype.hasOwnProperty.call(this.routes, path) ? this.routes[path] : null) || this.routes['404'];
         if (handler) {
             try {
                 // On initial load, add a 4-second timeout so async route handlers can't hang forever
@@ -15514,8 +15514,8 @@ const router = {
             await handlers.loadPushStatus();
         }
         // Re-render after data loads
-        const handler = this.routes[path];
-        if (handler) handler();
+        const handler = Object.prototype.hasOwnProperty.call(this.routes, path) ? this.routes[path] : null;
+        if (typeof handler === 'function') handler();
     },
 
     init() {
@@ -28529,7 +28529,7 @@ document.addEventListener('keydown', function(e) {
 
 // === Real User Monitoring (RUM) ===
 (function() {
-    var rumSessionId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+    var rumSessionId = crypto.randomUUID();
     var rumBuffer = [];
     var FLUSH_INTERVAL = 30000;
 

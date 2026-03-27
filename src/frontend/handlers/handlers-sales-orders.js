@@ -1719,7 +1719,7 @@ Object.assign(handlers, {
                     <div class="followup-type-grid">
                         ${reminderTypes.map(t => `
                             <button type="button" class="followup-type-btn ${existingReminder?.type === t.id ? 'selected' : ''}"
-                                    onclick="handlers.selectFollowUpType('${t.id}', '${t.message.replace(/'/g, "\\'")}')">
+                                    onclick="handlers.selectFollowUpType('${t.id}', '${t.message.replace(/\/g, '\\').replace(/'/g, "\\'")}')">
                                 ${components.icon(t.icon, 18)}
                                 <span>${t.label}</span>
                             </button>

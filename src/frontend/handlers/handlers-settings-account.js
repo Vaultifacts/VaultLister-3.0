@@ -614,7 +614,8 @@ Object.assign(handlers, {
         // Generate a mock TOTP secret for demo purposes
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
         let secret = '';
-        for (let i = 0; i < 16; i++) secret += chars[Math.floor(Math.random() * chars.length)];
+        const secretBytes = crypto.getRandomValues(new Uint8Array(16));
+        for (let i = 0; i < 16; i++) secret += chars[secretBytes[i] % chars.length];
         const formatted = secret.match(/.{1,4}/g).join(' ');
 
         modals.show(`

@@ -44,7 +44,7 @@ async function sendEmail(to, subject, html, text) {
         to,
         subject,
         html,
-        text: text || html.replace(/<[^>]*>/g, '')
+        text: text || html.replace(/<[^>]*(>|$)/g, '').replace(/&#?[a-z0-9]+;/gi, ' ')
     };
 
     if (resend) {

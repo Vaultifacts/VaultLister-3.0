@@ -10,17 +10,18 @@ export function sanitizeHtml(input) {
     if (!input || typeof input !== 'string') return input;
 
     // Remove script tags and their content
-    let sanitized = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    let sanitized = input.replace(/<script[\s>][\s\S]*?<\/script\s*>/gi, '').replace(/<script[^>]*>/gi, '');
 
     // Remove event handlers (onclick, onerror, etc.)
     sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
     sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '');
 
-    // Remove javascript: protocol
+    // Remove dangerous URL protocols
     sanitized = sanitized.replace(/javascript:/gi, '');
+    sanitized = sanitized.replace(/vbscript:/gi, '');
 
-    // Remove data: protocol (can be used for XSS)
-    sanitized = sanitized.replace(/data:text\/html/gi, '');
+    // Remove data: protocol (can be used for XSS in any form)
+    sanitized = sanitized.replace(/data:/gi, '');
 
     // Remove iframe tags
     sanitized = sanitized.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');

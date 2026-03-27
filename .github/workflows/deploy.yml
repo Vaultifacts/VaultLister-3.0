@@ -13,6 +13,8 @@ jobs:
   test:
     name: Unit Tests (PostgreSQL)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     services:
       postgres:
@@ -102,6 +104,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     environment: production
+    permissions:
+      contents: read
+      deployments: write
 
     steps:
       - name: Trigger Railway auto-deploy

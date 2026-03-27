@@ -16,13 +16,13 @@ const platform = detectPlatform();
 
 function detectPlatform() {
     const hostname = window.location.hostname;
-    if (hostname.includes('poshmark.com')) return 'poshmark';
-    if (hostname.includes('ebay.com')) return 'ebay';
-    if (hostname.includes('mercari.com')) return 'mercari';
-    if (hostname.includes('depop.com')) return 'depop';
-    if (hostname.includes('grailed.com')) return 'grailed';
-    if (hostname.includes('etsy.com')) return 'etsy';
-    if (hostname.includes('myshopify.com') || document.querySelector('meta[name="shopify-checkout-api-token"]')) return 'shopify';
+    if (hostname === 'poshmark.com' || hostname.endsWith('.poshmark.com')) return 'poshmark';
+    if (hostname === 'ebay.com' || hostname.endsWith('.ebay.com')) return 'ebay';
+    if (hostname === 'mercari.com' || hostname.endsWith('.mercari.com')) return 'mercari';
+    if (hostname === 'depop.com' || hostname.endsWith('.depop.com')) return 'depop';
+    if (hostname === 'grailed.com' || hostname.endsWith('.grailed.com')) return 'grailed';
+    if (hostname === 'etsy.com' || hostname.endsWith('.etsy.com')) return 'etsy';
+    if (hostname === 'myshopify.com' || hostname.endsWith('.myshopify.com') || document.querySelector('meta[name="shopify-checkout-api-token"]')) return 'shopify';
     return null;
 }
 

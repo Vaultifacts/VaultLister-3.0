@@ -211,7 +211,7 @@ const outgoingWebhooks = {
 
         // Get active webhooks for this event and user
         // Escape ILIKE wildcards in eventType to prevent injection
-        const escapedEvent = eventType.replace(/[%_]/g, '\\$&');
+        const escapedEvent = eventType.replace(/\/g, '\\').replace(/[%_]/g, '\\$&');
         const webhooks = await query.all(`
             SELECT * FROM user_webhooks
             WHERE user_id = ? AND is_active = 1 AND (events ILIKE ? ESCAPE '\\' OR events = '*')

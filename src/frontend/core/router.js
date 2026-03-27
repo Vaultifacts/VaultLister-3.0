@@ -354,7 +354,7 @@ const router = {
             }
         }
 
-        const handler = this.routes[path] || this.routes['404'];
+        const handler = (Object.prototype.hasOwnProperty.call(this.routes, path) ? this.routes[path] : null) || this.routes['404'];
         if (handler) {
             try {
                 // On initial load, add a 4-second timeout so async route handlers can't hang forever
@@ -445,8 +445,8 @@ const router = {
             await handlers.loadPushStatus();
         }
         // Re-render after data loads
-        const handler = this.routes[path];
-        if (handler) handler();
+        const handler = Object.prototype.hasOwnProperty.call(this.routes, path) ? this.routes[path] : null;
+        if (typeof handler === 'function') handler();
     },
 
     init() {

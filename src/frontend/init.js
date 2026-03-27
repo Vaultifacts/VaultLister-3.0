@@ -1709,7 +1709,7 @@ document.addEventListener('keydown', function(e) {
 
 // === Real User Monitoring (RUM) ===
 (function() {
-    var rumSessionId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+    var rumSessionId = crypto.randomUUID();
     var rumBuffer = [];
     var FLUSH_INTERVAL = 30000;
 

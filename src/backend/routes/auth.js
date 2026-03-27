@@ -91,7 +91,7 @@ function isValidEmail(email) {
 
 // SECURITY: Escape ILIKE wildcards
 function escapeLike(str) {
-    return str.replace(/[%_]/g, '\\$&');
+    return str.replace(/\\/g, '\\\\').replace(/[%_]/g, '\\$&');
 }
 
 // SECURITY: Mask email address for safe storage in logs — avoids storing raw PII.
