@@ -5093,8 +5093,8 @@ const tagPicker = {
         const render = () => {
             inputContainer.innerHTML = selectedTags.map(tag => `
                 <span class="tag-picker-tag">
-                    ${tag}
-                    <span class="tag-picker-tag-remove" data-tag="${tag}">×</span>
+                    ${escapeHtml(tag)}
+                    <span class="tag-picker-tag-remove" data-tag="${escapeHtml(tag)}">×</span>
                 </span>
             `).join('');
             inputContainer.appendChild(input);
@@ -5111,7 +5111,7 @@ const tagPicker = {
                     <div class="tag-picker-section">
                         <div class="tag-picker-section-label">Recent</div>
                         ${recentTags.filter(t => !selectedTags.includes(t)).slice(0, 5).map(t => `
-                            <div class="tag-picker-suggestion" data-tag="${t}">${t}</div>
+                            <div class="tag-picker-suggestion" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</div>
                         `).join('')}
                     </div>
                 ` : ''}
@@ -10231,7 +10231,7 @@ const imageUploader = {
             thumb.className = 'image-thumbnail';
             thumb.draggable = true;
             thumb.innerHTML = `
-                <img src="${e.target.result}" alt="${file.name}">
+                <img src="${e.target.result}" alt="${escapeHtml(file.name)}">
                 <button class="image-thumbnail-remove" onclick="this.parentElement.remove()">×</button>
             `;
 
@@ -56403,10 +56403,11 @@ const handlers = {
         const symbols = { EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$', JPY: '¥' };
         const rate = rates[target] || 1;
         const converted = amount * rate;
+        const safeTarget = target.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         const el = document.getElementById('currency-result');
         if (el) {
-            el.innerHTML = '<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">' + symbols[target] + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +
-                '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 USD = ' + rate + ' ' + target + ' (indicative rate)</div>';
+            el.innerHTML = '<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">' + (symbols[target] || '') + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +
+                '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 USD = ' + rate + ' ' + safeTarget + ' (indicative rate)</div>';
         }
     },
 

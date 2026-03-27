@@ -5114,8 +5114,8 @@ const tagPicker = {
         const render = () => {
             inputContainer.innerHTML = selectedTags.map(tag => `
                 <span class="tag-picker-tag">
-                    ${tag}
-                    <span class="tag-picker-tag-remove" data-tag="${tag}">×</span>
+                    ${escapeHtml(tag)}
+                    <span class="tag-picker-tag-remove" data-tag="${escapeHtml(tag)}">×</span>
                 </span>
             `).join('');
             inputContainer.appendChild(input);
@@ -5132,7 +5132,7 @@ const tagPicker = {
                     <div class="tag-picker-section">
                         <div class="tag-picker-section-label">Recent</div>
                         ${recentTags.filter(t => !selectedTags.includes(t)).slice(0, 5).map(t => `
-                            <div class="tag-picker-suggestion" data-tag="${t}">${t}</div>
+                            <div class="tag-picker-suggestion" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</div>
                         `).join('')}
                     </div>
                 ` : ''}
@@ -5140,16 +5140,16 @@ const tagPicker = {
                     <div class="tag-picker-section">
                         <div class="tag-picker-section-label">Suggestions</div>
                         ${filtered.slice(0, 8).map(s => `
-                            <div class="tag-picker-suggestion" data-tag="${s.label}">
-                                ${s.label}
+                            <div class="tag-picker-suggestion" data-tag="${escapeHtml(s.label)}">
+                                ${escapeHtml(s.label)}
                                 ${s.count ? `<span class="tag-picker-suggestion-count">${s.count}</span>` : ''}
                             </div>
                         `).join('')}
                     </div>
                 ` : ''}
                 ${allowCreate && query && !suggestions.some(s => s.label.toLowerCase() === query.toLowerCase()) ? `
-                    <div class="tag-picker-create" data-tag="${query}">
-                        + Create "${query}"
+                    <div class="tag-picker-create" data-tag="${escapeHtml(query)}">
+                        + Create "${escapeHtml(query)}"
                     </div>
                 ` : ''}
             `;
@@ -15176,7 +15176,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'dfbc8a0f';
+    const v = '3e72ef0e';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {

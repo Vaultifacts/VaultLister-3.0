@@ -161,10 +161,11 @@
                 }
 
                 // Show success message
+                const safePlatform = platform.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
                 document.getElementById('content').innerHTML = `
                     <div class="success-icon">✓</div>
                     <h1>Connection Successful!</h1>
-                    <p>Your ${platform.charAt(0).toUpperCase() + platform.slice(1)} account has been connected.</p>
+                    <p>Your ${safePlatform.charAt(0).toUpperCase() + safePlatform.slice(1)} account has been connected.</p>
                     <p class="countdown">This window will close in <span id="countdown">2</span> seconds...</p>
                 `;
 

@@ -3608,7 +3608,7 @@ async function runInteractSteps(page, steps, options = {}) {
                         console.error('  FAIL: assert-request requires PageContext (ctx)');
                         break;
                     }
-                    const matchUrl = step.url ? new RegExp(step.url.replace(/\*\*/g, '<<<GLOBSTAR>>>').replace(/\*/g, '[^/]*').replace(/<<<GLOBSTAR>>>/g, '.*')) : null;
+                    const matchUrl = step.url ? new RegExp(step.url.replace(/[.+^${}()|[\]\]/g, '\$&').replace(/\*\*/g, '<<<GLOBSTAR>>>').replace(/\*/g, '[^/]*').replace(/<<<GLOBSTAR>>>/g, '.*')) : null;
                     const matching = ctx.allRequests.filter(r => {
                         if (matchUrl && !matchUrl.test(r.url)) return false;
                         if (step.method && r.method !== step.method) return false;
