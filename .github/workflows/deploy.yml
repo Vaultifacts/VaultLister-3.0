@@ -65,12 +65,16 @@ jobs:
       - name: Deploy app service
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service vaultlister-app --detach
+        run: |
+          railway link --project 73f90c33-83db-4301-a138-b5ca5a2c8de4 --environment production --service b7f36b13-dfff-44ea-a90c-783cef01057f
+          railway redeploy --yes || echo "No existing deployment to redeploy — Railway will auto-deploy from GitHub source"
 
       - name: Deploy worker service
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service vaultlister-worker --detach
+        run: |
+          railway link --project 73f90c33-83db-4301-a138-b5ca5a2c8de4 --environment production --service 4f9e776c-0a96-41bd-9749-a23eec55a8b0
+          railway redeploy --yes || echo "No existing deployment to redeploy — Railway will auto-deploy from GitHub source"
 
   notify:
     name: Notify

@@ -23,12 +23,27 @@ env:
   JWT_SECRET: ci-test-secret-do-not-use-in-production
   PORT: '3000'
   TEST_BASE_URL: http://localhost:3000
+  DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
 
 jobs:
   unit-tests:
     name: Unit Tests (Guardian Gate)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: vaultlister
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: vaultlister_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -109,6 +124,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [unit-tests]
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: vaultlister
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: vaultlister_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
