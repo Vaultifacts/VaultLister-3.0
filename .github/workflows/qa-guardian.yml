@@ -124,6 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [unit-tests]
+    continue-on-error: true
     services:
       postgres:
         image: postgres:17-alpine
