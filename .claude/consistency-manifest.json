@@ -2,7 +2,7 @@
   "deny_patterns": 31,
   "validate_bash_patterns": "global",
   "protected_files": "global",
-  "agent_files": 14,
+  "agent_files": 17,
   "memory_rules": 38,
   "_comment": "Update this file whenever any of the counted sources change. Run scripts/reconcile-notion.sh to verify counts. See Notion Rules Architecture page for documentation.",
   "_sources": {

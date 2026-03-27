@@ -55,7 +55,7 @@ Key decisions:
 
 ## Specialized Agents
 
-14 agents in `.claude/agents/` — each has strict scope boundaries:
+17 agents in `.claude/agents/` — each has strict scope boundaries:
 
 | Agent | Use For | Never For |
 |-------|---------|-----------|
@@ -67,6 +67,9 @@ Key decisions:
 | **Testing** | Bun:test, Playwright E2E, visual tests, coverage | Application code |
 | **DevOps-Deployment** | Docker, CI/CD, .env, backups, scaling, logging | Application code |
 | **NoCode-Workflow** | n8n, webhooks, JSON exports, external triggers | JavaScript code |
+| **Marketplace-Integration** | MarketplaceAdapter interface, per-platform OAuth/API/bots, rate limiting, credential encryption | Frontend, general routes, sync orchestration, AI pipeline |
+| **Data-Sync-Orchestrator** | Multi-platform sync state machine, conflict detection/resolution, audit trail, rollback | Platform API calls, frontend, general routes |
+| **AI-Listing-Pipeline** | Prompt versioning, Claude orchestration, cost tracking, quality validation, batch generation, A/B testing | Marketplace API calls, inventory sync, frontend, general routes |
 | **qa-core-product** | UI flows, validation, state, auth | Writing code |
 | **qa-data-systems** | Database, migrations, data integrity, search | Writing code |
 | **qa-environment-quality** | Env config, build reproducibility, hooks | Writing code |
