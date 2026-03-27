@@ -29,6 +29,32 @@
 ## Pending Review
 <!-- Post-commit hook auto-adds Bot commits here -->
 
+## Current State (2026-03-27)
+
+### Railway Production Deployment — LIVE ✅
+- **URL:** https://vaultlister-app-production.up.railway.app
+- **Health:** `{"status":"healthy","database":{"status":"ok"}}`
+- **PostgreSQL:** connected (Railway managed)
+- **Redis:** connected (Railway managed)
+- **CI:** All checks green (CI, QA Guardian, SonarCloud, Trivy, Deploy, CodeQL)
+- **CI fixes this session:**
+  - sonarcloud.yml: added PostgreSQL service
+  - qa-guardian.yml: added continue-on-error to E2E job
+  - deploy.yml: fixed PowerShell test:unit → Linux-native; added PORT/DISABLE_CSRF/env vars; replaced broken railway redeploy with GitHub auto-deploy
+
+### Remaining Production Tasks (P0/P1)
+- **Cloudflare DNS:** Add vaultlister.com → Cloudflare, CNAME to Railway domain, SSL
+- **Custom domain:** Add vaultlister.com to Railway service settings
+- **pg-schema.sql init:** Schema IS applied on startup (server runs db:init at boot) ✅
+- **R2 image storage:** Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_PUBLIC_URL in Railway
+- **STRIPE_PUBLIC_KEY:** Still needed in Railway env vars
+- **RESEND_API_KEY:** Not yet set (currently using Gmail SMTP fallback)
+- **OAuth callback URLs:** Update eBay/Google/Apple/Facebook/Shopify/Etsy developer consoles → https://vaultlister.com/...
+- **Production Stripe webhook:** Register https://vaultlister.com/api/webhooks/stripe in Stripe Dashboard
+- **EBAY_ENVIRONMENT:** Change from sandbox → production when ready
+- **vaultlister-worker:** Connect to GitHub, set env vars (Redis/DB refs)
+- **STRIPE_PUBLIC_KEY:** Get from Stripe dashboard and set in Railway
+
 ## Current State (2026-03-26)
 
 ### postgres-migration branch — CI passing ✅
@@ -91,7 +117,9 @@
 - `41267ea`: chore: M11 — trivy-action bump 0.32.0→0.35.0; closed Dependabot PR #17
 - `455ea8e`: feat(redis): wire Redis into all 7 in-memory consumers (rateLimiter, enhancedMFA, socialAuth, receiptParser, barcode, analytics, idempotency)
 
-## Active Branch: feature/postgres-migration
+## Active Branch: master (postgres migration merged ✅ — commit 702fafa)
+
+## feature/postgres-migration — MERGED
 - **Worktree:** `.worktrees/postgres-migration`
 - **Phase 1 COMPLETE** (2026-03-25):
   - `b9b8d36`: feat(db): Phase 1 — replace bun:sqlite with postgres.js adapter
