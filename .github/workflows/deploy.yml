@@ -104,38 +104,7 @@ jobs:
     environment: production
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy app service
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Trigger Railway auto-deploy
         run: |
-          railway link --project 73f90c33-83db-4301-a138-b5ca5a2c8de4 --environment production --service b7f36b13-dfff-44ea-a90c-783cef01057f
-          railway redeploy --yes || echo "No existing deployment to redeploy — Railway will auto-deploy from GitHub source"
-
-      - name: Deploy worker service
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          railway link --project 73f90c33-83db-4301-a138-b5ca5a2c8de4 --environment production --service 4f9e776c-0a96-41bd-9749-a23eec55a8b0
-          railway redeploy --yes || echo "No existing deployment to redeploy — Railway will auto-deploy from GitHub source"
-
-  notify:
-    name: Notify
-    runs-on: ubuntu-latest
-    needs: [deploy]
-    if: always()
-
-    steps:
-      - name: Notify on success
-        if: needs.deploy.result == 'success'
-        run: echo "Deployed ${{ github.sha }} to Railway"
-
-      - name: Notify on failure
-        if: needs.deploy.result == 'failure'
-        run: |
-          echo "Deploy failed — see ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          exit 1
+          echo "Tests passed — Railway will auto-deploy commit ${{ github.sha }} from GitHub source"
+          echo "Monitor deployment at https://railway.app/project/73f90c33-83db-4301-a138-b5ca5a2c8de4"
