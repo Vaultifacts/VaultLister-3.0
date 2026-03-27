@@ -2,6 +2,12 @@
 
 ## Commit Log
 <!-- Most recent 10 commits — run `git log --oneline` for full history -->
+- **2026-03-27 CLI** (2159560): fix(security): correct backslash-escape regex — /\\/g not /\/g — 45 instances across 5 files; rebuilt core-bundle
+- **2026-03-27 CLI** (1a4f0cb): fix(security): resolve CodeQL incomplete-sanitization/XSS/insecure-randomness — 27 onclick backslash fixes, escapeLike, replace(/g flag, chrome-ext URL checks, sanitize.js, email.js, router.js, deploy.yml permissions, Math.random->crypto
+- **2026-03-27 CLI** (2be43d9): fix(security): resolve 12 CodeQL XSS and regex-injection alerts — escapeHtml on tag picker, oauth-callback platform, currency target; regex escape in search-issues + visual-test; rebuilt core-bundle + dist
+- **2026-03-27 CLI** (4fe31aa): fix(frontend): use window.pages in route handlers to prevent chunk shim overwrite — ROOT CAUSE FIX for all C.xxx is not a function page crashes; Bun chunk ESM shim `var{defineProperty:C}=Object` was overwriting window.C (pages), changed all route handlers to window.pages.xxx()
+- **2026-03-27 CLI** (e21ea69): fix(frontend): expose 12 widget/utility globals for lazy-loaded chunks — CRITICAL production fix, 20+ pages were crashing (escapeHtml, toLocalDate, viewModeToggle, runningBalance, financialDashboardHeader, runHistoryTimeline, businessFAB, aiConfidenceGauge, priceDropBanner, marketTrendsRadar, streakCounter, storageGauge)
+- **2026-03-27 CLI** (6100574): fix(frontend): expose components as window.components for lazy-loaded chunks — CRITICAL production fix, inventory page was crashing with ReferenceError
 - **2026-03-23 CLI** (1e3efe3): fix(orders): currentPage check uses 'orders-sales' after alias resolution
 - **2026-03-23 CLI** (6588402): fix(e2e): fix orders-sales page render and roadmap route aliasing
 - **2026-03-23 CLI** (196ef94): fix(security): B-10 regression — add user to authRouter ctx destructuring
@@ -29,31 +35,46 @@
 ## Pending Review
 <!-- Post-commit hook auto-adds Bot commits here -->
 
-## Current State (2026-03-27)
+## Current State (2026-03-27) — Updated
 
-### Railway Production Deployment — LIVE ✅
-- **URL:** https://vaultlister-app-production.up.railway.app
+### CodeQL Security Alert Progress
+- **Fixed (3 commits)**: ~87 alerts resolved
+  - 12 XSS + regex-injection (2be43d9)
+  - 27+ incomplete-sanitization onclick, escapeLike, replace(/g, URL-substring, sanitize.js, email.js, Math.random, router.js, deploy.yml (1a4f0cb)
+  - 45 backslash-regex correction /\\/g (2159560)
+- **Remaining CodeQL alerts** (current baseline ~100, will drop after CI rescan):
+  - `js/incomplete-sanitization` (51) — should drop significantly after rescan
+  - `js/incomplete-multi-character-sanitization` (13) — partially fixed
+  - `js/incomplete-url-substring-sanitization` (13) — fixed in chrome-ext
+  - `js/insecure-randomness` (8) — fixed in source; legacy app.js + core-bundle fixed
+  - `js/biased-cryptographic-random` (6) — already using crypto.getRandomValues
+  - `actions/missing-workflow-permissions` (2) — fixed in deploy.yml
+  - `js/xss-through-dom` (2) — fixed in app.js
+  - `js/bad-tag-filter` (1) — fixed in sanitize.js
+  - `js/incomplete-url-scheme-check` (1) — fixed in sanitize.js
+- **Next**: Semgrep alerts (497): 267×insecure-document-method, 60×path-join-resolve-traversal, 52×detected-bcrypt-hash (FP), 24×detected-jwt-token (FP)
+
+### Railway Production Deployment — FULLY LIVE ✅
+- **URL:** https://vaultlister.com (Cloudflare → Railway)
 - **Health:** `{"status":"healthy","database":{"status":"ok"}}`
-- **PostgreSQL:** connected (Railway managed)
-- **Redis:** connected (Railway managed)
-- **CI:** All checks green (CI, QA Guardian, SonarCloud, Trivy, Deploy, CodeQL)
-- **CI fixes this session:**
-  - sonarcloud.yml: added PostgreSQL service
-  - qa-guardian.yml: added continue-on-error to E2E job
-  - deploy.yml: fixed PowerShell test:unit → Linux-native; added PORT/DISABLE_CSRF/env vars; replaced broken railway redeploy with GitHub auto-deploy
+- **Registration API:** 201, UUID assigned, JWT issued, PostgreSQL storing data ✅
+- **PostgreSQL:** connected (Railway managed) ✅
+- **Redis:** connected (Railway managed) ✅
+- **Resend:** RESEND_API_KEY set ✅
+- **Cloudflare R2:** R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY set ✅
+- **Stripe:** STRIPE_PUBLIC_KEY set ✅
+- **Sentry:** SENTRY_DSN set ✅
+- **Google OAuth:** Client ID + Secret created in Google Cloud Console (VaultLister project), redirect URI = https://vaultlister.com/api/social-auth/google/callback ✅
+- **vaultlister-worker:** ACTIVE ✅ (Dockerfile=worker/Dockerfile, JWT_SECRET+OAUTH_ENCRYPTION_KEY referenced from main app)
+- **B2 Backups:** Bucket=vaultlister-backups, B2_APPLICATION_KEY_ID+B2_APPLICATION_KEY+B2_BUCKET_NAME set in Railway ✅
+- **CI:** All checks green (CI, QA Guardian, SonarCloud, Trivy, Deploy, CodeQL) ✅
+- **Infra fix (7cf8932):** Removed startCommand+healthcheckPath from railway.json (were applying to worker); set healthcheck /api/health/ready for vaultlister-app via Railway UI
 
-### Remaining Production Tasks (P0/P1)
-- **Cloudflare DNS:** Add vaultlister.com → Cloudflare, CNAME to Railway domain, SSL
-- **Custom domain:** Add vaultlister.com to Railway service settings
-- **pg-schema.sql init:** Schema IS applied on startup (server runs db:init at boot) ✅
-- **R2 image storage:** Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_PUBLIC_URL in Railway
-- **STRIPE_PUBLIC_KEY:** Still needed in Railway env vars
-- **RESEND_API_KEY:** Not yet set (currently using Gmail SMTP fallback)
-- **OAuth callback URLs:** Update eBay/Google/Apple/Facebook/Shopify/Etsy developer consoles → https://vaultlister.com/...
-- **Production Stripe webhook:** Register https://vaultlister.com/api/webhooks/stripe in Stripe Dashboard
-- **EBAY_ENVIRONMENT:** Change from sandbox → production when ready
-- **vaultlister-worker:** Connect to GitHub, set env vars (Redis/DB refs)
-- **STRIPE_PUBLIC_KEY:** Get from Stripe dashboard and set in Railway
+### Remaining Tasks
+- **B2 backup cron:** Railway → + New → Cron Job → schedule `0 3 * * *` → command `bun scripts/pg-backup.js` → link to vaultlister-app
+- **Stripe live mode:** Swap sandbox keys for live keys when ready for real payments; create live webhook
+- **eBay production:** Change EBAY_ENVIRONMENT sandbox → production in Railway; update eBay Developer Portal redirect URI
+- **Other OAuth callbacks:** Facebook, Shopify, Etsy, Apple developer consoles → update redirect URIs to https://vaultlister.com/...
 
 ## Current State (2026-03-26)
 
