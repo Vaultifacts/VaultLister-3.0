@@ -315,7 +315,7 @@ Object.assign(pages, {
                             <li>Password encryption using bcrypt</li>
                             <li>JWT authentication for API requests</li>
                             <li>CSRF protection for form submissions</li>
-                            <li>OAuth token encryption (AES-256-CBC)</li>
+                            <li>OAuth token encryption (AES-256-GCM)</li>
                         </ul>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">6. Your Rights</h2>
@@ -1979,7 +1979,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     { type: 'feature', title: 'Token Refresh Scheduler', description: 'Automatic OAuth token renewal for connected platforms', areas: ['Integrations'] },
                     { type: 'feature', title: 'Receipt Parser AI', description: 'Upload receipts and let AI extract vendor, items, and totals', areas: ['Transactions'] },
                     { type: 'improvement', title: 'Full OAuth Integration', description: 'Enhanced platform sync with real-time status tracking', areas: ['My Shops', 'Integrations'] },
-                    { type: 'security', title: 'Token Encryption', description: 'AES-256-CBC encryption for stored OAuth tokens', areas: ['Security', 'Settings'] }
+                    { type: 'security', title: 'Token Encryption', description: 'AES-256-GCM encryption for stored OAuth tokens', areas: ['Security', 'Settings'] }
                 ]
             },
             {

@@ -122,7 +122,7 @@ Impact calculations based on:
 
 ### Database Migrations
 Currently no migration system. Changes require:
-1. Update `src/backend/db/schema.sql`
+1. Update `src/backend/db/pg-schema.sql`
 2. Run `bun run db:init` (drops existing data)
 3. Run `bun run db:seed` for demo data
 

@@ -10,7 +10,7 @@ Generated: 2026-03-04
 1. Clone repo / pull latest
 2. bun install
 3. Copy .env.example → .env (configure secrets)
-4. bun run db:reset          # Creates SQLite DB + runs all 96 migrations
+4. bun run db:reset          # Creates PostgreSQL DB + runs all 96 migrations
 5. bun run dev               # Starts server on default port
 6. Open browser → http://localhost:PORT
 ```
@@ -93,7 +93,7 @@ bun run test:e2e
 2. Run container:
    docker-compose up -d
 3. Nginx reverse proxy handles SSL termination
-4. SQLite data volume mounted for persistence
+4. PostgreSQL data volume mounted for persistence
 5. Health check: GET /api/health (if implemented)
 ```
 
@@ -110,7 +110,7 @@ bun run test:e2e
 
 ```
 # Backup
-bun run db:backup            # Copies SQLite file to timestamped backup
+bun run db:backup            # Copies PostgreSQL file to timestamped backup
 
 # Restore
 bun run db:restore           # Restores from latest backup

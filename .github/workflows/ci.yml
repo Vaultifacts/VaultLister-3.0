@@ -45,7 +45,7 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           # Use bun build --no-bundle to validate syntax without producing output.
-          # node --check hangs on ESM files with Bun-specific imports (bun:test, bun:sqlite).
+          # node --check hangs on ESM files with Bun-specific imports (bun:test).
           find src -name "*.js" -not -path "*/node_modules/*" | xargs bun build --no-bundle --outdir /dev/null 2>&1 | { grep -i "error" && exit 1 || true; }
 
   test-unit:

@@ -1,45 +1,47 @@
 ---
 name: deploy
-description: Deploy VaultLister 3.0 via Docker — build image, update production container
+description: Deploy VaultLister 3.0 via Railway — push to master triggers auto-deploy
 trigger: /deploy
 ---
 
-# /deploy — VaultLister 3.0 Docker Deployment
+# /deploy — VaultLister 3.0 Railway Deployment
 
 ⚠️ **This deploys to production. Confirm with the user before proceeding.**
+
+Production: Railway (managed PaaS) behind Cloudflare CDN. Deployments are triggered automatically by pushing to `master`. Manual deploys use the Railway CLI.
 
 ## Pre-Deploy Checks
 1. All tests passing: `bun run test:all`
 2. Clean commit: `git status` shows no uncommitted changes
 3. Build succeeds: `bun run build`
 
-## Deploy Steps
+## Deploy Steps (Auto via GitHub Actions)
 
-1. **Build Docker image**
+1. **Push to master** (triggers Railway auto-deploy via GitHub Actions)
    ```
-   docker build -t vaultlister-3:latest .
-   ```
-
-2. **Tag for registry** (fill `[CONFIGURE]` with your registry URL)
-   ```
-   docker tag vaultlister-3:latest [CONFIGURE]/vaultlister-3:latest
+   git push origin master
    ```
 
-3. **Push to registry**
+2. **Monitor deployment**
    ```
-   docker push [CONFIGURE]/vaultlister-3:latest
-   ```
-
-4. **Update production container**
-   ```
-   docker-compose pull && docker-compose up -d
+   railway logs --tail
    ```
 
-5. **Health check**
+3. **Health check**
    ```
-   curl -f http://localhost:3000/api/health || echo "Health check failed"
+   curl -f https://vaultlister.com/api/health || echo "Health check failed"
    ```
+
+## Manual Deploy (Railway CLI)
+
+```bash
+railway up                    # Deploy current branch
+railway logs --tail           # Stream live logs
+railway status                # Show service status
+```
 
 ## On Failure
-- Roll back: `docker-compose down && docker-compose up -d`
+- Check Railway dashboard: https://railway.app
+- View logs: `railway logs --tail`
+- Roll back: redeploy previous commit from Railway dashboard
 - Do NOT retry without investigating root cause

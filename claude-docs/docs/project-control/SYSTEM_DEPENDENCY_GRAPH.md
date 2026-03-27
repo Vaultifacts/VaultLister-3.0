@@ -37,7 +37,7 @@ Generated: 2026-03-04
  ├─ platformSync/*
  └─ ...43 modules
       |
-[SQLite (WAL + FTS5)]
+[PostgreSQL (WAL + TSVECTOR)]
       |
 [96 migrations → schema.sql]
 ```

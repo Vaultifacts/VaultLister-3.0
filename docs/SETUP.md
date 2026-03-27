@@ -41,7 +41,7 @@ EBAY_ENVIRONMENT=sandbox
 1. Start the server: `bun run dev`
 2. Navigate to **Settings → Connected Accounts** in the VaultLister UI.
 3. Click **Connect eBay** → you will be redirected to eBay to grant access.
-4. After authorization, your access token and refresh token are stored encrypted in SQLite.
+4. After authorization, your access token and refresh token are stored encrypted in PostgreSQL.
 
 ### Notes
 - eBay access tokens expire in **2 hours**; VaultLister auto-refreshes using the stored refresh token.
@@ -117,7 +117,7 @@ ETSY_REDIRECT_URI=http://localhost:3000/api/marketplace/etsy/callback
 
 ### Notes
 - Etsy's OAuth 2.0 uses PKCE — no client secret is required for the authorization request, only for token exchange.
-- Etsy access tokens expire in **3600 seconds**; refresh tokens are stored encrypted in SQLite.
+- Etsy access tokens expire in **3600 seconds**; refresh tokens are stored encrypted in PostgreSQL.
 - The Etsy integration is currently in stub state — full listing and inventory sync will be enabled once the app is approved.
 
 ---

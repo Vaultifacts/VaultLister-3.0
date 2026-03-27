@@ -20,7 +20,7 @@ Total: 67 route files.
 ### Inventory (3)
 | File | Domain |
 |------|--------|
-| `inventory.js` | CRUD for InventoryItems, FTS5 search, status transitions |
+| `inventory.js` | CRUD for InventoryItems, full-text search (TSVECTOR), status transitions |
 | `inventoryImport.js` | Bulk CSV/spreadsheet import |
 | `duplicates.js` | Duplicate detection and merge |
 

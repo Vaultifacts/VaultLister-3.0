@@ -23,16 +23,17 @@
 └───────┬───────────────────────┬─────────────────────────────────┘
         │                       │
 ┌───────▼───────┐   ┌───────────▼─────────────────────────────────┐
-│  SQLite 3     │   │  Side services (spawned per-request or       │
-│  WAL mode     │   │  as background tasks)                        │
-│  FTS5 index   │   │                                              │
-│  on inventory │   │  ┌─────────────────┐  ┌──────────────────┐  │
-│               │   │  │  Playwright bots │  │  Claude AI SDK   │  │
-│  26 tables    │   │  │  poshmark-bot   │  │  listing gen     │  │
-│  +indexes     │   │  │  mercari-bot    │  │  image analysis  │  │
-└───────────────┘   │  │  depop-bot      │  │  price predict   │  │
-                    │  │  grailed-bot    │  │  Vault Buddy     │  │
-                    │  │  facebook-bot   │  └──────────────────┘  │
+│  PostgreSQL   │   │  Side services (spawned per-request or       │
+│  (Railway     │   │  as background tasks)                        │
+│  managed)     │   │                                              │
+│  TSVECTOR+GIN │   │  ┌─────────────────┐  ┌──────────────────┐  │
+│  for FTS      │   │  │  Playwright bots │  │  Claude AI SDK   │  │
+│               │   │  │  worker/bots/   │  │  listing gen     │  │
+│  189 tables   │   │  │  poshmark-bot   │  │  image analysis  │  │
+│  +indexes     │   │  │  mercari-bot    │  │  price predict   │  │
+└───────────────┘   │  │  depop-bot      │  │  Vault Buddy     │  │
+                    │  │  grailed-bot    │  └──────────────────┘  │
+                    │  │  facebook-bot   │                         │
                     │  │  whatnot-bot    │                         │
                     │  └─────────────────┘                         │
                     │                                              │
@@ -42,7 +43,7 @@
                     │  └─────────────────────────────────────────┘ │
                     └─────────────────────────────────────────────┘
 
-Deployment: Docker container → Nginx reverse proxy → GitHub Actions CI/CD
+Deployment: Cloudflare → Railway (managed PaaS) → GitHub Actions CI/CD
 ```
 
 ---
@@ -53,9 +54,9 @@ Deployment: Docker container → Nginx reverse proxy → GitHub Actions CI/CD
 
 **Decision:** Use Bun.js 1.3+ as the runtime.
 
-**Rationale:** Bun provides built-in HTTP server and WebSocket support, native SQLite bindings, and measurably faster startup than Node.js. It runs the same JS/ESM code without a separate transpile step. For a self-hosted single-binary server, startup speed and the reduced dependency surface matter more than ecosystem breadth.
+**Rationale:** Bun provides built-in HTTP server and WebSocket support, measurably faster startup than Node.js, and broad npm package compatibility including the `postgres` npm package. It runs the same JS/ESM code without a separate transpile step.
 
-**Trade-offs accepted:** Bun is younger than Node.js; some Node ecosystem packages need compatibility shims. The database driver is Bun's native `bun:sqlite` — no native addon or node-gyp required.
+**Trade-offs accepted:** Bun is younger than Node.js; some Node ecosystem packages need compatibility shims. The `postgres` npm package is used for PostgreSQL access (not Bun's deprecated bun:sqlite).
 
 ---
 
@@ -71,13 +72,15 @@ Deployment: Docker container → Nginx reverse proxy → GitHub Actions CI/CD
 
 ---
 
-### ADR-003 — SQLite over PostgreSQL
+### ADR-003 — SQLite over PostgreSQL (**SUPERSEDED by ADR-012**)
 
-**Decision:** SQLite 3 with WAL mode and FTS5.
+**Status: Superseded — March 2026**
 
-**Rationale:** VaultLister is self-hosted by a single user or small team. SQLite in WAL mode handles concurrent reads well and serializes writes with negligible contention at this scale. No separate DB server process to manage. FTS5 virtual table provides full-text search over inventory (title, description, brand, tags) without an external search service. All IDs are TEXT (UUIDs) to avoid integer-sequence coupling.
+This decision was superseded by the PostgreSQL migration. See **ADR-012** for the replacement decision.
 
-**Trade-offs accepted:** No horizontal scaling of the DB layer. If the product ever moves to a multi-tenant SaaS model, a migration to PostgreSQL would be required.
+**Original decision:** SQLite 3 with WAL mode and FTS5 for local-first single-user deployment.
+
+**Why superseded:** As VaultLister moved toward multi-tenant SaaS and Railway hosting, SQLite's lack of horizontal scaling and connection pooling became blockers. PostgreSQL with TSVECTOR+GIN replaces FTS5. All IDs remain TEXT (UUIDs).
 
 ---
 
@@ -89,7 +92,7 @@ Deployment: Docker container → Nginx reverse proxy → GitHub Actions CI/CD
 
 **Rationale:** These platforms provide no public seller API. Playwright allows automated listing creation, closet sharing, follow-back, and offer management by driving the web UI. Bot scripts live in `src/shared/automations/` and are spawned as child processes from the publish services to avoid Playwright's internal timeouts affecting the main Bun server.
 
-**Safety constraints:** Bots must read credentials from `.env` only. All actions log to `data/automation-audit.log`. Rate limits are defined in `src/shared/automations/rate-limits.js` with ±30% jitter. Any CAPTCHA or bot detection stops the bot immediately — no bypass attempts.
+**Safety constraints:** Bots must read credentials from `.env` only. All actions log to `data/automation-audit.log`. Rate limits are defined in `worker/bots/rate-limits.js` with ±30% jitter. Any CAPTCHA or bot detection stops the bot immediately — no bypass attempts.
 
 ---
 
@@ -105,6 +108,54 @@ Deployment: Docker container → Nginx reverse proxy → GitHub Actions CI/CD
 
 ---
 
+### ADR-012 — PostgreSQL over SQLite
+
+**Decision:** Migrate from SQLite to PostgreSQL. **Status: Accepted (March 2026)**
+
+**Rationale:** Horizontal scaling for multi-tenant SaaS, Railway managed PostgreSQL, connection pooling via `postgres` npm, TSVECTOR + GIN replaces FTS5. See Notion for full rationale.
+
+---
+
+### ADR-013 — Railway for Production Hosting
+
+**Decision:** Railway managed PaaS over self-hosted Docker + Nginx. **Status: Accepted (March 2026)**
+
+**Rationale:** Managed PostgreSQL and Redis included, auto-deploy from GitHub, no server ops burden. Cloudflare handles CDN and SSL termination.
+
+---
+
+### ADR-014 — Resend for Transactional Email
+
+**Decision:** Resend API over SMTP. **Status: Accepted (March 2026)**
+
+**Rationale:** Reliable deliverability, simple API, generous free tier. `RESEND_API_KEY` in `.env`.
+
+---
+
+### ADR-015 — Cloudflare R2 for Image Storage
+
+**Decision:** Cloudflare R2 over local filesystem or AWS S3. **Status: Accepted (March 2026)**
+
+**Rationale:** Zero egress fees, S3-compatible API, integrated with Cloudflare CDN. Falls back to `IMAGE_STORAGE=local` in development.
+
+---
+
+### ADR-016 — BullMQ + Redis for Background Jobs
+
+**Decision:** BullMQ queue over in-process task worker. **Status: Accepted (March 2026)**
+
+**Rationale:** Persistent job queue survives process restarts, retry logic, job priorities, separate worker container for Playwright bots.
+
+---
+
+### ADR-017 — Backblaze B2 for Database Backups
+
+**Decision:** Backblaze B2 over AWS S3 for pg_dump archive storage. **Status: Accepted (March 2026)**
+
+**Rationale:** Lowest cost object storage, S3-compatible API, Railway cron job triggers nightly pg_dump + B2 upload.
+
+---
+
 ## Directory Structure (key paths)
 
 ```
@@ -114,9 +165,9 @@ src/
     routes/                — 67 route files (one per domain)
     middleware/            — auth, rateLimiter, CSRF, securityHeaders
     db/
-      schema.sql           — single source of truth for all tables
-      database.js          — bun:sqlite connection + WAL init
-      migrations/          — numbered migration files
+      pg-schema.sql        — single source of truth for all 189 tables
+      database.js          — postgres npm connection + pool init
+      migrations/          — 112 numbered migration files
     services/
       platformSync/        — per-platform publish + sync handlers
       websocket.js         — real-time WebSocket service
@@ -126,7 +177,9 @@ src/
     handlers/              — event handler modules grouped by domain
   shared/
     ai/                    — all Claude SDK interactions
-    automations/           — Playwright bot files + rate-limits.js
+worker/
+    index.js               — BullMQ worker entry point
+    bots/                  — Playwright bot files + rate-limits.js
 public/                    — static assets served by Bun
 e2e/                       — Playwright E2E test files
 ```

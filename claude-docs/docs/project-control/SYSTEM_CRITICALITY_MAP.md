@@ -17,7 +17,7 @@ Generated: 2026-03-04
 | SPA router | app.js: router.navigate() | No page loads; blank screen | Fix route matching; hard refresh |
 | Chunk loader | app.js: chunk loading logic | Pages fail to render; white screen on navigation | Fix chunk path; clear cache |
 | HTTP server | src/backend/server.js | No requests served | Fix listen/bind; restart process |
-| Schema (base) | src/backend/db/schema.sql | No tables exist on fresh install | Restore schema file from git |
+| Schema (base) | src/backend/db/pg-schema.sql | No tables exist on fresh install | Restore schema file from git |
 
 ### Tier 2 — HIGH (major feature area broken)
 
@@ -92,7 +92,7 @@ Single marketplace service failure (e.g., ebayPublish.js)
 
 | Scenario | Data at Risk | Mitigation |
 |----------|-------------|------------|
-| SQLite file corruption | All application data | WAL mode reduces risk; db:backup script exists |
+| PostgreSQL file corruption | All application data | WAL mode reduces risk; db:backup script exists |
 | Migration applied out of order | Schema drift; queries fail | Filename-ordered sequential apply |
 | No backup taken before deploy | Recovery point = last backup | Automate pre-deploy backup |
 | localStorage cleared | Auth tokens, UI preferences | Re-login; preferences reset to defaults |
@@ -104,7 +104,7 @@ Single marketplace service failure (e.g., ebayPublish.js)
 
 | SPOF | Why | Mitigation Path |
 |------|-----|-----------------|
-| SQLite (single writer) | WAL allows concurrent reads but one writer | Acceptable for single-user; queue writes |
+| PostgreSQL (single writer) | WAL allows concurrent reads but one writer | Acceptable for single-user; queue writes |
 | app.js (71K lines) | Monolith fallback; merge conflict magnet | Three-file sync pattern distributes load |
 | JWT_SECRET in .env | Lost = all sessions invalid | Document in deploy checklist; backup .env |
 | Bun runtime | Non-standard; fewer community fixes | Pin Bun version; test upgrades in staging |

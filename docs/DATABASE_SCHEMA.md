@@ -1,6 +1,6 @@
 # Database Schema
 
-Generated from live SQLite schema (`data/vaultlister.db`).
+Generated from live PostgreSQL schema (`data/vaultlister.db`).
 
 ## Tables
 

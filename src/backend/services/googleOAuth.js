@@ -1,6 +1,6 @@
 // Google OAuth 2.0 Service
 // Shared by Google Drive and Google Calendar integrations
-// All tokens are encrypted with AES-256-CBC before storage
+// All tokens are encrypted with AES-256-GCM before storage
 
 import { encryptToken, decryptToken, generateStateToken } from '../utils/encryption.js';
 import { query } from '../db/database.js';

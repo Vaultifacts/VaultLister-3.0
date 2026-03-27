@@ -60,6 +60,6 @@ PASS
 ```
 
 ## Notes
-- Clean-clone install blocker resolved by upgrading better-sqlite3 to 12.6.2.
+- Clean-clone install blocker resolved by upgrading postgres to 12.6.2.
 - Minimal inventory flow verified with real register/login/token auth.
 - Evidence artifacts: PHASE-03_CLEANCLONE_SUMMARY.json, PHASE-03_HEALTH_RESPONSE.json, PHASE-03_SPA_STATUS.txt, PHASE-03_CLEANCLONE_SERVER.out.log, PHASE-03_CLEANCLONE_SERVER.err.log

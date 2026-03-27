@@ -46,7 +46,7 @@ Perform thorough code review on changes or PR.
 
    ### Consistency
    - [ ] Follows existing code patterns
-   - [ ] Matches project style (vanilla JS, Bun, SQLite)
+   - [ ] Matches project style (vanilla JS, Bun, PostgreSQL)
    - [ ] API response format is consistent
 
    ### Testing

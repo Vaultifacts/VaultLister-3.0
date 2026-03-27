@@ -8,7 +8,7 @@
 
 | ID | Description | Fix | Commit |
 |----|-------------|-----|--------|
-| P0-1 | `notifications.read_at` column missing — `markAsRead()` threw SQLiteError, every mark-as-read returned 404 | Added `read_at DATETIME` column via `ALTER TABLE` + updated `schema.sql` | `4e9aca3` |
+| P0-1 | `notifications.read_at` column missing — `markAsRead()` threw PostgreSQLError, every mark-as-read returned 404 | Added `read_at DATETIME` column via `ALTER TABLE` + updated `schema.sql` | `4e9aca3` |
 
 **Re-test result:** `PUT /api/notifications/:id/read` returns 200, `is_read=1` + `read_at` persisted in DB. ✅
 

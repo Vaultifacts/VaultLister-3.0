@@ -5,11 +5,11 @@ Zero-cost, offline-capable multi-channel reselling platform. List to 9+ marketpl
 ## Tech Stack
 - **Runtime:** Bun.js 1.3+ (server + package manager)
 - **Frontend:** Vanilla JS SPA (route-based chunking, no framework)
-- **Database:** SQLite 3 (WAL mode, FTS5 full-text search, bun:sqlite)
+- **Database:** PostgreSQL (WAL mode, TSVECTOR full-text search, postgres npm)
 - **Automations:** Playwright (stealth mode) for marketplace bots
 - **AI:** Claude API (@anthropic-ai/sdk) for listings, pricing, predictions
 - **Auth:** JWT + bcrypt + TOTP MFA + OAuth 2.0 (eBay, Etsy, Shopify)
-- **Deploy:** Docker + Nginx + GitHub Actions CI/CD
+- **Deploy:** Railway + Cloudflare + GitHub Actions CI/CD
 
 ## Prerequisites
 - Bun 1.3+ (`curl -fsSL https://bun.sh/install | bash`)
@@ -69,7 +69,7 @@ Migrations run automatically on server start. To run manually:
 bun run db:init    # Applies all pending migrations
 ```
 
-The migration chain is in `src/backend/db/database.js` (112 migrations). Schema is in `src/backend/db/schema.sql`.
+The migration chain is in `src/backend/db/database.js` (112 migrations). Schema is in `src/backend/db/pg-schema.sql`.
 
 ## Git Hooks
 

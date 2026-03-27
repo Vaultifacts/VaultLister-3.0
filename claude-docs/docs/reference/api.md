@@ -108,7 +108,7 @@ Resends the verification email. Always returns 200 to prevent email enumeration.
 | POST | `/cleanup-deleted` | Remove items older than 30 days |
 
 **Query Parameters:**
-- `search` - FTS5 full-text search
+- `search` - TSVECTOR full-text search
 - `status` - Filter by status (draft, active, sold)
 - `category` - Filter by category
 - `limit`, `offset` - Pagination

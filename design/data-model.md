@@ -1,11 +1,11 @@
 # VaultLister 3.0 — Data Model
 
-Source of truth: `src/backend/db/schema.sql`
-SQLite 3, WAL mode (`PRAGMA journal_mode = WAL`), all IDs are TEXT (UUID).
+Source of truth: `src/backend/db/pg-schema.sql`
+PostgreSQL (postgres npm, DATABASE_URL). IDs are TEXT (UUID). Full-text search via TSVECTOR + GIN index on inventory. 189 total tables across 112 migrations.
 
 ---
 
-## Core Tables (18)
+## Core Tables (18 original — 189 total including migration-added tables)
 
 | Table | Purpose |
 |-------|---------|
@@ -37,11 +37,9 @@ SQLite 3, WAL mode (`PRAGMA journal_mode = WAL`), all IDs are TEXT (UUID).
 | `error_logs` | Runtime errors — type, message, stack trace, request context |
 | `audit_logs` | User action audit trail — action, resource_type, resource_id, IP address |
 
-## FTS Virtual Table (1)
+## Full-Text Search
 
-| Table | Purpose |
-|-------|---------|
-| `inventory_fts` | FTS5 full-text index over `inventory` (title, description, brand, tags) — kept in sync via INSERT/UPDATE/DELETE triggers |
+PostgreSQL TSVECTOR column on `inventory` with GIN index. Triggers keep the tsvector column updated on INSERT/UPDATE. Replaces the SQLite FTS5 virtual table from the original design.
 
 ---
 
@@ -71,8 +69,8 @@ users
 
 ## Notable Design Choices
 
-- **Encrypted credentials:** `shops.credentials` (and OAuth token columns) are encrypted with AES-256-CBC before storage. Never read raw — use `decryptToken()` from `src/backend/utils/encryption.js`.
-- **JSON columns:** `inventory.tags`, `inventory.images`, `listings.platform_specific_data`, `automation_rules.conditions/actions` are stored as JSON strings. SQLite has no native JSON type; application layer parses them.
+- **Encrypted credentials:** `shops.credentials` (and OAuth token columns) are encrypted with AES-256-GCM before storage. Never read raw — use `decryptToken()` from `src/backend/utils/encryption.js`.
+- **JSON columns:** `inventory.tags`, `inventory.images`, `listings.platform_specific_data`, `automation_rules.conditions/actions` use PostgreSQL JSONB where appropriate, or TEXT with application-layer parsing.
 - **Subscription tier enforcement:** `users.subscription_tier` CHECK constraint enforces valid values. Feature gating logic lives in application code, not the DB schema.
 - **Soft delete pattern:** `inventory.status` includes `'deleted'`; rows are not physically removed. `sales` and `listings` use `ON DELETE SET NULL` for inventory/listing FKs to preserve financial records.
 - **Unique constraint on listings:** `UNIQUE(inventory_id, platform)` — one listing per item per platform at the DB level.

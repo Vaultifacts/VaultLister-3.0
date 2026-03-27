@@ -6,8 +6,8 @@ browser automation because they provide no public seller API.
 Source files:
 - Publish handlers: `src/backend/services/platformSync/[platform]Publish.js`
 - Sync handlers: `src/backend/services/platformSync/[platform]Sync.js`
-- Playwright bots: `src/shared/automations/[platform]-bot.js`
-- Rate limits: `src/shared/automations/rate-limits.js`
+- Playwright bots: `worker/bots/[platform]-bot.js`
+- Rate limits: `worker/bots/rate-limits.js`
 
 ---
 

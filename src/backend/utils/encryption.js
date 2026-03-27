@@ -1,5 +1,5 @@
 // Token encryption utilities for OAuth tokens
-// Uses AES-256-CBC encryption for secure token storage
+// Uses AES-256-GCM encryption for secure token storage
 
 import crypto from 'crypto';
 import { logger } from '../shared/logger.js';

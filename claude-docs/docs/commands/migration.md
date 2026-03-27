@@ -1,6 +1,6 @@
 # /migration - Create Database Migration
 
-Create and register SQLite database migrations for VaultLister.
+Create and register PostgreSQL database migrations for VaultLister.
 
 ## Usage
 ```

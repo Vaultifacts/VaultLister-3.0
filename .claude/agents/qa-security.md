@@ -15,7 +15,7 @@ Focus only on:
 - SQL injection prevention (parameterized queries only)
 - CSP integrity (no unsafe directives removed, script-src/style-src correctness)
 - rate limiting coverage on auth and public-facing routes
-- OAuth token encryption (AES-256-GCM before SQLite storage)
+- OAuth token encryption (AES-256-GCM before PostgreSQL storage)
 - IDOR checks (users cannot access other users' InventoryItems, Listings, or Sales)
 - secret detection (no credentials, API keys, or tokens in source code)
 - OWASP Top 10 coverage
@@ -32,7 +32,7 @@ Common failure modes to look for:
 - missing escapeHtml() on any user-supplied string rendered to DOM
 - bare JSON.parse() in route handlers (crash vector)
 - CSRF token missing on PUT/PATCH/DELETE routes
-- OAuth tokens stored in plaintext in SQLite
+- OAuth tokens stored in plaintext in PostgreSQL
 - JWT secret weak or hardcoded fallback in source
 - refresh token not invalidated on logout
 - rate limiter absent on /api/auth/* and registration routes

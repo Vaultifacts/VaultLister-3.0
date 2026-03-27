@@ -11,7 +11,7 @@ Verification basis: runbook evidence + gate evaluation artifacts in `docs/eviden
 |-------|-------|
 | Project | VaultLister |
 | Runtime | Bun + Node tooling |
-| Primary DB | SQLite |
+| Primary DB | PostgreSQL |
 | Test stack | Bun tests + Playwright |
 | Runbook system | PowerShell (`runbook/`) with state + checklist + CI gate mode |
 

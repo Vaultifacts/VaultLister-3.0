@@ -4,8 +4,8 @@
 
 A daily cron job runs at **3:00 AM UTC** on the host machine. It executes `/opt/vaultlister-staging/backup.sh`, which:
 
-1. Puts the SQLite database into WAL checkpoint mode to flush any pending writes
-2. Copies the database file (`data/vaultlister.db`) to the backup directory using SQLite's `.backup` command (safe for live databases)
+1. Puts the PostgreSQL database into WAL checkpoint mode to flush any pending writes
+2. Copies the database file (`data/vaultlister.db`) to the backup directory using PostgreSQL's `.backup` command (safe for live databases)
 3. Compresses the copy with gzip
 4. Names the file with a UTC timestamp: `vaultlister-YYYY-MM-DD_HHMMSS.db.gz`
 5. Deletes backups older than **7 days**, keeping at most 7 daily snapshots
@@ -104,7 +104,7 @@ To do a full restore drill on a non-production instance, copy the backup file to
 
 ### Scenario 2: Database corruption
 
-**Symptom:** SQLite reports `database disk image is malformed` or the application fails to start with a database error.
+**Symptom:** PostgreSQL reports `database disk image is malformed` or the application fails to start with a database error.
 
 **Recovery:**
 1. Stop the application immediately to prevent further writes

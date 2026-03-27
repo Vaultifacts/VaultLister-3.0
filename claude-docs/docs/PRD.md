@@ -5,8 +5,8 @@
 ## Current State (Existing Features/Codebase)
 
 **Tech Stack:**
-- **Runtime**: Bun.js v1.3.6+ (ultra-fast JS runtime with built-in SQLite)
-- **Database**: SQLite with WAL mode, FTS5 full-text search
+- **Runtime**: Bun.js v1.3.6+ (ultra-fast JS runtime with built-in PostgreSQL)
+- **Database**: PostgreSQL with WAL mode, TSVECTOR full-text search
 - **Auth**: JWT + bcryptjs (10 rounds), refresh tokens
 - **Frontend**: Vanilla JS SPA, PWA with service worker, IndexedDB, styled confirm modals
 - **Automation**: Playwright for browser automation
@@ -16,7 +16,7 @@
 **Existing Features (218+ implementations across 24 sessions):**
 - **User Auth** - JWT + refresh tokens, auto-login demo
 - **Account Page** - Profile, subscription, security (change password), connected platforms, danger zone
-- **Inventory CRUD** - FTS5 search, bulk operations, quantity tracking, FIFO costing
+- **Inventory CRUD** - TSVECTOR search, bulk operations, quantity tracking, FIFO costing
 - **Multi-select & Bulk Edit** - Context menu, bulk status/price updates
 - **Cross-listing** - 6 platforms (Poshmark, eBay, Mercari, Depop, Grailed, Facebook), Advanced Cross-List modal
 - **Listing Templates** - Reusable listing configurations with CRUD

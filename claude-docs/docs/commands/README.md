@@ -80,7 +80,7 @@ When you do something more than twice, make it a command:
 
 These commands are optimized for:
 - **Runtime**: Bun.js
-- **Database**: SQLite with migrations
+- **Database**: PostgreSQL with migrations
 - **Backend**: Express-like router pattern
 - **Frontend**: Vanilla JS SPA
 - **Auth**: JWT tokens

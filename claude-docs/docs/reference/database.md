@@ -4,10 +4,10 @@
 ## Overview
 ## Overview
 
-- **Engine:** SQLite with Bun's built-in driver
+- **Engine:** PostgreSQL with Bun's built-in driver
 - **Location:** `data/vaultlister.db`
 - **Mode:** WAL (Write-Ahead Logging) for performance
-- **Search:** FTS5 full-text search enabled
+- **Search:** TSVECTOR full-text search enabled
 
 ---
 
@@ -271,6 +271,6 @@ ORDER BY purchase_date ASC
 
 - **IDs:** Always use TEXT for UUIDs, never INTEGER
 - **JSON fields:** Store as TEXT, parse with `JSON.parse()`
-- **Dates:** Use ISO format strings or SQLite datetime functions
+- **Dates:** Use ISO format strings or PostgreSQL datetime functions
 - **Soft deletes:** Use `deleted_at` timestamp, not actual deletion
 - **Foreign keys:** Always reference with ON DELETE CASCADE or SET NULL

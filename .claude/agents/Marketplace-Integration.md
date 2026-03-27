@@ -62,7 +62,7 @@ src/shared/marketplaces/
 
 ## Rules
 - All credentials read from `.env` only — never hardcode
-- AES-256-GCM (authenticated encryption) encrypt all OAuth tokens before SQLite storage
+- AES-256-GCM (authenticated encryption) encrypt all OAuth tokens before PostgreSQL storage
 - Log every bot action to `data/automation-audit.log`
 - Respect per-platform rate limits (config-driven, not hardcoded)
 - Stop and alert immediately on CAPTCHA or bot detection — never attempt bypass

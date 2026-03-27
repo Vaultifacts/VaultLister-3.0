@@ -5907,7 +5907,7 @@ src\tests\worker-taskWorker-unit.test.js:
 (pass) taskWorker (unit) > queueTask > serializes payload to JSON in the INSERT
 (pass) taskWorker (unit) > queueTask > returns the payload object (not serialized)
 (pass) taskWorker (unit) > queueTask > works with different task types
-(pass) taskWorker (unit) > queueTask > scheduledAt defaults to a SQLite datetime format (no T or Z)
+(pass) taskWorker (unit) > queueTask > scheduledAt defaults to a PostgreSQL datetime format (no T or Z)
 (pass) taskWorker (unit) > queueTask > multiple queueTask calls generate unique IDs
 (pass) taskWorker (unit) > getTaskStatus > returns the task record from the database
 (pass) taskWorker (unit) > getTaskStatus > calls query.get with the correct SQL and task ID

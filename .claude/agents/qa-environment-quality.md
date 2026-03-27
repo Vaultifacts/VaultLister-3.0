@@ -29,7 +29,7 @@ Common failure modes to look for:
 - .env vars used in code but missing from .env.example
 - platform-specific behavior (Windows vs Linux path handling, shell differences)
 - hook scripts that hang or silently fail on certain platforms
-- stale Docker images or docker-compose config drift
+- stale Docker images or docker-compose config drift (note: production is Railway, not self-hosted docker-compose)
 - CI environment diverging from local development setup
 - missing or outdated post-scaffold setup steps in CLAUDE.md
 - node_modules or bun.lockb inconsistencies after dependency changes

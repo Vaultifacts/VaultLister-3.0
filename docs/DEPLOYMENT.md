@@ -233,7 +233,7 @@ Full reference: `.env.example` at the repo root.
 | `NODE_ENV` | `production` or `staging` |
 | `PORT` | App port (default `3000`) |
 | `JWT_SECRET` | 32+ char random string — `openssl rand -hex 32` |
-| `DATA_DIR` | Absolute path to SQLite data directory (e.g. `/app/data`) |
+| `DATA_DIR` | Absolute path to PostgreSQL data directory (e.g. `/app/data`) |
 
 **Recommended for production:**
 
@@ -259,7 +259,7 @@ These jobs run on the server via crontab. Install with `crontab -e` as the servi
 # Health check — every 5 minutes
 */5 * * * * curl -sf http://localhost:3000/api/health > /dev/null || echo "$(date): health check failed" >> /opt/vaultlister/logs/health-alert.log
 
-# WAL checkpoint — every 6 hours (keeps SQLite WAL file from growing unbounded)
+# WAL checkpoint — every 6 hours (keeps PostgreSQL file from growing unbounded)
 0 */6 * * * sqlite3 /opt/vaultlister/data/vaultlister.db "PRAGMA wal_checkpoint(TRUNCATE);" >> /opt/vaultlister/logs/wal.log 2>&1
 
 # Database integrity check — daily at 4:00 AM

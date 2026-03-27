@@ -42,7 +42,7 @@
 ### Phase 2: Core Backend ✅
 - JWT authentication with bcrypt
 - All REST API endpoints (10 route modules)
-- SQLite optimization (WAL, prepared statements)
+- PostgreSQL optimization (WAL, prepared statements)
 - Middleware (auth, CORS, error handling)
 
 ### Phase 3: Frontend Application ✅

@@ -1,7 +1,7 @@
 -- Migration 103: Google Drive + Google Calendar OAuth token storage
 -- Shared google_tokens table keyed by (user_id, scope)
 -- Scopes: 'drive' | 'calendar' | 'drive_and_calendar'
--- Tokens are AES-256-CBC encrypted before storage
+-- Tokens are AES-256-GCM encrypted before storage
 
 CREATE TABLE IF NOT EXISTS google_tokens (
     id TEXT PRIMARY KEY,

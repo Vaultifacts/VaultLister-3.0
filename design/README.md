@@ -8,7 +8,7 @@ manages inventory, and automates reseller workflows via AI-powered tools.
 | File | Contents |
 |------|----------|
 | [architecture.md](architecture.md) | System architecture, ADRs, component diagram |
-| [data-model.md](data-model.md) | All 26 DB tables, purposes, and key relationships |
+| [data-model.md](data-model.md) | All 189 DB tables, purposes, and key relationships |
 | [api-overview.md](api-overview.md) | All 67 route files grouped by domain |
 | [platform-integrations.md](platform-integrations.md) | All 9 platform integrations: auth, publish, sync, bots |
 
@@ -16,13 +16,13 @@ manages inventory, and automates reseller workflows via AI-powered tools.
 
 - **Runtime:** Bun.js 1.3+ (not Node.js)
 - **Frontend:** Vanilla JS SPA — no framework, route-based chunk loading
-- **Database:** SQLite 3 (WAL mode + FTS5 full-text search on inventory)
+- **Database:** PostgreSQL (TSVECTOR + GIN index for full-text search on inventory, 189 tables, 112 migrations)
 - **Auth:** JWT (15-min access / 7-day refresh) + bcryptjs + TOTP MFA + OAuth 2.0
 - **AI:** @anthropic-ai/sdk — listing generation, image analysis, price predictions, Vault Buddy chat
-- **Automations:** Playwright headless bots for platforms with no public API
-- **Deploy:** Docker + Nginx (self-hosted) + GitHub Actions CI/CD
+- **Automations:** Playwright headless bots in `worker/bots/` for platforms with no public API
+- **Deploy:** Railway (managed PaaS) + Cloudflare + GitHub Actions CI/CD
 
 ## Source of Truth
 
-For canonical entity names and API contracts, see `CLAUDE.md` and `src/backend/db/schema.sql`.
+For canonical entity names and API contracts, see `CLAUDE.md` and `src/backend/db/pg-schema.sql`.
 The existing `ARCHITECTURE.md` at the project root covers the operational control plane (runbook/gate system).
