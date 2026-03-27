@@ -107,35 +107,37 @@ jobs:
             const title = `[CI Failure] ${branch} - Run #${runNumber}`;
 
             // Create issue body with useful context
-            const body = `## CI Workflow Failed
-
-**Branch**: \`${branch}\`
-**Commit**: \`${shortSha}\` (${sha})
-**Triggered by**: @${actor}
-**Run**: [#${runNumber}](${runUrl})
-**Timestamp**: ${new Date(context.payload.workflow_run.created_at).toUTCString()}
-
-### Failed Jobs
-
-${failedJobs}
-
-### Next Steps
-
-1. Review the [workflow run logs](${runUrl})
-2. Check the failing jobs listed above
-3. Fix the issues in the codebase
-4. Push fixes to the \`${branch}\` branch
-5. Close this issue once CI passes
-
-### Automatic Issue Management
-
-- This issue was created automatically by the \`auto-create-issue-on-ci-failure\` workflow
-- Only one issue per branch will be created (duplicates are prevented)
-- Please close this issue manually once the CI is fixed
-
----
-
-*This issue was automatically created. [View workflow file](.github/workflows/auto-create-issue-on-ci-failure.yml)*`;
+            const body = [
+              '## CI Workflow Failed',
+              '',
+              `**Branch**: \`${branch}\``,
+              `**Commit**: \`${shortSha}\` (${sha})`,
+              `**Triggered by**: @${actor}`,
+              `**Run**: [#${runNumber}](${runUrl})`,
+              `**Timestamp**: ${new Date(context.payload.workflow_run.created_at).toUTCString()}`,
+              '',
+              '### Failed Jobs',
+              '',
+              failedJobs,
+              '',
+              '### Next Steps',
+              '',
+              `1. Review the [workflow run logs](${runUrl})`,
+              '2. Check the failing jobs listed above',
+              '3. Fix the issues in the codebase',
+              `4. Push fixes to the \`${branch}\` branch`,
+              '5. Close this issue once CI passes',
+              '',
+              '### Automatic Issue Management',
+              '',
+              "- This issue was created automatically by the `auto-create-issue-on-ci-failure` workflow",
+              '- Only one issue per branch will be created (duplicates are prevented)',
+              '- Please close this issue manually once the CI is fixed',
+              '',
+              '---',
+              '',
+              '*This issue was automatically created. [View workflow file](.github/workflows/auto-create-issue-on-ci-failure.yml)*'
+            ].join('\n');
 
             // Create the issue
             const issue = await github.rest.issues.create({
