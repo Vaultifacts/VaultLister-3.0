@@ -15,7 +15,7 @@ Focus only on:
 - SQL injection prevention (parameterized queries only)
 - CSP integrity (no unsafe directives removed, script-src/style-src correctness)
 - rate limiting coverage on auth and public-facing routes
-- OAuth token encryption (AES-256-CBC before SQLite storage)
+- OAuth token encryption (AES-256-GCM before SQLite storage)
 - IDOR checks (users cannot access other users' InventoryItems, Listings, or Sales)
 - secret detection (no credentials, API keys, or tokens in source code)
 - OWASP Top 10 coverage

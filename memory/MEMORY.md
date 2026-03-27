@@ -41,8 +41,8 @@
 InventoryItem, Listing, Sale, Offer, Automation, Platform, PriceHistory, ImageAsset, Analytics, Report, User, Session, Notification, Tag, AuditLog
 
 ## Agents
-17 agents in `.claude/agents/` (11 specialized + 6 QA):
-Architect-Planner, Backend, Frontend-UI, Automations-AI, Security-Auth, Testing, DevOps-Deployment, NoCode-Workflow, Marketplace-Integration, Data-Sync-Orchestrator, AI-Listing-Pipeline, qa-core-product, qa-data-systems, qa-environment-quality, qa-infrastructure-delivery, qa-reliability, qa-security
+14 agents in `.claude/agents/` (8 specialized + 6 QA):
+Architect-Planner, Backend, Frontend-UI, Automations-AI, Security-Auth, Testing, DevOps-Deployment, NoCode-Workflow, qa-core-product, qa-data-systems, qa-environment-quality, qa-infrastructure-delivery, qa-reliability, qa-security
 
 ## AI Model Routing
 - claude-haiku-4-5: fast/cheap tasks (tag detection, short descriptions, price suggestions)
