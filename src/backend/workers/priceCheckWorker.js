@@ -239,7 +239,7 @@ async function fetchPriceFromUrl(item) {
         if (jsonLdMatch) {
             for (const match of jsonLdMatch) {
                 try {
-                    const jsonStr = match.replace(/<\/?script[^>]*>/gi, '');
+                    const jsonStr = match.replace(/<\/?script[^>]*(>|$)/gi, '');
                     const data = JSON.parse(jsonStr);
                     const product = data['@type'] === 'Product' ? data : (Array.isArray(data['@graph']) ? data['@graph'].find(i => i['@type'] === 'Product') : null);
                     if (product?.offers) {

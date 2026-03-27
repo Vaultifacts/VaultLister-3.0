@@ -15176,7 +15176,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'b57cf478';
+    const v = 'd4d0be7e';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15452,7 +15452,7 @@ const router = {
                     }
                 } else {
                     console.error(`[Router] Error rendering page '${path}':`, err);
-                    toast.error(`Failed to load page: ${err.message}`);
+                    toast.error('Failed to load page. Please try again.');
                 }
             }
         } else {

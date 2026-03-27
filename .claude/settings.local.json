@@ -25,7 +25,16 @@
       "WebFetch(domain:docs.docker.com)",
       "WebFetch(domain:eff-certbot.readthedocs.io)",
       "WebFetch(domain:community.letsencrypt.org)",
-      "WebFetch(domain:ipinfo.io)"
+      "WebFetch(domain:ipinfo.io)",
+      "mcp__claude_ai_Stripe__get_stripe_account_info",
+      "mcp__claude_ai_Stripe__list_prices",
+      "mcp__claude_ai_Stripe__stripe_api_execute",
+      "mcp__claude_ai_Stripe__list_products",
+      "mcp__claude_ai_Stripe__stripe_api_search",
+      "WebFetch(domain:vaultlister-app-production.up.railway.app)",
+      "WebFetch(domain:vaultlister.com)",
+      "WebFetch(domain:api.github.com)",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_console_messages"
     ]
   },
   "remote": {

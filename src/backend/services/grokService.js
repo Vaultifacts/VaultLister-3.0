@@ -349,7 +349,7 @@ function getMockResponse(userMessage, userContext = {}) {
         for (const pattern of config.patterns) {
             if (messageLower.includes(pattern)) {
                 // Random response from array
-                const response = config.responses[crypto.getRandomValues(new Uint32Array(1))[0] % config.responses.length];
+                const response = config.responses[Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * config.responses.length)];
 
                 return {
                     content: response,

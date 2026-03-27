@@ -8,7 +8,7 @@ import { claudePricePrediction, claudeDemandForecast } from '../../shared/ai/pre
 
 // Cryptographically secure random helpers (replaces Math.random())
 function secureRandomFloat() {
-    return crypto.getRandomValues(new Uint32Array(1))[0] / 4294967295;
+    return crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000;
 }
 function secureRandomInt(max) {
     return crypto.getRandomValues(new Uint32Array(1))[0] % max;

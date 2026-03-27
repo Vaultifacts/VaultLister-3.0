@@ -400,7 +400,7 @@ const websocketService = {
         const { roomId, content } = message;
 
         // Fix 4: Sanitize chat message content
-        const sanitizedContent = String(content || '').replace(/<[^>]*>/g, '').slice(0, 2000);
+        const sanitizedContent = String(content || '').replace(/<[^>]*(>|$)/g, '').slice(0, 2000);
 
         this.broadcast(`chat.${roomId}`, {
             type: MESSAGE_TYPES.CHAT_MESSAGE,

@@ -140,7 +140,8 @@ function buildBundle(files, outName, versionToInject) {
     writeFileSync(tmpFile, content);
 
     try {
-        const bunPath = process.argv[0] || 'bun';
+        const rawBunPath = process.argv[0] || 'bun';
+    const bunPath = /^[a-zA-Z0-9/_.-]+$/.test(rawBunPath) ? rawBunPath : 'bun';
         execSync(`${bunPath} build ${tmpFile} --outdir=${DIST} --minify --sourcemap=external`, {
             cwd: ROOT,
             stdio: 'inherit'

@@ -132,7 +132,7 @@ const featureFlags = {
             // Use user ID for consistent bucketing
             const bucket = user?.id
                 ? this.hashUserId(user.id) % 100
-                : (crypto.getRandomValues(new Uint32Array(1))[0] / 4294967295) * 100;
+                : (crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000) * 100;
 
             return bucket < flag.rolloutPercentage;
         }
@@ -238,7 +238,7 @@ const abTesting = {
     getVariant(experimentName, variants = ['A', 'B'], user = null) {
         const bucket = user?.id
             ? featureFlags.hashUserId(user.id + experimentName) % variants.length
-            : crypto.getRandomValues(new Uint32Array(1))[0] % variants.length;
+            : Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * variants.length);
 
         return variants[bucket];
     },

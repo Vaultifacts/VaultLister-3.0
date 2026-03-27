@@ -184,7 +184,7 @@ export function parseGmailMessage(message) {
     // Parse sender email
     const fromMatch = parsed.from.match(/<([^>]+)>/) || [null, parsed.from];
     parsed.fromEmail = fromMatch[1] || parsed.from;
-    parsed.fromName = parsed.from.replace(/<[^>]+>/, '').trim();
+    parsed.fromName = parsed.from.replace(/<[^>]*(>|$)/g, '').trim();
 
     // Parse date
     try {

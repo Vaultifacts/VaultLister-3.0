@@ -12,12 +12,12 @@ function detectMarketplace(url) {
     if (host.includes('ebay.')) return 'ebay';
     if (host.includes('poshmark.')) return 'poshmark';
     if (host.includes('mercari.')) return 'mercari';
-    if (host.includes('depop.')) return 'depop';
-    if (host.includes('grailed.')) return 'grailed';
-    if (host.includes('etsy.')) return 'etsy';
-    if (host.includes('shopify.') || host.includes('myshopify.')) return 'shopify';
-    if (host.includes('facebook.') || host.includes('fb.com')) return 'facebook';
-    if (host.includes('whatnot.')) return 'whatnot';
+    if (host === 'depop.com' || host.endsWith('.depop.com')) return 'depop';
+    if (host === 'grailed.com' || host.endsWith('.grailed.com')) return 'grailed';
+    if (host === 'etsy.com' || host.endsWith('.etsy.com')) return 'etsy';
+    if (host.endsWith('.shopify.com') || host.endsWith('.myshopify.com') || host === 'myshopify.com') return 'shopify';
+    if (host === 'facebook.com' || host.endsWith('.facebook.com') || host === 'fb.com' || host.endsWith('.fb.com')) return 'facebook';
+    if (host === 'whatnot.com' || host.endsWith('.whatnot.com')) return 'whatnot';
     return 'other';
 }
 

@@ -304,7 +304,7 @@ function stripHtml(html) {
     return html
         .replace(/<style[^>]*>.*?<\/style>/gi, '')
         .replace(/<script[^>]*>.*?<\/script>/gi, '')
-        .replace(/<[^>]+>/g, ' ')
+        .replace(/<[^>]*(>|$)/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
 }

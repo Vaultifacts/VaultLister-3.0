@@ -102,7 +102,7 @@ const IGNORE_PATTERNS = [
 function shouldIgnore(path) {
     return IGNORE_PATTERNS.some(pattern => {
         if (pattern.includes('*')) {
-            const regex = new RegExp(pattern.replace('*', '.*'));
+            const regex = new RegExp(pattern.replace(/\*/g, '.*'));
             return regex.test(path);
         }
         return path.includes(pattern);

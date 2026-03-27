@@ -221,7 +221,7 @@ export function extractVendorName(email) {
         // Clean up common suffixes
         return email.fromName
             .replace(/\s*(support|info|noreply|no-reply|notifications?)\s*/gi, '')
-            .replace(/\s*<.*>/, '')
+            .replace(/<[^>]*(>|$)/g, '')
             .trim();
     }
 

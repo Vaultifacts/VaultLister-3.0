@@ -13,7 +13,7 @@ export function sanitizeHtml(input) {
     let sanitized = input.replace(/<script[\s>][\s\S]*?<\/script\s*>/gi, '').replace(/<script[^>]*>/gi, '');
 
     // Remove event handlers (onclick, onerror, etc.)
-    sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
+    sanitized = sanitized.replace(/\s*on\w+\s*=\s*(?:"[^"]*"|'[^']*')/gi, '');
     sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '');
 
     // Remove dangerous URL protocols

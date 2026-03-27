@@ -5776,7 +5776,7 @@ Object.assign(handlers, {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
         let secret = '';
         const secretBytes = crypto.getRandomValues(new Uint8Array(16));
-        for (let i = 0; i < 16; i++) secret += chars[secretBytes[i] % chars.length];
+        for (let i = 0; i < 16; i++) secret += chars[secretBytes[i] & 0x1F]; // 0x1F=31, chars.length=32=2^5, no modulo bias
         const formatted = secret.match(/.{1,4}/g).join(' ');
 
         modals.show(`

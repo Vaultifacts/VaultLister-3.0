@@ -15,7 +15,7 @@ export function sanitizeForAI(text, maxLength = 500) {
     let sanitized = text;
 
     // Strip XML/HTML-like tags that could manipulate prompt structure
-    sanitized = sanitized.replace(/<\/?[a-zA-Z][^>]*>/g, '');
+    sanitized = sanitized.replace(/<\/?[a-zA-Z][^>]*(>|$)/g, '');
 
     // Strip common prompt injection patterns (expanded blocklist)
     sanitized = sanitized.replace(/\b(ignore|disregard|forget|override|bypass|disregard)\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|rules?|prompts?|context)/gi, '');

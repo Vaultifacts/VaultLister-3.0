@@ -58,7 +58,7 @@ export async function communityRouter(ctx) {
         }
 
         // Sanitize tags: enforce max length and strip HTML
-        const sanitizedTags = tags ? tags.map(t => String(t).slice(0, 50).replace(/<[^>]*>/g, '').trim()).filter(Boolean) : null;
+        const sanitizedTags = tags ? tags.map(t => String(t).slice(0, 50).replace(/<[^>]*(>|$)/g, '').trim()).filter(Boolean) : null;
 
         try {
             const postId = `post_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;

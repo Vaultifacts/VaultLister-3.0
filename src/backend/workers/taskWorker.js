@@ -858,7 +858,7 @@ async function executeShare(rule, conditions, actions) {
     for (const listing of listings) {
         try {
             await query.run(`UPDATE listings SET shares = shares + 1, last_shared_at = NOW(), updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [listing.id]);
-            const delayNote = actions.randomDelay ? ` (delay: ${(crypto.getRandomValues(new Uint32Array(1))[0] % 5) + 1}s)` : '';
+            const delayNote = actions.randomDelay ? ` (delay: ${(Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * 5)) + 1}s)` : '';
             logAutomationAction(rule.user_id, rule.id, 'share', listing.platform, 'success', isPartyShare ? 'party_share' : 'share', listing.id,
                 `Shared "${listing.title}"${delayNote}`);
             auditLog(listing.platform || rule.platform || 'poshmark', 'share_success', {

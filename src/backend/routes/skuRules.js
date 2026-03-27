@@ -57,7 +57,7 @@ function generateSku(pattern, itemData, rule) {
     };
 
     for (const [token, value] of Object.entries(replacements)) {
-        sku = sku.replace(new RegExp(token.replace(/[{}]/g, '\\$&'), 'g'), value);
+        sku = sku.replace(new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value);
     }
 
     // Apply prefix and suffix
