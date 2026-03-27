@@ -255,7 +255,6 @@ jobs:
               repo: context.repo.repo,
               deployment_id: ${{ needs.build-and-push.outputs.deployment_id }},
               state: 'success',
-              environment_url: 'http://${{ secrets.STAGING_HOST }}:3001',
               description: 'Staging deployment successful'
             });
 
