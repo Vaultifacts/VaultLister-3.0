@@ -6,7 +6,7 @@
 // Writes a pg_dump custom-format archive (.dump) — use pg-restore.js to restore.
 
 import { mkdirSync, readdirSync, statSync, unlinkSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
@@ -65,6 +65,11 @@ async function backup() {
         console.log('  File:', backupFile);
 
         cleanupOldBackups(backupDir, 7);
+
+        if (process.env.CLOUD_BACKUP_ENABLED === 'true') {
+            await uploadToB2(backupFile);
+        }
+
         console.log('\nBackup complete!');
 
     } catch (error) {
@@ -99,6 +104,47 @@ function formatBytes(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+async function uploadToB2(filePath) {
+    const keyId = process.env.B2_APPLICATION_KEY_ID;
+    const appKey = process.env.B2_APPLICATION_KEY;
+    const bucket = process.env.B2_BUCKET_NAME;
+    if (!keyId || !appKey || !bucket) {
+        console.warn('Warning: B2 credentials not set — skipping cloud upload.');
+        return;
+    }
+
+    console.log('\nUploading to B2...');
+
+    // Auto-discover S3-compatible endpoint via B2 authorize
+    const authResp = await fetch('https://api.backblazeb2.com/b2api/v3/b2_authorize_account', {
+        headers: {
+            Authorization: 'Basic ' + Buffer.from(`${keyId}:${appKey}`).toString('base64')
+        }
+    });
+    if (!authResp.ok) {
+        throw new Error(`B2 auth failed: ${authResp.status} ${await authResp.text()}`);
+    }
+    const auth = await authResp.json();
+    const endpoint = auth.s3ApiUrl;
+
+    const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
+    const { createReadStream } = await import('fs');
+
+    const client = new S3Client({
+        endpoint,
+        region: 'auto',
+        credentials: { accessKeyId: keyId, secretAccessKey: appKey }
+    });
+
+    const key = `backups/${basename(filePath)}`;
+    await client.send(new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: createReadStream(filePath)
+    }));
+    console.log(`  Uploaded: ${endpoint}/${bucket}/${key}`);
 }
 
 backup();
