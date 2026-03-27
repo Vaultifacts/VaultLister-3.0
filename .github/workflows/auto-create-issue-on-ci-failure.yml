@@ -1,0 +1,165 @@
+name: Auto-create Issue on CI Failure
+
+# Trigger: Run when the CI workflow completes
+# This uses workflow_run to avoid recursive triggers and to capture the conclusion
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+# Minimum permissions required - write access to issues only
+permissions:
+  issues: write
+  actions: read
+
+jobs:
+  create-issue:
+    name: Create Issue on Failure
+    runs-on: ubuntu-latest
+
+    # Only run if the CI workflow failed (not success, cancelled, or skipped)
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+
+    steps:
+      - name: Check for existing open failure issue
+        id: check-existing
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            // Search for open issues with our unique title pattern
+            const branch = context.payload.workflow_run.head_branch;
+            const titlePrefix = `[CI Failure] ${branch}`;
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+
+            // Look for an existing open issue for this branch
+            const existingIssue = issues.data.find(issue =>
+              issue.title.startsWith(titlePrefix) &&
+              !issue.pull_request  // Exclude PRs
+            );
+
+            if (existingIssue) {
+              console.log(`Found existing issue #${existingIssue.number}: ${existingIssue.title}`);
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', existingIssue.number);
+              core.setOutput('issue_url', existingIssue.html_url);
+            } else {
+              console.log('No existing open issue found for this branch');
+              core.setOutput('exists', 'false');
+            }
+
+      - name: Get failed jobs details
+        id: failed-jobs
+        if: steps.check-existing.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const runId = context.payload.workflow_run.id;
+
+            // Get all jobs for this workflow run
+            const jobsResponse = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId
+            });
+
+            // Filter to failed jobs only
+            const failedJobs = jobsResponse.data.jobs.filter(job =>
+              job.conclusion === 'failure'
+            );
+
+            // Build a summary of failed jobs
+            let jobsSummary = '';
+            if (failedJobs.length > 0) {
+              jobsSummary = failedJobs.map(job =>
+                `- **${job.name}**: [View job](${job.html_url})`
+              ).join('\n');
+            } else {
+              jobsSummary = '- No specific job failures detected (workflow-level failure)';
+            }
+
+            core.setOutput('failed_jobs', jobsSummary);
+            core.setOutput('failed_count', failedJobs.length);
+
+      - name: Create failure issue
+        id: create-failure-issue
+        if: steps.check-existing.outputs.exists == 'false'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const runId = context.payload.workflow_run.id;
+            const runNumber = context.payload.workflow_run.run_number;
+            const branch = context.payload.workflow_run.head_branch;
+            const sha = context.payload.workflow_run.head_sha;
+            const shortSha = sha.substring(0, 7);
+            const actor = context.payload.workflow_run.actor.login;
+            const runUrl = context.payload.workflow_run.html_url;
+            const failedJobs = `${{ steps.failed-jobs.outputs.failed_jobs }}`;
+            const failedCount = `${{ steps.failed-jobs.outputs.failed_count }}`;
+
+            // Create issue title
+            const title = `[CI Failure] ${branch} - Run #${runNumber}`;
+
+            // Create issue body with useful context
+            const body = `## CI Workflow Failed
+
+**Branch**: \`${branch}\`
+**Commit**: \`${shortSha}\` (${sha})
+**Triggered by**: @${actor}
+**Run**: [#${runNumber}](${runUrl})
+**Timestamp**: ${new Date(context.payload.workflow_run.created_at).toUTCString()}
+
+### Failed Jobs
+
+${failedJobs}
+
+### Next Steps
+
+1. Review the [workflow run logs](${runUrl})
+2. Check the failing jobs listed above
+3. Fix the issues in the codebase
+4. Push fixes to the \`${branch}\` branch
+5. Close this issue once CI passes
+
+### Automatic Issue Management
+
+- This issue was created automatically by the \`auto-create-issue-on-ci-failure\` workflow
+- Only one issue per branch will be created (duplicates are prevented)
+- Please close this issue manually once the CI is fixed
+
+---
+
+*This issue was automatically created. [View workflow file](.github/workflows/auto-create-issue-on-ci-failure.yml)*`;
+
+            // Create the issue
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['ci-failure', 'automated']
+            });
+
+            console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+            core.setOutput('issue_number', issue.data.number);
+            core.setOutput('issue_url', issue.data.html_url);
+
+      - name: Summary
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const exists = `${{ steps.check-existing.outputs.exists }}`;
+
+            if (exists === 'true') {
+              const issueUrl = `${{ steps.check-existing.outputs.issue_url }}`;
+              core.notice(`CI failure detected, but an issue already exists: ${issueUrl}`);
+            } else {
+              const issueUrl = `${{ steps.create-failure-issue.outputs.issue_url }}`;
+              core.notice(`Created new CI failure issue: ${issueUrl}`);
+            }
