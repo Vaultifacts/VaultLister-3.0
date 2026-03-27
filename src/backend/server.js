@@ -814,9 +814,14 @@ function serveStatic(pathname, request) {
                 content.toString().replace(/CACHE_VERSION\s*=\s*'[^']*'/, `CACHE_VERSION = '${BUILD_HASH}'`)
             );
         }
+        // app.js URL never changes — must not be cached long-term (content changes on deploy)
+        // Versioned chunk-*.js?v=hash files can be cached long-term (URL changes on rebuild)
+        const isVersionedAsset = pathname.includes('?v=') || pathname.match(/chunk-[^.]+\.js/);
         const cacheControl = isServiceWorker
             ? 'no-cache, no-store, must-revalidate'
-            : IS_PROD ? 'public, max-age=31536000' : 'public, max-age=3600';
+            : isVersionedAsset && IS_PROD
+                ? 'public, max-age=31536000, immutable'
+                : IS_PROD ? 'no-cache, must-revalidate' : 'public, max-age=3600';
 
         const responseHeaders = {
             'Content-Type': contentType,
