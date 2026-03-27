@@ -699,6 +699,19 @@ window.kanbanBoard = kanbanBoard;
 window.taskTemplates = taskTemplates;
 window.measurementTool = measurementTool;
 window.sizeConverter = sizeConverter;
+// Expose utility functions and widgets needed by lazy-loaded chunks
+window.escapeHtml = escapeHtml;
+window.toLocalDate = toLocalDate;
+window.viewModeToggle = viewModeToggle;
+window.runningBalance = runningBalance;
+window.financialDashboardHeader = financialDashboardHeader;
+window.runHistoryTimeline = runHistoryTimeline;
+window.businessFAB = businessFAB;
+window.aiConfidenceGauge = aiConfidenceGauge;
+window.priceDropBanner = priceDropBanner;
+window.marketTrendsRadar = marketTrendsRadar;
+window.streakCounter = streakCounter;
+window.storageGauge = storageGauge;
 
 // Advanced New Listing window functions
 window._advNewActiveTab = null;
