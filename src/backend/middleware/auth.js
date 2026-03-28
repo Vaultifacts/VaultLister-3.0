@@ -40,7 +40,7 @@ const JWT_ALGORITHM = 'HS256';
 const ACCESS_TOKEN_EXPIRY = '15m';  // 15 minutes (was 7 days)
 const REFRESH_TOKEN_EXPIRY = '7d';  // 7 days (was 30 days)
 
-export function generateToken(user, expiresIn = ACCESS_TOKEN_EXPIRY) {
+export function generateToken(user, expiresIn = ACCESS_TOKEN_EXPIRY, extra = {}) {
     return jwt.sign(
         {
             userId: user.id,
@@ -48,7 +48,8 @@ export function generateToken(user, expiresIn = ACCESS_TOKEN_EXPIRY) {
             tier: user.subscription_tier,
             type: 'access',
             iss: 'vaultlister',
-            aud: 'vaultlister-api'
+            aud: 'vaultlister-api',
+            ...extra
         },
         EFFECTIVE_SECRET,
         { expiresIn, algorithm: JWT_ALGORITHM }

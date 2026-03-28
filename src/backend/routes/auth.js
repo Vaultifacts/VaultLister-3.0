@@ -567,7 +567,8 @@ export async function authRouter(ctx) {
                 mfa_enabled: tokenRecord.mfa_enabled
             };
 
-            const token = generateToken(user);
+            const mfaVerifiedAt = Math.floor(Date.now() / 1000);
+            const token = generateToken(user, undefined, { mfa_verified_at: mfaVerifiedAt });
             const refreshToken = generateRefreshToken(user);
 
             // SECURITY: Cap concurrent sessions before inserting the new one
@@ -582,7 +583,8 @@ export async function authRouter(ctx) {
             const response = {
                 user,
                 token,
-                refreshToken
+                refreshToken,
+                mfaVerifiedAt
             };
 
             // Add warning if backup code was used and few remaining
@@ -716,6 +718,42 @@ export async function authRouter(ctx) {
             return { status: 404, data: { error: 'User not found' } };
         }
         return { status: 200, data: { user } };
+    }
+
+    // GET /api/auth/session-status - Return session inactivity and MFA expiry metadata
+    if (method === 'GET' && path === '/session-status') {
+        if (!user) return { status: 401, data: { error: 'Not authenticated' } };
+
+        const authHeader = ctx.request.headers.get('Authorization');
+        const cookieHeader = ctx.request.headers.get('Cookie') || '';
+        let token;
+        if (authHeader?.startsWith('Bearer ')) {
+            token = authHeader.split(' ')[1];
+        } else {
+            const match = cookieHeader.match(/(?:^|;\s*)vl_access=([^;]+)/);
+            token = match?.[1];
+        }
+
+        const decoded = token ? verifyToken(token) : null;
+
+        const MFA_EXPIRY_SECONDS = parseInt(process.env.MFA_SESSION_EXPIRY_SECONDS || '3600', 10);
+        const INACTIVITY_TIMEOUT_SECONDS = parseInt(process.env.INACTIVITY_TIMEOUT_SECONDS || '1800', 10);
+
+        const now = Math.floor(Date.now() / 1000);
+        const mfaVerifiedAt = decoded?.mfa_verified_at || null;
+        const mfaExpired = mfaVerifiedAt ? (now - mfaVerifiedAt) > MFA_EXPIRY_SECONDS : false;
+
+        return {
+            status: 200,
+            data: {
+                mfaVerifiedAt,
+                mfaExpired,
+                mfaExpirySeconds: MFA_EXPIRY_SECONDS,
+                inactivityTimeoutSeconds: INACTIVITY_TIMEOUT_SECONDS,
+                tokenExp: decoded?.exp || null,
+                serverTime: now
+            }
+        };
     }
 
     // PUT /api/auth/profile
