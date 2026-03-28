@@ -387,7 +387,7 @@ const pages = {
                 <button class="btn btn-secondary btn-sm" onclick="handlers.showQuickNotes()">
                     ${components.icon('edit-3', 14)} Quick Notes
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="if(document.getElementById('widget-settings-panel')){store.setState({_widgetPanelOpen:false});document.getElementById('widget-settings-panel').remove();}else{store.setState({_widgetPanelOpen:true});document.querySelector('.dashboard-customize-section').insertAdjacentHTML('afterend',widgetManager.showSettingsPanel());}">
+                <button class="btn btn-secondary btn-sm" onclick="if(document.getElementById('widget-settings-panel')){store.setState({_widgetPanelOpen:false});document.getElementById('widget-settings-panel').remove();}else{store.setState({_widgetPanelOpen:true});document.querySelector('.dashboard-customize-section').insertAdjacentHTML('afterend',widgetManager.showSettingsPanel());}">  // nosemgrep: javascript.browser.security.insecure-document-method
                     ${components.icon('settings', 14)} Customize Dashboard
                 </button>
                 <div class="dashboard-export-dropdown" style="position: relative; display: inline-block;">

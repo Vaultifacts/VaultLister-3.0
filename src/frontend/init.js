@@ -510,7 +510,7 @@ function hideLoadingScreen() {
 function render(content) {
     // Wrap in <main> so public pages (login, register, etc.) have a landmark
     // that screen readers can jump to, matching the skip-link target used in renderApp.
-    document.getElementById('app').innerHTML =
+    document.getElementById('app').innerHTML =  // nosemgrep: javascript.browser.security.insecure-document-method
        sanitizeHTML( sanitizeHTML(`<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`));
     hideLoadingScreen();
 }

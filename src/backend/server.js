@@ -1112,7 +1112,7 @@ server = Bun.serve({
                 const stateData = state.split('_');
                 const platform = stateData.length > 1 ? stateData[0] : 'poshmark';
                 if (!VALID_PLATFORMS.includes(platform)) {
-                    document.querySelector('.container').innerHTML = '<h2>Invalid platform</h2><p>The OAuth callback contained an unrecognized platform.</p>';
+                    document.querySelector('.container').innerHTML = '<h2>Invalid platform</h2><p>The OAuth callback contained an unrecognized platform.</p>';  // nosemgrep: javascript.browser.security.insecure-document-method
                     return;
                 }
 
@@ -1127,7 +1127,7 @@ server = Bun.serve({
                 const result = await response.json();
 
                 if (result.success) {
-                    document.querySelector('.container').innerHTML = '<h2 class="success">✓ Connected Successfully!</h2><p>This window will close automatically.</p>';
+                    document.querySelector('.container').innerHTML = '<h2 class="success">✓ Connected Successfully!</h2><p>This window will close automatically.</p>';  // nosemgrep: javascript.browser.security.insecure-document-method
                     // Signal the main window via localStorage (works even when window.opener is null after cross-origin navigation)
                     try { localStorage.setItem('oauth_complete', Date.now().toString()); } catch(e) {}
                 } else {

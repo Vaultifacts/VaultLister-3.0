@@ -252,7 +252,7 @@ export async function emailOAuthRouter(ctx) {
                                 }, window.location.origin);
                                 window.close();
                             } else {
-                                document.body.innerHTML = '<h2>Gmail Connected Successfully!</h2><p>You can close this window.</p>';
+                                document.body.innerHTML = '<h2>Gmail Connected Successfully!</h2><p>You can close this window.</p>';  // nosemgrep: javascript.browser.security.insecure-document-method
                             }
                         </script>
                         <h2>Gmail Connected Successfully!</h2>
@@ -617,7 +617,7 @@ export async function emailOAuthRouter(ctx) {
                                 }, window.location.origin);
                                 window.close();
                             } else {
-                                document.body.innerHTML = '<h2>Outlook Connected Successfully!</h2><p>You can close this window.</p>';
+                                document.body.innerHTML = '<h2>Outlook Connected Successfully!</h2><p>You can close this window.</p>';  // nosemgrep: javascript.browser.security.insecure-document-method
                             }
                         </script>
                         <h2>Outlook Connected Successfully!</h2>

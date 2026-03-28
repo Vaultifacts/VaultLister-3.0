@@ -13,3 +13,7 @@ src/backend/db/seeds/
 # API documentation pages using CDN resources (developer tools, not user-facing)
 public/api-docs/
 public/api-docs.html
+# Generated/compiled frontend bundles — source files are scanned instead
+src/frontend/app.js
+src/frontend/core-bundle.js
+dist/

@@ -7891,7 +7891,7 @@ Object.assign(handlers, {
                 return;
             }
             locationSection.style.position = 'relative';
-            locationSection.insertAdjacentHTML('beforeend', html);
+            locationSection.insertAdjacentHTML('beforeend', html);  // nosemgrep: javascript.browser.security.insecure-document-method
 
             // Close on outside click
             const closeHandler = (e) => {

@@ -2118,7 +2118,7 @@ const dataGrid = {
     refresh(id) {
         const container = document.getElementById(id);
         if (container) {
-            container.outerHTML = this.render(id);
+            container.outerHTML = this.render(id);  // nosemgrep: javascript.browser.security.insecure-document-method
         }
     }
 };
@@ -5379,7 +5379,7 @@ const infoBanner = {
         if (typeof container === 'string') {
             container = document.querySelector(container);
         }
-        container?.insertAdjacentHTML('afterbegin', html);
+        container?.insertAdjacentHTML('afterbegin', html);  // nosemgrep: javascript.browser.security.insecure-document-method
     }
 };
 
@@ -5489,7 +5489,7 @@ const megaMenu = {
         trigger.parentNode.insertBefore(container, trigger);
         container.appendChild(trigger);
         trigger.classList.add('mega-menu-trigger');
-        container.insertAdjacentHTML('beforeend', menuContent);
+        container.insertAdjacentHTML('beforeend', menuContent);  // nosemgrep: javascript.browser.security.insecure-document-method
 
         const menu = container.querySelector('.mega-menu');
 

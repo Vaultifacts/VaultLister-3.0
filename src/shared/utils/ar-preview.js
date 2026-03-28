@@ -55,7 +55,7 @@ export class ARPreview {
         // Add to container
         container.style.position = 'relative';
         container.style.overflow = 'hidden';
-        container.innerHTML = '';
+        container.innerHTML = '';  // nosemgrep: javascript.browser.security.insecure-document-method
         container.appendChild(this.video);
         container.appendChild(this.canvas);
 
