@@ -3,7 +3,7 @@
 
 ## Project Overview
 - **Purpose:** VaultLister 3.0 — multi-channel reselling platform (successor to VaultLister 2.0)
-- **Stack:** Bun.js 1.3+ + SQLite (WAL mode, FTS5) + Vanilla JS SPA + Playwright + @anthropic-ai/sdk
+- **Stack:** Bun.js 1.3+ + PostgreSQL (TSVECTOR + GIN) + Vanilla JS SPA + Playwright + @anthropic-ai/sdk
 - **Auth:** JWT + bcryptjs (12 rounds) + TOTP MFA + OAuth 2.0 (eBay, Etsy, Shopify, Poshmark)
 - **Testing:** Bun:test + Playwright + visual-test.js
 - **Repo:** https://github.com/Vaultifacts/VaultLister-3.0.git

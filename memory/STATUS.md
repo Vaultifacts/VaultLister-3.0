@@ -2,6 +2,7 @@
 
 ## Commit Log
 <!-- Most recent 10 commits — run `git log --oneline` for full history -->
+- **2026-03-27 CLI** (5b18357): fix(monitoring): repair Sentry SDK init + add lightweight sentry service — remove integrations:[] root cause, add sentry.js, SENTRY_RELEASE in .env.example; 82 tests pass
 - **2026-03-27 CLI** (41e1cbf): fix(security): resolve remaining CodeQL alerts — incomplete-sanitization, URL-check, biased-crypto, router hasOwnProperty, TOTP bias-free, skuRules metachar; rebuilt core-bundle
 - **2026-03-27 CLI** (2159560): fix(security): correct backslash-escape regex — /\\/g not /\/g — 45 instances across 5 files; rebuilt core-bundle
 - **2026-03-27 CLI** (1a4f0cb): fix(security): resolve CodeQL incomplete-sanitization/XSS/insecure-randomness — 27 onclick backslash fixes, escapeLike, replace(/g flag, chrome-ext URL checks, sanitize.js, email.js, router.js, deploy.yml permissions, Math.random->crypto
@@ -37,6 +38,24 @@
 <!-- Post-commit hook auto-adds Bot commits here -->
 
 ## Current State (2026-03-27) — Updated
+
+### Sentry Audit — COMPLETE ✅
+All fixes committed in 5b18357. UI changes done via browser automation.
+
+**Code fixes:**
+- `src/backend/services/sentry.js` — new lightweight Sentry client (raw fetch to Store API)
+- `monitoring.js` — removed `integrations:[]` (was root cause of 0 events), added release, tracesSampleRate 1.0
+- `.env.example` — added SENTRY_RELEASE
+
+**Sentry UI (automated via browser):**
+- Security: IP scrubbing, default PII scrubbing, advanced data scrubbing enabled
+- Inbound filters: browser-extension, localhost, web-crawlers enabled
+- Alert rules: issue alert (error rate >5%) + metric alert created
+- Uptime monitor: "VaultLister Production" → `https://vaultlister-app-production.up.railway.app/api/health` (id: 6888074, 60s interval)
+
+**Still manual (requires phone):**
+- Set up personal 2FA on Sentry account
+- Enable org-level require2FA after personal 2FA done
 
 ### CodeQL Security Alert Progress
 - **Fixed (4 commits)**: ~120+ alerts resolved
