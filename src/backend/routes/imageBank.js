@@ -55,10 +55,18 @@ export async function imageBankRouter(ctx) {
 
             const uploadedImages = [];
 
+            const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+
             for (const imageData of images) {
-                // Validate image
+                // Enforce MIME type allowlist before processing
+                const declaredMimeType = imageData.mimeType || 'image/jpeg';
+                if (!ALLOWED_MIME_TYPES.includes(declaredMimeType)) {
+                    return { status: 400, data: { error: `Unsupported image type: ${declaredMimeType}. Allowed types: JPEG, PNG, GIF, WebP.` } };
+                }
+
+                // Validate image size
                 const validation = validateImage({
-                    type: imageData.mimeType || 'image/jpeg',
+                    type: declaredMimeType,
                     size: Buffer.byteLength(imageData.data || imageData, 'base64')
                 });
 
@@ -69,12 +77,12 @@ export async function imageBankRouter(ctx) {
                     return { status: httpStatus, data: { error: validation.error } };
                 }
 
-                // Save to filesystem
+                // Save to filesystem (also validates magic bytes internally)
                 const savedImage = await saveImage(
                     imageData.data || imageData,
                     user.id,
                     imageData.filename || `upload_${Date.now()}.jpg`,
-                    imageData.mimeType || 'image/jpeg'
+                    declaredMimeType
                 );
 
                 // Save to database
@@ -99,7 +107,9 @@ export async function imageBankRouter(ctx) {
                         JSON.stringify(tags || [])
                     ]);
                 } catch (dbError) {
-                    try { const fs = await import('fs'); fs.unlinkSync(savedImage.file_path); } catch {}
+                    try { const fs = await import('fs'); fs.unlinkSync(savedImage.file_path); } catch (cleanupErr) {
+                        logger.error('[ImageBank] Failed to clean up file after DB error', user?.id, { detail: cleanupErr?.message });
+                    }
                     throw dbError;
                 }
 
