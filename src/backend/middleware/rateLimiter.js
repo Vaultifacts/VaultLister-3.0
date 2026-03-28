@@ -280,11 +280,11 @@ export function createRateLimiter(limitType = 'default') {
         // Check rate limit
         const result = await rateLimiter.check(key, actualLimitType, ip);
 
-        // Add rate limit headers to response
+        // Add rate limit headers to response (X-RateLimit-Reset uses Unix seconds per RFC 6585)
         ctx.rateLimitHeaders = {
             'X-RateLimit-Limit': RateLimiter.config[actualLimitType].maxRequests,
             'X-RateLimit-Remaining': result.remaining || 0,
-            'X-RateLimit-Reset': result.resetTime || Date.now()
+            'X-RateLimit-Reset': Math.ceil((result.resetTime || Date.now()) / 1000)
         };
 
         if (!result.allowed) {
