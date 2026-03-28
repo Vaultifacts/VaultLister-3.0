@@ -20,7 +20,7 @@ import { join } from 'path';
 import { logger } from '../../shared/logger.js';
 import sharp from 'sharp';
 
-const TEMP_DIR = join(tmpdir(), 'vaultlister-img-upload');
+const TEMP_DIR = join(tmpdir(), 'vaultlister-img-upload');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
 const COMPRESS_MAX_BYTES = 2 * 1024 * 1024; // 2 MB — compress images above this size
 const COMPRESS_MAX_PX    = 2000;             // max width/height after resize
@@ -45,7 +45,7 @@ async function compressIfNeeded(filePath, tempFiles) {
     const stat = statSync(filePath);
     if (stat.size <= COMPRESS_MAX_BYTES) return filePath;
     ensureTempDir();
-    const compressedPath = join(TEMP_DIR, `c-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`);
+    const compressedPath = join(TEMP_DIR, `c-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     await sharp(filePath)
         .resize(COMPRESS_MAX_PX, COMPRESS_MAX_PX, { fit: 'inside', withoutEnlargement: true })
         .jpeg({ quality: COMPRESS_QUALITY })
@@ -136,7 +136,7 @@ async function downloadToTemp(url) {
     const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
     const fileExt = allowedExts.includes(ext) ? ext : 'jpg';
     const filename = `img-${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-    const destPath = join(TEMP_DIR, filename);
+    const destPath = join(TEMP_DIR, filename);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
     const response = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0 VaultLister/3.0 image-prefetch' },

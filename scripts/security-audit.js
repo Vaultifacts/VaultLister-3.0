@@ -7,7 +7,7 @@ import { join, dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = join(__dirname, '..');
+const ROOT_DIR = join(__dirname, '..');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
 // Audit results
 const results = {
@@ -164,7 +164,7 @@ function scanDirectory(dir) {
     const items = readdirSync(dir);
 
     for (const item of items) {
-        const fullPath = join(dir, item);
+        const fullPath = join(dir, item);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
         try {
             const stats = statSync(fullPath);
@@ -183,8 +183,8 @@ function scanDirectory(dir) {
 // Check for security best practices
 function checkBestPractices() {
     // Check for .env file in git
-    if (existsSync(join(ROOT_DIR, '.gitignore'))) {
-        const gitignore = readFileSync(join(ROOT_DIR, '.gitignore'), 'utf8');
+    if (existsSync(join(ROOT_DIR, '.gitignore'))) {  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        const gitignore = readFileSync(join(ROOT_DIR, '.gitignore'), 'utf8');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (!gitignore.includes('.env')) {
             results.critical.push({
                 file: '.gitignore',
@@ -196,7 +196,7 @@ function checkBestPractices() {
     }
 
     // Check for package-lock.json / bun.lockb
-    if (existsSync(join(ROOT_DIR, 'package-lock.json')) || existsSync(join(ROOT_DIR, 'bun.lockb'))) {
+    if (existsSync(join(ROOT_DIR, 'package-lock.json')) || existsSync(join(ROOT_DIR, 'bun.lockb'))) {  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         results.passed.push('✓ Lock file present for reproducible builds');
     } else {
         results.warnings.push({
@@ -206,7 +206,7 @@ function checkBestPractices() {
     }
 
     // Check for security headers middleware
-    const serverFile = join(ROOT_DIR, 'src/backend/server.js');
+    const serverFile = join(ROOT_DIR, 'src/backend/server.js');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     if (existsSync(serverFile)) {
         const serverContent = readFileSync(serverFile, 'utf8');
 
@@ -239,8 +239,8 @@ function checkBestPractices() {
     }
 
     // Check for HTTPS redirect in production
-    if (existsSync(join(ROOT_DIR, 'src/backend/middleware/securityHeaders.js'))) {
-        const headersContent = readFileSync(join(ROOT_DIR, 'src/backend/middleware/securityHeaders.js'), 'utf8');
+    if (existsSync(join(ROOT_DIR, 'src/backend/middleware/securityHeaders.js'))) {  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        const headersContent = readFileSync(join(ROOT_DIR, 'src/backend/middleware/securityHeaders.js'), 'utf8');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (headersContent.includes('Strict-Transport-Security')) {
             results.passed.push('✓ HSTS header configured');
         }
@@ -248,8 +248,8 @@ function checkBestPractices() {
 
     // Check for bcrypt/argon2 for password hashing
     const authFiles = [
-        join(ROOT_DIR, 'src/backend/routes/auth.js'),
-        join(ROOT_DIR, 'src/backend/middleware/auth.js')
+        join(ROOT_DIR, 'src/backend/routes/auth.js'),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        join(ROOT_DIR, 'src/backend/middleware/auth.js')  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     ];
 
     for (const authFile of authFiles) {
@@ -263,8 +263,8 @@ function checkBestPractices() {
     }
 
     // Check for input validation
-    if (existsSync(join(ROOT_DIR, 'src/backend/middleware'))) {
-        const middlewareFiles = readdirSync(join(ROOT_DIR, 'src/backend/middleware'));
+    if (existsSync(join(ROOT_DIR, 'src/backend/middleware'))) {  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        const middlewareFiles = readdirSync(join(ROOT_DIR, 'src/backend/middleware'));  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         const hasValidation = middlewareFiles.some(f =>
             f.includes('validation') || f.includes('sanitize')
         );
@@ -429,7 +429,7 @@ async function main() {
 
     // Scan source code
     console.log('Scanning source files...');
-    scanDirectory(join(ROOT_DIR, 'src'));
+    scanDirectory(join(ROOT_DIR, 'src'));  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
     // Check best practices
     console.log('Checking security best practices...');

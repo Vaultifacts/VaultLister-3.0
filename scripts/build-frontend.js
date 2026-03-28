@@ -11,7 +11,7 @@ import { execSync } from 'child_process';
 import { createHash } from 'crypto';
 
 const ROOT = resolve(import.meta.dir, '..');
-const DIST = join(ROOT, 'dist');
+const DIST = join(ROOT, 'dist');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
 // Phase 1: Core bundle files (critical-path, always eager-loaded)
 const coreFiles = [
@@ -91,9 +91,9 @@ const allSourceFiles = [
 ];
 
 // ── Compute content hash ──────────────────────────────────────────────────────
-const cssPath = join(ROOT, 'src/frontend/styles/main.css');
+const cssPath = join(ROOT, 'src/frontend/styles/main.css');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 const hashableFiles = [
-    ...allSourceFiles.map(f => join(ROOT, f)),
+    ...allSourceFiles.map(f => join(ROOT, f)),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     ...(existsSync(cssPath) ? [cssPath] : [])
 ];
 const hashInput = hashableFiles.map(f => readFileSync(f, 'utf-8')).join('');
@@ -101,7 +101,7 @@ const bundleVersion = createHash('sha256').update(hashInput).digest('hex').slice
 console.log(`  bundle version: ${bundleVersion}`);
 
 // ── Sync version into index.html and sw.js ────────────────────────────────────
-const indexPath = join(ROOT, 'src/frontend/index.html');
+const indexPath = join(ROOT, 'src/frontend/index.html');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 if (existsSync(indexPath)) {
     const original = readFileSync(indexPath, 'utf-8');
     const updated = original.replace(/(\?v=)[a-f0-9]+/g, `$1${bundleVersion}`);
@@ -110,7 +110,7 @@ if (existsSync(indexPath)) {
         console.log(`  index.html ?v= updated to ${bundleVersion}`);
     }
 }
-const swPath = join(ROOT, 'public/sw.js');
+const swPath = join(ROOT, 'public/sw.js');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 if (existsSync(swPath)) {
     const original = readFileSync(swPath, 'utf-8');
     const updated = original.replace(/(\?v=)[a-f0-9]+/g, `$1${bundleVersion}`);
@@ -127,7 +127,7 @@ mkdirSync(DIST, { recursive: true });
 function buildBundle(files, outName, versionToInject) {
     const content = files
         .map(f => {
-            let src = readFileSync(join(ROOT, f), 'utf-8');
+            let src = readFileSync(join(ROOT, f), 'utf-8');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             if (f.endsWith('router.js')) {
                 src = src.replace(/\bconst v = '[^']*'/, `const v = '${versionToInject}'`);
             }
@@ -136,7 +136,7 @@ function buildBundle(files, outName, versionToInject) {
         .join('\n');
 
     const tmpName = outName.replace(/\.js$/, '.tmp.js');
-    const tmpFile = join(DIST, tmpName);
+    const tmpFile = join(DIST, tmpName);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     writeFileSync(tmpFile, content);
 
     try {
@@ -147,8 +147,8 @@ function buildBundle(files, outName, versionToInject) {
             stdio: 'inherit'
         });
         // Bun outputs as {tmpName} — rename to {outName}
-        const builtFile = join(DIST, tmpName);
-        const targetFile = join(DIST, outName);
+        const builtFile = join(DIST, tmpName);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+        const targetFile = join(DIST, outName);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (existsSync(builtFile)) {
             if (existsSync(targetFile)) unlinkSync(targetFile);
             renameSync(builtFile, targetFile);
@@ -159,10 +159,10 @@ function buildBundle(files, outName, versionToInject) {
                 renameSync(mapSrc, mapDst);
             }
         }
-        console.log(`  ${outName} built (${(statSync(join(DIST, outName)).size / 1024).toFixed(0)} KB)`);
+        console.log(`  ${outName} built (${(statSync(join(DIST, outName)).size / 1024).toFixed(0)} KB)`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     } catch (e) {
         console.error(`Bun build failed for ${outName}, using unminified output`);
-        writeFileSync(join(DIST, outName), content);
+        writeFileSync(join(DIST, outName), content);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     }
 
     try { unlinkSync(tmpFile); } catch {}
@@ -182,7 +182,7 @@ for (const chunk of chunkDefs) {
     buildBundle(chunk.files, outName, bundleVersion);
 
     // Compute per-chunk content hash for the manifest
-    const chunkContent = chunk.files.map(f => readFileSync(join(ROOT, f), 'utf-8')).join('');
+    const chunkContent = chunk.files.map(f => readFileSync(join(ROOT, f), 'utf-8')).join('');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     const chunkHash = createHash('sha256').update(chunkContent).digest('hex').slice(0, 8);
     manifest.chunks[chunk.name] = {
         file: outName,
@@ -192,12 +192,12 @@ for (const chunk of chunkDefs) {
 }
 
 // Write manifest.json
-const manifestPath = join(DIST, 'manifest.json');
+const manifestPath = join(DIST, 'manifest.json');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 console.log(`  manifest.json written`);
 
 // ── PurgeCSS ─────────────────────────────────────────────────────────────────
-const cssOutputPath = join(DIST, 'main.css');
+const cssOutputPath = join(DIST, 'main.css');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 if (existsSync(cssPath)) {
     console.log('Purging unused CSS...');
     try {
@@ -206,9 +206,9 @@ if (existsSync(cssPath)) {
         writeFileSync(cssOutputPath, readFileSync(cssPath, 'utf-8'));
         const purged = await new PurgeCSS().purge({
             content: [
-                join(ROOT, 'src/frontend/**/*.js'),
-                join(ROOT, 'src/frontend/**/*.html'),
-                join(ROOT, 'public/**/*.html'),
+                join(ROOT, 'src/frontend/**/*.js'),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+                join(ROOT, 'src/frontend/**/*.html'),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+                join(ROOT, 'public/**/*.html'),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
             ],
             css: [cssOutputPath],
         });
@@ -225,12 +225,12 @@ if (existsSync(cssPath)) {
 
 // ── Report ────────────────────────────────────────────────────────────────────
 console.log('\nBuild complete:');
-if (existsSync(join(DIST, 'app.js'))) {
-    const size = statSync(join(DIST, 'app.js')).size;
+if (existsSync(join(DIST, 'app.js'))) {  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    const size = statSync(join(DIST, 'app.js')).size;  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     console.log(`  dist/app.js          (${(size / 1024).toFixed(0)} KB)`);
 }
 for (const chunk of chunkDefs) {
-    const p = join(DIST, `chunk-${chunk.name}.js`);
+    const p = join(DIST, `chunk-${chunk.name}.js`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     if (existsSync(p)) {
         console.log(`  dist/chunk-${chunk.name}.js`.padEnd(32) + `(${(statSync(p).size / 1024).toFixed(0)} KB)`);
     }

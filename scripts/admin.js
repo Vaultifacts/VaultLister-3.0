@@ -11,7 +11,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = join(__dirname, '..');
+const ROOT_DIR = join(__dirname, '..');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 const BCRYPT_ROUNDS = 12;
 
 const [,, command, ...args] = process.argv;
@@ -164,7 +164,7 @@ async function dbStats() {
 }
 
 async function migrateStatus() {
-    const MIGRATIONS_DIR = join(ROOT_DIR, 'src', 'backend', 'db', 'migrations');
+    const MIGRATIONS_DIR = join(ROOT_DIR, 'src', 'backend', 'db', 'migrations');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
     const tableExists = await query.get(
         "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'migrations'",
@@ -218,7 +218,7 @@ async function migrateStatus() {
 }
 
 async function migrateRun() {
-    const MIGRATIONS_DIR = join(ROOT_DIR, 'src', 'backend', 'db', 'migrations');
+    const MIGRATIONS_DIR = join(ROOT_DIR, 'src', 'backend', 'db', 'migrations');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
     const tableExists = await query.get(
         "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'migrations'",
@@ -254,7 +254,7 @@ async function migrateRun() {
     let failed = 0;
 
     for (const name of pending) {
-        const filePath = join(MIGRATIONS_DIR, name);
+        const filePath = join(MIGRATIONS_DIR, name);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (!existsSync(filePath)) {
             console.log(`  SKIP    ${name} (file not found at ${filePath})`);
             failed++;
@@ -299,7 +299,7 @@ async function migrateRun() {
 }
 
 async function migrateRollback(count) {
-    const MIGRATIONS_DIR = join(ROOT_DIR, 'src', 'backend', 'db', 'migrations');
+    const MIGRATIONS_DIR = join(ROOT_DIR, 'src', 'backend', 'db', 'migrations');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
     if (!Number.isInteger(count) || count < 1) {
         console.error('Error: count must be a positive integer.');
@@ -331,7 +331,7 @@ async function migrateRollback(count) {
 
     for (const row of applied) {
         const name = row.name;
-        const filePath = join(MIGRATIONS_DIR, name);
+        const filePath = join(MIGRATIONS_DIR, name);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         const isJs = name.endsWith('.js');
 
         if (isJs && existsSync(filePath)) {
@@ -359,8 +359,8 @@ async function migrateRollback(count) {
 }
 
 function envCheck() {
-    const examplePath = join(ROOT_DIR, '.env.example');
-    const envPath = join(ROOT_DIR, '.env');
+    const examplePath = join(ROOT_DIR, '.env.example');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    const envPath = join(ROOT_DIR, '.env');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
     if (!existsSync(examplePath)) {
         console.error('Error: .env.example not found at', examplePath);

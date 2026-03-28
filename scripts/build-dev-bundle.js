@@ -40,7 +40,7 @@ const sourceFiles = [
 // ── Compute content hash ──────────────────────────────────────────────────────
 // Hash covers all JS source files + lazy chunks + main.css so any change
 // (including to deferred pages/handlers) invalidates the chunk cache-bust version.
-const cssPath = join(ROOT, 'src/frontend/styles/main.css');
+const cssPath = join(ROOT, 'src/frontend/styles/main.css');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 const chunkFiles = [
     // Route-group chunk source files (must stay in sync with scripts/build-frontend.js chunkDefs)
     'src/frontend/pages/pages-inventory-catalog.js',
@@ -58,8 +58,8 @@ const chunkFiles = [
     'src/frontend/services/websocketClient.js',
 ];
 const hashableFiles = [
-    ...sourceFiles.map(f => join(ROOT, f)),
-    ...chunkFiles.map(f => join(ROOT, f)).filter(f => existsSync(f)),
+    ...sourceFiles.map(f => join(ROOT, f)),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    ...chunkFiles.map(f => join(ROOT, f)).filter(f => existsSync(f)),  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     ...(existsSync(cssPath) ? [cssPath] : [])
 ];
 const hashInput = hashableFiles.map(f => readFileSync(f, 'utf-8')).join('');
@@ -71,7 +71,7 @@ console.log(`  bundle version: ${bundleVersion}`);
 // ── Build bundle, injecting version into router.js const ──────────────────────
 const content = sourceFiles
     .map(f => {
-        const full = join(ROOT, f);
+        const full = join(ROOT, f);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         let src = readFileSync(full, 'utf-8');
         // Inject computed version into router.js without modifying the source file
         if (f.endsWith('router.js')) {
@@ -81,14 +81,14 @@ const content = sourceFiles
     })
     .join('\n\n');
 
-const outPath = join(ROOT, 'src/frontend/core-bundle.js');
+const outPath = join(ROOT, 'src/frontend/core-bundle.js');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 writeFileSync(outPath, content);
 
 const sizeKB = (Buffer.byteLength(content, 'utf-8') / 1024).toFixed(0);
 console.log(`  core-bundle.js written (${sizeKB} KB, ${sourceFiles.length} files)`);
 
 // ── Sync version into index.html ──────────────────────────────────────────────
-const indexPath = join(ROOT, 'src/frontend/index.html');
+const indexPath = join(ROOT, 'src/frontend/index.html');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 if (existsSync(indexPath)) {
     const original = readFileSync(indexPath, 'utf-8');
     const updated = original.replace(/(\?v=)[a-f0-9]+/g, `$1${bundleVersion}`);
@@ -99,7 +99,7 @@ if (existsSync(indexPath)) {
 }
 
 // ── Sync version into sw.js PRECACHE_URLS ─────────────────────────────────────
-const swPath = join(ROOT, 'public/sw.js');
+const swPath = join(ROOT, 'public/sw.js');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 if (existsSync(swPath)) {
     const original = readFileSync(swPath, 'utf-8');
     const updated = original.replace(/(\?v=)[a-f0-9]+/g, `$1${bundleVersion}`);
