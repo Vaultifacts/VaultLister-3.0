@@ -67975,3 +67975,25 @@ kbd {
     text-align: center;
     z-index: 3;
 }
+
+/* Navigation Progress Bar (Issue #89) */
+.nav-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: var(--primary-600, #4f46e5);
+    z-index: 9999;
+    opacity: 0;
+    transition: width 0.4s ease, opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.nav-progress-bar.nav-progress-active {
+    opacity: 1;
+}
+
+body.dark-mode .nav-progress-bar {
+    background: var(--primary-400, #818cf8);
+}
