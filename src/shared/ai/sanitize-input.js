@@ -14,7 +14,13 @@ function normalizePunctuation(str) {
 
 /**
  * Sanitize a user-provided string before including it in an AI prompt.
- * Strips known injection patterns, XML/HTML-like tags, and caps length.
+ * Strips known injection patterns, XML/HTML-like tags, dangerous Unicode,
+ * and caps length.
+ *
+ * Unicode categories stripped:
+ *   - RTL override characters: U+202A–U+202E, U+2066–U+2069
+ *   - Zero-width characters: U+200B–U+200F, U+FEFF
+ *   - Control characters: U+0000–U+001F (except tab U+0009 and newline U+000A)
  *
  * @param {string} text - Raw user input
  * @param {number} [maxLength=500] - Maximum allowed character length
@@ -34,6 +40,18 @@ export function sanitizeForAI(text, maxLength = 500) {
 
     // Normalize unicode punctuation lookalikes to prevent blocklist bypass
     sanitized = normalizePunctuation(sanitized);
+
+    // Strip control characters (U+0000–U+001F) except tab (U+0009) and newline (U+000A)
+    sanitized = sanitized.replace(/[\u0000-\u0008\u000B-\u001F]/g, '');
+
+    // Strip RTL override and bidi control characters (U+202A–U+202E, U+2066–U+2069)
+    sanitized = sanitized.replace(/[\u202A-\u202E\u2066-\u2069]/g, '');
+
+    // Strip zero-width characters (U+200B–U+200F) and BOM (U+FEFF)
+    sanitized = sanitized.replace(/[\u200B-\u200F\uFEFF]/g, '');
+
+    // Normalize to NFC (canonical decomposition then canonical composition)
+    sanitized = sanitized.normalize('NFC');
 
     // Strip XML/HTML-like tags that could manipulate prompt structure
     sanitized = sanitized.replace(/<\/?[a-zA-Z][^>]*(>|$)/g, '');
