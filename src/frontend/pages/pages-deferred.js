@@ -1558,7 +1558,7 @@ Object.assign(pages, {
                 store.setState({ schedulerStatus: data });
                 const widget = document.getElementById('scheduler-health-widget');
                 if (widget) {
-                    widget.innerHTML = sanitizeHTML(renderSchedulerWidget(data));
+                    widget.innerHTML = sanitizeHTML(renderSchedulerWidget(data));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 }
             }).catch(() => {});
         }

@@ -281,7 +281,7 @@ const loadingState = {
             if (loading) {
                 btn.disabled = true;
                 btn.dataset.originalText = btn.textContent;
-                btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...');
+                btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             } else {
                 btn.disabled = false;
                 if (btn.dataset.originalText) {
@@ -302,7 +302,7 @@ const loadingState = {
         if (loading) {
             btn.disabled = true;
             btn.dataset.originalText = btn.textContent;
-            btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...');
+            btn.innerHTML = sanitizeHTML('<span class="loading-spinner"></span> Loading...');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } else {
             btn.disabled = false;
             if (btn.dataset.originalText) {
