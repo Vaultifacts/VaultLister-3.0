@@ -1474,5 +1474,62 @@ export async function inventoryRouter(ctx) {
         return { status: 200, data: { message: 'Supplier deleted' } };
     }
 
+    // POST /api/inventory/:id/duplicate - Duplicate an inventory item
+    if (method === 'POST' && path.match(/^\/[\w-]+\/duplicate$/)) {
+        const sourceId = path.split('/')[1];
+
+        const source = await query.get(
+            'SELECT * FROM inventory WHERE id = ? AND user_id = ?',
+            [sourceId, user.id]
+        );
+        if (!source) {
+            return { status: 404, data: { error: { message: 'Item not found', code: 'NOT_FOUND' } } };
+        }
+
+        const newId = uuidv4();
+
+        // Generate a new unique SKU: append -COPY-<random4> to avoid collisions
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const randomValues = new Uint32Array(4);
+        crypto.getRandomValues(randomValues);
+        const suffix = Array.from(randomValues).map(v => chars[v % chars.length]).join('');
+        const newSku = source.sku ? `${source.sku}-COPY-${suffix}` : `COPY-${suffix}`;
+
+        const newTitle = `${source.title} (Copy)`;
+
+        await query.run(`
+            INSERT INTO inventory (
+                id, user_id, sku, title, description, brand, category, subcategory,
+                size, color, condition, cost_price, list_price, quantity,
+                low_stock_threshold, weight, dimensions, material, tags, images,
+                location, bin_location, notes, custom_fields, ai_generated_data,
+                blockchain_hash, sustainability_score, status, created_at, updated_at
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?,
+                ?, ?, 'draft', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            )
+        `, [
+            newId, user.id, newSku, newTitle,
+            source.description, source.brand, source.category, source.subcategory,
+            source.size, source.color, source.condition,
+            source.cost_price, source.list_price, source.quantity,
+            source.low_stock_threshold, source.weight, source.dimensions, source.material,
+            source.tags, source.images, source.location, source.bin_location, source.notes,
+            source.custom_fields, source.ai_generated_data,
+            source.blockchain_hash, source.sustainability_score
+        ]);
+
+        const newItem = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [newId, user.id]);
+        newItem.tags = safeJsonParse(newItem.tags, []);
+        newItem.images = safeJsonParse(newItem.images, []);
+        newItem.ai_generated_data = safeJsonParse(newItem.ai_generated_data, {});
+        newItem.custom_fields = safeJsonParse(newItem.custom_fields, {});
+
+        return { status: 201, data: { item: newItem } };
+    }
+
     return { status: 404, data: { error: { message: 'Route not found', code: 'NOT_FOUND' } } };
 }
