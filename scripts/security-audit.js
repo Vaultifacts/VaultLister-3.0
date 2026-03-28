@@ -102,7 +102,7 @@ const IGNORE_PATTERNS = [
 function shouldIgnore(path) {
     return IGNORE_PATTERNS.some(pattern => {
         if (pattern.includes('*')) {
-            const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+            const regex = new RegExp(pattern.replace(/\*/g, '.*'));  // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
             return regex.test(path);
         }
         return path.includes(pattern);
@@ -124,7 +124,7 @@ function scanFile(filePath) {
         for (const [name, check] of Object.entries(SECURITY_PATTERNS)) {
             for (const pattern of check.patterns) {
                 let match;
-                const regex = new RegExp(pattern.source, pattern.flags);
+                const regex = new RegExp(pattern.source, pattern.flags);  // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
 
                 while ((match = regex.exec(content)) !== null) {
                     // Find line number

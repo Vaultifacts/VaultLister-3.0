@@ -64,7 +64,7 @@ function highlightText(text, query) {
     if (!text || !query) return escapeHtml(text);
     const escaped = escapeHtml(text);
     const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return escaped.replace(new RegExp(`(${q})`, 'gi'), '<mark class="search-highlight">$1</mark>'); // nosemgrep: javascript.lang.security.detect-non-literal-regexp
+    return escaped.replace(new RegExp(`(${q})`, 'gi'), '<mark class="search-highlight">$1</mark>'); // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
 }
 
 // Format a Date as YYYY-MM-DD in the LOCAL timezone (not UTC)
@@ -4861,7 +4861,7 @@ const smartAutocomplete = {
         const index = typeof item === 'object' ? item._index : 0;
 
         const highlighted = label.replace(
-            new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+            new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),  // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
             '<span class="autocomplete-highlight">$1</span>'
         );
 
@@ -15229,7 +15229,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'dee36151';
+    const v = 'cc4acb41';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {

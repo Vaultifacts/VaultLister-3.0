@@ -24,7 +24,7 @@ function extractText(block) {
 
 function highlightMatch(text, keyword) {
   const safeKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(${safeKeyword})`, 'gi');
+  const regex = new RegExp(`(${safeKeyword})`, 'gi');  // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
   return text.replace(regex, '\x1b[33m$1\x1b[0m'); // Yellow highlight
 }
 
