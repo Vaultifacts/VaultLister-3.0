@@ -3097,12 +3097,34 @@ const pages = {
 
     notFound() {
         return `
-            <div class="text-center py-16">
-                <div class="text-6xl mb-4">🔍</div>
-                <h1 class="text-2xl font-bold mb-2">Page Not Found</h1>
-                <p class="text-gray-600 mb-6">The page you're looking for doesn't exist.</p>
-                <button class="btn btn-primary" onclick="router.navigate('dashboard')">Go to Dashboard</button>
-            </div>
+            <main id="main-content" class="flex items-center justify-center" style="min-height:60vh;" aria-labelledby="not-found-heading">
+                <div class="text-center" style="max-width:480px;padding:2rem;">
+                    <div aria-hidden="true" style="font-size:4rem;line-height:1;margin-bottom:1rem;color:var(--primary-400);">404</div>
+                    <h1 id="not-found-heading" class="text-2xl font-bold mb-2">Page Not Found</h1>
+                    <p class="text-gray-600 mb-6">The page you're looking for doesn't exist or has been moved.</p>
+                    <div class="flex gap-3 justify-center flex-wrap">
+                        <button class="btn btn-primary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
+                        <button class="btn btn-secondary" onclick="history.back()" style="min-height:44px;">Go Back</button>
+                    </div>
+                </div>
+            </main>
+        `;
+    },
+
+    errorPage(message) {
+        const safeMessage = escapeHtml(message || 'An unexpected error occurred. Please try reloading the page.');
+        return `
+            <main id="main-content" class="flex items-center justify-center" style="min-height:60vh;" aria-labelledby="error-page-heading">
+                <div class="text-center" style="max-width:480px;padding:2rem;">
+                    <div aria-hidden="true" style="font-size:3rem;line-height:1;margin-bottom:1rem;color:var(--error);">!</div>
+                    <h1 id="error-page-heading" class="text-2xl font-bold mb-2">Something Went Wrong</h1>
+                    <p class="text-gray-600 mb-6">${safeMessage}</p>
+                    <div class="flex gap-3 justify-center flex-wrap">
+                        <button class="btn btn-primary" onclick="location.reload()" style="min-height:44px;">Reload Page</button>
+                        <button class="btn btn-secondary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
+                    </div>
+                </div>
+            </main>
         `;
     },
 
