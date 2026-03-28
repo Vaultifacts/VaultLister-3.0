@@ -664,6 +664,53 @@ export async function inventoryRouter(ctx) {
         return { status: 200, data: { affected } };
     }
 
+    // GET /api/inventory/export/csv - Export inventory as CSV (Issue #91)
+    if (method === 'GET' && path === '/export/csv') {
+        const items = await query.all(
+            `SELECT title, sku, category, brand, size, color, condition,
+                    cost_price, list_price, status, quantity
+             FROM inventory WHERE user_id = ? AND status != 'deleted'
+             ORDER BY created_at DESC`,
+            [user.id]
+        );
+
+        const escapeCsvField = (value) => {
+            if (value == null) return '';
+            const str = String(value);
+            if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
+        };
+
+        const headers = ['title', 'sku', 'category', 'brand', 'size', 'color', 'condition', 'cost', 'price', 'status', 'quantity'];
+        const rows = items.map(item => [
+            escapeCsvField(item.title),
+            escapeCsvField(item.sku),
+            escapeCsvField(item.category),
+            escapeCsvField(item.brand),
+            escapeCsvField(item.size),
+            escapeCsvField(item.color),
+            escapeCsvField(item.condition),
+            escapeCsvField(item.cost_price),
+            escapeCsvField(item.list_price),
+            escapeCsvField(item.status),
+            escapeCsvField(item.quantity)
+        ].join(','));
+
+        const csv = [headers.join(','), ...rows].join('\r\n');
+        const filename = `inventory-export-${new Date().toISOString().split('T')[0]}.csv`;
+
+        return {
+            status: 200,
+            headers: {
+                'Content-Type': 'text/csv',
+                'Content-Disposition': `attachment; filename="${filename}"`
+            },
+            data: csv
+        };
+    }
+
     // GET /api/inventory/stats - Get inventory statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
