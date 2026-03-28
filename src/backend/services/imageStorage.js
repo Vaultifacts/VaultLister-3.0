@@ -68,19 +68,19 @@ function getExtensionFromMime(mimeType) {
  * Validate image file
  */
 export function validateImage(file) {
-    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
     const maxSizeBytes = 10 * 1024 * 1024; // 10MB
 
     if (!file) {
-        return { valid: false, error: 'No file provided' };
+        return { valid: false, reason: 'missing', error: 'No file provided' };
     }
 
     if (!allowedMimeTypes.includes(file.type)) {
-        return { valid: false, error: 'Invalid file type. Only JPEG, PNG, and WebP are allowed.' };
+        return { valid: false, reason: 'mime', error: 'Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.' };
     }
 
     if (file.size > maxSizeBytes) {
-        return { valid: false, error: 'File too large. Maximum size is 10MB.' };
+        return { valid: false, reason: 'size', error: 'File too large. Maximum size is 10MB.' };
     }
 
     return { valid: true };

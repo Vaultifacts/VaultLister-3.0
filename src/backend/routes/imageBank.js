@@ -63,7 +63,10 @@ export async function imageBankRouter(ctx) {
                 });
 
                 if (!validation.valid) {
-                    return { status: 400, data: { error: validation.error } };
+                    const httpStatus = validation.reason === 'size' ? 413
+                        : validation.reason === 'mime' ? 415
+                        : 400;
+                    return { status: httpStatus, data: { error: validation.error } };
                 }
 
                 // Save to filesystem
