@@ -35,8 +35,10 @@ const api = {
 
                 if (!response.ok) {
                     if (response.status === 401) {
+                        // Clear expired tokens but do NOT navigate here — this function
+                        // is called during app init (before the router is ready) and
+                        // by request() which handles its own redirect after we return false.
                         store.setState({ user: null, token: null, refreshToken: null });
-                        router.navigate('login');
                     }
                     return false;
                 }
