@@ -8,13 +8,11 @@ import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { saveImage, deleteImage, getImageUrl, importFromInventory, validateImage } from '../services/imageStorage.js';
 
-function safeJsonParse(str, fallback = null) {
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..', '..', '..');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 import {
+import { safeJsonParse } from '../shared/utils.js';
     uploadToCloudinary,
     removeBackground,
     autoEnhance,

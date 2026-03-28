@@ -1,10 +1,8 @@
 import { query } from '../db/database.js';
 import { nanoid } from 'nanoid';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Whitelist of allowed tables for custom queries
 const ALLOWED_TABLES = [

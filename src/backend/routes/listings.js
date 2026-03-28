@@ -12,14 +12,11 @@ import { publishListingToFacebook } from '../services/platformSync/facebookPubli
 import { publishListingToWhatnot } from '../services/platformSync/whatnotPublish.js';
 import { publishListingToShopify } from '../services/platformSync/shopifyPublish.js';
 import websocketService from '../services/websocket.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
  */
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Defense-in-depth: whitelist for dynamic listing update fields
 const ALLOWED_LISTING_FIELDS = new Set([

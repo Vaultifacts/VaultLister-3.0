@@ -2,11 +2,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { cacheForUser } from '../middleware/cache.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 export async function templatesRouter(ctx) {
     const { method, path, user } = ctx;

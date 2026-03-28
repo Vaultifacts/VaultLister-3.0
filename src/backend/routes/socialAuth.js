@@ -8,10 +8,8 @@ import { query } from '../db/database.js';
 import { generateToken, generateRefreshToken } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
 import redis from '../services/redis.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Apple JWKS cache for signature verification
 let appleJwksCache = null;

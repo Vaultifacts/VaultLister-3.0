@@ -6,6 +6,7 @@ import { generateBlockchainHash } from '../../shared/utils/blockchain.js';
 import { calculateSustainability } from '../../shared/utils/sustainability.js';
 import { validateInventoryData, validatePrice } from '../../shared/utils/sanitize.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 function detectMarketplace(url) {
     const host = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
@@ -24,10 +25,6 @@ function detectMarketplace(url) {
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
  */
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Helper function to generate SKU from a rule
 function generateSkuFromRule(rule, itemData) {

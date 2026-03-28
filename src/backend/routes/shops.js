@@ -5,10 +5,8 @@ import { checkTierPermission } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
 import { encryptToken, decryptToken } from '../utils/encryption.js';
 import { cacheForUser } from '../middleware/cache.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 export async function shopsRouter(ctx) {
     const { method, path, body, user } = ctx;

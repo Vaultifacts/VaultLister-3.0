@@ -13,11 +13,8 @@ import { sanitizeForAI } from '../../shared/ai/sanitize-input.js';
 import { withTimeout } from '../shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../shared/circuitBreaker.js';
 import { RateLimiter } from '../middleware/rateLimiter.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Rate limiter for expensive AI API calls (per-user, 10 requests per minute)
 const aiRateLimiter = new RateLimiter();

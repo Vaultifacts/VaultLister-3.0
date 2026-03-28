@@ -11,14 +11,11 @@ import {
     getDemandForecast
 } from '../services/pricingEngine.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
  */
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 const ALLOWED_MODEL_FIELDS = new Set(['name', 'model_type', 'parameters', 'is_active']);
 

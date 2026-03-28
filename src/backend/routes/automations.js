@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { checkTierPermission } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 // Validate cron schedule format (5 or 6 fields, valid characters only)
 function validateCronSchedule(schedule) {
@@ -19,10 +20,6 @@ function validateCronSchedule(schedule) {
     }
 }
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 export async function automationsRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;

@@ -9,11 +9,8 @@ import { getUserEmail as getOutlookUserEmail } from '../services/outlookService.
 import { DEFAULT_RECEIPT_SENDERS } from '../services/receiptDetector.js';
 import { queueTask } from '../workers/taskWorker.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Gmail OAuth configuration
 const GMAIL_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';

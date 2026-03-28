@@ -5,9 +5,9 @@ import { getAnthropicClient } from '../../shared/ai/claude-client.js';
 import { logger } from '../shared/logger.js';
 import { validateBase64Image } from '../services/imageStorage.js';
 import redis from '../services/redis.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 
-function safeJsonParse(str, fallback = null) { try { return JSON.parse(str); } catch { return fallback; } }
 
 async function checkReceiptRateLimit(userId) {
     const key = 'rl:receipt:' + userId;

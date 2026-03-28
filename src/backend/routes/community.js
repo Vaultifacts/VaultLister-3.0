@@ -4,6 +4,7 @@
 import crypto from 'crypto';
 import { query, escapeLike } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 function escapeHtml(str) {
     return String(str)
@@ -14,10 +15,6 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 /**
  * Community router

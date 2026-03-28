@@ -9,11 +9,8 @@ import mfaService from '../services/mfa.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
 import { auditLog } from '../services/auditLog.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 /**
  * Security Router
