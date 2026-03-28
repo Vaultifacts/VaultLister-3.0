@@ -26,14 +26,11 @@ jobs:
       - name: Install PostgreSQL client tools
         run: sudo apt-get install -y postgresql-client
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
       - name: Run backup
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          railway run \
-            --service vaultlister-app \
-            --environment production \
-            bun scripts/pg-backup.js --compress
+          DATABASE_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
+          CLOUD_BACKUP_ENABLED: 'true'
+        run: bun scripts/pg-backup.js --compress
