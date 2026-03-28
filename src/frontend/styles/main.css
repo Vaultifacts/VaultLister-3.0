@@ -137,6 +137,14 @@
 
     /* Semantic text colors */
     --text-secondary: var(--gray-500);
+
+    /* Z-index scale (#244) */
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-modal-backdrop: 300;
+    --z-modal: 400;
+    --z-toast: 500;
+    --z-tooltip: 600;
 }
 
 /* Dark Mode */
@@ -1227,6 +1235,7 @@ body {
     background-color: #f9fafb !important;
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 /*
@@ -1427,7 +1436,7 @@ select:focus-visible {
     background: var(--primary-600);
     color: white;
     padding: 8px 16px;
-    z-index: 10000;
+    z-index: var(--z-tooltip);
     font-weight: 600;
     transition: top 0.2s;
     text-decoration: none;
@@ -1470,7 +1479,7 @@ select:focus-visible {
     border-right: 1px solid var(--gray-200);
     display: flex;
     flex-direction: column;
-    z-index: 100;
+    z-index: var(--z-dropdown);
     transition: transform var(--transition-base);
 }
 
@@ -1502,7 +1511,7 @@ select:focus-visible {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    z-index: var(--z-modal-backdrop);
     transition: opacity 0.2s ease;
     opacity: 0;
 }
@@ -1700,7 +1709,7 @@ body.dark-mode .sidebar-collapse-btn {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 4px;
-    z-index: 200;
+    z-index: var(--z-sticky);
     display: none;
 }
 
@@ -3171,7 +3180,7 @@ body.dark-mode .empty-state::before {
     position: fixed;
     bottom: var(--space-6);
     right: var(--space-6);
-    z-index: 9999;
+    z-index: var(--z-toast);
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
@@ -3413,7 +3422,7 @@ body.dark-mode .toast-close:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10001;
+    z-index: var(--z-modal);
     padding: var(--space-4);
 }
 
