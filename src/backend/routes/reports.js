@@ -754,12 +754,11 @@ export async function reportsRouter(ctx) {
     // POST /api/reports/generate - Generate widget data on demand (no save)
     if (method === 'POST' && path === '/generate') {
       const { widgets = [], startDate, endDate } = body;
-      const widgetData = {};
-      for (const w of widgets) {
-        if (w?.type) {
-          widgetData[w.type] = generateWidgetResult(w.type, user.id, startDate, endDate);
-        }
-      }
+      const validWidgets = widgets.filter(w => w?.type);
+      const results = await Promise.all(
+        validWidgets.map(w => generateWidgetResult(w.type, user.id, startDate, endDate))
+      );
+      const widgetData = Object.fromEntries(validWidgets.map((w, i) => [w.type, results[i]]));
       return { status: 200, data: { widgetData } };
     }
 
@@ -808,14 +807,13 @@ export async function reportsRouter(ctx) {
 
       const report = parseReport(row);
 
-      // Generate widget data for the report's widgets
+      // Generate widget data for the report's widgets — parallel fetches
       const { startDate, endDate } = queryParams;
-      const widgetData = {};
-      for (const w of (report.widgets || [])) {
-        if (w?.type) {
-          widgetData[w.type] = generateWidgetResult(w.type, user.id, startDate, endDate);
-        }
-      }
+      const reportWidgets = (report.widgets || []).filter(w => w?.type);
+      const widgetResults = await Promise.all(
+        reportWidgets.map(w => generateWidgetResult(w.type, user.id, startDate, endDate))
+      );
+      const widgetData = Object.fromEntries(reportWidgets.map((w, i) => [w.type, widgetResults[i]]));
 
       const schedule = await query.get(
         'SELECT * FROM report_schedules WHERE report_id = ? AND user_id = ?',
