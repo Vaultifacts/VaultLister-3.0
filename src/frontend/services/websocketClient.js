@@ -324,7 +324,7 @@ window.wsSubscribe = {
 
 // Update the WS status dot when connection status changes
 document.addEventListener('vl:ws-status', (e) => {
-    const dot = document.getElementById('ws-status-dot');
+    const dot = document.getElementById('ws-status-dot'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     if (!dot) return;
     const { status } = e.detail;
     dot.classList.remove('ws-status-dot--connected', 'ws-status-dot--reconnecting', 'ws-status-dot--disconnected');
