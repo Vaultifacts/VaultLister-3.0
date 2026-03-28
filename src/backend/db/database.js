@@ -241,7 +241,11 @@ export const query = {
     async searchInventory(searchTerm, userId, limit = 50) {
         // TODO Phase 3: implement tsvector full-text search
         const term = `%${searchTerm}%`;
-        const rows = await sql`SELECT * FROM inventory WHERE user_id = ${userId} AND (title ILIKE ${term} OR description ILIKE ${term}) LIMIT ${limit}`;
+        const safeLimit = Math.min(parseInt(limit, 10) || 50, 200);
+        const rows = await sql.unsafe(
+            `SELECT * FROM inventory WHERE user_id = $1 AND (title ILIKE $2 OR description ILIKE $2) LIMIT ${safeLimit}`,
+            [userId, term]
+        );
         return rows;
     }
 };
