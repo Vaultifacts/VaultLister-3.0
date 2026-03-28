@@ -2,7 +2,7 @@
 // Handles image storage: filesystem (dev) or Cloudflare R2/S3 (production)
 // Set IMAGE_STORAGE=r2 to use R2; defaults to local filesystem
 
-import { existsSync, mkdirSync, writeFileSync, unlinkSync, readFileSync, lstatSync } from 'fs';
+import fs, { existsSync, mkdirSync, unlinkSync, lstatSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
@@ -193,7 +193,7 @@ export async function saveImage(fileData, userId, originalFilename, mimeType = '
                 mkdirSync(userDir, { recursive: true });
             }
             const localPath = join(userDir, storedFilename);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-            writeFileSync(localPath, buffer);
+            await fs.promises.writeFile(localPath, buffer);
             filePath = `/uploads/images/original/${userId}/${storedFilename}`;
             thumbnailPath = await generateThumbnail(localPath, userId, imageId, extension);
         }
@@ -245,6 +245,13 @@ export async function generateThumbnail(pathOrBuffer, userId, imageId, extension
     const safeUserId = String(userId).replace(/[^a-zA-Z0-9\-_]/g, '');
     const userThumbDir = join(UPLOADS_DIR, 'thumbnails', safeUserId);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     if (!resolve(userThumbDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+
+    const fileSize = typeof pathOrBuffer === 'string' ? lstatSync(pathOrBuffer).size : pathOrBuffer.length;
+    if (fileSize > 20 * 1024 * 1024) {
+        logger.warn('[ImageStorage] File too large for thumbnail generation, skipping', null, { size: fileSize });
+        return null;
+    }
+
     if (!existsSync(userThumbDir)) {
         mkdirSync(userThumbDir, { recursive: true });
     }
@@ -257,8 +264,12 @@ export async function generateThumbnail(pathOrBuffer, userId, imageId, extension
             .toFile(thumbnailPath);
     } catch (err) {
         logger.error('[ImageStorage] sharp resize failed, falling back to copy', null, { detail: err.message });
-        const originalBuffer = typeof pathOrBuffer === 'string' ? readFileSync(pathOrBuffer) : pathOrBuffer;
-        writeFileSync(thumbnailPath, originalBuffer);
+        try {
+            const originalBuffer = typeof pathOrBuffer === 'string' ? await fs.promises.readFile(pathOrBuffer) : pathOrBuffer;
+            await fs.promises.writeFile(thumbnailPath, originalBuffer);
+        } catch (writeErr) {
+            logger.error('[ImageStorage] Fallback thumbnail write failed', null, { detail: writeErr.message });
+        }
     }
     return `/uploads/images/thumbnails/${userId}/${thumbnailFilename}`;
 }
