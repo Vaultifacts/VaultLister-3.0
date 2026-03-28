@@ -10,11 +10,11 @@ import { logger } from '../src/backend/shared/logger.js';
 
 const REDIS_URL = process.env.REDIS_URL;
 if (!REDIS_URL) {
-    console.error('[Worker] REDIS_URL is required');
+    logger.error('[Worker] REDIS_URL is required', { missingVar: 'REDIS_URL' });
     process.exit(1);
 }
 if (!process.env.DATABASE_URL) {
-    console.error('[Worker] DATABASE_URL is required');
+    logger.error('[Worker] DATABASE_URL is required', { missingVar: 'DATABASE_URL' });
     process.exit(1);
 }
 
