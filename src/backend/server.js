@@ -1206,7 +1206,8 @@ server = Bun.serve({
                 '/api/security/reset-password'
             ].includes(effectivePath);
 
-            if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity) {
+            const isPublicMonitoring = effectivePath === '/api/monitoring/rum' && method === 'POST';
+            if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity && !isPublicMonitoring) {
                 const authResult = await authenticateToken(request);
                 if (!authResult.success) {
                     return new Response(JSON.stringify({ error: authResult.error }), {
