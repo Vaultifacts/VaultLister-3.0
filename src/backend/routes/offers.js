@@ -35,7 +35,12 @@ export async function offersRouter(ctx) {
         }
 
         sql += ' ORDER BY o.created_at DESC LIMIT ? OFFSET ?';
-        params.push(Math.min(parseInt(limit) || 50, 200), parseInt(offset) || 0);
+        const parsedLimit = parseInt(limit);
+        const parsedOffset = parseInt(offset);
+        params.push(
+            Math.min(!isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : 50, 200),
+            !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0
+        );
 
         const offers = await query.all(sql, params);
 
@@ -286,6 +291,10 @@ export async function offersRouter(ctx) {
         const { listing_id, platform, offer_amount, buyer_username } = body;
         if (!listing_id || !platform || !offer_amount) {
             return { status: 400, data: { error: 'listing_id, platform, and offer_amount are required' } };
+        }
+        const parsedOfferAmount = parseFloat(offer_amount);
+        if (isNaN(parsedOfferAmount) || parsedOfferAmount <= 0 || parsedOfferAmount > 999999.99) {
+            return { status: 400, data: { error: 'offer_amount must be a valid positive number' } };
         }
 
         const id = uuidv4();

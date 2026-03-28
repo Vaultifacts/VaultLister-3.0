@@ -193,8 +193,10 @@ export async function inventoryRouter(ctx) {
         }
 
         sql += ' LIMIT ? OFFSET ?';
-        const cappedLimit = Math.min(parseInt(limit) || 50, 200);
-        params.push(cappedLimit, parseInt(offset) || 0);
+        const parsedLimit = parseInt(limit);
+        const parsedOffset = parseInt(offset);
+        const cappedLimit = Math.min(!isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : 50, 200);
+        params.push(cappedLimit, !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0);
 
         const items = await query.all(sql, params);
 
@@ -235,7 +237,7 @@ export async function inventoryRouter(ctx) {
 
         return {
             status: 200,
-            data: { items, total, limit: cappedLimit, offset: parseInt(offset) }
+            data: { items, total, limit: cappedLimit, offset: !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0 }
         };
     }
 
