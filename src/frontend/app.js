@@ -15231,7 +15231,7 @@ const router = {
                         renderApp(pages.dashboard());
                     }
                 } else {
-                    console.error(`[Router] Error rendering page '${path}':`, err); // nosemgrep: javascript.lang.security.detect-unsafe-formatstring
+                    console.error('[Router] Error rendering page:', path, err);
                     toast.error(`Failed to load page: ${err.message}`);
                 }
             }

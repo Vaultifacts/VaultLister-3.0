@@ -15451,7 +15451,7 @@ const router = {
                         renderApp(window.pages.dashboard());
                     }
                 } else {
-                    console.error(`[Router] Error rendering page '${path}':`, err);
+                    console.error('[Router] Error rendering page:', path, err);
                     toast.error('Failed to load page. Please try again.');
                 }
             }
