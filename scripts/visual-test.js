@@ -515,7 +515,7 @@ function assertComparison(actual, step, label) {
         return { passed, message: passed ? `${p} contains ${JSON.stringify(step.contains)}` : `${p} (${JSON.stringify(actual)?.substring(0, 80)}) does NOT contain ${JSON.stringify(step.contains)}` };
     }
     if ('matches' in step) {
-        const regex = new RegExp(step.matches);
+        const regex = new RegExp(step.matches); // lgtm[js/regex-injection] -- step.matches is a developer-authored test pattern from config, not user input
         const passed = typeof actual === 'string' && regex.test(actual);
         return { passed, message: passed ? `${p} matches /${step.matches}/` : `${p} = "${actual}" does NOT match /${step.matches}/` };
     }
@@ -1600,7 +1600,7 @@ async function runInteractSteps(page, steps, options = {}) {
                             }
                             case 'text-matches': {
                                 const textContent = await page.textContent(step.selector);
-                                const regex = new RegExp(step.pattern || step.value);
+                                const regex = new RegExp(step.pattern || step.value); // lgtm[js/regex-injection] -- developer-authored test pattern from config
                                 passed = regex.test(textContent || '');
                                 message = passed ? `Element text matches /${step.pattern || step.value}/` : `Element text "${textContent?.substring(0, 80)}" does NOT match /${step.pattern || step.value}/`;
                                 break;
@@ -3568,7 +3568,7 @@ async function runInteractSteps(page, steps, options = {}) {
                         passed = url.includes(step.contains);
                         message = passed ? `URL contains "${step.contains}"` : `URL "${url}" does NOT contain "${step.contains}"`;
                     } else if (step.matches) {
-                        const regex = new RegExp(step.matches);
+                        const regex = new RegExp(step.matches); // lgtm[js/regex-injection] -- developer-authored test pattern from config
                         passed = regex.test(url);
                         message = passed ? `URL matches /${step.matches}/` : `URL "${url}" does NOT match /${step.matches}/`;
                     }
