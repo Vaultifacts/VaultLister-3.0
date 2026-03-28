@@ -64,8 +64,8 @@ export async function offersRouter(ctx) {
             countParams.push(status);
         }
 
-        const total = await query.get(countSql, countParams)?.count || 0;
-        const pending = await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0;
+        const total = Number((await query.get(countSql, countParams))?.count) || 0;
+        const pending = Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'pending']))?.count) || 0;
 
         return { status: 200, data: { offers, total, pending } };
     }
@@ -378,16 +378,16 @@ export async function offersRouter(ctx) {
     // GET /api/offers/stats - Get offer statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            total: await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ?', [user.id])?.count || 0,
-            pending: await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0,
-            accepted: await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'accepted'])?.count || 0,
-            declined: await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'declined'])?.count || 0,
-            avgOfferPercentage: await query.get(`
+            total: Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ?', [user.id]))?.count) || 0,
+            pending: Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'pending']))?.count) || 0,
+            accepted: Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'accepted']))?.count) || 0,
+            declined: Number((await query.get('SELECT COUNT(*) as count FROM offers WHERE user_id = ? AND status = ?', [user.id, 'declined']))?.count) || 0,
+            avgOfferPercentage: Number((await query.get(`
                 SELECT AVG(o.offer_amount * 100.0 / l.price) as avg
                 FROM offers o
                 JOIN listings l ON o.listing_id = l.id
                 WHERE o.user_id = ?
-            `, [user.id])?.avg || 0,
+            `, [user.id]))?.avg) || 0,
             acceptRate: 0
         };
 
