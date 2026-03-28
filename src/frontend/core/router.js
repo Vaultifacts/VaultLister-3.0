@@ -136,9 +136,26 @@ function loadChunk(chunkName) {
 
 const router = {
     routes: {},
+    // Tracks page scroll positions keyed by route path for back/forward restore
+    _scrollPositions: {},
+    // Pending chunk load script element for cancellation
+    _pendingChunkScript: null,
 
     register(path, handler) {
         this.routes[path] = handler;
+    },
+
+    // Decode a JWT and return true if its `exp` claim is in the past.
+    // Returns false (not expired) when the token is absent or unparseable.
+    _isTokenExpired(token) {
+        if (!token) return false;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (!payload.exp) return false;
+            return Date.now() >= payload.exp * 1000;
+        } catch (_) {
+            return false;
+        }
     },
 
     async navigate(path) {
@@ -161,12 +178,21 @@ const router = {
             store.setState({ batchPhotoActivePollInterval: null });
         }
 
+        // Cancel any pending GET requests from the previous page
+        if (typeof api !== 'undefined') api.cancelPending();
+
+        // Save main content scroll position for the current page before leaving
+        const mainEl = document.getElementById('app');
+        if (mainEl && currentPage) {
+            this._scrollPositions[currentPage] = mainEl.scrollTop;
+        }
+
         // Save sidebar scroll position before navigating
         const sidebar = document.querySelector('.sidebar-nav');
         if (sidebar) {
             store.setState({ sidebarScrollPos: sidebar.scrollTop });
         }
-        window.history.pushState({}, '', `#${path}`);
+        window.history.pushState({ scrollY: window.scrollY }, '', `#${path}`);
         await this.handleRoute();
     },
 
@@ -251,14 +277,36 @@ const router = {
             delete store.state.darkModePreview;
         }
 
-        // Auth guard: redirect unauthenticated users to login for protected routes
+        // Auth guard: redirect unauthenticated users to login for protected routes.
+        // Also redirect when the access token is present but expired — the API client
+        // will attempt a silent refresh on the next request, but we redirect early here
+        // so the user is not briefly shown a protected page before the 401 fires.
         const publicRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
-        if (!publicRoutes.includes(path) && !auth.isAuthenticated()) {
-            store.setState({ currentPage: 'login' });
-            window.location.hash = '#login';
-            const handler = this.routes['login'];
-            if (handler) handler();
-            return;
+        if (!publicRoutes.includes(path)) {
+            const token = store.state.token;
+            if (!auth.isAuthenticated() || this._isTokenExpired(token)) {
+                if (this._isTokenExpired(token) && store.state.refreshToken) {
+                    // Token expired but refresh token exists — attempt silent refresh before redirecting
+                    if (typeof api !== 'undefined') {
+                        const refreshed = await api.refreshAccessToken().catch(() => false);
+                        if (!refreshed) {
+                            store.setState({ user: null, token: null, refreshToken: null });
+                            store.setState({ currentPage: 'login' });
+                            window.location.hash = '#login';
+                            const handler = this.routes['login'];
+                            if (handler) handler();
+                            return;
+                        }
+                        // Token refreshed successfully — continue navigation
+                    }
+                } else if (!auth.isAuthenticated()) {
+                    store.setState({ currentPage: 'login' });
+                    window.location.hash = '#login';
+                    const handler = this.routes['login'];
+                    if (handler) handler();
+                    return;
+                }
+            }
         }
 
         store.setState({ currentPage: path });
@@ -391,11 +439,16 @@ const router = {
             renderApp(`<div style="padding:40px;text-align:center"><h2>Page Not Found</h2><p>The page "${escapeHtml(path)}" could not be found.</p><button class="btn btn-primary" onclick="router.navigate('dashboard')">Go to Dashboard</button></div>`);
         }
 
-        // Restore sidebar scroll position after rendering
+        // Restore sidebar scroll position and main content scroll after rendering
         requestAnimationFrame(() => {
             const sidebar = document.querySelector('.sidebar-nav');
             if (sidebar && store.state.sidebarScrollPos !== undefined) {
                 sidebar.scrollTop = store.state.sidebarScrollPos;
+            }
+            // Restore main content scroll for back/forward navigation
+            const appEl = document.getElementById('app');
+            if (appEl && this._scrollPositions[path] !== undefined) {
+                appEl.scrollTop = this._scrollPositions[path];
             }
         });
 
@@ -450,7 +503,16 @@ const router = {
     },
 
     init() {
-        window.addEventListener('popstate', () => this.handleRoute());
+        // Use browser-managed scroll restoration so the browser doesn't restore
+        // scroll on its own for popstate — we handle it in _scrollPositions.
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.addEventListener('popstate', (e) => {
+            // Cancel pending requests from the previous page on back/forward nav
+            if (typeof api !== 'undefined') api.cancelPending();
+            this.handleRoute();
+        });
         // Catch unhandled errors from async initial route handling
         this.handleRoute(true).catch(err => {
             console.error('[Router] Unhandled init error:', err);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
