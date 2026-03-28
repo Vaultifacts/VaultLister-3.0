@@ -365,11 +365,18 @@ export async function inventoryRouter(ctx) {
                 return { status: 400, data: { error: { message: 'Custom fields must be an object', code: 'BAD_REQUEST' } } };
             }
             const cfKeys = Object.keys(customFields);
-            if (cfKeys.length > 50) {
-                return { status: 400, data: { error: { message: 'Custom fields limited to 50 keys', code: 'BAD_REQUEST' } } };
+            if (cfKeys.length > 20) {
+                return { status: 400, data: { error: { message: 'Custom fields limited to 20 keys', code: 'BAD_REQUEST' } } };
             }
-            if (JSON.stringify(customFields).length > 10240) {
-                return { status: 400, data: { error: { message: 'Custom fields too large (max 10KB)', code: 'BAD_REQUEST' } } };
+            const validKeyPattern = /^[a-zA-Z0-9_]+$/;
+            for (const key of cfKeys) {
+                if (key.length > 50 || !validKeyPattern.test(key)) {
+                    return { status: 400, data: { error: { message: 'Custom field keys must be alphanumeric with underscores only, max 50 characters', code: 'BAD_REQUEST' } } };
+                }
+                const value = customFields[key];
+                if (typeof value !== 'string' || value.length > 500) {
+                    return { status: 400, data: { error: { message: 'Custom field values must be strings, max 500 characters', code: 'BAD_REQUEST' } } };
+                }
             }
         }
 
@@ -516,11 +523,19 @@ export async function inventoryRouter(ctx) {
             if (typeof customFields !== 'object' || Array.isArray(customFields)) {
                 return { status: 400, data: { error: { message: 'Custom fields must be an object', code: 'BAD_REQUEST' } } };
             }
-            if (Object.keys(customFields).length > 50) {
-                return { status: 400, data: { error: { message: 'Custom fields limited to 50 keys', code: 'BAD_REQUEST' } } };
+            const cfKeysUpdate = Object.keys(customFields);
+            if (cfKeysUpdate.length > 20) {
+                return { status: 400, data: { error: { message: 'Custom fields limited to 20 keys', code: 'BAD_REQUEST' } } };
             }
-            if (JSON.stringify(customFields).length > 10240) {
-                return { status: 400, data: { error: { message: 'Custom fields too large (max 10KB)', code: 'BAD_REQUEST' } } };
+            const validKeyPatternUpdate = /^[a-zA-Z0-9_]+$/;
+            for (const key of cfKeysUpdate) {
+                if (key.length > 50 || !validKeyPatternUpdate.test(key)) {
+                    return { status: 400, data: { error: { message: 'Custom field keys must be alphanumeric with underscores only, max 50 characters', code: 'BAD_REQUEST' } } };
+                }
+                const value = customFields[key];
+                if (typeof value !== 'string' || value.length > 500) {
+                    return { status: 400, data: { error: { message: 'Custom field values must be strings, max 500 characters', code: 'BAD_REQUEST' } } };
+                }
             }
         }
 
