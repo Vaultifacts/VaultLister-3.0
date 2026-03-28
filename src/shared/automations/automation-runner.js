@@ -117,7 +117,15 @@ export class AutomationRunner {
                 case 'share_closet':
                 case 'follow_user': {
                     const queue = getAutomationQueue();
-                    await queue.add(task.type, { taskId: task.id, userId: task.user_id, type: task.type, payload });
+                    await queue.add(
+                        task.type,
+                        { taskId: task.id, userId: task.user_id, type: task.type, payload },
+                        {
+                            attempts: 3,
+                            backoff: { type: 'exponential', delay: 5000 },
+                            timeout: 300000 // 5 min — bot jobs can be slow
+                        }
+                    );
                     // Task remains 'processing'; worker updates status on completion
                     this.currentTask = null;
                     if (taskPlatform) this.releasePlatformLock(taskPlatform);
