@@ -216,7 +216,7 @@ describe('authenticateToken — Token validation', () => {
     test('returns error for token signed with wrong secret', async () => {
         const token = jwt.sign(
             { userId: 'user-1', type: 'access', iss: 'vaultlister', aud: 'vaultlister-api' },
-            'wrong-secret',
+            'wrong-secret', // nosemgrep: javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret -- intentional wrong secret for invalid-token test
             { expiresIn: '15m', algorithm: 'HS256' }
         );
 

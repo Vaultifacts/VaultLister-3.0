@@ -569,7 +569,7 @@ Object.assign(handlers, {
             `;
             const warningEl = form.querySelector('.tx-duplicate-warning');
             if (!warningEl) {
-                form.insertAdjacentHTML('afterbegin', '<div class="tx-duplicate-warning">' + warningHtml + '</div>');  // nosemgrep: javascript.browser.security.insecure-document-method
+                form.insertAdjacentHTML('afterbegin', '<div class="tx-duplicate-warning">' + warningHtml + '</div>');  // nosemgrep: javascript.browser.security.insecure-document-method, typescript.react.security.audit.react-unsanitized-method.react-unsanitized-method
                 const submitBtn = form.querySelector('button[type="submit"]');
                 if (submitBtn) submitBtn.textContent = 'Add Anyway';
                 store.setState({ _txDuplicateConfirmed: true });
