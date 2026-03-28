@@ -1,7 +1,7 @@
 // Environment & Quality — i18n, Localization, Time, Scheduling, Expiry
 // Audit gaps: H1 (i18n untested), H7 (locale-aware validation), H8 (DST),
 //             H10 (token expiry boundary), H11 (daysAgo month-wrap), H12 (leap year),
-//             H14 (JS Date vs SQLite datetime)
+//             H14 (JS Date vs PostgreSQL datetime)
 // Categories: Localization, Time/Scheduling/Expiry
 
 import { describe, expect, test, beforeEach } from 'bun:test';

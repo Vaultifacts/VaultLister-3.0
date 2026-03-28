@@ -138,7 +138,7 @@ describe('taskWorker (unit)', () => {
       }
     });
 
-    test('scheduledAt defaults to a SQLite datetime format (no T or Z)', () => {
+    test('scheduledAt defaults to a PostgreSQL-compatible datetime format (no T or Z)', () => {
       const result = queueTask('sync_shop', { shopId: 's1', userId: 'u1' });
       expect(result.scheduledAt).not.toContain('T');
       expect(result.scheduledAt).not.toContain('Z');

@@ -254,7 +254,7 @@ describe('Image Bank - Search', () => {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
-        // FTS5 virtual table may be corrupt in test env (SQLITE_CORRUPT_VTAB); 500 on CI
+        // Full-text search index may be unavailable in test env; 500 on CI
         expect([200, 500]).toContain(response.status);
         if (response.status === 200) {
             const data = await response.json();

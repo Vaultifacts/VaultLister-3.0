@@ -521,7 +521,7 @@ export async function queueTask(type, payload, options = {}) {
     const {
         priority = 0,
         maxAttempts = DEFAULT_MAX_ATTEMPTS,
-        // FIXED 2026-02-24: Use SQLite datetime format, not ISO (T/Z breaks <= comparison)
+        // Use PostgreSQL-compatible datetime format (without T/Z; breaks <= comparison)
         scheduledAt = new Date().toISOString().replace('T', ' ').replace('Z', '').split('.')[0]
     } = options;
 
