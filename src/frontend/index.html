@@ -27,6 +27,21 @@
     <title>VaultLister - Multi-Channel Reselling Platform</title>
     <link rel="canonical" href="https://vaultlister.com/"> <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -->
 
+    <!-- Open Graph meta tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vaultlister.com/">
+    <meta property="og:title" content="VaultLister - Multi-Channel Reselling Platform">
+    <meta property="og:description" content="Zero-cost, offline-capable multi-channel reselling platform. List to 9+ marketplaces, manage inventory, and automate reseller workflows with AI-powered tools.">
+    <meta property="og:image" content="https://vaultlister.com/assets/og-image.png">
+    <meta property="og:site_name" content="VaultLister">
+
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@VaultLister">
+    <meta name="twitter:title" content="VaultLister - Multi-Channel Reselling Platform">
+    <meta name="twitter:description" content="Zero-cost, offline-capable multi-channel reselling platform. List to 9+ marketplaces, manage inventory, and automate reseller workflows with AI-powered tools.">
+    <meta name="twitter:image" content="https://vaultlister.com/assets/og-image.png">
+
     <!-- Preconnect to API origin to reduce DNS + TLS handshake latency -->
     <link rel="preconnect" href="https://vaultlister.com">
     <link rel="dns-prefetch" href="https://vaultlister.com">
@@ -35,6 +50,7 @@
     <link rel="preload" href="/styles/main.css?v=90a3d988" as="style">
     <link rel="preload" href="/core-bundle.js?v=90a3d988" as="script">
     <link rel="preload" href="/fonts/inter.css" as="style">
+
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.webmanifest">
@@ -217,27 +233,47 @@
     </script>
 
     <!-- Cookie Consent Banner -->
-    <div id="cookie-banner" role="region" aria-label="Cookie consent" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1e1b4b;color:#e0e7ff;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;"></div>
+    <div id="cookie-banner" role="dialog" aria-modal="false" aria-label="Cookie consent" aria-describedby="cookie-banner-desc" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1e1b4b;color:#e0e7ff;padding:1rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 16px rgba(0,0,0,0.18);font-family:Inter,system-ui,sans-serif;font-size:0.9rem;"></div>
     <script>
         (function() {
+            var existing = localStorage.getItem('cookie_consent');
+            // Expose consent state globally so app code can gate non-essential storage writes
+            window.__cookieConsentGiven = existing === 'accepted';
+
             var banner = document.getElementById('cookie-banner');
-            if (!banner) return;
-            if (localStorage.getItem('cookie_consent')) return;
+            if (!banner || existing) return;
+
             banner.innerHTML =
-                '<p style="margin:0;flex:1;min-width:200px;">We use cookies to keep you signed in and improve your experience. No tracking or advertising cookies are used.</p>' +
+                '<p id="cookie-banner-desc" style="margin:0;flex:1;min-width:200px;">' +
+                    '<strong>Essential cookies only.</strong> We use strictly necessary cookies to keep you signed in. ' +
+                    'No advertising or tracking cookies are used. ' +
+                    '<a href="#privacy-policy" style="color:#a5b4fc;text-decoration:underline;" tabindex="0">Learn more</a>' +
+                '</p>' +
                 '<div style="display:flex;gap:0.625rem;flex-shrink:0;">' +
-                    '<button id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#e0e7ff;font-size:0.875rem;font-weight:600;cursor:pointer;">Decline</button>' +
-                    '<button id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">Accept</button>' +
+                    '<button id="cookie-decline" style="min-height:44px;padding:0.5rem 1.125rem;border-radius:0.5rem;border:1.5px solid rgba(224,231,255,0.4);background:transparent;color:#e0e7ff;font-size:0.875rem;font-weight:600;cursor:pointer;" aria-label="Decline non-essential cookies">Decline</button>' +
+                    '<button id="cookie-accept" style="min-height:44px;padding:0.5rem 1.25rem;border-radius:0.5rem;border:none;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;" aria-label="Accept cookies">Accept</button>' +
                 '</div>';
             banner.style.display = 'flex';
+
             document.getElementById('cookie-accept').addEventListener('click', function() {
                 localStorage.setItem('cookie_consent', 'accepted');
+                window.__cookieConsentGiven = true;
                 banner.style.display = 'none';
+                banner.setAttribute('aria-hidden', 'true');
             });
             document.getElementById('cookie-decline').addEventListener('click', function() {
                 localStorage.setItem('cookie_consent', 'declined');
+                window.__cookieConsentGiven = false;
                 banner.style.display = 'none';
+                banner.setAttribute('aria-hidden', 'true');
             });
+
+            // Move focus to Accept button for keyboard accessibility
+            banner.style.display = 'flex';
+            setTimeout(function() {
+                var btn = document.getElementById('cookie-accept');
+                if (btn) btn.focus();
+            }, 100);
         })();
     </script>
 </body>
