@@ -28639,6 +28639,34 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// Dropdown keyboard navigation: ArrowDown/Up to move between items, Escape to close (#232)
+document.addEventListener('keydown', function(e) {
+    const openDropdown = document.querySelector('.dropdown.open');
+    if (!openDropdown) return;
+
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        openDropdown.classList.remove('open');
+        openDropdown.setAttribute('aria-expanded', 'false');
+        openDropdown.focus();
+        return;
+    }
+
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const items = Array.from(openDropdown.querySelectorAll('.dropdown-menu button:not([disabled]), .dropdown-menu a:not([disabled]), .shop-switch-menu button:not([disabled])'))
+            .filter(el => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const current = document.activeElement;
+        const idx = items.indexOf(current);
+        if (e.key === 'ArrowDown') {
+            items[idx + 1 < items.length ? idx + 1 : 0].focus();
+        } else {
+            items[idx - 1 >= 0 ? idx - 1 : items.length - 1].focus();
+        }
+    }
+});
+
 // === Real User Monitoring (RUM) ===
 (function() {
     var rumSessionId = crypto.randomUUID();
