@@ -293,6 +293,21 @@ const monitoring = {
             checks.database = true;
         } catch (e) {}
 
+        // Redis check
+        try {
+            const redisService = (await import('./redis.js')).default;
+            if (redisService.isConnected()) {
+                const client = redisService.getClient();
+                if (client) {
+                    const pong = await Promise.race([
+                        client.ping(),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1000))
+                    ]);
+                    checks.redis = pong === 'PONG';
+                }
+            }
+        } catch (e) {}
+
         // Memory check
         const memUsage = process.memoryUsage();
         checks.memory = (memUsage.heapUsed / memUsage.heapTotal) < THRESHOLDS.memoryUsage;
