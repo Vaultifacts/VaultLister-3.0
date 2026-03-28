@@ -230,6 +230,13 @@ class RateLimiter {
     }
 }
 
+// Log a warning at startup if Redis is unavailable and rate limiter will use in-memory fallback.
+// In-memory fallback does not share state across multiple server instances (e.g. horizontal scaling).
+if (!redis.isConnected()) {
+    logger.warn('[RateLimiter] Redis is unavailable — rate limiter is using in-memory fallback. ' +
+        'Rate limits will NOT be shared across server instances. Ensure Redis is configured for production.');
+}
+
 // Singleton instance
 const rateLimiter = new RateLimiter();
 
