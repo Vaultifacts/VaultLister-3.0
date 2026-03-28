@@ -90,7 +90,7 @@ jobs:
 
             await github.graphql(`
               mutation($projectId: ID!, $body: String!, $status: ProjectV2StatusUpdateStatus!) {
-                addProjectV2StatusUpdate(input: {
+                createProjectV2StatusUpdate(input: {
                   projectId: $projectId,
                   body: $body,
                   status: $status
@@ -163,7 +163,7 @@ jobs:
 
             await github.graphql(`
               mutation($projectId: ID!, $body: String!, $status: ProjectV2StatusUpdateStatus!) {
-                addProjectV2StatusUpdate(input: {
+                createProjectV2StatusUpdate(input: {
                   projectId: $projectId,
                   body: $body,
                   status: $status
