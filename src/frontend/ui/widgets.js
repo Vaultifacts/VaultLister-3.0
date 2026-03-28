@@ -640,7 +640,7 @@ const autocomplete = {
         dropdown.innerHTML =sanitizeHTML( sanitizeHTML(items.slice(0, 10).map((item, idx) => {
             const escapedItem = escapeHtml(item);
             const highlighted = query
-                ? escapedItem.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<span class="autocomplete-item-highlight">$1</span>')
+                ? escapedItem.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<span class="autocomplete-item-highlight">$1</span>') // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
                 : escapedItem;
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
