@@ -25159,10 +25159,16 @@ const pages = {
                         <div class="settings-section">
                             <h4 class="settings-section-title" id="theme-section-heading">Theme</h4>
                             <div class="theme-options" role="radiogroup" aria-labelledby="theme-section-heading">
-                                <label class="theme-option ${!store.state.darkMode ? 'active' : ''}">
+                                ${(() => {
+                                    const savedPref = localStorage.getItem('vaultlister_dark_mode');
+                                    const isSystem = savedPref === 'system' || savedPref === null;
+                                    const isLight = savedPref === 'false';
+                                    const isDark = savedPref === 'true';
+                                    return `
+                                <label class="theme-option ${isLight ? 'active' : ''}">
                                     <input type="radio" name="theme-mode" value="light" class="sr-only"
                                            aria-label="Light theme"
-                                           ${!store.state.darkMode ? 'checked' : ''}
+                                           ${isLight ? 'checked' : ''}
                                            onchange="handlers.setThemeMode('light')">
                                     <div class="theme-preview theme-preview-light">
                                         <div class="theme-preview-sidebar"></div>
@@ -25173,11 +25179,11 @@ const pages = {
                                     </div>
                                     <span>Light</span>
                                 </label>
-                                <label class="theme-option ${store.state.darkMode ? 'active' : ''}">
+                                <label class="theme-option ${isDark ? 'active' : ''}">
                                     <input type="radio" name="theme-mode" value="dark"
                                            id="dark-mode-toggle" class="sr-only"
                                            aria-label="Toggle dark mode"
-                                           ${store.state.darkMode ? 'checked' : ''}
+                                           ${isDark ? 'checked' : ''}
                                            onchange="handlers.setThemeMode('dark')">
                                     <div class="theme-preview theme-preview-dark">
                                         <div class="theme-preview-sidebar"></div>
@@ -25188,9 +25194,10 @@ const pages = {
                                     </div>
                                     <span>Dark</span>
                                 </label>
-                                <label class="theme-option">
+                                <label class="theme-option ${isSystem ? 'active' : ''}">
                                     <input type="radio" name="theme-mode" value="system" class="sr-only"
                                            aria-label="System theme (follows OS preference)"
+                                           ${isSystem ? 'checked' : ''}
                                            onchange="handlers.setThemeMode('system')">
                                     <div class="theme-preview theme-preview-system">
                                         <div class="theme-preview-sidebar"></div>
@@ -25200,7 +25207,8 @@ const pages = {
                                         </div>
                                     </div>
                                     <span>System</span>
-                                </label>
+                                </label>`;
+                                })()}
                             </div>
                         </div>
 
@@ -47690,6 +47698,11 @@ const handlers = {
     },
 
     setThemeMode: function(mode) {
+        // Remove any existing system preference listener before switching modes
+        if (window._vl_darkModeMediaListener) {
+            window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', window._vl_darkModeMediaListener);
+            window._vl_darkModeMediaListener = null;
+        }
         if (mode === 'dark') {
             document.body.classList.add('dark-mode');
             store.setState({ darkMode: true });
@@ -47699,11 +47712,16 @@ const handlers = {
             store.setState({ darkMode: false });
             localStorage.setItem('vaultlister_dark_mode', 'false');
         } else {
-            // System preference
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.body.classList.toggle('dark-mode', prefersDark);
-            store.setState({ darkMode: prefersDark });
-            localStorage.removeItem('vaultlister_dark_mode');
+            // System preference — follow OS, persist choice, and watch for changes
+            const mq = window.matchMedia('(prefers-color-scheme: dark)');
+            document.body.classList.toggle('dark-mode', mq.matches);
+            store.setState({ darkMode: mq.matches });
+            localStorage.setItem('vaultlister_dark_mode', 'system');
+            window._vl_darkModeMediaListener = (e) => {
+                document.body.classList.toggle('dark-mode', e.matches);
+                store.setState({ darkMode: e.matches });
+            };
+            mq.addEventListener('change', window._vl_darkModeMediaListener);
         }
         renderApp(pages.settings());
     },
@@ -70184,11 +70202,22 @@ async function initApp() {
         }
     }
 
-    // Initialize dark mode from localStorage
-    const darkMode = localStorage.getItem('vaultlister_dark_mode') === 'true';
-    if (darkMode) {
+    // Initialize dark mode from localStorage (handles 'true', 'false', 'system')
+    const darkModePref = localStorage.getItem('vaultlister_dark_mode');
+    if (darkModePref === 'true') {
         document.body.classList.add('dark-mode');
         store.setState({ darkMode: true });
+    } else if (darkModePref === 'system' || darkModePref === null) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        if (mq.matches) {
+            document.body.classList.add('dark-mode');
+            store.setState({ darkMode: true });
+        }
+        window._vl_darkModeMediaListener = (e) => {
+            document.body.classList.toggle('dark-mode', e.matches);
+            store.setState({ darkMode: e.matches });
+        };
+        mq.addEventListener('change', window._vl_darkModeMediaListener);
     }
 
     // Initialize UI helpers
