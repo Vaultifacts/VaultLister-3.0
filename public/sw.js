@@ -1,7 +1,7 @@
-﻿// VaultLister Service Worker v4.7
+﻿// VaultLister Service Worker v4.9
 // Pre-caching, fetch strategies, offline fallback, auth via MessageChannel
 
-const CACHE_VERSION = 'v4.8';
+const CACHE_VERSION = 'v4.9';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
@@ -155,7 +155,7 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Images and fonts: cache-first
+    // Images and fonts: cache-first with size-bounded eviction (#301)
     if (/\.(png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp)$/.test(url.pathname)) {
         event.respondWith(
             caches.match(request).then((cached) => {
@@ -163,7 +163,10 @@ self.addEventListener('fetch', (event) => {
                 return fetch(request).then((response) => {
                     if (response.ok) {
                         const clone = response.clone();
-                        caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone));
+                        caches.open(RUNTIME_CACHE).then((cache) => {
+                            cache.put(request, clone);
+                            evictOldestEntries(cache, RUNTIME_CACHE, 60);
+                        });
                     }
                     return response;
                 }).catch(() => new Response('', { status: 503 }));
@@ -220,6 +223,25 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
+// â”€â”€â”€ Cache eviction helper (#301) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+// Remove oldest cache entries when count exceeds maxEntries.
+// Uses the Response date header as a proxy for insertion time.
+async function evictOldestEntries(cache, cacheName, maxEntries) {
+    const keys = await cache.keys();
+    if (keys.length <= maxEntries) return;
+    const entries = await Promise.all(
+        keys.map(async (req) => {
+            const res = await cache.match(req);
+            const date = res ? new Date(res.headers.get('date') || 0).getTime() : 0;
+            return { req, date };
+        })
+    );
+    entries.sort((a, b) => a.date - b.date);
+    const toDelete = entries.slice(0, keys.length - maxEntries);
+    await Promise.all(toDelete.map(({ req }) => cache.delete(req)));
+}
+
 // â”€â”€â”€ Auth helper: request token from active client via MessageChannel â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function getAuthToken() {
@@ -241,14 +263,18 @@ async function getAuthToken() {
 
 // â”€â”€â”€ Push notification event â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+// Deduplication: track (tag + body) hashes within a 5-second window (#301)
+const _recentPushKeys = new Map();
+const PUSH_DEDUP_WINDOW_MS = 5000;
+
 self.addEventListener('push', (event) => {
     // console.log('[SW] Push notification received');
 
     let data = {
         title: 'VaultLister',
         body: 'You have a new notification',
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/badge-72x72.png',
+        icon: '/assets/icon-192.svg',
+        badge: '/assets/favicon.svg',
         tag: 'vaultlister-notification',
         data: {}
     };
@@ -259,6 +285,16 @@ self.addEventListener('push', (event) => {
         } catch (e) {
             data.body = event.data.text();
         }
+    }
+
+    // Skip duplicate pushes received within PUSH_DEDUP_WINDOW_MS (#301)
+    const dedupKey = `${data.tag}::${data.body}`;
+    const lastSeen = _recentPushKeys.get(dedupKey);
+    if (lastSeen && Date.now() - lastSeen < PUSH_DEDUP_WINDOW_MS) return;
+    _recentPushKeys.set(dedupKey, Date.now());
+    // Prune entries older than the window to avoid unbounded growth
+    for (const [k, ts] of _recentPushKeys) {
+        if (Date.now() - ts > PUSH_DEDUP_WINDOW_MS) _recentPushKeys.delete(k);
     }
 
     const options = {
@@ -320,15 +356,24 @@ self.addEventListener('notificationclick', (event) => {
 
 // â”€â”€â”€ Background sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+// Lock map to prevent concurrent syncs of the same tag (#301)
+const _syncLocks = {};
+
 self.addEventListener('sync', (event) => {
     // console.log('[SW] Background sync:', event.tag);
 
     if (event.tag === 'sync-inventory') {
-        event.waitUntil(syncInventory());
+        event.waitUntil(syncWithLock('sync-inventory', syncInventory));
     } else if (event.tag === 'sync-sales') {
-        event.waitUntil(syncSales());
+        event.waitUntil(syncWithLock('sync-sales', syncSales));
     }
 });
+
+function syncWithLock(tag, fn) {
+    if (_syncLocks[tag]) return _syncLocks[tag];
+    _syncLocks[tag] = fn().finally(() => { delete _syncLocks[tag]; });
+    return _syncLocks[tag];
+}
 
 async function syncInventory() {
     try {
