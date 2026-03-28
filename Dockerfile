@@ -46,7 +46,7 @@ COPY --from=builder --chown=vaultlister:nodejs /app/scripts/build-frontend.js ./
 COPY --from=builder --chown=vaultlister:nodejs /app/package.json ./
 
 # Install libvips for sharp image processing (required for thumbnail generation)
-RUN apt-get update && apt-get install -y --no-install-recommends libvips42 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends libvips42 postgresql-client && rm -rf /var/lib/apt/lists/*
 
 # Copy backup scripts needed by the scheduler
 COPY --from=builder --chown=vaultlister:nodejs /app/scripts ./scripts
