@@ -1184,7 +1184,7 @@ server = Bun.serve({
 
             // Get client IP — proxy headers only when TRUST_PROXY is set, otherwise use socket IP
             const trustProxy = process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true';
-            const ip = (trustProxy && (request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip'))) ||
+            const ip = (trustProxy && (request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip'))) ||
                        server.requestIP(request)?.address ||
                        'unknown';
 
