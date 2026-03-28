@@ -127,7 +127,7 @@ async function uploadToB2(filePath) {
         throw new Error(`B2 auth failed: ${authResp.status} ${await authResp.text()}`);
     }
     const auth = await authResp.json();
-    const endpoint = auth.s3ApiUrl;
+    const endpoint = auth.apiInfo?.storageApi?.s3ApiUrl || auth.s3ApiUrl;
 
     const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
     const { createReadStream } = await import('fs');
