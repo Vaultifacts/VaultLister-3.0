@@ -87,6 +87,7 @@ import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
 import { featureFlags } from './services/featureFlags.js';
 import { settingsRouter } from './routes/settings.js';
+import { accountRouter } from './routes/account.js';
 import { analyticsService } from './services/analytics.js';
 import { authenticateToken } from './middleware/auth.js';
 import redisService from './services/redis.js';
@@ -321,6 +322,7 @@ const apiRoutes = {
     '/api/rate-limits': rateLimitDashboardRouter,
     '/api/social-auth': socialAuthRouter,
     '/api/gdpr': gdprRouter,
+    '/api/account': accountRouter,
     '/api/outgoing-webhooks': outgoingWebhooksRouter,
     '/api/email-marketing': emailMarketingRouter,
     '/api/mfa': enhancedMFARouter,
@@ -662,6 +664,7 @@ const protectedPrefixes = [
     '/api/rate-limits',
     '/api/social-auth',
     '/api/gdpr',
+    '/api/account',
     '/api/outgoing-webhooks',
     '/api/email-marketing',
     '/api/mfa',
