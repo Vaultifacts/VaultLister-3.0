@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+# Run bun install if package.json or bun.lock changed after a merge
+CHANGED=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD 2>/dev/null || true)
+
+if echo "$CHANGED" | grep -qE "(^|/)package\.json$|(^|/)bun\.lock(b)?$"; then
+    echo "package.json or bun.lock changed — running bun install..."
+    bun install
+    echo "bun install complete."
+fi
