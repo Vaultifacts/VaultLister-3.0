@@ -39,9 +39,9 @@ export async function tasksRouter(ctx) {
                 task.result = safeJsonParse(task.result, null);
             });
 
-            const total = await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ?', [user.id])?.count || 0;
-            const pending = await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0;
-            const processing = await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'processing'])?.count || 0;
+            const total = Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ?', [user.id]))?.count) || 0;
+            const pending = Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'pending']))?.count) || 0;
+            const processing = Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'processing']))?.count) || 0;
 
             return { status: 200, data: { tasks, total, pending, processing } };
         } catch (error) {
@@ -267,10 +267,10 @@ export async function tasksRouter(ctx) {
     if (method === 'GET' && path === '/queue') {
         try {
             const stats = {
-                pending: await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'pending'])?.count || 0,
-                processing: await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'processing'])?.count || 0,
-                completed: await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'completed'])?.count || 0,
-                failed: await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'failed'])?.count || 0,
+                pending: Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'pending']))?.count) || 0,
+                processing: Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'processing']))?.count) || 0,
+                completed: Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'completed']))?.count) || 0,
+                failed: Number((await query.get('SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = ?', [user.id, 'failed']))?.count) || 0,
                 byType: await query.all(`
                     SELECT type, status, COUNT(*) as count
                     FROM tasks WHERE user_id = ?

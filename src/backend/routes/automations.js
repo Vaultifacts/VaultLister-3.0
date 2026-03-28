@@ -105,7 +105,7 @@ export async function automationsRouter(ctx) {
 
         const logs = await query.all(sql, params);
 
-        const total = await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ?', [user.id])?.count || 0;
+        const total = Number((await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ?', [user.id]))?.count) || 0;
 
         return { status: 200, data: { logs, total } };
     }
@@ -166,7 +166,7 @@ export async function automationsRouter(ctx) {
                 run.metadata = safeJsonParse(run.metadata, {});
             });
 
-            const total = await query.get('SELECT COUNT(*) as count FROM automation_runs WHERE user_id = ?', [user.id])?.count || 0;
+            const total = Number((await query.get('SELECT COUNT(*) as count FROM automation_runs WHERE user_id = ?', [user.id]))?.count) || 0;
 
             // Get summary stats
             const stats = await query.get(`
@@ -992,11 +992,11 @@ export async function automationsRouter(ctx) {
     // GET /api/automations/stats - Get automation statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            totalRules: await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ?', [user.id])?.count || 0,
-            activeRules: await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = 1', [user.id])?.count || 0,
-            totalRuns: await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ?', [user.id])?.count || 0,
-            successfulRuns: await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ? AND status = ?', [user.id, 'success'])?.count || 0,
-            failedRuns: await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ? AND status = ?', [user.id, 'failure'])?.count || 0,
+            totalRules: Number((await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ?', [user.id]))?.count) || 0,
+            activeRules: Number((await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = 1', [user.id]))?.count) || 0,
+            totalRuns: Number((await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ?', [user.id]))?.count) || 0,
+            successfulRuns: Number((await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ? AND status = ?', [user.id, 'success']))?.count) || 0,
+            failedRuns: Number((await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ? AND status = ?', [user.id, 'failure']))?.count) || 0,
             byType: await query.all(`
                 SELECT type, COUNT(*) as count
                 FROM automation_rules WHERE user_id = ?

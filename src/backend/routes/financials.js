@@ -53,13 +53,13 @@ export async function financialsRouter(ctx) {
             params.push(limit, offset);
 
             const purchases = await query.all(sql, params);
-            const total = await query.get('SELECT COUNT(*) as count FROM purchases WHERE user_id = ?', [user.id])?.count || 0;
+            const total = Number((await query.get('SELECT COUNT(*) as count FROM purchases WHERE user_id = ?', [user.id]))?.count) || 0;
 
             // Calculate stats
             const stats = {
                 totalPurchases: total,
-                totalSpend: await query.get('SELECT SUM(total_amount) as total FROM purchases WHERE user_id = ? AND status = ?', [user.id, 'completed'])?.total || 0,
-                avgPurchaseAmount: await query.get('SELECT AVG(total_amount) as avg FROM purchases WHERE user_id = ? AND status = ?', [user.id, 'completed'])?.avg || 0
+                totalSpend: Number((await query.get('SELECT SUM(total_amount) as total FROM purchases WHERE user_id = ? AND status = ?', [user.id, 'completed']))?.total) || 0,
+                avgPurchaseAmount: Number((await query.get('SELECT AVG(total_amount) as avg FROM purchases WHERE user_id = ? AND status = ?', [user.id, 'completed']))?.avg) || 0
             };
 
             return { status: 200, data: { purchases, total, stats } };
@@ -135,10 +135,10 @@ export async function financialsRouter(ctx) {
         try {
             const createPurchase = async () => {
                 // Generate purchase number INSIDE transaction to prevent race conditions
-                const maxNum = await query.get(
+                const maxNum = Number((await query.get(
                     `SELECT MAX(CAST(SUBSTR(purchase_number, 5) AS INTEGER)) as max_num FROM purchases WHERE user_id = ?`,
                     [user.id]
-                )?.max_num || 0;
+                ))?.max_num) || 0;
                 const purchaseNumber = `PUR-${String(maxNum + 1).padStart(5, '0')}`;
 
                 // Insert purchase
@@ -387,7 +387,7 @@ export async function financialsRouter(ctx) {
                 LIMIT 100
             `, [id]);
 
-            const balance = await query.get('SELECT COALESCE(SUM(amount), 0) as balance FROM financial_transactions WHERE account_id = ?', [id])?.balance || 0;
+            const balance = Number((await query.get('SELECT COALESCE(SUM(amount), 0) as balance FROM financial_transactions WHERE account_id = ?', [id]))?.balance) || 0;
 
             return { status: 200, data: { account, transactions, balance } };
         } catch (error) {
@@ -510,7 +510,7 @@ export async function financialsRouter(ctx) {
                 return { status: 404, data: { error: 'Account not found' } };
             }
 
-            const transactionCount = await query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE account_id = ?', [id])?.count || 0;
+            const transactionCount = Number((await query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE account_id = ?', [id]))?.count) || 0;
             if (transactionCount > 0) {
                 return { status: 400, data: { error: 'Cannot delete account with transactions. Deactivate instead.' } };
             }
@@ -563,7 +563,7 @@ export async function financialsRouter(ctx) {
             params.push(limit, offset);
 
             const transactions = await query.all(sql, params);
-            const total = await query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE user_id = ?', [user.id])?.count || 0;
+            const total = Number((await query.get('SELECT COUNT(*) as count FROM financial_transactions WHERE user_id = ?', [user.id]))?.count) || 0;
 
             return { status: 200, data: { transactions, total } };
         } catch (error) {
@@ -911,7 +911,7 @@ export async function financialsRouter(ctx) {
     if (method === 'POST' && path === '/seed-accounts') {
         try {
             // Check if user already has accounts
-            const existingCount = await query.get('SELECT COUNT(*) as count FROM accounts WHERE user_id = ?', [user.id])?.count || 0;
+            const existingCount = Number((await query.get('SELECT COUNT(*) as count FROM accounts WHERE user_id = ?', [user.id]))?.count) || 0;
             if (existingCount > 0) {
                 return { status: 200, data: { message: 'Accounts already exist', count: existingCount } };
             }

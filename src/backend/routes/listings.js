@@ -264,7 +264,7 @@ export async function listingsRouter(ctx) {
             }
         }
 
-        const total = await query.get(countSql, countParams)?.count || 0;
+        const total = Number((await query.get(countSql, countParams))?.count) || 0;
 
         return { status: 200, data: { listings, total } };
     }
@@ -542,10 +542,10 @@ export async function listingsRouter(ctx) {
         }
 
         // Check for affected offers before deleting
-        const affectedOffers = await query.get(
+        const affectedOffers = Number((await query.get(
             'SELECT COUNT(*) as count FROM offers WHERE listing_id = ? AND status = ?',
             [id, 'pending']
-        )?.count || 0;
+        ))?.count) || 0;
 
         // SECURITY: Include user_id in DELETE to prevent TOCTOU race
         await query.run('DELETE FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
@@ -581,7 +581,7 @@ export async function listingsRouter(ctx) {
     // GET /api/listings/stats - Get listing statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            total: await query.get('SELECT COUNT(*) as count FROM listings WHERE user_id = ?', [user.id])?.count || 0,
+            total: Number((await query.get('SELECT COUNT(*) as count FROM listings WHERE user_id = ?', [user.id]))?.count) || 0,
             byPlatform: await query.all(`
                 SELECT platform, COUNT(*) as count, SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active
                 FROM listings WHERE user_id = ?
@@ -592,8 +592,8 @@ export async function listingsRouter(ctx) {
                 FROM listings WHERE user_id = ?
                 GROUP BY status
             `, [user.id]),
-            totalViews: await query.get('SELECT SUM(views) as total FROM listings WHERE user_id = ?', [user.id])?.total || 0,
-            totalLikes: await query.get('SELECT SUM(likes) as total FROM listings WHERE user_id = ?', [user.id])?.total || 0
+            totalViews: Number((await query.get('SELECT SUM(views) as total FROM listings WHERE user_id = ?', [user.id]))?.total) || 0,
+            totalLikes: Number((await query.get('SELECT SUM(likes) as total FROM listings WHERE user_id = ?', [user.id]))?.total) || 0
         };
 
         return { status: 200, data: { stats } };

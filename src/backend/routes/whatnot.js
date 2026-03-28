@@ -158,10 +158,10 @@ export async function whatnotRouter(ctx) {
     if (method === 'GET' && path === '/stats') {
         try {
             const stats = {
-                total_events: await query.get('SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ?', [user.id])?.count || 0,
-                upcoming: await query.get("SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ? AND status = 'scheduled' AND start_time > NOW()", [user.id])?.count || 0,
-                completed: await query.get("SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ? AND status = 'completed'", [user.id])?.count || 0,
-                total_items_sold: await query.get("SELECT COUNT(*) as count FROM whatnot_event_items wei JOIN whatnot_events we ON wei.event_id = we.id WHERE we.user_id = ? AND wei.status = 'sold'", [user.id])?.count || 0
+                total_events: Number((await query.get('SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ?', [user.id]))?.count) || 0,
+                upcoming: Number((await query.get("SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ? AND status = 'scheduled' AND start_time > NOW()", [user.id]))?.count) || 0,
+                completed: Number((await query.get("SELECT COUNT(*) as count FROM whatnot_events WHERE user_id = ? AND status = 'completed'", [user.id]))?.count) || 0,
+                total_items_sold: Number((await query.get("SELECT COUNT(*) as count FROM whatnot_event_items wei JOIN whatnot_events we ON wei.event_id = we.id WHERE we.user_id = ? AND wei.status = 'sold'", [user.id]))?.count) || 0
             };
             return { status: 200, data: { stats } };
         } catch (error) {

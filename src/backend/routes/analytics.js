@@ -431,18 +431,18 @@ export async function analyticsRouter(ctx) {
         }
 
         try {
-            const sellThroughRate = await query.get(`
+            const sellThroughRate = Number((await query.get(`
                 SELECT
                     COUNT(CASE WHEN status = 'sold' THEN 1 END) * 100.0 / COUNT(*) as rate
                 FROM inventory WHERE user_id = ? AND status != 'deleted'
-            `, [user.id])?.rate || 0;
+            `, [user.id]))?.rate) || 0;
 
-            const avgDaysToSell = await query.get(`
+            const avgDaysToSell = Number((await query.get(`
                 SELECT AVG(EXTRACT(EPOCH FROM (s.created_at - i.created_at)) / 86400) as days
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
                 WHERE s.user_id = ?
-            `, [user.id])?.days || 0;
+            `, [user.id]))?.days) || 0;
 
             const roiAnalysis = await query.get(`
                 SELECT
@@ -506,7 +506,7 @@ export async function analyticsRouter(ctx) {
                 GROUP BY category
             `, [user.id]);
 
-            const salesCount = await query.get('SELECT COUNT(*) as count FROM sales WHERE user_id = ?', [user.id])?.count || 0;
+            const salesCount = Number((await query.get('SELECT COUNT(*) as count FROM sales WHERE user_id = ?', [user.id]))?.count) || 0;
 
             return {
                 status: 200,

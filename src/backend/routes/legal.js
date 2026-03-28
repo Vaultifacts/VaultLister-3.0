@@ -219,7 +219,7 @@ async function getDataAudit(user) {
     // Count records in each table
     const getCount = async (table) => {
       if (!ALLOWED_AUDIT_TABLES.has(table)) { logger.warn('Blocked audit query for disallowed table', { table }); return 0; }
-      try { return await query.get(`SELECT COUNT(*) as count FROM ${table} WHERE user_id = ?`, [userId])?.count || 0; }
+      try { return Number((await query.get(`SELECT COUNT(*) as count FROM ${table} WHERE user_id = ?`, [userId]))?.count) || 0; }
       catch { return 0; }
     };
 

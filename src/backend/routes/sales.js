@@ -82,7 +82,7 @@ export async function salesRouter(ctx) {
             countParams.push(endDate);
         }
 
-        const total = await query.get(countSql, countParams)?.count || 0;
+        const total = Number((await query.get(countSql, countParams))?.count) || 0;
 
         return { status: 200, data: { sales, total } };
     }
@@ -347,10 +347,10 @@ export async function salesRouter(ctx) {
         }
 
         const stats = {
-            totalSales: await query.get(`SELECT COUNT(*) as count FROM sales WHERE user_id = ? ${dateFilter}`, [user.id])?.count || 0,
-            totalRevenue: await query.get(`SELECT SUM(sale_price) as total FROM sales WHERE user_id = ? ${dateFilter}`, [user.id])?.total || 0,
-            totalProfit: await query.get(`SELECT SUM(net_profit) as total FROM sales WHERE user_id = ? ${dateFilter}`, [user.id])?.total || 0,
-            avgSalePrice: await query.get(`SELECT AVG(sale_price) as avg FROM sales WHERE user_id = ? ${dateFilter}`, [user.id])?.avg || 0,
+            totalSales: Number((await query.get(`SELECT COUNT(*) as count FROM sales WHERE user_id = ? ${dateFilter}`, [user.id]))?.count) || 0,
+            totalRevenue: Number((await query.get(`SELECT SUM(sale_price) as total FROM sales WHERE user_id = ? ${dateFilter}`, [user.id]))?.total) || 0,
+            totalProfit: Number((await query.get(`SELECT SUM(net_profit) as total FROM sales WHERE user_id = ? ${dateFilter}`, [user.id]))?.total) || 0,
+            avgSalePrice: Number((await query.get(`SELECT AVG(sale_price) as avg FROM sales WHERE user_id = ? ${dateFilter}`, [user.id]))?.avg) || 0,
             byPlatform: await query.all(`
                 SELECT platform, COUNT(*) as sales, SUM(sale_price) as revenue, SUM(net_profit) as profit
                 FROM sales WHERE user_id = ? ${dateFilter}
@@ -367,10 +367,10 @@ export async function salesRouter(ctx) {
                 GROUP BY created_at::date
                 ORDER BY date DESC LIMIT 30
             `, [user.id]),
-            pendingShipments: await query.get(
+            pendingShipments: Number((await query.get(
                 'SELECT COUNT(*) as count FROM sales WHERE user_id = ? AND status IN (?, ?)',
                 [user.id, 'pending', 'confirmed']
-            )?.count || 0
+            ))?.count) || 0
         };
 
         return { status: 200, data: { stats } };

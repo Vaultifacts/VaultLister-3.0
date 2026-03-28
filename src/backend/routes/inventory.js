@@ -226,7 +226,7 @@ export async function inventoryRouter(ctx) {
                 countParams.push(searchTerm, searchTerm, searchTerm);
             }
         }
-        const total = await query.get(countSql, countParams)?.total || 0;
+        const total = Number((await query.get(countSql, countParams))?.total) || 0;
 
         // Parse JSON fields
         items.forEach(item => {
@@ -667,12 +667,12 @@ export async function inventoryRouter(ctx) {
     // GET /api/inventory/stats - Get inventory statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
-            total: await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ?', [user.id])?.count || 0,
-            active: await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active'])?.count || 0,
-            draft: await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'draft'])?.count || 0,
-            sold: await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'sold'])?.count || 0,
-            totalValue: await query.get('SELECT SUM(list_price * quantity) as value FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active'])?.value || 0,
-            avgPrice: await query.get('SELECT AVG(list_price) as avg FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active'])?.avg || 0,
+            total: Number((await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ?', [user.id]))?.count) || 0,
+            active: Number((await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active']))?.count) || 0,
+            draft: Number((await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'draft']))?.count) || 0,
+            sold: Number((await query.get('SELECT COUNT(*) as count FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'sold']))?.count) || 0,
+            totalValue: Number((await query.get('SELECT SUM(list_price * quantity) as value FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active']))?.value) || 0,
+            avgPrice: Number((await query.get('SELECT AVG(list_price) as avg FROM inventory WHERE user_id = ? AND status = ?', [user.id, 'active']))?.avg) || 0,
             topCategories: await query.all(`
                 SELECT category, COUNT(*) as count
                 FROM inventory WHERE user_id = ? AND status != 'deleted'
