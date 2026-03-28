@@ -104,7 +104,7 @@ export async function listingsRouter(ctx) {
                 [id, user.id, name.trim(), color || '#6366f1', icon || 'folder']
             );
 
-            const folder = await query.get('SELECT * FROM listings_folders WHERE id = ?', [id]);
+            const folder = await query.get('SELECT * FROM listings_folders WHERE id = ? AND user_id = ?', [id, user.id]);
 
             return { status: 201, data: folder };
         } catch (error) {
@@ -163,7 +163,7 @@ export async function listingsRouter(ctx) {
             );
         }
 
-        const folder = await query.get('SELECT * FROM listings_folders WHERE id = ?', [folderId]);
+        const folder = await query.get('SELECT * FROM listings_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
 
         return { status: 200, data: folder };
     }
@@ -334,7 +334,7 @@ export async function listingsRouter(ctx) {
             throw error;
         }
 
-        const listing = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         listing.images = safeJsonParse(listing.images, []);
         listing.platform_specific_data = safeJsonParse(listing.platform_specific_data, {});
 
@@ -522,7 +522,7 @@ export async function listingsRouter(ctx) {
             );
         }
 
-        const listing = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         listing.images = safeJsonParse(listing.images, []);
         listing.platform_specific_data = safeJsonParse(listing.platform_specific_data, {});
 
@@ -751,7 +751,7 @@ export async function listingsRouter(ctx) {
                 VALUES (?, ?, ?, ?, 'mark_sold', ?, ?, 'ended')
             `, [historyId, id, user.id, listing.platform, reason, previousStatus]);
 
-            const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
+            const updated = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
             updated.images = safeJsonParse(updated.images, []);
 
             return { status: 200, data: { listing: updated, action: 'mark_sold', message: 'Listing marked as sold on Facebook Marketplace' } };
@@ -771,7 +771,7 @@ export async function listingsRouter(ctx) {
             VALUES (?, ?, ?, ?, 'delist', ?, ?, 'ended')
         `, [historyId, id, user.id, listing.platform, reason, previousStatus]);
 
-        const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const updated = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         updated.images = safeJsonParse(updated.images, []);
 
         return { status: 200, data: { listing: updated, action: 'delist', message: 'Listing delisted successfully' } };
@@ -808,7 +808,7 @@ export async function listingsRouter(ctx) {
             VALUES (?, ?, ?, ?, 'relist', ?, ?, 'active')
         `, [historyId, id, user.id, listing.platform, reason, previousStatus]);
 
-        const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const updated = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         updated.images = safeJsonParse(updated.images, []);
 
         return { status: 200, data: { listing: updated, action: 'relist', message: 'Listing relisted successfully' } };
@@ -855,7 +855,7 @@ export async function listingsRouter(ctx) {
             VALUES (?, ?, ?, ?, 'relist', ?, 'ended', 'active')
         `, [relistHistoryId, id, user.id, listing.platform, reason]);
 
-        const updated = await query.get('SELECT * FROM listings WHERE id = ?', [id]);
+        const updated = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         updated.images = safeJsonParse(updated.images, []);
 
         return { status: 200, data: { listing: updated, action: 'refresh', message: 'Listing refreshed (delisted and relisted)' } };

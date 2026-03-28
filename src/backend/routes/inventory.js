@@ -456,7 +456,7 @@ export async function inventoryRouter(ctx) {
             ]);
         }
 
-        const item = await query.get('SELECT * FROM inventory WHERE id = ?', [id]);
+        const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
         item.tags = safeJsonParse(item.tags, []);
         item.images = safeJsonParse(item.images, []);
 
@@ -580,7 +580,7 @@ export async function inventoryRouter(ctx) {
             );
         }
 
-        const item = await query.get('SELECT * FROM inventory WHERE id = ?', [id]);
+        const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
         item.tags = safeJsonParse(item.tags, []);
         item.images = safeJsonParse(item.images, []);
         item.custom_fields = safeJsonParse(item.custom_fields, {});
