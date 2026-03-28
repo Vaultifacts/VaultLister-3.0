@@ -13,7 +13,7 @@ import {
 } from '../helpers/test-isolation.js';
 import { routes } from '../fixtures/test-data.js';
 
-const BASE = `http://localhost:${process.env.PORT || 3001}`;
+const BASE = `http://localhost:${process.env.PORT || 3100}`;
 const DEMO = { email: 'demo@vaultlister.com', password: 'DemoPassword123!' };
 
 async function getAuthToken(request) {
@@ -151,7 +151,7 @@ test.describe('E2E isolation — strict locking to prevent parallel interference
 test.describe('E2E isolation — page state reset between tests', () => {
     test('should clear localStorage and sessionStorage between tests', async ({ page }) => {
         // Set some state
-        await page.goto(BASE, { waitForLoadState: 'domcontentloaded' } as any).catch(() => {});
+        await page.goto(BASE, { waitForLoadState: 'domcontentloaded' }).catch(() => {});
         await page.evaluate(() => {
             try {
                 localStorage.setItem('test-isolation-key', 'dirty-value');

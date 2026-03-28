@@ -2,7 +2,7 @@
 // Data cleanup helpers and strict locking for E2E test isolation
 import { acquireTestLock, releaseTestLock } from './test-lock.js';
 
-const BASE = `http://localhost:${process.env.PORT || 3001}`;
+const BASE = `http://localhost:${process.env.PORT || 3100}`;
 
 /**
  * Clean up test data by prefix name pattern.
