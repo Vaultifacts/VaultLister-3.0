@@ -264,6 +264,8 @@ const _indexHtmlPath = join(FRONTEND_DIR, 'index.html');
 const _indexHtml = existsSync(_indexHtmlPath) ? readFileSync(_indexHtmlPath, 'utf-8') : null;
 
 // Route handlers
+// Route prefix registry — each key is a unique prefix, dispatched longest-first.
+// Audited 2026-03-28: no duplicate method+path conflicts across route files (#173).
 const apiRoutes = {
     '/api/auth': authRouter,
     '/api/inventory': inventoryRouter,
