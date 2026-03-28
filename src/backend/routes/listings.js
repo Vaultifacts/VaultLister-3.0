@@ -1625,5 +1625,120 @@ export async function listingsRouter(ctx) {
         }
     }
 
+    // POST /api/listings/sync-status - Sync listing status from marketplace platforms back to local DB
+    // Fetches current status for active listings that have a platform_listing_id and updates
+    // local listing status. If a listing is sold on the platform, also marks the inventory item sold.
+    if (method === 'POST' && path === '/sync-status') {
+        try {
+            const { platform, listingId } = body || {};
+
+            // Build query to find active listings with platform IDs to check
+            let sql = `
+                SELECT l.id, l.platform, l.platform_listing_id, l.inventory_id, l.status
+                FROM listings l
+                WHERE l.user_id = ?
+                  AND l.platform_listing_id IS NOT NULL
+                  AND l.status NOT IN ('sold', 'ended', 'archived', 'draft')
+            `;
+            const params = [user.id];
+
+            if (platform) {
+                sql += ' AND l.platform = ?';
+                params.push(platform);
+            }
+
+            if (listingId) {
+                sql += ' AND l.id = ?';
+                params.push(listingId);
+            }
+
+            sql += ' LIMIT 100';
+
+            const activeListings = await query.all(sql, params);
+
+            const results = {
+                checked: 0,
+                updated: 0,
+                soldCount: 0,
+                errors: []
+            };
+
+            for (const listing of activeListings) {
+                try {
+                    // Fetch the connected shop for this platform to get OAuth credentials
+                    const shop = await query.get(
+                        `SELECT * FROM shops WHERE user_id = ? AND platform = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1`,
+                        [user.id, listing.platform]
+                    );
+
+                    if (!shop) {
+                        results.errors.push({ listingId: listing.id, error: `No active ${listing.platform} shop connected` });
+                        continue;
+                    }
+
+                    // Use the platform-specific sync module to get fresh status
+                    let platformStatus = null;
+                    try {
+                        const { getPlatformListingStatus } = await import(`../services/platformSync/${listing.platform}Sync.js`);
+                        platformStatus = await getPlatformListingStatus(shop, listing.platform_listing_id);
+                    } catch (importErr) {
+                        // Platform sync module does not expose getPlatformListingStatus yet — skip silently
+                        results.errors.push({ listingId: listing.id, error: `Status fetch not supported for ${listing.platform}` });
+                        continue;
+                    }
+
+                    if (!platformStatus) {
+                        results.errors.push({ listingId: listing.id, error: `No status returned from ${listing.platform}` });
+                        continue;
+                    }
+
+                    results.checked++;
+
+                    // Map platform status to local status
+                    const localStatus = platformStatus.sold ? 'sold'
+                        : platformStatus.ended ? 'ended'
+                        : platformStatus.active ? 'active'
+                        : listing.status;
+
+                    if (localStatus !== listing.status) {
+                        const now = new Date().toISOString();
+
+                        await query.run(
+                            `UPDATE listings SET status = ?, updated_at = ?, sold_at = CASE WHEN ? = 'sold' THEN ? ELSE sold_at END WHERE id = ? AND user_id = ?`,
+                            [localStatus, now, localStatus, now, listing.id, user.id]
+                        );
+
+                        results.updated++;
+
+                        // If sold on platform, mark inventory item as sold too
+                        if (localStatus === 'sold' && listing.inventory_id) {
+                            await query.run(
+                                `UPDATE inventory SET status = 'sold', updated_at = ? WHERE id = ? AND user_id = ? AND status != 'sold'`,
+                                [now, listing.inventory_id, user.id]
+                            );
+
+                            // Mark all other active listings for the same inventory item as ended
+                            await query.run(
+                                `UPDATE listings SET status = 'ended', updated_at = ? WHERE inventory_id = ? AND user_id = ? AND id != ? AND status IN ('active', 'pending')`,
+                                [now, listing.inventory_id, user.id, listing.id]
+                            );
+
+                            results.soldCount++;
+
+                            websocketService.notifyListingSold(user.id, { id: listing.id, platform: listing.platform });
+                        }
+                    }
+                } catch (err) {
+                    results.errors.push({ listingId: listing.id, error: err.message });
+                }
+            }
+
+            return { status: 200, data: results };
+        } catch (error) {
+            logger.error('[Listings] sync-status error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
     return { status: 404, data: { error: { message: 'Route not found', code: 'NOT_FOUND' } } };
 }
