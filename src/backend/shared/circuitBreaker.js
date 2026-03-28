@@ -6,6 +6,7 @@ import { logger } from './logger.js';
 const STATES = { CLOSED: 'CLOSED', OPEN: 'OPEN', HALF_OPEN: 'HALF_OPEN' };
 
 const circuits = new Map();
+const CIRCUIT_MAP_MAX = 500; // guard against unbounded growth from dynamic circuit names
 
 const DEFAULTS = {
     failureThreshold: 5,
@@ -15,6 +16,19 @@ const DEFAULTS = {
 
 function getCircuit(name, opts = {}) {
     if (!circuits.has(name)) {
+        // Evict the oldest closed circuit when the map reaches its size cap
+        if (circuits.size >= CIRCUIT_MAP_MAX) {
+            for (const [key, circuit] of circuits) {
+                if (circuit.state === 'CLOSED') {
+                    circuits.delete(key);
+                    break;
+                }
+            }
+            // If no closed circuit found, evict the oldest entry regardless
+            if (circuits.size >= CIRCUIT_MAP_MAX) {
+                circuits.delete(circuits.keys().next().value);
+            }
+        }
         circuits.set(name, {
             name,
             state: STATES.CLOSED,
