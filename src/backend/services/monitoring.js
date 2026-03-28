@@ -255,7 +255,26 @@ const monitoring = {
 
         // Send email if configured
         if (ALERT_EMAIL) {
-            // Email implementation would go here
+            try {
+                const { sendEmail } = await import('./email.js');
+                const detailRows = Object.entries(data)
+                    .map(([k, v]) => `<tr><td style="padding:4px 8px;font-weight:600;">${k}</td><td style="padding:4px 8px;">${String(v)}</td></tr>`)
+                    .join('');
+                const html = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #DC2626;">VaultLister Alert: ${type}</h2>
+                        <p>An alert was triggered at ${alert.timestamp}.</p>
+                        <table style="border-collapse:collapse;width:100%;margin:16px 0;">
+                            ${detailRows}
+                        </table>
+                        <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
+                        <p style="color: #9CA3AF; font-size: 12px;">This is an automated monitoring alert from VaultLister.</p>
+                    </div>
+                `;
+                await sendEmail(ALERT_EMAIL, `[VaultLister Alert] ${type}`, html);
+            } catch (e) {
+                logger.error('[Monitoring] Alert email failed:', e.message);
+            }
         }
     },
 
