@@ -65575,11 +65575,29 @@ body.dark-mode .platform-usage-section {
 .form-input.field-error {
     border-color: var(--error) !important;
     box-shadow: 0 0 0 3px var(--error-light);
+    color: var(--gray-900);
+    background-color: white;
+}
+
+body.dark-mode .form-input.field-error {
+    border-color: var(--error-400, #f87171) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+    color: #ffffff !important;
+    background-color: #374151 !important;
 }
 
 .form-input.field-valid {
     border-color: var(--success) !important;
     box-shadow: 0 0 0 3px var(--success-light);
+    color: var(--gray-900);
+    background-color: white;
+}
+
+body.dark-mode .form-input.field-valid {
+    border-color: var(--green-400, #4ade80) !important;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+    color: #ffffff !important;
+    background-color: #374151 !important;
 }
 
 .field-error-text {
