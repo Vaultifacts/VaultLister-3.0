@@ -68,7 +68,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Error fetching folders', user?.id, { detail: error.message });
-            return { status: 500, data: { error: 'Internal server error' } };
+            return { status: 500, data: { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -77,23 +77,23 @@ export async function listingsRouter(ctx) {
         const { name, color, icon } = body;
 
         if (!name || !name.trim()) {
-            return { status: 400, data: { error: 'Folder name required' } };
+            return { status: 400, data: { error: { message: 'Folder name required', code: 'BAD_REQUEST' } } };
         }
 
         // Validate name length
         if (name.length > 100) {
-            return { status: 400, data: { error: 'Folder name must be 100 characters or less' } };
+            return { status: 400, data: { error: { message: 'Folder name must be 100 characters or less', code: 'BAD_REQUEST' } } };
         }
 
         // Validate color format if provided
         if (color && !/^#[0-9A-Fa-f]{6}$/.test(color)) {
-            return { status: 400, data: { error: 'Invalid color format. Use hex format (e.g., #FF5733)' } };
+            return { status: 400, data: { error: { message: 'Invalid color format. Use hex format (e.g., #FF5733)', code: 'BAD_REQUEST' } } };
         }
 
         // Validate icon if provided
         const validIcons = ['folder', 'archive', 'bookmark', 'star', 'heart', 'tag', 'box', 'package', 'shopping-bag', 'gift'];
         if (icon && !validIcons.includes(icon)) {
-            return { status: 400, data: { error: `Invalid icon. Choose from: ${validIcons.join(', ')}` } };
+            return { status: 400, data: { error: { message: `Invalid icon. Choose from: ${validIcons.join(', ')}`, code: 'BAD_REQUEST' } } };
         }
 
         try {
@@ -109,7 +109,7 @@ export async function listingsRouter(ctx) {
             return { status: 201, data: folder };
         } catch (error) {
             logger.error('[Listings] Error creating folder', user?.id, { detail: error.message });
-            return { status: 500, data: { error: 'Internal server error' } };
+            return { status: 500, data: { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -123,7 +123,7 @@ export async function listingsRouter(ctx) {
         );
 
         if (!existing) {
-            return { status: 404, data: { error: 'Folder not found' } };
+            return { status: 404, data: { error: { message: 'Folder not found', code: 'NOT_FOUND' } } };
         }
 
         const { name, color, icon } = body;
@@ -132,7 +132,7 @@ export async function listingsRouter(ctx) {
 
         if (name !== undefined) {
             if (!name.trim() || name.length > 100) {
-                return { status: 400, data: { error: 'Folder name must be 1-100 characters' } };
+                return { status: 400, data: { error: { message: 'Folder name must be 1-100 characters', code: 'BAD_REQUEST' } } };
             }
             updates.push('name = ?');
             values.push(name.trim());
@@ -140,7 +140,7 @@ export async function listingsRouter(ctx) {
         if (color !== undefined) {
             // Validate hex color format
             if (color && !/^#[0-9A-Fa-f]{6}$/.test(color)) {
-                return { status: 400, data: { error: 'Invalid color format. Use hex format (e.g., #FF5733)' } };
+                return { status: 400, data: { error: { message: 'Invalid color format. Use hex format (e.g., #FF5733)', code: 'BAD_REQUEST' } } };
             }
             updates.push('color = ?');
             values.push(color);
@@ -149,7 +149,7 @@ export async function listingsRouter(ctx) {
             // Validate icon against allowed list
             const validIcons = ['folder', 'archive', 'bookmark', 'star', 'heart', 'tag', 'box', 'package', 'shopping-bag', 'gift', null];
             if (icon && !validIcons.includes(icon)) {
-                return { status: 400, data: { error: 'Invalid icon. Choose from: folder, archive, bookmark, star, heart, tag, box, package, shopping-bag, gift' } };
+                return { status: 400, data: { error: { message: 'Invalid icon. Choose from: folder, archive, bookmark, star, heart, tag, box, package, shopping-bag, gift', code: 'BAD_REQUEST' } } };
             }
             updates.push('icon = ?');
             values.push(icon);
@@ -178,7 +178,7 @@ export async function listingsRouter(ctx) {
         );
 
         if (!existing) {
-            return { status: 404, data: { error: 'Folder not found' } };
+            return { status: 404, data: { error: { message: 'Folder not found', code: 'NOT_FOUND' } } };
         }
 
         // Delete folder (listings will have folder_id set to NULL due to ON DELETE SET NULL)
@@ -276,7 +276,7 @@ export async function listingsRouter(ctx) {
         `, [id, user.id]);
 
         if (!listing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         listing.images = safeJsonParse(listing.images, []);
@@ -290,20 +290,20 @@ export async function listingsRouter(ctx) {
         const { inventoryId, platform, title, description, price, originalPrice, shippingPrice, categoryPath, images, platformSpecificData, folderId } = body;
 
         if (!inventoryId || !platform || !title || !price) {
-            return { status: 400, data: { error: 'Inventory ID, platform, title, and price required' } };
+            return { status: 400, data: { error: { message: 'Inventory ID, platform, title, and price required', code: 'BAD_REQUEST' } } };
         }
-        if (title.length > 500) return { status: 400, data: { error: 'Title must be 500 characters or less' } };
-        if (description && description.length > 5000) return { status: 400, data: { error: 'Description must be 5000 characters or less' } };
-        if (categoryPath && categoryPath.length > 300) return { status: 400, data: { error: 'Category path must be 300 characters or less' } };
+        if (title.length > 500) return { status: 400, data: { error: { message: 'Title must be 500 characters or less', code: 'BAD_REQUEST' } } };
+        if (description && description.length > 5000) return { status: 400, data: { error: { message: 'Description must be 5000 characters or less', code: 'BAD_REQUEST' } } };
+        if (categoryPath && categoryPath.length > 300) return { status: 400, data: { error: { message: 'Category path must be 300 characters or less', code: 'BAD_REQUEST' } } };
         if (platformSpecificData !== undefined) {
             const psdJson = JSON.stringify(platformSpecificData);
-            if (psdJson.length > 50000) return { status: 400, data: { error: 'Platform specific data exceeds maximum size' } };
+            if (psdJson.length > 50000) return { status: 400, data: { error: { message: 'Platform specific data exceeds maximum size', code: 'BAD_REQUEST' } } };
         }
 
         // Check inventory item exists
         const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [inventoryId, user.id]);
         if (!item) {
-            return { status: 404, data: { error: 'Inventory item not found' } };
+            return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
         }
 
         const id = uuidv4();
@@ -329,7 +329,7 @@ export async function listingsRouter(ctx) {
                     'SELECT id FROM listings WHERE inventory_id = ? AND platform = ? AND user_id = ?',
                     [inventoryId, platform, user.id]
                 );
-                return { status: 409, data: { error: 'Listing already exists for this platform', existingId: existingListing?.id } };
+                return { status: 409, data: { error: { message: 'Listing already exists for this platform', code: 'CONFLICT' }, existingId: existingListing?.id } };
             }
             throw error;
         }
@@ -352,7 +352,7 @@ export async function listingsRouter(ctx) {
             : (inventoryId ? [inventoryId] : []);
 
         if (inventoryIds.length === 0 || !platforms || !Array.isArray(platforms)) {
-            return { status: 400, data: { error: 'Inventory ID(s) and platforms array required' } };
+            return { status: 400, data: { error: { message: 'Inventory ID(s) and platforms array required', code: 'BAD_REQUEST' } } };
         }
 
         const results = { created: [], skipped: [], errors: [] };
@@ -456,7 +456,7 @@ export async function listingsRouter(ctx) {
 
         const existing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         const {
@@ -465,13 +465,13 @@ export async function listingsRouter(ctx) {
             platformListingId, platformUrl, folderId
         } = body;
 
-        if (title && title.length > 500) return { status: 400, data: { error: 'Title must be 500 characters or less' } };
-        if (description && description.length > 5000) return { status: 400, data: { error: 'Description must be 5000 characters or less' } };
-        if (categoryPath && categoryPath.length > 300) return { status: 400, data: { error: 'Category path must be 300 characters or less' } };
+        if (title && title.length > 500) return { status: 400, data: { error: { message: 'Title must be 500 characters or less', code: 'BAD_REQUEST' } } };
+        if (description && description.length > 5000) return { status: 400, data: { error: { message: 'Description must be 5000 characters or less', code: 'BAD_REQUEST' } } };
+        if (categoryPath && categoryPath.length > 300) return { status: 400, data: { error: { message: 'Category path must be 300 characters or less', code: 'BAD_REQUEST' } } };
 
         // Prevent sold listings from being changed back to active
         if (existing.status === 'sold' && status && status !== 'sold') {
-            return { status: 400, data: { error: 'Cannot change status of a sold listing' } };
+            return { status: 400, data: { error: { message: 'Cannot change status of a sold listing', code: 'BAD_REQUEST' } } };
         }
 
         const updates = [];
@@ -504,7 +504,7 @@ export async function listingsRouter(ctx) {
         if (platformSpecificData !== undefined) {
             const psdJson = JSON.stringify(platformSpecificData);
             if (psdJson.length > 50000) {
-                return { status: 400, data: { error: 'Platform specific data exceeds maximum size' } };
+                return { status: 400, data: { error: { message: 'Platform specific data exceeds maximum size', code: 'BAD_REQUEST' } } };
             }
             updates.push('platform_specific_data = ?');
             values.push(psdJson);
@@ -535,7 +535,7 @@ export async function listingsRouter(ctx) {
 
         const existing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         // Check for affected offers before deleting
@@ -559,7 +559,7 @@ export async function listingsRouter(ctx) {
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         // Queue share task
@@ -601,7 +601,7 @@ export async function listingsRouter(ctx) {
         const { listings } = body;
 
         if (!Array.isArray(listings) || listings.length === 0) {
-            return { status: 400, data: { error: 'Listings array required' } };
+            return { status: 400, data: { error: { message: 'Listings array required', code: 'BAD_REQUEST' } } };
         }
 
         const created = [];
@@ -730,7 +730,7 @@ export async function listingsRouter(ctx) {
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         const previousStatus = listing.status;
@@ -783,12 +783,12 @@ export async function listingsRouter(ctx) {
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         // Facebook listings that were marked as sold cannot be relisted
         if (listing.platform === 'facebook' && listing.marked_as_sold) {
-            return { status: 400, data: { error: 'Facebook Marketplace listings marked as sold cannot be relisted. Please create a new listing.' } };
+            return { status: 400, data: { error: { message: 'Facebook Marketplace listings marked as sold cannot be relisted. Please create a new listing.', code: 'BAD_REQUEST' } } };
         }
 
         const previousStatus = listing.status;
@@ -820,12 +820,12 @@ export async function listingsRouter(ctx) {
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         // Facebook Marketplace doesn't support refresh - use mark as sold instead
         if (listing.platform === 'facebook') {
-            return { status: 400, data: { error: 'Facebook Marketplace does not support refresh. Use "Mark as Sold" instead.' } };
+            return { status: 400, data: { error: { message: 'Facebook Marketplace does not support refresh. Use "Mark as Sold" instead.', code: 'BAD_REQUEST' } } };
         }
 
         const previousStatus = listing.status;
@@ -866,11 +866,11 @@ export async function listingsRouter(ctx) {
         const { listingIds, reason = 'bulk_refresh' } = body;
 
         if (!Array.isArray(listingIds) || listingIds.length === 0) {
-            return { status: 400, data: { error: 'listingIds array required' } };
+            return { status: 400, data: { error: { message: 'listingIds array required', code: 'BAD_REQUEST' } } };
         }
 
         if (listingIds.length > 100) {
-            return { status: 400, data: { error: 'Too many listings (max 100 per bulk refresh)' } };
+            return { status: 400, data: { error: { message: 'Too many listings (max 100 per bulk refresh)', code: 'BAD_REQUEST' } } };
         }
 
         const results = { refreshed: [], skipped: [], errors: [] };
@@ -950,7 +950,7 @@ export async function listingsRouter(ctx) {
 
         const listing = await query.get('SELECT id FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         const history = await query.all(`
@@ -969,7 +969,7 @@ export async function listingsRouter(ctx) {
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         const { stalenessDays, autoRelistEnabled } = body;
@@ -1005,7 +1005,7 @@ export async function listingsRouter(ctx) {
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         // Try to archive with 'archived' status first
@@ -1048,11 +1048,11 @@ export async function listingsRouter(ctx) {
                     };
                 } catch (fallbackError) {
                     logger.error('[Listings] Archive fallback failed', user?.id, { detail: fallbackError.message });
-                    return { status: 500, data: { error: 'Failed to archive listing' } };
+                    return { status: 500, data: { error: { message: 'Failed to archive listing', code: 'INTERNAL_ERROR' } } };
                 }
             } else {
                 logger.error('[Listings] Archive failed', user?.id, { detail: error.message });
-                return { status: 500, data: { error: 'Failed to archive listing' } };
+                return { status: 500, data: { error: { message: 'Failed to archive listing', code: 'INTERNAL_ERROR' } } };
             }
         }
     }
@@ -1063,12 +1063,12 @@ export async function listingsRouter(ctx) {
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!listing) {
-            return { status: 404, data: { error: 'Listing not found' } };
+            return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
         }
 
         // Only allow unarchiving if status is 'archived' or 'ended' with archive note
         if (listing.status !== 'archived' && !(listing.status === 'ended' && listing.notes && listing.notes.includes('[ARCHIVED]'))) {
-            return { status: 400, data: { error: 'Only archived listings can be unarchived' } };
+            return { status: 400, data: { error: { message: 'Only archived listings can be unarchived', code: 'BAD_REQUEST' } } };
         }
 
         try {
@@ -1094,7 +1094,7 @@ export async function listingsRouter(ctx) {
             return { status: 200, data: { listing: updated, message: 'Listing unarchived successfully' } };
         } catch (error) {
             logger.error('[Listings] Unarchive failed', user?.id, { detail: error.message });
-            return { status: 500, data: { error: 'Failed to unarchive listing' } };
+            return { status: 500, data: { error: { message: 'Failed to unarchive listing', code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1108,14 +1108,14 @@ export async function listingsRouter(ctx) {
         const { drop_amount, new_price, scheduled_date, recurring, max_drops, floor_price } = body;
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
-        if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+        if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
         if (!drop_amount || drop_amount <= 0) {
-            return { status: 400, data: { error: 'Invalid drop amount' } };
+            return { status: 400, data: { error: { message: 'Invalid drop amount', code: 'BAD_REQUEST' } } };
         }
 
         if (scheduled_date && isNaN(new Date(scheduled_date).getTime())) {
-            return { status: 400, data: { error: 'Invalid scheduled date' } };
+            return { status: 400, data: { error: { message: 'Invalid scheduled date', code: 'BAD_REQUEST' } } };
         }
 
         try {
@@ -1150,7 +1150,7 @@ export async function listingsRouter(ctx) {
             return { status: 200, data: { message: 'Price drop scheduled', schedule: platformData.price_drop_schedule } };
         } catch (error) {
             logger.error('[Listings] Error scheduling price drop', user?.id, { detail: error.message });
-            return { status: 500, data: { error: 'Failed to schedule price drop' } };
+            return { status: 500, data: { error: { message: 'Failed to schedule price drop', code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1163,7 +1163,7 @@ export async function listingsRouter(ctx) {
         const id = path.split('/')[1];
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
-        if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+        if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
         try {
             // Get similar sold items from sales history for price comparison
@@ -1204,7 +1204,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Error fetching competitor pricing', user?.id, { detail: error.message });
-            return { status: 500, data: { error: 'Failed to fetch competitor pricing' } };
+            return { status: 500, data: { error: { message: 'Failed to fetch competitor pricing', code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1217,7 +1217,7 @@ export async function listingsRouter(ctx) {
         const id = path.split('/')[1];
 
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
-        if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+        if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
         try {
             const category = listing.category || '';
@@ -1265,7 +1265,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Error calculating time-to-sell', user?.id, { detail: error.message });
-            return { status: 500, data: { error: 'Failed to calculate time-to-sell' } };
+            return { status: 500, data: { error: { message: 'Failed to calculate time-to-sell', code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1275,17 +1275,17 @@ export async function listingsRouter(ctx) {
 
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
-            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+            if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const shop = await query.get(
                 "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = 1",
                 [user.id]
             );
-            if (!shop) return { status: 400, data: { error: 'No connected eBay shop found. Connect eBay in My Shops first.' } };
-            if (!shop.oauth_token) return { status: 400, data: { error: 'eBay shop has no OAuth token. Reconnect eBay in My Shops.' } };
+            if (!shop) return { status: 400, data: { error: { message: 'No connected eBay shop found. Connect eBay in My Shops first.', code: 'BAD_REQUEST' } } };
+            if (!shop.oauth_token) return { status: 400, data: { error: { message: 'eBay shop has no OAuth token. Reconnect eBay in My Shops.', code: 'BAD_REQUEST' } } };
 
             const result = await publishListingToEbay(shop, listing, inventory);
 
@@ -1307,7 +1307,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] eBay publish error', user?.id, { detail: error.message });
-            return { status: 500, data: { error: error.message } };
+            return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1317,17 +1317,17 @@ export async function listingsRouter(ctx) {
 
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
-            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+            if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const shop = await query.get(
                 "SELECT * FROM shops WHERE user_id = ? AND platform = 'etsy' AND is_connected = 1",
                 [user.id]
             );
-            if (!shop) return { status: 400, data: { error: 'No connected Etsy shop found. Connect Etsy in My Shops first.' } };
-            if (!shop.oauth_token) return { status: 400, data: { error: 'Etsy shop has no OAuth token. Reconnect Etsy in My Shops.' } };
+            if (!shop) return { status: 400, data: { error: { message: 'No connected Etsy shop found. Connect Etsy in My Shops first.', code: 'BAD_REQUEST' } } };
+            if (!shop.oauth_token) return { status: 400, data: { error: { message: 'Etsy shop has no OAuth token. Reconnect Etsy in My Shops.', code: 'BAD_REQUEST' } } };
 
             const result = await publishListingToEtsy(shop, listing, inventory);
 
@@ -1346,7 +1346,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Etsy publish error', user?.id, { detail: error.message });
-            return { status: 500, data: { error: error.message } };
+            return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1356,10 +1356,10 @@ export async function listingsRouter(ctx) {
 
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
-            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+            if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const result = await publishListingToPoshmark(null, listing, inventory);
 
@@ -1378,7 +1378,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Poshmark publish error: ' + error.message);
-            return { status: 500, data: { error: error.message } };
+            return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1386,11 +1386,11 @@ export async function listingsRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/publish$/)) {
         const id = path.split('/')[1];
         const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [id, user.id]);
-        if (!listing) return { status: 404, data: { error: 'Listing not found' } };
-        if (listing.status === 'active') return { status: 400, data: { error: 'Listing is already active' } };
+        if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
+        if (listing.status === 'active') return { status: 400, data: { error: { message: 'Listing is already active', code: 'BAD_REQUEST' } } };
 
         const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-        if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+        if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
         const publishers = {
             poshmark: publishListingToPoshmark,
@@ -1405,7 +1405,7 @@ export async function listingsRouter(ctx) {
         };
 
         const publisher = publishers[listing.platform];
-        if (!publisher) return { status: 400, data: { error: `Platform '${listing.platform}' does not support publish` } };
+        if (!publisher) return { status: 400, data: { error: { message: `Platform '${listing.platform}' does not support publish`, code: 'BAD_REQUEST' } } };
 
         const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1', [user.id, listing.platform]) || null;
 
@@ -1441,7 +1441,7 @@ export async function listingsRouter(ctx) {
             } catch (wsErr) {
                 // Silent — WS failure shouldn't block error response
             }
-            return { status: 500, data: { error: error.message } };
+            return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1451,10 +1451,10 @@ export async function listingsRouter(ctx) {
 
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
-            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+            if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const result = await publishListingToMercari(null, listing, inventory);
 
@@ -1473,7 +1473,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Mercari publish error', user?.id, { detail: error.message });
-            return { status: 500, data: { error: error.message } };
+            return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1483,10 +1483,10 @@ export async function listingsRouter(ctx) {
 
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
-            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+            if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const result = await publishListingToDepop(null, listing, inventory);
 
@@ -1505,7 +1505,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Depop publish error', user?.id, { detail: error.message });
-            return { status: 500, data: { error: error.message } };
+            return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1515,10 +1515,10 @@ export async function listingsRouter(ctx) {
 
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
-            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+            if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const result = await publishListingToGrailed(null, listing, inventory);
 
@@ -1537,7 +1537,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Grailed publish error', user?.id, { detail: error.message });
-            return { status: 500, data: { error: error.message } };
+            return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1547,10 +1547,10 @@ export async function listingsRouter(ctx) {
 
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
-            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+            if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const result = await publishListingToFacebook(null, listing, inventory);
 
@@ -1565,7 +1565,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Facebook publish error', user?.id, { detail: error.message });
-            return { status: 500, data: { error: error.message } };
+            return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1575,10 +1575,10 @@ export async function listingsRouter(ctx) {
 
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
-            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+            if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const result = await publishListingToWhatnot(null, listing, inventory);
 
@@ -1593,7 +1593,7 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Whatnot publish error', user?.id, { detail: error.message });
-            return { status: 500, data: { error: error.message } };
+            return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
     }
 
@@ -1603,10 +1603,10 @@ export async function listingsRouter(ctx) {
 
         try {
             const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
-            if (!listing) return { status: 404, data: { error: 'Listing not found' } };
+            if (!listing) return { status: 404, data: { error: { message: 'Listing not found', code: 'NOT_FOUND' } } };
 
             const inventory = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [listing.inventory_id, user.id]);
-            if (!inventory) return { status: 404, data: { error: 'Inventory item not found' } };
+            if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const result = await publishListingToShopify(null, listing, inventory);
 
@@ -1621,9 +1621,9 @@ export async function listingsRouter(ctx) {
             };
         } catch (error) {
             logger.error('[Listings] Shopify publish error', user?.id, { detail: error.message });
-            return { status: 500, data: { error: error.message } };
+            return { status: 500, data: { error: { message: error.message, code: 'INTERNAL_ERROR' } } };
         }
     }
 
-    return { status: 404, data: { error: 'Route not found' } };
+    return { status: 404, data: { error: { message: 'Route not found', code: 'NOT_FOUND' } } };
 }

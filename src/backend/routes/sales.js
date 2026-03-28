@@ -97,7 +97,7 @@ export async function salesRouter(ctx) {
         `, [id, user.id]);
 
         if (!sale) {
-            return { status: 404, data: { error: 'Sale not found' } };
+            return { status: 404, data: { error: { message: 'Sale not found', code: 'NOT_FOUND' } } };
         }
 
         sale.item_images = safeJsonParse(sale.item_images, []);
@@ -115,13 +115,13 @@ export async function salesRouter(ctx) {
         } = body;
 
         if (!platform || !salePrice) {
-            return { status: 400, data: { error: 'Platform and sale price required' } };
+            return { status: 400, data: { error: { message: 'Platform and sale price required', code: 'BAD_REQUEST' } } };
         }
 
         // Validate platform enum
         const VALID_PLATFORMS = ['poshmark', 'ebay', 'whatnot', 'depop', 'facebook', 'mercari', 'grailed', 'etsy', 'shopify', 'amazon', 'other'];
         if (!VALID_PLATFORMS.includes(platform.toLowerCase())) {
-            return { status: 400, data: { error: `Invalid platform. Must be one of: ${VALID_PLATFORMS.join(', ')}` } };
+            return { status: 400, data: { error: { message: `Invalid platform. Must be one of: ${VALID_PLATFORMS.join(', ')}`, code: 'BAD_REQUEST' } } };
         }
 
         const id = uuidv4();
@@ -227,7 +227,7 @@ export async function salesRouter(ctx) {
         } catch (error) {
             // Handle specific transaction errors
             if (error.message === 'INVENTORY_ALREADY_SOLD') {
-                return { status: 409, data: { error: 'Inventory item already sold' } };
+                return { status: 409, data: { error: { message: 'Inventory item already sold', code: 'CONFLICT' } } };
             }
             logger.error('[Sales] Sale creation transaction failed', user?.id, { detail: error?.message });
             throw error;
@@ -242,7 +242,7 @@ export async function salesRouter(ctx) {
 
         const existing = await query.get('SELECT * FROM sales WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
-            return { status: 404, data: { error: 'Sale not found' } };
+            return { status: 404, data: { error: { message: 'Sale not found', code: 'NOT_FOUND' } } };
         }
 
         const {
@@ -306,7 +306,7 @@ export async function salesRouter(ctx) {
 
         const existing = await query.get('SELECT * FROM sales WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
-            return { status: 404, data: { error: 'Sale not found' } };
+            return { status: 404, data: { error: { message: 'Sale not found', code: 'NOT_FOUND' } } };
         }
 
         // Restore inventory status if linked
@@ -322,7 +322,7 @@ export async function salesRouter(ctx) {
         const result = await query.run('DELETE FROM sales WHERE id = ? AND user_id = ?', [id, user.id]);
 
         if (result.changes === 0) {
-            return { status: 404, data: { error: 'Sale not found' } };
+            return { status: 404, data: { error: { message: 'Sale not found', code: 'NOT_FOUND' } } };
         }
 
         return { status: 200, data: { message: 'Sale deleted successfully' } };
@@ -422,5 +422,5 @@ export async function salesRouter(ctx) {
         };
     }
 
-    return { status: 404, data: { error: 'Route not found' } };
-}
+    return { status: 404, data: { error: { message: 'Route not found', code: 'NOT_FOUND' } } };
+
