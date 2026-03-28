@@ -73,3 +73,16 @@ CREATE INDEX IF NOT EXISTS idx_competitor_listings_category ON competitor_listin
 CREATE INDEX IF NOT EXISTS idx_market_insights_category ON market_insights(category);
 CREATE INDEX IF NOT EXISTS idx_market_insights_platform ON market_insights(platform);
 CREATE INDEX IF NOT EXISTS idx_market_insights_opportunity ON market_insights(opportunity_score);
+
+-- DOWN: DROP INDEX IF EXISTS idx_competitors_user;
+-- DOWN: DROP INDEX IF EXISTS idx_competitors_platform;
+-- DOWN: DROP INDEX IF EXISTS idx_competitors_active;
+-- DOWN: DROP INDEX IF EXISTS idx_competitor_listings_competitor;
+-- DOWN: DROP INDEX IF EXISTS idx_competitor_listings_sold;
+-- DOWN: DROP INDEX IF EXISTS idx_competitor_listings_category;
+-- DOWN: DROP INDEX IF EXISTS idx_market_insights_category;
+-- DOWN: DROP INDEX IF EXISTS idx_market_insights_platform;
+-- DOWN: DROP INDEX IF EXISTS idx_market_insights_opportunity;
+-- DOWN: DROP TABLE IF EXISTS market_insights;
+-- DOWN: DROP TABLE IF EXISTS competitor_listings;
+-- DOWN: DROP TABLE IF EXISTS competitors;

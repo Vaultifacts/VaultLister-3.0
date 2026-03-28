@@ -27,3 +27,9 @@ CREATE TABLE IF NOT EXISTS warehouse_locations (
 CREATE INDEX IF NOT EXISTS idx_inventory_bin_location ON inventory(bin_location);
 CREATE INDEX IF NOT EXISTS idx_warehouse_locations_user ON warehouse_locations(user_id);
 CREATE INDEX IF NOT EXISTS idx_warehouse_locations_name ON warehouse_locations(name);
+
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_bin_location;
+-- DOWN: DROP INDEX IF EXISTS idx_warehouse_locations_user;
+-- DOWN: DROP INDEX IF EXISTS idx_warehouse_locations_name;
+-- DOWN: DROP TABLE IF EXISTS warehouse_locations;
+-- DOWN: ALTER TABLE inventory DROP COLUMN IF EXISTS bin_location;

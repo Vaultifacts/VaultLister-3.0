@@ -30,3 +30,9 @@ CREATE TABLE IF NOT EXISTS checklist_items (
 CREATE INDEX IF NOT EXISTS idx_checklist_items_user ON checklist_items(user_id);
 CREATE INDEX IF NOT EXISTS idx_checklist_items_checklist ON checklist_items(checklist_id);
 CREATE INDEX IF NOT EXISTS idx_checklist_items_due_date ON checklist_items(due_date);
+
+-- DOWN: DROP INDEX IF EXISTS idx_checklist_items_user;
+-- DOWN: DROP INDEX IF EXISTS idx_checklist_items_checklist;
+-- DOWN: DROP INDEX IF EXISTS idx_checklist_items_due_date;
+-- DOWN: DROP TABLE IF EXISTS checklist_items;
+-- DOWN: DROP TABLE IF EXISTS checklists;

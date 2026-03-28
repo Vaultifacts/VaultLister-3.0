@@ -14,3 +14,6 @@ DROP TABLE IF EXISTS _migration_helper;
 
 -- Indexes for new fields (safe to run multiple times)
 CREATE INDEX IF NOT EXISTS idx_inventory_status ON inventory(status);
+
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_status;
+-- DOWN: DROP TABLE IF EXISTS _migration_helper;

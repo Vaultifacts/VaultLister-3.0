@@ -146,3 +146,17 @@ CREATE INDEX IF NOT EXISTS idx_label_batches_user ON label_batches(user_id);
 CREATE INDEX IF NOT EXISTS idx_label_batches_status ON label_batches(status);
 CREATE INDEX IF NOT EXISTS idx_shipping_rates_label ON shipping_rates(label_id);
 CREATE INDEX IF NOT EXISTS idx_return_addresses_user ON return_addresses(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_shipping_labels_user;
+-- DOWN: DROP INDEX IF EXISTS idx_shipping_labels_order;
+-- DOWN: DROP INDEX IF EXISTS idx_shipping_labels_status;
+-- DOWN: DROP INDEX IF EXISTS idx_shipping_labels_batch;
+-- DOWN: DROP INDEX IF EXISTS idx_shipping_labels_tracking;
+-- DOWN: DROP INDEX IF EXISTS idx_label_batches_user;
+-- DOWN: DROP INDEX IF EXISTS idx_label_batches_status;
+-- DOWN: DROP INDEX IF EXISTS idx_shipping_rates_label;
+-- DOWN: DROP INDEX IF EXISTS idx_return_addresses_user;
+-- DOWN: DROP TABLE IF EXISTS return_addresses;
+-- DOWN: DROP TABLE IF EXISTS shipping_rates;
+-- DOWN: DROP TABLE IF EXISTS label_batches;
+-- DOWN: DROP TABLE IF EXISTS shipping_labels;

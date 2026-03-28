@@ -44,3 +44,14 @@ CREATE INDEX IF NOT EXISTS idx_receipt_vendors_name ON receipt_vendors(user_id, 
 -- Index on email_parse_queue for faster filtering
 CREATE INDEX IF NOT EXISTS idx_email_parse_queue_status ON email_parse_queue(user_id, status);
 CREATE INDEX IF NOT EXISTS idx_email_parse_queue_type ON email_parse_queue(user_id, receipt_type);
+
+-- DOWN: DROP INDEX IF EXISTS idx_receipt_vendors_user;
+-- DOWN: DROP INDEX IF EXISTS idx_receipt_vendors_name;
+-- DOWN: DROP INDEX IF EXISTS idx_email_parse_queue_status;
+-- DOWN: DROP INDEX IF EXISTS idx_email_parse_queue_type;
+-- DOWN: DROP TABLE IF EXISTS receipt_vendors;
+-- DOWN: ALTER TABLE email_parse_queue DROP COLUMN IF EXISTS receipt_type;
+-- DOWN: ALTER TABLE email_parse_queue DROP COLUMN IF EXISTS confidence_score;
+-- DOWN: ALTER TABLE email_parse_queue DROP COLUMN IF EXISTS source_file;
+-- DOWN: ALTER TABLE email_parse_queue DROP COLUMN IF EXISTS file_type;
+-- DOWN: ALTER TABLE email_parse_queue DROP COLUMN IF EXISTS image_data;

@@ -12,3 +12,7 @@ CREATE INDEX IF NOT EXISTS idx_inventory_deleted_at ON inventory(deleted_at);
 UPDATE inventory
 SET deleted_at = updated_at
 WHERE status = 'deleted' AND deleted_at IS NULL;
+
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_deleted_at;
+-- DOWN: ALTER TABLE inventory DROP COLUMN IF EXISTS deleted_at;
+-- DOWN: -- (includes data migration — manual data rollback required)

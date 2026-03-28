@@ -42,3 +42,10 @@ CREATE INDEX IF NOT EXISTS idx_users_email_active ON users(email, is_active);
 CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login_at);
 
 PRAGMA foreign_keys = ON;
+
+-- DOWN: DROP INDEX IF EXISTS idx_users_email;
+-- DOWN: DROP INDEX IF EXISTS idx_users_username;
+-- DOWN: DROP INDEX IF EXISTS idx_users_subscription_tier;
+-- DOWN: DROP INDEX IF EXISTS idx_users_email_active;
+-- DOWN: DROP INDEX IF EXISTS idx_users_last_login;
+-- DOWN: -- (includes data migration — manual data rollback required)

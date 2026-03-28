@@ -117,3 +117,18 @@ END;
 CREATE TRIGGER IF NOT EXISTS image_bank_ad AFTER DELETE ON image_bank BEGIN
     DELETE FROM image_bank_fts WHERE rowid = old.rowid;
 END;
+
+-- DOWN: DROP TRIGGER IF EXISTS image_bank_ai;
+-- DOWN: DROP TRIGGER IF EXISTS image_bank_au;
+-- DOWN: DROP TRIGGER IF EXISTS image_bank_ad;
+-- DOWN: DROP INDEX IF EXISTS idx_image_bank_user;
+-- DOWN: DROP INDEX IF EXISTS idx_image_bank_folder;
+-- DOWN: DROP INDEX IF EXISTS idx_image_bank_created;
+-- DOWN: DROP INDEX IF EXISTS idx_image_bank_usage_image;
+-- DOWN: DROP INDEX IF EXISTS idx_image_bank_usage_inventory;
+-- DOWN: DROP INDEX IF EXISTS idx_folders_user;
+-- DOWN: DROP TABLE IF EXISTS image_bank_fts;
+-- DOWN: DROP TABLE IF EXISTS image_edit_history;
+-- DOWN: DROP TABLE IF EXISTS image_bank_usage;
+-- DOWN: DROP TABLE IF EXISTS image_bank;
+-- DOWN: DROP TABLE IF EXISTS image_bank_folders;

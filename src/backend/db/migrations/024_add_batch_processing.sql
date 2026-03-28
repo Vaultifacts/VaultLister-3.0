@@ -56,3 +56,12 @@ CREATE INDEX IF NOT EXISTS idx_batch_jobs_status ON batch_photo_jobs(user_id, st
 CREATE INDEX IF NOT EXISTS idx_batch_items_job ON batch_photo_items(job_id);
 CREATE INDEX IF NOT EXISTS idx_batch_items_status ON batch_photo_items(job_id, status);
 CREATE INDEX IF NOT EXISTS idx_batch_presets_user ON batch_photo_presets(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_batch_jobs_user;
+-- DOWN: DROP INDEX IF EXISTS idx_batch_jobs_status;
+-- DOWN: DROP INDEX IF EXISTS idx_batch_items_job;
+-- DOWN: DROP INDEX IF EXISTS idx_batch_items_status;
+-- DOWN: DROP INDEX IF EXISTS idx_batch_presets_user;
+-- DOWN: DROP TABLE IF EXISTS batch_photo_presets;
+-- DOWN: DROP TABLE IF EXISTS batch_photo_items;
+-- DOWN: DROP TABLE IF EXISTS batch_photo_jobs;

@@ -3,3 +3,6 @@
 
 CREATE INDEX IF NOT EXISTS idx_listings_user_status_date ON listings(user_id, status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_offers_user_status_date ON offers(user_id, status, created_at DESC);
+
+-- DOWN: DROP INDEX IF EXISTS idx_listings_user_status_date;
+-- DOWN: DROP INDEX IF EXISTS idx_offers_user_status_date;

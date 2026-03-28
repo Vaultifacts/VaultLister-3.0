@@ -23,3 +23,10 @@ ANALYZE price_history;
 ANALYZE automation_logs;
 ANALYZE notifications;
 ANALYZE offers;
+
+-- DOWN: DROP INDEX IF EXISTS idx_sales_created_at;
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_user_status_date;
+-- DOWN: DROP INDEX IF EXISTS idx_price_history_inv_date;
+-- DOWN: DROP INDEX IF EXISTS idx_automation_logs_user_date;
+-- DOWN: DROP INDEX IF EXISTS idx_notifications_user_read_date;
+-- DOWN: DROP INDEX IF EXISTS idx_offers_listing_platform_unique;

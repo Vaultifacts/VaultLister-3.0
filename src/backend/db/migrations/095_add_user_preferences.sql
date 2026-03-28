@@ -14,3 +14,7 @@ CREATE TABLE IF NOT EXISTS user_preferences (
 
 CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_preferences_key ON user_preferences(key);
+
+-- DOWN: DROP INDEX IF EXISTS idx_user_preferences_user_id;
+-- DOWN: DROP INDEX IF EXISTS idx_user_preferences_key;
+-- DOWN: DROP TABLE IF EXISTS user_preferences;

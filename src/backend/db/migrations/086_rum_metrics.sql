@@ -16,3 +16,9 @@ CREATE INDEX IF NOT EXISTS idx_rum_metrics_session ON rum_metrics(session_id);
 CREATE INDEX IF NOT EXISTS idx_rum_metrics_name ON rum_metrics(metric_name);
 CREATE INDEX IF NOT EXISTS idx_rum_metrics_timestamp ON rum_metrics(timestamp);
 CREATE INDEX IF NOT EXISTS idx_rum_metrics_user ON rum_metrics(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_rum_metrics_session;
+-- DOWN: DROP INDEX IF EXISTS idx_rum_metrics_name;
+-- DOWN: DROP INDEX IF EXISTS idx_rum_metrics_timestamp;
+-- DOWN: DROP INDEX IF EXISTS idx_rum_metrics_user;
+-- DOWN: DROP TABLE IF EXISTS rum_metrics;

@@ -17,3 +17,7 @@ CREATE TABLE IF NOT EXISTS calendar_sync_settings (
 
 CREATE INDEX IF NOT EXISTS idx_calendar_sync_user ON calendar_sync_settings(user_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_calendar_sync_user_provider ON calendar_sync_settings(user_id, provider);
+
+-- DOWN: DROP INDEX IF EXISTS idx_calendar_sync_user;
+-- DOWN: DROP INDEX IF EXISTS idx_calendar_sync_user_provider;
+-- DOWN: DROP TABLE IF EXISTS calendar_sync_settings;

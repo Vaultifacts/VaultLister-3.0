@@ -39,3 +39,16 @@ CREATE TABLE IF NOT EXISTS mfa_events (
 
 CREATE INDEX IF NOT EXISTS idx_mfa_events_user ON mfa_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_mfa_events_type ON mfa_events(event_type);
+
+-- DOWN: DROP INDEX IF EXISTS idx_verification_tokens_token;
+-- DOWN: DROP INDEX IF EXISTS idx_verification_tokens_user;
+-- DOWN: DROP INDEX IF EXISTS idx_verification_tokens_type;
+-- DOWN: DROP INDEX IF EXISTS idx_mfa_events_user;
+-- DOWN: DROP INDEX IF EXISTS idx_mfa_events_type;
+-- DOWN: DROP TABLE IF EXISTS mfa_events;
+-- DOWN: DROP TABLE IF EXISTS verification_tokens;
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS email_verified;
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS email_verified_at;
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS mfa_enabled;
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS mfa_secret;
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS mfa_backup_codes;

@@ -49,3 +49,14 @@ CREATE TABLE IF NOT EXISTS transaction_audit_log (
 
 CREATE INDEX IF NOT EXISTS idx_tx_audit_transaction ON transaction_audit_log(transaction_id);
 CREATE INDEX IF NOT EXISTS idx_tx_audit_user ON transaction_audit_log(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_tx_attachments_transaction;
+-- DOWN: DROP INDEX IF EXISTS idx_recurring_templates_user;
+-- DOWN: DROP INDEX IF EXISTS idx_tx_audit_transaction;
+-- DOWN: DROP INDEX IF EXISTS idx_tx_audit_user;
+-- DOWN: DROP TABLE IF EXISTS transaction_audit_log;
+-- DOWN: DROP TABLE IF EXISTS recurring_transaction_templates;
+-- DOWN: DROP TABLE IF EXISTS transaction_attachments;
+-- DOWN: ALTER TABLE financial_transactions DROP COLUMN IF EXISTS parent_transaction_id;
+-- DOWN: ALTER TABLE financial_transactions DROP COLUMN IF EXISTS is_split;
+-- DOWN: ALTER TABLE financial_transactions DROP COLUMN IF EXISTS split_note;

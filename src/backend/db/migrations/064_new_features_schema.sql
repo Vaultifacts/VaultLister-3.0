@@ -191,3 +191,27 @@ INSERT OR IGNORE INTO tos_versions (id, version, title, content, effective_date)
     ('tos-v1', '1.0', 'Terms of Service v1.0',
      'By creating an account or using VaultLister (the "Service"), you agree to be bound by these Terms of Service. The full Terms of Service are available at /terms.html and are incorporated here by reference. Key provisions: (1) You must be 18 or older to use the Service. (2) You are responsible for maintaining account security and all activity under your account. (3) Automation features may violate certain marketplace terms; you use them at your own risk. (4) VaultLister is not affiliated with or endorsed by any third-party marketplace. (5) AI-generated content is provided as-is; you are responsible for reviewing it before publishing. (6) Liability is limited to the greater of fees paid in the prior 12 months or $100. (7) The Service is provided "as is" without warranties. Full terms: https://vaultlister.com/terms.html — contact: legal@vaultlister.com',
      '2026-03-01');
+
+-- DOWN: DROP INDEX IF EXISTS idx_cookie_consent_user;
+-- DOWN: DROP INDEX IF EXISTS idx_tos_acceptances_user;
+-- DOWN: DROP INDEX IF EXISTS idx_affiliate_landing_user;
+-- DOWN: DROP INDEX IF EXISTS idx_affiliate_commissions_user;
+-- DOWN: DROP INDEX IF EXISTS idx_deleted_items_user;
+-- DOWN: DROP INDEX IF EXISTS idx_deleted_items_type;
+-- DOWN: DROP INDEX IF EXISTS idx_saved_reports_user;
+-- DOWN: DROP INDEX IF EXISTS idx_plan_usage_user;
+-- DOWN: DROP INDEX IF EXISTS idx_sales_tax_nexus_user;
+-- DOWN: DROP INDEX IF EXISTS idx_buyer_profiles_user;
+-- DOWN: DROP TABLE IF EXISTS buyer_profiles;
+-- DOWN: DROP TABLE IF EXISTS sales_tax_nexus;
+-- DOWN: DROP TABLE IF EXISTS plan_usage;
+-- DOWN: DROP TABLE IF EXISTS report_schedules;
+-- DOWN: DROP TABLE IF EXISTS saved_reports;
+-- DOWN: DROP TABLE IF EXISTS deleted_items;
+-- DOWN: DROP TABLE IF EXISTS affiliate_commissions;
+-- DOWN: DROP TABLE IF EXISTS affiliate_tiers;
+-- DOWN: DROP TABLE IF EXISTS affiliate_landing_pages;
+-- DOWN: DROP TABLE IF EXISTS tos_acceptances;
+-- DOWN: DROP TABLE IF EXISTS tos_versions;
+-- DOWN: DROP TABLE IF EXISTS cookie_consent;
+-- DOWN: -- (includes data migration — manual data rollback required)

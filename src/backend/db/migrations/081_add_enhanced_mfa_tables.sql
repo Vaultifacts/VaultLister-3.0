@@ -53,3 +53,12 @@ CREATE TABLE IF NOT EXISTS totp_secrets (
 );
 
 CREATE INDEX IF NOT EXISTS idx_totp_user ON totp_secrets(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_webauthn_user;
+-- DOWN: DROP INDEX IF EXISTS idx_backup_codes_user;
+-- DOWN: DROP INDEX IF EXISTS idx_sms_codes_user;
+-- DOWN: DROP INDEX IF EXISTS idx_totp_user;
+-- DOWN: DROP TABLE IF EXISTS totp_secrets;
+-- DOWN: DROP TABLE IF EXISTS sms_codes;
+-- DOWN: DROP TABLE IF EXISTS backup_codes;
+-- DOWN: DROP TABLE IF EXISTS webauthn_credentials;

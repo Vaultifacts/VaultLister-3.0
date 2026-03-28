@@ -20,3 +20,7 @@ CREATE TABLE IF NOT EXISTS automation_experiments (
 
 CREATE INDEX IF NOT EXISTS idx_experiments_user ON automation_experiments(user_id);
 CREATE INDEX IF NOT EXISTS idx_experiments_status ON automation_experiments(status);
+
+-- DOWN: DROP INDEX IF EXISTS idx_experiments_user;
+-- DOWN: DROP INDEX IF EXISTS idx_experiments_status;
+-- DOWN: DROP TABLE IF EXISTS automation_experiments;

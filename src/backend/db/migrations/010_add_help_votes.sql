@@ -33,3 +33,9 @@ DROP TABLE _help_faq_temp;
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_help_faq_votes_user ON help_faq_votes(user_id);
 CREATE INDEX IF NOT EXISTS idx_help_article_votes_user ON help_article_votes(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_help_faq_votes_user;
+-- DOWN: DROP INDEX IF EXISTS idx_help_article_votes_user;
+-- DOWN: DROP TABLE IF EXISTS _help_faq_temp;
+-- DOWN: DROP TABLE IF EXISTS help_article_votes;
+-- DOWN: DROP TABLE IF EXISTS help_faq_votes;

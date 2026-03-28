@@ -32,3 +32,9 @@ UPDATE sales SET net_profit = (
 
 -- Create index for date-based queries on sales
 CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at);
+
+-- DOWN: DROP INDEX IF EXISTS idx_sales_created_at;
+-- DOWN: ALTER TABLE sales DROP COLUMN IF EXISTS item_cost;
+-- DOWN: ALTER TABLE sales DROP COLUMN IF EXISTS customer_shipping_cost;
+-- DOWN: ALTER TABLE sales DROP COLUMN IF EXISTS seller_shipping_cost;
+-- DOWN: -- (includes data migration — manual data rollback required)

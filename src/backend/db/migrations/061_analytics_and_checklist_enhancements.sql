@@ -32,3 +32,7 @@ CREATE TABLE IF NOT EXISTS checklist_shares (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- DOWN: DROP TABLE IF EXISTS checklist_shares;
+-- DOWN: DROP TABLE IF EXISTS analytics_digests;
+-- DOWN: DROP TABLE IF EXISTS custom_metrics;

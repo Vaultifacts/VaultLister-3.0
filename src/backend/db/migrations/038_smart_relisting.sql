@@ -119,3 +119,15 @@ CREATE INDEX IF NOT EXISTS idx_relisting_queue_scheduled ON relisting_queue(sche
 CREATE INDEX IF NOT EXISTS idx_relisting_queue_listing ON relisting_queue(listing_id);
 CREATE INDEX IF NOT EXISTS idx_relisting_performance_user ON relisting_performance(user_id);
 CREATE INDEX IF NOT EXISTS idx_relisting_performance_listing ON relisting_performance(listing_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_relisting_rules_user;
+-- DOWN: DROP INDEX IF EXISTS idx_relisting_rules_active;
+-- DOWN: DROP INDEX IF EXISTS idx_relisting_queue_user;
+-- DOWN: DROP INDEX IF EXISTS idx_relisting_queue_status;
+-- DOWN: DROP INDEX IF EXISTS idx_relisting_queue_scheduled;
+-- DOWN: DROP INDEX IF EXISTS idx_relisting_queue_listing;
+-- DOWN: DROP INDEX IF EXISTS idx_relisting_performance_user;
+-- DOWN: DROP INDEX IF EXISTS idx_relisting_performance_listing;
+-- DOWN: DROP TABLE IF EXISTS relisting_performance;
+-- DOWN: DROP TABLE IF EXISTS relisting_queue;
+-- DOWN: DROP TABLE IF EXISTS relisting_rules;

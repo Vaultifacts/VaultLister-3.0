@@ -173,3 +173,28 @@ INSERT OR IGNORE INTO expense_categories (id, user_id, name, type, tax_deductibl
     ('exp-software', 'system', 'Software Subscriptions', 'expense', 1),
     ('exp-travel', 'system', 'Travel & Sourcing Trips', 'expense', 1),
     ('exp-returns', 'system', 'Returns & Refunds', 'expense', 0);
+
+-- DOWN: DROP INDEX IF EXISTS idx_competitor_keywords_user;
+-- DOWN: DROP INDEX IF EXISTS idx_search_analytics_user;
+-- DOWN: DROP INDEX IF EXISTS idx_expense_categories_user;
+-- DOWN: DROP INDEX IF EXISTS idx_sku_platform_links_user;
+-- DOWN: DROP INDEX IF EXISTS idx_sku_platform_links_sku;
+-- DOWN: DROP INDEX IF EXISTS idx_qr_analytics_user;
+-- DOWN: DROP INDEX IF EXISTS idx_warehouse_bins_user;
+-- DOWN: DROP INDEX IF EXISTS idx_watermark_presets_user;
+-- DOWN: DROP INDEX IF EXISTS idx_whatnot_cohosts_event;
+-- DOWN: DROP INDEX IF EXISTS idx_stream_staging_user;
+-- DOWN: DROP INDEX IF EXISTS idx_onboarding_progress_user;
+-- DOWN: DROP INDEX IF EXISTS idx_offline_sync_queue_user;
+-- DOWN: DROP TABLE IF EXISTS offline_sync_queue;
+-- DOWN: DROP TABLE IF EXISTS onboarding_progress;
+-- DOWN: DROP TABLE IF EXISTS stream_staging;
+-- DOWN: DROP TABLE IF EXISTS whatnot_cohosts;
+-- DOWN: DROP TABLE IF EXISTS watermark_presets;
+-- DOWN: DROP TABLE IF EXISTS warehouse_bins;
+-- DOWN: DROP TABLE IF EXISTS qr_analytics;
+-- DOWN: DROP TABLE IF EXISTS sku_platform_links;
+-- DOWN: DROP TABLE IF EXISTS expense_categories;
+-- DOWN: DROP TABLE IF EXISTS search_analytics;
+-- DOWN: DROP TABLE IF EXISTS competitor_keywords;
+-- DOWN: -- (includes data migration — manual data rollback required)

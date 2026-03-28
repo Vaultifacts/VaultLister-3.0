@@ -2,3 +2,5 @@
 -- Required by platformSync services that write sync errors after failed syncs
 
 ALTER TABLE shops ADD COLUMN sync_error TEXT;
+
+-- DOWN: ALTER TABLE shops DROP COLUMN IF EXISTS sync_error;

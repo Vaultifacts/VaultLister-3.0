@@ -39,3 +39,12 @@ CREATE INDEX IF NOT EXISTS idx_webhook_events_user ON webhook_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_webhook_events_status ON webhook_events(status);
 CREATE INDEX IF NOT EXISTS idx_webhook_events_source ON webhook_events(source);
 CREATE INDEX IF NOT EXISTS idx_webhook_events_type ON webhook_events(event_type);
+
+-- DOWN: DROP INDEX IF EXISTS idx_webhook_endpoints_user;
+-- DOWN: DROP INDEX IF EXISTS idx_webhook_endpoints_enabled;
+-- DOWN: DROP INDEX IF EXISTS idx_webhook_events_user;
+-- DOWN: DROP INDEX IF EXISTS idx_webhook_events_status;
+-- DOWN: DROP INDEX IF EXISTS idx_webhook_events_source;
+-- DOWN: DROP INDEX IF EXISTS idx_webhook_events_type;
+-- DOWN: DROP TABLE IF EXISTS webhook_events;
+-- DOWN: DROP TABLE IF EXISTS webhook_endpoints;

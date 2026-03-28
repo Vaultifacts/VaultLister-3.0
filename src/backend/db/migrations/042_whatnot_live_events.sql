@@ -37,3 +37,9 @@ CREATE TABLE IF NOT EXISTS whatnot_event_items (
 CREATE INDEX IF NOT EXISTS idx_whatnot_events_user ON whatnot_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_whatnot_events_status ON whatnot_events(status);
 CREATE INDEX IF NOT EXISTS idx_whatnot_event_items_event ON whatnot_event_items(event_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_whatnot_events_user;
+-- DOWN: DROP INDEX IF EXISTS idx_whatnot_events_status;
+-- DOWN: DROP INDEX IF EXISTS idx_whatnot_event_items_event;
+-- DOWN: DROP TABLE IF EXISTS whatnot_event_items;
+-- DOWN: DROP TABLE IF EXISTS whatnot_events;

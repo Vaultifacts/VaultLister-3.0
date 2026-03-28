@@ -41,3 +41,9 @@ ON notifications(user_id, is_read);
 
 CREATE INDEX IF NOT EXISTS idx_notifications_user_created
 ON notifications(user_id, created_at);
+
+-- DOWN: DROP INDEX IF EXISTS idx_task_queue_status_scheduled;
+-- DOWN: DROP INDEX IF EXISTS idx_notifications_user_unread;
+-- DOWN: DROP INDEX IF EXISTS idx_notifications_user_created;
+-- DOWN: DROP TABLE IF EXISTS notifications;
+-- DOWN: DROP TABLE IF EXISTS task_queue;

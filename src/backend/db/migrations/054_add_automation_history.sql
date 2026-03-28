@@ -29,3 +29,10 @@ CREATE INDEX IF NOT EXISTS idx_automation_runs_automation ON automation_runs(aut
 CREATE INDEX IF NOT EXISTS idx_automation_runs_status ON automation_runs(status);
 CREATE INDEX IF NOT EXISTS idx_automation_runs_started ON automation_runs(started_at);
 CREATE INDEX IF NOT EXISTS idx_automation_runs_user_started ON automation_runs(user_id, started_at DESC);
+
+-- DOWN: DROP INDEX IF EXISTS idx_automation_runs_user;
+-- DOWN: DROP INDEX IF EXISTS idx_automation_runs_automation;
+-- DOWN: DROP INDEX IF EXISTS idx_automation_runs_status;
+-- DOWN: DROP INDEX IF EXISTS idx_automation_runs_started;
+-- DOWN: DROP INDEX IF EXISTS idx_automation_runs_user_started;
+-- DOWN: DROP TABLE IF EXISTS automation_runs;

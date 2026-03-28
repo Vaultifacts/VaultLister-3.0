@@ -16,3 +16,14 @@ ALTER TABLE audit_logs ADD COLUMN resource_type TEXT;
 -- Orders priority columns
 ALTER TABLE orders ADD COLUMN priority TEXT DEFAULT 'normal';
 ALTER TABLE orders ADD COLUMN priority_note TEXT;
+
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS mfa_method;
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS phone_number;
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS phone_verified;
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS pending_phone;
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS phone_verification_code;
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS phone_verification_expires;
+-- DOWN: ALTER TABLE audit_logs DROP COLUMN IF EXISTS category;
+-- DOWN: ALTER TABLE audit_logs DROP COLUMN IF EXISTS resource_type;
+-- DOWN: ALTER TABLE orders DROP COLUMN IF EXISTS priority;
+-- DOWN: ALTER TABLE orders DROP COLUMN IF EXISTS priority_note;

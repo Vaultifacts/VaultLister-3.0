@@ -47,3 +47,10 @@ CREATE TABLE IF NOT EXISTS push_notification_log (
 );
 
 CREATE INDEX IF NOT EXISTS idx_push_log_user ON push_notification_log(user_id, created_at DESC);
+
+-- DOWN: DROP INDEX IF EXISTS idx_push_devices_user;
+-- DOWN: DROP INDEX IF EXISTS idx_push_devices_token;
+-- DOWN: DROP INDEX IF EXISTS idx_push_log_user;
+-- DOWN: DROP TABLE IF EXISTS push_notification_log;
+-- DOWN: DROP TABLE IF EXISTS notification_preferences;
+-- DOWN: DROP TABLE IF EXISTS push_devices;

@@ -15,3 +15,5 @@
 -- No schema changes needed; this migration documents existing design decision
 -- Marker comment: INTENTIONAL_INTEGER_LOG_ID
 SELECT 1 WHERE 0; -- No-op to satisfy schema validation
+
+-- DOWN: -- (no-op migration — no rollback needed)

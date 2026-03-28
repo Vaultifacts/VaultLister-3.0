@@ -19,3 +19,8 @@ CREATE INDEX IF NOT EXISTS idx_listings_folders_user ON listings_folders(user_id
 ALTER TABLE listings ADD COLUMN folder_id TEXT REFERENCES listings_folders(id) ON DELETE SET NULL;
 
 CREATE INDEX IF NOT EXISTS idx_listings_folder ON listings(folder_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_listings_folders_user;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_folder;
+-- DOWN: DROP TABLE IF EXISTS listings_folders;
+-- DOWN: ALTER TABLE listings DROP COLUMN IF EXISTS folder_id;

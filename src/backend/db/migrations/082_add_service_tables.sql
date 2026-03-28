@@ -81,3 +81,16 @@ CREATE TABLE IF NOT EXISTS email_unsubscribes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_email_unsub ON email_unsubscribes(email);
+
+-- DOWN: DROP INDEX IF EXISTS idx_webhooks_user;
+-- DOWN: DROP INDEX IF EXISTS idx_webhook_deliveries;
+-- DOWN: DROP INDEX IF EXISTS idx_email_queue_status;
+-- DOWN: DROP INDEX IF EXISTS idx_email_log_user;
+-- DOWN: DROP INDEX IF EXISTS idx_user_consents;
+-- DOWN: DROP INDEX IF EXISTS idx_email_unsub;
+-- DOWN: DROP TABLE IF EXISTS email_unsubscribes;
+-- DOWN: DROP TABLE IF EXISTS user_consents;
+-- DOWN: DROP TABLE IF EXISTS email_log;
+-- DOWN: DROP TABLE IF EXISTS email_queue;
+-- DOWN: DROP TABLE IF EXISTS webhook_deliveries;
+-- DOWN: DROP TABLE IF EXISTS user_webhooks;

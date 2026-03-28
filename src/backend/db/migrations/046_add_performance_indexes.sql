@@ -27,3 +27,18 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 -- Shops indexes (core table)
 CREATE INDEX IF NOT EXISTS idx_shops_user_id ON shops(user_id);
 CREATE INDEX IF NOT EXISTS idx_shops_platform ON shops(platform);
+
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_user_status;
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_user_created;
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_category;
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_brand;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_user_status;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_inventory_id;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_platform;
+-- DOWN: DROP INDEX IF EXISTS idx_sales_user_created;
+-- DOWN: DROP INDEX IF EXISTS idx_sales_platform;
+-- DOWN: DROP INDEX IF EXISTS idx_orders_user_status;
+-- DOWN: DROP INDEX IF EXISTS idx_orders_created;
+-- DOWN: DROP INDEX IF EXISTS idx_users_email;
+-- DOWN: DROP INDEX IF EXISTS idx_shops_user_id;
+-- DOWN: DROP INDEX IF EXISTS idx_shops_platform;

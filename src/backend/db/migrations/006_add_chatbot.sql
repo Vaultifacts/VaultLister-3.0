@@ -42,3 +42,10 @@ CREATE TABLE IF NOT EXISTS chat_canned_responses (
 CREATE INDEX IF NOT EXISTS idx_chat_conversations_user ON chat_conversations(user_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_conversation ON chat_messages(conversation_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_created ON chat_messages(created_at);
+
+-- DOWN: DROP INDEX IF EXISTS idx_chat_conversations_user;
+-- DOWN: DROP INDEX IF EXISTS idx_chat_messages_conversation;
+-- DOWN: DROP INDEX IF EXISTS idx_chat_messages_created;
+-- DOWN: DROP TABLE IF EXISTS chat_canned_responses;
+-- DOWN: DROP TABLE IF EXISTS chat_messages;
+-- DOWN: DROP TABLE IF EXISTS chat_conversations;

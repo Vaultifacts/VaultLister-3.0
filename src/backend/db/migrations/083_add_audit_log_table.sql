@@ -24,3 +24,11 @@ CREATE INDEX IF NOT EXISTS idx_audit_severity ON audit_logs(severity, created_at
 CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_resource ON audit_logs(resource_type, resource_id);
 CREATE INDEX IF NOT EXISTS idx_audit_date ON audit_logs(created_at DESC);
+
+-- DOWN: DROP INDEX IF EXISTS idx_audit_user;
+-- DOWN: DROP INDEX IF EXISTS idx_audit_category;
+-- DOWN: DROP INDEX IF EXISTS idx_audit_severity;
+-- DOWN: DROP INDEX IF EXISTS idx_audit_action;
+-- DOWN: DROP INDEX IF EXISTS idx_audit_resource;
+-- DOWN: DROP INDEX IF EXISTS idx_audit_date;
+-- DOWN: DROP TABLE IF EXISTS audit_logs;

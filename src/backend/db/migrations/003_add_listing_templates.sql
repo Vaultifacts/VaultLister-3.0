@@ -34,3 +34,7 @@ CREATE TABLE IF NOT EXISTS listing_templates (
 
 CREATE INDEX IF NOT EXISTS idx_listing_templates_user ON listing_templates(user_id);
 CREATE INDEX IF NOT EXISTS idx_listing_templates_favorite ON listing_templates(user_id, is_favorite);
+
+-- DOWN: DROP INDEX IF EXISTS idx_listing_templates_user;
+-- DOWN: DROP INDEX IF EXISTS idx_listing_templates_favorite;
+-- DOWN: DROP TABLE IF EXISTS listing_templates;

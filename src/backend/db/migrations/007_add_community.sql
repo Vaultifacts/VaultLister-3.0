@@ -166,3 +166,25 @@ CREATE TRIGGER IF NOT EXISTS community_reply_created AFTER INSERT ON community_r
         replies_count = replies_count + 1,
         last_active_at = CURRENT_TIMESTAMP;
 END;
+
+-- DOWN: DROP TRIGGER IF EXISTS community_posts_ai;
+-- DOWN: DROP TRIGGER IF EXISTS community_posts_au;
+-- DOWN: DROP TRIGGER IF EXISTS community_posts_ad;
+-- DOWN: DROP TRIGGER IF EXISTS community_post_created;
+-- DOWN: DROP TRIGGER IF EXISTS community_reply_created;
+-- DOWN: DROP INDEX IF EXISTS idx_community_posts_type;
+-- DOWN: DROP INDEX IF EXISTS idx_community_posts_category;
+-- DOWN: DROP INDEX IF EXISTS idx_community_posts_user;
+-- DOWN: DROP INDEX IF EXISTS idx_community_posts_activity;
+-- DOWN: DROP INDEX IF EXISTS idx_community_posts_upvotes;
+-- DOWN: DROP INDEX IF EXISTS idx_community_replies_post;
+-- DOWN: DROP INDEX IF EXISTS idx_community_reactions_target;
+-- DOWN: DROP INDEX IF EXISTS idx_community_stats_upvotes;
+-- DOWN: DROP INDEX IF EXISTS idx_community_stats_profit;
+-- DOWN: DROP TABLE IF EXISTS community_posts_fts;
+-- DOWN: DROP TABLE IF EXISTS community_stats;
+-- DOWN: DROP TABLE IF EXISTS community_badges;
+-- DOWN: DROP TABLE IF EXISTS community_flags;
+-- DOWN: DROP TABLE IF EXISTS community_reactions;
+-- DOWN: DROP TABLE IF EXISTS community_replies;
+-- DOWN: DROP TABLE IF EXISTS community_posts;

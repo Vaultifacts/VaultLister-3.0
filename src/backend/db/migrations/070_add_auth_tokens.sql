@@ -25,3 +25,10 @@ CREATE TABLE IF NOT EXISTS email_verifications (
 
 CREATE INDEX IF NOT EXISTS idx_email_verifications_token ON email_verifications(token);
 CREATE INDEX IF NOT EXISTS idx_email_verifications_user ON email_verifications(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_password_resets_token;
+-- DOWN: DROP INDEX IF EXISTS idx_password_resets_user;
+-- DOWN: DROP INDEX IF EXISTS idx_email_verifications_token;
+-- DOWN: DROP INDEX IF EXISTS idx_email_verifications_user;
+-- DOWN: DROP TABLE IF EXISTS email_verifications;
+-- DOWN: DROP TABLE IF EXISTS password_resets;

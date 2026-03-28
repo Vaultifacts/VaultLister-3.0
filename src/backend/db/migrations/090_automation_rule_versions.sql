@@ -17,3 +17,6 @@ CREATE TABLE IF NOT EXISTS automation_rule_versions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_rule_versions_rule ON automation_rule_versions(rule_id, version DESC);
+
+-- DOWN: DROP INDEX IF EXISTS idx_rule_versions_rule;
+-- DOWN: DROP TABLE IF EXISTS automation_rule_versions;

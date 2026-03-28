@@ -47,3 +47,12 @@ CREATE INDEX IF NOT EXISTS idx_checklist_items_checklist ON checklist_items(chec
 CREATE INDEX IF NOT EXISTS idx_checklist_items_due_date ON checklist_items(due_date);
 CREATE INDEX IF NOT EXISTS idx_checklist_items_priority ON checklist_items(priority);
 CREATE INDEX IF NOT EXISTS idx_checklist_items_completed ON checklist_items(completed);
+
+-- DOWN: DROP INDEX IF EXISTS idx_checklist_items_user;
+-- DOWN: DROP INDEX IF EXISTS idx_checklist_items_checklist;
+-- DOWN: DROP INDEX IF EXISTS idx_checklist_items_due_date;
+-- DOWN: DROP INDEX IF EXISTS idx_checklist_items_priority;
+-- DOWN: DROP INDEX IF EXISTS idx_checklist_items_completed;
+-- DOWN: DROP TABLE IF EXISTS checklist_items;
+-- DOWN: DROP TABLE IF EXISTS checklists;
+-- DOWN: -- (includes data migration — manual data rollback required)

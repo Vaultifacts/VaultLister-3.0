@@ -26,3 +26,7 @@ CREATE TABLE IF NOT EXISTS shipping_profiles (
 
 CREATE INDEX IF NOT EXISTS idx_shipping_profiles_user ON shipping_profiles(user_id);
 CREATE INDEX IF NOT EXISTS idx_shipping_profiles_default ON shipping_profiles(user_id, is_default);
+
+-- DOWN: DROP INDEX IF EXISTS idx_shipping_profiles_user;
+-- DOWN: DROP INDEX IF EXISTS idx_shipping_profiles_default;
+-- DOWN: DROP TABLE IF EXISTS shipping_profiles;

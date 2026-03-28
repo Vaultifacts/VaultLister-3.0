@@ -30,3 +30,9 @@ CREATE TABLE IF NOT EXISTS roadmap_votes (
 CREATE INDEX IF NOT EXISTS idx_roadmap_features_status ON roadmap_features(status);
 CREATE INDEX IF NOT EXISTS idx_roadmap_votes_user ON roadmap_votes(user_id);
 CREATE INDEX IF NOT EXISTS idx_roadmap_votes_feature ON roadmap_votes(feature_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_roadmap_features_status;
+-- DOWN: DROP INDEX IF EXISTS idx_roadmap_votes_user;
+-- DOWN: DROP INDEX IF EXISTS idx_roadmap_votes_feature;
+-- DOWN: DROP TABLE IF EXISTS roadmap_votes;
+-- DOWN: DROP TABLE IF EXISTS roadmap_features;

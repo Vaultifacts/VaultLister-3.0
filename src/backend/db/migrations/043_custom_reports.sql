@@ -15,3 +15,6 @@ CREATE TABLE IF NOT EXISTS custom_reports (
 );
 
 CREATE INDEX IF NOT EXISTS idx_custom_reports_user ON custom_reports(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_custom_reports_user;
+-- DOWN: DROP TABLE IF EXISTS custom_reports;
