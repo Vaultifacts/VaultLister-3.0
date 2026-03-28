@@ -1414,7 +1414,7 @@ Object.assign(pages, {
 
         // Merge presets with existing rules to show enabled state
         const automations = allPresets.map(preset => {
-            const existing = store.state.automations.find(a => a.type === preset.id || a.name === preset.name);
+            const existing = (store.state.automations || []).find(a => a.type === preset.id || a.name === preset.name);
             return {
                 ...preset,
                 id: existing ? existing.id : preset.id,
@@ -4895,6 +4895,7 @@ Object.assign(pages, {
     // Settings page,
 
     settings() {
+        const safeGet = (key, fallback = null) => { try { return localStorage.getItem(key); } catch { return fallback; } };
         const hasUnsavedChanges = store.state.settingsChanged || false;
         const activeTab = store.state.settingsTab || 'profile';
         const user = store.state.user || {};
@@ -5067,7 +5068,7 @@ Object.assign(pages, {
                             <h4 class="settings-section-title">Accent Color</h4>
                             <div class="accent-colors">
                                 ${['blue', 'green', 'purple', 'orange', 'pink', 'red', 'teal', 'indigo'].map(color => `
-                                    <button class="accent-color-option ${localStorage.getItem('vaultlister_accent') === color ? 'active' : ''}"
+                                    <button class="accent-color-option ${safeGet('vaultlister_accent') === color ? 'active' : ''}"
                                             style="--accent-preview: var(--${color}-500);"
                                             onclick="handlers.setAccentColor('${color}')">
                                         <span class="accent-color-swatch"></span>
@@ -5083,17 +5084,17 @@ Object.assign(pages, {
                                 <div class="form-group">
                                     <label class="form-label">Density</label>
                                     <select class="form-select" onchange="themeManager.setDensity(this.value)">
-                                        <option value="compact" ${localStorage.getItem('vaultlister_density') === 'compact' ? 'selected' : ''}>Compact</option>
-                                        <option value="default" ${localStorage.getItem('vaultlister_density') === 'default' || !localStorage.getItem('vaultlister_density') ? 'selected' : ''}>Default</option>
-                                        <option value="comfortable" ${localStorage.getItem('vaultlister_density') === 'comfortable' ? 'selected' : ''}>Comfortable</option>
+                                        <option value="compact" ${safeGet('vaultlister_density') === 'compact' ? 'selected' : ''}>Compact</option>
+                                        <option value="default" ${safeGet('vaultlister_density') === 'default' || !safeGet('vaultlister_density') ? 'selected' : ''}>Default</option>
+                                        <option value="comfortable" ${safeGet('vaultlister_density') === 'comfortable' ? 'selected' : ''}>Comfortable</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Font Size</label>
                                     <select class="form-select" onchange="themeManager.setFontSize(this.value)">
-                                        <option value="small" ${localStorage.getItem('vaultlister_fontsize') === 'small' ? 'selected' : ''}>Small (14px)</option>
-                                        <option value="default" ${localStorage.getItem('vaultlister_fontsize') === 'default' || !localStorage.getItem('vaultlister_fontsize') ? 'selected' : ''}>Default (16px)</option>
-                                        <option value="large" ${localStorage.getItem('vaultlister_fontsize') === 'large' ? 'selected' : ''}>Large (18px)</option>
+                                        <option value="small" ${safeGet('vaultlister_fontsize') === 'small' ? 'selected' : ''}>Small (14px)</option>
+                                        <option value="default" ${safeGet('vaultlister_fontsize') === 'default' || !safeGet('vaultlister_fontsize') ? 'selected' : ''}>Default (16px)</option>
+                                        <option value="large" ${safeGet('vaultlister_fontsize') === 'large' ? 'selected' : ''}>Large (18px)</option>
                                     </select>
                                 </div>
                             </div>
@@ -6008,10 +6009,10 @@ Object.assign(pages, {
             <div class="settings-container">
                 <!-- Feature 5: Settings Changelog Banner -->
                 ${(() => {
-                    const lastVisit = localStorage.getItem('vaultlister_settings_last_visit');
+                    const lastVisit = safeGet('vaultlister_settings_last_visit');
                     let changes = [];
                     try {
-                        changes = JSON.parse(localStorage.getItem('vaultlister_settings_changes') || '[]');
+                        changes = JSON.parse(safeGet('vaultlister_settings_changes') || '[]');
                     } catch (e) {
                         console.error('Failed to parse settings changes:', e);
                         changes = [];
@@ -7783,7 +7784,7 @@ Object.assign(pages, {
 
     sizeCharts() {
         const activeTab = store.state.sizeChartsTab || 'women-clothing';
-        const sizeUnit = store.state.sizeChartUnit || localStorage.getItem('vaultlister_size_unit') || 'in';
+        const sizeUnit = store.state.sizeChartUnit || (() => { try { return localStorage.getItem('vaultlister_size_unit'); } catch { return null; } })() || 'in';
         const convertCell = (val) => {
             if (sizeUnit === 'in') return val;
             return val.replace(/(\d+\.?\d*)/g, (m) => (parseFloat(m) * 2.54).toFixed(1));
@@ -8075,7 +8076,7 @@ Object.assign(pages, {
                         <button class="btn btn-sm btn-secondary" onclick="handlers.copySizeChart('${activeTab}')" title="Copy size chart">
                             ${components.icon('copy', 14)} Copy
                         </button>
-                        <button class="btn btn-sm ${sizeUnit === 'cm' ? 'btn-primary' : 'btn-secondary'}" onclick="const u = store.state.sizeChartUnit === 'cm' ? 'in' : 'cm'; store.setState({ sizeChartUnit: u }); localStorage.setItem('vaultlister_size_unit', u); renderApp(pages.sizeCharts());" title="Toggle inches/centimeters">
+                        <button class="btn btn-sm ${sizeUnit === 'cm' ? 'btn-primary' : 'btn-secondary'}" onclick="const u = store.state.sizeChartUnit === 'cm' ? 'in' : 'cm'; store.setState({ sizeChartUnit: u }); try { localStorage.setItem('vaultlister_size_unit', u); } catch(e) {} renderApp(pages.sizeCharts());" title="Toggle inches/centimeters">
                             ${components.icon('ruler', 14)} ${sizeUnit === 'cm' ? 'cm' : 'in'}
                         </button>
                         <button class="btn btn-sm btn-secondary" onclick="store.setState({ sizeChartSwapped: !store.state.sizeChartSwapped }); renderApp(pages.sizeCharts());" title="Swap rows and columns">
@@ -11622,9 +11623,9 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         const versionFilter = store.state.changelogVersionFilter || 'all';
 
         // Track "New since last visit"
-        const lastChangelogVisit = localStorage.getItem('vaultlister_changelog_last_visit');
+        const lastChangelogVisit = (() => { try { return localStorage.getItem('vaultlister_changelog_last_visit'); } catch { return null; } })();
         const lastVisitDate = lastChangelogVisit ? new Date(lastChangelogVisit) : null;
-        setTimeout(() => localStorage.setItem('vaultlister_changelog_last_visit', new Date().toISOString()), 2000);
+        setTimeout(() => { try { localStorage.setItem('vaultlister_changelog_last_visit', new Date().toISOString()); } catch(e) {} }, 2000);
 
         // Count changes by type
         const allChanges = versions.flatMap(v => v.changes);
