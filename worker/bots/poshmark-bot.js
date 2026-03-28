@@ -252,6 +252,7 @@ export class PoshmarkBot {
 
             return this.isLoggedIn;
         } catch (error) {
+            await this._screenshotOnFailure('login');
             logger.error('[PoshmarkBot] Login error', error);
             await captureFailureScreenshot(this.page, 'login');
             writeAuditLog('login', { username, method: 'form', success: false, error: error.message });
@@ -297,6 +298,7 @@ export class PoshmarkBot {
                 return false;
             });
         } catch (error) {
+            await this._screenshotOnFailure('share_item');
             logger.error('[PoshmarkBot] Share error', error);
             await captureFailureScreenshot(this.page, 'share_item');
             this.stats.errors++;
@@ -355,6 +357,7 @@ export class PoshmarkBot {
             logger.info(`[PoshmarkBot] Closet share complete. Shared ${shared} items.`);
             return shared;
         } catch (error) {
+            await this._screenshotOnFailure('share_closet');
             logger.error('[PoshmarkBot] Closet share error', error);
             await captureFailureScreenshot(this.page, 'share_closet');
             this.stats.errors++;
@@ -390,6 +393,7 @@ export class PoshmarkBot {
                 return false;
             });
         } catch (error) {
+            await this._screenshotOnFailure('follow_user');
             logger.error('[PoshmarkBot] Follow error', error);
             await captureFailureScreenshot(this.page, 'follow_user');
             this.stats.errors++;
@@ -433,6 +437,7 @@ export class PoshmarkBot {
             logger.info(`[PoshmarkBot] Follow back complete. Followed ${followed} users.`);
             return followed;
         } catch (error) {
+            await this._screenshotOnFailure('follow_back');
             logger.error('[PoshmarkBot] Follow back error', error);
             this.stats.errors++;
             throw error;
@@ -662,6 +667,7 @@ export class PoshmarkBot {
 
             return { sent: false, reason: 'submit_button_not_found' };
         } catch (error) {
+            await this._screenshotOnFailure('send_offer_to_likers');
             logger.error('[PoshmarkBot] OTL error', error);
             this.stats.errors++;
             return { sent: false, reason: error.message };
@@ -713,6 +719,7 @@ export class PoshmarkBot {
             logger.info(`[PoshmarkBot] OTL campaign done: ${sent} sent, ${skipped} skipped`);
             return { sent, skipped, total: uniqueLinks.length };
         } catch (error) {
+            await this._screenshotOnFailure('send_offers_all_listings');
             logger.error('[PoshmarkBot] OTL campaign error', error);
             this.stats.errors++;
             throw error;
@@ -784,6 +791,7 @@ export class PoshmarkBot {
             logger.info(`[PoshmarkBot] Community share complete. Shared ${shared} items.`);
             return { shared };
         } catch (error) {
+            await this._screenshotOnFailure('community_share');
             logger.error('[PoshmarkBot] Community share error', error);
             this.stats.errors++;
             throw error;
@@ -916,6 +924,7 @@ export class PoshmarkBot {
             return { success: true, listingUrl };
 
         } catch (error) {
+            try { await listPage.screenshot({ path: (() => { const d = path.join(process.cwd(), 'data', 'bot-screenshots'); fs.mkdirSync(d, { recursive: true }); return path.join(d, `${new Date().toISOString().replace(/[:.]/g, '-')}-create_listing.png`); })() }); } catch (_) {}
             writeAuditLog('publish_failure', { title, price, error: error.message });
             logger.error('[PoshmarkBot] createListing error', { error: error.message });
             this.stats.errors++;
@@ -1057,6 +1066,7 @@ export class PoshmarkBot {
             logger.info(`[PoshmarkBot] Found ${listings.length} closet listings`);
             return listings;
         } catch (error) {
+            await this._screenshotOnFailure('get_closet_listings');
             logger.error('[PoshmarkBot] getClosetListings error', error);
             this.stats.errors++;
             throw error;
@@ -1130,6 +1140,7 @@ export class PoshmarkBot {
             logger.info('[PoshmarkBot] Closet stats fetched', stats);
             return stats;
         } catch (error) {
+            await this._screenshotOnFailure('get_closet_stats');
             logger.error('[PoshmarkBot] getClosetStats error', error);
             this.stats.errors++;
             throw error;
@@ -1144,14 +1155,41 @@ export class PoshmarkBot {
     }
 
     /**
-     * Close the browser
+     * Take a failure screenshot to data/bot-screenshots/[timestamp]-[action].png
+     * Silently skips if page is not available.
+     */
+    async _screenshotOnFailure(action) {
+        if (!this.page) return;
+        try {
+            const screenshotDir = path.join(process.cwd(), 'data', 'bot-screenshots');
+            fs.mkdirSync(screenshotDir, { recursive: true });
+            const ts = new Date().toISOString().replace(/[:.]/g, '-');
+            const screenshotPath = path.join(screenshotDir, `${ts}-${action}.png`);
+            await this.page.screenshot({ path: screenshotPath });
+            logger.warn('[PoshmarkBot] Failure screenshot saved', { path: screenshotPath, action });
+            writeAuditLog('failure_screenshot', { action, path: screenshotPath });
+        } catch (e) {
+            logger.warn('[PoshmarkBot] Could not capture failure screenshot', { error: e.message, action });
+        }
+    }
+
+    /**
+     * Close the browser with a 5-second timeout.
      */
     async close() {
         logger.info('[PoshmarkBot] Closing browser...');
         if (this.browser) {
-            await this.browser.close();
-            this.browser = null;
-            this.page = null;
+            try {
+                await Promise.race([
+                    this.browser.close(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('browser.close() timed out')), 5000))
+                ]);
+            } catch (e) {
+                logger.warn('[PoshmarkBot] Browser close error', { error: e.message });
+            } finally {
+                this.browser = null;
+                this.page = null;
+            }
         }
         logger.info('[PoshmarkBot] Browser closed');
     }
