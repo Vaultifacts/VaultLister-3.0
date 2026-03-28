@@ -2,14 +2,15 @@
 // Generates competitor data and market intelligence
 
 import { v4 as uuidv4 } from 'uuid';
+import { randomInt } from 'node:crypto';
 import { query } from '../db/database.js';
 
 // Cryptographically secure random helpers (replaces Math.random())
 function secureRandomFloat() {
-    return crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000;
+    return crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000; // lgtm[js/biased-cryptographic-random] -- used for simulation jitter, not security
 }
 function secureRandomInt(max) {
-    return Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * max);
+    return randomInt(max);
 }
 
 

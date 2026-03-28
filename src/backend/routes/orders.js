@@ -2,6 +2,7 @@
 // Manages order tracking and fulfillment
 
 import { query } from '../db/database.js';
+import { randomInt } from 'node:crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../shared/logger.js';
 import { parsePagination } from '../shared/helpers.js';
@@ -12,7 +13,7 @@ const ALLOWED_RETURN_FIELDS = new Set(['return_status', 'return_tracking']);
 
 // Cryptographically secure random helpers (replaces Math.random())
 function secureRandomInt(max) {
-    return Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * max);
+    return randomInt(max);
 }
 function secureRandomFloat() {
     return crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000;

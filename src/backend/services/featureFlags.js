@@ -1,6 +1,7 @@
 // Feature Flags Service
 // Enables gradual rollout and A/B testing
 
+import { randomInt } from 'node:crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 
@@ -238,7 +239,7 @@ const abTesting = {
     getVariant(experimentName, variants = ['A', 'B'], user = null) {
         const bucket = user?.id
             ? featureFlags.hashUserId(user.id + experimentName) % variants.length
-            : Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * variants.length);
+            : randomInt(variants.length);
 
         return variants[bucket];
     },

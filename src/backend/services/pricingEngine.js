@@ -2,6 +2,7 @@
 // Generates price predictions and recommendations using Claude Haiku + statistical fallback
 
 import { v4 as uuidv4 } from 'uuid';
+import { randomInt } from 'node:crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { claudePricePrediction, claudeDemandForecast } from '../../shared/ai/predictions-ai.js';
@@ -11,7 +12,7 @@ function secureRandomFloat() {
     return crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000;
 }
 function secureRandomInt(max) {
-    return Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * max);
+    return randomInt(max);
 }
 
 // Seasonality factors by month (index 0 = January)
