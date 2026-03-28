@@ -1825,7 +1825,7 @@ Object.assign(pages, {
                     try {
                         changes = JSON.parse(localStorage.getItem('vaultlister_settings_changes') || '[]');
                     } catch (e) {
-                        console.error('Failed to parse settings changes:', e);
+                        console.error('Failed to parse settings changes:', e); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring
                         changes = [];
                     }
                     if (changes.length > 0 && lastVisit) {

@@ -833,7 +833,7 @@ const modals = {
                                         </div>
                                     `).join('');
                                 } catch (e) {
-                                    console.error('Error parsing item images:', e);
+                                    console.error('Error parsing item images:', e); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring
                                     return '';
                                 }
                             })()}

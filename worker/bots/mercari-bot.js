@@ -145,7 +145,7 @@ export class MercariBot {
                 return false;
             } catch (error) {
                 lastError = error;
-                console.error('[MercariBot] Refresh error (attempt %d/2):', attempt, error.message);
+                console.error(`[MercariBot] Refresh error (attempt ${attempt}/2):`, error.message);
                 if (attempt < 2) {
                     await this.page.waitForTimeout(randomDelay(1000, 2000));
                 }
@@ -226,7 +226,7 @@ export class MercariBot {
                 return false;
             } catch (error) {
                 lastError = error;
-                console.error('[MercariBot] Relist error (attempt %d/2):', attempt, error.message);
+                console.error(`[MercariBot] Relist error (attempt ${attempt}/2):`, error.message);
                 if (attempt < 2) {
                     await this.page.waitForTimeout(randomDelay(1000, 2000));
                 }
