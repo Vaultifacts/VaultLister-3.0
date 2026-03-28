@@ -1216,6 +1216,10 @@ server = Bun.serve({
                     });
                 }
                 user = authResult.user;
+            } else if (isPublicMonitoring) {
+                // Optional auth: attribute RUM data to user if token/cookie present, but don't reject if absent
+                const authResult = await authenticateToken(request);
+                if (authResult.success) user = authResult.user;
             }
 
             // Parse body only for methods that have a body
