@@ -3491,6 +3491,8 @@ body.dark-mode .toast-close:hover {
 .modal-body {
     padding: var(--space-5);
     overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .modal-footer {
@@ -3499,6 +3501,7 @@ body.dark-mode .toast-close:hover {
     display: flex;
     justify-content: flex-end;
     gap: var(--space-3);
+    flex-shrink: 0;
 }
 
 /* ============================================
