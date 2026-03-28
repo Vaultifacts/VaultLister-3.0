@@ -1,6 +1,6 @@
 # Database Schema
 
-Generated from live PostgreSQL schema (`data/vaultlister.db`).
+> **Note:** This file documents the original SQLite schema (pre-March 2026). The current schema is `src/backend/db/pg-schema.sql` (PostgreSQL). This file is retained for historical reference only — it uses SQLite-specific syntax (DATETIME, FTS5 virtual tables, AUTOINCREMENT) that has been superseded.
 
 ## Tables
 
