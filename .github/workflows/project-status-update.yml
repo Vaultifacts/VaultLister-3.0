@@ -4,10 +4,14 @@ name: Project Status Update
 # Runs every Monday at 9am UTC, and whenever an issue is closed or reopened
 on:
   schedule:
-    - cron: '0 9 * * 1'
+    - cron: '0 16 * * 1'
   issues:
     types: [closed, reopened]
   workflow_dispatch:
+
+concurrency:
+  group: project-status-update
+  cancel-in-progress: true
 
 permissions:
   issues: read
