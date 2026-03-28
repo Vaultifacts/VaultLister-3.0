@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
+import websocketService from '../services/websocket.js';
 
 
 export async function salesRouter(ctx) {
@@ -240,6 +241,8 @@ export async function salesRouter(ctx) {
             throw error;
         }
 
+        websocketService.notifySaleCreated(user.id, sale);
+
         return { status: 201, data: { sale } };
     }
 
@@ -303,6 +306,12 @@ export async function salesRouter(ctx) {
         }
 
         const sale = await query.get('SELECT * FROM sales WHERE id = ? AND user_id = ?', [id, user.id]);
+
+        if (status === 'shipped') {
+            websocketService.notifySaleShipped(user.id, sale);
+        } else if (status === 'delivered') {
+            websocketService.notifySaleDelivered(user.id, sale);
+        }
 
         return { status: 200, data: { sale } };
     }

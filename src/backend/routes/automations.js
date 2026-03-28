@@ -4,6 +4,7 @@ import { query } from '../db/database.js';
 import { checkTierPermission } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
 import { safeJsonParse } from '../shared/utils.js';
+import websocketService from '../services/websocket.js';
 
 // Validate cron schedule format (5 or 6 fields, valid characters only)
 function validateCronSchedule(schedule) {
@@ -530,6 +531,8 @@ export async function automationsRouter(ctx) {
             INSERT INTO task_queue (id, type, payload, priority, max_attempts, scheduled_at)
             VALUES (?, ?, ?, ?, ?, NOW())
         `, [taskId, 'run_automation', JSON.stringify({ ruleId: id, userId: user.id }), 1, 3]);
+
+        websocketService.notifyAutomationQueued(user.id, rule, taskId);
 
         return { status: 200, data: { message: 'Automation queued', taskId } };
     }
