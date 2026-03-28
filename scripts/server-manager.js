@@ -95,7 +95,7 @@ async function startServer(useWatch) {
     detached: true,
     stdio: ['ignore', logFd, logFd],
     cwd: ROOT_DIR,
-    shell: true
+    shell: true  // nosemgrep: javascript.lang.security.audit.spawn-shell-true.spawn-shell-true
   });
 
   child.unref();

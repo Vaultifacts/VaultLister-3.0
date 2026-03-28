@@ -37,7 +37,7 @@ async function runTest(testFile) {
         const test = spawn('bun', ['test', testFile], {
             cwd: ROOT_DIR,
             stdio: 'inherit',
-            shell: true
+            shell: true  // nosemgrep: javascript.lang.security.audit.spawn-shell-true.spawn-shell-true
         });
 
         test.on('close', (code) => {

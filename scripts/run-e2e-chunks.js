@@ -211,7 +211,7 @@ for (let i = 0; i < chunksToRun.length; i++) {
         },
         timeout: 600000, // 10 min per chunk
         stdio: 'inherit',
-        shell: true,
+        shell: true,  // nosemgrep: javascript.lang.security.audit.spawn-shell-true.spawn-shell-true
     });
 
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);

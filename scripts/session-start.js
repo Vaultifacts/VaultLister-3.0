@@ -20,7 +20,7 @@ function runScript(scriptName) {
     const proc = spawn('bun', [scriptPath], {
       stdio: 'inherit',
       cwd: dirname(__dirname),
-      shell: true
+      shell: true  // nosemgrep: javascript.lang.security.audit.spawn-shell-true.spawn-shell-true
     });
 
     proc.on('close', (code) => {

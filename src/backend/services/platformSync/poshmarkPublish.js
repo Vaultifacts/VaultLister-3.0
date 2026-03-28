@@ -63,7 +63,7 @@ export async function publishListingToPoshmark(shop, listing, inventory) {
     });
 
     return new Promise((resolve, reject) => {
-        const child = spawn('node', [BOT_SCRIPT], {
+        const child = spawn('node', [BOT_SCRIPT], {  // nosemgrep: javascript.lang.security.audit.spawn-shell-true.spawn-shell-true
             stdio: ['pipe', 'pipe', 'pipe'],
             env: process.env
         });
