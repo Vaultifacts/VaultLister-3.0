@@ -16,6 +16,10 @@ export class ARPreview {
         this.imagePosition = { x: 0.5, y: 0.5 };
         this.imageScale = 0.5;
         this.imageRotation = 0;
+        this._lastFrameTime = 0;
+        this._targetFps = 30;
+        this._container = null;
+        this._boundListeners = [];
     }
 
     /**
@@ -59,6 +63,8 @@ export class ARPreview {
         container.appendChild(this.video);
         container.appendChild(this.canvas);
 
+        this._container = container;
+
         // Add touch/mouse controls
         this.setupControls(container);
 
@@ -68,7 +74,7 @@ export class ARPreview {
     /**
      * Start the camera
      */
-    async start() {
+    async start(fallbackImageSrc) {
         try {
             this.stream = await navigator.mediaDevices.getUserMedia({
                 video: {
@@ -92,7 +98,49 @@ export class ARPreview {
             return true;
         } catch (error) {
             console.error('[AR] Failed to start camera:', error);
+
+            if (error.name === 'NotAllowedError' || error.name === 'NotFoundError') {
+                const message = error.name === 'NotAllowedError'
+                    ? 'Camera permission denied. Showing static preview.'
+                    : 'No camera found. Showing static preview.';
+                console.warn('[AR]', message);
+
+                this._showFallback(fallbackImageSrc, message);
+                return false;
+            }
+
             throw error;
+        }
+    }
+
+    /**
+     * Show a static fallback preview when camera is unavailable
+     * @private
+     */
+    _showFallback(imageSrc, message) {
+        if (this.canvas && this.ctx) {
+            this.canvas.width = this.canvas.width || 1280;
+            this.canvas.height = this.canvas.height || 720;
+            const { width, height } = this.canvas;
+
+            this.ctx.fillStyle = '#1a1a2e';
+            this.ctx.fillRect(0, 0, width, height);
+
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.font = `${Math.max(14, width / 40)}px sans-serif`;
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(message, width / 2, height / 2 - 20);
+
+            if (imageSrc) {
+                const img = new Image();
+                img.onload = () => {
+                    const scale = Math.min(width / img.width, height / img.height) * 0.5;
+                    const iw = img.width * scale;
+                    const ih = img.height * scale;
+                    this.ctx.drawImage(img, (width - iw) / 2, (height - ih) / 2 + 20, iw, ih);
+                };
+                img.src = imageSrc;
+            }
         }
     }
 
@@ -100,11 +148,12 @@ export class ARPreview {
      * Stop the camera
      */
     stop() {
+        const stream = this.stream;
         this.isActive = false;
+        this.stream = null;
 
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
-            this.stream = null;
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
         }
 
         if (this.video) {
@@ -112,6 +161,20 @@ export class ARPreview {
         }
 
         console.log('[AR] Camera stopped');
+    }
+
+    /**
+     * Remove all canvas event listeners and release resources
+     */
+    cleanup() {
+        this.stop();
+
+        if (this._container) {
+            for (const { target, type, handler } of this._boundListeners) {
+                target.removeEventListener(type, handler);
+            }
+            this._boundListeners = [];
+        }
     }
 
     /**
@@ -137,10 +200,17 @@ export class ARPreview {
     }
 
     /**
-     * Render loop
+     * Render loop — capped at ~30fps using performance.now() delta
      */
-    renderLoop() {
+    renderLoop(timestamp = 0) {
         if (!this.isActive) return;
+
+        const minInterval = 1000 / this._targetFps;
+        if (timestamp - this._lastFrameTime < minInterval) {
+            requestAnimationFrame((ts) => this.renderLoop(ts));
+            return;
+        }
+        this._lastFrameTime = timestamp;
 
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -151,7 +221,7 @@ export class ARPreview {
         }
 
         // Continue loop
-        requestAnimationFrame(() => this.renderLoop());
+        requestAnimationFrame((ts) => this.renderLoop(ts));
     }
 
     /**
@@ -204,14 +274,19 @@ export class ARPreview {
         let lastX, lastY;
         let lastDistance = 0;
 
+        const addListener = (target, type, handler) => {
+            target.addEventListener(type, handler);
+            this._boundListeners.push({ target, type, handler });
+        };
+
         // Mouse events
-        container.addEventListener('mousedown', (e) => {
+        addListener(container, 'mousedown', (e) => {
             isDragging = true;
             lastX = e.clientX;
             lastY = e.clientY;
         });
 
-        container.addEventListener('mousemove', (e) => {
+        addListener(container, 'mousemove', (e) => {
             if (!isDragging) return;
 
             const rect = container.getBoundingClientRect();
@@ -229,23 +304,23 @@ export class ARPreview {
             lastY = e.clientY;
         });
 
-        container.addEventListener('mouseup', () => {
+        addListener(container, 'mouseup', () => {
             isDragging = false;
         });
 
-        container.addEventListener('mouseleave', () => {
+        addListener(container, 'mouseleave', () => {
             isDragging = false;
         });
 
         // Mouse wheel for scaling
-        container.addEventListener('wheel', (e) => {
+        addListener(container, 'wheel', (e) => {
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.05 : 0.05;
             this.imageScale = Math.max(0.1, Math.min(2, this.imageScale + delta));
         });
 
         // Touch events
-        container.addEventListener('touchstart', (e) => {
+        addListener(container, 'touchstart', (e) => {
             if (e.touches.length === 1) {
                 isDragging = true;
                 lastX = e.touches[0].clientX;
@@ -256,7 +331,7 @@ export class ARPreview {
             }
         });
 
-        container.addEventListener('touchmove', (e) => {
+        addListener(container, 'touchmove', (e) => {
             e.preventDefault();
 
             if (e.touches.length === 1 && isDragging) {
@@ -281,7 +356,7 @@ export class ARPreview {
             }
         });
 
-        container.addEventListener('touchend', () => {
+        addListener(container, 'touchend', () => {
             isDragging = false;
             lastDistance = 0;
         });
