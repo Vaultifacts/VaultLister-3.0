@@ -1219,7 +1219,7 @@ export async function inventoryRouter(ctx) {
 
     // GET /api/inventory/categories - List user categories
     if (method === 'GET' && path === '/categories') {
-        const categories = await query.all('SELECT * FROM inventory_categories WHERE user_id = ? ORDER BY sort_order, name', [user.id]);
+        const categories = await query.all('SELECT id, name, color, sort_order, created_at, updated_at FROM inventory_categories WHERE user_id = ? ORDER BY sort_order, name LIMIT 200', [user.id]);
         // Also get counts per category from inventory
         const counts = await query.all(`SELECT category, COUNT(*) as count FROM inventory WHERE user_id = ? AND status = 'active' GROUP BY category`, [user.id]);
         const countMap = {};

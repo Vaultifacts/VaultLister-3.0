@@ -1389,7 +1389,7 @@ export async function financialsRouter(ctx) {
             if (!tx) {
                 return { status: 404, data: { error: 'Transaction not found' } };
             }
-            const logs = await query.all('SELECT * FROM transaction_audit_log WHERE transaction_id = ? ORDER BY created_at DESC', [txId]);
+            const logs = await query.all('SELECT id, transaction_id, action, field_name, old_value, new_value, created_at FROM transaction_audit_log WHERE transaction_id = ? ORDER BY created_at DESC LIMIT 500', [txId]);
             return { status: 200, data: { logs } };
         } catch (error) {
             logger.error('[Financials] Error fetching transaction audit log', user?.id, { detail: error.message });

@@ -1228,7 +1228,7 @@ export async function automationsRouter(ctx) {
     // GET /api/automations/export - Export all rules as JSON
     if (method === 'GET' && path === '/export') {
         try {
-            const rules = await query.all('SELECT name, type, platform, schedule, conditions, actions FROM automation_rules WHERE user_id = ? ORDER BY name', [user.id]);
+            const rules = await query.all('SELECT name, type, platform, schedule, conditions, actions FROM automation_rules WHERE user_id = ? ORDER BY name LIMIT 200', [user.id]);
             const parsed = rules.map(r => ({
                 ...r,
                 conditions: safeJsonParse(r.conditions, r.conditions),
