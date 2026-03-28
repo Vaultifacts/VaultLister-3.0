@@ -116,3 +116,4 @@ nginx/ssl/*.crt
 
 # Git worktrees
 .worktrees/
+.claude/worktrees/
