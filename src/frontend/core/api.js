@@ -12,6 +12,18 @@ const api = {
     retryDelay: 1000,
     isRefreshing: false,
     refreshPromise: null,
+    // Map of "METHOD:url" → in-flight Promise (for GET deduplication)
+    _inFlight: new Map(),
+    // AbortController for cancelling all pending requests on navigation
+    _navController: null,
+
+    cancelPending() {
+        if (this._navController) {
+            this._navController.abort();
+        }
+        this._navController = new AbortController();
+        this._inFlight.clear();
+    },
 
     async refreshAccessToken() {
         // Prevent multiple simultaneous refresh attempts
@@ -59,7 +71,17 @@ const api = {
     },
 
     async request(endpoint, options = {}, retryCount = 0, isRetryAfterRefresh = false) {
+        const method = options.method || 'GET';
         const url = `${this.baseUrl}${endpoint}`;
+
+        // Deduplicate identical GET requests that are already in-flight
+        if (method === 'GET' && retryCount === 0) {
+            const dedupKey = `GET:${url}`;
+            if (this._inFlight.has(dedupKey)) {
+                return this._inFlight.get(dedupKey);
+            }
+        }
+
         const headers = {
             'Content-Type': 'application/json',
             ...options.headers
@@ -71,13 +93,23 @@ const api = {
 
         // Add CSRF token for state-changing requests
         const stateMutatingMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
-        if (stateMutatingMethods.includes(options.method) && this.csrfToken) {
+        if (stateMutatingMethods.includes(method) && this.csrfToken) {
             headers['X-CSRF-Token'] = this.csrfToken;
+        }
+
+        // Ensure nav controller exists
+        if (!this._navController) {
+            this._navController = new AbortController();
         }
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
+        // Chain nav-level cancellation into this request's signal
+        const navSignal = this._navController.signal;
+        navSignal.addEventListener('abort', () => controller.abort(), { once: true });
 
+        const dedupKey = method === 'GET' && retryCount === 0 ? `GET:${url}` : null;
+        const requestPromise = (async () => {
         try {
             const response = await fetch(url, {
                 ...options,
@@ -176,7 +208,13 @@ const api = {
                 throw new Error('You are offline. This action will sync when you reconnect.');
             }
             throw error;
+        } finally {
+            if (dedupKey) this._inFlight.delete(dedupKey);
         }
+        })();
+
+        if (dedupKey) this._inFlight.set(dedupKey, requestPromise);
+        return requestPromise;
     },
 
     get(endpoint) {
