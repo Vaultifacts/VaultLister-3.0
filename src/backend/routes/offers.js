@@ -300,7 +300,7 @@ export async function offersRouter(ctx) {
             [id, user.id, listing_id, platform, offer_amount, buyer_username || 'e2e_buyer', expires]
         );
 
-        const offer = await query.get('SELECT * FROM offers WHERE id = ?', [id]);
+        const offer = await query.get('SELECT * FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
         return { status: 201, data: { offer } };
     }
 
@@ -338,7 +338,7 @@ export async function offersRouter(ctx) {
             isEnabled !== false ? 1 : 0
         ]);
 
-        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         rule.conditions = safeJsonParse(rule.conditions, []);
         rule.actions = safeJsonParse(rule.actions, {});
 
@@ -396,7 +396,7 @@ export async function offersRouter(ctx) {
             );
         }
 
-        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         rule.conditions = safeJsonParse(rule.conditions, []);
         rule.actions = safeJsonParse(rule.actions, {});
 

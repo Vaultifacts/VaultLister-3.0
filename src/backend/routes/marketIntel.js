@@ -79,7 +79,7 @@ export async function marketIntelRouter(ctx) {
             `, [competitorId, user.id, platform, username, profile_url || null,
                 category_focus || null, notes || null]);
 
-            const competitor = await query.get('SELECT * FROM competitors WHERE id = ?', [competitorId]);
+            const competitor = await query.get('SELECT * FROM competitors WHERE id = ? AND user_id = ?', [competitorId, user.id]);
             return { status: 201, data: competitor };
         } catch (error) {
             if (error.message.includes('UNIQUE')) {

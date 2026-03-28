@@ -352,7 +352,7 @@ export async function automationsRouter(ctx) {
             isEnabled !== false ? 1 : 0
         ]);
 
-        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         try {
             rule.conditions = JSON.parse(rule.conditions || '{}');
         } catch (e) {
@@ -453,7 +453,7 @@ export async function automationsRouter(ctx) {
             );
         }
 
-        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         try {
             rule.conditions = JSON.parse(rule.conditions);
         } catch (error) {
@@ -499,7 +499,7 @@ export async function automationsRouter(ctx) {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
             [newId, user.id, rule.name + ' (Copy)', rule.type, rule.platform, rule.schedule, rule.conditions, rule.actions]);
 
-        const cloned = await query.get('SELECT * FROM automation_rules WHERE id = ?', [newId]);
+        const cloned = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [newId, user.id]);
         cloned.conditions = safeJsonParse(cloned.conditions, {});
         cloned.actions = safeJsonParse(cloned.actions, {});
         return { status: 201, data: { rule: cloned } };
@@ -972,7 +972,7 @@ export async function automationsRouter(ctx) {
             1
         ]);
 
-        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ?', [id]);
+        const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         try {
             rule.conditions = JSON.parse(rule.conditions || '{}');
         } catch (e) {

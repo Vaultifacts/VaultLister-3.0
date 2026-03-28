@@ -215,7 +215,7 @@ export async function financialsRouter(ctx) {
             // Execute all operations in a transaction
             await query.transaction(createPurchase);
 
-            const purchase = await query.get('SELECT * FROM purchases WHERE id = ?', [purchaseId]);
+            const purchase = await query.get('SELECT * FROM purchases WHERE id = ? AND user_id = ?', [purchaseId, user.id]);
             const purchaseItems = await query.all('SELECT * FROM purchase_items WHERE purchase_id = ?', [purchaseId]);
 
             return { status: 201, data: { purchase, items: purchaseItems } };
@@ -448,7 +448,7 @@ export async function financialsRouter(ctx) {
                 ]);
             }
 
-            const account = await query.get('SELECT * FROM accounts WHERE id = ?', [accountId]);
+            const account = await query.get('SELECT * FROM accounts WHERE id = ? AND user_id = ?', [accountId, user.id]);
             return { status: 201, data: { account } };
         } catch (error) {
             logger.error('[Financials] Error creating account', user?.id, { detail: error.message });
@@ -604,7 +604,7 @@ export async function financialsRouter(ctx) {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `, [transactionId, user.id, transactionDate, description, parsedAmount, accountId, category || account.account_type, 'manual']);
 
-            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ?', [transactionId]);
+            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [transactionId, user.id]);
             return { status: 201, data: { transaction } };
         } catch (error) {
             logger.error('[Financials] Error creating transaction', user?.id, { detail: error.message });
@@ -1197,7 +1197,7 @@ export async function financialsRouter(ctx) {
             // Update last_executed
             await query.run('UPDATE recurring_transaction_templates SET last_executed = NOW() WHERE id = ?', [templateId]);
 
-            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ?', [txId]);
+            const transaction = await query.get('SELECT * FROM financial_transactions WHERE id = ? AND user_id = ?', [txId, user.id]);
             return { status: 201, data: { transaction, message: 'Recurring transaction created' } };
         } catch (error) {
             logger.error('[Financials] Error executing recurring template', user?.id, { detail: error.message });
