@@ -15298,8 +15298,8 @@ const router = {
             await handlers.loadPushStatus();
         }
         // Re-render after data loads
-        const handler = this.routes[path];
-        if (handler) handler();
+        const handler = Object.prototype.hasOwnProperty.call(this.routes, path) ? this.routes[path] : null;
+        if (typeof handler === 'function') handler(); // lgtm[js/unvalidated-dynamic-method-call] -- guarded by hasOwnProperty + typeof check
     },
 
     init() {
