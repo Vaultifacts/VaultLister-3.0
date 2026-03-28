@@ -370,7 +370,7 @@ async function initApp() {
     // Online/offline handlers are in offlineManager.init()
 
     // OAuth callback handler via postMessage (handles both same-origin and cross-origin via ngrok)
-    window.addEventListener('message', (event) => { // nosemgrep: javascript.browser.security.postmessage-origin-validation
+    window.addEventListener('message', (event) => { // nosemgrep: javascript.browser.security.insufficient-postmessage-origin-validation.insufficient-postmessage-origin-validation
         // Verify message origin — accept same-origin and configured API base
         const allowedOrigins = [window.location.origin];
         const apiBase = store.state?.apiBase || window.location.origin;

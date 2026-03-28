@@ -9325,7 +9325,7 @@ const autocomplete = {
         dropdown.innerHTML =sanitizeHTML( sanitizeHTML(items.slice(0, 10).map((item, idx) => {
             const escapedItem = escapeHtml(item);
             const highlighted = query
-                ? escapedItem.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<span class="autocomplete-item-highlight">$1</span>')
+                ? escapedItem.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<span class="autocomplete-item-highlight">$1</span>') // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
                 : escapedItem;
             return `
                 <div class="autocomplete-item ${idx === 0 ? 'selected' : ''}"
@@ -15176,7 +15176,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '48585221';
+    const v = '1bda5240';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27190,7 +27190,7 @@ async function initApp() {
     // Online/offline handlers are in offlineManager.init()
 
     // OAuth callback handler via postMessage (handles both same-origin and cross-origin via ngrok)
-    window.addEventListener('message', (event) => { // nosemgrep: javascript.browser.security.postmessage-origin-validation
+    window.addEventListener('message', (event) => { // nosemgrep: javascript.browser.security.insufficient-postmessage-origin-validation.insufficient-postmessage-origin-validation
         // Verify message origin — accept same-origin and configured API base
         const allowedOrigins = [window.location.origin];
         const apiBase = store.state?.apiBase || window.location.origin;
