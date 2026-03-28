@@ -218,12 +218,15 @@ function getCorsHeaders(request) {
         'Access-Control-Max-Age': '86400'
     };
 
-    // Allow whitelisted origins or same-origin requests (no origin header)
+    // Allow whitelisted origins only — never wildcard when credentials are used
     if (origin && allowedOrigins.includes(origin)) {
         headers['Access-Control-Allow-Origin'] = origin;
-    } else if (!origin) {
-        // Same-origin requests don't need CORS header
+        headers['Access-Control-Allow-Credentials'] = 'true';
+        headers['Access-Control-Expose-Headers'] = 'X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After';
+        // Vary header signals to proxies that the response varies by Origin
+        headers['Vary'] = 'Origin';
     }
+    // Same-origin requests (no Origin header) need no CORS headers
 
     return headers;
 }
