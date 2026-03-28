@@ -18,6 +18,17 @@ export const STRIPE_PRICE_IDS = {
     business: process.env.STRIPE_PRICE_BUSINESS  || 'price_business_placeholder'
 };
 
+// Warn at startup if Stripe is configured but price IDs are placeholder/empty values.
+// Stripe is optional — missing IDs are a warning, not a fatal error.
+if (stripe) {
+    const PLACEHOLDER_PATTERN = /^price_[a-z]+_placeholder$/;
+    for (const [tier, priceId] of Object.entries(STRIPE_PRICE_IDS)) {
+        if (!priceId || PLACEHOLDER_PATTERN.test(priceId)) {
+            logger.warn(`[Stripe] STRIPE_PRICE_${tier.toUpperCase()} is not set or uses a placeholder value ("${priceId}"). Checkout for the ${tier} plan will fail until a real Stripe Price ID is configured.`);
+        }
+    }
+}
+
 export const TIER_FOR_PRICE = Object.fromEntries(
     Object.entries(STRIPE_PRICE_IDS).map(([tier, priceId]) => [priceId, tier])
 );
