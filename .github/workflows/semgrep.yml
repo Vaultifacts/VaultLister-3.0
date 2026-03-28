@@ -33,7 +33,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload SARIF to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@f09c1c0a46b326c31cf5a3a2a840ed678984c3ed # v3.28.11
+        uses: github/codeql-action/upload-sarif@7fc1baf373eb073c686865bd453d412d506a05a2 # v3.35.1
         if: always()
         with:
           sarif_file: results.sarif
