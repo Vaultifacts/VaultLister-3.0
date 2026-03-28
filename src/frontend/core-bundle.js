@@ -5262,6 +5262,9 @@ const toastQueue = {
         const toast = document.createElement('div');
         toast.className = `toast-notification ${type}`;
         toast.dataset.id = id;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+        toast.setAttribute('aria-atomic', 'true');
 
         const iconMap = {
             success: 'check',
@@ -5285,8 +5288,8 @@ const toastQueue = {
                     </div>
                 ` : ''}
             </div>
-            ${dismissible ? '<div class="toast-close">×</div>' : ''}
-            ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
+            ${dismissible ? '<button class="toast-close" aria-label="Dismiss notification">×</button>' : ''}
+            ${duration > 0 ? `<div class="toast-progress" role="progressbar" aria-label="Auto-dismiss timer" aria-valuemin="0" aria-valuemax="100" style="animation-duration: ${duration}ms"></div>` : ''}
         `);
 
         this.container.appendChild(toast);
@@ -8655,6 +8658,7 @@ const toast = {
         toastEl.setAttribute('role', type === 'error' ? 'alert' : 'status');
         toastEl.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
         toastEl.setAttribute('aria-atomic', 'true');
+        toastEl.setAttribute('aria-label', `${type} notification`);
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         toastEl.innerHTML = sanitizeHTML(`
@@ -8668,7 +8672,7 @@ const toast = {
                 ` : ''}
             </div>
             <button class="toast-close" aria-label="Dismiss notification" onclick="toast.dismiss('${toastId}')">${components.icon('close', 14)}</button>
-            ${showProgress && duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
+            ${showProgress && duration > 0 ? `<div class="toast-progress" role="progressbar" aria-label="Auto-dismiss timer" aria-valuemin="0" aria-valuemax="100" style="animation-duration: ${duration}ms"></div>` : ''}
         `);
 
         container.appendChild(toastEl);
