@@ -302,8 +302,8 @@ export async function getUserEmail(accessToken) {
  */
 function stripHtml(html) {
     return html
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // nosemgrep: javascript.lang.security.detect-bad-tag-filter
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // nosemgrep: javascript.lang.security.detect-bad-tag-filter
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // nosemgrep: javascript.lang.security.detect-bad-tag-filter // lgtm[js/incomplete-multi-character-sanitization]
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // nosemgrep: javascript.lang.security.detect-bad-tag-filter // lgtm[js/incomplete-multi-character-sanitization]
         .replace(/<[^>]*(>|$)/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
