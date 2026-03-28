@@ -158,12 +158,12 @@ function escapeHtml(text) {
 
 ```sql
 CREATE TABLE security_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     event_type TEXT NOT NULL,     -- rate_limit, csrf_failure, auth_failure
     ip_address TEXT,
     user_id TEXT,
     details TEXT,                 -- JSON
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 

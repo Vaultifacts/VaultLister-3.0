@@ -10,7 +10,7 @@ Generated: 2026-03-04
 1. Clone repo / pull latest
 2. bun install
 3. Copy .env.example → .env (configure secrets)
-4. bun run db:reset          # Creates PostgreSQL DB + runs all 96 migrations
+4. bun run db:reset          # Creates PostgreSQL DB + runs all 112 migrations
 5. bun run dev               # Starts server on default port
 6. Open browser → http://localhost:PORT
 ```
@@ -23,7 +23,7 @@ Generated: 2026-03-04
 
 ```
 1. Create migration file: src/backend/db/migrations/NNN_description.sql
-   - NNN = next sequential number (currently 097+)
+   - NNN = next sequential number (currently 113+)
    - Use TEXT for all ID columns (UUIDs)
 2. Test migration:
    bun run db:reset           # Drops + recreates from pg-schema.sql + all migrations

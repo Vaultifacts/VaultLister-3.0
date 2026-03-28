@@ -81,7 +81,7 @@ test.describe('Extension API — Price Tracking', () => {
     test('GET /api/extension/price-tracking — created item appears in list', async ({ request }) => {
         if (!createdItemId) test.skip(true, 'Item not created in previous test');
 
-        // Retry up to 8 times with increasing delay — SQLite WAL may delay visibility
+        // Retry up to 8 times with increasing delay — replication lag may delay visibility
         let found = false;
         let lastList = [];
         for (let attempt = 0; attempt < 8; attempt++) {

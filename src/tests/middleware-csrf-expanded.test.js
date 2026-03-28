@@ -1,7 +1,7 @@
 // CSRF Middleware — Pure Function & Lifecycle Unit Tests
 import { describe, expect, test, mock, beforeEach } from 'bun:test';
 
-// In-memory simulation of the csrf_tokens SQLite table
+// In-memory simulation of the csrf_tokens table
 const tokenStore = new Map();
 
 mock.module('../backend/db/database.js', () => ({

@@ -4,10 +4,8 @@
 ## Overview
 ## Overview
 
-- **Engine:** PostgreSQL with Bun's built-in driver
-- **Location:** `data/vaultlister.db`
-- **Mode:** WAL (Write-Ahead Logging) for performance
-- **Search:** TSVECTOR full-text search enabled
+- **Engine:** PostgreSQL (postgres npm package, DATABASE_URL)
+- **Search:** TSVECTOR full-text search with GIN index
 
 ---
 
@@ -235,9 +233,9 @@ Migrations are numbered sequentially:
 **Migration tracking:**
 ```sql
 CREATE TABLE migrations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL,
-    applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    applied_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -248,14 +246,14 @@ CREATE TABLE migrations (
 **Full-text search:**
 ```sql
 SELECT * FROM inventory
-WHERE id IN (SELECT rowid FROM inventory_fts WHERE inventory_fts MATCH ?)
+WHERE search_vector @@ plainto_tsquery('english', $1)
 ```
 
 **Stale listings:**
 ```sql
 SELECT * FROM listings
 WHERE status = 'active'
-AND julianday('now') - julianday(COALESCE(last_relisted_at, listed_at, created_at)) >= 30
+AND COALESCE(last_relisted_at, listed_at, created_at) <= NOW() - INTERVAL '30 days'
 ```
 
 **FIFO cost layers:**

@@ -4,7 +4,7 @@
 // Only mocks database.js and logger.js per project rules.
 import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
 
-// ── In-memory simulation of the csrf_tokens SQLite table ────────────────────
+// ── In-memory simulation of the csrf_tokens table ────────────────────────────
 
 const tokenStore = new Map(); // token → { session_id, expires_at, created_at }
 
@@ -170,10 +170,10 @@ describe('CSRFManager — session ID validation', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CSRFManager — token generation (SQLite-backed)
+// CSRFManager — token generation (PostgreSQL-backed)
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('CSRFManager — token generation (SQLite-backed)', () => {
+describe('CSRFManager — token generation (PostgreSQL-backed)', () => {
     test('generates unique tokens on each call', () => {
         const t1 = csrfManager.generateToken('session-a');
         const t2 = csrfManager.generateToken('session-b');

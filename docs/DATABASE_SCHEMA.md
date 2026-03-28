@@ -985,7 +985,7 @@ CREATE TABLE email_parse_queue (
 ### email_verifications
 ```sql
 CREATE TABLE email_verifications (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     token TEXT NOT NULL UNIQUE,
     expires_at TEXT NOT NULL,
@@ -1109,7 +1109,7 @@ CREATE TABLE financial_transactions (
 ### health_checks
 ```sql
 CREATE TABLE health_checks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     status TEXT NOT NULL,
     checks TEXT DEFAULT '{}',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -1735,7 +1735,7 @@ CREATE TABLE market_insights (
 ### mfa_events
 ```sql
 CREATE TABLE mfa_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     event_type TEXT NOT NULL CHECK (event_type IN ('enabled', 'disabled', 'verified', 'backup_used', 'failed')),
     ip_address TEXT,
@@ -1748,7 +1748,7 @@ CREATE TABLE mfa_events (
 ### migrations
 ```sql
 CREATE TABLE migrations (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 name TEXT UNIQUE NOT NULL,
                 applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
@@ -2028,7 +2028,7 @@ CREATE TABLE orders (
 ### password_resets
 ```sql
 CREATE TABLE password_resets (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     token TEXT NOT NULL UNIQUE,
     expires_at TEXT NOT NULL,
@@ -2591,7 +2591,7 @@ CREATE TABLE search_analytics (
 ### security_logs
 ```sql
 CREATE TABLE security_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     event_type TEXT NOT NULL,
     ip_or_user TEXT NOT NULL,
     user_id TEXT,

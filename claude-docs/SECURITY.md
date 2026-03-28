@@ -278,12 +278,12 @@ query.run(`SELECT * FROM users WHERE email = '${userInput}'`);
 **Schema**:
 ```sql
 CREATE TABLE security_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     event_type TEXT NOT NULL,
     ip_or_user TEXT NOT NULL,
     user_id TEXT,
     details TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
