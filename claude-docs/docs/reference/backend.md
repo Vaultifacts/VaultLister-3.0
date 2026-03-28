@@ -29,9 +29,9 @@ const server = Bun.serve({
 src/backend/
 ├── db/
 │   ├── database.js      # DB connection, query helpers, migrations
-│   ├── schema.sql       # Initial schema
+│   ├── pg-schema.sql    # PostgreSQL schema (189 tables)
 │   ├── seed.js          # Demo data seeding
-│   └── migrations/      # Incremental schema changes (001-024)
+│   └── migrations/      # Incremental schema changes (001-112)
 ├── middleware/
 │   ├── auth.js          # JWT verification
 │   ├── csrf.js          # CSRF token validation

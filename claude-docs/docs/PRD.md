@@ -172,7 +172,7 @@
   - `platformSync/ebaySync.js` - eBay listings/orders sync proof-of-concept
   - `workers/taskWorker.js` - Background job processing with exponential backoff retry
 - **Features**:
-  - Token encryption with AES-256-CBC
+  - Token encryption with AES-256-GCM
   - Graceful degradation for missing database columns
   - Real-time sync status tracking
   - Notification system for sync success/failure

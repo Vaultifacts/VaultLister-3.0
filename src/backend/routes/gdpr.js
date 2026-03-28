@@ -7,7 +7,7 @@ import emailService from '../services/email.js';
 import { logger } from '../shared/logger.js';
 
 // Tables containing user data — explicit DELETE on erasure
-// (tables with ON DELETE CASCADE are handled automatically by SQLite FK constraint)
+// (tables with ON DELETE CASCADE are handled automatically by PostgreSQL FK constraint)
 // (tables with ON DELETE SET NULL — audit_logs, error_logs, request_logs, security_logs,
 //  webhook_events — are intentionally anonymized rather than deleted)
 const USER_DATA_TABLES = [

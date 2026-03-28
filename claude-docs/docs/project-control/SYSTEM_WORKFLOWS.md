@@ -26,10 +26,10 @@ Generated: 2026-03-04
    - NNN = next sequential number (currently 097+)
    - Use TEXT for all ID columns (UUIDs)
 2. Test migration:
-   bun run db:reset           # Drops + recreates from schema.sql + all migrations
+   bun run db:reset           # Drops + recreates from pg-schema.sql + all migrations
 3. Verify schema:
    bun run scripts/checkDatabase.js
-4. Update schema.sql if adding base tables (rare)
+4. Update pg-schema.sql if adding base tables (rare)
 ```
 
 **Rules:**
@@ -129,7 +129,7 @@ cp data/vaultlister.db data/vaultlister.db.backup.$(date +%Y%m%d)
 1. USER: Configure shop in My Shops (OAuth flow)
    - eBay: Client ID + Client Secret → OAuth2 authorization code flow
    - Etsy: Client ID + Client Secret → OAuth2 PKCE flow
-2. SYSTEM: Store encrypted tokens in shops table (AES-256-CBC)
+2. SYSTEM: Store encrypted tokens in shops table (AES-256-GCM)
 3. USER: Create listing in VaultLister
 4. USER: Click "Publish to [Platform]"
 5. SYSTEM: POST /api/listings/:id/publish-[platform]

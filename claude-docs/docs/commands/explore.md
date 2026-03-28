@@ -74,7 +74,7 @@ src/
 │   ├── server.js          # Entry point, routing
 │   ├── db/
 │   │   ├── database.js    # DB connection, query helpers
-│   │   ├── schema.sql     # Base schema
+│   │   ├── pg-schema.sql  # PostgreSQL schema
 │   │   └── migrations/    # Schema changes
 │   ├── middleware/
 │   │   ├── auth.js        # JWT authentication

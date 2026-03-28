@@ -90,7 +90,7 @@ This decision was superseded by the PostgreSQL migration. See **ADR-012** for th
 
 **Platforms affected:** Poshmark, Mercari, Depop, Grailed, Facebook Marketplace, Whatnot.
 
-**Rationale:** These platforms provide no public seller API. Playwright allows automated listing creation, closet sharing, follow-back, and offer management by driving the web UI. Bot scripts live in `src/shared/automations/` and are spawned as child processes from the publish services to avoid Playwright's internal timeouts affecting the main Bun server.
+**Rationale:** These platforms provide no public seller API. Playwright allows automated listing creation, closet sharing, follow-back, and offer management by driving the web UI. Bot scripts live in `worker/bots/` and are spawned as child processes from the publish services to avoid Playwright's internal timeouts affecting the main Bun server.
 
 **Safety constraints:** Bots must read credentials from `.env` only. All actions log to `data/automation-audit.log`. Rate limits are defined in `worker/bots/rate-limits.js` with ±30% jitter. Any CAPTCHA or bot detection stops the bot immediately — no bypass attempts.
 

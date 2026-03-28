@@ -39,7 +39,7 @@ Generated: 2026-03-04
       |
 [PostgreSQL (WAL + TSVECTOR)]
       |
-[96 migrations → schema.sql]
+[112 migrations → pg-schema.sql]
 ```
 
 ---
@@ -85,7 +85,7 @@ pages-inventory-catalog.js     ←MUST MATCH→  pages-deferred.js     ←MUST M
 
 ### 4. Database Migration Chain (breaks on fresh deploy)
 ```
-schema.sql (base) → 001_*.sql → 002_*.sql → ... → 096_*.sql
+pg-schema.sql (base) → 001_*.sql → 002_*.sql → ... → 112_*.sql
        ↓
 database.js: runMigrations() applies in filename order
        ↓

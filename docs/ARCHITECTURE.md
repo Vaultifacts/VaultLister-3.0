@@ -14,13 +14,13 @@ VaultLister 3.0 is a zero-cost, offline-capable multi-channel reselling platform
 | Frontend | Vanilla JS SPA | Route-based chunk loading; no framework overhead |
 | Database | PostgreSQL | WAL mode + TSVECTOR full-text search; postgres |
 | Auth | JWT + bcryptjs | 15-min access / 7-day refresh; TOTP MFA |
-| Marketplace OAuth | OAuth 2.0 | eBay, Etsy, Shopify; AES-256-CBC encrypted in PostgreSQL |
+| Marketplace OAuth | OAuth 2.0 | eBay, Etsy, Shopify; AES-256-GCM encrypted in PostgreSQL |
 | Automations | Playwright | Headless browser bots (Poshmark, Mercari) |
 | AI | @anthropic-ai/sdk | Claude — listing gen, image analysis, price suggestions |
 | Email | nodemailer | Gmail / Outlook OAuth for transactional email |
 | Image Storage | AWS S3 / OneDrive | Via rclone; local-first fallback |
 | Chrome Extension | Manifest V3 | Cross-listing from browser |
-| Deploy | Docker + Nginx | Multi-stage Bun 1.3 image; GitHub Actions CI/CD |
+| Deploy | Railway + Cloudflare | Auto-deploy via GitHub Actions CI/CD; 8 workflows |
 
 ## Directory Structure
 
@@ -43,7 +43,7 @@ vaultlister-3/
 │   │   └── styles/          # CSS (nano CSS)
 │   └── shared/
 │       ├── ai/              # Anthropic SDK wrappers (listing generator, price predictor, image analyzer)
-│       ├── automations/     # Playwright bots (Poshmark share, follow-back, offer rules)
+│       ├── automations/     # Shared automation utilities (bots live in worker/bots/)
 │       └── utils/           # Shared utilities (escapeHtml, blockchain, AR preview, i18n)
 ├── tests/                   # Unit tests (Bun:test)
 ├── e2e/                     # Playwright E2E tests (fixtures, helpers, specs)
@@ -72,7 +72,7 @@ vaultlister-3/
 - **Rationale:** Zero framework overhead, full bundle control, no hydration complexity, offline-capable
 - **Trade-off:** More boilerplate for component patterns; harder to onboard new developers unfamiliar with vanilla JS at scale
 
-### ADR-003: PostgreSQL over PostgreSQL
+### ADR-003: Database — PostgreSQL (migrated from SQLite, March 2026)
 - **Decision:** PostgreSQL with WAL mode and TSVECTOR for full-text search
 - **Rationale:** Local-first architecture, zero infrastructure cost, TSVECTOR for inventory search, WAL mode for concurrent reads
 - **Trade-off:** Single writer at a time; not suitable for multi-server deployments
@@ -95,8 +95,8 @@ vaultlister-3/
 | `PORT` | Yes | Server port (default: 3000) |
 | `JWT_SECRET` | Yes | JWT signing secret (32+ bytes) |
 | `ANTHROPIC_API_KEY` | Yes | Claude AI features (listing gen, Vault Buddy) |
-| `DB_PATH` | Yes | PostgreSQL database file path |
-| `DATA_DIR` | Yes | Data directory for DB + audit log |
+| `DATABASE_URL` | Yes | PostgreSQL connection string (Railway managed) |
+| `DATA_DIR` | Optional | Data directory for audit logs |
 | `GITHUB_TOKEN` | Optional | GitHub MCP server |
 | `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` | Optional | eBay OAuth cross-listing |
 | `ETSY_API_KEY` | Optional | Etsy cross-listing |
@@ -112,7 +112,7 @@ vaultlister-3/
 4. Requests include `Authorization: Bearer [token]` via `api.request()`
 5. On 401: `api.refreshAccessToken()` using stored refresh token
 6. TOTP MFA: otplib + QR code enrollment; backup codes issued at enrollment
-7. Marketplace OAuth: tokens encrypted AES-256-CBC before PostgreSQL storage
+7. Marketplace OAuth: tokens encrypted AES-256-GCM before PostgreSQL storage
 
 ## Deployment Architecture
 

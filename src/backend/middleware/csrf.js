@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { query } from '../db/database.js';
 
 /**
- * CSRF Token Manager — SQLite-backed (B-09)
+ * CSRF Token Manager — PostgreSQL-backed (B-09)
  * Tokens survive server restarts and work across multiple instances.
  */
 class CSRFManager {

@@ -1559,7 +1559,7 @@ logger.info(`
 ║     ╚═══╝  ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝LISTER            ║
 ║                                                           ║
 ║   🚀 Server running at http://localhost:${server.port}          ║
-║   📦 Database: SQLite (./data/vaultlister.db)            ║
+║   📦 Database: PostgreSQL (DATABASE_URL)                 ║
 ║   🔒 Auth: JWT + CSRF Protection                          ║
 ║   🛡️  Security: Rate Limiting + CSP + XSS Protection      ║
 ║   🔄 OAuth: Token Refresh Scheduler Active                ║

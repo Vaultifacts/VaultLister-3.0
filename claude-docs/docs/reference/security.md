@@ -261,7 +261,7 @@ const encrypted = encryptToken(oauthToken);
 const token = decryptToken(encrypted);
 ```
 
-**Algorithm:** AES-256-CBC with random IV
+**Algorithm:** AES-256-GCM with random IV and auth tag
 
 ---
 

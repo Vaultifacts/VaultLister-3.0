@@ -283,7 +283,7 @@ Object.assign(pages, {
                         </ul>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">2. How We Store Your Data</h2>
-                        <p style="margin-bottom: 1rem;">Your data is stored locally on your device by default using SQLite. This means:</p>
+                        <p style="margin-bottom: 1rem;">Your data is stored in PostgreSQL. This means:</p>
                         <ul style="margin-bottom: 1rem; padding-left: 1.5rem;">
                             <li>Your inventory, listings, and sales data never leave your device unless you explicitly share them</li>
                             <li>You have full control over your data at all times</li>
@@ -574,7 +574,7 @@ Object.assign(pages, {
                 <div class="tech-stack-grid">
                     ${[
                         { name: 'Bun.js', desc: 'Runtime & Bundler', icon: '🥟', color: '#fbf0df' },
-                        { name: 'SQLite', desc: 'Local Database', icon: '🗄️', color: '#e8f4fd' },
+                        { name: 'PostgreSQL', desc: 'Database', icon: '🗄️', color: '#e8f4fd' },
                         { name: 'Vanilla JS', desc: 'Frontend (Zero Dependencies)', icon: '⚡', color: '#fff3cd' },
                         { name: 'REST API', desc: 'Backend Services', icon: '🔌', color: '#d4edda' },
                         { name: 'Claude AI', desc: 'AI-Powered Features', icon: '🧠', color: '#f0e6ff' },
