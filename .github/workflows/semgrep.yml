@@ -7,8 +7,6 @@ on:
     branches:
       - main
       - master
-    paths:
-      - ".github/workflows/semgrep.yml"
   schedule:
     - cron: "51 8 * * *"
 
@@ -19,6 +17,7 @@ jobs:
 
     permissions:
       contents: read
+      security-events: write
 
     env:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
@@ -30,4 +29,12 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Run Semgrep
-        run: semgrep ci --exclude .github/workflows/sonarcloud.yml
+        run: semgrep ci --sarif-output results.sarif --exclude .github/workflows/sonarcloud.yml
+        continue-on-error: true
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@f09c1c0a46b326c31cf5a3a2a840ed678984c3ed # v3.28.11
+        if: always()
+        with:
+          sarif_file: results.sarif
+          category: semgrep
