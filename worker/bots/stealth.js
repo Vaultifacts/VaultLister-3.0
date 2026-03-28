@@ -20,6 +20,87 @@ chromiumBase.use(StealthPlugin());
 
 export const stealthChromium = chromiumBase;
 
+/**
+ * Inject a complete chrome.runtime stub via page.addInitScript() to avoid
+ * detection by strict fingerprint tests (e.g. CreepJS) that probe for
+ * chrome.runtime.id, getURL, getManifest, sendMessage, connect, etc.
+ *
+ * Call this in every bot's newPage() setup AFTER the page is created:
+ *   await injectChromeRuntimeStub(page);
+ *
+ * This complements puppeteer-extra-plugin-stealth's partial stub, which
+ * only sets chrome.runtime to a non-null object but leaves most methods
+ * undefined — causing fingerprint tests to score a fail on that check.
+ */
+export async function injectChromeRuntimeStub(page) {
+    await page.addInitScript(() => {
+        if (typeof window.chrome === 'undefined') {
+            window.chrome = {};
+        }
+        const chrome = window.chrome;
+
+        if (!chrome.runtime) {
+            chrome.runtime = {};
+        }
+        const rt = chrome.runtime;
+
+        // Stable extension-like ID (avoids undefined check)
+        if (!rt.id) rt.id = 'mhjfbmdgcfjbbpaeojofohoefgiehjai';
+
+        if (typeof rt.getURL !== 'function') {
+            rt.getURL = (path) => `chrome-extension://${rt.id}/${path}`;
+        }
+
+        if (typeof rt.getManifest !== 'function') {
+            rt.getManifest = () => ({
+                name: 'Chrome PDF Viewer',
+                version: '1.0',
+                manifest_version: 3,
+                description: ''
+            });
+        }
+
+        if (typeof rt.sendMessage !== 'function') {
+            rt.sendMessage = (_extensionId, _message, _options, responseCallback) => {
+                if (typeof responseCallback === 'function') responseCallback(undefined);
+            };
+        }
+
+        if (typeof rt.connect !== 'function') {
+            rt.connect = (_extensionId, _connectInfo) => {
+                const port = {
+                    name: '',
+                    disconnect: () => {},
+                    postMessage: () => {},
+                    onDisconnect: { addListener: () => {}, removeListener: () => {} },
+                    onMessage: { addListener: () => {}, removeListener: () => {} }
+                };
+                return port;
+            };
+        }
+
+        if (typeof rt.onMessage === 'undefined') {
+            rt.onMessage = { addListener: () => {}, removeListener: () => {}, hasListener: () => false };
+        }
+
+        if (typeof rt.onConnect === 'undefined') {
+            rt.onConnect = { addListener: () => {}, removeListener: () => {}, hasListener: () => false };
+        }
+
+        if (typeof rt.onInstalled === 'undefined') {
+            rt.onInstalled = { addListener: () => {}, removeListener: () => {}, hasListener: () => false };
+        }
+
+        if (typeof rt.lastError === 'undefined') {
+            // Must be a getter so reads return undefined (not a plain property)
+            Object.defineProperty(rt, 'lastError', {
+                get: () => undefined,
+                configurable: true
+            });
+        }
+    });
+}
+
 // Pool of recent real Chrome UA strings — rotated per session to avoid
 // fingerprinting on a single static UA.
 const CHROME_USER_AGENTS = [
