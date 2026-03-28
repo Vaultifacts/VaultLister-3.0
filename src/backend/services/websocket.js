@@ -94,6 +94,15 @@ const websocketService = {
         ws.data.userId = null;
         ws.data.subscriptions = new Set();
 
+        // Auth timeout: disconnect if not authenticated within 10 seconds
+        ws.data.authTimeout = setTimeout(() => {
+            if (!ws.data.userId) {
+                logger.warn(`[WebSocket] Auth timeout — closing unauthenticated connection: ${connectionId}`);
+                this.send(ws, { type: MESSAGE_TYPES.AUTH_FAILED, message: 'Authentication timeout' });
+                ws.close();
+            }
+        }, 10000);
+
         // Send connection acknowledgment
         this.send(ws, {
             type: 'connected',
@@ -121,26 +130,26 @@ const websocketService = {
                 return;
             }
 
-            // Fix 2: Add message rate limiting
+            // Rate limiting: max 30 messages per minute per client
             const now = Date.now();
             if (!ws.data.messageWindowStart) {
                 ws.data.messageWindowStart = now;
                 ws.data.messageCount = 0;
             }
 
-            // Reset counter if window expired (10 seconds)
-            if (now - ws.data.messageWindowStart > 10000) {
+            // Reset counter if window expired (60 seconds)
+            if (now - ws.data.messageWindowStart > 60000) {
                 ws.data.messageWindowStart = now;
                 ws.data.messageCount = 0;
             }
 
             ws.data.messageCount++;
 
-            // Max 60 messages per 10 seconds
-            if (ws.data.messageCount > 60) {
+            // Max 30 messages per minute
+            if (ws.data.messageCount > 30) {
                 this.send(ws, {
                     type: MESSAGE_TYPES.ERROR,
-                    message: 'Rate limit exceeded. Max 60 messages per 10 seconds.'
+                    message: 'Rate limit exceeded. Max 30 messages per minute.'
                 });
                 ws.close();
                 return;
@@ -208,6 +217,12 @@ const websocketService = {
             ws.data.userId = decoded.userId || decoded.id;
             ws.data.authToken = token;
             ws.data.lastTokenCheck = Date.now();
+
+            // Clear auth timeout now that the client is authenticated
+            if (ws.data.authTimeout) {
+                clearTimeout(ws.data.authTimeout);
+                ws.data.authTimeout = null;
+            }
 
             // Add to connections map (max 10 per user)
             if (!connections.has(ws.data.userId)) {
@@ -362,6 +377,12 @@ const websocketService = {
 
     // Handle disconnect
     handleDisconnect(ws) {
+        // Clear any pending auth timeout
+        if (ws.data.authTimeout) {
+            clearTimeout(ws.data.authTimeout);
+            ws.data.authTimeout = null;
+        }
+
         logger.info(`[WebSocket] Disconnected: ${ws.data.connectionId}`);
 
         // Remove from user connections
@@ -400,10 +421,25 @@ const websocketService = {
     handleChatMessage(ws, message) {
         const { roomId, content } = message;
 
-        // Fix 4: Sanitize chat message content
+        if (!roomId || typeof roomId !== 'string' || roomId.length > 100) {
+            this.send(ws, { type: MESSAGE_TYPES.ERROR, message: 'Invalid room ID' });
+            return;
+        }
+
+        // Chat room permission check: user must be subscribed to the room topic
+        const roomTopic = `chat.${roomId}`;
+        if (!ws.data.subscriptions.has(roomTopic)) {
+            this.send(ws, {
+                type: MESSAGE_TYPES.ERROR,
+                message: `Access denied: must join room ${roomId} before sending messages`
+            });
+            return;
+        }
+
+        // Sanitize chat message content
         const sanitizedContent = String(content || '').replace(/<[^>]*(>|$)/g, '').slice(0, 2000);
 
-        this.broadcast(`chat.${roomId}`, {
+        this.broadcast(roomTopic, {
             type: MESSAGE_TYPES.CHAT_MESSAGE,
             roomId,
             senderId: ws.data.userId,
