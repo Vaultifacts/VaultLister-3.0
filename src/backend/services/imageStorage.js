@@ -35,7 +35,7 @@ async function getS3() {
 
 // Ensure local directories exist (local mode only)
 if (!USE_R2) {
-    ['original', 'thumbnails', 'edited', 'temp'].forEach(dir => {
+    ['original', 'thumbnails', 'medium', 'edited', 'temp'].forEach(dir => {
         const path = join(UPLOADS_DIR, dir);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
         if (!existsSync(path)) {
             mkdirSync(path, { recursive: true });
@@ -198,6 +198,9 @@ export async function saveImage(fileData, userId, originalFilename, mimeType = '
             thumbnailPath = await generateThumbnail(localPath, userId, imageId, extension);
         }
 
+        const source = USE_R2 ? buffer : filePath;
+        const { thumbPath, mediumPath } = await generateOptimizedVariants(source, userId, imageId);
+
         return {
             id: imageId,
             original_filename: originalFilename,
@@ -206,6 +209,8 @@ export async function saveImage(fileData, userId, originalFilename, mimeType = '
             file_size: fileSize,
             mime_type: mimeType,
             thumbnail_path: thumbnailPath,
+            thumb_path: thumbPath,
+            medium_path: mediumPath,
             width: null,
             height: null,
             aspect_ratio: null,
