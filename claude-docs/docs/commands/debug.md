@@ -20,7 +20,7 @@ Systematically debug and fix issues in the application.
    tail -50 logs/server.log
 
    # Check database state
-   sqlite3 data/vaultlister.db "SELECT * FROM table LIMIT 5;"
+   psql $DATABASE_URL -c "SELECT * FROM table LIMIT 5;"
 
    # Check network requests (browser devtools)
    ```

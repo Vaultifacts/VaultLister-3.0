@@ -84,8 +84,8 @@ To verify a backup is readable without touching the live database:
 ```bash
 # Decompress to a temp file and inspect
 gunzip -c /opt/vaultlister-staging/backups/vaultlister-2026-03-15_030001.db.gz > /tmp/test-restore.db
-sqlite3 /tmp/test-restore.db "SELECT COUNT(*) FROM inventory_items;"
-sqlite3 /tmp/test-restore.db ".tables"
+pg_restore --list /tmp/test-restore.dump | head -20
+psql $DATABASE_URL -c "SELECT COUNT(*) FROM inventory_items;"
 rm /tmp/test-restore.db
 ```
 
@@ -100,7 +100,7 @@ To do a full restore drill on a non-production instance, copy the backup file to
 **Recovery:**
 1. Identify the last backup before the deletion occurred
 2. Run `restore.sh <that-backup-file>`
-3. If only partial data needs to be recovered (not a full rollback), decompress the backup to `/tmp/`, query the rows you need from the backup using `sqlite3`, and INSERT them back into the live database manually
+3. If only partial data needs to be recovered (not a full rollback), decompress the backup to `/tmp/`, query the rows you need from the backup using `psql`, and INSERT them back into the live database manually
 
 ### Scenario 2: Database corruption
 
@@ -115,7 +115,7 @@ To check whether a backup file is healthy before restoring:
 
 ```bash
 gunzip -c /opt/vaultlister-staging/backups/<filename> > /tmp/check.db
-sqlite3 /tmp/check.db "PRAGMA integrity_check;"
+pg_restore --list /tmp/check.dump | head -5
 rm /tmp/check.db
 ```
 

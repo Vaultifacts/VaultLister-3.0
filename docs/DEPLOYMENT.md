@@ -259,11 +259,8 @@ These jobs run on the server via crontab. Install with `crontab -e` as the servi
 # Health check — every 5 minutes
 */5 * * * * curl -sf http://localhost:3000/api/health > /dev/null || echo "$(date): health check failed" >> /opt/vaultlister/logs/health-alert.log
 
-# WAL checkpoint — every 6 hours (keeps PostgreSQL file from growing unbounded)
-0 */6 * * * sqlite3 /opt/vaultlister/data/vaultlister.db "PRAGMA wal_checkpoint(TRUNCATE);" >> /opt/vaultlister/logs/wal.log 2>&1
-
-# Database integrity check — daily at 4:00 AM
-0 4 * * * sqlite3 /opt/vaultlister/data/vaultlister.db "PRAGMA integrity_check;" >> /opt/vaultlister/logs/integrity.log 2>&1
+# PostgreSQL connection check — daily at 4:00 AM
+0 4 * * * psql $DATABASE_URL -c "SELECT 1;" >> /opt/vaultlister/logs/integrity.log 2>&1
 ```
 
 For staging, replace `/opt/vaultlister/` with `/opt/vaultlister-staging/`.

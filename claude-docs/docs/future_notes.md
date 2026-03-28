@@ -114,7 +114,7 @@ Impact calculations based on:
 ## Notes for Implementation
 
 ### Adding New Platform Bot
-1. Create `src/shared/automations/{platform}-bot.js`
+1. Create `worker/bots/{platform}-bot.js`
 2. Extend `automation-runner.js` with platform case
 3. Add platform config to `config/settings.json`
 4. Create E2E tests in `e2e/tests/{platform}.spec.js`
@@ -126,4 +126,4 @@ Currently no migration system. Changes require:
 2. Run `bun run db:init` (drops existing data)
 3. Run `bun run db:seed` for demo data
 
-Consider adding: `bun-sqlite-migrations` or custom migration runner
+PostgreSQL migrations use the custom migration runner in `src/backend/db/database.js` (migrationFiles array). Each new migration file must be registered there.

@@ -16,7 +16,7 @@
 - Frontend handlers: `src/frontend/handlers/` — event handlers grouped by domain
 - Shared utilities: `src/shared/` — no route-specific or frontend-specific code in this layer
 - All AI interactions go through `src/shared/ai/` — never call @anthropic-ai/sdk directly from routes
-- All Playwright automations live in `src/shared/automations/` — never inline browser code in routes
+- All Playwright automations live in `worker/bots/` — never inline browser code in routes
 
 ## Security Rules (Non-Negotiable)
 - Always escape user content with `escapeHtml()` before rendering in the DOM
@@ -30,7 +30,7 @@
 ## Automation Safety Rules
 - Playwright bots must read credentials from `.env` only — never accept credentials as function arguments
 - All automation actions must be logged to `data/automation-audit.log`
-- Bots must respect platform-specific rate limits (see `src/shared/automations/rate-limits.js`)
+- Bots must respect platform-specific rate limits (see `worker/bots/rate-limits.js`)
 - Never run two automations against the same platform simultaneously
 - Any CAPTCHA detection must stop the bot and alert the user — never attempt to bypass
 
