@@ -4,6 +4,7 @@
 import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { INTERVALS } from '../shared/constants.js';
+import { logger } from '../shared/logger.js';
 
 /**
  * CSRF Token Manager — PostgreSQL-backed (B-09)
@@ -71,7 +72,7 @@ const csrfManager = new CSRFManager();
 
 // Startup guard: warn if DISABLE_CSRF is set outside test mode
 if (process.env.DISABLE_CSRF === 'true' && process.env.NODE_ENV !== 'test') {
-    console.warn('[SECURITY] DISABLE_CSRF is set but NODE_ENV is not "test" — CSRF protection remains ENABLED. DISABLE_CSRF only takes effect when NODE_ENV=test.');
+    logger.warn('[SECURITY] DISABLE_CSRF is set but NODE_ENV is not "test" — CSRF protection remains ENABLED. DISABLE_CSRF only takes effect when NODE_ENV=test.');
 }
 
 /**
