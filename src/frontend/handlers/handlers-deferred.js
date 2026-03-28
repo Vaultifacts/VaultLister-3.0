@@ -125,7 +125,8 @@ Object.assign(handlers, {
         }
 
         if (images.length === 0) {
-            grid.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            grid.innerHTML = sanitizeHTML(`
                 <div class="text-center text-gray-500 py-6" style="grid-column: 1 / -1;">
                     <div style="font-size: 32px; margin-bottom: 8px;">${components.icon('image', 32)}</div>
                     <p style="font-weight: 500;">No images in your Image Bank</p>
@@ -138,7 +139,8 @@ Object.assign(handlers, {
             return;
         }
 
-        grid.innerHTML = sanitizeHTML(images.slice(0, 50).map(img => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        grid.innerHTML = sanitizeHTML(images.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
                  onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
@@ -189,7 +191,8 @@ Object.assign(handlers, {
         previewItem.className = 'media-preview-item';
         previewItem.setAttribute('data-imagebank-id', imageId);
         previewItem.setAttribute('data-imagebank-url', imageUrl);
-        previewItem.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        previewItem.innerHTML = sanitizeHTML(`
             <img src="${escapeHtml(imageUrl)}" alt="Image from Image Bank" style="width: 100%; height: 100%; object-fit: cover;">
             <button type="button" class="media-preview-remove" onclick="handlers.removeImageBankImageFromPreview('${mode}', '${imageId}')">×</button>
             <span class="media-preview-source" style="position: absolute; bottom: 2px; left: 2px; background: var(--primary-600); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px;">Bank</span>
@@ -232,7 +235,8 @@ Object.assign(handlers, {
         if (!grid) return;
 
         if (filtered.length === 0) {
-            grid.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            grid.innerHTML = sanitizeHTML(`
                 <div class="text-center text-gray-500 py-4" style="grid-column: 1 / -1;">
                     No images found matching "${escapeHtml(query)}"
                 </div>
@@ -240,7 +244,8 @@ Object.assign(handlers, {
             return;
         }
 
-        grid.innerHTML = sanitizeHTML(filtered.slice(0, 50).map(img => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        grid.innerHTML = sanitizeHTML(filtered.slice(0, 50).map(img => `
             <div class="imagebank-inline-item" data-image-id="${img.id}" data-image-url="${escapeHtml(img.file_path || img.url)}"
                  onclick="handlers.toggleImageBankInlineSelection('${mode}', '${img.id}', '${escapeHtml(img.file_path || img.url)}')"
                  style="position: relative; cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; aspect-ratio: 1;">
@@ -360,7 +365,8 @@ Object.assign(handlers, {
             return;
         }
 
-        variationsList.innerHTML = sanitizeHTML(variations.map(variation => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        variationsList.innerHTML = sanitizeHTML(variations.map(variation => `
             <div style="display: flex; gap: 8px; align-items: center;">
                 <input type="text"
                        class="form-input"
@@ -2683,7 +2689,8 @@ Object.assign(handlers, {
 
             const sizeResultEl = document.getElementById('size-recommendation-result');
             if (!sizeResultEl) return;
-            sizeResultEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            sizeResultEl.innerHTML = sanitizeHTML(`
                 <div class="card" style="padding: 16px; background: var(--bg-success-subtle); border: 1px solid var(--border-success);">
                     <h4>Recommended Size: ${data.recommended_size || 'M'}</h4>
                     <p style="color: var(--text-secondary);">Based on your measurements</p>
@@ -2800,7 +2807,8 @@ Object.assign(handlers, {
         };
 
         const rec = getSize(bust, waist, hips);
-        container.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        container.innerHTML = sanitizeHTML(`
             <div class="p-4 bg-green-50 rounded-lg border border-green-200 mt-4">
                 <h4 class="font-semibold text-green-800 mb-2">${components.icon('check-circle', 16)} Your Recommended Size</h4>
                 <div class="grid grid-cols-3 gap-4">
@@ -5400,7 +5408,8 @@ Object.assign(handlers, {
             const avgDays = Math.floor(Math.random() * 14) + 3;
 
             if (resultEl) {
-                resultEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                resultEl.innerHTML = sanitizeHTML(`
                     <div style="padding: 16px; background: var(--primary-50); border-radius: 8px; border: 1px solid var(--primary-200);">
                         <div style="text-align: center; margin-bottom: 16px;">
                             <div style="font-size: 12px; color: var(--gray-600);">Suggested Price Range</div>
@@ -5558,7 +5567,8 @@ Object.assign(handlers, {
             return;
         }
 
-        resultsEl.innerHTML = sanitizeHTML(matches.map(m => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        resultsEl.innerHTML = sanitizeHTML(matches.map(m => `
             <div class="settings-search-result" onclick="handlers.setSettingsTab('${m.tab}'); document.getElementById('settings-search-input').value=''; document.getElementById('settings-search-results').style.display='none';"
                 style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--gray-100);"
                 onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
@@ -6404,7 +6414,8 @@ Object.assign(handlers, {
             // Re-render the screenshot section
             const dropZone = document.getElementById('screenshot-drop-zone');
             if (dropZone) {
-                dropZone.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                dropZone.innerHTML = sanitizeHTML(`
                     <div style="position: relative; display: inline-block;">
                         <img src="${e.target.result}" style="max-width: 300px; max-height: 200px; border-radius: 4px;" alt="Screenshot preview">
                         <button type="button" onclick="event.stopPropagation(); handlers.clearScreenshot();" style="position: absolute; top: -8px; right: -8px; background: var(--danger-600); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;">x</button>
@@ -6425,7 +6436,8 @@ Object.assign(handlers, {
         if (input) input.value = '';
         const dropZone = document.getElementById('screenshot-drop-zone');
         if (dropZone) {
-            dropZone.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            dropZone.innerHTML = sanitizeHTML(`
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="margin-bottom: 8px;">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -7303,7 +7315,8 @@ Object.assign(handlers, {
         if (!container) return;
 
         if (action === 'updateStatus') {
-            container.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label">New Status</label>
                     <select class="form-select" name="status" required>
@@ -7315,7 +7328,8 @@ Object.assign(handlers, {
                 </div>
             `);
         } else if (action === 'updatePrice') {
-            container.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            container.innerHTML = sanitizeHTML(`
                 <div class="form-group">
                     <label class="form-label">Price Adjustment</label>
                     <select class="form-select" name="adjustmentType" required>
@@ -7471,7 +7485,8 @@ Object.assign(handlers, {
             return;
         }
 
-        container.innerHTML = sanitizeHTML(Object.entries(activeFilters).map(([column, value]) => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        container.innerHTML = sanitizeHTML(Object.entries(activeFilters).map(([column, value]) => `
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 4px;">
                 <div style="font-size: 12px;">
                     <span style="font-weight: 600; text-transform: capitalize;">${column}:</span>
@@ -8415,7 +8430,8 @@ Object.assign(handlers, {
             const data = await api.get(`/listings/${listingId}/competitor-pricing`);
             if (container) {
                 const recColor = data.recommendation === 'competitive' ? 'success' : data.recommendation === 'underpriced' ? 'warning' : 'error';
-                container.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                container.innerHTML = sanitizeHTML(`
                     <div class="space-y-1">
                         <div class="flex justify-between"><span class="text-gray-500">Avg Sale Price:</span><span class="font-medium">$${data.avg_price}</span></div>
                         <div class="flex justify-between"><span class="text-gray-500">Range:</span><span class="font-medium">$${data.min_price} - $${data.max_price}</span></div>
@@ -8441,7 +8457,8 @@ Object.assign(handlers, {
             if (container) {
                 if (data.estimated_days !== null) {
                     const confColor = data.confidence === 'high' ? 'success' : data.confidence === 'medium' ? 'warning' : 'gray';
-                    container.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    container.innerHTML = sanitizeHTML(`
                         <div class="space-y-1">
                             <div class="flex justify-between"><span class="text-gray-500">Estimate:</span><span class="font-bold text-lg">${data.estimated_days} days</span></div>
                             <div class="flex justify-between"><span class="text-gray-500">Range:</span><span class="font-medium">${data.min_days} - ${data.max_days} days</span></div>
@@ -10000,7 +10017,7 @@ Object.assign(handlers, {
         });
 
         const printWindow = window.open('', '_blank');
-        printWindow.document.write(`  // nosemgrep: javascript.browser.security.insecure-document-method
+        printWindow.document.write(`  // nosemgrep: javascript.browser.security.insecure-document-method  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             <!DOCTYPE html>
             <html>
             <head>
@@ -10268,7 +10285,8 @@ Object.assign(handlers, {
 
         const estimatesEl = document.getElementById('shipping-estimates');
         if (estimatesEl) {
-            estimatesEl.innerHTML = sanitizeHTML(rates.map((r, i) => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            estimatesEl.innerHTML = sanitizeHTML(rates.map((r, i) => `
                 <div class="shipping-rate-card ${i === 0 ? 'best-rate' : ''}">
                     ${i === 0 ? '<span class="best-badge">Best Value</span>' : ''}
                     <div class="rate-carrier">${r.carrier}</div>
@@ -10281,7 +10299,8 @@ Object.assign(handlers, {
 
         const dimEl = document.getElementById('dim-weight-info');
         if (dimEl) {
-            dimEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            dimEl.innerHTML = sanitizeHTML(`
                 <div class="dim-weight-row">
                     <span>Actual Weight:</span>
                     <strong>${weight.toFixed(1)} lbs</strong>
@@ -10842,7 +10861,8 @@ Object.assign(handlers, {
 
         const previewEl = document.getElementById('bulk-price-preview-list');
         if (previewEl) {
-            previewEl.innerHTML = sanitizeHTML(previewItems.map(p => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            previewEl.innerHTML = sanitizeHTML(previewItems.map(p => `
                 <div class="preview-row">
                     <span class="preview-title">${escapeHtml(p.title)}</span>
                     <span class="preview-old">$${p.oldPrice.toFixed(2)}</span>
@@ -11901,7 +11921,8 @@ Object.assign(handlers, {
 
         const container = document.getElementById('bundle-available');
         if (container) {
-            container.innerHTML = sanitizeHTML(filtered.map(item => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            container.innerHTML = sanitizeHTML(filtered.map(item => `
                 <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
                     <span class="item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
@@ -12124,7 +12145,8 @@ Object.assign(handlers, {
             return;
         }
 
-        resultsEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        resultsEl.innerHTML = sanitizeHTML(`
             ${invResults.length > 0 ? `
                 <div class="lookup-section">
                     <h4 class="lookup-section-title">Inventory (${invResults.length})</h4>
@@ -16201,7 +16223,8 @@ Object.assign(handlers, {
         if (!container) return;
         const row = document.createElement('div');
         row.className = 'condition-row flex items-center gap-2 p-3 bg-gray-50 rounded-lg';
-        row.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML(`
             <select class="form-select" style="width: 140px;">
                 <option value="and">AND</option>
                 <option value="or">OR</option>
@@ -17416,7 +17439,8 @@ Object.assign(handlers, {
             { type: 'action', title: 'Keyboard Shortcuts', subtitle: 'View all shortcuts', action: 'handlers.showKeyboardShortcuts()', icon: 'help' }
         ];
 
-        overlay.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        overlay.innerHTML = sanitizeHTML(`
             <div class="global-search-modal">
                 <div class="global-search-input-wrapper">
                     ${components.icon('search', 20)}
@@ -17487,7 +17511,8 @@ Object.assign(handlers, {
         const resultsEl = document.getElementById('global-search-results');
         if (!resultsEl) return;
 
-        resultsEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        resultsEl.innerHTML = sanitizeHTML(`
             <div class="global-search-section">
                 <div class="global-search-section-title">${query ? 'Results' : 'Quick Actions'}</div>
                 ${filtered.length > 0 ? filtered.map((item, idx) => `
@@ -18702,7 +18727,8 @@ Object.assign(handlers, {
             reader.onload = (e) => {
                 const img = document.createElement('div');
                 img.style.cssText = 'width:64px;height:64px;border-radius:6px;overflow:hidden;position:relative;border:2px solid var(--gray-200);';
-                img.innerHTML = sanitizeHTML(`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                img.innerHTML = sanitizeHTML(`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">
                     <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:10px;text-align:center;padding:1px;">${idx + 1}</span>`);
                 container.appendChild(img);
 
@@ -18853,7 +18879,8 @@ Object.assign(handlers, {
         }
         const confidenceBadge = confidence === 'high' ? 'badge-success' : confidence === 'medium' ? 'badge-warning' : 'badge-gray';
 
-        container.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        container.innerHTML = sanitizeHTML(`
             <div class="mb-4 flex items-center gap-3">
                 <span class="badge ${confidenceBadge}">Confidence: ${confidence.toUpperCase()}</span>
                 ${data.aiProvider ? `<span class="text-xs text-gray-500">Powered by ${data.aiProvider}</span>` : ''}
@@ -19476,7 +19503,8 @@ Object.assign(handlers, {
                 if (usageContainer) {
                     const items = usageData.usage || [];
                     if (items.length > 0) {
-                        usageContainer.innerHTML = sanitizeHTML(items.map(item => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        usageContainer.innerHTML = sanitizeHTML(items.map(item => `
                             <div class="image-usage-item" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
                                 ${components.icon('package', 14)}
                                 <span>${escapeHtml(item.title)}</span>
@@ -19653,7 +19681,8 @@ Object.assign(handlers, {
                     preview.className = 'selected-image-preview';
                     preview.dataset.imageId = imageId;
                     preview.dataset.imageUrl = imageUrl;
-                    preview.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    preview.innerHTML = sanitizeHTML(`
                         <img src="${escapeHtml(imageUrl)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" alt="Selected image preview">
                         <button type="button" class="btn btn-xs btn-ghost" style="position: absolute; top: -8px; right: -8px; background: white; border-radius: 50%; padding: 2px;"
                                 onclick="this.parentElement.remove()" aria-label="Remove image">×</button>
@@ -20647,7 +20676,8 @@ Object.assign(handlers, {
 
         const newRow = document.createElement('div');
         newRow.className = 'receipt-line-item-row';
-        newRow.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        newRow.innerHTML = sanitizeHTML(`
             <input type="text" name="itemDescription" placeholder="Description" class="form-input">
             <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px">
             <input type="number" name="itemUnitPrice" step="0.01" placeholder="0.00" class="form-input" style="width:80px">
@@ -22151,7 +22181,8 @@ Object.assign(handlers, {
 
             // Check for camera access
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                document.querySelector('.barcode-scanner-container').innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.barcode-scanner-container').innerHTML = sanitizeHTML(`
                     <div style="padding: 32px; text-align: center; color: var(--gray-600);">
                         <p>Camera not supported in this browser.</p>
                         <p style="font-size: 13px; margin-top: 8px;">Use the manual entry below.</p>
@@ -22173,7 +22204,8 @@ Object.assign(handlers, {
         } catch (error) {
             console.error('Camera access failed:', error);
             toast.error('Camera access denied or unavailable');
-            document.querySelector('.barcode-scanner-container').innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.barcode-scanner-container').innerHTML = sanitizeHTML(`
                 <div style="padding: 32px; text-align: center; color: var(--gray-600);">
                     <p>Camera access denied or unavailable.</p>
                     <p style="font-size: 13px; margin-top: 8px;">Use the manual entry below.</p>
@@ -22257,7 +22289,8 @@ Object.assign(handlers, {
         const listEl = document.getElementById('duplicates-list');
         if (!listEl) return;
 
-        listEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        listEl.innerHTML = sanitizeHTML(`
             <div style="text-align: center; padding: 32px;">
                 <div class="spinner"></div>
                 <p style="margin-top: 12px; color: var(--gray-600);">Scanning inventory for duplicates...</p>
@@ -22269,7 +22302,8 @@ Object.assign(handlers, {
             const result = await api.post('/duplicates/scan', {});
 
             if (result.duplicates_found === 0) {
-                listEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                listEl.innerHTML = sanitizeHTML(`
                     <div style="text-align: center; padding: 32px; color: var(--success);">
                         ${components.icon('check', 32)}
                         <p style="margin-top: 12px; font-weight: 600;">No duplicates found!</p>
@@ -22292,7 +22326,8 @@ Object.assign(handlers, {
         if (!listEl) return;
 
         if (duplicates.length === 0) {
-            listEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            listEl.innerHTML = sanitizeHTML(`
                 <p style="text-align: center; color: var(--gray-500); padding: 32px;">
                     No pending duplicates to review.
                 </p>
@@ -22300,7 +22335,8 @@ Object.assign(handlers, {
             return;
         }
 
-        listEl.innerHTML = sanitizeHTML(duplicates.map(d => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        listEl.innerHTML = sanitizeHTML(duplicates.map(d => `
             <div class="duplicate-card" data-id="${d.id}">
                 <div class="duplicate-card-items">
                     <div class="duplicate-item-preview">
@@ -22360,7 +22396,8 @@ Object.assign(handlers, {
             const teams = data.teams || [];
 
             if (teams.length === 0) {
-                contentEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                contentEl.innerHTML = sanitizeHTML(`
                     <div style="text-align: center; padding: 48px;">
                         ${components.icon('users', 48)}
                         <h3 style="margin-top: 16px; color: var(--gray-700);">No Teams Yet</h3>
@@ -22373,7 +22410,8 @@ Object.assign(handlers, {
                 return;
             }
 
-            contentEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            contentEl.innerHTML = sanitizeHTML(`
                 <div class="team-members-grid">
                     ${teams.map(team => `
                         <div class="team-member-card" style="cursor: pointer;" onclick="handlers.viewTeam('${team.id}')">
@@ -22398,7 +22436,8 @@ Object.assign(handlers, {
         const contentEl = document.getElementById('team-content');
         if (!contentEl) return;
 
-        contentEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        contentEl.innerHTML = sanitizeHTML(`
             <div style="text-align: center; padding: 32px;">
                 <div class="spinner"></div>
                 <p style="margin-top: 12px; color: var(--gray-600);">Loading team...</p>
@@ -22410,7 +22449,8 @@ Object.assign(handlers, {
             const team = data.team;
             const members = data.members || [];
 
-            contentEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            contentEl.innerHTML = sanitizeHTML(`
                 <div style="margin-bottom: 24px;">
                     <button class="btn btn-sm btn-ghost" onclick="handlers.loadTeams()">
                         ${components.icon('arrow-left', 14)} Back to Teams
@@ -22608,7 +22648,8 @@ Object.assign(handlers, {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'relisting-rule-modal';
-        modal.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width:550px;">
                 <div class="modal-header">
                     <h3>New Relisting Rule</h3>
@@ -22762,7 +22803,8 @@ Object.assign(handlers, {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'create-label-modal';
-        modal.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width:650px; max-height:90vh; overflow-y:auto;">
                 <div class="modal-header">
                     <h3>Create Shipping Label</h3>
@@ -22868,7 +22910,8 @@ Object.assign(handlers, {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'rate-shopping-modal';
-        modal.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width:550px;">
                 <div class="modal-header">
                     <h3>Compare Shipping Rates</h3>
@@ -22903,7 +22946,8 @@ Object.assign(handlers, {
                 to_zip: document.getElementById('rs-to-zip')?.value || ''
             });
 
-            resultsEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            resultsEl.innerHTML = sanitizeHTML(`
                 <div class="table-container">
                     <table class="table table-sm">
                         <thead><tr><th>Carrier</th><th>Service</th><th>Rate</th><th>Days</th></tr></thead>
@@ -23004,7 +23048,8 @@ Object.assign(handlers, {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'add-address-modal';
-        modal.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        modal.innerHTML = sanitizeHTML(`
             <div class="modal" style="max-width:450px;">
                 <div class="modal-header">
                     <h3>Add Return Address</h3>
@@ -23773,7 +23818,7 @@ Object.assign(handlers, {
 
                 // Create printable HTML for labels
                 const printWindow = window.open('', '_blank');
-                printWindow.document.write(`  // nosemgrep: javascript.browser.security.insecure-document-method
+                printWindow.document.write(`  // nosemgrep: javascript.browser.security.insecure-document-method  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     <!DOCTYPE html>
                     <html>
                     <head>
@@ -25224,7 +25269,8 @@ Object.assign(handlers, {
         const listEl = document.getElementById(listId);
         if (listEl) {
             const arr = mode === 'add' ? handlers._addChecklistAttachments : handlers._editChecklistAttachments;
-            listEl.innerHTML = sanitizeHTML(arr.map((a, i) => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            listEl.innerHTML = sanitizeHTML(arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
                     <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
@@ -25243,7 +25289,8 @@ Object.assign(handlers, {
         const listEl = document.getElementById(listId);
         if (listEl) {
             const arr = mode === 'add' ? handlers._addChecklistAttachments : handlers._editChecklistAttachments;
-            listEl.innerHTML = sanitizeHTML(arr.map((a, i) => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            listEl.innerHTML = sanitizeHTML(arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
                     <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
@@ -25360,7 +25407,8 @@ Object.assign(handlers, {
             if (!res.ok) throw new Error('Failed to run scenario');
             const data = await res.json();
             const r = data.results || {};
-            document.getElementById('scenario-results').innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.getElementById('scenario-results').innerHTML = sanitizeHTML(`
                 <div class="card" style="padding: 16px;">
                     <h4>Scenario Results</h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">

@@ -94,6 +94,7 @@ function addImportButton() {
 
     const button = document.createElement('button');
     button.id = 'vaultlister-import-btn';
+    // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     button.innerHTML = `
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -166,6 +167,7 @@ function showItemSelector() {
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     `;
 
+    // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     modal.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="font-size: 20px; font-weight: 700; color: #1f2937; margin: 0;">
@@ -220,11 +222,11 @@ function displayItems(items) {
     const container = document.getElementById('vaultlister-items-list');
 
     if (items.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #6b7280;">No items found</p>';
+        container.innerHTML = '<p style="text-align: center; color: #6b7280;">No items found</p>';  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         return;
     }
 
-    container.innerHTML = items.map(item => {
+    container.innerHTML = items.map(item => {  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         const safeItem = escapeHtml(JSON.stringify(item));
         const imgSrc = escapeHtml(item.images && item.images[0] ? item.images[0] : '');
         const imgAlt = escapeHtml(item.title || item.name || '');
@@ -261,7 +263,7 @@ function displayItems(items) {
 // Display error
 function displayError(message) {
     const container = document.getElementById('vaultlister-items-list');
-    container.innerHTML = `<p style="text-align: center; color: #ef4444;">${escapeHtml(message)}</p>`;
+    container.innerHTML = `<p style="text-align: center; color: #ef4444;">${escapeHtml(message)}</p>`;  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 }
 
 // Fill form with item data

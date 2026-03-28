@@ -165,7 +165,8 @@ const ChatWidget = {
         const container = document.getElementById('chat-widget-container');
         if (!container) return;
 
-        container.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        container.innerHTML = sanitizeHTML(`
             <!-- Floating Button -->
             <button class="chat-widget-button ${this.isOpen ? 'active' : ''}"
                     onclick="ChatWidget.toggle()"

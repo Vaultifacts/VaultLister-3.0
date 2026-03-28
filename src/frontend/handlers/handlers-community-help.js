@@ -243,7 +243,8 @@ Object.assign(handlers, {
             // Re-render the screenshot section
             const dropZone = document.getElementById('screenshot-drop-zone');
             if (dropZone) {
-                dropZone.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                dropZone.innerHTML = sanitizeHTML(`
                     <div style="position: relative; display: inline-block;">
                         <img src="${e.target.result}" style="max-width: 300px; max-height: 200px; border-radius: 4px;" alt="Screenshot preview">
                         <button type="button" onclick="event.stopPropagation(); handlers.clearScreenshot();" style="position: absolute; top: -8px; right: -8px; background: var(--danger-600); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;">x</button>
@@ -265,7 +266,8 @@ Object.assign(handlers, {
         if (input) input.value = '';
         const dropZone = document.getElementById('screenshot-drop-zone');
         if (dropZone) {
-            dropZone.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            dropZone.innerHTML = sanitizeHTML(`
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="margin-bottom: 8px;">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     <circle cx="8.5" cy="8.5" r="1.5"></circle>

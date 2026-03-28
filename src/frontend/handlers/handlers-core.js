@@ -474,7 +474,8 @@ const handlers = {
                         container.style.display = items.length > 0 ? 'block' : 'none';
                         const list = document.getElementById('similar-feedback-list');
                         if (list && items.length > 0) {
-                            list.innerHTML = sanitizeHTML(items.map(item => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                            list.innerHTML = sanitizeHTML(items.map(item => `
                                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; cursor: pointer;" onclick="handlers.showFeedbackDetail('${item.id}')">
                                     <span style="font-size: 13px; color: var(--gray-700);">${escapeHtml(item.title)}</span>
                                     <div style="display: flex; align-items: center; gap: 8px;">
@@ -676,7 +677,8 @@ const handlers = {
         const menu = document.createElement('div');
         menu.id = 'dashboard-fab-menu';
         menu.className = 'dashboard-fab-menu';
-        menu.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        menu.innerHTML = sanitizeHTML(`
             <button class="fab-action-item" onclick="router.navigate('inventory'); setTimeout(() => modals.addItem(), 100); document.getElementById('dashboard-fab-menu')?.remove();">
                 ${components.icon('plus', 16)} Add Item
             </button>

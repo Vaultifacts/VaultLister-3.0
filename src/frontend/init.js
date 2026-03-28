@@ -81,7 +81,8 @@ async function initApp() {
     // Add global UI elements
     const globalUI = document.createElement('div');
     globalUI.id = 'global-ui';
-    globalUI.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+    // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+    globalUI.innerHTML =sanitizeHTML( sanitizeHTML(`
         ${components.backToTop()}
         ${components.offlineIndicator()}
         ${components.pullToRefresh()}
@@ -428,7 +429,8 @@ async function initApp() {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'webhook-modal';
-        modal.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        modal.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="modal" style="max-width: 500px;">
                 <div class="modal-header">
                     <h3>Add Webhook Endpoint</h3>
@@ -510,7 +512,7 @@ function hideLoadingScreen() {
 function render(content) {
     // Wrap in <main> so public pages (login, register, etc.) have a landmark
     // that screen readers can jump to, matching the skip-link target used in renderApp.
-    document.getElementById('app').innerHTML =  // nosemgrep: javascript.browser.security.insecure-document-method
+    document.getElementById('app').innerHTML =  // nosemgrep: javascript.browser.security.insecure-document-method  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
        sanitizeHTML( sanitizeHTML(`<main id="main-content" tabindex="-1" aria-label="Page content">${content}</main>`));
     hideLoadingScreen();
 }
@@ -529,7 +531,8 @@ function renderApp(pageContent) {
     }
 
     try {
-        document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <a class="skip-link" href="#main-content">Skip to main content</a>
             <div class="app-layout">
                 ${components.sidebar()}
@@ -572,7 +575,8 @@ function renderApp(pageContent) {
     } catch (err) {
         console.error('renderApp error:', err);
         hideLoadingScreen();
-        document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
             <div style="padding: 40px; text-align: center; font-family: system-ui;">
                 <h2>Something went wrong</h2>
                 <p style="color: #666;">An error occurred while rendering the page.</p>

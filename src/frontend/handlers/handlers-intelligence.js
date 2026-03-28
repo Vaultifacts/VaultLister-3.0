@@ -1414,7 +1414,8 @@ Object.assign(handlers, {
             const avgDays = Math.floor(Math.random() * 14) + 3;
 
             if (resultEl) {
-                resultEl.innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                resultEl.innerHTML = sanitizeHTML(`
                     <div style="padding: 16px; background: var(--primary-50); border-radius: 8px; border: 1px solid var(--primary-200);">
                         <div style="text-align: center; margin-bottom: 16px;">
                             <div style="font-size: 12px; color: var(--gray-600);">Suggested Price Range</div>
@@ -1646,7 +1647,8 @@ Object.assign(handlers, {
             if (!res.ok) throw new Error('Failed to run scenario');
             const data = await res.json();
             const r = data.results || {};
-            document.getElementById('scenario-results').innerHTML = sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.getElementById('scenario-results').innerHTML = sanitizeHTML(`
                 <div class="card" style="padding: 16px;">
                     <h4>Scenario Results</h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">

@@ -864,7 +864,8 @@ Object.assign(handlers, {
 
             const sizeResultEl = document.getElementById('size-recommendation-result');
             if (!sizeResultEl) return;
-            sizeResultEl.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            sizeResultEl.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="card" style="padding: 16px; background: var(--bg-success-subtle); border: 1px solid var(--border-success);">
                     <h4>Recommended Size: ${data.recommended_size || 'M'}</h4>
                     <p style="color: var(--text-secondary);">Based on your measurements</p>
@@ -985,7 +986,8 @@ Object.assign(handlers, {
         };
 
         const rec = getSize(bust, waist, hips);
-        container.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        container.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="p-4 bg-green-50 rounded-lg border border-green-200 mt-4">
                 <h4 class="font-semibold text-green-800 mb-2">${components.icon('check-circle', 16)} Your Recommended Size</h4>
                 <div class="grid grid-cols-3 gap-4">
@@ -2784,7 +2786,8 @@ Object.assign(handlers, {
                 if (usageContainer) {
                     const items = usageData.usage || [];
                     if (items.length > 0) {
-                        usageContainer.innerHTML =sanitizeHTML( sanitizeHTML(items.map(item => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        usageContainer.innerHTML =sanitizeHTML( sanitizeHTML(items.map(item => `
                             <div class="image-usage-item" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
                                 ${components.icon('package', 14)}
                                 <span>${escapeHtml(item.title)}</span>
@@ -3539,7 +3542,8 @@ Object.assign(handlers, {
 
         const newRow = document.createElement('div');
         newRow.className = 'receipt-line-item-row';
-        newRow.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        newRow.innerHTML =sanitizeHTML( sanitizeHTML(`
             <input type="text" name="itemDescription" placeholder="Description" class="form-input">
             <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px">
             <input type="number" name="itemUnitPrice" step="0.01" placeholder="0.00" class="form-input" style="width:80px">
@@ -4261,7 +4265,8 @@ Object.assign(handlers, {
 
             // Check for camera access
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                document.querySelector('.barcode-scanner-container').innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.barcode-scanner-container').innerHTML =sanitizeHTML( sanitizeHTML(`
                     <div style="padding: 32px; text-align: center; color: var(--gray-600);">
                         <p>Camera not supported in this browser.</p>
                         <p style="font-size: 13px; margin-top: 8px;">Use the manual entry below.</p>
@@ -4283,7 +4288,8 @@ Object.assign(handlers, {
         } catch (error) {
             console.error('Camera access failed:', error);
             toast.error('Camera access denied or unavailable');
-            document.querySelector('.barcode-scanner-container').innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.barcode-scanner-container').innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div style="padding: 32px; text-align: center; color: var(--gray-600);">
                     <p>Camera access denied or unavailable.</p>
                     <p style="font-size: 13px; margin-top: 8px;">Use the manual entry below.</p>
@@ -4371,7 +4377,8 @@ Object.assign(handlers, {
         const listEl = document.getElementById('duplicates-list');
         if (!listEl) return;
 
-        listEl.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        listEl.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div style="text-align: center; padding: 32px;">
                 <div class="spinner"></div>
                 <p style="margin-top: 12px; color: var(--gray-600);">Scanning inventory for duplicates...</p>
@@ -4383,7 +4390,8 @@ Object.assign(handlers, {
             const result = await api.post('/duplicates/scan', {});
 
             if (result.duplicates_found === 0) {
-                listEl.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                listEl.innerHTML =sanitizeHTML( sanitizeHTML(`
                     <div style="text-align: center; padding: 32px; color: var(--success);">
                         ${components.icon('check', 32)}
                         <p style="margin-top: 12px; font-weight: 600;">No duplicates found!</p>
@@ -4944,7 +4952,8 @@ Object.assign(handlers, {
         const listEl = document.getElementById(listId);
         if (listEl) {
             const arr = mode === 'add' ? handlers._addChecklistAttachments : handlers._editChecklistAttachments;
-            listEl.innerHTML =sanitizeHTML( sanitizeHTML(arr.map((a, i) => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            listEl.innerHTML =sanitizeHTML( sanitizeHTML(arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
                     <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
@@ -4964,7 +4973,8 @@ Object.assign(handlers, {
         const listEl = document.getElementById(listId);
         if (listEl) {
             const arr = mode === 'add' ? handlers._addChecklistAttachments : handlers._editChecklistAttachments;
-            listEl.innerHTML =sanitizeHTML( sanitizeHTML(arr.map((a, i) => `  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            listEl.innerHTML =sanitizeHTML( sanitizeHTML(arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
                     <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>

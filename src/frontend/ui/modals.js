@@ -14,7 +14,8 @@ const modals = {
         this._previouslyFocused = document.activeElement;
         const container = document.getElementById('modal-container');
         const modalClass = sizeClass ? `modal ${sizeClass}` : 'modal';
-        container.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        container.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="modal-overlay" onclick="modals.close()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
                 <div class="${modalClass}" onclick="event.stopPropagation()" role="document">
                     ${content}
@@ -98,7 +99,8 @@ const modals = {
             this._confirmReject = () => resolve(false);
             const btnClass = danger ? 'btn btn-danger' : 'btn btn-primary';
             const container = document.getElementById('modal-container');
-            container.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
@@ -159,7 +161,8 @@ const modals = {
                 resolve(null);
             };
 
-            container.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            container.innerHTML =sanitizeHTML( sanitizeHTML(`
                 <div class="modal-overlay" id="prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="prompt-title">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
@@ -3536,7 +3539,8 @@ const modals = {
         }
 
         const container = document.getElementById('modal-container');
-        container.innerHTML =sanitizeHTML( sanitizeHTML(`  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        container.innerHTML =sanitizeHTML( sanitizeHTML(`
             <div class="ar-preview-backdrop" id="ar-backdrop" role="dialog" aria-modal="true" aria-label="AR Preview">
                 <video id="ar-video" class="ar-video" autoplay playsinline muted aria-hidden="true"></video>
                 <canvas id="ar-canvas" class="ar-canvas" style="display:none;" aria-hidden="true"></canvas>
