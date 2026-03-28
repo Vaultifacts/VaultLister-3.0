@@ -83,9 +83,9 @@ export async function getNotifications(userId, { page = 1, limit = 20 } = {}) {
             LIMIT ? OFFSET ?
         `, [userId, limit, offset]);
 
-        const total = await query.get(`
+        const total = Number((await query.get(`
             SELECT COUNT(*) as count FROM notifications WHERE user_id = ?
-        `, [userId])?.count || 0;
+        `, [userId]))?.count) || 0;
 
         return {
             notifications: notifications.map(n => ({

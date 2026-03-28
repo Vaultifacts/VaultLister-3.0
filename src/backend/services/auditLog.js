@@ -313,36 +313,36 @@ const auditLog = {
 
         // Authentication events
         report.details.authentication = {
-            totalLogins: await query.get(`
+            totalLogins: Number((await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE category = 'authentication' AND action = 'login_success'
                 AND created_at BETWEEN ? AND ?
-            `, [startDate, endDate])?.count || 0,
-            failedLogins: await query.get(`
+            `, [startDate, endDate]))?.count) || 0,
+            failedLogins: Number((await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE category = 'authentication' AND action = 'login_failed'
                 AND created_at BETWEEN ? AND ?
-            `, [startDate, endDate])?.count || 0,
-            passwordResets: await query.get(`
+            `, [startDate, endDate]))?.count) || 0,
+            passwordResets: Number((await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE action ILIKE '%password_reset%'
                 AND created_at BETWEEN ? AND ?
-            `, [startDate, endDate])?.count || 0
+            `, [startDate, endDate]))?.count) || 0
         };
 
         // Security events
         report.details.security = {
-            mfaEnrollments: await query.get(`
+            mfaEnrollments: Number((await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE action ILIKE '%mfa_enabled%'
                 AND created_at BETWEEN ? AND ?
-            `, [startDate, endDate])?.count || 0,
-            suspiciousActivity: await query.get(`
+            `, [startDate, endDate]))?.count) || 0,
+            suspiciousActivity: Number((await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE severity IN ('warning', 'critical')
                 AND category = 'security'
                 AND created_at BETWEEN ? AND ?
-            `, [startDate, endDate])?.count || 0
+            `, [startDate, endDate]))?.count) || 0
         };
 
         // Data access patterns
@@ -501,10 +501,10 @@ export async function auditLogRouter(ctx) {
         startDate.setDate(startDate.getDate() - days);
 
         const stats = {
-            totalEvents: await query.get(`
+            totalEvents: Number((await query.get(`
                 SELECT COUNT(*) as count FROM audit_logs
                 WHERE created_at >= ?
-            `, [startDate.toISOString()])?.count || 0,
+            `, [startDate.toISOString()]))?.count) || 0,
 
             byCategory: await query.all(`
                 SELECT category, COUNT(*) as count
@@ -529,11 +529,11 @@ export async function auditLogRouter(ctx) {
                 LIMIT 10
             `, [startDate.toISOString()]) || [],
 
-            uniqueUsers: await query.get(`
+            uniqueUsers: Number((await query.get(`
                 SELECT COUNT(DISTINCT user_id) as count
                 FROM audit_logs
                 WHERE created_at >= ?
-            `, [startDate.toISOString()])?.count || 0
+            `, [startDate.toISOString()]))?.count) || 0
         };
 
         return { status: 200, data: stats };
