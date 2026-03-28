@@ -3643,29 +3643,44 @@ const modals = {
         // Hide Share button if Web Share API or file sharing is not supported
         const canShare = typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
         let latestBlob = null;
+        let rafId = null;
 
         // Start rear camera
+        const nocamMsg = document.getElementById('ar-nocam-msg');
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
                 .then(s => {
                     stream = s;
                     video.srcObject = s;
                 })
-                .catch(() => {
-                    // Fallback: hide video, show warning
+                .catch((err) => {
                     video.style.display = 'none';
-                    document.getElementById('ar-nocam-msg').style.display = 'flex';
+                    if (nocamMsg) {
+                        const isDenied = err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+                        nocamMsg.textContent = isDenied
+                            ? 'Camera access denied. Please allow camera permission and try again.'
+                            : 'Camera not available on this device. Overlay mode only.';
+                        nocamMsg.style.display = 'flex';
+                    }
                 });
         } else {
             video.style.display = 'none';
-            document.getElementById('ar-nocam-msg').style.display = 'flex';
+            if (nocamMsg) {
+                nocamMsg.textContent = 'Camera not supported in this browser. Overlay mode only.';
+                nocamMsg.style.display = 'flex';
+            }
         }
 
-        // Close handler — stop camera tracks
+        // Close handler — stop camera tracks and remove all document listeners
         const cleanup = () => {
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
             if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
             container.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             document.removeEventListener('keydown', escHandler);
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
         };
         const escHandler = (e) => { if (e.key === 'Escape') cleanup(); };
         document.addEventListener('keydown', escHandler);
@@ -3738,20 +3753,39 @@ const modals = {
             });
         });
 
-        // Drag-to-position (mouse + touch)
+        // Drag-to-position (mouse + touch) with RAF-based FPS limiter
         let isDragging = false;
         let dragStartX = 0, dragStartY = 0;
         let overlayLeft = window.innerWidth / 2;
         let overlayTop = window.innerHeight / 2;
         let overlayScale = 1;
+        let pendingLeft = overlayLeft, pendingTop = overlayTop, pendingScale = overlayScale;
+        const FPS_LIMIT = 1000 / 30; // cap overlay DOM updates at 30 fps
+        let lastFrameTime = 0;
 
-        const getPos = (e) => e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+        const applyOverlayTransform = (timestamp) => {
+            rafId = null;
+            if (timestamp - lastFrameTime < FPS_LIMIT) {
+                rafId = requestAnimationFrame(applyOverlayTransform);
+                return;
+            }
+            lastFrameTime = timestamp;
+            overlay.style.left = pendingLeft + 'px';
+            overlay.style.top = pendingTop + 'px';
+            overlay.style.transform = `translate(-50%, -50%) scale(${pendingScale})`;
+            overlayLeft = pendingLeft;
+            overlayTop = pendingTop;
+            overlayScale = pendingScale;
+        };
+
+        const scheduleUpdate = () => {
+            if (!rafId) rafId = requestAnimationFrame(applyOverlayTransform);
+        };
 
         overlay.addEventListener('mousedown', (e) => {
             isDragging = true;
-            const pos = getPos(e);
-            dragStartX = pos.x - overlayLeft;
-            dragStartY = pos.y - overlayTop;
+            dragStartX = e.clientX - overlayLeft;
+            dragStartY = e.clientY - overlayTop;
             e.preventDefault();
         });
         overlay.addEventListener('touchstart', (e) => {
@@ -3762,25 +3796,36 @@ const modals = {
             }
         }, { passive: true });
 
-        document.addEventListener('mousemove', (e) => {
+        const onMouseMove = (e) => {
             if (!isDragging) return;
-            overlayLeft = e.clientX - dragStartX;
-            overlayTop = e.clientY - dragStartY;
-            overlay.style.left = overlayLeft + 'px';
-            overlay.style.top = overlayTop + 'px';
-            overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
-        });
-        document.addEventListener('touchmove', (e) => {
+            pendingLeft = e.clientX - dragStartX;
+            pendingTop = e.clientY - dragStartY;
+            scheduleUpdate();
+        };
+        const onMouseUp = () => { isDragging = false; };
+        const onTouchMove = (e) => {
             if (e.touches.length === 1 && isDragging) {
-                overlayLeft = e.touches[0].clientX - dragStartX;
-                overlayTop = e.touches[0].clientY - dragStartY;
-                overlay.style.left = overlayLeft + 'px';
-                overlay.style.top = overlayTop + 'px';
-                overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
+                pendingLeft = e.touches[0].clientX - dragStartX;
+                pendingTop = e.touches[0].clientY - dragStartY;
+                scheduleUpdate();
+            } else if (e.touches.length === 2 && lastPinchDist !== null) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                pendingScale = Math.min(5, Math.max(0.2, overlayScale * (dist / lastPinchDist)));
+                lastPinchDist = dist;
+                scheduleUpdate();
             }
-        }, { passive: true });
-        document.addEventListener('mouseup', () => { isDragging = false; });
-        document.addEventListener('touchend', () => { isDragging = false; });
+        };
+        const onTouchEnd = (e) => {
+            if (e.touches.length < 2) lastPinchDist = null;
+            if (e.touches.length === 0) isDragging = false;
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('touchmove', onTouchMove, { passive: true });
+        document.addEventListener('touchend', onTouchEnd);
 
         // Pinch-to-zoom
         let lastPinchDist = null;
@@ -3792,16 +3837,5 @@ const modals = {
                 isDragging = false;
             }
         }, { passive: true });
-        document.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2 && lastPinchDist !== null) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                overlayScale = Math.min(5, Math.max(0.2, overlayScale * (dist / lastPinchDist)));
-                overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
-                lastPinchDist = dist;
-            }
-        }, { passive: true });
-        document.addEventListener('touchend', (e) => { if (e.touches.length < 2) lastPinchDist = null; });
     }
 };
