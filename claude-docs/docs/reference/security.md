@@ -1,5 +1,5 @@
 # Security Reference
-> Last reviewed: 2026-02-16
+> Last reviewed: 2026-03-28
 
 ## Overview
 ## Overview
@@ -32,7 +32,8 @@ Authorization: Bearer <jwt_token>
 }
 ```
 
-**Token expiry:** Configurable, typically 24 hours
+**Access token expiry:** 15 minutes
+**Refresh token expiry:** 7 days (stored in `sessions` table)
 **Refresh tokens:** Supported via `/api/auth/refresh`
 
 ---

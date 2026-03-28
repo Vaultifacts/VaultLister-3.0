@@ -1,5 +1,5 @@
 # Backend Reference
-> Last reviewed: 2026-02-16
+> Last reviewed: 2026-03-28
 
 ## Server Entry Point
 ## Server Entry Point
@@ -53,11 +53,13 @@ src/backend/
 │   ├── oauth.js         # OAuth flows
 │   ├── mock-oauth.js    # Mock OAuth provider
 │   ├── batchPhoto.js    # Batch image processing
-│   └── ... (24 total)
+│   └── ... (67 total)
 ├── services/
-│   ├── grokService.js      # AI chat responses
-│   ├── imageStorage.js     # File storage
-│   └── cloudinaryService.js # Image processing
+│   ├── grokService.js      # Legacy AI chat (xAI Grok fallback)
+│   ├── imageStorage.js     # File storage (local fallback)
+│   ├── cloudinaryService.js # Image processing (optional)
+│   ├── email.js            # Transactional email via Resend
+│   └── sentry.js           # Error tracking (Sentry Store API)
 └── utils/
     └── encryption.js    # Token encryption
 ```
@@ -134,7 +136,7 @@ Applied in order:
 
 ### Grok Service (`grokService.js`)
 
-AI chat responses with mock mode fallback:
+Legacy AI chat fallback (xAI Grok). The primary AI engine is `@anthropic-ai/sdk` (Claude) used directly in route handlers. `grokService.js` provides a canned-response fallback when no AI key is configured.
 
 ```javascript
 import { generateResponse, isConfigured, getCannedResponses } from './services/grokService.js';
@@ -144,6 +146,8 @@ const response = await generateResponse(messages, context);
 ```
 
 ### Image Storage (`imageStorage.js`)
+
+Local filesystem fallback for image storage. Production uses Cloudflare R2 (ADR-015).
 
 ```javascript
 import { saveImage, deleteImage, getImageUrl } from './services/imageStorage.js';
@@ -156,6 +160,8 @@ const imageId = await saveImage(fileData, userId, filename, mimeType);
 
 ### Cloudinary Service (`cloudinaryService.js`)
 
+Optional image processing (background removal, enhancement). Configure with `CLOUDINARY_*` env vars.
+
 ```javascript
 import { removeBackground, autoEnhance, isCloudinaryConfigured } from './services/cloudinaryService.js';
 
@@ -165,6 +171,26 @@ if (isCloudinaryConfigured()) {
 }
 ```
 
+### Email Service (`email.js`)
+
+Transactional email via Resend (ADR-014). Requires `RESEND_API_KEY`.
+
+```javascript
+import { sendEmail } from './services/email.js';
+
+await sendEmail({ to, subject, html });
+```
+
+### Sentry Service (`sentry.js`)
+
+Lightweight error tracking via Sentry Store API. Requires `SENTRY_DSN`.
+
+```javascript
+import { captureException } from './services/sentry.js';
+
+captureException(error, { context: 'route-handler' });
+```
+
 ---
 
 ## Environment Variables
@@ -172,13 +198,22 @@ if (isCloudinaryConfigured()) {
 ```bash
 # Required
 JWT_SECRET=your-secret-key
+DATABASE_URL=postgresql://user:password@host:5432/vaultlister
 
 # Optional
 ANTHROPIC_API_KEY=sk-...       # For AI features
-CLOUDINARY_CLOUD_NAME=...      # For image processing
+RESEND_API_KEY=re_...          # For transactional email (ADR-014)
+EMAIL_FROM=VaultLister <noreply@vaultlister.com>
+SENTRY_DSN=https://...@sentry.io/... # For error tracking
+REDIS_URL=redis://...          # For BullMQ background jobs (ADR-016)
+R2_ACCOUNT_ID=...              # For Cloudflare R2 image storage (ADR-015)
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_BUCKET_NAME=...
+CLOUDINARY_CLOUD_NAME=...      # For optional image processing
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
-XAI_API_KEY=...                # For Grok AI
+XAI_API_KEY=...                # For legacy Grok AI fallback
 
 # Testing
 DISABLE_CSRF=true              # Disable CSRF for tests

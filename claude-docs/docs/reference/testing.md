@@ -1,5 +1,5 @@
 # Testing Reference
-> Last reviewed: 2026-02-16
+> Last reviewed: 2026-03-28
 
 ## Test Framework
 ## Test Framework
@@ -12,15 +12,16 @@
 ## Directory Structure
 
 ```
-src/tests/
+src/tests/             # 299+ unit/integration test files
 ├── api.test.js           # Core API tests
+├── auth.test.js          # Authentication tests
 ├── security.test.js      # Security middleware tests
 ├── chatbot.test.js       # Vault Buddy tests
 ├── financials.test.js    # Financial API tests
-├── community.test.js     # Community features
-├── extension.test.js     # Chrome extension
-├── help.test.js          # Help system
-└── imageBank.test.js     # Image bank
+├── analytics.test.js     # Analytics tests
+├── billing.test.js       # Billing tests
+├── automations.test.js   # Automation tests
+└── ... (299 total)
 
 e2e/
 ├── tests/

@@ -5,7 +5,7 @@ Zero-cost, offline-capable multi-channel reselling platform. List to 9+ marketpl
 ## Tech Stack
 - **Runtime:** Bun.js 1.3+ (server + package manager)
 - **Frontend:** Vanilla JS SPA (route-based chunking, no framework)
-- **Database:** PostgreSQL (WAL mode, TSVECTOR full-text search, postgres npm)
+- **Database:** PostgreSQL (TSVECTOR + GIN full-text search, postgres npm)
 - **Automations:** Playwright (stealth mode) for marketplace bots
 - **AI:** Claude API (@anthropic-ai/sdk) for listings, pricing, predictions
 - **Auth:** JWT + bcrypt + TOTP MFA + OAuth 2.0 (eBay, Etsy, Shopify)
@@ -52,15 +52,17 @@ Copy `.env.example` to `.env` and configure:
 | Section | Variables | Required |
 |---------|-----------|----------|
 | Core | `JWT_SECRET`, `PORT` | Yes |
-| Database | `DATA_DIR` | No (defaults to ./data) |
+| Database | `DATABASE_URL` | Yes |
 | AI | `ANTHROPIC_API_KEY` | For AI features |
 | eBay | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, `EBAY_REDIRECT_URI` | For eBay OAuth |
 | Poshmark | `POSHMARK_USERNAME`, `POSHMARK_PASSWORD` | For Poshmark bots |
 | Stripe | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | For billing |
 | Push | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | For push notifications |
 | Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | For Drive/Calendar |
-| Redis | `REDIS_PASSWORD` | For Docker deploy |
-| Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | For email |
+| Redis | `REDIS_URL` | For background jobs (BullMQ) |
+| Email | `RESEND_API_KEY`, `EMAIL_FROM` | For transactional email |
+| Image storage | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` | For Cloudflare R2 image storage |
+| Monitoring | `SENTRY_DSN`, `SENTRY_RELEASE` | For error tracking |
 
 ## Database Migrations
 
@@ -82,16 +84,23 @@ bun run dev:stop # Stop background server after push
 
 ## Deployment
 
-### Docker (Staging/Production)
+### Railway (Production)
+Push to `master` triggers an automatic deploy via GitHub Actions to Railway. The production URL is https://vaultlister.com (proxied through Cloudflare).
+
+```bash
+git push origin master   # Auto-deploys to Railway production
+```
+
+### Staging (Docker)
 ```bash
 # Build and push
-git push origin master:staging   # Triggers GitHub Actions deploy
+git push origin master:staging   # Triggers GitHub Actions staging deploy
 
 # Manual deploy on server
 ssh ubuntu@server "bash /opt/vaultlister-staging/deploy.sh"
 ```
 
-### Requirements
+### Staging Requirements
 - Docker + Docker Compose
 - GHCR access (GitHub Container Registry)
 - Nginx reverse proxy (config in `nginx/nginx.staging.conf`)
@@ -105,7 +114,7 @@ src/
     middleware/     # Auth, CSRF, rate limiting, security headers
     services/      # Platform sync, notifications, billing
     workers/       # Task worker, price check worker
-    db/            # Schema, migrations (104), database.js
+    db/            # Schema, migrations (112), database.js
   frontend/        # Vanilla JS SPA
     core/          # Router, store, API client, toast
     pages/         # Route pages (lazy-loaded)
@@ -122,7 +131,7 @@ chrome-extension/  # MV3 Chrome extension
 
 ## Testing
 
-- **Unit tests:** 58+ test files in `src/tests/` (Bun:test)
+- **Unit tests:** 299+ test files in `src/tests/` (Bun:test)
 - **E2E tests:** 54 spec files in `e2e/tests/` (Playwright, 761 tests)
 - **Visual tests:** `node scripts/visual-test.js`
 - **Baseline:** 747/761 passing (14 conditionally skipped)

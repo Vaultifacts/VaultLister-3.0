@@ -1,5 +1,5 @@
 # Database Reference
-> Last reviewed: 2026-02-16
+> Last reviewed: 2026-03-28
 
 ## Overview
 ## Overview
@@ -13,18 +13,22 @@
 
 **File:** `src/backend/db/database.js`
 
+The query helpers accept `?` positional parameters, which are automatically converted to `$1`, `$2`, … for the underlying `postgres` npm driver.
+
 ```javascript
 import { query } from '../db/database.js';
 
 // Single row
-const user = query.get('SELECT * FROM users WHERE id = ?', [userId]);
+const user = await query.get('SELECT * FROM users WHERE id = ?', [userId]);
 
 // Multiple rows
-const items = query.all('SELECT * FROM inventory WHERE user_id = ?', [userId]);
+const items = await query.all('SELECT * FROM inventory WHERE user_id = ?', [userId]);
 
 // INSERT/UPDATE/DELETE
-query.run('INSERT INTO inventory (id, user_id, title) VALUES (?, ?, ?)', [id, userId, title]);
+await query.run('INSERT INTO inventory (id, user_id, title) VALUES (?, ?, ?)', [id, userId, title]);
 ```
+
+All query helpers are `async` and return Promises.
 
 ---
 
@@ -38,7 +42,7 @@ CREATE TABLE users (
     password TEXT NOT NULL,       -- bcrypt hash
     name TEXT,
     tier TEXT DEFAULT 'free',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -62,8 +66,8 @@ CREATE TABLE inventory (
     status TEXT DEFAULT 'draft',   -- draft, active, sold
     images TEXT,                    -- JSON array
     tags TEXT,                      -- JSON array
-    deleted_at DATETIME,            -- Soft delete
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMPTZ,            -- Soft delete
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 ```
@@ -82,12 +86,12 @@ CREATE TABLE listings (
     platform_listing_id TEXT,
     platform_url TEXT,
     images TEXT,                    -- JSON array
-    last_relisted_at DATETIME,
-    last_delisted_at DATETIME,
+    last_relisted_at TIMESTAMPTZ,
+    last_delisted_at TIMESTAMPTZ,
     staleness_days INTEGER DEFAULT 30,
     auto_relist_enabled INTEGER DEFAULT 0,
     marked_as_sold INTEGER DEFAULT 0,  -- For Facebook
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (inventory_id) REFERENCES inventory(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -110,7 +114,7 @@ CREATE TABLE sales (
     tax_amount REAL DEFAULT 0,
     net_profit REAL DEFAULT 0,
     status TEXT DEFAULT 'pending',     -- pending, shipped, delivered
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -128,7 +132,7 @@ CREATE TABLE accounts (
     description TEXT,
     balance REAL DEFAULT 0,
     parent_account_id TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -147,7 +151,7 @@ CREATE TABLE purchases (
     status TEXT DEFAULT 'completed',
     source TEXT DEFAULT 'manual',
     notes TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -160,7 +164,7 @@ CREATE TABLE inventory_cost_layers (
     quantity_remaining INTEGER NOT NULL,
     unit_cost REAL NOT NULL,
     purchase_date DATE,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -175,8 +179,8 @@ CREATE TABLE chat_conversations (
     user_id TEXT NOT NULL,
     title TEXT DEFAULT 'New Chat',
     last_message TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -189,7 +193,7 @@ CREATE TABLE chat_messages (
     content TEXT NOT NULL,
     metadata TEXT,                 -- JSON
     rating INTEGER,                -- 1-5
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -209,7 +213,7 @@ CREATE TABLE listing_refresh_history (
     new_status TEXT,
     platform_response TEXT,
     error_message TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -219,11 +223,12 @@ CREATE TABLE listing_refresh_history (
 
 **Location:** `src/backend/db/migrations/`
 
-Migrations are numbered sequentially:
+Migrations are numbered sequentially (112 total as of March 2026):
 - `001_add_inventory_fields.sql`
 - `002_add_analytics_tables.sql`
 - ...
-- `020_add_listing_refresh_tracking.sql`
+- `111_add_poshmark_monitoring_log.sql`
+- `112_add_csrf_tokens_table.sql`
 
 **Adding a new migration:**
 1. Create file: `XXX_description.sql`
