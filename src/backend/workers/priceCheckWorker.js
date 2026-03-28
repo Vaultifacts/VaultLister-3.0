@@ -71,7 +71,7 @@ async function runPriceChecks() {
             FROM supplier_items si
             JOIN suppliers s ON si.supplier_id = s.id
             WHERE si.alert_enabled = 1
-            AND s.is_active = 1
+            AND s.is_active = TRUE
             ORDER BY si.last_checked_at ASC NULLS FIRST
             LIMIT ?
         `, [MAX_ITEMS_PER_CYCLE]);

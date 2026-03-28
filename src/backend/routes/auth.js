@@ -202,11 +202,11 @@ async function ensureTestDemoUser() {
             VALUES (?, ?, ?, ?, ?, 1)
         `, [id, demoEmail, passwordHash, demoUsername, demoFullName]);
     } else if (!existing.is_active) {
-        await query.run('UPDATE users SET is_active = 1 WHERE id = ?', [existing.id]);
+        await query.run('UPDATE users SET is_active = TRUE WHERE id = ?', [existing.id]);
     }
 
     return await query.get(
-        'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = 1',
+        'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = TRUE',
         [demoEmail]
     );
 }
@@ -355,7 +355,7 @@ export async function authRouter(ctx) {
                 && demoPasswordMatch(password);
 
             let user = await query.get(
-                'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = 1',
+                'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = TRUE',
                 [normalizedEmail]
             );
 
@@ -629,7 +629,7 @@ export async function authRouter(ctx) {
             }
 
             const user = await query.get(
-                'SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled FROM users WHERE id = ? AND is_active = 1',
+                'SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled FROM users WHERE id = ? AND is_active = TRUE',
                 [decoded.userId]
             );
             if (!user) {
@@ -995,7 +995,7 @@ export async function authRouter(ctx) {
             }
 
             await query.transaction(async (tx) => {
-                await tx.run('UPDATE users SET email_verified = 1 WHERE id = ?', [record.user_id]);
+                await tx.run('UPDATE users SET email_verified = TRUE WHERE id = ?', [record.user_id]);
                 await tx.run('UPDATE email_verifications SET used_at = NOW() WHERE token = ?', [token]);
             });
 

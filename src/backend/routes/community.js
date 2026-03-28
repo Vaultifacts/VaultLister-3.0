@@ -113,7 +113,7 @@ export async function communityRouter(ctx) {
                     (SELECT COUNT(*) FROM community_reactions WHERE target_type = 'post' AND target_id = p.id AND reaction_type = 'upvote') as upvote_count
                 FROM community_posts p
                 JOIN users u ON p.user_id = u.id
-                WHERE p.is_hidden = 0
+                WHERE p.is_hidden = FALSE
             `;
 
             const params = [];
@@ -173,7 +173,7 @@ export async function communityRouter(ctx) {
                 `SELECT p.*, u.username as author_name
                  FROM community_posts p
                  JOIN users u ON p.user_id = u.id
-                 WHERE p.id = ? AND (p.is_hidden = 0 OR p.user_id = ?)`,
+                 WHERE p.id = ? AND (p.is_hidden = FALSE OR p.user_id = ?)`,
                 [postId, user?.id]
             );
 
@@ -528,9 +528,9 @@ export async function communityRouter(ctx) {
                 };
             }
 
-            // Soft delete (set is_hidden = 1)
+            // Soft delete (set is_hidden = TRUE)
             await query.run(
-                `UPDATE community_posts SET is_hidden = 1 WHERE id = ? AND user_id = ?`,
+                `UPDATE community_posts SET is_hidden = TRUE WHERE id = ? AND user_id = ?`,
                 [postId, user.id]
             );
 

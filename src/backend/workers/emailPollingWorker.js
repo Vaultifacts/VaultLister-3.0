@@ -83,7 +83,7 @@ async function pollEmailAccounts() {
         // Find accounts due for sync (not syncing, enabled, with refresh token)
         const accounts = await query.all(`
             SELECT * FROM email_accounts
-            WHERE is_enabled = 1
+            WHERE is_enabled = TRUE
             AND sync_status != 'syncing'
             AND oauth_refresh_token IS NOT NULL
             AND consecutive_failures < ?
@@ -266,7 +266,7 @@ export async function syncEmailAccount(account) {
             logger.info(`[EmailPolling] Disabling account ${redactId(account.id)} after ${failures} failures`);
 
             await query.run(`
-                UPDATE email_accounts SET is_enabled = 0, updated_at = ?
+                UPDATE email_accounts SET is_enabled = FALSE, updated_at = ?
                 WHERE id = ?
             `, [now, account.id]);
 
@@ -377,7 +377,7 @@ export async function getEmailPollingStatus() {
     const stats = await query.get(`
         SELECT
             COUNT(*) as total_accounts,
-            SUM(CASE WHEN is_enabled = 1 THEN 1 ELSE 0 END) as enabled_accounts,
+            SUM(CASE WHEN is_enabled = TRUE THEN 1 ELSE 0 END) as enabled_accounts,
             SUM(CASE WHEN sync_status = 'syncing' THEN 1 ELSE 0 END) as syncing_accounts,
             SUM(CASE WHEN sync_status = 'error' THEN 1 ELSE 0 END) as error_accounts
         FROM email_accounts

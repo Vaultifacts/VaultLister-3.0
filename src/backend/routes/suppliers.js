@@ -33,7 +33,7 @@ export async function suppliersRouter(ctx) {
         }
 
         if (active) {
-            sql += ' AND is_active = 1';
+            sql += ' AND is_active = TRUE';
         }
 
         sql += ' ORDER BY name ASC LIMIT 500';
@@ -399,13 +399,13 @@ export async function suppliersRouter(ctx) {
                     SUM(CASE WHEN si.current_price <= si.target_price THEN 1 ELSE 0 END) as at_target
                 FROM suppliers s
                 LEFT JOIN supplier_items si ON s.id = si.supplier_id
-                WHERE s.user_id = ? AND s.is_active = 1
+                WHERE s.user_id = ? AND s.is_active = TRUE
             `, [user.id]);
 
             const byType = await query.all(`
                 SELECT type, COUNT(*) as count
                 FROM suppliers
-                WHERE user_id = ? AND is_active = 1
+                WHERE user_id = ? AND is_active = TRUE
                 GROUP BY type
             `, [user.id]);
 

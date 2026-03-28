@@ -205,7 +205,7 @@ export async function shopsRouter(ctx) {
 
             // Soft disconnect
             await query.run(
-                'UPDATE shops SET is_connected = 0, credentials = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND platform = ?',
+                'UPDATE shops SET is_connected = FALSE, credentials = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND platform = ?',
                 [user.id, platform]
             );
 
@@ -222,7 +222,7 @@ export async function shopsRouter(ctx) {
             const platform = path.split('/')[1];
 
             const shop = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
                 [user.id, platform]
             );
 
@@ -290,7 +290,7 @@ export async function shopsRouter(ctx) {
     if (method === 'POST' && path === '/sync-all') {
         try {
             const shops = await query.all(
-                'SELECT * FROM shops WHERE user_id = ? AND is_connected = 1',
+                'SELECT * FROM shops WHERE user_id = ? AND is_connected = TRUE',
                 [user.id]
             );
 

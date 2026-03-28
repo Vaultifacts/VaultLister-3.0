@@ -35,7 +35,7 @@ export async function marketIntelRouter(ctx) {
 
         let sql = `
             SELECT * FROM competitors
-            WHERE user_id = ? AND is_active = 1
+            WHERE user_id = ? AND is_active = TRUE
         `;
         const params = [user.id];
 
@@ -391,7 +391,7 @@ export async function marketIntelRouter(ctx) {
 
         try {
             const competitorStats = await query.get(`
-                SELECT COUNT(*) as count FROM competitors WHERE user_id = ? AND is_active = 1
+                SELECT COUNT(*) as count FROM competitors WHERE user_id = ? AND is_active = TRUE
             `, [user.id]);
 
             const listingStats = await query.get(`

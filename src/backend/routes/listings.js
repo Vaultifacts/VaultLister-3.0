@@ -1281,7 +1281,7 @@ export async function listingsRouter(ctx) {
             if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const shop = await query.get(
-                "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = 1",
+                "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = TRUE",
                 [user.id]
             );
             if (!shop) return { status: 400, data: { error: { message: 'No connected eBay shop found. Connect eBay in My Shops first.', code: 'BAD_REQUEST' } } };
@@ -1323,7 +1323,7 @@ export async function listingsRouter(ctx) {
             if (!inventory) return { status: 404, data: { error: { message: 'Inventory item not found', code: 'NOT_FOUND' } } };
 
             const shop = await query.get(
-                "SELECT * FROM shops WHERE user_id = ? AND platform = 'etsy' AND is_connected = 1",
+                "SELECT * FROM shops WHERE user_id = ? AND platform = 'etsy' AND is_connected = TRUE",
                 [user.id]
             );
             if (!shop) return { status: 400, data: { error: { message: 'No connected Etsy shop found. Connect Etsy in My Shops first.', code: 'BAD_REQUEST' } } };
@@ -1407,7 +1407,7 @@ export async function listingsRouter(ctx) {
         const publisher = publishers[listing.platform];
         if (!publisher) return { status: 400, data: { error: { message: `Platform '${listing.platform}' does not support publish`, code: 'BAD_REQUEST' } } };
 
-        const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1', [user.id, listing.platform]) || null;
+        const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE', [user.id, listing.platform]) || null;
 
         try {
             const result = await publisher(shop, listing, inventory);

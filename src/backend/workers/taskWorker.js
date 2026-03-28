@@ -601,7 +601,7 @@ async function checkAutomationSchedules() {
     const rules = await query.all(`
         SELECT id, user_id, name, type, schedule, last_run_at
         FROM automation_rules
-        WHERE is_enabled = 1 AND schedule IS NOT NULL AND schedule != ''
+        WHERE is_enabled = TRUE AND schedule IS NOT NULL AND schedule != ''
     `);
     for (const rule of rules) {
         const cronValidation = validateCronExpression(rule.schedule);
@@ -882,7 +882,7 @@ async function executeCommunityShare(rule, conditions, actions) {
         const maxShares = conditions.maxShares || 50;
 
         const shop = await query.get(
-            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'poshmark']
         );
         if (!shop) {
@@ -1017,7 +1017,7 @@ async function executeOtl(rule, conditions, actions) {
 
         // Get the shop credentials
         const shop = await query.get(
-            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'poshmark']
         );
         if (!shop || !shop.platform_username) {
@@ -1165,7 +1165,7 @@ async function executeMercariBot(rule, conditions, actions) {
         const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
         const shop = await query.get(
-            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'mercari']
         );
         if (!shop) {
@@ -1211,7 +1211,7 @@ async function executeDepopBot(rule, conditions, actions) {
         const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
         const shop = await query.get(
-            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'depop']
         );
         if (!shop) {
@@ -1258,7 +1258,7 @@ async function executeGrailedBot(rule, conditions, actions) {
         const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
         const shop = await query.get(
-            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'grailed']
         );
         if (!shop) {
@@ -1291,7 +1291,7 @@ async function executeFacebookBot(rule, conditions, actions) {
         const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
         const shop = await query.get(
-            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'facebook']
         );
         if (!shop) {
@@ -1324,7 +1324,7 @@ async function executeWhatnotBot(rule, conditions, actions) {
         const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
 
         const shop = await query.get(
-            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+            'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'whatnot']
         );
         if (!shop) {
@@ -1361,7 +1361,7 @@ async function executePoshmarkPublishTask(payload) {
     );
     if (!listing) return { message: `Listing ${listingId} not found`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 1 };
 
-    const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1', [userId, 'poshmark']);
+    const shop = await query.get('SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE', [userId, 'poshmark']);
     if (!shop) {
         await query.run('UPDATE listings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', ['publish_failed', listingId]);
         return { message: 'No connected Poshmark shop found', itemsProcessed: 1, itemsSucceeded: 0, itemsFailed: 1 };
@@ -1569,7 +1569,7 @@ async function executePoshmarkMonitoringTask(payload) {
 async function executeRunAutomationTask(payload) {
     const { ruleId, userId } = payload;
     if (!ruleId) throw new Error('Missing ruleId in run_automation payload');
-    const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND is_enabled = 1', [ruleId]);
+    const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND is_enabled = TRUE', [ruleId]);
     if (!rule) return { message: `Automation rule ${ruleId} not found or disabled — skipping`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
 
     let conditions = {}, actions = {};

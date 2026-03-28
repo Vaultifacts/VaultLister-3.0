@@ -1057,7 +1057,7 @@ export async function reportsRouter(ctx) {
         // Update existing schedule
         await query.run(
           `UPDATE report_schedules
-           SET frequency = ?, recipients = ?, format = ?, next_run_at = ?, is_active = 1
+           SET frequency = ?, recipients = ?, format = ?, next_run_at = ?, is_active = TRUE
            WHERE report_id = ? AND user_id = ?`,
           [
             frequency,

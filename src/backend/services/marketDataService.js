@@ -36,7 +36,7 @@ export async function getCompetitorsForPlatform(platform, userId) {
     if (!userId) return [];
     try {
         return await query.all(
-            'SELECT * FROM competitors WHERE user_id = ? AND platform = ? AND is_active = 1 ORDER BY listing_count DESC',
+            'SELECT * FROM competitors WHERE user_id = ? AND platform = ? AND is_active = TRUE ORDER BY listing_count DESC',
             [userId, platform.toLowerCase()]
         );
     } catch {

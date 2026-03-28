@@ -90,7 +90,7 @@ export async function skuRulesRouter(ctx) {
     // GET /api/sku-rules/default - Get default rule (must be before :id catch-all)
     if (method === 'GET' && path === '/default') {
         const rule = await query.get(
-            'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1',
+            'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = TRUE',
             [user.id]
         );
 
@@ -154,7 +154,7 @@ export async function skuRulesRouter(ctx) {
             );
         } else {
             rule = await query.get(
-                'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1',
+                'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = TRUE',
                 [user.id]
             );
         }
@@ -290,7 +290,7 @@ export async function skuRulesRouter(ctx) {
         // If setting as default, clear other defaults first
         if (isDefault) {
             await query.run(
-                'UPDATE sku_rules SET is_default = 0 WHERE user_id = ?',
+                'UPDATE sku_rules SET is_default = FALSE WHERE user_id = ?',
                 [user.id]
             );
         }
@@ -378,7 +378,7 @@ export async function skuRulesRouter(ctx) {
         if (isDefault !== undefined) {
             // Clear other defaults first if setting this as default
             if (isDefault) {
-                await query.run('UPDATE sku_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE sku_rules SET is_default = FALSE WHERE user_id = ?', [user.id]);
             }
             updates.push('is_default = ?');
             params.push(isDefault ? 1 : 0);
@@ -462,10 +462,10 @@ export async function skuRulesRouter(ctx) {
         }
 
         // Clear all defaults for user
-        await query.run('UPDATE sku_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
+        await query.run('UPDATE sku_rules SET is_default = FALSE WHERE user_id = ?', [user.id]);
 
         // Set this rule as default
-        await query.run('UPDATE sku_rules SET is_default = 1 WHERE id = ?', [ruleId]);
+        await query.run('UPDATE sku_rules SET is_default = TRUE WHERE id = ?', [ruleId]);
 
         return { status: 200, data: { message: 'Default rule updated' } };
     }

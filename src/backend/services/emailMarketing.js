@@ -113,7 +113,7 @@ const emailMarketing = {
 
     // Generate and send weekly digest
     async sendWeeklyDigest(userId) {
-        const user = await query.get('SELECT id, email, username, full_name, display_name, avatar_url, subscription_tier, last_login_at FROM users WHERE id = ? AND is_active = 1', [userId]);
+        const user = await query.get('SELECT id, email, username, full_name, display_name, avatar_url, subscription_tier, last_login_at FROM users WHERE id = ? AND is_active = TRUE', [userId]);
         if (!user || !await this.hasConsent(userId, 'marketing_emails')) return;
 
         // Get stats for the week
@@ -195,7 +195,7 @@ const emailMarketing = {
         const users = await query.all(`
             SELECT u.id FROM users u
             JOIN user_consents uc ON u.id = uc.user_id
-            WHERE u.is_active = 1
+            WHERE u.is_active = TRUE
             AND uc.consent_type = 'marketing_emails'
             AND uc.granted = 1
         `);
@@ -211,7 +211,7 @@ const emailMarketing = {
 
         const inactiveUsers = await query.all(`
             SELECT id, email, username, full_name, last_login_at FROM users
-            WHERE is_active = 1
+            WHERE is_active = TRUE
             AND last_login_at < ?
             AND id NOT IN (
                 SELECT user_id FROM email_queue

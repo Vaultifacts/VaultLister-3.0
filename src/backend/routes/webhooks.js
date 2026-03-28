@@ -262,7 +262,7 @@ export async function webhooksRouter(ctx) {
             // Look up webhook configuration for this source (most recent if duplicates)
             const webhookConfig = await query.get(`
                 SELECT secret, user_id FROM webhook_endpoints
-                WHERE name = ? AND is_enabled = 1
+                WHERE name = ? AND is_enabled = TRUE
                 ORDER BY rowid DESC
                 LIMIT 1
             `, [source]);
@@ -373,7 +373,7 @@ export async function webhooksRouter(ctx) {
 
         // Check for existing endpoint with same name for this user
         const existingEndpoint = await query.get(
-            'SELECT id FROM webhook_endpoints WHERE user_id = ? AND name = ? AND is_enabled = 1',
+            'SELECT id FROM webhook_endpoints WHERE user_id = ? AND name = ? AND is_enabled = TRUE',
             [user.id, name]
         );
 

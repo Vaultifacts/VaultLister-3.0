@@ -211,7 +211,7 @@ async function getUserStats(userId) {
         );
         const connectedShops = await query.all(
             `SELECT platform, platform_username FROM shops
-             WHERE user_id = ? AND is_connected = 1
+             WHERE user_id = ? AND is_connected = TRUE
              ORDER BY platform`,
             [userId]
         );

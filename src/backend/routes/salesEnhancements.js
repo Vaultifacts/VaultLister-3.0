@@ -170,9 +170,9 @@ export async function salesEnhancementsRouter(ctx) {
             }
 
             if (blocked === 'true') {
-                sql += ` AND is_blocked = 1`;
+                sql += ` AND is_blocked = TRUE`;
             } else if (blocked === 'false') {
-                sql += ` AND is_blocked = 0`;
+                sql += ` AND is_blocked = FALSE`;
             }
 
             if (min_purchases) {
@@ -366,7 +366,7 @@ export async function salesEnhancementsRouter(ctx) {
                 AND (
                     (CAST(total_returns AS FLOAT) / NULLIF(total_purchases, 0)) > 0.3
                     OR communication_rating <= 2
-                    OR is_blocked = 1
+                    OR is_blocked = TRUE
                 )
                 ORDER BY return_rate DESC
                 LIMIT 500

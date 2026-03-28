@@ -88,7 +88,7 @@ export async function shippingProfilesRouter(ctx) {
             // If setting as default, clear existing default first
             if (isDefault) {
                 await query.run(
-                    `UPDATE shipping_profiles SET is_default = 0 WHERE user_id = ?`,
+                    `UPDATE shipping_profiles SET is_default = FALSE WHERE user_id = ?`,
                     [user.id]
                 );
             }
@@ -158,7 +158,7 @@ export async function shippingProfilesRouter(ctx) {
             // If setting as default, clear existing default first
             if (isDefault) {
                 await query.run(
-                    `UPDATE shipping_profiles SET is_default = 0 WHERE user_id = ?`,
+                    `UPDATE shipping_profiles SET is_default = FALSE WHERE user_id = ?`,
                     [user.id]
                 );
             }
@@ -206,13 +206,13 @@ export async function shippingProfilesRouter(ctx) {
 
             // Clear all defaults for this user
             await query.run(
-                `UPDATE shipping_profiles SET is_default = 0 WHERE user_id = ?`,
+                `UPDATE shipping_profiles SET is_default = FALSE WHERE user_id = ?`,
                 [user.id]
             );
 
             // Set this one as default
             await query.run(
-                `UPDATE shipping_profiles SET is_default = 1, updated_at = ? WHERE id = ?`,
+                `UPDATE shipping_profiles SET is_default = TRUE, updated_at = ? WHERE id = ?`,
                 [new Date().toISOString(), profileId]
             );
 

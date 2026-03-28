@@ -214,7 +214,7 @@ const outgoingWebhooks = {
         const escapedEvent = eventType.replace(/\\/g, '\\\\').replace(/[%_]/g, '\\$&');
         const webhooks = await query.all(`
             SELECT * FROM user_webhooks
-            WHERE user_id = ? AND is_active = 1 AND (events ILIKE ? ESCAPE '\\' OR events = '*')
+            WHERE user_id = ? AND is_active = TRUE AND (events ILIKE ? ESCAPE '\\' OR events = '*')
         `, [userId, `%${escapedEvent}%`]);
 
         if (!webhooks || webhooks.length === 0) return;

@@ -100,7 +100,7 @@ export async function securityRouter(ctx) {
             // Mark email as verified
             await query.run(`
                 UPDATE users
-                SET email_verified = 1, email_verified_at = NOW(), updated_at = CURRENT_TIMESTAMP
+                SET email_verified = TRUE, email_verified_at = NOW(), updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `, [tokenRecord.user_id]);
 

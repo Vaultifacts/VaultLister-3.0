@@ -402,7 +402,7 @@ export async function inventoryRouter(ctx) {
         if (!finalSku) {
             // Check for default SKU rule
             const defaultRule = await query.get(
-                'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1 AND is_active = 1',
+                'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = TRUE AND is_active = TRUE',
                 [user.id]
             );
 
@@ -888,7 +888,7 @@ export async function inventoryRouter(ctx) {
 
             // Resolve username: connected shop first, then env fallback
             const shop = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
                 [user.id, 'poshmark']
             );
             const username = shop?.platform_username || process.env.POSHMARK_USERNAME;
@@ -956,7 +956,7 @@ export async function inventoryRouter(ctx) {
             const { fetchWithTimeout } = await import('../shared/fetchWithTimeout.js');
 
             const shop = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
                 [user.id, 'ebay']
             );
             if (!shop || !shop.oauth_token) {
