@@ -111,7 +111,7 @@ function _decryptWithKey(encrypted, keyBuffer) {
     const iv = Buffer.from(parts[0], 'hex');
     const encryptedText = parts[1];
 
-    const decipher = crypto.createDecipheriv(ALGORITHM_CBC, keyBuffer, iv);  // nosemgrep: javascript.node-crypto.security.gcm-no-tag-length.gcm-no-tag-length
+    const decipher = crypto.createDecipheriv(ALGORITHM_CBC, keyBuffer, iv);  // nosemgrep: javascript.node-crypto.security.gcm-no-tag-length.gcm-no-tag-length  // nosemgrep: javascript.crypto.weak-symmetric-mode.weak-symmetric-mode -- legacy CBC decrypt-only; all new tokens use AES-GCM
 
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');

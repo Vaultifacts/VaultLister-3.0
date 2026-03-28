@@ -11,7 +11,7 @@ import { logger } from '../shared/logger.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const sql = postgres(process.env.DATABASE_URL || 'postgresql://vaultlister:localdev@localhost:5432/vaultlister_dev', {
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false, // nosemgrep: problem-based-packs.insecure-transport.js-node.bypass-tls-verification.bypass-tls-verification -- Railway managed PostgreSQL uses self-signed cert; internal private network connection
     max: 25,
     idle_timeout: 20,
     connect_timeout: 10,
