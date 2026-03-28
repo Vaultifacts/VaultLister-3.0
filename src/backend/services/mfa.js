@@ -160,8 +160,10 @@ export async function enableMFA(userId, setupToken, totpCode) {
     // Get user's temporary secret (stored in a temp field or cache)
     const user = await query.get('SELECT mfa_secret FROM users WHERE id = ?', [userId]);
 
-    // For now, we need to get the secret from the request since we don't store it yet
-    // In production, you might store it temporarily in Redis
+    // Verify the TOTP code against the stored secret
+    if (user?.mfa_secret && !verifyToken(totpCode, user.mfa_secret)) {
+        return { success: false, error: 'Invalid verification code' };
+    }
 
     // Mark token as used
     await query.run('UPDATE verification_tokens SET used_at = NOW() WHERE id = ?', [tokenRecord.id]);

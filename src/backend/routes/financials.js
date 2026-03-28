@@ -53,7 +53,26 @@ export async function financialsRouter(ctx) {
             params.push(limit, offset);
 
             const purchases = await query.all(sql, params);
-            const total = Number((await query.get('SELECT COUNT(*) as count FROM purchases WHERE user_id = ?', [user.id]))?.count) || 0;
+
+            let countSql = 'SELECT COUNT(*) as count FROM purchases p WHERE p.user_id = ?';
+            const countParams = [user.id];
+            if (vendor) {
+                countSql += " AND p.vendor_name ILIKE ? ESCAPE '\\'";
+                countParams.push(`%${escapeLike(vendor)}%`);
+            }
+            if (status) {
+                countSql += ' AND p.status = ?';
+                countParams.push(status);
+            }
+            if (startDate) {
+                countSql += ' AND p.purchase_date >= ?';
+                countParams.push(startDate);
+            }
+            if (endDate) {
+                countSql += ' AND p.purchase_date <= ?';
+                countParams.push(endDate);
+            }
+            const total = Number((await query.get(countSql, countParams))?.count) || 0;
 
             // Calculate stats
             const stats = {

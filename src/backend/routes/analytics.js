@@ -176,6 +176,8 @@ export async function analyticsRouter(ctx) {
             };
             const groupClause = GROUP_CLAUSES[groupBy];
 
+            const salesDateFilter = salesPeriodOffset ? ' AND s.created_at >= NOW() + ?::interval' : '';
+
             const salesData = await query.all(`
                 SELECT
                     ${groupClause} as period,
@@ -186,10 +188,10 @@ export async function analyticsRouter(ctx) {
                     COALESCE(SUM(i.cost_price), 0) as cogs
                 FROM sales s
                 LEFT JOIN inventory i ON s.inventory_id = i.id
-                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= NOW() + ?::interval)
+                WHERE s.user_id = ?${salesDateFilter}
                 GROUP BY ${groupClause}
                 ORDER BY period DESC
-            `, [user.id, salesPeriodOffset]);
+            `, salesPeriodOffset ? [user.id, salesPeriodOffset] : [user.id]);
 
             const byPlatform = await query.all(`
                 SELECT
@@ -198,10 +200,10 @@ export async function analyticsRouter(ctx) {
                     SUM(s.sale_price) as revenue,
                     SUM(s.net_profit) as profit
                 FROM sales s
-                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= NOW() + ?::interval)
+                WHERE s.user_id = ?${salesDateFilter}
                 GROUP BY s.platform
                 ORDER BY revenue DESC
-            `, [user.id, salesPeriodOffset]);
+            `, salesPeriodOffset ? [user.id, salesPeriodOffset] : [user.id]);
 
             const topItems = await query.all(`
                 SELECT
@@ -209,10 +211,10 @@ export async function analyticsRouter(ctx) {
                     s.sale_price, s.net_profit, s.platform, s.created_at
                 FROM sales s
                 JOIN inventory i ON s.inventory_id = i.id
-                WHERE s.user_id = ? AND (salesPeriodOffset IS NULL OR s.created_at >= NOW() + ?::interval)
+                WHERE s.user_id = ?${salesDateFilter}
                 ORDER BY s.sale_price DESC
                 LIMIT 10
-            `, [user.id, salesPeriodOffset]);
+            `, salesPeriodOffset ? [user.id, salesPeriodOffset] : [user.id]);
 
             await _setCached(_ck2, { salesData, byPlatform, topItems });
             return { status: 200, data: { salesData, byPlatform, topItems }, cacheControl: cacheForUser(300) };

@@ -97,7 +97,7 @@ export async function getSettings(userId) {
  * @returns {Object}
  */
 export async function saveSettings(userId, settings) {
-    const existing = getSettings(userId);
+    const existing = await getSettings(userId);
     const now = new Date().toISOString();
 
     if (existing) {
@@ -158,7 +158,7 @@ export async function saveSettings(userId, settings) {
             values
         );
 
-        return getSettings(userId);
+        return await getSettings(userId);
     } else {
         const id = uuidv4();
         await query.run(`
@@ -186,7 +186,7 @@ export async function saveSettings(userId, settings) {
             now
         ]);
 
-        return getSettings(userId);
+        return await getSettings(userId);
     }
 }
 

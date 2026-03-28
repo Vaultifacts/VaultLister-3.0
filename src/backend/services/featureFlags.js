@@ -133,7 +133,7 @@ const featureFlags = {
             // Use user ID for consistent bucketing
             const bucket = user?.id
                 ? this.hashUserId(user.id) % 100
-                : (crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000) * 100;
+                : randomInt(100);
 
             return bucket < flag.rolloutPercentage;
         }
