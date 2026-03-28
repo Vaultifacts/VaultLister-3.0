@@ -726,22 +726,22 @@ export async function shippingLabelsRouter(ctx) {
 
         try {
             const stats = {
-                total_labels: await query.get(
+                total_labels: Number((await query.get(
                     'SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ?',
                     [user.id, dateStart, dateEnd + 'T23:59:59']
-                )?.count || 0,
-                printed_labels: await query.get(
+                ))?.count) || 0,
+                printed_labels: Number((await query.get(
                     'SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND printed_at IS NOT NULL AND created_at BETWEEN ? AND ?',
                     [user.id, dateStart, dateEnd + 'T23:59:59']
-                )?.count || 0,
-                shipped_labels: await query.get(
+                ))?.count) || 0,
+                shipped_labels: Number((await query.get(
                     "SELECT COUNT(*) as count FROM shipping_labels WHERE user_id = ? AND status = 'shipped' AND created_at BETWEEN ? AND ?",
                     [user.id, dateStart, dateEnd + 'T23:59:59']
-                )?.count || 0,
-                total_postage: await query.get(
+                ))?.count) || 0,
+                total_postage: Number((await query.get(
                     'SELECT SUM(total_cost) as total FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ?',
                     [user.id, dateStart, dateEnd + 'T23:59:59']
-                )?.total || 0,
+                ))?.total) || 0,
                 by_carrier: await query.all(
                     'SELECT carrier, COUNT(*) as count, SUM(total_cost) as cost FROM shipping_labels WHERE user_id = ? AND created_at BETWEEN ? AND ? GROUP BY carrier',
                     [user.id, dateStart, dateEnd + 'T23:59:59']

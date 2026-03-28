@@ -665,25 +665,25 @@ async function handleSyncStatus(user) {
         // Get counts of items in each sync state
         const { query: dbQuery } = await import('../db/database.js');
 
-        const pendingPush = dbQuery.get(
+        const pendingPush = Number((await dbQuery.get(
             `SELECT COUNT(*) as count FROM notion_sync_map WHERE user_id = ? AND sync_status = 'pending_push'`,
             [user.id]
-        )?.count || 0;
+        ))?.count) || 0;
 
-        const pendingPull = dbQuery.get(
+        const pendingPull = Number((await dbQuery.get(
             `SELECT COUNT(*) as count FROM notion_sync_map WHERE user_id = ? AND sync_status = 'pending_pull'`,
             [user.id]
-        )?.count || 0;
+        ))?.count) || 0;
 
-        const conflicts = dbQuery.get(
+        const conflicts = Number((await dbQuery.get(
             `SELECT COUNT(*) as count FROM notion_sync_conflicts WHERE user_id = ? AND resolved = 0`,
             [user.id]
-        )?.count || 0;
+        ))?.count) || 0;
 
-        const synced = dbQuery.get(
+        const synced = Number((await dbQuery.get(
             `SELECT COUNT(*) as count FROM notion_sync_map WHERE user_id = ? AND sync_status = 'synced'`,
             [user.id]
-        )?.count || 0;
+        ))?.count) || 0;
 
         return {
             status: 200,
