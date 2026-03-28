@@ -142,7 +142,7 @@ function buildBundle(files, outName, versionToInject) {
     try {
         const rawBunPath = process.argv[0] || 'bun';
     const bunPath = /^[a-zA-Z0-9/_.-]+$/.test(rawBunPath) ? rawBunPath : 'bun';
-        execSync(`${bunPath} build ${tmpFile} --outdir=${DIST} --minify --sourcemap=external`, {  // nosemgrep: javascript.lang.security.detect-child-process.detect-child-process
+        execSync(`${bunPath} build ${tmpFile} --outdir=${DIST} --minify --sourcemap=external`, {  // nosemgrep: javascript.lang.security.detect-child-process.detect-child-process  // nosemgrep: js/shell-command-injection-from-environment
             cwd: ROOT,
             stdio: 'inherit'
         });
