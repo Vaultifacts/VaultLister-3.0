@@ -97,6 +97,7 @@ import { handleError } from './middleware/errorHandler.js';
 import { logRequestComplete } from './middleware/requestLogger.js';
 import { generateETag, etagMatches } from './middleware/cache.js';
 import { CDN_URL, getPreloadHints } from './middleware/cdn.js';
+import { compressBody } from './middleware/compression.js';
 import { startTokenRefreshScheduler, stopTokenRefreshScheduler, getRefreshSchedulerStatus } from './services/tokenRefreshScheduler.js';
 import { startSyncScheduler, stopSyncScheduler } from './services/syncScheduler.js';
 import { startTaskWorker, stopTaskWorker, getTaskWorkerStatus } from './workers/taskWorker.js';
@@ -1364,7 +1365,17 @@ server = Bun.serve({
                             }
                         }
 
-                        const response = new Response(responseBody, {
+                        // Compress response body if client supports it and payload is large enough
+                        const { body: finalBody, encoding } = compressBody(
+                            responseBody,
+                            request.headers.get('Accept-Encoding') || ''
+                        );
+                        if (encoding) {
+                            responseHeaders['Content-Encoding'] = encoding;
+                            responseHeaders['Vary'] = 'Accept-Encoding';
+                        }
+
+                        const response = new Response(finalBody, {
                             status: result.status || 200,
                             headers: responseHeaders
                         });
