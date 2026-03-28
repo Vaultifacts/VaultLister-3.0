@@ -39,7 +39,7 @@ function getJwtSecret() {
 // ── Provision an admin user directly in the test DB ─────────────────────────
 async function createAdminUserWithToken() {
     const now = Date.now();
-    const rand = Math.random().toString(36).slice(2, 8);
+    const rand = Math.random().toString(36).slice(2, 8); // lgtm[js/insecure-randomness] -- test-only unique ID, not security-sensitive
     const email = `admin${now}${rand}@example.com`;
     const password = 'AdminPass123!';
     const username = `adminuser${now}${rand}`;

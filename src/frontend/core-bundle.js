@@ -5126,6 +5126,7 @@ const tagPicker = {
 
         const render = () => {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // lgtm[js/xss-through-dom] -- wrapped in sanitizeHTML(); tag values use escapeHtml()
             inputContainer.innerHTML = sanitizeHTML(selectedTags.map(tag => `
                 <span class="tag-picker-tag">
                     ${escapeHtml(tag)}
@@ -15229,7 +15230,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f96084c8';
+    const v = '90a3d988';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {

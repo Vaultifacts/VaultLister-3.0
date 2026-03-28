@@ -5125,6 +5125,7 @@ const tagPicker = {
 
         const render = () => {
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            // lgtm[js/xss-through-dom] -- wrapped in sanitizeHTML(); tag values use escapeHtml()
             inputContainer.innerHTML = sanitizeHTML(selectedTags.map(tag => `
                 <span class="tag-picker-tag">
                     ${escapeHtml(tag)}
