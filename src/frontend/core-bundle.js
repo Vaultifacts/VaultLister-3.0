@@ -23,7 +23,7 @@ window.addEventListener('unhandledrejection', function(event) {
 // ============================================
 // Escape HTML to prevent XSS
 function escapeHtml(text) {
-    if (!text) return '';
+    if (text == null) return '';
     const map = {
         '&': '&amp;',
         '<': '&lt;',
