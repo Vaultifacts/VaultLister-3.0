@@ -1,12 +1,15 @@
 name: Project Status Update
 
-# Automatically posts a status update to both project boards
-# Runs every Monday at 9am UTC, and whenever an issue is closed or reopened
+# Automatically posts a status update to both project boards.
+# Runs every Monday at 9am UTC, whenever an issue changes state or labels,
+# and when a PR is closed (merged), so board status stays current.
 on:
   schedule:
     - cron: '0 9 * * 1'
   issues:
-    types: [closed, reopened]
+    types: [closed, reopened, labeled, unlabeled]
+  pull_request:
+    types: [closed]
   workflow_dispatch:
 
 permissions:

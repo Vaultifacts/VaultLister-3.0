@@ -1,0 +1,129 @@
+name: Update Project Item Status
+
+# Keeps both project boards in sync by updating the Status field on individual
+# items whenever issues or PRs move through their lifecycle:
+#   closed  → Done
+#   reopened → Todo
+#   assigned → In Progress
+#   PR ready_for_review / review_requested → In Review
+#   PR converted_to_draft → In Progress
+#   PR closed & not merged → Todo
+on:
+  issues:
+    types: [closed, reopened, assigned, unassigned]
+  pull_request:
+    types: [closed, ready_for_review, converted_to_draft, review_requested]
+
+permissions:
+  issues: read
+  pull-requests: read
+
+jobs:
+  update-status:
+    name: Update item status on project boards
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve desired status and update project items
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
+          script: |
+            const isPR    = !!context.payload.pull_request;
+            const payload = isPR ? context.payload.pull_request : context.payload.issue;
+            const action  = context.payload.action;
+            const nodeId  = payload.node_id;
+
+            // ── Determine the desired Status option name ──────────────────────
+            let desiredStatus;
+            if (isPR) {
+              if (action === 'closed')              desiredStatus = payload.merged ? 'Done' : 'Todo';
+              else if (action === 'ready_for_review' || action === 'review_requested') desiredStatus = 'In Review';
+              else if (action === 'converted_to_draft') desiredStatus = 'In Progress';
+            } else {
+              if (action === 'closed')    desiredStatus = 'Done';
+              else if (action === 'reopened')  desiredStatus = 'Todo';
+              else if (action === 'assigned')  desiredStatus = 'In Progress';
+              else if (action === 'unassigned') desiredStatus = 'Todo';
+            }
+
+            if (!desiredStatus) {
+              core.notice(`No status change mapped for action="${action}" on ${isPR ? 'PR' : 'issue'}`);
+              return;
+            }
+
+            // ── Find which project boards contain this item ───────────────────
+            const itemQuery = await github.graphql(`
+              query($nodeId: ID!) {
+                node(id: $nodeId) {
+                  ... on Issue       { projectItems(first: 10) { nodes { id project { id number } } } }
+                  ... on PullRequest { projectItems(first: 10) { nodes { id project { id number } } } }
+                }
+              }
+            `, { nodeId });
+
+            const projectItems = itemQuery.node?.projectItems?.nodes ?? [];
+            if (projectItems.length === 0) {
+              core.notice('Item is not yet in any project board — nothing to update');
+              return;
+            }
+
+            for (const item of projectItems) {
+              const { id: projectId, number: projectNumber } = item.project;
+              const itemId = item.id;
+
+              // Only manage our two boards
+              if (projectNumber !== 1 && projectNumber !== 2) continue;
+
+              // ── Fetch the Status field and its options for this project ──────
+              const fieldQuery = await github.graphql(`
+                query($owner: String!, $number: Int!) {
+                  user(login: $owner) {
+                    projectV2(number: $number) {
+                      field(name: "Status") {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          options { id name }
+                        }
+                      }
+                    }
+                  }
+                }
+              `, { owner: context.repo.owner, number: projectNumber });
+
+              const statusField = fieldQuery.user?.projectV2?.field;
+              if (!statusField) {
+                core.warning(`Project ${projectNumber} has no "Status" single-select field`);
+                continue;
+              }
+
+              // Single-pass case-insensitive option lookup; fall back to "Done" if "Closed" is missing
+              const target = desiredStatus.toLowerCase();
+              let option = statusField.options.find(o => o.name.toLowerCase() === target);
+
+              if (!option && desiredStatus === 'Closed') {
+                option = statusField.options.find(o => o.name.toLowerCase() === 'done');
+              }
+
+              if (!option) {
+                core.warning(
+                  `Status option "${desiredStatus}" not found in project ${projectNumber}. ` +
+                  `Available: ${statusField.options.map(o => o.name).join(', ')}`
+                );
+                continue;
+              }
+
+              await github.graphql(`
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                  updateProjectV2ItemFieldValue(input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { singleSelectOptionId: $optionId }
+                  }) {
+                    projectV2Item { id }
+                  }
+                }
+              `, { projectId, itemId, fieldId: statusField.id, optionId: option.id });
+
+              core.notice(`Project ${projectNumber}: item status → "${option.name}"`);
+            }
