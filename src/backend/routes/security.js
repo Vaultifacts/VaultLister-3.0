@@ -471,6 +471,43 @@ export async function securityRouter(ctx) {
         }
     }
 
+    // GET /api/security/activity - Recent account activity from audit_log
+    if (method === 'GET' && path === '/activity') {
+        try {
+            if (!user) {
+                return { status: 401, data: { error: 'Authentication required' } };
+            }
+
+            const limit = Math.min(parseInt(ctx.query?.limit) || 50, 200);
+            const offset = parseInt(ctx.query?.offset) || 0;
+
+            // Filter to security-relevant categories only
+            const activityRows = await query.all(`
+                SELECT id, action, category, severity, ip_address, user_agent, created_at
+                FROM audit_logs
+                WHERE user_id = ?
+                  AND category IN ('auth', 'security')
+                ORDER BY created_at DESC
+                LIMIT ? OFFSET ?
+            `, [user.id, limit, offset]);
+
+            const total = Number(
+                (await query.get(
+                    `SELECT COUNT(*) AS total FROM audit_logs WHERE user_id = ? AND category IN ('auth', 'security')`,
+                    [user.id]
+                ))?.total
+            ) || 0;
+
+            return {
+                status: 200,
+                data: { activity: activityRows, total, limit, offset }
+            };
+        } catch (error) {
+            logger.error('[Security] Error fetching activity log', user?.id, { detail: error.message });
+            return { status: 500, data: { error: 'Internal server error' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }
 
