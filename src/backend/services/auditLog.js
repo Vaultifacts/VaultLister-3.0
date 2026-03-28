@@ -54,6 +54,11 @@ function redactSensitive(data) {
 const auditLog = {
     // Initialize service
     init() {
+        // Guard against duplicate setInterval calls if init() is called more than once
+        if (this.cleanupInterval) {
+            logger.warn('[AuditLog] init() called while already initialized — skipping duplicate interval');
+            return;
+        }
         // Start cleanup job (runs daily)
         this.cleanupInterval = setInterval(() => this.cleanup(), 86400000);
         logger.info('[AuditLog] Service initialized');

@@ -13,6 +13,16 @@ import { circuitBreaker } from '../shared/circuitBreaker.js';
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAYS_MS = [1000, 4000, 16000]; // exponential: 1s, 4s, 16s
 
+// Query timeout wrapper — rejects if a DB query takes longer than timeoutMs
+function queryWithTimeout(fn, timeoutMs = 5000) {
+    return Promise.race([
+        fn(),
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`Webhook DB query timed out after ${timeoutMs}ms`)), timeoutMs)
+        )
+    ]);
+}
+
 // Supported event types and their handlers
 const EVENT_HANDLERS = {
     // Listing events
@@ -64,15 +74,18 @@ export async function processWebhookEvent(event) {
             ? JSON.parse(event.payload)
             : event.payload;
 
-        const result = await handler(event, payload);
+        const result = await circuitBreaker('webhook-processing', () => handler(event, payload), {
+            failureThreshold: 5,
+            cooldownMs: 60000 // pause webhook processing for 60s after 5 consecutive failures
+        });
 
-        // Update event status
-        await query.run(`
+        // Update event status with query timeout
+        await queryWithTimeout(() => query.run(`
             UPDATE webhook_events SET
                 status = 'processed',
                 processed_at = NOW()
             WHERE id = ?
-        `, [event.id]);
+        `, [event.id]));
 
         return { success: true, result };
 
@@ -91,14 +104,14 @@ export async function processWebhookEvent(event) {
                 retryCount: nextRetry
             });
 
-            await query.run(`
+            await queryWithTimeout(() => query.run(`
                 UPDATE webhook_events SET
                     status = 'dead_letter',
                     error_message = ?,
                     retry_count = ?,
                     processed_at = NOW()
                 WHERE id = ?
-            `, [error.message, nextRetry, event.id]);
+            `, [error.message, nextRetry, event.id]));
         } else {
             // Schedule retry with exponential backoff delay
             const delayMs = RETRY_DELAYS_MS[currentRetry] ?? RETRY_DELAYS_MS[RETRY_DELAYS_MS.length - 1];
@@ -106,14 +119,14 @@ export async function processWebhookEvent(event) {
 
             logger.info(`[WebhookProcessor] Scheduling event ${event.id} retry ${nextRetry} in ${delayMs}ms`);
 
-            await query.run(`
+            await queryWithTimeout(() => query.run(`
                 UPDATE webhook_events SET
                     status = 'pending',
                     error_message = ?,
                     retry_count = ?,
                     retry_after = ?
                 WHERE id = ?
-            `, [error.message, nextRetry, retryAt, event.id]);
+            `, [error.message, nextRetry, retryAt, event.id]));
         }
 
         return { success: false, error: error.message, retryCount: nextRetry };
@@ -129,11 +142,11 @@ export async function processWebhookEvent(event) {
 export async function dispatchToUserEndpoints(userId, eventType, payload) {
     // Escape ILIKE wildcards to prevent injection
     const escapedEvent = eventType.replace(/\\/g, '\\\\').replace(/[%_]/g, '\\$&');
-    const endpoints = await query.all(`
+    const endpoints = await queryWithTimeout(() => query.all(`
         SELECT * FROM webhook_endpoints
         WHERE user_id = ? AND is_enabled = 1
         AND (events ILIKE '%"' || ? || '"%' ESCAPE '\\' OR events = '[]')
-    `, [userId, escapedEvent]);
+    `, [userId, escapedEvent]));
 
     for (const endpoint of endpoints) {
         try {
@@ -163,36 +176,36 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
             }
 
             // Update success
-            await query.run(`
+            await queryWithTimeout(() => query.run(`
                 UPDATE webhook_endpoints SET
                     last_triggered_at = NOW(),
                     failure_count = 0,
                     updated_at = NOW()
                 WHERE id = ?
-            `, [endpoint.id]);
+            `, [endpoint.id]));
 
         } catch (error) {
             logger.error(`[WebhookProcessor] Failed to dispatch to ${endpoint.url}:`, error.message);
 
             // Update failure count
-            await query.run(`
+            await queryWithTimeout(() => query.run(`
                 UPDATE webhook_endpoints SET
                     failure_count = failure_count + 1,
                     updated_at = NOW()
                 WHERE id = ?
-            `, [endpoint.id]);
+            `, [endpoint.id]));
 
             // Disable after too many failures
-            const failures = await query.get(
+            const failures = await queryWithTimeout(() => query.get(
                 'SELECT failure_count FROM webhook_endpoints WHERE id = ?',
                 [endpoint.id]
-            );
+            ));
 
             if (failures && failures.failure_count >= 10) {
-                await query.run(`
+                await queryWithTimeout(() => query.run(`
                     UPDATE webhook_endpoints SET is_enabled = 0, updated_at = NOW()
                     WHERE id = ?
-                `, [endpoint.id]);
+                `, [endpoint.id]));
 
                 createNotification(userId, {
                     type: 'webhook_disabled',
