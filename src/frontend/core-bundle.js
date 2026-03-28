@@ -20691,6 +20691,7 @@ const pages = {
                                 <label for="login-email" class="form-label">Email</label>
                                 <input id="login-email" type="email" class="form-input" name="email" required
                                        autocomplete="email" aria-label="Email address" aria-describedby="login-email-error"
+                                       maxlength="254" placeholder="you@example.com"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-email-error" role="alert">Please enter a valid email address</span>
                             </div>
@@ -20699,6 +20700,7 @@ const pages = {
                                 <input id="login-password" type="password" class="form-input" name="password" required
                                        autocomplete="current-password" aria-label="Password"
                                        aria-describedby="login-password-error"
+                                       minlength="8" maxlength="128"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-password-error" role="alert">Password is required</span>
                             </div>
@@ -20749,12 +20751,13 @@ const pages = {
                             <div class="form-group">
                                 <label for="reg-email" class="form-label">Email</label>
                                 <input id="reg-email" type="email" class="form-input" name="email" required
-                                       autocomplete="email" aria-label="Email address" placeholder="you@example.com">
+                                       autocomplete="email" aria-label="Email address" placeholder="you@example.com"
+                                       maxlength="254">
                             </div>
                             <div class="form-group">
                                 <label for="reg-username" class="form-label">Username</label>
                                 <input id="reg-username" type="text" class="form-input" name="username" required
-                                       autocomplete="username" aria-label="Username" placeholder="Choose a username" minlength="3">
+                                       autocomplete="username" aria-label="Username" placeholder="Choose a username" minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscores only">
                             </div>
                             <div class="form-group">
                                 <label for="reg-password" class="form-label">Password</label>
@@ -20788,7 +20791,7 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="reg-confirm-password" class="form-label">Confirm Password</label>
-                                <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password">
+                                <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password" minlength="12" maxlength="128">
                             </div>
                             <button type="submit" id="register-submit-btn" class="btn btn-primary w-full mb-4">Create Account</button>
                             <div class="social-divider">Or continue with</div>
@@ -21596,7 +21599,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label for="add-item-title" class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required>
+                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)">
                     </div>
                     <div class="form-group">
                         <div class="flex justify-between items-center mb-2">
@@ -21605,13 +21608,13 @@ const modals = {
                                 Auto-Generate
                             </button>
                         </div>
-                        <input type="text" class="form-input" name="sku" id="add-item-sku" placeholder="Leave blank to auto-generate">
+                        <input type="text" class="form-input" name="sku" id="add-item-sku" placeholder="Leave blank to auto-generate" maxlength="50" pattern="[A-Za-z0-9\-_./]+" title="Letters, numbers, hyphens, underscores, dots, and slashes only">
                         <p class="text-xs text-gray-500 mt-1">Unique identifier for this item. Will be auto-generated if left blank and a default rule exists.</p>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="add-item-brand" class="form-label">Brand</label>
-                            <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand">
+                            <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand" maxlength="50">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
@@ -21664,7 +21667,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="add-item-color" class="form-label">Color</label>
-                            <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color">
+                            <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color" maxlength="50">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
@@ -21832,11 +21835,11 @@ const modals = {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <input type="text" class="form-input" name="location" id="add-item-location" placeholder="e.g., Warehouse A, Storage Room">
+                                <input type="text" class="form-input" name="location" id="add-item-location" placeholder="e.g., Warehouse A, Storage Room" maxlength="100">
                                 <p class="text-xs text-gray-500 mt-1">General location or area</p>
                             </div>
                             <div>
-                                <input type="text" class="form-input" name="binLocation" id="add-item-bin" placeholder="e.g., A1-03-B, Shelf 2 Bin 4">
+                                <input type="text" class="form-input" name="binLocation" id="add-item-bin" placeholder="e.g., A1-03-B, Shelf 2 Bin 4" maxlength="50">
                                 <p class="text-xs text-gray-500 mt-1">Specific bin/shelf position</p>
                             </div>
                         </div>
