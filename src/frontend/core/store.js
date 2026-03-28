@@ -2,6 +2,10 @@
 // Store (state management, localStorage persistence)
 // Extracted from app.js lines 7718-8137
 
+// Increment this when the shape of persisted state changes in a breaking way.
+// On mismatch the stored state is discarded and the user must re-authenticate.
+const STATE_SCHEMA_VERSION = 1;
+
 // State Management
 // ============================================
 const store = {
@@ -284,6 +288,7 @@ const store = {
         // across tabs or browser restarts. "Remember Me" persistence is handled by the
         // HttpOnly vl_refresh cookie expiry set at login, not by localStorage.
         sessionStorage.setItem('vaultlister_state', JSON.stringify({
+            _v: STATE_SCHEMA_VERSION,
             user: this.state.user,
             token: this.state.token,
             refreshToken: this.state.refreshToken,
@@ -295,6 +300,7 @@ const store = {
         // browser restart while silent re-auth completes via the HttpOnly cookie.
         if (!this.state.useSessionStorage) {
             localStorage.setItem('vaultlister_state', JSON.stringify({
+                _v: STATE_SCHEMA_VERSION,
                 user: this.state.user,
                 useSessionStorage: false
             }));
@@ -315,7 +321,32 @@ const store = {
                 saved = localStorage.getItem('vaultlister_state');
             }
             if (saved) {
-                const parsed = JSON.parse(saved);
+                let parsed;
+                try {
+                    parsed = JSON.parse(saved);
+                } catch (_) {
+                    // Malformed JSON — discard persisted state
+                    sessionStorage.removeItem('vaultlister_state');
+                    localStorage.removeItem('vaultlister_state');
+                    return;
+                }
+
+                // Schema version check — stale state from a different schema is discarded.
+                if (typeof parsed !== 'object' || parsed === null || parsed._v !== STATE_SCHEMA_VERSION) {
+                    sessionStorage.removeItem('vaultlister_state');
+                    localStorage.removeItem('vaultlister_state');
+                    return;
+                }
+
+                // Basic shape validation: user must be null or an object with an id string.
+                if (parsed.user !== null && parsed.user !== undefined) {
+                    if (typeof parsed.user !== 'object' || typeof parsed.user.id !== 'string') {
+                        sessionStorage.removeItem('vaultlister_state');
+                        localStorage.removeItem('vaultlister_state');
+                        return;
+                    }
+                }
+
                 // When reading from localStorage (browser restart scenario), tokens are
                 // intentionally excluded — they are only trusted from sessionStorage.
                 const allowed = fromSession
@@ -326,7 +357,13 @@ const store = {
                 }
             }
             const savedVotes = localStorage.getItem('vaultlister_changelog_votes');
-            if (savedVotes) this.state.changelogVotes = JSON.parse(savedVotes);
+            if (savedVotes) {
+                try {
+                    this.state.changelogVotes = JSON.parse(savedVotes);
+                } catch (_) {
+                    localStorage.removeItem('vaultlister_changelog_votes');
+                }
+            }
         } catch (e) {
             console.error('Failed to hydrate state:', e);
         }
