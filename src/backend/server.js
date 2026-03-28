@@ -196,7 +196,9 @@ const MIME_TYPES = {
     '.woff2': 'font/woff2',
     '.ttf': 'font/ttf',
     '.webp': 'image/webp',
-    '.webmanifest': 'application/manifest+json'
+    '.webmanifest': 'application/manifest+json',
+    '.xml': 'application/xml',
+    '.txt': 'text/plain'
 };
 
 // CORS configuration
