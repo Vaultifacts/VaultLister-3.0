@@ -887,7 +887,7 @@ export async function inventoryRouter(ctx) {
             try {
                 const accessToken = decryptToken(shop.oauth_token);
                 const oauthMode = process.env.OAUTH_MODE || 'mock';
-                const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'sandbox';
+                const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'production';
                 const apiBase = ebayEnvironment === 'production'
                     ? 'https://api.ebay.com'
                     : 'https://api.sandbox.ebay.com';

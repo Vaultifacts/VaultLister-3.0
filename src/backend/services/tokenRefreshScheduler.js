@@ -591,7 +591,7 @@ export function getOAuthConfig(platform, mode) {
     }
 
     // Real platform configurations
-    const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'sandbox';
+    const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'production';
     const ebayAuthBase = ebayEnvironment === 'production'
         ? 'https://auth.ebay.com'
         : 'https://auth.sandbox.ebay.com';

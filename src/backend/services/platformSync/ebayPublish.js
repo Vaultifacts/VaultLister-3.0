@@ -22,7 +22,7 @@ const CONDITION_PREFERENCE = {
 const DEFAULT_CATEGORY_ID = '57988';
 
 function getApiBase() {
-    const env = process.env.EBAY_ENVIRONMENT || 'sandbox';
+    const env = process.env.EBAY_ENVIRONMENT || 'production';
     return env === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
 }
 
@@ -412,7 +412,7 @@ export async function publishListingToEbay(shop, listing, inventory) {
     }
 
     const listingId = publishResult.data.listingId;
-    const env = process.env.EBAY_ENVIRONMENT || 'sandbox';
+    const env = process.env.EBAY_ENVIRONMENT || 'production';
     const listingUrl = env === 'production'
         ? `https://www.ebay.com/itm/${listingId}`
         : `https://www.sandbox.ebay.com/itm/${listingId}`;

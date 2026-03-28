@@ -229,7 +229,7 @@ async function fetchEbayListings(accessToken, mode) {
     }
 
     // Real eBay API call
-    const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'sandbox';
+    const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'production';
     const apiBase = ebayEnvironment === 'production'
         ? 'https://api.ebay.com'
         : 'https://api.sandbox.ebay.com';
@@ -261,7 +261,7 @@ async function fetchEbayOrders(accessToken, mode) {
     }
 
     // Real eBay API call
-    const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'sandbox';
+    const ebayEnvironment = process.env.EBAY_ENVIRONMENT || 'production';
     const apiBase = ebayEnvironment === 'production'
         ? 'https://api.ebay.com'
         : 'https://api.sandbox.ebay.com';

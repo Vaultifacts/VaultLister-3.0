@@ -14,7 +14,7 @@ if (!process.env.OAUTH_MODE) {
 } else if (process.env.OAUTH_MODE === 'mock') {
     logger.warn('[OAuth] WARNING: OAUTH_MODE=mock — OAuth returns fake tokens. Set OAUTH_MODE=real for production.');
 }
-if (!process.env.EBAY_ENVIRONMENT || process.env.EBAY_ENVIRONMENT === 'sandbox') {
+if (process.env.EBAY_ENVIRONMENT === 'sandbox') {
     logger.warn('[OAuth] WARNING: EBAY_ENVIRONMENT=sandbox — eBay API calls go to sandbox, not production. Set EBAY_ENVIRONMENT=production for live listings.');
 }
 
@@ -546,7 +546,7 @@ function getOAuthConfig(platform, mode) {
             clientSecret: process.env.POSHMARK_CLIENT_SECRET,
         },
         ebay: (() => {
-            const env = process.env.EBAY_ENVIRONMENT || 'sandbox';
+            const env = process.env.EBAY_ENVIRONMENT || 'production';
             const authBase = env === 'production' ? 'https://auth.ebay.com' : 'https://auth.sandbox.ebay.com';
             const apiBase = env === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
             const apizBase = env === 'production' ? 'https://apiz.ebay.com' : 'https://apiz.sandbox.ebay.com';
