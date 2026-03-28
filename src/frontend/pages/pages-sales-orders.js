@@ -625,7 +625,7 @@ Object.assign(pages, {
                     </div>
                 ` : `
                     <div class="card-body">
-                        ${components.emptyState('No sales yet', 'Your sales will appear here once you make your first sale')}
+                        ${components.emptyState('sales', 'No sales yet', 'Sales you make across connected platforms will appear here. Connect a platform to get started.', 'Connect a Platform', "router.navigate('shops')", 'shops')}
                     </div>
                 `}
             </div>
