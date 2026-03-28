@@ -9,6 +9,10 @@ import { logger } from '../shared/logger.js';
 import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../shared/circuitBreaker.js';
 
+// Retry configuration
+const MAX_RETRY_ATTEMPTS = 3;
+const RETRY_DELAYS_MS = [1000, 4000, 16000]; // exponential: 1s, 4s, 16s
+
 // Supported event types and their handlers
 const EVENT_HANDLERS = {
     // Listing events
@@ -40,7 +44,7 @@ const EVENT_HANDLERS = {
 };
 
 /**
- * Process a webhook event
+ * Process a webhook event with retry logic and dead-letter queue on max failures
  * @param {Object} event - Webhook event record
  * @returns {Object} Processing result
  */
@@ -52,6 +56,8 @@ export async function processWebhookEvent(event) {
         logger.info(`[WebhookProcessor] Unknown event type: ${eventType}`);
         return { success: false, error: `Unknown event type: ${eventType}` };
     }
+
+    const currentRetry = event.retry_count || 0;
 
     try {
         const payload = typeof event.payload === 'string'
@@ -71,19 +77,46 @@ export async function processWebhookEvent(event) {
         return { success: true, result };
 
     } catch (error) {
-        logger.error(`[WebhookProcessor] Error processing event ${event.id}:`, error);
+        logger.error(`[WebhookProcessor] Error processing event ${event.id} (attempt ${currentRetry + 1}/${MAX_RETRY_ATTEMPTS}):`, error);
 
-        // Update event with error
-        await query.run(`
-            UPDATE webhook_events SET
-                status = 'failed',
-                error_message = ?,
-                retry_count = retry_count + 1,
-                processed_at = NOW()
-            WHERE id = ?
-        `, [error.message, event.id]);
+        const nextRetry = currentRetry + 1;
 
-        return { success: false, error: error.message };
+        if (nextRetry >= MAX_RETRY_ATTEMPTS) {
+            // Move to dead-letter queue — log full context and mark permanently failed
+            logger.error(`[WebhookProcessor] Event ${event.id} moved to dead-letter queue after ${MAX_RETRY_ATTEMPTS} attempts`, {
+                eventId: event.id,
+                eventType,
+                userId: event.user_id,
+                lastError: error.message,
+                retryCount: nextRetry
+            });
+
+            await query.run(`
+                UPDATE webhook_events SET
+                    status = 'dead_letter',
+                    error_message = ?,
+                    retry_count = ?,
+                    processed_at = NOW()
+                WHERE id = ?
+            `, [error.message, nextRetry, event.id]);
+        } else {
+            // Schedule retry with exponential backoff delay
+            const delayMs = RETRY_DELAYS_MS[currentRetry] ?? RETRY_DELAYS_MS[RETRY_DELAYS_MS.length - 1];
+            const retryAt = new Date(Date.now() + delayMs).toISOString();
+
+            logger.info(`[WebhookProcessor] Scheduling event ${event.id} retry ${nextRetry} in ${delayMs}ms`);
+
+            await query.run(`
+                UPDATE webhook_events SET
+                    status = 'pending',
+                    error_message = ?,
+                    retry_count = ?,
+                    retry_after = ?
+                WHERE id = ?
+            `, [error.message, nextRetry, retryAt, event.id]);
+        }
+
+        return { success: false, error: error.message, retryCount: nextRetry };
     }
 }
 
