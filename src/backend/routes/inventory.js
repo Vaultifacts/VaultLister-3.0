@@ -1532,6 +1532,24 @@ export async function inventoryRouter(ctx) {
     }
 
 // PUT /api/inventory/bulk/update - Bulk update status, category, or price for multiple items
+
+    // POST /api/inventory/purge-deleted - Permanently purge items soft-deleted 30+ days ago
+    if (method === 'POST' && path === '/purge-deleted') {
+        try {
+            const { v4: uuidv4 } = await import('uuid');
+            const taskId = uuidv4();
+            await query.run(
+                `INSERT INTO task_queue (id, type, payload, priority, max_attempts, created_at, scheduled_at)
+                 VALUES (?, 'purge_deleted_inventory', ?, 1, 1, NOW(), NOW())`,
+                [taskId, JSON.stringify({ userId: user.id })]
+            );
+            return { status: 202, data: { taskId, status: 'queued', message: 'Purge of deleted items older than 30 days has been queued' } };
+        } catch (error) {
+            logger.error('[Inventory] purge-deleted queue error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } } };
+        }
+    }
+
     if (method === 'PUT' && path === '/bulk/update') {
         try {
             const { ids, status: newStatus, category, listPrice } = body;
