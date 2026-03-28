@@ -7,11 +7,23 @@ on:
     types: [opened, reopened]
 
 jobs:
-  add-to-project:
-    name: Add to VaultLister Kanban
+  add-to-development-board:
+    name: Add to Development Board
     runs-on: ubuntu-latest
     steps:
       - uses: actions/add-to-project@v1.0.2
         with:
           project-url: https://github.com/users/Vaultifacts/projects/1
           github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
+          labeled: launch-checklist
+          label-operator: NOT
+
+  add-to-launch-checklist:
+    name: Add to Launch Checklist Board
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/users/Vaultifacts/projects/2
+          github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
+          labeled: launch-checklist

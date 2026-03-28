@@ -1,0 +1,95 @@
+name: Backfill Issues to Project Boards
+
+# One-time backfill: adds existing issues to the correct project boards.
+# Run manually once, then this workflow can be left in place for future re-runs.
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: read
+
+jobs:
+  backfill-development-board:
+    name: Backfill to Development Board (project 1)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
+          script: |
+            // Get project 1 node ID
+            const proj1 = await github.graphql(`
+              query { user(login: "${context.repo.owner}") { projectV2(number: 1) { id } } }
+            `);
+            const projectId = proj1.user.projectV2.id;
+
+            // Get all open issues WITHOUT launch-checklist label
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+
+            const devIssues = issues.filter(i =>
+              !i.pull_request &&
+              !i.labels.some(l => l.name === 'launch-checklist')
+            );
+
+            core.notice(`Adding ${devIssues.length} issues to Development Board`);
+
+            for (const issue of devIssues) {
+              try {
+                await github.graphql(`
+                  mutation($projectId: ID!, $contentId: ID!) {
+                    addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                      item { id }
+                    }
+                  }
+                `, { projectId, contentId: issue.node_id });
+                core.info(`Added #${issue.number}: ${issue.title}`);
+              } catch (e) {
+                core.warning(`Skipped #${issue.number} (${e.message})`);
+              }
+            }
+
+  backfill-launch-checklist:
+    name: Backfill to Launch Checklist Board (project 2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
+          script: |
+            // Get project 2 node ID
+            const proj2 = await github.graphql(`
+              query { user(login: "${context.repo.owner}") { projectV2(number: 2) { id } } }
+            `);
+            const projectId = proj2.user.projectV2.id;
+
+            // Get all issues with launch-checklist label
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'launch-checklist',
+              per_page: 100
+            });
+
+            core.notice(`Adding ${issues.length} launch-checklist issues to Launch Checklist Board`);
+
+            for (const issue of issues) {
+              if (issue.pull_request) continue;
+              try {
+                await github.graphql(`
+                  mutation($projectId: ID!, $contentId: ID!) {
+                    addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                      item { id }
+                    }
+                  }
+                `, { projectId, contentId: issue.node_id });
+                core.info(`Added #${issue.number}: ${issue.title}`);
+              } catch (e) {
+                core.warning(`Skipped #${issue.number} (${e.message})`);
+              }
+            }

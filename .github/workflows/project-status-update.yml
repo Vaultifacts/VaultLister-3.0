@@ -1,0 +1,176 @@
+name: Project Status Update
+
+# Automatically posts a status update to both project boards
+# Runs every Monday at 9am UTC, and whenever an issue is closed or reopened
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  issues:
+    types: [closed, reopened]
+  workflow_dispatch:
+
+permissions:
+  issues: read
+
+jobs:
+  update-development-board:
+    name: Update Development Board Status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post status update to Development Board
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
+          script: |
+            // Get all open issues excluding launch-checklist
+            const { data: allIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+
+            const devIssues = allIssues.filter(i =>
+              !i.pull_request &&
+              !i.labels.some(l => l.name === 'launch-checklist')
+            );
+
+            const p0 = devIssues.filter(i => i.labels.some(l => l.name === 'p0-critical'));
+            const bugs = devIssues.filter(i => i.labels.some(l => l.name === 'bug'));
+            const security = devIssues.filter(i => i.labels.some(l => l.name === 'security'));
+
+            // Get recently closed (last 7 days)
+            const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            const { data: recentlyClosed } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              since,
+              per_page: 20
+            });
+            const closedDev = recentlyClosed.filter(i =>
+              !i.pull_request &&
+              !i.labels.some(l => l.name === 'launch-checklist')
+            );
+
+            const statusEmoji = p0.length > 0 ? '🔴' : bugs.length > 3 ? '🟡' : '🟢';
+            const statusLabel = p0.length > 0 ? 'AT_RISK' : bugs.length > 3 ? 'OFF_TRACK' : 'ON_TRACK';
+
+            const body = [
+              `## Weekly Development Board Status ${statusEmoji}`,
+              '',
+              `**Open issues:** ${devIssues.length}`,
+              `**P0 Critical:** ${p0.length}`,
+              `**Bugs:** ${bugs.length}`,
+              `**Security:** ${security.length}`,
+              '',
+              closedDev.length > 0
+                ? `**Closed this week:** ${closedDev.length} issue${closedDev.length !== 1 ? 's' : ''}`
+                : '**Closed this week:** None',
+              '',
+              p0.length > 0
+                ? `### 🚨 P0 Critical\n${p0.slice(0, 5).map(i => `- [#${i.number}](${i.html_url}) ${i.title}`).join('\n')}`
+                : '',
+              '',
+              `*Auto-generated ${new Date().toUTCString()}*`
+            ].filter(l => l !== undefined).join('\n');
+
+            // Get project node ID and post status update
+            const projectQuery = await github.graphql(`
+              query {
+                user(login: "${context.repo.owner}") {
+                  projectV2(number: 1) {
+                    id
+                  }
+                }
+              }
+            `);
+
+            const projectId = projectQuery.user.projectV2.id;
+
+            await github.graphql(`
+              mutation($projectId: ID!, $body: String!, $status: ProjectV2StatusUpdateStatus!) {
+                addProjectV2StatusUpdate(input: {
+                  projectId: $projectId,
+                  body: $body,
+                  status: $status
+                }) {
+                  statusUpdate { id }
+                }
+              }
+            `, { projectId, body, status: statusLabel });
+
+            core.notice(`Posted ${statusLabel} status update to Development Board`);
+
+  update-launch-checklist:
+    name: Update Launch Checklist Status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post status update to Launch Checklist Board
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
+          script: |
+            const { data: allIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              labels: 'launch-checklist',
+              per_page: 100
+            });
+
+            const open = allIssues.filter(i => i.state === 'open' && !i.pull_request);
+            const closed = allIssues.filter(i => i.state === 'closed' && !i.pull_request);
+            const total = open.length + closed.length;
+            const pct = total > 0 ? Math.round((closed.length / total) * 100) : 0;
+
+            const p0Open = open.filter(i => i.labels.some(l => l.name === 'p0-critical'));
+
+            const statusLabel = p0Open.length > 0 ? 'AT_RISK' : pct >= 80 ? 'ON_TRACK' : pct >= 50 ? 'ON_TRACK' : 'OFF_TRACK';
+            const statusEmoji = p0Open.length > 0 ? '🔴' : pct >= 80 ? '🟢' : pct >= 50 ? '🟡' : '🟡';
+
+            const progressBar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
+
+            const body = [
+              `## Launch Checklist Status ${statusEmoji}`,
+              '',
+              `**Progress:** \`${progressBar}\` ${pct}% (${closed.length}/${total} complete)`,
+              '',
+              `**Remaining:** ${open.length} item${open.length !== 1 ? 's' : ''}`,
+              '',
+              p0Open.length > 0
+                ? `### 🚨 Blocking (P0)\n${p0Open.map(i => `- [#${i.number}](${i.html_url}) ${i.title}`).join('\n')}`
+                : '### ✅ No P0 blockers',
+              '',
+              open.length > 0
+                ? `### Remaining Tasks\n${open.slice(0, 8).map(i => `- [ ] [#${i.number}](${i.html_url}) ${i.title}`).join('\n')}${open.length > 8 ? `\n- ... and ${open.length - 8} more` : ''}`
+                : '### 🎉 All launch checklist items complete!',
+              '',
+              `*Auto-generated ${new Date().toUTCString()}*`
+            ].join('\n');
+
+            const projectQuery = await github.graphql(`
+              query {
+                user(login: "${context.repo.owner}") {
+                  projectV2(number: 2) {
+                    id
+                  }
+                }
+              }
+            `);
+
+            const projectId = projectQuery.user.projectV2.id;
+
+            await github.graphql(`
+              mutation($projectId: ID!, $body: String!, $status: ProjectV2StatusUpdateStatus!) {
+                addProjectV2StatusUpdate(input: {
+                  projectId: $projectId,
+                  body: $body,
+                  status: $status
+                }) {
+                  statusUpdate { id }
+                }
+              }
+            `, { projectId, body, status: statusLabel });
+
+            core.notice(`Posted ${statusLabel} status update to Launch Checklist Board (${pct}% complete)`);
