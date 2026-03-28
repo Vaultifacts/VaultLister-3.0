@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
+import { INTERVALS } from '../shared/constants.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -172,7 +173,7 @@ const monitoring = {
     startMetricsCollection() {
         // Check DB size immediately on init, then every hour
         this.checkDatabaseSize().catch(err => logger.error('DB size check failed:', err.message));
-        this._dbSizeInterval = setInterval(() => this.checkDatabaseSize().catch(err => logger.error('DB size check failed:', err.message)), 60 * 60 * 1000);
+        this._dbSizeInterval = setInterval(() => this.checkDatabaseSize().catch(err => logger.error('DB size check failed:', err.message)), INTERVALS.DB_SIZE_CHECK_MS);
 
         // Collect metrics every 30 seconds
         this._metricsInterval = setInterval(() => {
@@ -202,7 +203,7 @@ const monitoring = {
                     heapSizeLimitMB: Math.round(heapSizeLimit / 1024 / 1024)
                 });
             }
-        }, 30000);
+        }, INTERVALS.METRICS_COLLECTION_MS);
     },
 
     // Send alert

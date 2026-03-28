@@ -6,6 +6,7 @@ import { createHmac } from 'crypto';
 import { query } from '../db/database.js';
 import emailService from './email.js';
 import { logger } from '../shared/logger.js';
+import { INTERVALS } from '../shared/constants.js';
 
 // Email templates
 const EMAIL_TEMPLATES = {
@@ -55,13 +56,13 @@ const emailMarketing = {
     // Start scheduled jobs
     startScheduledJobs() {
         // Run welcome sequence check every hour
-        this.welcomeInterval = setInterval(() => this.processWelcomeSequence(), 3600000);
+        this.welcomeInterval = setInterval(() => this.processWelcomeSequence(), INTERVALS.HOURLY_TASK_MS);
 
         // Run weekly digest on Sundays at 9 AM (check every hour)
-        this.digestInterval = setInterval(() => this.processWeeklyDigests(), 3600000);
+        this.digestInterval = setInterval(() => this.processWeeklyDigests(), INTERVALS.HOURLY_TASK_MS);
 
         // Run inactivity check daily
-        this.inactivityInterval = setInterval(() => this.processInactivityReminders(), 86400000);
+        this.inactivityInterval = setInterval(() => this.processInactivityReminders(), INTERVALS.DAILY_CLEANUP_MS);
     },
 
     // Stop scheduled jobs and release interval handles
