@@ -96,48 +96,56 @@ export async function offersRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/accept$/)) {
         const id = path.split('/')[1];
 
-        // Check offer exists first
-        const existingOffer = await query.get('SELECT id, status FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
-        if (!existingOffer) {
+        // Pre-flight: verify offer exists before opening a transaction
+        const preCheck = await query.get('SELECT id FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
+        if (!preCheck) {
             return { status: 404, data: { error: 'Offer not found' } };
         }
-        if (existingOffer.status !== 'pending') {
-            return { status: 400, data: { error: 'Offer has already been responded to' } };
-        }
 
-        // Atomic UPDATE with WHERE status = 'pending' to prevent TOCTOU race condition
-        const result = await query.run(
-            'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status = ?',
-            ['accepted', id, user.id, 'pending']
-        );
-
-        if (result.changes === 0) {
-            return { status: 400, data: { error: 'Offer has already been responded to' } };
-        }
-
-        const offer = await query.get(`
-            SELECT o.*, l.id as listing_id, l.price as listing_price
-            FROM offers o
-            LEFT JOIN listings l ON o.listing_id = l.id
-            WHERE o.id = ? AND o.user_id = ?
-        `, [id, user.id]);
-
-        // Best-effort sale creation — wrapped in transaction for atomicity
+        let offer;
         try {
-            await query.transaction(async () => {
+            offer = await query.transaction(async (tx) => {
+                // Lock the row to prevent concurrent accept/decline/counter
+                const locked = await tx.get(
+                    'SELECT id, status, listing_id, platform, buyer_username, offer_amount FROM offers WHERE id = ? AND user_id = ? FOR UPDATE',
+                    [id, user.id]
+                );
+
+                if (!locked) {
+                    const err = new Error('OFFER_NOT_FOUND');
+                    err.status = 404;
+                    throw err;
+                }
+                if (locked.status !== 'pending') {
+                    const err = new Error('OFFER_ALREADY_PROCESSED');
+                    err.status = 409;
+                    throw err;
+                }
+
+                await tx.run(
+                    'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                    ['accepted', id, user.id]
+                );
+
+                // Create sale atomically within the same transaction
                 const saleId = uuidv4();
-                await query.run(
+                await tx.run(
                     `INSERT INTO sales (id, user_id, listing_id, platform, buyer_username, sale_price, platform_fee, shipping_cost, customer_shipping_cost, seller_shipping_cost, item_cost, tax_amount, net_profit, status, created_at)
                      VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, 'confirmed', CURRENT_TIMESTAMP)`,
-                    [saleId, user.id, offer.listing_id, offer.platform, offer.buyer_username, offer.offer_amount, offer.offer_amount]
+                    [saleId, user.id, locked.listing_id, locked.platform, locked.buyer_username, locked.offer_amount, locked.offer_amount]
                 );
-                await query.run(
+                await tx.run(
                     `UPDATE listings SET status = 'sold', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status != 'sold'`,
-                    [offer.listing_id]
+                    [locked.listing_id]
                 );
+
+                return locked;
             });
-        } catch (saleErr) {
-            logger.warn('Best-effort sale creation failed for offer ' + id + ': ' + saleErr.message);
+        } catch (err) {
+            if (err.message === 'OFFER_NOT_FOUND') return { status: 404, data: { error: 'Offer not found' } };
+            if (err.message === 'OFFER_ALREADY_PROCESSED') return { status: 409, data: { error: 'Offer has already been processed' } };
+            logger.error('[Offers] Accept transaction failed', user?.id, { detail: err?.message });
+            throw err;
         }
 
         // Queue automation task to accept on platform
@@ -156,26 +164,45 @@ export async function offersRouter(ctx) {
     if (method === 'POST' && path.match(/^\/[a-f0-9-]+\/decline$/)) {
         const id = path.split('/')[1];
 
-        // Check offer exists first
-        const existingOffer = await query.get('SELECT id, status FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
-        if (!existingOffer) {
+        // Pre-flight: verify offer exists before opening a transaction
+        const preCheck = await query.get('SELECT id FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
+        if (!preCheck) {
             return { status: 404, data: { error: 'Offer not found' } };
         }
-        if (existingOffer.status !== 'pending') {
-            return { status: 400, data: { error: 'Offer has already been responded to' } };
+
+        let offer;
+        try {
+            offer = await query.transaction(async (tx) => {
+                // Lock the row to prevent concurrent accept/decline/counter
+                const locked = await tx.get(
+                    'SELECT id, status, platform FROM offers WHERE id = ? AND user_id = ? FOR UPDATE',
+                    [id, user.id]
+                );
+
+                if (!locked) {
+                    const err = new Error('OFFER_NOT_FOUND');
+                    err.status = 404;
+                    throw err;
+                }
+                if (locked.status !== 'pending') {
+                    const err = new Error('OFFER_ALREADY_PROCESSED');
+                    err.status = 409;
+                    throw err;
+                }
+
+                await tx.run(
+                    'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                    ['declined', id, user.id]
+                );
+
+                return locked;
+            });
+        } catch (err) {
+            if (err.message === 'OFFER_NOT_FOUND') return { status: 404, data: { error: 'Offer not found' } };
+            if (err.message === 'OFFER_ALREADY_PROCESSED') return { status: 409, data: { error: 'Offer has already been processed' } };
+            logger.error('[Offers] Decline transaction failed', user?.id, { detail: err?.message });
+            throw err;
         }
-
-        // Atomic UPDATE with WHERE status = 'pending' to prevent TOCTOU race condition
-        const result = await query.run(
-            'UPDATE offers SET status = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status = ?',
-            ['declined', id, user.id, 'pending']
-        );
-
-        if (result.changes === 0) {
-            return { status: 400, data: { error: 'Offer has already been responded to' } };
-        }
-
-        const offer = await query.get('SELECT * FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
 
         // Queue automation task
         const taskId = uuidv4();
@@ -201,26 +228,45 @@ export async function offersRouter(ctx) {
             return { status: 400, data: { error: 'Counter amount must be a valid positive number' } };
         }
 
-        // Check offer exists first
-        const existingOffer = await query.get('SELECT id, status FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
-        if (!existingOffer) {
+        // Pre-flight: verify offer exists before opening a transaction
+        const preCheck = await query.get('SELECT id FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
+        if (!preCheck) {
             return { status: 404, data: { error: 'Offer not found' } };
         }
-        if (existingOffer.status !== 'pending') {
-            return { status: 400, data: { error: 'Offer has already been responded to' } };
+
+        let offer;
+        try {
+            offer = await query.transaction(async (tx) => {
+                // Lock the row to prevent concurrent accept/decline/counter
+                const locked = await tx.get(
+                    'SELECT id, status, platform FROM offers WHERE id = ? AND user_id = ? FOR UPDATE',
+                    [id, user.id]
+                );
+
+                if (!locked) {
+                    const err = new Error('OFFER_NOT_FOUND');
+                    err.status = 404;
+                    throw err;
+                }
+                if (locked.status !== 'pending') {
+                    const err = new Error('OFFER_ALREADY_PROCESSED');
+                    err.status = 409;
+                    throw err;
+                }
+
+                await tx.run(
+                    'UPDATE offers SET status = ?, counter_amount = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+                    ['countered', amount, id, user.id]
+                );
+
+                return locked;
+            });
+        } catch (err) {
+            if (err.message === 'OFFER_NOT_FOUND') return { status: 404, data: { error: 'Offer not found' } };
+            if (err.message === 'OFFER_ALREADY_PROCESSED') return { status: 409, data: { error: 'Offer has already been processed' } };
+            logger.error('[Offers] Counter transaction failed', user?.id, { detail: err?.message });
+            throw err;
         }
-
-        // Atomic UPDATE with WHERE status = 'pending' to prevent TOCTOU race condition
-        const result = await query.run(
-            'UPDATE offers SET status = ?, counter_amount = ?, responded_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ? AND status = ?',
-            ['countered', amount, id, user.id, 'pending']
-        );
-
-        if (result.changes === 0) {
-            return { status: 400, data: { error: 'Offer has already been responded to' } };
-        }
-
-        const offer = await query.get('SELECT * FROM offers WHERE id = ? AND user_id = ?', [id, user.id]);
 
         // Queue automation task
         const taskId = uuidv4();
