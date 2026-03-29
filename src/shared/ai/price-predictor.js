@@ -91,9 +91,56 @@ const SEASONAL_ADJUSTMENTS = {
 };
 
 /**
+ * Compute mean and standard deviation for an array of numbers.
+ * Returns { mean, stdDev } or null if fewer than 2 values.
+ */
+function computeStats(values) {
+    if (values.length < 2) return null;
+    const mean = values.reduce((s, v) => s + v, 0) / values.length;
+    const variance = values.reduce((s, v) => s + (v - mean) ** 2, 0) / values.length;
+    return { mean, stdDev: Math.sqrt(variance) };
+}
+
+/**
+ * Filter outliers that are more than 2 standard deviations from the mean.
+ * Returns { filtered, outliers, stats }.
+ */
+function filterOutliers(values) {
+    const stats = computeStats(values);
+    if (!stats) return { filtered: values, outliers: [], stats };
+    const { mean, stdDev } = stats;
+    const threshold = 2 * stdDev;
+    const filtered = [];
+    const outliers = [];
+    for (const v of values) {
+        if (Math.abs(v - mean) > threshold) {
+            outliers.push(v);
+        } else {
+            filtered.push(v);
+        }
+    }
+    return { filtered, outliers, stats };
+}
+
+/**
+ * Compute a confidence score (0–1) based on the quality and quantity of data.
+ * Higher confidence when more historical sales exist and outlier ratio is low.
+ */
+function computeConfidence(totalSales, filteredSales, priceSource) {
+    if (priceSource === 'category') return 0.3; // lowest confidence — pure heuristic
+    const outlierPenalty = totalSales > 0 ? (totalSales - filteredSales) / totalSales : 0;
+    // Base confidence scales from 0.5 (3 sales) up toward 1.0 (20+ sales)
+    const quantityScore = Math.min(1, filteredSales / 20);
+    const base = 0.5 + quantityScore * 0.5;
+    return Math.max(0, Math.min(1, parseFloat((base - outlierPenalty * 0.3).toFixed(2))));
+}
+
+/**
  * Predict a price for an item.
  * If historicalSales (array of {sale_price}) has 3+ entries, uses their average as the base
  * before applying brand/condition/seasonal multipliers.
+ *
+ * Returns { price, priceSource, confidence, dataPoints, range, outlierPrices }
  */
 export function predictPrice(context) {
     const { title, brand, category, condition, originalRetail, size, historicalSales = [] } = context;
@@ -102,15 +149,30 @@ export function predictPrice(context) {
     const categoryKey = findCategoryKey(category);
     const basePrice = CATEGORY_PRICES[categoryKey] || CATEGORY_PRICES['Accessories'];
 
+    // Validate hard bounds from category
+    const absoluteMin = basePrice.min;
+    const absoluteMax = basePrice.max * 10; // allow luxury brands to exceed base max
+
     let price = basePrice.avg;
     let priceSource = 'category';
+    let dataPoints = 0;
+    let outlierPrices = [];
+    let confidence = 0.3;
 
     // Use historical sold prices as PRIMARY base when sufficient data exists
     if (historicalSales.length >= 3) {
-        const historicalAvg = historicalSales.reduce((sum, s) => sum + (s.sale_price || 0), 0) / historicalSales.length;
-        if (historicalAvg > 0) {
-            price = historicalAvg;
-            priceSource = 'historical_sales';
+        const rawPrices = historicalSales.map(s => parseFloat(s.sale_price) || 0).filter(v => v > 0);
+        if (rawPrices.length >= 3) {
+            const { filtered, outliers, stats } = filterOutliers(rawPrices);
+            outlierPrices = outliers;
+            const effectivePrices = filtered.length >= 2 ? filtered : rawPrices;
+            const historicalAvg = effectivePrices.reduce((s, v) => s + v, 0) / effectivePrices.length;
+            if (historicalAvg > 0) {
+                price = historicalAvg;
+                priceSource = 'historical_sales';
+                dataPoints = effectivePrices.length;
+                confidence = computeConfidence(rawPrices.length, effectivePrices.length, 'historical_sales');
+            }
         }
     }
 
@@ -144,25 +206,38 @@ export function predictPrice(context) {
     // Round to nearest dollar
     price = Math.round(price);
 
-    // Ensure within reasonable bounds
-    price = Math.max(price, basePrice.min);
-    price = Math.min(price, basePrice.max * brandMultiplier);
+    // Enforce validated min/max bounds
+    price = Math.max(price, absoluteMin);
+    price = Math.min(price, absoluteMax);
 
-    return { price, priceSource };
+    const rangeLow  = Math.max(absoluteMin, Math.round(price * 0.75));
+    const rangeHigh = Math.round(price * 1.25);
+
+    return {
+        price,
+        priceSource,
+        confidence,
+        dataPoints,
+        range: { low: rangeLow, high: rangeHigh },
+        outlierPrices
+    };
 }
 
 /**
  * Get price range for an item
  */
 export function getPriceRange(context) {
-    const { price: suggestedPrice, priceSource } = predictPrice(context);
+    const { price: suggestedPrice, priceSource, confidence, dataPoints, range, outlierPrices } = predictPrice(context);
 
     return {
-        low: Math.round(suggestedPrice * 0.75),
+        low: range.low,
         suggested: suggestedPrice,
-        high: Math.round(suggestedPrice * 1.25),
+        high: range.high,
         quickSale: Math.round(suggestedPrice * 0.6),
-        priceSource
+        priceSource,
+        confidence,
+        dataPoints,
+        outlierPrices
     };
 }
 

@@ -24,9 +24,12 @@ const ANALYTICS_CONFIG = {
     dataRetentionDays: 90,
 };
 
-// Event queue for batching
+// Event queue for batching — hard cap enforced in track()
+const EVENT_QUEUE_MAX = 10000;
+const EVENT_QUEUE_EVICT_TO = 5000; // evict down to this size when cap is hit
 let eventQueue = [];
 let flushTimer = null;
+let cleanupTimer = null;
 
 // Analytics service
 const analyticsService = {
@@ -39,6 +42,9 @@ const analyticsService = {
 
         // Start flush timer
         flushTimer = setInterval(() => this.flush(), ANALYTICS_CONFIG.flushInterval);
+
+        // Periodic data retention cleanup (every 24 hours)
+        cleanupTimer = setInterval(() => this.cleanupOldData(), 24 * 60 * 60 * 1000);
 
         logger.info('[Analytics] Initialized');
     },
@@ -64,9 +70,11 @@ const analyticsService = {
             userAgent: request?.headers?.['user-agent'] || null,
         };
 
-        // Cap queue size to prevent unbounded memory growth
-        if (eventQueue.length >= 10000) {
-            eventQueue.splice(0, eventQueue.length - 5000); // Drop oldest half
+        // Cap queue size to prevent unbounded memory growth — evict oldest events
+        if (eventQueue.length >= EVENT_QUEUE_MAX) {
+            const excess = eventQueue.length - EVENT_QUEUE_EVICT_TO;
+            eventQueue.splice(0, excess);
+            logger.warn(`[Analytics] Event queue exceeded ${EVENT_QUEUE_MAX}, evicted ${excess} oldest events`);
         }
 
         eventQueue.push(event);
@@ -159,6 +167,11 @@ const analyticsService = {
     async shutdown() {
         if (flushTimer) {
             clearInterval(flushTimer);
+            flushTimer = null;
+        }
+        if (cleanupTimer) {
+            clearInterval(cleanupTimer);
+            cleanupTimer = null;
         }
         await this.flush();
     },

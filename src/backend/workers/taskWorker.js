@@ -604,6 +604,11 @@ async function checkAutomationSchedules() {
         WHERE is_enabled = 1 AND schedule IS NOT NULL AND schedule != ''
     `);
     for (const rule of rules) {
+        const cronValidation = validateCronExpression(rule.schedule);
+        if (!cronValidation.valid) {
+            logger.warn(`[TaskWorker] Skipping automation ${rule.id} — invalid cron expression: ${cronValidation.reason}`, { schedule: rule.schedule });
+            continue;
+        }
         const nextRun = calculateNextRunFromCron(rule.schedule, rule.last_run_at);
         if (nextRun && nextRun <= new Date()) {
             const existing = await query.get(`
@@ -620,8 +625,75 @@ async function checkAutomationSchedules() {
     }
 }
 
+// Cron field valid ranges: [min, max]
+const CRON_FIELD_RANGES = [
+    { name: 'minute',     min: 0,  max: 59 },
+    { name: 'hour',       min: 0,  max: 23 },
+    { name: 'dayOfMonth', min: 1,  max: 31 },
+    { name: 'month',      min: 1,  max: 12 },
+    { name: 'dayOfWeek',  min: 0,  max: 6  },
+];
+
+/**
+ * Validate a 5-field cron expression.
+ * Returns { valid: true } or { valid: false, reason: string }.
+ */
+export function validateCronExpression(cronExpr) {
+    if (!cronExpr || typeof cronExpr !== 'string') {
+        return { valid: false, reason: 'Cron expression must be a non-empty string' };
+    }
+    const parts = cronExpr.trim().split(/\s+/);
+    if (parts.length !== 5) {
+        return { valid: false, reason: `Cron expression must have exactly 5 fields, got ${parts.length}` };
+    }
+    for (let i = 0; i < 5; i++) {
+        const field = parts[i];
+        const { name, min, max } = CRON_FIELD_RANGES[i];
+        if (field === '*') continue;
+        for (const part of field.split(',')) {
+            let rangeStr = part;
+            if (part.includes('/')) {
+                const segments = part.split('/');
+                if (segments.length !== 2) {
+                    return { valid: false, reason: `Invalid step in ${name} field: "${part}"` };
+                }
+                const step = parseInt(segments[1], 10);
+                if (isNaN(step) || step < 1 || step > (max - min)) {
+                    return { valid: false, reason: `Invalid step value in ${name} field: "${segments[1]}"` };
+                }
+                rangeStr = segments[0];
+            }
+            if (rangeStr === '*') continue;
+            if (rangeStr.includes('-')) {
+                const bounds = rangeStr.split('-');
+                if (bounds.length !== 2) {
+                    return { valid: false, reason: `Invalid range in ${name} field: "${rangeStr}"` };
+                }
+                const lo = parseInt(bounds[0], 10);
+                const hi = parseInt(bounds[1], 10);
+                if (isNaN(lo) || isNaN(hi)) {
+                    return { valid: false, reason: `Non-numeric range in ${name} field: "${rangeStr}"` };
+                }
+                if (lo < min || hi > max || lo > hi) {
+                    return { valid: false, reason: `${name} range ${lo}-${hi} out of valid bounds ${min}-${max}` };
+                }
+            } else {
+                const val = parseInt(rangeStr, 10);
+                if (isNaN(val)) {
+                    return { valid: false, reason: `Non-numeric value in ${name} field: "${rangeStr}"` };
+                }
+                if (val < min || val > max) {
+                    return { valid: false, reason: `${name} value ${val} out of valid range ${min}-${max}` };
+                }
+            }
+        }
+    }
+    return { valid: true };
+}
+
 // FIXED 2026-02-24: Full 5-field cron parser (was minute/hour only)
 function parseCronField(field, min, max) {
+    // Set size is bounded by (max - min + 1) which is at most 60 for minutes
     const values = new Set();
     for (const part of field.split(',')) {
         let rangeStr = part, step = 1;

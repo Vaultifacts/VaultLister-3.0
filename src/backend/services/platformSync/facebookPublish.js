@@ -87,7 +87,16 @@ export async function publishListingToFacebook(shop, listing, inventory) {
 
     logger.info('[Facebook Publish] Launching browser');
 
-    const browser = await chromium.launch({ headless: true, slowMo: 80 });
+    let browser;
+    try {
+        browser = await chromium.launch({ headless: true, slowMo: 80 });
+    } catch (launchErr) {
+        throw new Error(`[Facebook Publish] Browser launch failed: ${launchErr.message}`);
+    }
+    if (!browser) {
+        throw new Error('[Facebook Publish] Browser launch returned null — Playwright may not be installed');
+    }
+
     let tempFiles = [];
 
     try {
@@ -96,8 +105,10 @@ export async function publishListingToFacebook(shop, listing, inventory) {
             viewport: { width: 1366, height: 768 },
             locale: 'en-US'
         });
+        if (!context) throw new Error('[Facebook Publish] Browser context creation returned null');
 
         const page = await context.newPage();
+        if (!page) throw new Error('[Facebook Publish] Page creation returned null');
 
         // Step 1: Login
         logger.info('[Facebook Publish] Logging in', { email });
