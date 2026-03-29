@@ -2075,16 +2075,6 @@ Object.assign(handlers, {
         renderApp(pages.imageBank());
     },
 
-    toggleImageSelection: function(imageId) {
-        const selected = store.state.selectedImages || [];
-        if (selected.includes(imageId)) {
-            store.setState({ selectedImages: selected.filter(id => id !== imageId) });
-        } else {
-            store.setState({ selectedImages: [...selected, imageId] });
-        }
-        renderApp(pages.imageBank());
-    },
-
     selectAllImages: function() {
         const images = store.state.imageBankImages || [];
         store.setState({ selectedImages: images.map(i => i.id) });
@@ -2221,30 +2211,6 @@ Object.assign(handlers, {
 
     addCalendarEvent: function(date) {
         modals.addCalendarEvent(date);
-    },
-
-    saveCalendarEvent: function(e, defaultDate) {
-        e.preventDefault();
-        const form = e.target;
-        const events = store.state.calendarEvents || [];
-        const recurrence = form.recurrence?.value || 'none';
-        const recurrenceEnd = form.recurrenceEnd?.value || null;
-        const newEvent = {
-            id: Date.now().toString(),
-            date: form.date ? form.date.value : defaultDate,
-            title: form.title.value,
-            time: form.time.value,
-            type: form.type.value,
-            notes: form.notes ? form.notes.value : '',
-            recurrence: recurrence,
-            recurrenceEnd: recurrenceEnd,
-            depends_on: form.depends_on ? form.depends_on.value || null : null
-        };
-        store.setState({ calendarEvents: [...events, newEvent] });
-        modals.close();
-        const recurrenceLabel = recurrence !== 'none' ? ` (repeats ${recurrence})` : '';
-        toast.success('Event added' + recurrenceLabel);
-        renderApp(pages.calendar());
     },
 
     // Whatnot Live scheduling from Calendar,
@@ -2700,7 +2666,8 @@ Object.assign(handlers, {
                 </div>
             `);
         } catch (err) {
-            document.getElementById('size-recommendation-result').innerHTML = sanitizeHTML('<p style="color: var(--text-error);">Failed to get recommendation</p>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            const sizeResultEl = document.getElementById('size-recommendation-result');
+            if (sizeResultEl) sizeResultEl.innerHTML = sanitizeHTML('<p style="color: var(--text-error);">Failed to get recommendation</p>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             console.error(err);
         }
     },
@@ -3768,7 +3735,8 @@ Object.assign(handlers, {
                             return;
                         }
                         if (file) {
-                            document.getElementById('receipt-file-name').textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+                            const nameEl = document.getElementById('receipt-file-name');
+                            if (nameEl) nameEl.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
                         }
                     ">
                     <p id="receipt-file-name" style="font-size: 12px; color: var(--gray-500); margin-top: 4px;"></p>
@@ -4118,40 +4086,6 @@ Object.assign(handlers, {
         `);
     },
 
-    // What-If Scenario handler,
-
-    runWhatIfScenario: function() {
-        const priceChange = parseInt(document.getElementById('whatif-price-change')?.value || 0);
-        const category = document.getElementById('whatif-category')?.value || 'all';
-        const period = parseInt(document.getElementById('whatif-period')?.value || 30);
-
-        store.setState({ whatIfPriceChange: priceChange });
-
-        toast.info('Running scenario analysis...');
-        setTimeout(() => {
-            const baseRevenue = store.state.sales?.reduce((sum, s) => sum + (s.sale_price || 0), 0) || 2500;
-            const baseSales = store.state.sales?.length || 25;
-            const revenueMultiplier = 1 + (priceChange / 100);
-            const demandImpact = priceChange > 0 ? 1 - (priceChange / 200) : 1 + (Math.abs(priceChange) / 150);
-            const projectedSales = Math.round(baseSales * demandImpact * (period / 30));
-            const projectedRevenue = Math.round(baseRevenue * revenueMultiplier * demandImpact * (period / 30));
-            const baseDays = 12;
-            const daysToSell = Math.max(1, Math.round(baseDays * (priceChange > 0 ? 1 + priceChange / 50 : 1 - Math.abs(priceChange) / 80)));
-            const profitImpact = Math.round((revenueMultiplier * demandImpact - 1) * 100);
-
-            store.setState({
-                whatIfResults: {
-                    revenue: projectedRevenue.toLocaleString(),
-                    sales: projectedSales,
-                    daysToSell: daysToSell,
-                    profitImpact: profitImpact
-                }
-            });
-            toast.success('Scenario analysis complete');
-            renderApp(pages.predictions());
-        }, 800);
-    },
-
     // Prediction Details modal (enhanced),
 
     showPredictionDetails: function(id) {
@@ -4394,7 +4328,8 @@ Object.assign(handlers, {
     },
 
     setStarRating: function(rating) {
-        document.getElementById('rating-input').value = rating;
+        const ratingInput = document.getElementById('rating-input');
+        if (ratingInput) ratingInput.value = rating;
         document.querySelectorAll('#star-rating span').forEach(star => {
             star.style.color = parseInt(star.dataset.star) <= rating ? 'var(--warning)' : 'var(--gray-300)';
         });
@@ -4484,30 +4419,6 @@ Object.assign(handlers, {
             const pageContent = pages.suppliers();
             document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
-    },
-
-    // Feature 3: Delete supplier with confirmation,
-
-    deleteSupplier: function(id) {
-        const supplier = store.state.suppliers?.find(s => s.id === id);
-        if (!supplier) return;
-
-        const linkedItems = (store.state.inventory || []).filter(item => item.supplier_id === id).length;
-
-        modals.show('Delete Supplier', `
-            <div style="padding: 16px;">
-                <p style="color: var(--gray-700); margin-bottom: 16px;">
-                    Delete <strong>${escapeHtml(supplier.name)}</strong>? This supplier has <strong>${linkedItems} items</strong> linked.
-                </p>
-                <div style="padding: 12px; background: var(--warning-light); border-left: 3px solid var(--warning); border-radius: 4px; margin-bottom: 16px;">
-                    <span style="color: var(--gray-700); font-size: 12px;">This action cannot be undone.</span>
-                </div>
-                <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                    <button class="btn btn-error" onclick="handlers.confirmDeleteSupplier('${id}')">Delete Supplier</button>
-                </div>
-            </div>
-        `);
     },
 
     confirmDeleteSupplier: function(id) {
@@ -4624,8 +4535,10 @@ Object.assign(handlers, {
                 </div>
             `;
 
-            document.getElementById('csv-preview').innerHTML = sanitizeHTML(preview);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            document.getElementById('import-suppliers-btn').style.display = 'block';
+            const csvPreviewEl = document.getElementById('csv-preview');
+            if (csvPreviewEl) csvPreviewEl.innerHTML = sanitizeHTML(preview);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            const importBtn = document.getElementById('import-suppliers-btn');
+            if (importBtn) importBtn.style.display = 'block';
         };
         reader.readAsText(file);
     },
@@ -6048,64 +5961,7 @@ Object.assign(handlers, {
         `);
     },
 
-    handleImportFile: function(file) {
-        if (!file) return;
-        modals.close();
-        const ext = file.name.split('.').pop().toLowerCase();
-        if (!['csv', 'json', 'tsv'].includes(ext)) {
-            toast.error('Unsupported file format. Use CSV, JSON, or TSV.');
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                if (ext === 'json') {
-                    const data = JSON.parse(e.target.result);
-                    const items = Array.isArray(data) ? data : (data.inventory || data.items || [data]);
-                    store.setState({ importedData: items, importFileName: file.name });
-                    toast.success(`Loaded ${items.length} item(s) from ${file.name}`);
-                } else {
-                    const lines = e.target.result.split('\n').filter(l => l.trim());
-                    if (lines.length === 0) {
-                        toast.error('File is empty');
-                        return;
-                    }
-                    const separator = ext === 'tsv' ? '\t' : ',';
-                    const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
-                    const items = lines.slice(1).map(line => {
-                        const values = line.split(separator).map(v => v.trim().replace(/^"|"$/g, ''));
-                        const obj = {};
-                        headers.forEach((h, i) => { obj[h] = values[i] || ''; });
-                        return obj;
-                    });
-                    store.setState({ importedData: items, importFileName: file.name });
-                    toast.success(`Parsed ${items.length} item(s) from ${file.name}`);
-                }
-                router.navigate('inventory');
-            } catch (err) {
-                toast.error('Failed to parse file: ' + err.message);
-            }
-        };
-        reader.readAsText(file);
-    },
-
     // Help & Support handlers,
-
-    searchHelp: function(query) {
-        store.setState({ helpSearchQuery: query });
-        const q = (query || '').toLowerCase().trim();
-        if (!q) {
-            store.setState({ helpSearchResults: null });
-            renderApp();
-            return;
-        }
-        const faqs = store.state.faqs || [];
-        const articles = store.state.articles || [];
-        const matchedFaqs = faqs.filter(f => (f.question || '').toLowerCase().includes(q) || (f.answer || '').toLowerCase().includes(q)).slice(0, 5);
-        const matchedArticles = articles.filter(a => (a.title || '').toLowerCase().includes(q) || (a.content || '').toLowerCase().includes(q)).slice(0, 5);
-        store.setState({ helpSearchResults: { faqs: matchedFaqs, articles: matchedArticles } });
-        renderApp();
-    },
 
     submitFeatureRequest: function() {
         modals.show(`
@@ -7392,8 +7248,10 @@ Object.assign(handlers, {
         store.setState({ activeFilters });
 
         // Clear input fields
-        document.getElementById('filter-column').value = '';
-        document.getElementById('filter-value').value = '';
+        const filterColEl = document.getElementById('filter-column');
+        const filterValEl = document.getElementById('filter-value');
+        if (filterColEl) filterColEl.value = '';
+        if (filterValEl) filterValEl.value = '';
 
         // Apply all filters
         await handlers.applyFilters();
@@ -7930,7 +7788,7 @@ Object.assign(handlers, {
     },
 
     viewListing: function(listingId) {
-        const listing = store.state.listings.find(l => l.id === listingId);
+        const listing = (store.state.listings || []).find(l => l.id === listingId);
         if (!listing) {
             toast.error('Listing not found');
             return;
@@ -7994,7 +7852,7 @@ Object.assign(handlers, {
     },
 
     editListing: function(listingId) {
-        const listing = store.state.listings.find(l => l.id === listingId);
+        const listing = (store.state.listings || []).find(l => l.id === listingId);
         if (!listing) {
             toast.error('Listing not found');
             return;
@@ -8098,7 +7956,7 @@ Object.assign(handlers, {
     },
 
     archiveListing: async function(listingId) {
-        const listing = store.state.listings.find(l => l.id === listingId);
+        const listing = (store.state.listings || []).find(l => l.id === listingId);
         if (!listing) {
             toast.error('Listing not found');
             return;
@@ -8124,7 +7982,7 @@ Object.assign(handlers, {
     },
 
     unarchiveListing: async function(listingId) {
-        const listing = store.state.listings.find(l => l.id === listingId);
+        const listing = (store.state.listings || []).find(l => l.id === listingId);
         if (!listing) {
             toast.error('Listing not found');
             return;
@@ -8146,7 +8004,7 @@ Object.assign(handlers, {
     },
 
     deleteListing: async function(listingId) {
-        const listing = store.state.listings.find(l => l.id === listingId);
+        const listing = (store.state.listings || []).find(l => l.id === listingId);
         if (!listing) {
             toast.error('Listing not found');
             return;
@@ -8175,7 +8033,7 @@ Object.assign(handlers, {
     // Price Drop Scheduler,
 
     showPriceDropScheduler: function(listingId) {
-        const listing = store.state.listings.find(l => l.id === listingId);
+        const listing = (store.state.listings || []).find(l => l.id === listingId);
         if (!listing) {
             toast.error('Listing not found');
             return;
@@ -8317,16 +8175,19 @@ Object.assign(handlers, {
     },
 
     setPriceDropPreset: function(listingId, percent) {
-        const listing = store.state.listings.find(l => l.id === listingId);
+        const listing = (store.state.listings || []).find(l => l.id === listingId);
         if (!listing) return;
 
         const currentPrice = listing.price || 0;
         const dropAmount = (currentPrice * percent) / 100;
         const newPrice = currentPrice - dropAmount;
 
-        document.getElementById('price-drop-amount').value = dropAmount.toFixed(2);
-        document.getElementById('price-drop-percent').value = percent;
-        document.querySelector('#new-price-preview .new-price').textContent = '$' + newPrice.toFixed(2);
+        const dropAmountEl = document.getElementById('price-drop-amount');
+        const dropPercentEl = document.getElementById('price-drop-percent');
+        const newPricePreview = document.querySelector('#new-price-preview .new-price');
+        if (dropAmountEl) dropAmountEl.value = dropAmount.toFixed(2);
+        if (dropPercentEl) dropPercentEl.value = percent;
+        if (newPricePreview) newPricePreview.textContent = '$' + newPrice.toFixed(2);
 
         // Highlight selected preset
         document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('selected'));
@@ -8334,8 +8195,8 @@ Object.assign(handlers, {
     },
 
     savePriceDropSchedule: async function(listingId, currentPrice) {
-        const dropAmount = parseFloat(document.getElementById('price-drop-amount').value) || 0;
-        const timing = document.getElementById('price-drop-timing').value;
+        const dropAmount = parseFloat(document.getElementById('price-drop-amount')?.value) || 0;
+        const timing = document.getElementById('price-drop-timing')?.value;
         const customDate = document.getElementById('price-drop-date')?.value;
         const recurring = document.getElementById('price-drop-recurring')?.checked || false;
         const floorPrice = parseFloat(document.getElementById('price-drop-floor').value) || 0;
@@ -9150,14 +9011,16 @@ Object.assign(handlers, {
         }
 
         // Store selected type
-        document.getElementById('followup-message').dataset.type = typeId;
+        const followupMsg = document.getElementById('followup-message');
+        if (followupMsg) followupMsg.dataset.type = typeId;
     },
 
     setFollowUpDate: function(daysFromNow) {
         const date = new Date();
         date.setDate(date.getDate() + daysFromNow);
         date.setHours(10, 0, 0, 0); // Set to 10 AM
-        document.getElementById('followup-date').value = date.toISOString().slice(0, 16);
+        const followupDateEl = document.getElementById('followup-date');
+        if (followupDateEl) followupDateEl.value = date.toISOString().slice(0, 16);
 
         // Highlight preset button
         document.querySelectorAll('.preset-date-btn').forEach(btn => btn.classList.remove('active'));
@@ -10823,9 +10686,12 @@ Object.assign(handlers, {
     },
 
     toggleBulkPriceMethod: function(method) {
-        document.getElementById('bulk-percentage-section').style.display = method === 'percentage' ? 'block' : 'none';
-        document.getElementById('bulk-fixed-section').style.display = method === 'fixed' ? 'block' : 'none';
-        document.getElementById('bulk-roundup-section').style.display = method === 'roundup' ? 'block' : 'none';
+        const bulkPctSection = document.getElementById('bulk-percentage-section');
+        const bulkFixedSection = document.getElementById('bulk-fixed-section');
+        const bulkRoundupSection = document.getElementById('bulk-roundup-section');
+        if (bulkPctSection) bulkPctSection.style.display = method === 'percentage' ? 'block' : 'none';
+        if (bulkFixedSection) bulkFixedSection.style.display = method === 'fixed' ? 'block' : 'none';
+        if (bulkRoundupSection) bulkRoundupSection.style.display = method === 'roundup' ? 'block' : 'none';
     },
 
     previewBulkPriceUpdate: function() {
@@ -15059,8 +14925,8 @@ Object.assign(handlers, {
     },
 
     loadCustomAnalytics: async function() {
-        const startDate = document.getElementById('analytics-start-date').value;
-        const endDate = document.getElementById('analytics-end-date').value;
+        const startDate = document.getElementById('analytics-start-date')?.value;
+        const endDate = document.getElementById('analytics-end-date')?.value;
 
         if (!startDate || !endDate) {
             return toast.warning('Please select both start and end dates');
@@ -15278,8 +15144,8 @@ Object.assign(handlers, {
     },
 
     filterAnalyticsSales: async function() {
-        const start = document.getElementById('analytics-sales-start').value;
-        const end = document.getElementById('analytics-sales-end').value;
+        const start = document.getElementById('analytics-sales-start')?.value;
+        const end = document.getElementById('analytics-sales-end')?.value;
         store.setState({ salesDateStart: start, salesDateEnd: end });
 
         // Reload sales with date filter
@@ -16784,9 +16650,12 @@ Object.assign(handlers, {
             }
 
             // Clear fields after successful change
-            document.getElementById('account-current-password').value = '';
-            document.getElementById('account-new-password').value = '';
-            document.getElementById('account-confirm-password').value = '';
+            const curPwEl = document.getElementById('account-current-password');
+            const newPwEl = document.getElementById('account-new-password');
+            const confirmPwEl = document.getElementById('account-confirm-password');
+            if (curPwEl) curPwEl.value = '';
+            if (newPwEl) newPwEl.value = '';
+            if (confirmPwEl) confirmPwEl.value = '';
             toast.success('Password updated successfully');
         } catch (err) {
             toast.error(err.message || 'Failed to change password');
@@ -18612,95 +18481,6 @@ Object.assign(handlers, {
         }
     },
 
-    submitAdvancedCrosslist: async function(event, itemIds) {
-        event.preventDefault();
-
-        const form = event.target;
-        const formData = new FormData(form);
-
-        // Get selected platforms
-        const platforms = formData.getAll('platforms');
-        if (platforms.length === 0) {
-            return toast.warning('Please select at least one platform');
-        }
-
-        // Collect platform-specific data
-        const platformData = {};
-        platforms.forEach(platform => {
-            platformData[platform] = {
-                title: formData.get(`${platform}_title`),
-                price: parseFloat(formData.get(`${platform}_price`)) || 0,
-                description: formData.get(`${platform}_description`),
-                // Platform-specific fields
-                ...(platform === 'poshmark' && {
-                    category: formData.get(`${platform}_category`),
-                    size: formData.get(`${platform}_size`),
-                    original_price: formData.get(`${platform}_original_price`)
-                }),
-                ...(platform === 'ebay' && {
-                    listing_type: formData.get(`${platform}_listing_type`),
-                    condition: formData.get(`${platform}_condition`),
-                    duration: formData.get(`${platform}_duration`)
-                }),
-                ...(platform === 'whatnot' && {
-                    shipping: formData.get(`${platform}_shipping`),
-                    smart_pricing: formData.get(`${platform}_smart_pricing`) === 'on'
-                }),
-                ...(platform === 'depop' && {
-                    tags: formData.get(`${platform}_tags`),
-                    brand: formData.get(`${platform}_brand`)
-                }),
-                ...(platform === 'shopify' && {
-                    category: formData.get(`${platform}_category`),
-                    designer: formData.get(`${platform}_designer`)
-                }),
-                ...(platform === 'facebook' && {
-                    location: formData.get(`${platform}_location`),
-                    availability: formData.get(`${platform}_availability`)
-                })
-            };
-        });
-
-        try {
-            // Show loading
-            toast.info(`Cross-listing to ${platforms.length} platform(s)...`);
-
-            // In a real implementation, this would call the backend API
-            // For now, we'll simulate creating listings
-            const itemIdArray = itemIds.split(',');
-
-            for (const itemId of itemIdArray) {
-                for (const platform of platforms) {
-                    const data = platformData[platform];
-                    const newListing = {
-                        id: `lst-${Date.now()}-${platform}`,
-                        inventory_id: itemId,
-                        platform: platform,
-                        title: data.title,
-                        price: data.price,
-                        description: data.description,
-                        status: 'active',
-                        listed_at: new Date().toISOString(),
-                        views: 0,
-                        likes: 0
-                    };
-
-                    // Add to state
-                    const currentListings = store.state.listings || [];
-                    store.setState({ listings: [...currentListings, newListing] });
-                }
-            }
-
-            modals.close();
-            toast.success(`Successfully cross-listed ${itemIdArray.length} item(s) to ${platforms.length} platform(s)!`);
-
-            // Refresh the page
-            renderApp(pages.crosslist());
-        } catch (error) {
-            toast.error('Failed to cross-list: ' + error.message);
-        }
-    },
-
     previewListingImages: function(input, platform) {
         const container = document.getElementById(`${platform}-selected-images`);
         const progressContainer = document.getElementById(`${platform}-image-progress`);
@@ -20447,7 +20227,7 @@ Object.assign(handlers, {
 
     // Load receipt queue,
 
-    uploadReceipt: async function(files) {
+    uploadReceiptPhoto: async function(files) {
         if (!files || files.length === 0) return;
 
         store.setState({ receiptParsing: true, receiptUploadProgress: 0 });
@@ -20514,14 +20294,14 @@ Object.assign(handlers, {
         event.currentTarget.classList.remove('dragover');
 
         const files = Array.from(event.dataTransfer.files);
-        handlers.uploadReceipt(files);
+        handlers.uploadReceiptPhoto(files);
     },
 
     // Handle receipt file input,
 
     handleReceiptFileSelect: function(event) {
         const files = Array.from(event.target.files);
-        handlers.uploadReceipt(files);
+        handlers.uploadReceiptPhoto(files);
         event.target.value = ''; // Reset input
     },
 
@@ -20731,74 +20511,6 @@ Object.assign(handlers, {
     // Batch Photo Processing Handlers
     // ==========================================
 
-    // Load batch photo jobs,
-
-    loadBatchPhotoJobs: async function() {
-        try {
-            const result = await api.get('/batch-photo/jobs');
-            store.setState({ batchPhotoJobs: result.jobs || [] });
-        } catch (error) {
-            console.error('Failed to load batch jobs:', error);
-            toast.error('Failed to load batch photo jobs');
-        }
-    },
-
-    // Load batch photo presets,
-
-    loadBatchPhotoPresets: async function() {
-        try {
-            const result = await api.get('/batch-photo/presets');
-            store.setState({ batchPhotoPresets: result.presets || [] });
-        } catch (error) {
-            console.error('Failed to load batch presets:', error);
-            toast.error('Failed to load batch photo presets');
-        }
-    },
-
-    // Open batch photo modal,
-
-    openBatchPhotoModal: async function() {
-        const selectedImages = store.state.selectedImages || [];
-        if (selectedImages.length === 0) {
-            toast.warning('Please select images first');
-            return;
-        }
-        if (selectedImages.length > 50) {
-            toast.warning('Maximum 50 images per batch');
-            return;
-        }
-
-        // Reset transformations
-        store.setState({
-            batchPhotoModalOpen: true,
-            batchPhotoTransformations: {
-                removeBackground: false,
-                enhance: false,
-                upscale: false,
-                cropWidth: null,
-                cropHeight: null,
-                cropPreset: null
-            },
-            batchPhotoProgress: null
-        });
-
-        // Load presets before showing modal
-        await handlers.loadBatchPhotoPresets();
-        modals.batchPhoto();
-    },
-
-    // Close batch photo modal,
-
-    closeBatchPhotoModal: function() {
-        store.setState({
-            batchPhotoModalOpen: false,
-            batchPhotoProgress: null,
-            batchPhotoTransformations: {},
-            selectedImages: []
-        });
-        modals.close();
-    },
-
     // Set batch photo transformation,
 
     setBatchPhotoTransformation: function(key, value) {
@@ -20902,100 +20614,6 @@ Object.assign(handlers, {
         } catch (error) {
             toast.error('Failed to start batch job: ' + error.message);
             store.setState({ batchPhotoProgress: null });
-        }
-    },
-
-    // Poll for batch photo progress,
-
-    pollBatchPhotoProgress: function(jobId) {
-        if (this._batchPhotoPollInterval) {
-            clearInterval(this._batchPhotoPollInterval);
-        }
-        const pollInterval = this._batchPhotoPollInterval = setInterval(async () => {
-            try {
-                const result = await api.get(`/batch-photo/jobs/${jobId}`);
-                const job = result.job;
-
-                store.setState({
-                    batchPhotoProgress: {
-                        jobId: job.id,
-                        total: job.total_images,
-                        processed: job.processed_images,
-                        failed: job.failed_images,
-                        status: job.status
-                    }
-                });
-
-                // Re-render modal to show progress
-                if (store.state.batchPhotoModalOpen) {
-                    modals.batchPhoto();
-                }
-
-                // Stop polling if job is done
-                if (job.status === 'completed' || job.status === 'failed' || job.status === 'cancelled') {
-                    clearInterval(pollInterval);
-
-                    if (job.status === 'completed') {
-                        const successCount = job.processed_images - job.failed_images;
-                        toast.success(`Batch complete: ${successCount} images processed`);
-                    } else if (job.status === 'failed') {
-                        toast.error('Batch job failed');
-                    } else if (job.status === 'cancelled') {
-                        toast.info('Batch job cancelled');
-                    }
-
-                    // Clear selection and reload image bank
-                    store.setState({ selectedImages: [] });
-                    await handlers.loadImageBank();
-                }
-            } catch (error) {
-                console.error('Poll error:', error);
-                clearInterval(pollInterval);
-            }
-        }, 2000); // Poll every 2 seconds
-    },
-
-    // Cancel batch photo job,
-
-    cancelBatchPhotoJob: async function(jobId) {
-        try {
-            await api.ensureCSRFToken();
-            await api.post(`/batch-photo/jobs/${jobId}/cancel`);
-            toast.info('Job cancelled');
-        } catch (error) {
-            toast.error('Failed to cancel job: ' + error.message);
-        }
-    },
-
-    // Save batch photo preset,
-
-    saveBatchPhotoPreset: async function() {
-        const name = await modals.prompt('Enter a name for this preset:', { title: 'Save Preset', placeholder: 'Preset name' });
-        if (!name) return;
-
-        const transformations = store.state.batchPhotoTransformations;
-
-        try {
-            await api.ensureCSRFToken();
-            await api.post('/batch-photo/presets', {
-                name,
-                transformations: {
-                    removeBackground: transformations.removeBackground,
-                    enhance: transformations.enhance,
-                    upscale: transformations.upscale,
-                    cropWidth: transformations.cropWidth,
-                    cropHeight: transformations.cropHeight
-                }
-            });
-            toast.success('Preset saved');
-            await handlers.loadBatchPhotoPresets();
-
-            // Re-render modal
-            if (store.state.batchPhotoModalOpen) {
-                modals.batchPhoto();
-            }
-        } catch (error) {
-            toast.error('Failed to save preset: ' + error.message);
         }
     },
 
@@ -23939,7 +23557,7 @@ Object.assign(handlers, {
     // Mark listing as sold,
 
     markAsSold: async function(listingId) {
-        const listing = store.state.listings.find(l => l.id === listingId);
+        const listing = (store.state.listings || []).find(l => l.id === listingId);
         if (!listing) {
             toast.error('Listing not found');
             return;

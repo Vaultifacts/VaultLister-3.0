@@ -225,14 +225,14 @@ const pages = {
 
         // Calculate today's stats
         const today = toLocalDate(new Date());
-        const todaySales = store.state.sales.filter(s => s.sold_at?.startsWith(today));
+        const todaySales = (store.state.sales || []).filter(s => s.sold_at?.startsWith(today));
         const todayRevenue = todaySales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
-        const todayListings = store.state.listings.filter(l => l.listed_at?.startsWith(today)).length;
+        const todayListings = (store.state.listings || []).filter(l => l.listed_at?.startsWith(today)).length;
         const pendingOrders = (store.state.orders || []).filter(o => o.status === 'pending').length;
 
         // Calculate platform breakdown
         const platformStats = {};
-        store.state.sales.forEach(s => {
+        (store.state.sales || []).forEach(s => {
             const platform = s.platform || 'other';
             if (!platformStats[platform]) {
                 platformStats[platform] = { sales: 0, revenue: 0 };
@@ -1414,7 +1414,7 @@ const pages = {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${store.state.sales.map(s => `
+                                ${(store.state.sales || []).map(s => `
                                     <tr>
                                         <td>${new Date(s.created_at).toLocaleDateString()}</td>
                                         <td class="font-medium">${escapeHtml(s.listing_title || s.inventory_title || 'N/A')}</td>
@@ -3057,7 +3057,7 @@ const pages = {
                                     </thead>
                                     <tbody>
                                         ${topItems.map((item, index) => {
-                                            const inventoryItem = store.state.inventory.find(i => i.id === item.inventoryId);
+                                            const inventoryItem = (store.state.inventory || []).find(i => i.id === item.inventoryId);
                                             const itemTitle = inventoryItem ? inventoryItem.title : 'Unknown Item';
                                             const avgSalePrice = item.totalRevenue / item.salesCount;
 
