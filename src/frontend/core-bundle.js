@@ -5262,9 +5262,6 @@ const toastQueue = {
         const toast = document.createElement('div');
         toast.className = `toast-notification ${type}`;
         toast.dataset.id = id;
-        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
-        toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
-        toast.setAttribute('aria-atomic', 'true');
 
         const iconMap = {
             success: 'check',
@@ -5288,8 +5285,8 @@ const toastQueue = {
                     </div>
                 ` : ''}
             </div>
-            ${dismissible ? '<button class="toast-close" aria-label="Dismiss notification">×</button>' : ''}
-            ${duration > 0 ? `<div class="toast-progress" role="progressbar" aria-label="Auto-dismiss timer" aria-valuemin="0" aria-valuemax="100" style="animation-duration: ${duration}ms"></div>` : ''}
+            ${dismissible ? '<div class="toast-close">×</div>' : ''}
+            ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
         `);
 
         this.container.appendChild(toast);
@@ -7830,11 +7827,7 @@ const store = {
         inventory: [],
         listings: [],
         sales: [],
-        offers: [
-            { id: 'demo-offer-1', status: 'pending', amount: 45.00, offer_amount: 45.00, listing_price: 60.00, listing_id: 'demo-item-1', listing_title: 'Vintage Levi 501 Jeans', buyer_name: 'sarah_styles', buyer_username: 'sarah_styles', platform: 'poshmark', expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(), created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
-            { id: 'demo-offer-2', status: 'pending', amount: 120.00, offer_amount: 120.00, listing_price: 175.00, listing_id: 'demo-item-2', listing_title: 'Nike Air Jordan 1 Retro High', buyer_name: 'sneaker_king', buyer_username: 'sneaker_king', platform: 'ebay', expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
-            { id: 'demo-offer-3', status: 'countered', amount: 30.00, offer_amount: 30.00, listing_price: 55.00, listing_id: 'demo-item-3', listing_title: 'Coach Signature Crossbody Bag', buyer_name: 'bag_collector', buyer_username: 'bag_collector', platform: 'mercari', expires_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
-        ],
+        offers: [],
         orders: [],
         comparisonPeriod: 'week',
         shops: [],
@@ -7879,46 +7872,12 @@ const store = {
 
         // Community state
         communityTab: 'discussion',  // 'discussion', 'success', 'tips', 'leaderboard'
-        communityPosts: [
-            { id: 'post-1', type: 'discussion', author: 'ResellerPro', avatar: 'R', title: 'Best time to share on Poshmark?', content: 'I\'ve been experimenting with different sharing times. Has anyone found the optimal time to share for maximum visibility?', likes: 24, comments: 12, created_at: '2026-01-27T14:00:00Z' },
-            { id: 'post-2', type: 'success', author: 'VintageQueen', avatar: 'V', title: 'Hit $10K in January!', content: 'So excited to share that I just crossed $10K in sales this month! My best month ever. Consistency is key!', likes: 156, comments: 34, created_at: '2026-01-26T10:30:00Z' },
-            { id: 'post-3', type: 'tip', author: 'ThriftMaster', avatar: 'T', title: 'Photography tip for beginners', content: 'Use natural light and a clean white background. I use a $20 poster board and it makes a huge difference in my photos!', likes: 89, comments: 15, created_at: '2026-01-25T16:00:00Z' },
-            { id: 'post-4', type: 'discussion', author: 'NewSeller2026', avatar: 'N', title: 'Cross-listing strategy question', content: 'Do you list on all platforms at once, or stagger your listings? What works best for you?', likes: 18, comments: 22, created_at: '2026-01-24T11:00:00Z' },
-            { id: 'post-5', type: 'success', author: 'SneakerFlip', avatar: 'S', title: 'Sold my first $500+ item!', content: 'Finally sold a pair of rare Jordans for $520! The patience paid off. Never drop your prices too quickly!', likes: 203, comments: 45, created_at: '2026-01-23T09:15:00Z' },
-            { id: 'post-6', type: 'tip', author: 'BundleQueen', avatar: 'B', title: 'How I increased my bundle rate', content: 'I started messaging buyers who like 2+ items with a personalized bundle offer. My bundle conversion went up 40%!', likes: 112, comments: 28, created_at: '2026-01-22T14:30:00Z' }
-        ],
-        leaderboard: [
-            { rank: 1, username: 'VintageQueen', avatar: 'V', sales: 156, revenue: 12450, badge: 'gold' },
-            { rank: 2, username: 'SneakerFlip', avatar: 'S', sales: 98, revenue: 9870, badge: 'gold' },
-            { rank: 3, username: 'ThriftMaster', avatar: 'T', sales: 87, revenue: 6540, badge: 'silver' },
-            { rank: 4, username: 'ResellerPro', avatar: 'R', sales: 76, revenue: 5890, badge: 'silver' },
-            { rank: 5, username: 'BundleQueen', avatar: 'B', sales: 65, revenue: 4320, badge: 'bronze' },
-            { rank: 6, username: 'DesignerDeals', avatar: 'D', sales: 54, revenue: 8900, badge: 'bronze' },
-            { rank: 7, username: 'Y2KCollector', avatar: 'Y', sales: 48, revenue: 2890, badge: 'bronze' },
-            { rank: 8, username: 'NewSeller2026', avatar: 'N', sales: 12, revenue: 890, badge: null }
-        ],
+        communityPosts: [],
+        leaderboard: [],
 
         // Help & Support state
-        helpFAQs: [
-            { id: 'faq-1', question: 'How do I add items to my inventory?', answer: 'Navigate to the Inventory page and click "Add Item". Fill out the item details including title, description, price, and photos. You can also use the AI Listing Generator to automatically generate descriptions from your photos.', category: 'inventory', helpful_count: 45 },
-            { id: 'faq-2', question: 'How does cross-listing work?', answer: 'Cross-listing allows you to list the same item on multiple marketplaces at once. Go to the Cross-List page, select the item you want to list, choose your target platforms, and click "Cross-List". VaultLister will create listings on each selected platform.', category: 'listings', helpful_count: 38 },
-            { id: 'faq-3', question: 'Can I use VaultLister offline?', answer: 'Yes! VaultLister is a Progressive Web App (PWA) that works offline. Your data is stored locally on your device. Any changes made offline will sync when you reconnect to the internet.', category: 'general', helpful_count: 52 },
-            { id: 'faq-4', question: 'How do I connect my marketplace accounts?', answer: 'Go to My Shops page and click "Connect" next to the marketplace you want to add. Follow the OAuth flow to authorize VaultLister to access your account. Your credentials are encrypted and stored securely.', category: 'platforms', helpful_count: 31 },
-            { id: 'faq-5', question: 'What is the AI Listing Generator?', answer: 'The AI Listing Generator uses Claude AI to analyze your product photos and automatically generate titles, descriptions, and suggested prices. Simply upload photos and click "Generate" to get AI-powered listing content.', category: 'ai', helpful_count: 67 },
-            { id: 'faq-6', question: 'How do automations work?', answer: 'Automations run scheduled tasks on your connected marketplace accounts. You can enable pre-built automations like "Daily Closet Share" for Poshmark or create custom rules. Configure scheduling in the Automations page.', category: 'automation', helpful_count: 29 },
-            { id: 'faq-7', question: 'Is my data secure?', answer: 'Yes, your data is stored locally on your device by default and never leaves without your consent. Passwords are encrypted with bcrypt, API tokens use AES-256 encryption, and all connections use HTTPS.', category: 'security', helpful_count: 41 },
-            { id: 'faq-8', question: 'How do I track my sales and profits?', answer: 'Use the Analytics page to view your sales performance, revenue trends, and profit margins. The Financials page provides detailed purchase tracking, COGS calculation, and P&L reports.', category: 'analytics', helpful_count: 36 }
-        ],
-        helpArticles: [
-            { id: 'art-1', slug: 'getting-started', title: 'Getting Started with VaultLister', excerpt: 'A complete guide to setting up your account and making your first listing.', category: 'Getting Started', view_count: 1234, helpful_count: 89, tags: ['beginner', 'setup', 'tutorial'] },
-            { id: 'art-2', slug: 'inventory-management', title: 'Mastering Inventory Management', excerpt: 'Learn how to efficiently organize, track, and manage your inventory.', category: 'Inventory', view_count: 892, helpful_count: 67, tags: ['inventory', 'organization', 'bulk-edit'] },
-            { id: 'art-3', slug: 'cross-listing-guide', title: 'Cross-Listing Best Practices', excerpt: 'Tips and strategies for successfully cross-listing across multiple platforms.', category: 'Listings', view_count: 1567, helpful_count: 112, tags: ['cross-listing', 'platforms', 'strategy'] },
-            { id: 'art-4', slug: 'ai-features', title: 'Using AI Features Effectively', excerpt: 'Maximize the power of AI for listing generation, pricing, and photo editing.', category: 'AI & Automation', view_count: 743, helpful_count: 54, tags: ['ai', 'listing-generator', 'automation'] },
-            { id: 'art-5', slug: 'poshmark-automation', title: 'Poshmark Automation Guide', excerpt: 'Set up and optimize automations for sharing, following, and sending offers.', category: 'Automation', view_count: 2103, helpful_count: 156, tags: ['poshmark', 'automation', 'sharing'] },
-            { id: 'art-6', slug: 'analytics-reporting', title: 'Understanding Your Analytics', excerpt: 'How to read and interpret your sales data, trends, and performance metrics.', category: 'Analytics', view_count: 621, helpful_count: 43, tags: ['analytics', 'reports', 'metrics'] },
-            { id: 'art-7', slug: 'photo-editing', title: 'Photo Editing with Cloudinary', excerpt: 'Use AI-powered tools to remove backgrounds, enhance images, and optimize for platforms.', category: 'Images', view_count: 534, helpful_count: 38, tags: ['photos', 'cloudinary', 'editing'] },
-            { id: 'art-8', slug: 'shipping-profiles', title: 'Setting Up Shipping Profiles', excerpt: 'Create reusable shipping configurations for different carriers and platforms.', category: 'Shipping', view_count: 412, helpful_count: 29, tags: ['shipping', 'profiles', 'carriers'] }
-        ],
+        helpFAQs: [],
+        helpArticles: [],
         supportTickets: [],
         selectedTicket: null,
         helpSearchQuery: '',
@@ -7948,14 +7907,7 @@ const store = {
         shippingProfiles: [],
 
         // Listing Templates
-        templates: [
-            { id: 'tpl-1', name: 'Vintage Clothing', category: 'Clothing', description: 'Template for vintage apparel listings', title_pattern: 'Vintage {brand} {item} - {size} - {era}', pricing_strategy: 'Markup', markup_percentage: 200, tags: ['vintage', 'retro', 'clothing', 'thrift'], is_favorite: true, use_count: 34, created_at: '2025-11-15T10:00:00Z' },
-            { id: 'tpl-2', name: 'Sneaker Resale', category: 'Sneakers', description: 'Optimized for sneaker flips with key details', title_pattern: '{brand} {model} - Size {size} - {colorway}', pricing_strategy: 'Market Comp', markup_percentage: 80, tags: ['sneakers', 'kicks', 'shoes', 'athletic', 'nike', 'jordan'], is_favorite: true, use_count: 52, created_at: '2025-11-20T14:30:00Z' },
-            { id: 'tpl-3', name: 'Designer Handbags', category: 'Designer', description: 'Luxury bag listings with authentication details', title_pattern: 'Authentic {brand} {model} - {color} - {condition}', pricing_strategy: 'Comp Analysis', markup_percentage: 150, tags: ['designer', 'luxury', 'handbag', 'authentic', 'purse'], is_favorite: false, use_count: 18, created_at: '2025-12-01T09:00:00Z' },
-            { id: 'tpl-4', name: 'Electronics & Gadgets', category: 'Electronics', description: 'Consumer electronics with specs and condition', title_pattern: '{brand} {model} {storage} - {condition} - {accessories}', pricing_strategy: 'Markup', markup_percentage: 60, tags: ['electronics', 'tech', 'gadgets', 'phones', 'tablets'], is_favorite: false, use_count: 11, created_at: '2025-12-10T16:00:00Z' },
-            { id: 'tpl-5', name: 'Home & Decor', category: 'Home', description: 'Furniture and home goods with dimensions', title_pattern: '{brand} {item} - {material} - {dimensions}', pricing_strategy: 'Markup', markup_percentage: 120, tags: ['home', 'decor', 'furniture', 'vintage-home', 'farmhouse'], is_favorite: false, use_count: 7, created_at: '2025-12-20T11:30:00Z' },
-            { id: 'tpl-6', name: 'Streetwear Bundle', category: 'Clothing', description: 'Hype streetwear items with brand focus', title_pattern: '{brand} {item} - {size} - {season} {year}', pricing_strategy: 'Market Comp', markup_percentage: 100, tags: ['streetwear', 'hype', 'supreme', 'bape', 'palace'], is_favorite: true, use_count: 28, created_at: '2026-01-05T13:00:00Z' }
-        ],
+        templates: [],
 
         // Photo Editor (Cloudinary) state
         photoEditorOpen: false,
@@ -8017,34 +7969,10 @@ const store = {
 
         // Roadmap state
         roadmapFilter: 'all',
-        roadmapFeatures: [
-            { id: 'rf-1', title: 'Mobile App (iOS & Android)', description: 'Native mobile apps for managing inventory on the go with camera integration for quick photo uploads.', status: 'planned', category: 'Mobile', votes: 156, eta: 'Q3 2026', comments: 24, user_voted: false },
-            { id: 'rf-2', title: 'Multi-user Team Support', description: 'Invite team members, assign roles, and collaborate on inventory management.', status: 'planned', category: 'Collaboration', votes: 89, eta: 'Q4 2026', comments: 12, user_voted: false },
-            { id: 'rf-3', title: 'Etsy Integration', description: 'Cross-list to Etsy marketplace with full sync support.', status: 'in_progress', category: 'Platforms', votes: 234, eta: 'Q2 2026', comments: 45, user_voted: false },
-            { id: 'rf-4', title: 'Whatnot Live Selling', description: 'Integration with Whatnot for live selling events and inventory sync.', status: 'planned', category: 'Platforms', votes: 178, eta: 'Q3 2026', comments: 31, user_voted: false },
-            { id: 'rf-5', title: 'Bulk Label Printing', description: 'Generate and print shipping labels in bulk for multiple orders.', status: 'in_progress', category: 'Shipping', votes: 145, eta: 'Q1 2026', comments: 19, user_voted: false },
-            { id: 'rf-6', title: 'Advanced Analytics Dashboard', description: 'More detailed analytics with customizable widgets, export options, and trend predictions.', status: 'completed', category: 'Analytics', votes: 267, eta: 'Completed', comments: 52, user_voted: true },
-            { id: 'rf-7', title: 'AI-Powered Pricing Suggestions', description: 'Get AI recommendations for optimal pricing based on market data and sold comparables.', status: 'in_progress', category: 'AI Features', votes: 198, eta: 'Q1 2026', comments: 28, user_voted: false },
-            { id: 'rf-8', title: 'Automated Relisting', description: 'Automatically relist stale items on a schedule with price adjustments.', status: 'completed', category: 'Automation', votes: 312, eta: 'Completed', comments: 67, user_voted: true },
-            { id: 'rf-9', title: 'Inventory Import from Spreadsheets', description: 'Bulk import inventory from CSV/Excel files with field mapping.', status: 'completed', category: 'Import/Export', votes: 189, eta: 'Completed', comments: 23, user_voted: false },
-            { id: 'rf-10', title: 'Real-time Webhook Notifications', description: 'Instant notifications when items sell or receive offers via webhooks.', status: 'planned', category: 'Integrations', votes: 112, eta: 'Q2 2026', comments: 15, user_voted: false },
-            { id: 'rf-11', title: 'Custom Reporting Builder', description: 'Build custom reports with drag-and-drop widgets and scheduled email delivery.', status: 'planned', category: 'Analytics', votes: 76, eta: 'Q4 2026', comments: 8, user_voted: false },
-            { id: 'rf-12', title: 'Supplier Management', description: 'Track suppliers, manage purchase orders, and monitor sourcing costs.', status: 'planned', category: 'Inventory', votes: 134, eta: 'Q3 2026', comments: 21, user_voted: false }
-        ],
+        roadmapFeatures: [],
 
         // User Feedback state
-        userFeedback: [
-            { id: 'uf-1', type: 'feature', title: 'Add Whatnot integration', category: 'integration', description: 'Would love to be able to cross-list directly to Whatnot for live selling events.', status: 'planned', admin_response: 'Great suggestion! Whatnot integration is on our roadmap for Q2 2026.', created_at: '2026-01-15T10:30:00Z' },
-            { id: 'uf-2', type: 'improvement', title: 'Faster bulk editing', category: 'ui', description: 'The bulk edit feature is great but could be faster. Would love to see lazy loading for large inventories.', status: 'reviewing', admin_response: null, created_at: '2026-01-20T14:45:00Z' },
-            { id: 'uf-3', type: 'bug', title: 'Image upload sometimes fails', category: 'inventory', description: 'When uploading multiple images at once, sometimes one or two fail to upload. Have to retry manually.', status: 'completed', admin_response: 'Fixed in v1.5.2! We improved the upload queue to handle concurrent uploads more reliably.', created_at: '2026-01-10T09:15:00Z' },
-            { id: 'uf-4', type: 'general', title: 'Love the dark mode!', category: 'ui', description: 'Just wanted to say the dark mode looks amazing. Very easy on the eyes for late night listing sessions.', status: 'completed', admin_response: 'Thank you so much! We worked hard on the dark mode design. Glad you enjoy it!', created_at: '2026-01-05T22:00:00Z' },
-            { id: 'uf-5', type: 'feature', title: 'Barcode/UPC scanner for quick listing', category: 'inventory', description: 'Would be amazing if we could scan barcodes with our phone camera to auto-fill product details from a database. Would save so much time when listing items!', status: 'pending', admin_response: null, created_at: '2026-01-22T11:20:00Z' },
-            { id: 'uf-6', type: 'improvement', title: 'eBay promoted listings management', category: 'integration', description: 'It would be great to manage eBay promoted listing rates directly from VaultLister instead of going to eBay Seller Hub.', status: 'planned', admin_response: 'This is coming in our next major update! Thanks for the suggestion.', created_at: '2026-01-12T13:30:00Z' },
-            { id: 'uf-7', type: 'bug', title: 'Analytics graphs not updating with timeline filter', category: 'analytics', description: 'When I change the timeline filter on the analytics page from "Last 30 Days" to "Last 7 Days", the graphs do not update and the dropdown still shows the old value.', status: 'reviewing', admin_response: 'We are investigating this issue. Thanks for the detailed report!', created_at: '2026-01-25T16:00:00Z' },
-            { id: 'uf-8', type: 'feature', title: 'Auto-share to multiple platforms', category: 'automation', description: 'Would love a feature to share all my active listings across Poshmark, Mercari, and eBay with one click. Currently have to do each platform manually.', status: 'planned', admin_response: 'Multi-platform auto-share is on our roadmap for Q2 2026!', created_at: '2026-01-18T14:30:00Z' },
-            { id: 'uf-9', type: 'improvement', title: 'Add profit margin percentage to analytics', category: 'analytics', description: 'The analytics page shows total profit, but it would be helpful to see profit margin as a percentage alongside the dollar amount.', status: 'completed', admin_response: 'Added in version 1.4.0! Check your analytics dashboard.', created_at: '2026-01-08T09:15:00Z' },
-            { id: 'uf-10', type: 'general', title: 'Excellent customer support experience', category: 'other', description: 'Had an issue with my account and reached out to support. Got a response within an hour and the problem was fixed immediately. Great team!', status: 'completed', admin_response: 'We really appreciate you taking the time to share this! Our support team works hard to provide fast resolutions.', created_at: '2026-01-03T18:45:00Z' }
-        ],
+        userFeedback: [],
         feedbackFormType: 'feature',
         feedbackFormCategory: '',
 
@@ -11561,7 +11489,7 @@ const quickFilters = {
                     </button>
                 `).join('')}
                 ${this.activeFilters.size > 0 ? `
-                    <button class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})" aria-label="Clear all filters">Clear all</button>
+                    <span class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})">Clear all</span>
                 ` : ''}
             </div>
         `;
@@ -15343,6 +15271,42 @@ const navProgress = {
     }
 };
 
+// ============================================
+// Page lifecycle cleanup registry (#202, #275)
+// ============================================
+const pageCleanupRegistry = {
+    _listeners: [],
+    _intervals: [],
+    _timeouts: [],
+
+    addListener(target, type, handler, options) {
+        target.addEventListener(type, handler, options);
+        this._listeners.push({ target, type, handler, options });
+    },
+
+    addInterval(id) {
+        this._intervals.push(id);
+        return id;
+    },
+
+    addTimeout(id) {
+        this._timeouts.push(id);
+        return id;
+    },
+
+    cleanAll() {
+        for (const { target, type, handler, options } of this._listeners) {
+            try { target.removeEventListener(type, handler, options); } catch (_) {}
+        }
+        for (const id of this._intervals) { clearInterval(id); }
+        for (const id of this._timeouts) { clearTimeout(id); }
+        this._listeners = [];
+        this._intervals = [];
+        this._timeouts = [];
+    }
+};
+
+
 /**
  * Dynamically load a built route-group chunk (dist/chunk-{name}.js).
  * Returns a promise that resolves when the script has loaded.
@@ -15351,7 +15315,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '90a3d988';
+    const v = 'daf760db';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15432,7 +15396,7 @@ const router = {
         }
 
         // Save sidebar scroll position before navigating
-        const sidebar = document.querySelector('.sidebar-nav');
+        const sidebar = document.querySelector('.sidebar-nav'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         if (sidebar) {
             store.setState({ sidebarScrollPos: sidebar.scrollTop });
         }
@@ -15475,6 +15439,9 @@ const router = {
             store.setState({ activeTab: alias.tab });
             window.history.replaceState({}, '', `#${path}`);
         }
+
+        // Run page lifecycle cleanup for registered listeners/intervals/timeouts (#202, #275)
+        pageCleanupRegistry.cleanAll();
 
         // Clear timers/intervals on navigation to prevent leaks
         if (window._lockoutCountdown) {
@@ -15676,6 +15643,8 @@ const router = {
                     }
                 } else {
                     console.error('[Router] Error rendering page:', path, err);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+                    // Render an error state so sidebar still updates to reflect the current page
+                    renderApp(`<div style="padding:40px;text-align:center"><h2>Page Error</h2><p>Something went wrong loading this page.</p><button class="btn btn-primary" onclick="router.navigate('${escapeHtml(path)}')">Retry</button> <button class="btn btn-secondary" onclick="router.navigate('dashboard')">Go to Dashboard</button></div>`);
                     toast.error('Failed to load page. Please try again.');
                 }
             }
@@ -15686,7 +15655,7 @@ const router = {
 
         // Restore sidebar scroll position and main content scroll after rendering
         requestAnimationFrame(() => {
-            const sidebar = document.querySelector('.sidebar-nav');
+            const sidebar = document.querySelector('.sidebar-nav'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             if (sidebar && store.state.sidebarScrollPos !== undefined) {
                 sidebar.scrollTop = store.state.sidebarScrollPos;
             }
@@ -15750,13 +15719,11 @@ const router = {
     },
 
     init() {
-        // Use browser-managed scroll restoration so the browser doesn't restore
-        // scroll on its own for popstate — we handle it in _scrollPositions.
+        window.pageCleanupRegistry = pageCleanupRegistry;
         if ('scrollRestoration' in history) {
             history.scrollRestoration = 'manual';
         }
         window.addEventListener('popstate', (e) => {
-            // Cancel pending requests from the previous page on back/forward nav
             if (typeof api !== 'undefined') api.cancelPending();
             this.handleRoute();
         });
@@ -17973,14 +17940,14 @@ const pages = {
 
         // Calculate today's stats
         const today = toLocalDate(new Date());
-        const todaySales = store.state.sales.filter(s => s.sold_at?.startsWith(today));
+        const todaySales = (store.state.sales || []).filter(s => s.sold_at?.startsWith(today));
         const todayRevenue = todaySales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
-        const todayListings = store.state.listings.filter(l => l.listed_at?.startsWith(today)).length;
+        const todayListings = (store.state.listings || []).filter(l => l.listed_at?.startsWith(today)).length;
         const pendingOrders = (store.state.orders || []).filter(o => o.status === 'pending').length;
 
         // Calculate platform breakdown
         const platformStats = {};
-        store.state.sales.forEach(s => {
+        (store.state.sales || []).forEach(s => {
             const platform = s.platform || 'other';
             if (!platformStats[platform]) {
                 platformStats[platform] = { sales: 0, revenue: 0 };
@@ -18135,7 +18102,7 @@ const pages = {
                 <button class="btn btn-secondary btn-sm" onclick="handlers.showQuickNotes()">
                     ${components.icon('edit-3', 14)} Quick Notes
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="if(document.getElementById('widget-settings-panel')){store.setState({_widgetPanelOpen:false});document.getElementById('widget-settings-panel').remove();}else{store.setState({_widgetPanelOpen:true});document.querySelector('.dashboard-customize-section').insertAdjacentHTML('afterend',widgetManager.showSettingsPanel());}">  // nosemgrep: javascript.browser.security.insecure-document-method
+                <button class="btn btn-secondary btn-sm" onclick="if(document.getElementById('widget-settings-panel')){store.setState({_widgetPanelOpen:false});document.getElementById('widget-settings-panel').remove();}else{store.setState({_widgetPanelOpen:true});document.querySelector('.dashboard-customize-section').insertAdjacentHTML('afterend',widgetManager.showSettingsPanel());}">
                     ${components.icon('settings', 14)} Customize Dashboard
                 </button>
                 <div class="dashboard-export-dropdown" style="position: relative; display: inline-block;">
@@ -19162,7 +19129,7 @@ const pages = {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${store.state.sales.map(s => `
+                                ${(store.state.sales || []).map(s => `
                                     <tr>
                                         <td>${new Date(s.created_at).toLocaleDateString()}</td>
                                         <td class="font-medium">${escapeHtml(s.listing_title || s.inventory_title || 'N/A')}</td>
@@ -20805,7 +20772,7 @@ const pages = {
                                     </thead>
                                     <tbody>
                                         ${topItems.map((item, index) => {
-                                            const inventoryItem = store.state.inventory.find(i => i.id === item.inventoryId);
+                                            const inventoryItem = (store.state.inventory || []).find(i => i.id === item.inventoryId);
                                             const itemTitle = inventoryItem ? inventoryItem.title : 'Unknown Item';
                                             const avgSalePrice = item.totalRevenue / item.salesCount;
 
@@ -25102,29 +25069,44 @@ const modals = {
         // Hide Share button if Web Share API or file sharing is not supported
         const canShare = typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
         let latestBlob = null;
+        let rafId = null;
 
         // Start rear camera
+        const nocamMsg = document.getElementById('ar-nocam-msg');
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
                 .then(s => {
                     stream = s;
                     video.srcObject = s;
                 })
-                .catch(() => {
-                    // Fallback: hide video, show warning
+                .catch((err) => {
                     video.style.display = 'none';
-                    document.getElementById('ar-nocam-msg').style.display = 'flex';
+                    if (nocamMsg) {
+                        const isDenied = err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+                        nocamMsg.textContent = isDenied
+                            ? 'Camera access denied. Please allow camera permission and try again.'
+                            : 'Camera not available on this device. Overlay mode only.';
+                        nocamMsg.style.display = 'flex';
+                    }
                 });
         } else {
             video.style.display = 'none';
-            document.getElementById('ar-nocam-msg').style.display = 'flex';
+            if (nocamMsg) {
+                nocamMsg.textContent = 'Camera not supported in this browser. Overlay mode only.';
+                nocamMsg.style.display = 'flex';
+            }
         }
 
-        // Close handler — stop camera tracks
+        // Close handler — stop camera tracks and remove all document listeners
         const cleanup = () => {
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
             if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
             container.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             document.removeEventListener('keydown', escHandler);
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
         };
         const escHandler = (e) => { if (e.key === 'Escape') cleanup(); };
         document.addEventListener('keydown', escHandler);
@@ -25197,20 +25179,39 @@ const modals = {
             });
         });
 
-        // Drag-to-position (mouse + touch)
+        // Drag-to-position (mouse + touch) with RAF-based FPS limiter
         let isDragging = false;
         let dragStartX = 0, dragStartY = 0;
         let overlayLeft = window.innerWidth / 2;
         let overlayTop = window.innerHeight / 2;
         let overlayScale = 1;
+        let pendingLeft = overlayLeft, pendingTop = overlayTop, pendingScale = overlayScale;
+        const FPS_LIMIT = 1000 / 30; // cap overlay DOM updates at 30 fps
+        let lastFrameTime = 0;
 
-        const getPos = (e) => e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+        const applyOverlayTransform = (timestamp) => {
+            rafId = null;
+            if (timestamp - lastFrameTime < FPS_LIMIT) {
+                rafId = requestAnimationFrame(applyOverlayTransform);
+                return;
+            }
+            lastFrameTime = timestamp;
+            overlay.style.left = pendingLeft + 'px';
+            overlay.style.top = pendingTop + 'px';
+            overlay.style.transform = `translate(-50%, -50%) scale(${pendingScale})`;
+            overlayLeft = pendingLeft;
+            overlayTop = pendingTop;
+            overlayScale = pendingScale;
+        };
+
+        const scheduleUpdate = () => {
+            if (!rafId) rafId = requestAnimationFrame(applyOverlayTransform);
+        };
 
         overlay.addEventListener('mousedown', (e) => {
             isDragging = true;
-            const pos = getPos(e);
-            dragStartX = pos.x - overlayLeft;
-            dragStartY = pos.y - overlayTop;
+            dragStartX = e.clientX - overlayLeft;
+            dragStartY = e.clientY - overlayTop;
             e.preventDefault();
         });
         overlay.addEventListener('touchstart', (e) => {
@@ -25221,25 +25222,36 @@ const modals = {
             }
         }, { passive: true });
 
-        document.addEventListener('mousemove', (e) => {
+        const onMouseMove = (e) => {
             if (!isDragging) return;
-            overlayLeft = e.clientX - dragStartX;
-            overlayTop = e.clientY - dragStartY;
-            overlay.style.left = overlayLeft + 'px';
-            overlay.style.top = overlayTop + 'px';
-            overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
-        });
-        document.addEventListener('touchmove', (e) => {
+            pendingLeft = e.clientX - dragStartX;
+            pendingTop = e.clientY - dragStartY;
+            scheduleUpdate();
+        };
+        const onMouseUp = () => { isDragging = false; };
+        const onTouchMove = (e) => {
             if (e.touches.length === 1 && isDragging) {
-                overlayLeft = e.touches[0].clientX - dragStartX;
-                overlayTop = e.touches[0].clientY - dragStartY;
-                overlay.style.left = overlayLeft + 'px';
-                overlay.style.top = overlayTop + 'px';
-                overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
+                pendingLeft = e.touches[0].clientX - dragStartX;
+                pendingTop = e.touches[0].clientY - dragStartY;
+                scheduleUpdate();
+            } else if (e.touches.length === 2 && lastPinchDist !== null) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                pendingScale = Math.min(5, Math.max(0.2, overlayScale * (dist / lastPinchDist)));
+                lastPinchDist = dist;
+                scheduleUpdate();
             }
-        }, { passive: true });
-        document.addEventListener('mouseup', () => { isDragging = false; });
-        document.addEventListener('touchend', () => { isDragging = false; });
+        };
+        const onTouchEnd = (e) => {
+            if (e.touches.length < 2) lastPinchDist = null;
+            if (e.touches.length === 0) isDragging = false;
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('touchmove', onTouchMove, { passive: true });
+        document.addEventListener('touchend', onTouchEnd);
 
         // Pinch-to-zoom
         let lastPinchDist = null;
@@ -25251,17 +25263,6 @@ const modals = {
                 isDragging = false;
             }
         }, { passive: true });
-        document.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2 && lastPinchDist !== null) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                overlayScale = Math.min(5, Math.max(0.2, overlayScale * (dist / lastPinchDist)));
-                overlay.style.transform = `translate(-50%, -50%) scale(${overlayScale})`;
-                lastPinchDist = dist;
-            }
-        }, { passive: true });
-        document.addEventListener('touchend', (e) => { if (e.touches.length < 2) lastPinchDist = null; });
     }
 };
 
@@ -25298,15 +25299,15 @@ const handlers = {
 
         if (value.length === 0) {
             input.classList.remove('field-error', 'field-valid');
-            if (errorSpan) errorSpan.style.display = 'none';
+            if (errorSpan) { errorSpan.style.display = 'none'; errorSpan.classList.remove('visible'); }
         } else if (isValid) {
             input.classList.remove('field-error');
             input.classList.add('field-valid');
-            if (errorSpan) errorSpan.style.display = 'none';
+            if (errorSpan) { errorSpan.style.display = 'none'; errorSpan.classList.remove('visible'); }
         } else {
             input.classList.remove('field-valid');
             input.classList.add('field-error');
-            if (errorSpan) errorSpan.style.display = 'block';
+            if (errorSpan) { errorSpan.style.display = 'block'; errorSpan.classList.add('visible'); }
         }
     },
 
@@ -25668,11 +25669,6 @@ const handlers = {
     },
 
     setThemeMode: function(mode) {
-        // Remove any existing system preference listener before switching modes
-        if (window._vl_darkModeMediaListener) {
-            window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', window._vl_darkModeMediaListener);
-            window._vl_darkModeMediaListener = null;
-        }
         if (mode === 'dark') {
             document.body.classList.add('dark-mode');
             store.setState({ darkMode: true });
@@ -25682,16 +25678,11 @@ const handlers = {
             store.setState({ darkMode: false });
             localStorage.setItem('vaultlister_dark_mode', 'false');
         } else {
-            // System preference — follow OS, persist choice, and watch for changes
-            const mq = window.matchMedia('(prefers-color-scheme: dark)');
-            document.body.classList.toggle('dark-mode', mq.matches);
-            store.setState({ darkMode: mq.matches });
-            localStorage.setItem('vaultlister_dark_mode', 'system');
-            window._vl_darkModeMediaListener = (e) => {
-                document.body.classList.toggle('dark-mode', e.matches);
-                store.setState({ darkMode: e.matches });
-            };
-            mq.addEventListener('change', window._vl_darkModeMediaListener);
+            // System preference
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.body.classList.toggle('dark-mode', prefersDark);
+            store.setState({ darkMode: prefersDark });
+            localStorage.removeItem('vaultlister_dark_mode');
         }
         if (store.state.user) {
             const currentPrefs = (() => { try { return JSON.parse(store.state.user.preferences || '{}'); } catch { return {}; } })();
@@ -27180,22 +27171,11 @@ async function initApp() {
         }
     }
 
-    // Initialize dark mode from localStorage (handles 'true', 'false', 'system')
-    const darkModePref = localStorage.getItem('vaultlister_dark_mode');
-    if (darkModePref === 'true') {
+    // Initialize dark mode from localStorage
+    const darkMode = localStorage.getItem('vaultlister_dark_mode') === 'true';
+    if (darkMode) {
         document.body.classList.add('dark-mode');
         store.setState({ darkMode: true });
-    } else if (darkModePref === 'system' || darkModePref === null) {
-        const mq = window.matchMedia('(prefers-color-scheme: dark)');
-        if (mq.matches) {
-            document.body.classList.add('dark-mode');
-            store.setState({ darkMode: true });
-        }
-        window._vl_darkModeMediaListener = (e) => {
-            document.body.classList.toggle('dark-mode', e.matches);
-            store.setState({ darkMode: e.matches });
-        };
-        mq.addEventListener('change', window._vl_darkModeMediaListener);
     }
 
     // Initialize UI helpers
@@ -27747,13 +27727,9 @@ function renderApp(pageContent) {
 // Apply dark mode immediately before app initialization
 // This prevents flash of light mode on page load
 (function() {
-    const pref = localStorage.getItem('vaultlister_dark_mode');
-    if (pref === 'true') {
+    const darkMode = localStorage.getItem('vaultlister_dark_mode') === 'true';
+    if (darkMode) {
         document.body.classList.add('dark-mode');
-    } else if (pref === 'system' || pref === null) {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.classList.add('dark-mode');
-        }
     }
 })();
 
