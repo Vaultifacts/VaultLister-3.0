@@ -134,6 +134,41 @@ function convertPlaceholders(sqlStr) {
     return result;
 }
 
+// Normalize SQL boolean literals (TRUE/FALSE) to integers (1/0) for INTEGER columns.
+// PostgreSQL rejects `= TRUE` on INTEGER columns ("operator does not exist: integer = boolean").
+// Skips replacements inside single-quoted string literals.
+function normalizeSqlBooleans(sqlStr) {
+    let result = '';
+    let inString = false;
+    let i = 0;
+    while (i < sqlStr.length) {
+        if (!inString && sqlStr[i] === "'") {
+            inString = true;
+            result += sqlStr[i++];
+        } else if (inString && sqlStr[i] === "'") {
+            inString = false;
+            result += sqlStr[i++];
+        } else if (!inString) {
+            const sub = sqlStr.slice(i);
+            const m = sub.match(/^((?:!=|<>|=)\s*)(TRUE|FALSE)\b/i);
+            if (m) {
+                result += m[1] + (m[2].toUpperCase() === 'TRUE' ? '1' : '0');
+                i += m[0].length;
+            } else {
+                result += sqlStr[i++];
+            }
+        } else {
+            result += sqlStr[i++];
+        }
+    }
+    return result;
+}
+
+// Chain placeholder conversion and boolean normalization
+function prepareSQL(sqlStr) {
+    return normalizeSqlBooleans(convertPlaceholders(sqlStr));
+}
+
 // SQL identifier validation — prevents injection via dynamic column/table names
 const VALID_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 function validateIdentifier(name) {
@@ -157,7 +192,7 @@ export const query = {
         _activeQueries++;
         const start = performance.now();
         try {
-            const converted = convertPlaceholders(sqlStr);
+            const converted = prepareSQL(sqlStr);
             const paramArray = Array.isArray(params) ? params : [params];
             const rows = await sql.unsafe(converted, paramArray);
             const duration = performance.now() - start;
@@ -184,7 +219,7 @@ export const query = {
         _activeQueries++;
         const start = performance.now();
         try {
-            const converted = convertPlaceholders(sqlStr);
+            const converted = prepareSQL(sqlStr);
             const paramArray = Array.isArray(params) ? params : [params];
             const rows = await sql.unsafe(converted, paramArray);
             const duration = performance.now() - start;
@@ -211,7 +246,7 @@ export const query = {
         _activeQueries++;
         const start = performance.now();
         try {
-            const converted = convertPlaceholders(sqlStr);
+            const converted = prepareSQL(sqlStr);
             const paramArray = Array.isArray(params) ? params : [params];
             const result = await sql.unsafe(converted, paramArray);
             const duration = performance.now() - start;
@@ -256,16 +291,16 @@ export const query = {
                     const txQuery = {
                         async get(s, p = []) {
                             const paramArray = Array.isArray(p) ? p : [p];
-                            const r = await tx.unsafe(convertPlaceholders(s), paramArray);
+                            const r = await tx.unsafe(prepareSQL(s), paramArray);
                             return r.length > 0 ? r[0] : null;
                         },
                         async all(s, p = []) {
                             const paramArray = Array.isArray(p) ? p : [p];
-                            return await tx.unsafe(convertPlaceholders(s), paramArray);
+                            return await tx.unsafe(prepareSQL(s), paramArray);
                         },
                         async run(s, p = []) {
                             const paramArray = Array.isArray(p) ? p : [p];
-                            const r = await tx.unsafe(convertPlaceholders(s), paramArray);
+                            const r = await tx.unsafe(prepareSQL(s), paramArray);
                             return { changes: r.count, lastInsertRowid: 0 };
                         },
                         async exec(s) {
