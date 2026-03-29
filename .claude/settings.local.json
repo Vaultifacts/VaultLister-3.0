@@ -1,4 +1,17 @@
 {
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Matt1/OneDrive/Desktop/vaultlister-3/.claude/hooks/block-alert-dismiss.py"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "mcp__claude_ai_Notion__notion-search",
