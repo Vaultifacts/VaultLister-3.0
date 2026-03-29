@@ -38,7 +38,7 @@ export function initEmailService() {
 /**
  * Send an email
  */
-async function sendEmail(to, subject, html, text) {
+export async function sendEmail(to, subject, html, text) {
     const mailOptions = {
         from: EMAIL_FROM,
         to,

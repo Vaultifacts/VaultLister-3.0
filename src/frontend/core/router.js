@@ -505,6 +505,8 @@ const router = {
                     }
                 } else {
                     console.error('[Router] Error rendering page:', path, err);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+                    // Render an error state so sidebar still updates to reflect the current page
+                    renderApp(`<div style="padding:40px;text-align:center"><h2>Page Error</h2><p>Something went wrong loading this page.</p><button class="btn btn-primary" onclick="router.navigate('${escapeHtml(path)}')">Retry</button> <button class="btn btn-secondary" onclick="router.navigate('dashboard')">Go to Dashboard</button></div>`);
                     toast.error('Failed to load page. Please try again.');
                 }
             }
