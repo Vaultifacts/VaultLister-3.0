@@ -548,7 +548,7 @@ Be specific and accurate. Only include what you can confidently detect from the 
         );
 
         // Return updated folder data
-        const updatedFolder = await query.get('SELECT * FROM image_bank_folders WHERE id = ?', [folderId]);
+        const updatedFolder = await query.get('SELECT * FROM image_bank_folders WHERE id = ? AND user_id = ?', [folderId, user.id]);
         return { status: 200, data: { folder: updatedFolder } };
     }
 

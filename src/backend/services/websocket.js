@@ -65,6 +65,11 @@ const MESSAGE_TYPES = {
     USER_ONLINE: 'user.online',
     USER_OFFLINE: 'user.offline',
 
+    // Automations
+    AUTOMATION_QUEUED: 'automation.queued',
+    AUTOMATION_COMPLETED: 'automation.completed',
+    AUTOMATION_FAILED: 'automation.failed',
+
     // Error
     ERROR: 'error'
 };
@@ -654,6 +659,32 @@ const websocketService = {
         this.sendToUser(userId, {
             type: MESSAGE_TYPES.NOTIFICATION,
             notification,
+            timestamp: new Date().toISOString()
+        });
+    },
+
+    // Automation events
+    notifyAutomationQueued(userId, rule, taskId) {
+        this.sendToUser(userId, {
+            type: MESSAGE_TYPES.AUTOMATION_QUEUED,
+            rule,
+            taskId,
+            timestamp: new Date().toISOString()
+        });
+    },
+
+    notifyAutomationCompleted(userId, run) {
+        this.sendToUser(userId, {
+            type: MESSAGE_TYPES.AUTOMATION_COMPLETED,
+            run,
+            timestamp: new Date().toISOString()
+        });
+    },
+
+    notifyAutomationFailed(userId, run) {
+        this.sendToUser(userId, {
+            type: MESSAGE_TYPES.AUTOMATION_FAILED,
+            run,
             timestamp: new Date().toISOString()
         });
     },

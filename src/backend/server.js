@@ -419,6 +419,26 @@ const apiRoutes = {
         // Simple route to get CSRF token - token is already in ctx.csrfToken from middleware
         return { status: 200, data: { csrfToken: ctx.csrfToken || 'token-not-available' } };
     },
+    '/api/docs': async (ctx) => {
+        const { method } = ctx;
+        if (method !== 'GET') {
+            return { status: 405, data: { error: 'Method not allowed' } };
+        }
+        const openapiPath = join(PUBLIC_DIR, 'api-docs', 'openapi.yaml');
+        if (!existsSync(openapiPath)) {
+            return { status: 404, data: { error: 'OpenAPI spec not found' } };
+        }
+        // Return spec location and redirect hint; YAML content served as static file
+        return {
+            status: 200,
+            data: {
+                specUrl: '/api-docs/openapi.yaml',
+                uiUrl: '/api-docs/index.html',
+                format: 'OpenAPI 3.0',
+                description: 'VaultLister API specification — visit specUrl for the raw YAML or uiUrl for Swagger UI'
+            }
+        };
+    },
     '/api/health': async () => {
         // Health check endpoint - returns basic status only (no sensitive metrics)
         let dbStatus = 'ok';

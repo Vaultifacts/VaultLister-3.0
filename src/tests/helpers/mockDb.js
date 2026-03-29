@@ -13,12 +13,17 @@ import { mock } from 'bun:test';
  * Each call returns independent mocks — safe for parallel test files.
  */
 export function createMockDb() {
-    const mockGet = mock(() => null);
-    const mockAll = mock(() => []);
-    const mockRun = mock(() => ({ changes: 1, lastInsertRowid: 1 }));
-    const mockExec = mock(() => undefined);
-    const mockTransaction = mock((fn) => fn());
-    const mockSearchInventory = mock(() => []);
+    const mockGet = mock(() => Promise.resolve(null));
+    const mockAll = mock(() => Promise.resolve([]));
+    const mockRun = mock(() => Promise.resolve({ changes: 1, lastInsertRowid: 1 }));
+    const mockExec = mock(() => Promise.resolve(undefined));
+    const mockTransaction = mock((fn) => fn({
+        get: mock(() => Promise.resolve(null)),
+        all: mock(() => Promise.resolve([])),
+        run: mock(() => Promise.resolve({ changes: 1, lastInsertRowid: 1 })),
+        exec: mock(() => Promise.resolve(undefined)),
+    }));
+    const mockSearchInventory = mock(() => Promise.resolve([]));
 
     const query = {
         get: mockGet,
@@ -30,19 +35,23 @@ export function createMockDb() {
     };
 
     const models = {
-        create: mock(() => ({ changes: 1, lastInsertRowid: 1 })),
-        findById: mock(() => null),
-        findOne: mock(() => null),
-        findMany: mock(() => []),
-        update: mock(() => ({ changes: 1 })),
-        delete: mock(() => ({ changes: 1 })),
-        count: mock(() => 0),
+        create: mock(() => Promise.resolve({ changes: 1, lastInsertRowid: 1 })),
+        findById: mock(() => Promise.resolve(null)),
+        findOne: mock(() => Promise.resolve(null)),
+        findMany: mock(() => Promise.resolve([])),
+        update: mock(() => Promise.resolve({ changes: 1 })),
+        delete: mock(() => Promise.resolve({ changes: 1 })),
+        count: mock(() => Promise.resolve(0)),
     };
 
     const db = {
-        close: mock(() => {}),
-        exec: mock(() => {}),
-        query: mock(() => ({ get: mock(() => null), all: mock(() => []), run: mock(() => {}) })),
+        close: mock(() => Promise.resolve()),
+        exec: mock(() => Promise.resolve()),
+        query: mock(() => ({
+            get: mock(() => Promise.resolve(null)),
+            all: mock(() => Promise.resolve([])),
+            run: mock(() => Promise.resolve({})),
+        })),
     };
 
     function escapeLike(str) {
@@ -57,10 +66,10 @@ export function createMockDb() {
         mockTransaction.mockClear();
         mockSearchInventory.mockClear();
         Object.values(models).forEach(fn => fn.mockClear());
-        // Reset return values to defaults
-        mockGet.mockReturnValue(null);
-        mockAll.mockReturnValue([]);
-        mockRun.mockReturnValue({ changes: 1, lastInsertRowid: 1 });
+        // Reset return values to async defaults
+        mockGet.mockImplementation(() => Promise.resolve(null));
+        mockAll.mockImplementation(() => Promise.resolve([]));
+        mockRun.mockImplementation(() => Promise.resolve({ changes: 1, lastInsertRowid: 1 }));
     }
 
     return { query, models, db, escapeLike, reset };
@@ -76,8 +85,8 @@ export function installDbMock(mockDb) {
         models: mockDb.models,
         escapeLike: mockDb.escapeLike,
         default: mockDb.db,
-        initializeDatabase: mock(() => true),
-        cleanupExpiredData: mock(() => ({})),
+        initializeDatabase: mock(() => Promise.resolve(true)),
+        cleanupExpiredData: mock(() => Promise.resolve({})),
     }));
 
     // Also mock the relative path that services use
@@ -86,7 +95,7 @@ export function installDbMock(mockDb) {
         models: mockDb.models,
         escapeLike: mockDb.escapeLike,
         default: mockDb.db,
-        initializeDatabase: mock(() => true),
-        cleanupExpiredData: mock(() => ({})),
+        initializeDatabase: mock(() => Promise.resolve(true)),
+        cleanupExpiredData: mock(() => Promise.resolve({})),
     }));
 }
