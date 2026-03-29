@@ -1,21 +1,26 @@
 name: Project Status Update
 
 # Automatically posts a status update to both project boards
-# Runs every Monday at 9am UTC, and whenever an issue is closed or reopened
+# Runs every Monday at 9am MST, and whenever an issue is closed or reopened
 on:
   schedule:
-    - cron: '0 9 * * 1'
+    - cron: '0 16 * * 1'
   issues:
     types: [closed, reopened]
   workflow_dispatch:
 
+concurrency:
+  group: project-status-update
+  cancel-in-progress: true
+
 permissions:
-  issues: read
+  issues: write
 
 jobs:
   update-development-board:
     name: Update Development Board Status
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Post status update to Development Board
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -46,15 +51,15 @@ jobs:
               repo: context.repo.repo,
               state: 'closed',
               since,
-              per_page: 20
+              per_page: 100
             });
             const closedDev = recentlyClosed.filter(i =>
               !i.pull_request &&
               !i.labels.some(l => l.name === 'launch-checklist')
             );
 
-            const statusEmoji = p0.length > 0 ? '🔴' : bugs.length > 3 ? '🟡' : '🟢';
-            const statusLabel = p0.length > 0 ? 'AT_RISK' : bugs.length > 3 ? 'OFF_TRACK' : 'ON_TRACK';
+            const statusEmoji = p0.length > 0 ? '🔴' : (bugs.length > 3 || security.length > 0) ? '🟡' : '🟢';
+            const statusLabel = p0.length > 0 ? 'AT_RISK' : (bugs.length > 3 || security.length > 0) ? 'OFF_TRACK' : 'ON_TRACK';
 
             const body = [
               `## Weekly Development Board Status ${statusEmoji}`,
@@ -67,24 +72,20 @@ jobs:
               closedDev.length > 0
                 ? `**Closed this week:** ${closedDev.length} issue${closedDev.length !== 1 ? 's' : ''}`
                 : '**Closed this week:** None',
-              '',
               p0.length > 0
-                ? `### 🚨 P0 Critical\n${p0.slice(0, 5).map(i => `- [#${i.number}](${i.html_url}) ${i.title}`).join('\n')}`
-                : '',
-              '',
+                ? `\n### 🚨 P0 Critical\n${p0.slice(0, 5).map(i => `- [#${i.number}](${i.html_url}) ${i.title}`).join('\n')}\n`
+                : null,
               `*Auto-generated ${new Date().toUTCString()}*`
-            ].filter(l => l !== undefined).join('\n');
+            ].filter(l => l !== null).join('\n');
 
-            // Get project node ID and post status update
-            const projectQuery = await github.graphql(`
-              query {
-                user(login: "${context.repo.owner}") {
-                  projectV2(number: 1) {
-                    id
-                  }
+            const projectQuery = await github.graphql(
+              `query($login: String!) {
+                user(login: $login) {
+                  projectV2(number: 1) { id }
                 }
-              }
-            `);
+              }`,
+              { login: context.repo.owner }
+            );
 
             const projectId = projectQuery.user.projectV2.id;
 
@@ -102,9 +103,23 @@ jobs:
 
             core.notice(`Posted ${statusLabel} status update to Development Board`);
 
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '[Automation] Project status update workflow failed — boards may be stale',
+              body: `The \`project-status-update\` workflow failed. Project boards have not been updated.\n\n**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              labels: ['automated', 'ci-failure']
+            });
+
   update-launch-checklist:
     name: Update Launch Checklist Status
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Post status update to Launch Checklist Board
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -126,8 +141,8 @@ jobs:
 
             const p0Open = open.filter(i => i.labels.some(l => l.name === 'p0-critical'));
 
-            const statusLabel = p0Open.length > 0 ? 'AT_RISK' : pct >= 80 ? 'ON_TRACK' : pct >= 50 ? 'ON_TRACK' : 'OFF_TRACK';
-            const statusEmoji = p0Open.length > 0 ? '🔴' : pct >= 80 ? '🟢' : pct >= 50 ? '🟡' : '🟡';
+            const statusLabel = p0Open.length > 0 ? 'AT_RISK' : pct >= 80 ? 'ON_TRACK' : 'OFF_TRACK';
+            const statusEmoji = p0Open.length > 0 ? '🔴' : pct >= 80 ? '🟢' : pct >= 50 ? '🟡' : '🔴';
 
             const progressBar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
 
@@ -149,15 +164,14 @@ jobs:
               `*Auto-generated ${new Date().toUTCString()}*`
             ].join('\n');
 
-            const projectQuery = await github.graphql(`
-              query {
-                user(login: "${context.repo.owner}") {
-                  projectV2(number: 2) {
-                    id
-                  }
+            const projectQuery = await github.graphql(
+              `query($login: String!) {
+                user(login: $login) {
+                  projectV2(number: 2) { id }
                 }
-              }
-            `);
+              }`,
+              { login: context.repo.owner }
+            );
 
             const projectId = projectQuery.user.projectV2.id;
 
@@ -174,3 +188,16 @@ jobs:
             `, { projectId, body, status: statusLabel });
 
             core.notice(`Posted ${statusLabel} status update to Launch Checklist Board (${pct}% complete)`);
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '[Automation] Project status update workflow failed — boards may be stale',
+              body: `The \`project-status-update\` workflow failed. Project boards have not been updated.\n\n**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              labels: ['automated', 'ci-failure']
+            });

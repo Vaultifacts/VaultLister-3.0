@@ -7813,6 +7813,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // Store (state management, localStorage persistence)
 // Extracted from app.js lines 7718-8137
 
+// Increment this when the shape of persisted state changes in a breaking way.
+// On mismatch the stored state is discarded and the user must re-authenticate.
+const STATE_SCHEMA_VERSION = 1;
+
 // State Management
 // ============================================
 const store = {
@@ -8095,6 +8099,7 @@ const store = {
         // across tabs or browser restarts. "Remember Me" persistence is handled by the
         // HttpOnly vl_refresh cookie expiry set at login, not by localStorage.
         sessionStorage.setItem('vaultlister_state', JSON.stringify({
+            _v: STATE_SCHEMA_VERSION,
             user: this.state.user,
             token: this.state.token,
             refreshToken: this.state.refreshToken,
@@ -8106,6 +8111,7 @@ const store = {
         // browser restart while silent re-auth completes via the HttpOnly cookie.
         if (!this.state.useSessionStorage) {
             localStorage.setItem('vaultlister_state', JSON.stringify({
+                _v: STATE_SCHEMA_VERSION,
                 user: this.state.user,
                 useSessionStorage: false
             }));
@@ -8126,7 +8132,32 @@ const store = {
                 saved = localStorage.getItem('vaultlister_state');
             }
             if (saved) {
-                const parsed = JSON.parse(saved);
+                let parsed;
+                try {
+                    parsed = JSON.parse(saved);
+                } catch (_) {
+                    // Malformed JSON — discard persisted state
+                    sessionStorage.removeItem('vaultlister_state');
+                    localStorage.removeItem('vaultlister_state');
+                    return;
+                }
+
+                // Schema version check — stale state from a different schema is discarded.
+                if (typeof parsed !== 'object' || parsed === null || parsed._v !== STATE_SCHEMA_VERSION) {
+                    sessionStorage.removeItem('vaultlister_state');
+                    localStorage.removeItem('vaultlister_state');
+                    return;
+                }
+
+                // Basic shape validation: user must be null or an object with an id string.
+                if (parsed.user !== null && parsed.user !== undefined) {
+                    if (typeof parsed.user !== 'object' || typeof parsed.user.id !== 'string') {
+                        sessionStorage.removeItem('vaultlister_state');
+                        localStorage.removeItem('vaultlister_state');
+                        return;
+                    }
+                }
+
                 // When reading from localStorage (browser restart scenario), tokens are
                 // intentionally excluded — they are only trusted from sessionStorage.
                 const allowed = fromSession
@@ -8137,7 +8168,13 @@ const store = {
                 }
             }
             const savedVotes = localStorage.getItem('vaultlister_changelog_votes');
-            if (savedVotes) this.state.changelogVotes = JSON.parse(savedVotes);
+            if (savedVotes) {
+                try {
+                    this.state.changelogVotes = JSON.parse(savedVotes);
+                } catch (_) {
+                    localStorage.removeItem('vaultlister_changelog_votes');
+                }
+            }
         } catch (e) {
             console.error('Failed to hydrate state:', e);
         }
@@ -8160,6 +8197,18 @@ const api = {
     retryDelay: 1000,
     isRefreshing: false,
     refreshPromise: null,
+    // Map of "METHOD:url" → in-flight Promise (for GET deduplication)
+    _inFlight: new Map(),
+    // AbortController for cancelling all pending requests on navigation
+    _navController: null,
+
+    cancelPending() {
+        if (this._navController) {
+            this._navController.abort();
+        }
+        this._navController = new AbortController();
+        this._inFlight.clear();
+    },
 
     async refreshAccessToken() {
         // Prevent multiple simultaneous refresh attempts
@@ -8207,7 +8256,17 @@ const api = {
     },
 
     async request(endpoint, options = {}, retryCount = 0, isRetryAfterRefresh = false) {
+        const method = options.method || 'GET';
         const url = `${this.baseUrl}${endpoint}`;
+
+        // Deduplicate identical GET requests that are already in-flight
+        if (method === 'GET' && retryCount === 0) {
+            const dedupKey = `GET:${url}`;
+            if (this._inFlight.has(dedupKey)) {
+                return this._inFlight.get(dedupKey);
+            }
+        }
+
         const headers = {
             'Content-Type': 'application/json',
             ...options.headers
@@ -8219,13 +8278,23 @@ const api = {
 
         // Add CSRF token for state-changing requests
         const stateMutatingMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
-        if (stateMutatingMethods.includes(options.method) && this.csrfToken) {
+        if (stateMutatingMethods.includes(method) && this.csrfToken) {
             headers['X-CSRF-Token'] = this.csrfToken;
+        }
+
+        // Ensure nav controller exists
+        if (!this._navController) {
+            this._navController = new AbortController();
         }
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
+        // Chain nav-level cancellation into this request's signal
+        const navSignal = this._navController.signal;
+        navSignal.addEventListener('abort', () => controller.abort(), { once: true });
 
+        const dedupKey = method === 'GET' && retryCount === 0 ? `GET:${url}` : null;
+        const requestPromise = (async () => {
         try {
             const response = await fetch(url, {
                 ...options,
@@ -8324,7 +8393,13 @@ const api = {
                 throw new Error('You are offline. This action will sync when you reconnect.');
             }
             throw error;
+        } finally {
+            if (dedupKey) this._inFlight.delete(dedupKey);
         }
+        })();
+
+        if (dedupKey) this._inFlight.set(dedupKey, requestPromise);
+        return requestPromise;
     },
 
     get(endpoint) {
@@ -15259,9 +15334,26 @@ function loadChunk(chunkName) {
 
 const router = {
     routes: {},
+    // Tracks page scroll positions keyed by route path for back/forward restore
+    _scrollPositions: {},
+    // Pending chunk load script element for cancellation
+    _pendingChunkScript: null,
 
     register(path, handler) {
         this.routes[path] = handler;
+    },
+
+    // Decode a JWT and return true if its `exp` claim is in the past.
+    // Returns false (not expired) when the token is absent or unparseable.
+    _isTokenExpired(token) {
+        if (!token) return false;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (!payload.exp) return false;
+            return Date.now() >= payload.exp * 1000;
+        } catch (_) {
+            return false;
+        }
     },
 
     async navigate(path) {
@@ -15284,12 +15376,21 @@ const router = {
             store.setState({ batchPhotoActivePollInterval: null });
         }
 
+        // Cancel any pending GET requests from the previous page
+        if (typeof api !== 'undefined') api.cancelPending();
+
+        // Save main content scroll position for the current page before leaving
+        const mainEl = document.getElementById('app');
+        if (mainEl && currentPage) {
+            this._scrollPositions[currentPage] = mainEl.scrollTop;
+        }
+
         // Save sidebar scroll position before navigating
         const sidebar = document.querySelector('.sidebar-nav');
         if (sidebar) {
             store.setState({ sidebarScrollPos: sidebar.scrollTop });
         }
-        window.history.pushState({}, '', `#${path}`);
+        window.history.pushState({ scrollY: window.scrollY }, '', `#${path}`);
         await this.handleRoute();
     },
 
@@ -15374,14 +15475,36 @@ const router = {
             delete store.state.darkModePreview;
         }
 
-        // Auth guard: redirect unauthenticated users to login for protected routes
+        // Auth guard: redirect unauthenticated users to login for protected routes.
+        // Also redirect when the access token is present but expired — the API client
+        // will attempt a silent refresh on the next request, but we redirect early here
+        // so the user is not briefly shown a protected page before the 401 fires.
         const publicRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
-        if (!publicRoutes.includes(path) && !auth.isAuthenticated()) {
-            store.setState({ currentPage: 'login' });
-            window.location.hash = '#login';
-            const handler = this.routes['login'];
-            if (handler) handler();
-            return;
+        if (!publicRoutes.includes(path)) {
+            const token = store.state.token;
+            if (!auth.isAuthenticated() || this._isTokenExpired(token)) {
+                if (this._isTokenExpired(token) && store.state.refreshToken) {
+                    // Token expired but refresh token exists — attempt silent refresh before redirecting
+                    if (typeof api !== 'undefined') {
+                        const refreshed = await api.refreshAccessToken().catch(() => false);
+                        if (!refreshed) {
+                            store.setState({ user: null, token: null, refreshToken: null });
+                            store.setState({ currentPage: 'login' });
+                            window.location.hash = '#login';
+                            const handler = this.routes['login'];
+                            if (handler) handler();
+                            return;
+                        }
+                        // Token refreshed successfully — continue navigation
+                    }
+                } else if (!auth.isAuthenticated()) {
+                    store.setState({ currentPage: 'login' });
+                    window.location.hash = '#login';
+                    const handler = this.routes['login'];
+                    if (handler) handler();
+                    return;
+                }
+            }
         }
 
         store.setState({ currentPage: path });
@@ -15514,11 +15637,16 @@ const router = {
             renderApp(`<div style="padding:40px;text-align:center"><h2>Page Not Found</h2><p>The page "${escapeHtml(path)}" could not be found.</p><button class="btn btn-primary" onclick="router.navigate('dashboard')">Go to Dashboard</button></div>`);
         }
 
-        // Restore sidebar scroll position after rendering
+        // Restore sidebar scroll position and main content scroll after rendering
         requestAnimationFrame(() => {
             const sidebar = document.querySelector('.sidebar-nav');
             if (sidebar && store.state.sidebarScrollPos !== undefined) {
                 sidebar.scrollTop = store.state.sidebarScrollPos;
+            }
+            // Restore main content scroll for back/forward navigation
+            const appEl = document.getElementById('app');
+            if (appEl && this._scrollPositions[path] !== undefined) {
+                appEl.scrollTop = this._scrollPositions[path];
             }
         });
 
@@ -15573,7 +15701,16 @@ const router = {
     },
 
     init() {
-        window.addEventListener('popstate', () => this.handleRoute());
+        // Use browser-managed scroll restoration so the browser doesn't restore
+        // scroll on its own for popstate — we handle it in _scrollPositions.
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.addEventListener('popstate', (e) => {
+            // Cancel pending requests from the previous page on back/forward nav
+            if (typeof api !== 'undefined') api.cancelPending();
+            this.handleRoute();
+        });
         // Catch unhandled errors from async initial route handling
         this.handleRoute(true).catch(err => {
             console.error('[Router] Unhandled init error:', err);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
@@ -20659,12 +20796,34 @@ const pages = {
 
     notFound() {
         return `
-            <div class="text-center py-16">
-                <div class="text-6xl mb-4">🔍</div>
-                <h1 class="text-2xl font-bold mb-2">Page Not Found</h1>
-                <p class="text-gray-600 mb-6">The page you're looking for doesn't exist.</p>
-                <button class="btn btn-primary" onclick="router.navigate('dashboard')">Go to Dashboard</button>
-            </div>
+            <main id="main-content" class="flex items-center justify-center" style="min-height:60vh;" aria-labelledby="not-found-heading">
+                <div class="text-center" style="max-width:480px;padding:2rem;">
+                    <div aria-hidden="true" style="font-size:4rem;line-height:1;margin-bottom:1rem;color:var(--primary-400);">404</div>
+                    <h1 id="not-found-heading" class="text-2xl font-bold mb-2">Page Not Found</h1>
+                    <p class="text-gray-600 mb-6">The page you're looking for doesn't exist or has been moved.</p>
+                    <div class="flex gap-3 justify-center flex-wrap">
+                        <button class="btn btn-primary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
+                        <button class="btn btn-secondary" onclick="history.back()" style="min-height:44px;">Go Back</button>
+                    </div>
+                </div>
+            </main>
+        `;
+    },
+
+    errorPage(message) {
+        const safeMessage = escapeHtml(message || 'An unexpected error occurred. Please try reloading the page.');
+        return `
+            <main id="main-content" class="flex items-center justify-center" style="min-height:60vh;" aria-labelledby="error-page-heading">
+                <div class="text-center" style="max-width:480px;padding:2rem;">
+                    <div aria-hidden="true" style="font-size:3rem;line-height:1;margin-bottom:1rem;color:var(--error);">!</div>
+                    <h1 id="error-page-heading" class="text-2xl font-bold mb-2">Something Went Wrong</h1>
+                    <p class="text-gray-600 mb-6">${safeMessage}</p>
+                    <div class="flex gap-3 justify-center flex-wrap">
+                        <button class="btn btn-primary" onclick="location.reload()" style="min-height:44px;">Reload Page</button>
+                        <button class="btn btn-secondary" onclick="router.navigate('dashboard')" style="min-height:44px;">Go to Dashboard</button>
+                    </div>
+                </div>
+            </main>
         `;
     },
 

@@ -4,19 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#6366f1">
-    <meta name="description" content="VaultLister - All-in-one multi-channel reselling platform">
+    <meta name="description" content="VaultLister - All-in-one multi-channel reselling platform for cross-listing, inventory management, and reseller automation.">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="VaultLister">
+    <meta name="application-name" content="VaultLister">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- OG / Social meta — update content values per-page via server-side rendering if needed -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="VaultLister">
+    <meta property="og:title" content="VaultLister - Multi-Channel Reselling Platform">
+    <meta property="og:description" content="List to 9+ marketplaces, manage inventory, and automate reseller workflows with AI-powered tools.">
+    <meta property="og:url" content="https://vaultlister.com/">
+    <meta property="og:image" content="https://vaultlister.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="VaultLister - Multi-Channel Reselling Platform">
+    <meta name="twitter:description" content="List to 9+ marketplaces, manage inventory, and automate reseller workflows with AI-powered tools.">
+    <meta name="twitter:image" content="https://vaultlister.com/assets/og-image.png">
 
     <title>VaultLister - Multi-Channel Reselling Platform</title>
     <link rel="canonical" href="https://vaultlister.com/"> <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -->
+
+    <!-- Preconnect to API origin to reduce DNS + TLS handshake latency -->
+    <link rel="preconnect" href="https://vaultlister.com">
+    <link rel="dns-prefetch" href="https://vaultlister.com">
+
+    <!-- Preload critical CSS and JS so they start fetching ASAP -->
+    <link rel="preload" href="/styles/main.css?v=90a3d988" as="style">
+    <link rel="preload" href="/core-bundle.js?v=90a3d988" as="script">
+    <link rel="preload" href="/fonts/inter.css" as="style">
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.webmanifest">
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 
     <!-- Fonts (self-hosted — see public/fonts/ for download instructions) -->
     <link rel="stylesheet" href="/fonts/inter.css">

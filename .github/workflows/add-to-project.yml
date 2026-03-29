@@ -6,6 +6,8 @@ on:
   pull_request:
     types: [opened, reopened]
 
+permissions: {}
+
 jobs:
   add-to-development-board:
     name: Add to Development Board

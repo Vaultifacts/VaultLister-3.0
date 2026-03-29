@@ -12,22 +12,25 @@ jobs:
   backfill-development-board:
     name: Backfill to Development Board (project 1)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
           script: |
-            // Get project 1 node ID
-            const proj1 = await github.graphql(`
-              query { user(login: "${context.repo.owner}") { projectV2(number: 1) { id } } }
-            `);
+            const proj1 = await github.graphql(
+              `query($login: String!) {
+                user(login: $login) { projectV2(number: 1) { id } }
+              }`,
+              { login: context.repo.owner }
+            );
             const projectId = proj1.user.projectV2.id;
 
-            // Get all open issues WITHOUT launch-checklist label
+            // Get all issues (open and closed) WITHOUT launch-checklist label
             const { data: issues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: 'open',
+              state: 'all',
               per_page: 100
             });
 
@@ -56,18 +59,21 @@ jobs:
   backfill-launch-checklist:
     name: Backfill to Launch Checklist Board (project 2)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
           script: |
-            // Get project 2 node ID
-            const proj2 = await github.graphql(`
-              query { user(login: "${context.repo.owner}") { projectV2(number: 2) { id } } }
-            `);
+            const proj2 = await github.graphql(
+              `query($login: String!) {
+                user(login: $login) { projectV2(number: 2) { id } }
+              }`,
+              { login: context.repo.owner }
+            );
             const projectId = proj2.user.projectV2.id;
 
-            // Get all issues with launch-checklist label
+            // Get all open issues with launch-checklist label
             const { data: issues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -76,10 +82,9 @@ jobs:
               per_page: 100
             });
 
-            core.notice(`Adding ${issues.length} launch-checklist issues to Launch Checklist Board`);
-
-            for (const issue of issues) {
-              if (issue.pull_request) continue;
+            const checklistIssues = issues.filter(i => !i.pull_request);
+            core.notice(`Adding ${checklistIssues.length} launch-checklist issues to Launch Checklist Board`);
+            for (const issue of checklistIssues) {
               try {
                 await github.graphql(`
                   mutation($projectId: ID!, $contentId: ID!) {
