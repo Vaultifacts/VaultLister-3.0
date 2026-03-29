@@ -10,6 +10,7 @@ const REDIS_ENABLED = process.env.REDIS_ENABLED !== 'false';
 let redisClient = null;
 let isConnected = false;
 let connectionAttempts = 0;
+let _shutdownRegistered = false;
 const MAX_RECONNECT_ATTEMPTS = 3;
 
 // In-memory fallback for when Redis is unavailable
@@ -63,6 +64,17 @@ export function initRedis() {
             logger.warn('[Redis] Failed to connect, using in-memory fallback', { detail: err.message });
             isConnected = false;
         });
+
+        // Register graceful shutdown handlers once
+        if (!_shutdownRegistered) {
+            _shutdownRegistered = true;
+            const gracefulShutdown = async (signal) => {
+                logger.info(`[Redis] Received ${signal}, closing connection...`);
+                await closeRedis();
+            };
+            process.once('SIGTERM', () => gracefulShutdown('SIGTERM'));
+            process.once('SIGINT', () => gracefulShutdown('SIGINT'));
+        }
 
         return redisClient;
     } catch (error) {
@@ -253,14 +265,21 @@ export function getClient() {
 }
 
 /**
- * Close Redis connection
+ * Close Redis connection and remove all event listeners
  */
 export async function closeRedis() {
     if (redisClient) {
-        await redisClient.quit();
-        redisClient = null;
-        isConnected = false;
-        logger.info('[Redis] Connection closed');
+        try {
+            redisClient.removeAllListeners();
+            await redisClient.quit();
+        } catch (err) {
+            // Force disconnect if graceful quit fails
+            try { redisClient.disconnect(); } catch (_) { /* ignore */ }
+        } finally {
+            redisClient = null;
+            isConnected = false;
+            logger.info('[Redis] Connection closed');
+        }
     }
 }
 

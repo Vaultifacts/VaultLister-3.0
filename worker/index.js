@@ -4,7 +4,7 @@
 //
 // Required env vars: REDIS_URL, DATABASE_URL
 
-import { Worker } from 'bullmq';
+import { Worker, QueueEvents } from 'bullmq';
 import { query, initializeDatabase, closeDatabase } from '../src/backend/db/database.js';
 import { logger } from '../src/backend/shared/logger.js';
 
@@ -22,6 +22,33 @@ await initializeDatabase();
 logger.info('[Worker] Database connected');
 
 const connection = { url: REDIS_URL };
+
+// Stale job detection: mark tasks stuck in 'active' state for > 10 minutes as failed
+const STALE_JOB_THRESHOLD_MS = 10 * 60 * 1000;
+async function cleanStaleJobs() {
+    try {
+        const staleRows = await query.all(
+            `SELECT id FROM tasks WHERE status = 'processing'
+             AND started_at < NOW() - INTERVAL '10 minutes'`,
+            []
+        );
+        if (staleRows.length > 0) {
+            const ids = staleRows.map(r => r.id);
+            const placeholders = ids.map(() => '?').join(',');
+            await query.run(
+                `UPDATE tasks SET status = 'failed', error_message = 'Job timed out (stale active state)'
+                 WHERE id IN (${placeholders})`,
+                ids
+            );
+            logger.warn(`[Worker] Cleaned ${staleRows.length} stale active job(s)`);
+        }
+    } catch (err) {
+        logger.error('[Worker] Stale job cleanup error:', err.message);
+    }
+}
+
+// Run stale job cleanup every 5 minutes
+const staleCleanupInterval = setInterval(cleanStaleJobs, 5 * 60 * 1000);
 
 const worker = new Worker('automation-jobs', async (job) => {
     const { taskId, userId, type, payload } = job.data;
@@ -130,6 +157,12 @@ const worker = new Worker('automation-jobs', async (job) => {
 }, {
     connection,
     concurrency: 1,
+    // Default job options applied when not overridden per-job
+    defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+        timeout: 300000 // 5 min for bot jobs
+    }
 });
 
 worker.on('completed', (job) => logger.info(`[Worker] Job ${job.id} done`));
@@ -140,6 +173,7 @@ logger.info('[Worker] Listening on queue: automation-jobs');
 // Graceful shutdown
 async function shutdown() {
     logger.info('[Worker] Shutting down...');
+    clearInterval(staleCleanupInterval);
     await worker.close();
     await closeDatabase();
     process.exit(0);

@@ -878,8 +878,16 @@ export async function listingsRouter(ctx) {
 
         const results = { refreshed: [], skipped: [], errors: [] };
 
+        // Batch-fetch all listings in one query instead of N+1
+        const placeholders = listingIds.map(() => '?').join(',');
+        const allListings = await query.all(
+            `SELECT * FROM listings WHERE id IN (${placeholders}) AND user_id = ?`,
+            [...listingIds, user.id]
+        );
+        const listingMap = new Map(allListings.map(l => [l.id, l]));
+
         for (const listingId of listingIds) {
-            const listing = await query.get('SELECT * FROM listings WHERE id = ? AND user_id = ?', [listingId, user.id]);
+            const listing = listingMap.get(listingId);
 
             if (!listing) {
                 results.errors.push({ id: listingId, error: 'Listing not found' });

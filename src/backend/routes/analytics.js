@@ -992,11 +992,20 @@ export async function analyticsRouter(ctx) {
         }
         try {
             let updated = 0;
+            const validItems = items.filter(item => item.id && item.suggested_price != null);
             await query.transaction(async () => {
-                for (const item of items) {
-                    if (!item.id || item.suggested_price == null) continue;
-                    const existing = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [item.id, user.id]);
-                    if (!existing) continue;
+                if (validItems.length === 0) return;
+
+                // Batch-fetch all inventory items in one query instead of N+1
+                const placeholders = validItems.map(() => '?').join(',');
+                const existingRows = await query.all(
+                    `SELECT id FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`,
+                    [...validItems.map(i => i.id), user.id]
+                );
+                const existingIds = new Set(existingRows.map(r => r.id));
+
+                for (const item of validItems) {
+                    if (!existingIds.has(item.id)) continue;
                     await query.run('UPDATE inventory SET list_price = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
                         [item.suggested_price, item.id, user.id]);
 
