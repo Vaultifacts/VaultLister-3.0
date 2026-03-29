@@ -5262,6 +5262,9 @@ const toastQueue = {
         const toast = document.createElement('div');
         toast.className = `toast-notification ${type}`;
         toast.dataset.id = id;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+        toast.setAttribute('aria-atomic', 'true');
 
         const iconMap = {
             success: 'check',
@@ -5285,8 +5288,8 @@ const toastQueue = {
                     </div>
                 ` : ''}
             </div>
-            ${dismissible ? '<div class="toast-close">×</div>' : ''}
-            ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
+            ${dismissible ? '<button class="toast-close" aria-label="Dismiss notification">×</button>' : ''}
+            ${duration > 0 ? `<div class="toast-progress" role="progressbar" aria-label="Auto-dismiss timer" aria-valuemin="0" aria-valuemax="100" style="animation-duration: ${duration}ms"></div>` : ''}
         `);
 
         this.container.appendChild(toast);
@@ -8730,6 +8733,7 @@ const toast = {
         toastEl.setAttribute('role', type === 'error' ? 'alert' : 'status');
         toastEl.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
         toastEl.setAttribute('aria-atomic', 'true');
+        toastEl.setAttribute('aria-label', `${type} notification`);
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         toastEl.innerHTML = sanitizeHTML(`
@@ -8743,7 +8747,7 @@ const toast = {
                 ` : ''}
             </div>
             <button class="toast-close" aria-label="Dismiss notification" onclick="toast.dismiss('${toastId}')">${components.icon('close', 14)}</button>
-            ${showProgress && duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
+            ${showProgress && duration > 0 ? `<div class="toast-progress" role="progressbar" aria-label="Auto-dismiss timer" aria-valuemin="0" aria-valuemax="100" style="animation-duration: ${duration}ms"></div>` : ''}
         `);
 
         container.appendChild(toastEl);
@@ -11549,7 +11553,7 @@ const quickFilters = {
                     </button>
                 `).join('')}
                 ${this.activeFilters.size > 0 ? `
-                    <span class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})">Clear all</span>
+                    <button class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})" aria-label="Clear all filters">Clear all</button>
                 ` : ''}
             </div>
         `;
@@ -15957,8 +15961,8 @@ const components = {
                 </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
-                        <div class="shop-switch-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="true">
+                        <div class="shop-switch-dropdown dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="listbox" tabindex="-1">
                                 <div class="shop-switch-current">
                                     ${activeShop ? `
                                         <span class="shop-switch-platform" style="background: ${this.getPlatformColor(activeShop.platform)}">${activeShop.platform.charAt(0).toUpperCase()}</span>
@@ -16048,8 +16052,8 @@ const components = {
                     <button class="header-icon-btn" onclick="handlers.showKeyboardShortcuts()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
                         ${this.icon('help')}
                     </button>
-                    <div class="notifications-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="true">
+                    <div class="notifications-dropdown dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="listbox" tabindex="-1">
                             ${this.icon('bell')}
                             <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>
@@ -16076,8 +16080,8 @@ const components = {
                             </button>
                         </div>
                     </div>
-                    <div class="user-menu dropdown" onclick="this.classList.toggle('open')">
-                        <div class="user-avatar">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
+                    <div class="user-menu dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                        <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
                                 ${this.icon('user', 16)} Account
@@ -16194,7 +16198,7 @@ const components = {
             }
             return conversations.map(conv => `
                 <div class="vault-buddy-chat-item" style="position: relative;">
-                    <div onclick="handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}')" style="cursor: pointer;">
+                    <div role="button" tabindex="0" onclick="handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}');}" style="cursor: pointer;" aria-label="Open conversation: ${escapeHtml(conv.title || 'New Chat')}">
                         <h5>${escapeHtml(conv.title || 'New Chat')}</h5>
                         <p>${escapeHtml(conv.last_message || 'No messages yet')}</p>
                         <div class="vault-buddy-chat-item-time">${formatTime(conv.updated_at || conv.created_at)}</div>
@@ -16307,7 +16311,7 @@ const components = {
 
     // Stat card component with optional sparkline
     statCard(title, value, icon, change = null, color = 'primary', sparklineData = null, dataType = null) {
-        const sparkline = sparklineData ? `<div class="sparkline-clickable" onclick="event.stopPropagation(); handlers.expandSparkline('${dataType || title.toLowerCase()}')" title="Click to expand chart" style="cursor: pointer;">${this.sparkline(sparklineData, color)}</div>` : '';
+        const sparkline = sparklineData ? `<div class="sparkline-clickable" role="button" tabindex="0" onclick="event.stopPropagation(); handlers.expandSparkline('${dataType || title.toLowerCase()}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();handlers.expandSparkline('${dataType || title.toLowerCase()}');}" title="Click to expand chart" aria-label="Expand ${escapeHtml(title)} chart" style="cursor: pointer;">${this.sparkline(sparklineData, color)}</div>` : '';
         const periodLabel = store.state.comparisonPeriod === 'month' ? 'vs last month' : store.state.comparisonPeriod === 'year' ? 'vs last year' : 'vs last week';
         return `
             <div class="stat-card">
@@ -16669,7 +16673,7 @@ const components = {
         const { onSave = '', prefix = '', suffix = '', min = '', max = '', step = '' } = options;
         return `
             <span class="inline-edit" data-field="${fieldId}" data-value="${escapeHtml(value)}">
-                <span class="inline-edit-display" onclick="inlineEditor.startEdit('${fieldId}')">${prefix}${escapeHtml(value)}${suffix}</span>
+                <span class="inline-edit-display" role="button" tabindex="0" aria-label="Edit field" onclick="inlineEditor.startEdit('${fieldId}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();inlineEditor.startEdit('${fieldId}');}">${prefix}${escapeHtml(value)}${suffix}</span>
                 <input type="${type}" class="inline-edit-input hidden" value="${escapeHtml(value)}" aria-label="Edit field"
                     ${min ? `min="${min}"` : ''} ${max ? `max="${max}"` : ''} ${step ? `step="${step}"` : ''}
                     onblur="inlineEditor.save('${fieldId}')"
@@ -16756,7 +16760,7 @@ const components = {
                 ${!isMinimized ? `
                 <div class="onboarding-steps">
                     ${steps.map((step, i) => `
-                        <div class="onboarding-step ${step.completed ? 'completed' : ''}" onclick="${step.action || ''}">
+                        <div class="onboarding-step ${step.completed ? 'completed' : ''}" ${step.action ? `role="button" tabindex="0" onclick="${step.action}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();(${step.action})();}" aria-label="${escapeHtml(step.title)}"` : ''}>
                             <div class="onboarding-step-check">
                                 ${step.completed ? this.icon('check', 14) : `<span>${i + 1}</span>`}
                             </div>
@@ -16879,7 +16883,7 @@ const components = {
                     </button>
                 `).join('')}
                 ${activeFilters.length > 0 ? `
-                    <span class="filter-pills-clear" onclick="quickFilters.clearAll()">Clear all</span>
+                    <button class="filter-pills-clear" onclick="quickFilters.clearAll()" aria-label="Clear all filters">Clear all</button>
                 ` : ''}
             </div>
         `;
@@ -17463,7 +17467,7 @@ const components = {
         // Ensure we have an image before showing the editor
         if (!image) {
             return `
-                <div class="photo-editor-overlay" onclick="handlers.closePhotoEditor()">
+                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" onclick="handlers.closePhotoEditor()">
                     <div class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>
@@ -20846,6 +20850,7 @@ const pages = {
                                 <label for="login-email" class="form-label">Email</label>
                                 <input id="login-email" type="email" class="form-input" name="email" required
                                        autocomplete="email" aria-label="Email address" aria-describedby="login-email-error"
+                                       maxlength="254" placeholder="you@example.com"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-email-error" role="alert">Please enter a valid email address</span>
                             </div>
@@ -20854,6 +20859,7 @@ const pages = {
                                 <input id="login-password" type="password" class="form-input" name="password" required
                                        autocomplete="current-password" aria-label="Password"
                                        aria-describedby="login-password-error"
+                                       minlength="8" maxlength="128"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-password-error" role="alert">Password is required</span>
                             </div>
@@ -20904,12 +20910,13 @@ const pages = {
                             <div class="form-group">
                                 <label for="reg-email" class="form-label">Email</label>
                                 <input id="reg-email" type="email" class="form-input" name="email" required
-                                       autocomplete="email" aria-label="Email address" placeholder="you@example.com">
+                                       autocomplete="email" aria-label="Email address" placeholder="you@example.com"
+                                       maxlength="254">
                             </div>
                             <div class="form-group">
                                 <label for="reg-username" class="form-label">Username</label>
                                 <input id="reg-username" type="text" class="form-input" name="username" required
-                                       autocomplete="username" aria-label="Username" placeholder="Choose a username" minlength="3">
+                                       autocomplete="username" aria-label="Username" placeholder="Choose a username" minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscores only">
                             </div>
                             <div class="form-group">
                                 <label for="reg-password" class="form-label">Password</label>
@@ -20943,7 +20950,7 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="reg-confirm-password" class="form-label">Confirm Password</label>
-                                <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password">
+                                <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password" minlength="12" maxlength="128">
                             </div>
                             <button type="submit" id="register-submit-btn" class="btn btn-primary w-full mb-4">Create Account</button>
                             <div class="social-divider">Or continue with</div>
@@ -21508,10 +21515,10 @@ const modals = {
             const container = document.getElementById('modal-container');
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
-                <div class="modal-overlay" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
+                <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
-                            <h2 class="modal-title">${escapeHtml(title)}</h2>
+                            <h2 class="modal-title" id="confirm-modal-title">${escapeHtml(title)}</h2>
                             <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); modals.close();">${components.icon('close')}</button>
                         </div>
                         <div class="modal-body">
@@ -21525,6 +21532,27 @@ const modals = {
                 </div>
             `));
             document.getElementById('main-content')?.setAttribute('inert', '');
+            this._escapeHandler = (e) => {
+                if (e.key === 'Escape') {
+                    this._confirmResolve = null;
+                    this._confirmReject = null;
+                    resolve(false);
+                    this.close();
+                }
+            };
+            this._focusTrapHandler = (e) => {
+                if (e.key !== 'Tab') return;
+                const modal = container.querySelector('.modal');
+                if (!modal) return;
+                const focusable = Array.from(modal.querySelectorAll('button:not([disabled])')).filter(el => el.offsetParent !== null);
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            };
+            document.addEventListener('keydown', this._escapeHandler);
+            document.addEventListener('keydown', this._focusTrapHandler);
             document.getElementById('confirm-cancel-btn').onclick = () => {
                 this._confirmResolve = null;
                 this._confirmReject = null;
@@ -21537,6 +21565,7 @@ const modals = {
                 resolve(true);
                 this.close();
             };
+            document.getElementById('confirm-cancel-btn').focus();
         });
     },
 
@@ -21556,15 +21585,22 @@ const modals = {
                 inputHTML = `<input id="prompt-input" type="${inputType}" class="form-input" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(defaultValue)}" style="width:100%;">`;
             }
 
+            const cleanupPrompt = () => {
+                document.getElementById('main-content')?.removeAttribute('inert');
+                if (this._escapeHandler) { document.removeEventListener('keydown', this._escapeHandler); this._escapeHandler = null; }
+                if (this._focusTrapHandler) { document.removeEventListener('keydown', this._focusTrapHandler); this._focusTrapHandler = null; }
+                container.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                if (this._previouslyFocused && typeof this._previouslyFocused.focus === 'function') { this._previouslyFocused.focus(); this._previouslyFocused = null; }
+            };
             const submitFn = () => {
                 const val = document.getElementById('prompt-input')?.value || '';
                 this._promptResolve = null;
-                container.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                cleanupPrompt();
                 resolve(val);
             };
             const cancelFn = () => {
                 this._promptResolve = null;
-                container.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                cleanupPrompt();
                 resolve(null);
             };
 
@@ -21592,12 +21628,26 @@ const modals = {
             document.getElementById('prompt-close-btn').onclick = cancelFn;
             document.getElementById('prompt-cancel-btn').onclick = cancelFn;
             document.getElementById('prompt-ok-btn').onclick = submitFn;
+            document.getElementById('main-content')?.setAttribute('inert', '');
+            this._escapeHandler = (e) => { if (e.key === 'Escape') cancelFn(); };
+            this._focusTrapHandler = (e) => {
+                if (e.key !== 'Tab') return;
+                const modal = container.querySelector('.modal');
+                if (!modal) return;
+                const focusable = Array.from(modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])')).filter(el => el.offsetParent !== null);
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            };
+            document.addEventListener('keydown', this._escapeHandler);
+            document.addEventListener('keydown', this._focusTrapHandler);
 
             const input = document.getElementById('prompt-input');
             if (!selectOptions) {
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && inputType !== 'textarea') submitFn();
-                    if (e.key === 'Escape') cancelFn();
                 });
             }
 
@@ -21708,7 +21758,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label for="add-item-title" class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required>
+                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)">
                     </div>
                     <div class="form-group">
                         <div class="flex justify-between items-center mb-2">
@@ -21717,13 +21767,13 @@ const modals = {
                                 Auto-Generate
                             </button>
                         </div>
-                        <input type="text" class="form-input" name="sku" id="add-item-sku" placeholder="Leave blank to auto-generate">
+                        <input type="text" class="form-input" name="sku" id="add-item-sku" placeholder="Leave blank to auto-generate" maxlength="50" pattern="[A-Za-z0-9\-_./]+" title="Letters, numbers, hyphens, underscores, dots, and slashes only">
                         <p class="text-xs text-gray-500 mt-1">Unique identifier for this item. Will be auto-generated if left blank and a default rule exists.</p>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="add-item-brand" class="form-label">Brand</label>
-                            <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand">
+                            <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand" maxlength="50">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
@@ -21776,7 +21826,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="add-item-color" class="form-label">Color</label>
-                            <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color">
+                            <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color" maxlength="50">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
@@ -21944,11 +21994,11 @@ const modals = {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <input type="text" class="form-input" name="location" id="add-item-location" placeholder="e.g., Warehouse A, Storage Room">
+                                <input type="text" class="form-input" name="location" id="add-item-location" placeholder="e.g., Warehouse A, Storage Room" maxlength="100">
                                 <p class="text-xs text-gray-500 mt-1">General location or area</p>
                             </div>
                             <div>
-                                <input type="text" class="form-input" name="binLocation" id="add-item-bin" placeholder="e.g., A1-03-B, Shelf 2 Bin 4">
+                                <input type="text" class="form-input" name="binLocation" id="add-item-bin" placeholder="e.g., A1-03-B, Shelf 2 Bin 4" maxlength="50">
                                 <p class="text-xs text-gray-500 mt-1">Specific bin/shelf position</p>
                             </div>
                         </div>
@@ -28748,6 +28798,34 @@ document.addEventListener('keydown', function(e) {
         e.preventDefault();
         const quickAdd = document.getElementById('todo-quick-add');
         if (quickAdd) quickAdd.focus();
+    }
+});
+
+// Dropdown keyboard navigation: ArrowDown/Up to move between items, Escape to close (#232)
+document.addEventListener('keydown', function(e) {
+    const openDropdown = document.querySelector('.dropdown.open');
+    if (!openDropdown) return;
+
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        openDropdown.classList.remove('open');
+        openDropdown.setAttribute('aria-expanded', 'false');
+        openDropdown.focus();
+        return;
+    }
+
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const items = Array.from(openDropdown.querySelectorAll('.dropdown-menu button:not([disabled]), .dropdown-menu a:not([disabled]), .shop-switch-menu button:not([disabled])'))
+            .filter(el => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const current = document.activeElement;
+        const idx = items.indexOf(current);
+        if (e.key === 'ArrowDown') {
+            items[idx + 1 < items.length ? idx + 1 : 0].focus();
+        } else {
+            items[idx - 1 >= 0 ? idx - 1 : items.length - 1].focus();
+        }
     }
 });
 

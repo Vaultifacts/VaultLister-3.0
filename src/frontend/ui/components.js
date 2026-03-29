@@ -231,8 +231,8 @@ const components = {
                 </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
-                        <div class="shop-switch-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="true">
+                        <div class="shop-switch-dropdown dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="listbox" tabindex="-1">
                                 <div class="shop-switch-current">
                                     ${activeShop ? `
                                         <span class="shop-switch-platform" style="background: ${this.getPlatformColor(activeShop.platform)}">${activeShop.platform.charAt(0).toUpperCase()}</span>
@@ -322,8 +322,8 @@ const components = {
                     <button class="header-icon-btn" onclick="handlers.showKeyboardShortcuts()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
                         ${this.icon('help')}
                     </button>
-                    <div class="notifications-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="true">
+                    <div class="notifications-dropdown dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="listbox" tabindex="-1">
                             ${this.icon('bell')}
                             <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>
@@ -350,8 +350,8 @@ const components = {
                             </button>
                         </div>
                     </div>
-                    <div class="user-menu dropdown" onclick="this.classList.toggle('open')">
-                        <div class="user-avatar">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
+                    <div class="user-menu dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="User menu" onclick="const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                        <div class="user-avatar" aria-hidden="true">${store.state.user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div class="dropdown-menu">
                             <button class="dropdown-item" onclick="router.navigate('account')" aria-label="Account">
                                 ${this.icon('user', 16)} Account
@@ -468,7 +468,7 @@ const components = {
             }
             return conversations.map(conv => `
                 <div class="vault-buddy-chat-item" style="position: relative;">
-                    <div onclick="handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}')" style="cursor: pointer;">
+                    <div role="button" tabindex="0" onclick="handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}');}" style="cursor: pointer;" aria-label="Open conversation: ${escapeHtml(conv.title || 'New Chat')}">
                         <h5>${escapeHtml(conv.title || 'New Chat')}</h5>
                         <p>${escapeHtml(conv.last_message || 'No messages yet')}</p>
                         <div class="vault-buddy-chat-item-time">${formatTime(conv.updated_at || conv.created_at)}</div>
@@ -581,7 +581,7 @@ const components = {
 
     // Stat card component with optional sparkline
     statCard(title, value, icon, change = null, color = 'primary', sparklineData = null, dataType = null) {
-        const sparkline = sparklineData ? `<div class="sparkline-clickable" onclick="event.stopPropagation(); handlers.expandSparkline('${dataType || title.toLowerCase()}')" title="Click to expand chart" style="cursor: pointer;">${this.sparkline(sparklineData, color)}</div>` : '';
+        const sparkline = sparklineData ? `<div class="sparkline-clickable" role="button" tabindex="0" onclick="event.stopPropagation(); handlers.expandSparkline('${dataType || title.toLowerCase()}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();handlers.expandSparkline('${dataType || title.toLowerCase()}');}" title="Click to expand chart" aria-label="Expand ${escapeHtml(title)} chart" style="cursor: pointer;">${this.sparkline(sparklineData, color)}</div>` : '';
         const periodLabel = store.state.comparisonPeriod === 'month' ? 'vs last month' : store.state.comparisonPeriod === 'year' ? 'vs last year' : 'vs last week';
         return `
             <div class="stat-card">
@@ -943,7 +943,7 @@ const components = {
         const { onSave = '', prefix = '', suffix = '', min = '', max = '', step = '' } = options;
         return `
             <span class="inline-edit" data-field="${fieldId}" data-value="${escapeHtml(value)}">
-                <span class="inline-edit-display" onclick="inlineEditor.startEdit('${fieldId}')">${prefix}${escapeHtml(value)}${suffix}</span>
+                <span class="inline-edit-display" role="button" tabindex="0" aria-label="Edit field" onclick="inlineEditor.startEdit('${fieldId}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();inlineEditor.startEdit('${fieldId}');}">${prefix}${escapeHtml(value)}${suffix}</span>
                 <input type="${type}" class="inline-edit-input hidden" value="${escapeHtml(value)}" aria-label="Edit field"
                     ${min ? `min="${min}"` : ''} ${max ? `max="${max}"` : ''} ${step ? `step="${step}"` : ''}
                     onblur="inlineEditor.save('${fieldId}')"
@@ -1030,7 +1030,7 @@ const components = {
                 ${!isMinimized ? `
                 <div class="onboarding-steps">
                     ${steps.map((step, i) => `
-                        <div class="onboarding-step ${step.completed ? 'completed' : ''}" onclick="${step.action || ''}">
+                        <div class="onboarding-step ${step.completed ? 'completed' : ''}" ${step.action ? `role="button" tabindex="0" onclick="${step.action}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();(${step.action})();}" aria-label="${escapeHtml(step.title)}"` : ''}>
                             <div class="onboarding-step-check">
                                 ${step.completed ? this.icon('check', 14) : `<span>${i + 1}</span>`}
                             </div>
@@ -1153,7 +1153,7 @@ const components = {
                     </button>
                 `).join('')}
                 ${activeFilters.length > 0 ? `
-                    <span class="filter-pills-clear" onclick="quickFilters.clearAll()">Clear all</span>
+                    <button class="filter-pills-clear" onclick="quickFilters.clearAll()" aria-label="Clear all filters">Clear all</button>
                 ` : ''}
             </div>
         `;
@@ -1737,7 +1737,7 @@ const components = {
         // Ensure we have an image before showing the editor
         if (!image) {
             return `
-                <div class="photo-editor-overlay" onclick="handlers.closePhotoEditor()">
+                <div class="photo-editor-overlay" role="dialog" aria-modal="true" aria-label="AI Photo Editor" onclick="handlers.closePhotoEditor()">
                     <div class="photo-editor-modal" onclick="event.stopPropagation()">
                         <div class="photo-editor-header">
                             <h2>AI Photo Editor</h2>

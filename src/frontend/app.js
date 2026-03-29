@@ -5241,6 +5241,9 @@ const toastQueue = {
         const toast = document.createElement('div');
         toast.className = `toast-notification ${type}`;
         toast.dataset.id = id;
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+        toast.setAttribute('aria-atomic', 'true');
 
         const iconMap = {
             success: 'check',
@@ -5264,8 +5267,8 @@ const toastQueue = {
                     </div>
                 ` : ''}
             </div>
-            ${dismissible ? '<div class="toast-close">×</div>' : ''}
-            ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
+            ${dismissible ? '<button class="toast-close" aria-label="Dismiss notification">×</button>' : ''}
+            ${duration > 0 ? `<div class="toast-progress" role="progressbar" aria-label="Auto-dismiss timer" aria-valuemin="0" aria-valuemax="100" style="animation-duration: ${duration}ms"></div>` : ''}
         `);
 
         this.container.appendChild(toast);
@@ -8579,6 +8582,8 @@ const toast = {
         toastEl.className = `toast toast-${type}`;
         toastEl.setAttribute('role', type === 'error' ? 'alert' : 'status');
         toastEl.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+        toastEl.setAttribute('aria-atomic', 'true');
+        toastEl.setAttribute('aria-label', `${type} notification`);
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         toastEl.innerHTML = sanitizeHTML(`
@@ -8592,7 +8597,7 @@ const toast = {
                 ` : ''}
             </div>
             <button class="toast-close" aria-label="Dismiss notification" onclick="toast.dismiss('${toastId}')">${components.icon('close', 14)}</button>
-            ${showProgress && duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
+            ${showProgress && duration > 0 ? `<div class="toast-progress" role="progressbar" aria-label="Auto-dismiss timer" aria-valuemin="0" aria-valuemax="100" style="animation-duration: ${duration}ms"></div>` : ''}
         `);
 
         container.appendChild(toastEl);
@@ -11441,7 +11446,7 @@ const quickFilters = {
                     </button>
                 `).join('')}
                 ${this.activeFilters.size > 0 ? `
-                    <span class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})">Clear all</span>
+                    <button class="filter-pills-clear" onclick="quickFilters.clearAll(${onChange})" aria-label="Clear all filters">Clear all</button>
                 ` : ''}
             </div>
         `;
@@ -15597,8 +15602,8 @@ const components = {
                 </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
-                        <div class="shop-switch-dropdown dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button class="shop-switch-btn" title="Switch Shop">
+                        <div class="shop-switch-dropdown dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
+                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="listbox" tabindex="-1">
                                 <div class="shop-switch-current">
                                     ${activeShop ? `
                                         <span class="shop-switch-platform" style="background: ${this.getPlatformColor(activeShop.platform)}">${activeShop.platform.charAt(0).toUpperCase()}</span>
@@ -16508,7 +16513,7 @@ const components = {
                     </button>
                 `).join('')}
                 ${activeFilters.length > 0 ? `
-                    <span class="filter-pills-clear" onclick="quickFilters.clearAll()">Clear all</span>
+                    <button class="filter-pills-clear" onclick="quickFilters.clearAll()" aria-label="Clear all filters">Clear all</button>
                 ` : ''}
             </div>
         `;

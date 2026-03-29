@@ -3147,6 +3147,7 @@ const pages = {
                                 <label for="login-email" class="form-label">Email</label>
                                 <input id="login-email" type="email" class="form-input" name="email" required
                                        autocomplete="email" aria-label="Email address" aria-describedby="login-email-error"
+                                       maxlength="254" placeholder="you@example.com"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-email-error" role="alert">Please enter a valid email address</span>
                             </div>
@@ -3155,6 +3156,7 @@ const pages = {
                                 <input id="login-password" type="password" class="form-input" name="password" required
                                        autocomplete="current-password" aria-label="Password"
                                        aria-describedby="login-password-error"
+                                       minlength="8" maxlength="128"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-password-error" role="alert">Password is required</span>
                             </div>
@@ -3205,12 +3207,13 @@ const pages = {
                             <div class="form-group">
                                 <label for="reg-email" class="form-label">Email</label>
                                 <input id="reg-email" type="email" class="form-input" name="email" required
-                                       autocomplete="email" aria-label="Email address" placeholder="you@example.com">
+                                       autocomplete="email" aria-label="Email address" placeholder="you@example.com"
+                                       maxlength="254">
                             </div>
                             <div class="form-group">
                                 <label for="reg-username" class="form-label">Username</label>
                                 <input id="reg-username" type="text" class="form-input" name="username" required
-                                       autocomplete="username" aria-label="Username" placeholder="Choose a username" minlength="3">
+                                       autocomplete="username" aria-label="Username" placeholder="Choose a username" minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscores only">
                             </div>
                             <div class="form-group">
                                 <label for="reg-password" class="form-label">Password</label>
@@ -3244,7 +3247,7 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="reg-confirm-password" class="form-label">Confirm Password</label>
-                                <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password">
+                                <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password" minlength="12" maxlength="128">
                             </div>
                             <button type="submit" id="register-submit-btn" class="btn btn-primary w-full mb-4">Create Account</button>
                             <div class="social-divider">Or continue with</div>

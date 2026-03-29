@@ -101,10 +101,10 @@ const modals = {
             const container = document.getElementById('modal-container');
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             container.innerHTML =sanitizeHTML( sanitizeHTML(`
-                <div class="modal-overlay" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
+                <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" onclick="${danger ? '' : 'modals._confirmReject(); modals.close();'}">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 440px;">
                         <div class="modal-header">
-                            <h2 class="modal-title">${escapeHtml(title)}</h2>
+                            <h2 class="modal-title" id="confirm-modal-title">${escapeHtml(title)}</h2>
                             <button class="modal-close" aria-label="Close" onclick="modals._confirmReject(); modals.close();">${components.icon('close')}</button>
                         </div>
                         <div class="modal-body">
@@ -118,6 +118,27 @@ const modals = {
                 </div>
             `));
             document.getElementById('main-content')?.setAttribute('inert', '');
+            this._escapeHandler = (e) => {
+                if (e.key === 'Escape') {
+                    this._confirmResolve = null;
+                    this._confirmReject = null;
+                    resolve(false);
+                    this.close();
+                }
+            };
+            this._focusTrapHandler = (e) => {
+                if (e.key !== 'Tab') return;
+                const modal = container.querySelector('.modal');
+                if (!modal) return;
+                const focusable = Array.from(modal.querySelectorAll('button:not([disabled])')).filter(el => el.offsetParent !== null);
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            };
+            document.addEventListener('keydown', this._escapeHandler);
+            document.addEventListener('keydown', this._focusTrapHandler);
             document.getElementById('confirm-cancel-btn').onclick = () => {
                 this._confirmResolve = null;
                 this._confirmReject = null;
@@ -130,6 +151,7 @@ const modals = {
                 resolve(true);
                 this.close();
             };
+            document.getElementById('confirm-cancel-btn').focus();
         });
     },
 
@@ -149,15 +171,22 @@ const modals = {
                 inputHTML = `<input id="prompt-input" type="${inputType}" class="form-input" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(defaultValue)}" style="width:100%;">`;
             }
 
+            const cleanupPrompt = () => {
+                document.getElementById('main-content')?.removeAttribute('inert');
+                if (this._escapeHandler) { document.removeEventListener('keydown', this._escapeHandler); this._escapeHandler = null; }
+                if (this._focusTrapHandler) { document.removeEventListener('keydown', this._focusTrapHandler); this._focusTrapHandler = null; }
+                container.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                if (this._previouslyFocused && typeof this._previouslyFocused.focus === 'function') { this._previouslyFocused.focus(); this._previouslyFocused = null; }
+            };
             const submitFn = () => {
                 const val = document.getElementById('prompt-input')?.value || '';
                 this._promptResolve = null;
-                container.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                cleanupPrompt();
                 resolve(val);
             };
             const cancelFn = () => {
                 this._promptResolve = null;
-                container.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                cleanupPrompt();
                 resolve(null);
             };
 
@@ -185,12 +214,26 @@ const modals = {
             document.getElementById('prompt-close-btn').onclick = cancelFn;
             document.getElementById('prompt-cancel-btn').onclick = cancelFn;
             document.getElementById('prompt-ok-btn').onclick = submitFn;
+            document.getElementById('main-content')?.setAttribute('inert', '');
+            this._escapeHandler = (e) => { if (e.key === 'Escape') cancelFn(); };
+            this._focusTrapHandler = (e) => {
+                if (e.key !== 'Tab') return;
+                const modal = container.querySelector('.modal');
+                if (!modal) return;
+                const focusable = Array.from(modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])')).filter(el => el.offsetParent !== null);
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            };
+            document.addEventListener('keydown', this._escapeHandler);
+            document.addEventListener('keydown', this._focusTrapHandler);
 
             const input = document.getElementById('prompt-input');
             if (!selectOptions) {
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && inputType !== 'textarea') submitFn();
-                    if (e.key === 'Escape') cancelFn();
                 });
             }
 
@@ -301,7 +344,7 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label for="add-item-title" class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required>
+                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)">
                     </div>
                     <div class="form-group">
                         <div class="flex justify-between items-center mb-2">
@@ -310,13 +353,13 @@ const modals = {
                                 Auto-Generate
                             </button>
                         </div>
-                        <input type="text" class="form-input" name="sku" id="add-item-sku" placeholder="Leave blank to auto-generate">
+                        <input type="text" class="form-input" name="sku" id="add-item-sku" placeholder="Leave blank to auto-generate" maxlength="50" pattern="[A-Za-z0-9\-_./]+" title="Letters, numbers, hyphens, underscores, dots, and slashes only">
                         <p class="text-xs text-gray-500 mt-1">Unique identifier for this item. Will be auto-generated if left blank and a default rule exists.</p>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="add-item-brand" class="form-label">Brand</label>
-                            <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand">
+                            <input type="text" class="form-input" name="brand" id="add-item-brand" data-testid="add-item-brand" maxlength="50">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Category</label>
@@ -369,7 +412,7 @@ const modals = {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="add-item-color" class="form-label">Color</label>
-                            <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color">
+                            <input type="text" class="form-input" name="color" id="add-item-color" data-testid="add-item-color" maxlength="50">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
@@ -537,11 +580,11 @@ const modals = {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <input type="text" class="form-input" name="location" id="add-item-location" placeholder="e.g., Warehouse A, Storage Room">
+                                <input type="text" class="form-input" name="location" id="add-item-location" placeholder="e.g., Warehouse A, Storage Room" maxlength="100">
                                 <p class="text-xs text-gray-500 mt-1">General location or area</p>
                             </div>
                             <div>
-                                <input type="text" class="form-input" name="binLocation" id="add-item-bin" placeholder="e.g., A1-03-B, Shelf 2 Bin 4">
+                                <input type="text" class="form-input" name="binLocation" id="add-item-bin" placeholder="e.g., A1-03-B, Shelf 2 Bin 4" maxlength="50">
                                 <p class="text-xs text-gray-500 mt-1">Specific bin/shelf position</p>
                             </div>
                         </div>
