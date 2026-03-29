@@ -9,6 +9,10 @@ permissions:
   contents: read
   security-events: write
 
+concurrency:
+  group: trivy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   trivy:
     runs-on: ubuntu-latest
