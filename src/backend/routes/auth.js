@@ -163,6 +163,21 @@ async function clearLoginAttempts(email, ip) {
     }
 }
 
+// SECURITY: Constant-time comparison for demo password to prevent timing attacks.
+// Returns false immediately (without leaking timing info) when DEMO_PASSWORD is unset.
+function demoPasswordMatch(input) {
+    const envPassword = process.env.DEMO_PASSWORD;
+    if (!envPassword) return false;
+    const expected = Buffer.from(envPassword);
+    const provided = Buffer.from(input);
+    if (expected.length !== provided.length) {
+        // Run a dummy comparison against itself so elapsed time doesn't reveal length.
+        crypto.timingSafeEqual(expected, expected);
+        return false;
+    }
+    return crypto.timingSafeEqual(expected, provided);
+}
+
 async function ensureTestDemoUser() {
     if (!isAuthLockoutBypassed()) {
         return null;
@@ -171,7 +186,8 @@ async function ensureTestDemoUser() {
     const demoEmail = 'demo@vaultlister.com';
     const demoUsername = 'demo';
     const demoFullName = 'Demo User';
-    const demoPassword = process.env.DEMO_PASSWORD || 'DemoPassword123!';
+    const demoPassword = process.env.DEMO_PASSWORD;
+    if (!demoPassword) return null;
 
     let existing = await query.get(
         'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ?',
@@ -336,7 +352,7 @@ export async function authRouter(ctx) {
             const normalizedEmail = email.toLowerCase();
             const isTestDemoLogin = isAuthLockoutBypassed()
                 && normalizedEmail === 'demo@vaultlister.com'
-                && password === (process.env.DEMO_PASSWORD || 'DemoPassword123!');
+                && demoPasswordMatch(password);
 
             let user = await query.get(
                 'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = 1',
