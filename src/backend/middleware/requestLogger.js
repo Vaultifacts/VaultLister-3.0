@@ -20,6 +20,11 @@ function getClientIP(request, headers) {
     const trustProxy = process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true';
 
     if (trustProxy) {
+        const cfConnectingIP = headers['cf-connecting-ip'];
+        if (cfConnectingIP) {
+            return cfConnectingIP;
+        }
+
         const forwardedFor = headers['x-forwarded-for'];
         if (forwardedFor) {
             return forwardedFor.split(',')[0].trim();
