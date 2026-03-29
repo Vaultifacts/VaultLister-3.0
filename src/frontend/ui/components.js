@@ -912,14 +912,7 @@ const components = {
         return `
             <div class="activity-feed">
                 ${items.length > 0 ? items.map(a => this.activityItem(a.icon, a.title, a.description, a.timestamp, a.type)).join('') :
-                    this.emptyState({
-                        icon: 'activity',
-                        title: 'No recent activity',
-                        description: 'Your sales, offers, and listing activity will appear here.',
-                        actionLabel: 'Add Inventory',
-                        actionHandler: "router.navigate('inventory')",
-                        variant: 'compact'
-                    })
+                    this.emptyState('No recent activity', 'Your sales, offers, and listing activity will appear here.', 'Add Inventory', "router.navigate('inventory')")
                 }
             </div>
         `;

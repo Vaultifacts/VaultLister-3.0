@@ -15320,7 +15320,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'ed9cab14';
+    const v = '47c1b33c';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16659,14 +16659,7 @@ const components = {
         return `
             <div class="activity-feed">
                 ${items.length > 0 ? items.map(a => this.activityItem(a.icon, a.title, a.description, a.timestamp, a.type)).join('') :
-                    this.emptyState({
-                        icon: 'activity',
-                        title: 'No recent activity',
-                        description: 'Your sales, offers, and listing activity will appear here.',
-                        actionLabel: 'Add Inventory',
-                        actionHandler: "router.navigate('inventory')",
-                        variant: 'compact'
-                    })
+                    this.emptyState('No recent activity', 'Your sales, offers, and listing activity will appear here.', 'Add Inventory', "router.navigate('inventory')")
                 }
             </div>
         `;
