@@ -2,7 +2,7 @@
 // Provides health checks, metrics, and observability endpoints
 
 import { monitor, healthChecker, securityMonitor } from '../services/monitoring.js';
-import { query } from '../db/database.js';
+import { query, getQueryMetrics } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import websocketService from '../services/websocket.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
@@ -94,6 +94,18 @@ export async function monitoringRouter(ctx) {
             data: prometheus,
             headers: { 'Content-Type': 'text/plain' }
         };
+    }
+
+    // GET /api/metrics/queries - Database query performance metrics (admin only)
+    if (method === 'GET' && path === '/metrics/queries') {
+        if (!user) {
+            return { status: 401, data: { error: 'Authentication required' } };
+        }
+        if (!user.is_admin) {
+            return { status: 403, data: { error: 'Admin access required' } };
+        }
+
+        return { status: 200, data: getQueryMetrics() };
     }
 
     // GET /api/security/events - Security event summary (admin only)
