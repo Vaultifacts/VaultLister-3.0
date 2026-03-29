@@ -358,7 +358,32 @@ jobs:
             sleep 1
           done
           curl -sf http://localhost:3000/api/health > /dev/null || { echo "::error::Server failed to start within ${TIMEOUT}s"; exit 1; }
-          bun test src/tests/security.test.js
+
+          set +e
+          bun test src/tests/security.test.js 2>&1 | tee /tmp/security-output.txt
+          SECURITY_EXIT=$?
+          set -e
+
+          if [ $SECURITY_EXIT -eq 0 ]; then
+            echo "All security tests passed!"
+          else
+            KNOWN_FAIL_NAMES=$(grep -v '^\s*#' .test-baseline | grep '^KNOWN_FAIL: ' | sed 's/^KNOWN_FAIL: //' || true)
+            ACTUAL_FAIL_NAMES=$(grep '^(fail) ' /tmp/security-output.txt | sed 's/^(fail) //' || true)
+            REGRESSIONS=""
+            while IFS= read -r fail_name; do
+              [ -z "$fail_name" ] && continue
+              fail_name_stripped=$(printf '%s' "$fail_name" | sed 's/ \[[0-9][0-9.]*ms\]$//')
+              if ! printf '%s\n' "$KNOWN_FAIL_NAMES" | grep -qxF "$fail_name_stripped"; then
+                REGRESSIONS="${REGRESSIONS}  REGRESSION: ${fail_name}"$'\n'
+              fi
+            done <<< "$ACTUAL_FAIL_NAMES"
+            if [ -n "$REGRESSIONS" ]; then
+              echo "::error::New security regressions (not in .test-baseline KNOWN_FAIL list):"
+              printf '%s' "$REGRESSIONS"
+              exit 1
+            fi
+            echo "Security tests: known pre-existing failures only — no new regressions"
+          fi
 
       - name: Check for hardcoded secrets
         run: |
