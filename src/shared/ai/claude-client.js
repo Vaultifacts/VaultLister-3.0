@@ -110,7 +110,7 @@ export async function callVisionAPI({ imageBase64, mimeType, prompt, model = 'cl
 
 
     const response = await callWithRetry(
-        () => client.messages.create({
+        (signal) => client.messages.create({
             model,
             max_tokens: maxTokens,
             messages: [{
@@ -120,12 +120,11 @@ export async function callVisionAPI({ imageBase64, mimeType, prompt, model = 'cl
                     { type: 'text', text: prompt }
                 ]
             }],
-            ...(requestId && { metadata: { user_id: requestId } })
+            ...(requestId && { metadata: { user_id: requestId } }),
+            signal
         }),
         timeoutMs
     );
-
-    const response = await client.messages.create(params);
     return response.content[0].text;
 }
 
@@ -146,16 +145,15 @@ export async function callTextAPI({ system, user, model = 'claude-sonnet-4-6', m
 
 
     const response = await callWithRetry(
-        () => client.messages.create({
+        (signal) => client.messages.create({
             model,
             max_tokens: maxTokens,
             system,
             messages: [{ role: 'user', content: user }],
-            ...(requestId && { metadata: { user_id: requestId } })
+            ...(requestId && { metadata: { user_id: requestId } }),
+            signal
         }),
         timeoutMs
     );
-
-    const response = await client.messages.create(params);
     return response.content[0].text;
 }
