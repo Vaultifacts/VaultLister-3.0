@@ -4903,6 +4903,7 @@ const calendarLegend = {
         `;
     }
 };
+window.calendarViewToggle = calendarViewToggle;
 
 // Calendar Timeline Sidebar
 const calendarTimeline = {
@@ -5572,6 +5573,7 @@ const profitMarginGauge = {
         `;
     }
 };
+window.profitMarginGauge = profitMarginGauge;
 
 // Cash Flow Waterfall Chart
 const waterfallChart = {
@@ -5941,6 +5943,7 @@ const recommendationCards = {
         `;
     }
 };
+window.recommendationCards = recommendationCards;
 
 // Demand Heatmap
 const demandHeatmap = {
@@ -6074,6 +6077,7 @@ const supplierHealthDashboard = {
         `;
     }
 };
+window.supplierHealthDashboard = supplierHealthDashboard;
 
 // Price Drop Alert Banner
 const priceDropBanner = {
@@ -6262,6 +6266,7 @@ const competitorActivityFeed = {
         `;
     }
 };
+window.competitorActivityFeed = competitorActivityFeed;
 
 // Market Opportunity Cards
 const opportunityCards = {

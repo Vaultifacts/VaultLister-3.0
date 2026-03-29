@@ -9634,7 +9634,6 @@ const offlineManager = {
     queue: [],
     _onlineHandler: null,
     _offlineHandler: null,
-    _syncing: false,
 
     init() {
         // Remove previous listeners to prevent accumulation on re-init
@@ -9644,16 +9643,6 @@ const offlineManager = {
         this._offlineHandler = () => this.onOffline();
         window.addEventListener('online', this._onlineHandler);
         window.addEventListener('offline', this._offlineHandler);
-
-        // Restore persisted queue from localStorage
-        try {
-            const saved = localStorage.getItem('vaultlister_offline_queue');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) this.queue = parsed;
-            }
-        } catch (_e) {}
-        this.updateQueueIndicator();
 
         // Check initial state
         if (!navigator.onLine) this.onOffline();
@@ -9668,9 +9657,7 @@ const offlineManager = {
     onOnline() {
         store.setState({ isOffline: false });
         document.getElementById('offline-indicator')?.classList.add('hidden');
-        // Auto-flush: automatically sync any queued changes when back online
         if (this.queue.length > 0) {
-            toast.info(`Back online. Syncing ${this.queue.length} queued change(s)...`);
             this.syncQueue();
         } else {
             toast.success('Back online!');
@@ -9693,9 +9680,6 @@ const offlineManager = {
     },
 
     async syncQueue() {
-        if (this._syncing) return;
-        this._syncing = true;
-
         const queueEl = document.getElementById('offline-queue');
         if (queueEl) queueEl.textContent = `Syncing ${this.queue.length} changes...`;
 
@@ -9707,12 +9691,7 @@ const offlineManager = {
                 synced++;
             } catch (e) {
                 console.error('Failed to sync action:', e);
-                // Conflict resolution: server wins — notify user and discard conflicting item
-                if (e.status === 409) {
-                    toast.warning(`A conflict was detected for a queued change. The server version has been kept.`);
-                } else {
-                    failedActions.push(action);
-                }
+                failedActions.push(action);
             }
         }
 
@@ -9727,7 +9706,6 @@ const offlineManager = {
                 console.error('Failed to update offline queue:', e);
             }
         }
-        this._syncing = false;
         this.updateQueueIndicator();
 
         if (failedActions.length === 0) {
@@ -9738,22 +9716,15 @@ const offlineManager = {
     },
 
     async executeAction(action) {
-        if (!action || !action.endpoint) return;
-        const response = await api.request(action.endpoint, action.options || {});
-        return response;
+        // Execute queued action based on type
+        // This would integrate with actual API calls
+        // Action execution integrates with API calls — type determines handler
     },
 
     updateQueueIndicator() {
-        const count = this.queue.length;
         const queueEl = document.getElementById('offline-queue');
         if (queueEl) {
-            queueEl.textContent = count > 0 ? `${count} pending` : '';
-            queueEl.setAttribute('aria-label', count > 0 ? `${count} offline changes pending sync` : '');
-        }
-        // Update aria-label on the offline indicator for screen readers
-        const indicator = document.getElementById('offline-indicator');
-        if (indicator && count > 0) {
-            indicator.setAttribute('aria-label', `Offline — ${count} change(s) queued`);
+            queueEl.textContent = this.queue.length > 0 ? `(${this.queue.length} pending)` : '';
         }
     }
 };
@@ -13672,6 +13643,7 @@ const calendarLegend = {
         `;
     }
 };
+window.calendarViewToggle = calendarViewToggle;
 
 // Calendar Timeline Sidebar
 const calendarTimeline = {
@@ -14341,6 +14313,7 @@ const profitMarginGauge = {
         `;
     }
 };
+window.profitMarginGauge = profitMarginGauge;
 
 // Cash Flow Waterfall Chart
 const waterfallChart = {
@@ -14710,6 +14683,7 @@ const recommendationCards = {
         `;
     }
 };
+window.recommendationCards = recommendationCards;
 
 // Demand Heatmap
 const demandHeatmap = {
@@ -14843,6 +14817,7 @@ const supplierHealthDashboard = {
         `;
     }
 };
+window.supplierHealthDashboard = supplierHealthDashboard;
 
 // Price Drop Alert Banner
 const priceDropBanner = {
@@ -15031,6 +15006,7 @@ const competitorActivityFeed = {
         `;
     }
 };
+window.competitorActivityFeed = competitorActivityFeed;
 
 // Market Opportunity Cards
 const opportunityCards = {
@@ -15344,7 +15320,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'daf760db';
+    const v = 'ed9cab14';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27836,13 +27812,21 @@ initApp();
     });
 })();
 
-// Service Worker auth token listener (responds to GET_AUTH_TOKEN from SW)
+// Service Worker message listener
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', function(event) { // nosemgrep: javascript.browser.security.postmessage-origin-validation
-        if (event.data && event.data.type === 'GET_AUTH_TOKEN') {
+        if (!event.data) return;
+        // Respond to GET_AUTH_TOKEN requests from the SW (used by background sync)
+        if (event.data.type === 'GET_AUTH_TOKEN') {
             var token = (typeof store !== 'undefined' && store.state && store.state.token) || null;
             if (event.ports && event.ports[0]) {
                 event.ports[0].postMessage({ token: token });
+            }
+        }
+        // SW requests client to flush the offline queue after background sync fires
+        if (event.data.type === 'SW_FLUSH_OFFLINE_QUEUE') {
+            if (typeof offlineManager !== 'undefined' && navigator.onLine) {
+                offlineManager.syncQueue();
             }
         }
     });
