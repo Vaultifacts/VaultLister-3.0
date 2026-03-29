@@ -29,11 +29,9 @@
 name: SonarCloud analysis
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
   workflow_dispatch:
+  schedule:
+    - cron: "7 9 * * *"
 
 concurrency:
   group: sonarcloud-${{ github.ref }}
