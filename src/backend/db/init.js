@@ -5,3 +5,4 @@
 const { initializeDatabase } = await import('./database.js');
 await initializeDatabase();
 console.log('✓ Database initialized');
+process.exit(0);
