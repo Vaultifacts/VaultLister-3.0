@@ -745,7 +745,7 @@ export async function analyticsRouter(ctx) {
     // GET /api/analytics/custom-metrics - List custom metrics
     if (method === 'GET' && path === '/custom-metrics') {
         try {
-            const metrics = await query.all('SELECT * FROM custom_metrics WHERE user_id = ? ORDER BY created_at DESC', [user.id]);
+            const metrics = await query.all('SELECT id, name, metric_a, operation, metric_b, display_format, created_at FROM custom_metrics WHERE user_id = ? ORDER BY created_at DESC LIMIT 100', [user.id]);
             return { status: 200, data: { metrics } };
         } catch (err) {
             return { status: 500, data: { error: 'Failed to load custom metrics' } };

@@ -17,7 +17,10 @@ export async function shopsRouter(ctx) {
     // GET /api/shops - List connected shops
     if (method === 'GET' && (path === '/' || path === '')) {
         try {
-            const shops = await query.all('SELECT * FROM shops WHERE user_id = ?', [user.id]);
+            const shops = await query.all(
+                'SELECT id, platform, platform_username, platform_user_id, is_connected, last_sync_at, sync_status, settings, stats, created_at, updated_at, oauth_provider, connection_type, auto_sync_enabled, auto_sync_interval_minutes, sync_error FROM shops WHERE user_id = ? LIMIT 100',
+                [user.id]
+            );
 
             shops.forEach(shop => {
                 shop.settings = safeJsonParse(shop.settings, {});
