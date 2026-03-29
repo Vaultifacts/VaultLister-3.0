@@ -3044,18 +3044,27 @@ Object.assign(handlers, {
             { keys: ['?'], label: 'Show keyboard shortcuts' }
         ];
 
-        modals.show('Keyboard Shortcuts', `
-            <div class="keyboard-shortcuts-grid">
-                ${shortcuts.map(s => `
-                    <div class="keyboard-shortcut-item">
-                        <span class="keyboard-shortcut-label">${s.label}</span>
-                        <div class="keyboard-shortcut-keys">
-                            ${s.keys.map(k => `<span class="keyboard-key">${k}</span>`).join(' + ')}
-                        </div>
-                    </div>
-                `).join('')}
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Keyboard Shortcuts</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
-        `, `<button class="btn btn-primary" onclick="modals.close()">Got it</button>`);
+            <div class="modal-body">
+                <div class="keyboard-shortcuts-grid">
+                    ${shortcuts.map(s => `
+                        <div class="keyboard-shortcut-item">
+                            <span class="keyboard-shortcut-label">${s.label}</span>
+                            <div class="keyboard-shortcut-keys">
+                                ${s.keys.map(k => `<span class="keyboard-key">${k}</span>`).join(' + ')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="modals.close()">Got it</button>
+                </div>
+            </div>
+        `);
     },
 
     // Vault Buddy (Chatbot) Management
