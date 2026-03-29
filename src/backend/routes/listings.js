@@ -1740,5 +1740,84 @@ export async function listingsRouter(ctx) {
         }
     }
 
+    // GET /api/listings/cross-list-history - Cross-listing history grouped by inventory item
+    if (method === 'GET' && path === '/cross-list-history') {
+        try {
+            const { limit = 50, offset = 0, inventoryId } = queryParams;
+            const limitNum = Math.min(Math.max(parseInt(limit) || 50, 1), 200);
+            const offsetNum = Math.max(parseInt(offset) || 0, 0);
+
+            let sql = `
+                SELECT
+                    l.inventory_id,
+                    i.title AS item_title,
+                    i.sku AS item_sku,
+                    json_agg(json_build_object(
+                        'listing_id', l.id,
+                        'platform', l.platform,
+                        'status', l.status,
+                        'price', l.price,
+                        'platform_listing_id', l.platform_listing_id,
+                        'platform_url', l.platform_url,
+                        'created_at', l.created_at,
+                        'updated_at', l.updated_at
+                    ) ORDER BY l.created_at DESC) AS platform_listings,
+                    COUNT(l.id) AS listing_count,
+                    MAX(l.created_at) AS last_listed_at
+                FROM listings l
+                LEFT JOIN inventory i ON i.id = l.inventory_id
+                WHERE l.user_id = ?
+            `;
+            const params = [user.id];
+
+            if (inventoryId) {
+                sql += ' AND l.inventory_id = ?';
+                params.push(inventoryId);
+            }
+
+            sql += `
+                GROUP BY l.inventory_id, i.title, i.sku
+                ORDER BY last_listed_at DESC
+                LIMIT ? OFFSET ?
+            `;
+            params.push(limitNum, offsetNum);
+
+            const rows = await query.all(sql, params);
+
+            let countSql = 'SELECT COUNT(DISTINCT inventory_id) AS total FROM listings WHERE user_id = ?';
+            const countParams = [user.id];
+            if (inventoryId) {
+                countSql += ' AND inventory_id = ?';
+                countParams.push(inventoryId);
+            }
+            const countResult = await query.get(countSql, countParams);
+            const total = Number(countResult?.total) || 0;
+
+            const history = rows.map(row => ({
+                inventoryId: row.inventory_id,
+                itemTitle: row.item_title,
+                itemSku: row.item_sku,
+                listingCount: Number(row.listing_count),
+                lastListedAt: row.last_listed_at,
+                platformListings: safeJsonParse(typeof row.platform_listings === 'string' ? row.platform_listings : JSON.stringify(row.platform_listings), [])
+            }));
+
+            return {
+                status: 200,
+                data: {
+                    history,
+                    total,
+                    limit: limitNum,
+                    offset: offsetNum,
+                    hasMore: offsetNum + rows.length < total
+                }
+            };
+        } catch (error) {
+            logger.error('[Listings] Error fetching cross-list history', user?.id, { detail: error.message });
+            return { status: 500, data: { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } } };
+        }
+    }
+
     return { status: 404, data: { error: { message: 'Route not found', code: 'NOT_FOUND' } } };
+
 }

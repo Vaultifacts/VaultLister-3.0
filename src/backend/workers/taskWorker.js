@@ -22,6 +22,9 @@ const AUTOMATION_CHECK_INTERVAL_MS = 60 * 1000;
 let lastAutomationCheck = 0;
 const DAILY_SUMMARY_CHECK_MS = 60 * 60 * 1000; // Check every hour
 let lastDailySummaryCheck = 0;
+// Issue #182: auto-purge deleted inventory items past 30-day retention, checked every 24 hours
+const PURGE_DELETED_INTERVAL_MS = 24 * 60 * 60 * 1000;
+let lastPurgeDeletedCheck = 0;
 
 let workerInterval = null;
 let isProcessing = false;
@@ -102,6 +105,11 @@ async function processQueue() {
             lastDailySummaryCheck = now;
             try { await checkDailySummaries(); }
             catch (err) { logger.error('[TaskWorker] Daily summary check failed:', err.message); }
+        }
+        if (now - lastPurgeDeletedCheck >= PURGE_DELETED_INTERVAL_MS) {
+            lastPurgeDeletedCheck = now;
+            try { await executePurgeDeletedInventoryTask({}); }
+            catch (err) { logger.error('[TaskWorker] Purge deleted inventory failed:', err.message); }
         }
 
         // Get pending tasks up to the concurrency limit
@@ -375,6 +383,9 @@ async function executeTask(type, payload) {
 
         case 'poshmark_monitoring':
             return await executePoshmarkMonitoringTask(payload);
+
+        case 'purge_deleted_inventory':
+            return await executePurgeDeletedInventoryTask(payload);
 
         default:
             throw new Error(`Unknown task type: ${type}`);
@@ -1665,4 +1676,30 @@ async function executeRunAutomationTask(payload) {
     }
 
     return { message: result.message, itemsProcessed: result.itemsProcessed, itemsSucceeded: result.itemsSucceeded, itemsFailed: result.itemsFailed, ruleId, type: rule.type, ruleName: rule.name };
+}
+
+/**
+ * Permanently delete inventory items that have been soft-deleted for more than 30 days.
+ * Payload: { userId } — when provided, scopes purge to that user.
+ *          Omit userId to purge globally (admin/cron use only).
+ */
+async function executePurgeDeletedInventoryTask(payload) {
+    const { userId } = payload || {};
+
+    let sql = `
+        DELETE FROM inventory
+        WHERE status = 'deleted'
+          AND updated_at < NOW() - INTERVAL '30 days'
+    `;
+    const params = [];
+
+    if (userId) {
+        sql += ' AND user_id = ?';
+        params.push(userId);
+    }
+
+    const result = await query.run(sql, params);
+    const purged = result.changes ?? result.rowCount ?? 0;
+    logger.info('[TaskWorker] purge_deleted_inventory completed', userId || 'global', { purged });
+    return { purged, message: `Permanently removed ${purged} deleted inventory item(s) past 30-day retention` };
 }

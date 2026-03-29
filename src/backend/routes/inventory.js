@@ -1474,7 +1474,7 @@ export async function inventoryRouter(ctx) {
         return { status: 200, data: { message: 'Supplier deleted' } };
     }
 
-    // POST /api/inventory/:id/duplicate - Duplicate an inventory item
+// POST /api/inventory/:id/duplicate - Duplicate an inventory item
     if (method === 'POST' && path.match(/^\/[\w-]+\/duplicate$/)) {
         const sourceId = path.split('/')[1];
 
@@ -1531,5 +1531,196 @@ export async function inventoryRouter(ctx) {
         return { status: 201, data: { item: newItem } };
     }
 
+// PUT /api/inventory/bulk/update - Bulk update status, category, or price for multiple items
+
+    // POST /api/inventory/purge-deleted - Permanently purge items soft-deleted 30+ days ago
+    if (method === 'POST' && path === '/purge-deleted') {
+        try {
+            const { v4: uuidv4 } = await import('uuid');
+            const taskId = uuidv4();
+            await query.run(
+                `INSERT INTO task_queue (id, type, payload, priority, max_attempts, created_at, scheduled_at)
+                 VALUES (?, 'purge_deleted_inventory', ?, 1, 1, NOW(), NOW())`,
+                [taskId, JSON.stringify({ userId: user.id })]
+            );
+            return { status: 202, data: { taskId, status: 'queued', message: 'Purge of deleted items older than 30 days has been queued' } };
+        } catch (error) {
+            logger.error('[Inventory] purge-deleted queue error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } } };
+        }
+    }
+
+    if (method === 'PUT' && path === '/bulk/update') {
+        try {
+            const { ids, status: newStatus, category, listPrice } = body;
+
+            if (!Array.isArray(ids) || ids.length === 0) {
+                return { status: 400, data: { error: 'ids array required' } };
+            }
+            if (ids.length > 200) {
+                return { status: 400, data: { error: 'Maximum 200 items per bulk operation' } };
+            }
+            if (!newStatus && !category && listPrice === undefined) {
+                return { status: 400, data: { error: 'At least one of status, category, or listPrice required' } };
+            }
+
+            const ALLOWED_STATUSES = new Set(['active', 'draft', 'inactive', 'sold', 'deleted']);
+            if (newStatus && !ALLOWED_STATUSES.has(newStatus)) {
+                return { status: 400, data: { error: 'Invalid status value' } };
+            }
+
+            if (listPrice !== undefined && (typeof listPrice !== 'number' || listPrice < 0)) {
+                return { status: 400, data: { error: 'listPrice must be a non-negative number' } };
+            }
+
+            // Verify ownership of all IDs in one query
+            const placeholders = ids.map(() => '?').join(',');
+            const owned = await query.all(
+                `SELECT id FROM inventory WHERE id IN (${placeholders}) AND user_id = ?`,
+                [...ids, user.id]
+            );
+            const ownedIds = owned.map(r => r.id);
+
+            if (ownedIds.length === 0) {
+                return { status: 404, data: { error: 'No matching items found' } };
+            }
+
+            const setParts = [];
+            const params = [];
+            if (newStatus) { setParts.push('status = ?'); params.push(newStatus); }
+            if (category) { setParts.push('category = ?'); params.push(category); }
+            if (listPrice !== undefined) { setParts.push('list_price = ?'); params.push(listPrice); }
+            setParts.push('updated_at = NOW()');
+
+            const ownedPlaceholders = ownedIds.map(() => '?').join(',');
+            await query.run(
+                `UPDATE inventory SET ${setParts.join(', ')} WHERE id IN (${ownedPlaceholders}) AND user_id = ?`,
+                [...params, ...ownedIds, user.id]
+            );
+
+            return {
+                status: 200,
+                data: {
+                    updated: ownedIds.length,
+                    skipped: ids.length - ownedIds.length,
+                    ids: ownedIds
+                }
+            };
+        } catch (error) {
+            logger.error('[Inventory] bulk/update error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } } };
+        }
+    }
+
+    // DELETE /api/inventory/bulk/delete - Soft-delete multiple items
+    if (method === 'DELETE' && path === '/bulk/delete') {
+        try {
+            const { ids } = body;
+
+            if (!Array.isArray(ids) || ids.length === 0) {
+                return { status: 400, data: { error: 'ids array required' } };
+            }
+            if (ids.length > 200) {
+                return { status: 400, data: { error: 'Maximum 200 items per bulk operation' } };
+            }
+
+            const placeholders = ids.map(() => '?').join(',');
+            const owned = await query.all(
+                `SELECT id FROM inventory WHERE id IN (${placeholders}) AND user_id = ? AND status != 'deleted'`,
+                [...ids, user.id]
+            );
+            const ownedIds = owned.map(r => r.id);
+
+            if (ownedIds.length === 0) {
+                return { status: 404, data: { error: 'No matching items found' } };
+            }
+
+            const ownedPlaceholders = ownedIds.map(() => '?').join(',');
+            await query.run(
+                `UPDATE inventory SET status = 'deleted', updated_at = NOW() WHERE id IN (${ownedPlaceholders}) AND user_id = ?`,
+                [...ownedIds, user.id]
+            );
+
+            return {
+                status: 200,
+                data: {
+                    deleted: ownedIds.length,
+                    skipped: ids.length - ownedIds.length,
+                    ids: ownedIds
+                }
+            };
+        } catch (error) {
+            logger.error('[Inventory] bulk/delete error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } } };
+        }
+    }
+
+    // POST /api/inventory/bulk/cross-list - Queue cross-listing draft listings for multiple items
+    if (method === 'POST' && path === '/bulk/cross-list') {
+        try {
+            const { ids, platforms } = body;
+
+            if (!Array.isArray(ids) || ids.length === 0) {
+                return { status: 400, data: { error: 'ids array required' } };
+            }
+            if (!Array.isArray(platforms) || platforms.length === 0) {
+                return { status: 400, data: { error: 'platforms array required' } };
+            }
+            if (ids.length > 100) {
+                return { status: 400, data: { error: 'Maximum 100 items per bulk cross-list operation' } };
+            }
+
+            const VALID_PLATFORMS = new Set(['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot']);
+            const invalidPlatforms = platforms.filter(p => !VALID_PLATFORMS.has(p));
+            if (invalidPlatforms.length > 0) {
+                return { status: 400, data: { error: `Invalid platforms: ${invalidPlatforms.join(', ')}` } };
+            }
+
+            // Verify ownership and fetch active items only
+            const placeholders = ids.map(() => '?').join(',');
+            const items = await query.all(
+                `SELECT id, title, list_price FROM inventory WHERE id IN (${placeholders}) AND user_id = ? AND status != 'deleted'`,
+                [...ids, user.id]
+            );
+
+            if (items.length === 0) {
+                return { status: 404, data: { error: 'No matching items found' } };
+            }
+
+            const { v4: uuidv4 } = await import('uuid');
+            const results = { created: [], skipped: [], errors: [] };
+
+            for (const item of items) {
+                for (const platform of platforms) {
+                    try {
+                        const existing = await query.get(
+                            `SELECT id FROM listings WHERE inventory_id = ? AND platform = ? AND user_id = ? AND status NOT IN ('deleted','ended')`,
+                            [item.id, platform, user.id]
+                        );
+                        if (existing) {
+                            results.skipped.push({ inventoryId: item.id, platform, reason: 'Already listed', existingId: existing.id });
+                            continue;
+                        }
+                        const listingId = uuidv4();
+                        await query.run(
+                            `INSERT INTO listings (id, inventory_id, user_id, platform, title, price, status, created_at, updated_at)
+                             VALUES (?, ?, ?, ?, ?, ?, 'draft', NOW(), NOW())`,
+                            [listingId, item.id, user.id, platform, item.title, item.list_price]
+                        );
+                        results.created.push({ inventoryId: item.id, platform, listingId });
+                    } catch (err) {
+                        results.errors.push({ inventoryId: item.id, platform, error: err.message });
+                    }
+                }
+            }
+
+            return { status: 201, data: results };
+        } catch (error) {
+            logger.error('[Inventory] bulk/cross-list error', user?.id, { detail: error.message });
+            return { status: 500, data: { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } } };
+        }
+    }
+
     return { status: 404, data: { error: { message: 'Route not found', code: 'NOT_FOUND' } } };
+
 }

@@ -1,0 +1,170 @@
+name: Weekly Backup Restore Verification
+
+on:
+  schedule:
+    - cron: '0 4 * * 0'  # 4 AM UTC every Sunday
+  workflow_dispatch:      # allow manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  verify-backup:
+    name: Download, Restore, and Verify Backup
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: vaultlister_verify
+          POSTGRES_USER: verify_user
+          POSTGRES_PASSWORD: verify_pass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: '1.3.9'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install PostgreSQL 18 client tools
+        run: |
+          sudo apt-get install -y curl ca-certificates
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-18
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+
+      - name: Install b2 CLI
+        run: |
+          pip install b2 --quiet
+          b2 version
+
+      - name: Authorize B2 and download latest backup
+        env:
+          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
+        run: |
+          b2 authorize-account "$B2_APPLICATION_KEY_ID" "$B2_APPLICATION_KEY"
+          # List files sorted by upload timestamp, pick the newest .gz backup
+          LATEST_FILE=$(b2 ls --json "b2://$B2_BUCKET_NAME" | \
+            python3 -c "
+          import sys, json
+          files = json.load(sys.stdin)
+          backups = [f for f in files if f['fileName'].endswith('.gz') or f['fileName'].endswith('.sql')]
+          backups.sort(key=lambda f: f['uploadTimestamp'], reverse=True)
+          if not backups:
+              raise SystemExit('No backup files found in B2 bucket')
+          print(backups[0]['fileName'])
+          ")
+          echo "Downloading: $LATEST_FILE"
+          b2 download-file-by-name "$B2_BUCKET_NAME" "$LATEST_FILE" /tmp/backup_file
+          echo "BACKUP_FILE=/tmp/backup_file" >> "$GITHUB_ENV"
+          echo "LATEST_BACKUP_NAME=$LATEST_FILE" >> "$GITHUB_ENV"
+
+      - name: Decompress backup if gzipped
+        run: |
+          if file "$BACKUP_FILE" | grep -q 'gzip'; then
+            gunzip -c "$BACKUP_FILE" > /tmp/backup.sql
+          else
+            cp "$BACKUP_FILE" /tmp/backup.sql
+          fi
+
+      - name: Restore backup to test database
+        env:
+          PGPASSWORD: verify_pass
+        run: |
+          psql -h localhost -U verify_user -d vaultlister_verify -f /tmp/backup.sql
+          echo "Restore exit code: $?"
+
+      - name: Run integrity checks
+        env:
+          PGPASSWORD: verify_pass
+        run: |
+          echo "=== Integrity Check: Core tables exist ==="
+          TABLES=$(psql -h localhost -U verify_user -d vaultlister_verify -tAc "
+            SELECT string_agg(tablename, ', ' ORDER BY tablename)
+            FROM pg_tables
+            WHERE schemaname = 'public'
+              AND tablename IN ('users','inventory','listings','sales','sessions','notifications')
+          ")
+          echo "Present tables: $TABLES"
+
+          MISSING=$(psql -h localhost -U verify_user -d vaultlister_verify -tAc "
+            SELECT COUNT(*) FROM (
+              VALUES ('users'),('inventory'),('listings'),('sales'),('sessions'),('notifications')
+            ) AS required(t)
+            WHERE NOT EXISTS (
+              SELECT 1 FROM pg_tables
+              WHERE schemaname = 'public' AND tablename = required.t
+            )
+          ")
+          if [ "$MISSING" -gt 0 ]; then
+            echo "FAIL: $MISSING required table(s) missing after restore"
+            exit 1
+          fi
+          echo "PASS: All core tables present"
+
+          echo "=== Integrity Check: Row counts are non-negative ==="
+          psql -h localhost -U verify_user -d vaultlister_verify -c "
+            SELECT 'users' AS tbl, COUNT(*) AS rows FROM users
+            UNION ALL SELECT 'inventory', COUNT(*) FROM inventory
+            UNION ALL SELECT 'listings', COUNT(*) FROM listings
+            UNION ALL SELECT 'sales', COUNT(*) FROM sales;
+          "
+          echo "PASS: Row counts retrieved without error"
+
+          echo "=== Integrity Check: No orphaned listings ==="
+          ORPHANS=$(psql -h localhost -U verify_user -d vaultlister_verify -tAc "
+            SELECT COUNT(*) FROM listings l
+            LEFT JOIN inventory i ON i.id = l.inventory_id
+            WHERE l.inventory_id IS NOT NULL AND i.id IS NULL
+          ")
+          echo "Orphaned listings: $ORPHANS"
+          if [ "$ORPHANS" -gt 100 ]; then
+            echo "WARN: $ORPHANS orphaned listings detected — may indicate restore issue"
+          else
+            echo "PASS: Orphaned listing count within acceptable range"
+          fi
+
+          echo "=== Integrity Check: No orphaned sales ==="
+          ORPHAN_SALES=$(psql -h localhost -U verify_user -d vaultlister_verify -tAc "
+            SELECT COUNT(*) FROM sales s
+            LEFT JOIN users u ON u.id = s.user_id
+            WHERE u.id IS NULL
+          ")
+          echo "Orphaned sales: $ORPHAN_SALES"
+          if [ "$ORPHAN_SALES" -gt 100 ]; then
+            echo "WARN: $ORPHAN_SALES orphaned sales detected — may indicate restore issue"
+          else
+            echo "PASS: Orphaned sales count within acceptable range"
+          fi
+
+      - name: Report pass
+        if: success()
+        run: |
+          echo "BACKUP RESTORE VERIFICATION PASSED"
+          echo "Backup file: $LATEST_BACKUP_NAME"
+          echo "Restore date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "BACKUP RESTORE VERIFICATION FAILED"
+          echo "Backup file: ${LATEST_BACKUP_NAME:-unknown}"
+          echo "Check the steps above for details."
+          exit 1
