@@ -664,6 +664,53 @@ export async function inventoryRouter(ctx) {
         return { status: 200, data: { affected } };
     }
 
+    // GET /api/inventory/export/csv - Export inventory as CSV (Issue #91)
+    if (method === 'GET' && path === '/export/csv') {
+        const items = await query.all(
+            `SELECT title, sku, category, brand, size, color, condition,
+                    cost_price, list_price, status, quantity
+             FROM inventory WHERE user_id = ? AND status != 'deleted'
+             ORDER BY created_at DESC`,
+            [user.id]
+        );
+
+        const escapeCsvField = (value) => {
+            if (value == null) return '';
+            const str = String(value);
+            if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
+        };
+
+        const headers = ['title', 'sku', 'category', 'brand', 'size', 'color', 'condition', 'cost', 'price', 'status', 'quantity'];
+        const rows = items.map(item => [
+            escapeCsvField(item.title),
+            escapeCsvField(item.sku),
+            escapeCsvField(item.category),
+            escapeCsvField(item.brand),
+            escapeCsvField(item.size),
+            escapeCsvField(item.color),
+            escapeCsvField(item.condition),
+            escapeCsvField(item.cost_price),
+            escapeCsvField(item.list_price),
+            escapeCsvField(item.status),
+            escapeCsvField(item.quantity)
+        ].join(','));
+
+        const csv = [headers.join(','), ...rows].join('\r\n');
+        const filename = `inventory-export-${new Date().toISOString().split('T')[0]}.csv`;
+
+        return {
+            status: 200,
+            headers: {
+                'Content-Type': 'text/csv',
+                'Content-Disposition': `attachment; filename="${filename}"`
+            },
+            data: csv
+        };
+    }
+
     // GET /api/inventory/stats - Get inventory statistics
     if (method === 'GET' && path === '/stats') {
         const stats = {
@@ -712,6 +759,52 @@ export async function inventoryRouter(ctx) {
         }));
 
         return { status: 200, data: { items } };
+    }
+
+    // POST /api/inventory/:id/duplicate - Duplicate an inventory item (Issue #93)
+    if (method === 'POST' && path.match(/^\/[\w-]+\/duplicate$/)) {
+        const sourceId = path.split('/')[1];
+
+        const source = await query.get(
+            'SELECT * FROM inventory WHERE id = ? AND user_id = ? AND status != ?',
+            [sourceId, user.id, 'deleted']
+        );
+
+        if (!source) {
+            return { status: 404, data: { error: 'Item not found' } };
+        }
+
+        const newId = uuidv4();
+        const newSku = `VL-${Date.now()}`;
+        const now = new Date().toISOString();
+
+        await query.run(`
+            INSERT INTO inventory (
+                id, user_id, sku, title, description, brand, category, subcategory,
+                size, color, condition, cost_price, list_price, quantity, low_stock_threshold,
+                weight, dimensions, material, tags, images, location, bin_location, notes,
+                blockchain_hash, sustainability_score, custom_fields, purchase_date, supplier,
+                status, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            newId, user.id, newSku,
+            'Copy of ' + (source.title || ''),
+            source.description, source.brand, source.category, source.subcategory,
+            source.size, source.color, source.condition, source.cost_price, source.list_price,
+            source.quantity, source.low_stock_threshold, source.weight, source.dimensions,
+            source.material, source.tags, source.images, source.location, source.bin_location,
+            source.notes, source.blockchain_hash, source.sustainability_score, source.custom_fields,
+            source.purchase_date, source.supplier,
+            'draft', now, now
+        ]);
+
+        const newItem = await query.get('SELECT * FROM inventory WHERE id = ?', [newId]);
+        newItem.tags = safeJsonParse(newItem.tags, []);
+        newItem.images = safeJsonParse(newItem.images, []);
+        newItem.ai_generated_data = safeJsonParse(newItem.ai_generated_data, {});
+        newItem.custom_fields = safeJsonParse(newItem.custom_fields, {});
+
+        return { status: 201, data: { item: newItem } };
     }
 
     // POST /api/inventory/:id/restore - Restore deleted item

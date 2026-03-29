@@ -376,5 +376,54 @@ export async function salesRouter(ctx) {
         return { status: 200, data: { stats } };
     }
 
+    // GET /api/sales/export/csv - Export sales as CSV (Issue #92)
+    if (method === 'GET' && path === '/export/csv') {
+        const sales = await query.all(
+            `SELECT s.created_at,
+                    COALESCE(l.title, i.title, '') as item_title,
+                    s.platform, s.sale_price, s.shipping_cost,
+                    s.platform_fee, s.net_profit, s.buyer_username
+             FROM sales s
+             LEFT JOIN listings l ON s.listing_id = l.id
+             LEFT JOIN inventory i ON s.inventory_id = i.id
+             WHERE s.user_id = ?
+             ORDER BY s.created_at DESC`,
+            [user.id]
+        );
+
+        const escapeCsvField = (value) => {
+            if (value == null) return '';
+            const str = String(value);
+            if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
+        };
+
+        const headers = ['date', 'item_title', 'platform', 'sale_price', 'shipping_cost', 'fees', 'net_profit', 'buyer'];
+        const rows = sales.map(sale => [
+            escapeCsvField(sale.created_at ? new Date(sale.created_at).toISOString().split('T')[0] : ''),
+            escapeCsvField(sale.item_title),
+            escapeCsvField(sale.platform),
+            escapeCsvField(sale.sale_price),
+            escapeCsvField(sale.shipping_cost),
+            escapeCsvField(sale.platform_fee),
+            escapeCsvField(sale.net_profit),
+            escapeCsvField(sale.buyer_username)
+        ].join(','));
+
+        const csv = [headers.join(','), ...rows].join('\r\n');
+        const filename = `sales-export-${new Date().toISOString().split('T')[0]}.csv`;
+
+        return {
+            status: 200,
+            headers: {
+                'Content-Type': 'text/csv',
+                'Content-Disposition': `attachment; filename="${filename}"`
+            },
+            data: csv
+        };
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

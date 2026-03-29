@@ -271,7 +271,7 @@ export async function ordersRouter(ctx) {
                 now, now
             ]);
 
-            const order = await query.get('SELECT * FROM orders WHERE id = ?', [orderId]);
+            const order = await query.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, user.id]);
 
             return {
                 status: 201,

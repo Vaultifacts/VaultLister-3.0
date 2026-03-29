@@ -219,7 +219,7 @@ export async function calendarRouter(ctx) {
                 ]
             );
 
-            const event = await query.get(`SELECT * FROM calendar_events WHERE id = ?`, [eventId]);
+            const event = await query.get(`SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`, [eventId, user.id]);
 
             return {
                 status: 201,
@@ -271,7 +271,7 @@ export async function calendarRouter(ctx) {
                 ]
             );
 
-            const updatedEvent = await query.get(`SELECT * FROM calendar_events WHERE id = ?`, [eventId]);
+            const updatedEvent = await query.get(`SELECT * FROM calendar_events WHERE id = ? AND user_id = ?`, [eventId, user.id]);
 
             return {
                 status: 200,
