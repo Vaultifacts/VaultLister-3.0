@@ -70365,9 +70365,9 @@ async function initApp() {
     router.register('checklist', () => renderApp(pages.checklist()));
     router.register('calendar', () => renderApp(pages.calendar()));
     router.register('planner', async () => {
-        renderApp(pages.planner());
+        renderApp(window.pages.checklist());
         await handlers.loadChecklistItems();
-        renderApp(pages.planner());
+        renderApp(window.pages.checklist());
     });
     router.register('size-charts', () => renderApp(pages.sizeCharts()));
     router.register('duplicates', () => modals.duplicates());
