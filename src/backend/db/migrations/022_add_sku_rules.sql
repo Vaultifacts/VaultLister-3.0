@@ -26,3 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_sku_rules_user ON sku_rules(user_id);
 
 -- Index for finding default rules
 CREATE INDEX IF NOT EXISTS idx_sku_rules_default ON sku_rules(user_id, is_default);
+
+-- DOWN: DROP INDEX IF EXISTS idx_sku_rules_user;
+-- DOWN: DROP INDEX IF EXISTS idx_sku_rules_default;
+-- DOWN: DROP TABLE IF EXISTS sku_rules;

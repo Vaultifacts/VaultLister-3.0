@@ -29,3 +29,8 @@ CREATE TABLE IF NOT EXISTS brand_size_guides (
 CREATE INDEX IF NOT EXISTS idx_brand_size_guides_brand ON brand_size_guides(brand);
 CREATE INDEX IF NOT EXISTS idx_brand_size_guides_garment ON brand_size_guides(garment_type);
 CREATE INDEX IF NOT EXISTS idx_brand_size_guides_brand_garment ON brand_size_guides(brand, garment_type);
+
+-- DOWN: DROP INDEX IF EXISTS idx_brand_size_guides_brand;
+-- DOWN: DROP INDEX IF EXISTS idx_brand_size_guides_garment;
+-- DOWN: DROP INDEX IF EXISTS idx_brand_size_guides_brand_garment;
+-- DOWN: DROP TABLE IF EXISTS brand_size_guides;

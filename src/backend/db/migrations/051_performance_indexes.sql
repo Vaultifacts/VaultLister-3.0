@@ -113,3 +113,34 @@ ANALYZE orders;
 -- Note: VACUUM should be run periodically, not on every migration
 -- ============================================
 -- VACUUM;
+
+-- DOWN: DROP TRIGGER IF EXISTS inventory_fts_insert;
+-- DOWN: DROP TRIGGER IF EXISTS inventory_fts_delete;
+-- DOWN: DROP TRIGGER IF EXISTS inventory_fts_update;
+-- DOWN: DROP INDEX IF EXISTS idx_users_email_active;
+-- DOWN: DROP INDEX IF EXISTS idx_users_subscription_tier;
+-- DOWN: DROP INDEX IF EXISTS idx_users_last_login;
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_user_status;
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_user_category;
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_created;
+-- DOWN: DROP INDEX IF EXISTS idx_inventory_updated;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_user_platform;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_user_status;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_inventory;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_external;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_created;
+-- DOWN: DROP INDEX IF EXISTS idx_sales_user_date;
+-- DOWN: DROP INDEX IF EXISTS idx_sales_user_platform;
+-- DOWN: DROP INDEX IF EXISTS idx_sales_listing;
+-- DOWN: DROP INDEX IF EXISTS idx_sales_date_range;
+-- DOWN: DROP INDEX IF EXISTS idx_sessions_user;
+-- DOWN: DROP INDEX IF EXISTS idx_sessions_token;
+-- DOWN: DROP INDEX IF EXISTS idx_sessions_expires;
+-- DOWN: DROP INDEX IF EXISTS idx_automations_user_active;
+-- DOWN: DROP INDEX IF EXISTS idx_automations_next_run;
+-- DOWN: DROP INDEX IF EXISTS idx_security_logs_event;
+-- DOWN: DROP INDEX IF EXISTS idx_security_logs_ip;
+-- DOWN: DROP INDEX IF EXISTS idx_notifications_user_read;
+-- DOWN: DROP INDEX IF EXISTS idx_orders_user_status;
+-- DOWN: DROP INDEX IF EXISTS idx_orders_tracking;
+-- DOWN: DROP TABLE IF EXISTS inventory_fts;

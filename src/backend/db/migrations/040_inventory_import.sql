@@ -100,3 +100,12 @@ CREATE INDEX IF NOT EXISTS idx_import_jobs_status ON import_jobs(status);
 CREATE INDEX IF NOT EXISTS idx_import_rows_job ON import_rows(job_id);
 CREATE INDEX IF NOT EXISTS idx_import_rows_status ON import_rows(status);
 CREATE INDEX IF NOT EXISTS idx_import_mappings_user ON import_mappings(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_import_jobs_user;
+-- DOWN: DROP INDEX IF EXISTS idx_import_jobs_status;
+-- DOWN: DROP INDEX IF EXISTS idx_import_rows_job;
+-- DOWN: DROP INDEX IF EXISTS idx_import_rows_status;
+-- DOWN: DROP INDEX IF EXISTS idx_import_mappings_user;
+-- DOWN: DROP TABLE IF EXISTS import_mappings;
+-- DOWN: DROP TABLE IF EXISTS import_rows;
+-- DOWN: DROP TABLE IF EXISTS import_jobs;

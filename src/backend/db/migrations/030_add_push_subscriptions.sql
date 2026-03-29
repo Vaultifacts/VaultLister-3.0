@@ -18,3 +18,8 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_push_subscriptions_active ON push_subscriptions(is_active);
 CREATE INDEX IF NOT EXISTS idx_push_subscriptions_endpoint ON push_subscriptions(endpoint);
+
+-- DOWN: DROP INDEX IF EXISTS idx_push_subscriptions_user;
+-- DOWN: DROP INDEX IF EXISTS idx_push_subscriptions_active;
+-- DOWN: DROP INDEX IF EXISTS idx_push_subscriptions_endpoint;
+-- DOWN: DROP TABLE IF EXISTS push_subscriptions;

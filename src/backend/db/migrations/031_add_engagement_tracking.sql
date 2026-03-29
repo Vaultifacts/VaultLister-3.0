@@ -23,3 +23,11 @@ CREATE INDEX IF NOT EXISTS idx_engagement_time ON listing_engagement(hour_of_day
 CREATE INDEX IF NOT EXISTS idx_engagement_platform ON listing_engagement(platform);
 CREATE INDEX IF NOT EXISTS idx_engagement_type ON listing_engagement(event_type);
 CREATE INDEX IF NOT EXISTS idx_engagement_created ON listing_engagement(created_at);
+
+-- DOWN: DROP INDEX IF EXISTS idx_engagement_user;
+-- DOWN: DROP INDEX IF EXISTS idx_engagement_listing;
+-- DOWN: DROP INDEX IF EXISTS idx_engagement_time;
+-- DOWN: DROP INDEX IF EXISTS idx_engagement_platform;
+-- DOWN: DROP INDEX IF EXISTS idx_engagement_type;
+-- DOWN: DROP INDEX IF EXISTS idx_engagement_created;
+-- DOWN: DROP TABLE IF EXISTS listing_engagement;

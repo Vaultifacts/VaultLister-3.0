@@ -18,3 +18,8 @@ CREATE TABLE IF NOT EXISTS price_history (
 CREATE INDEX IF NOT EXISTS idx_price_history_inventory ON price_history(inventory_id);
 CREATE INDEX IF NOT EXISTS idx_price_history_user ON price_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_price_history_date ON price_history(changed_at);
+
+-- DOWN: DROP INDEX IF EXISTS idx_price_history_inventory;
+-- DOWN: DROP INDEX IF EXISTS idx_price_history_user;
+-- DOWN: DROP INDEX IF EXISTS idx_price_history_date;
+-- DOWN: DROP TABLE IF EXISTS price_history;

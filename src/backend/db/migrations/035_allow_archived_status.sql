@@ -92,3 +92,11 @@ CREATE INDEX IF NOT EXISTS idx_listings_platform ON listings(platform);
 CREATE INDEX IF NOT EXISTS idx_listings_status ON listings(status);
 CREATE INDEX IF NOT EXISTS idx_listings_inventory_id ON listings(inventory_id);
 CREATE INDEX IF NOT EXISTS idx_listings_folder_id ON listings(folder_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_listings_user_id;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_platform;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_status;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_inventory_id;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_folder_id;
+-- DOWN: DROP TABLE IF EXISTS listings_new;
+-- DOWN: -- (includes data migration — manual data rollback required)

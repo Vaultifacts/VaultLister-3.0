@@ -11,3 +11,6 @@ CREATE TABLE IF NOT EXISTS inventory_categories (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_user_name ON inventory_categories(user_id, name);
+
+-- DOWN: DROP INDEX IF EXISTS idx_categories_user_name;
+-- DOWN: DROP TABLE IF EXISTS inventory_categories;

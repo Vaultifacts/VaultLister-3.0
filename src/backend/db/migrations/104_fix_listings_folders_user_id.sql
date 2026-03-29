@@ -21,3 +21,7 @@ DROP TABLE IF EXISTS listings_folders;
 ALTER TABLE listings_folders_new RENAME TO listings_folders;
 
 CREATE INDEX IF NOT EXISTS idx_listings_folders_user ON listings_folders(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_listings_folders_user;
+-- DOWN: DROP TABLE IF EXISTS listings_folders_new;
+-- DOWN: -- (includes data migration — manual data rollback required)

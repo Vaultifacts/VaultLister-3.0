@@ -140,3 +140,22 @@ END;
 CREATE TRIGGER IF NOT EXISTS help_articles_ad AFTER DELETE ON help_articles BEGIN
     DELETE FROM help_articles_fts WHERE rowid = old.rowid;
 END;
+
+-- DOWN: DROP TRIGGER IF EXISTS help_articles_ai;
+-- DOWN: DROP TRIGGER IF EXISTS help_articles_au;
+-- DOWN: DROP TRIGGER IF EXISTS help_articles_ad;
+-- DOWN: DROP INDEX IF EXISTS idx_help_videos_category;
+-- DOWN: DROP INDEX IF EXISTS idx_help_faq_category;
+-- DOWN: DROP INDEX IF EXISTS idx_help_articles_category;
+-- DOWN: DROP INDEX IF EXISTS idx_help_articles_published;
+-- DOWN: DROP INDEX IF EXISTS idx_support_tickets_user;
+-- DOWN: DROP INDEX IF EXISTS idx_support_tickets_status;
+-- DOWN: DROP INDEX IF EXISTS idx_support_ticket_replies_ticket;
+-- DOWN: DROP TABLE IF EXISTS help_articles_fts;
+-- DOWN: DROP TABLE IF EXISTS support_ticket_replies;
+-- DOWN: DROP TABLE IF EXISTS support_tickets;
+-- DOWN: DROP TABLE IF EXISTS help_article_votes;
+-- DOWN: DROP TABLE IF EXISTS help_articles;
+-- DOWN: DROP TABLE IF EXISTS help_faq_votes;
+-- DOWN: DROP TABLE IF EXISTS help_faq;
+-- DOWN: DROP TABLE IF EXISTS help_videos;

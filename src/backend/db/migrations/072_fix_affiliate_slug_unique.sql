@@ -26,3 +26,7 @@ DROP TABLE IF EXISTS affiliate_landing_pages;
 ALTER TABLE affiliate_landing_pages_new RENAME TO affiliate_landing_pages;
 
 CREATE INDEX IF NOT EXISTS idx_affiliate_landing_user ON affiliate_landing_pages(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_affiliate_landing_user;
+-- DOWN: DROP TABLE IF EXISTS affiliate_landing_pages_new;
+-- DOWN: -- (includes data migration — manual data rollback required)

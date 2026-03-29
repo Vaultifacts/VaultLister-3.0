@@ -25,3 +25,8 @@ ALTER TABLE team_members_new RENAME TO team_members;
 
 CREATE INDEX IF NOT EXISTS idx_team_members_user ON team_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_team_members_team ON team_members(team_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_team_members_user;
+-- DOWN: DROP INDEX IF EXISTS idx_team_members_team;
+-- DOWN: DROP TABLE IF EXISTS team_members_new;
+-- DOWN: -- (includes data migration — manual data rollback required)

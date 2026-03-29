@@ -42,3 +42,13 @@ CREATE INDEX IF NOT EXISTS idx_health_checks_created ON health_checks(created_at
 
 -- Cleanup old records (keep 30 days of error logs, 90 days of alerts)
 -- This should be run periodically via a scheduled task
+
+-- DOWN: DROP INDEX IF EXISTS idx_error_logs_created;
+-- DOWN: DROP INDEX IF EXISTS idx_error_logs_type;
+-- DOWN: DROP INDEX IF EXISTS idx_alerts_created;
+-- DOWN: DROP INDEX IF EXISTS idx_alerts_type;
+-- DOWN: DROP INDEX IF EXISTS idx_alerts_acknowledged;
+-- DOWN: DROP INDEX IF EXISTS idx_health_checks_created;
+-- DOWN: DROP TABLE IF EXISTS health_checks;
+-- DOWN: DROP TABLE IF EXISTS alerts;
+-- DOWN: DROP TABLE IF EXISTS error_logs;

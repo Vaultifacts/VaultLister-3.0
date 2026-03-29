@@ -34,3 +34,9 @@ CREATE TABLE IF NOT EXISTS google_oauth_states (
 
 CREATE INDEX IF NOT EXISTS idx_google_oauth_states_token ON google_oauth_states(state_token);
 CREATE INDEX IF NOT EXISTS idx_google_oauth_states_expires ON google_oauth_states(expires_at);
+
+-- DOWN: DROP INDEX IF EXISTS idx_google_tokens_user;
+-- DOWN: DROP INDEX IF EXISTS idx_google_oauth_states_token;
+-- DOWN: DROP INDEX IF EXISTS idx_google_oauth_states_expires;
+-- DOWN: DROP TABLE IF EXISTS google_oauth_states;
+-- DOWN: DROP TABLE IF EXISTS google_tokens;

@@ -98,3 +98,23 @@ CREATE INDEX IF NOT EXISTS idx_team_activity_created ON team_activity_log(create
 -- Indexes for barcode_lookups
 CREATE INDEX IF NOT EXISTS idx_barcode_lookups_barcode ON barcode_lookups(barcode);
 CREATE INDEX IF NOT EXISTS idx_barcode_lookups_brand ON barcode_lookups(brand);
+
+-- DOWN: DROP INDEX IF EXISTS idx_teams_owner;
+-- DOWN: DROP INDEX IF EXISTS idx_teams_created;
+-- DOWN: DROP INDEX IF EXISTS idx_team_members_team;
+-- DOWN: DROP INDEX IF EXISTS idx_team_members_user;
+-- DOWN: DROP INDEX IF EXISTS idx_team_members_status;
+-- DOWN: DROP INDEX IF EXISTS idx_team_invitations_team;
+-- DOWN: DROP INDEX IF EXISTS idx_team_invitations_email;
+-- DOWN: DROP INDEX IF EXISTS idx_team_invitations_token;
+-- DOWN: DROP INDEX IF EXISTS idx_team_invitations_status;
+-- DOWN: DROP INDEX IF EXISTS idx_team_activity_team;
+-- DOWN: DROP INDEX IF EXISTS idx_team_activity_user;
+-- DOWN: DROP INDEX IF EXISTS idx_team_activity_created;
+-- DOWN: DROP INDEX IF EXISTS idx_barcode_lookups_barcode;
+-- DOWN: DROP INDEX IF EXISTS idx_barcode_lookups_brand;
+-- DOWN: DROP TABLE IF EXISTS barcode_lookups;
+-- DOWN: DROP TABLE IF EXISTS team_activity_log;
+-- DOWN: DROP TABLE IF EXISTS team_invitations;
+-- DOWN: DROP TABLE IF EXISTS team_members;
+-- DOWN: DROP TABLE IF EXISTS teams;

@@ -25,3 +25,13 @@ CREATE TABLE IF NOT EXISTS oauth_states (
 -- Create indexes for efficient state token lookup
 CREATE INDEX IF NOT EXISTS idx_oauth_states_token ON oauth_states(state_token);
 CREATE INDEX IF NOT EXISTS idx_oauth_states_expiry ON oauth_states(expires_at);
+
+-- DOWN: DROP INDEX IF EXISTS idx_oauth_states_token;
+-- DOWN: DROP INDEX IF EXISTS idx_oauth_states_expiry;
+-- DOWN: DROP TABLE IF EXISTS oauth_states;
+-- DOWN: ALTER TABLE shops DROP COLUMN IF EXISTS oauth_provider;
+-- DOWN: ALTER TABLE shops DROP COLUMN IF EXISTS oauth_token;
+-- DOWN: ALTER TABLE shops DROP COLUMN IF EXISTS oauth_refresh_token;
+-- DOWN: ALTER TABLE shops DROP COLUMN IF EXISTS oauth_token_expires_at;
+-- DOWN: ALTER TABLE shops DROP COLUMN IF EXISTS oauth_scopes;
+-- DOWN: ALTER TABLE shops DROP COLUMN IF EXISTS connection_type;

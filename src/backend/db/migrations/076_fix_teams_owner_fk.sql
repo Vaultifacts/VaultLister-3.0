@@ -48,3 +48,13 @@ CREATE INDEX IF NOT EXISTS idx_team_invitations_team ON team_invitations(team_id
 CREATE INDEX IF NOT EXISTS idx_team_invitations_email ON team_invitations(email);
 CREATE INDEX IF NOT EXISTS idx_team_invitations_token ON team_invitations(token);
 CREATE INDEX IF NOT EXISTS idx_team_invitations_status ON team_invitations(status);
+
+-- DOWN: DROP INDEX IF EXISTS idx_teams_owner;
+-- DOWN: DROP INDEX IF EXISTS idx_teams_created;
+-- DOWN: DROP INDEX IF EXISTS idx_team_invitations_team;
+-- DOWN: DROP INDEX IF EXISTS idx_team_invitations_email;
+-- DOWN: DROP INDEX IF EXISTS idx_team_invitations_token;
+-- DOWN: DROP INDEX IF EXISTS idx_team_invitations_status;
+-- DOWN: DROP TABLE IF EXISTS team_invitations_new;
+-- DOWN: DROP TABLE IF EXISTS teams_new;
+-- DOWN: -- (includes data migration — manual data rollback required)

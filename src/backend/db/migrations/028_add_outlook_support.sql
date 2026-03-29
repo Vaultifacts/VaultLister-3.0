@@ -7,3 +7,5 @@ CREATE INDEX IF NOT EXISTS idx_email_accounts_provider_enabled
 
 -- Add outlook-specific fields if needed
 -- (email_accounts table already has generic provider field)
+
+-- DOWN: DROP INDEX IF EXISTS idx_email_accounts_provider_enabled;

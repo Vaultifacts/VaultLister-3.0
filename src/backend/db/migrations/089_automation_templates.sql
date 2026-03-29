@@ -29,3 +29,9 @@ CREATE TABLE IF NOT EXISTS automation_template_installs (
 CREATE INDEX IF NOT EXISTS idx_templates_author ON automation_templates(author_id);
 CREATE INDEX IF NOT EXISTS idx_templates_public ON automation_templates(is_public);
 CREATE INDEX IF NOT EXISTS idx_template_installs_user ON automation_template_installs(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_templates_author;
+-- DOWN: DROP INDEX IF EXISTS idx_templates_public;
+-- DOWN: DROP INDEX IF EXISTS idx_template_installs_user;
+-- DOWN: DROP TABLE IF EXISTS automation_template_installs;
+-- DOWN: DROP TABLE IF EXISTS automation_templates;

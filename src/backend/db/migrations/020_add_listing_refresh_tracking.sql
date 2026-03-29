@@ -34,3 +34,16 @@ CREATE INDEX IF NOT EXISTS idx_listing_refresh_history_created ON listing_refres
 -- Index for staleness queries
 CREATE INDEX IF NOT EXISTS idx_listings_last_relisted ON listings(last_relisted_at);
 CREATE INDEX IF NOT EXISTS idx_listings_staleness ON listings(staleness_days, status, auto_relist_enabled);
+
+-- DOWN: DROP INDEX IF EXISTS idx_listing_refresh_history_listing;
+-- DOWN: DROP INDEX IF EXISTS idx_listing_refresh_history_user;
+-- DOWN: DROP INDEX IF EXISTS idx_listing_refresh_history_action;
+-- DOWN: DROP INDEX IF EXISTS idx_listing_refresh_history_created;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_last_relisted;
+-- DOWN: DROP INDEX IF EXISTS idx_listings_staleness;
+-- DOWN: DROP TABLE IF EXISTS listing_refresh_history;
+-- DOWN: ALTER TABLE listings DROP COLUMN IF EXISTS last_delisted_at;
+-- DOWN: ALTER TABLE listings DROP COLUMN IF EXISTS last_relisted_at;
+-- DOWN: ALTER TABLE listings DROP COLUMN IF EXISTS staleness_days;
+-- DOWN: ALTER TABLE listings DROP COLUMN IF EXISTS auto_relist_enabled;
+-- DOWN: ALTER TABLE listings DROP COLUMN IF EXISTS marked_as_sold;

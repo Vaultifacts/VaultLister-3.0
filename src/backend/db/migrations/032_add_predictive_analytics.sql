@@ -49,3 +49,13 @@ CREATE INDEX IF NOT EXISTS idx_predictions_expires ON price_predictions(expires_
 CREATE INDEX IF NOT EXISTS idx_forecasts_category ON demand_forecasts(category);
 CREATE INDEX IF NOT EXISTS idx_forecasts_date ON demand_forecasts(forecast_date);
 CREATE INDEX IF NOT EXISTS idx_forecasts_platform ON demand_forecasts(platform);
+
+-- DOWN: DROP INDEX IF EXISTS idx_predictions_user;
+-- DOWN: DROP INDEX IF EXISTS idx_predictions_inventory;
+-- DOWN: DROP INDEX IF EXISTS idx_predictions_recommendation;
+-- DOWN: DROP INDEX IF EXISTS idx_predictions_expires;
+-- DOWN: DROP INDEX IF EXISTS idx_forecasts_category;
+-- DOWN: DROP INDEX IF EXISTS idx_forecasts_date;
+-- DOWN: DROP INDEX IF EXISTS idx_forecasts_platform;
+-- DOWN: DROP TABLE IF EXISTS demand_forecasts;
+-- DOWN: DROP TABLE IF EXISTS price_predictions;

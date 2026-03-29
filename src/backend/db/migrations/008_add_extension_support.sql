@@ -88,3 +88,13 @@ CREATE INDEX IF NOT EXISTS idx_scraped_products_user ON scraped_products(user_id
 CREATE INDEX IF NOT EXISTS idx_scraped_products_imported ON scraped_products(imported_to_inventory, user_id);
 CREATE INDEX IF NOT EXISTS idx_extension_sync_status ON extension_sync_queue(status);
 CREATE INDEX IF NOT EXISTS idx_extension_sync_user ON extension_sync_queue(user_id, status);
+
+-- DOWN: DROP INDEX IF EXISTS idx_price_tracking_user;
+-- DOWN: DROP INDEX IF EXISTS idx_price_tracking_platform;
+-- DOWN: DROP INDEX IF EXISTS idx_scraped_products_user;
+-- DOWN: DROP INDEX IF EXISTS idx_scraped_products_imported;
+-- DOWN: DROP INDEX IF EXISTS idx_extension_sync_status;
+-- DOWN: DROP INDEX IF EXISTS idx_extension_sync_user;
+-- DOWN: DROP TABLE IF EXISTS extension_sync_queue;
+-- DOWN: DROP TABLE IF EXISTS scraped_products;
+-- DOWN: DROP TABLE IF EXISTS price_tracking;

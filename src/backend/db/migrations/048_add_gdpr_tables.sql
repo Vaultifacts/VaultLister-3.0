@@ -34,3 +34,11 @@ CREATE INDEX IF NOT EXISTS idx_account_deletion_user ON account_deletion_request
 CREATE INDEX IF NOT EXISTS idx_account_deletion_scheduled ON account_deletion_requests(scheduled_for);
 CREATE INDEX IF NOT EXISTS idx_data_export_status ON data_export_requests(status);
 CREATE INDEX IF NOT EXISTS idx_data_export_user ON data_export_requests(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_account_deletion_status;
+-- DOWN: DROP INDEX IF EXISTS idx_account_deletion_user;
+-- DOWN: DROP INDEX IF EXISTS idx_account_deletion_scheduled;
+-- DOWN: DROP INDEX IF EXISTS idx_data_export_status;
+-- DOWN: DROP INDEX IF EXISTS idx_data_export_user;
+-- DOWN: DROP TABLE IF EXISTS data_export_requests;
+-- DOWN: DROP TABLE IF EXISTS account_deletion_requests;

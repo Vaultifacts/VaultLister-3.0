@@ -3,3 +3,5 @@
 
 CREATE INDEX IF NOT EXISTS idx_listings_inventory_platform
 ON listings(inventory_id, platform);
+
+-- DOWN: DROP INDEX IF EXISTS idx_listings_inventory_platform;

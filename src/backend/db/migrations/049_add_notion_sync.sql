@@ -136,3 +136,17 @@ CREATE INDEX IF NOT EXISTS idx_notion_sync_map_status ON notion_sync_map(sync_st
 CREATE INDEX IF NOT EXISTS idx_notion_field_mappings_user ON notion_field_mappings(user_id, entity_type);
 CREATE INDEX IF NOT EXISTS idx_notion_sync_history_user ON notion_sync_history(user_id, started_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notion_sync_conflicts_user ON notion_sync_conflicts(user_id, resolved);
+
+-- DOWN: DROP INDEX IF EXISTS idx_notion_settings_user;
+-- DOWN: DROP INDEX IF EXISTS idx_notion_sync_map_user;
+-- DOWN: DROP INDEX IF EXISTS idx_notion_sync_map_entity;
+-- DOWN: DROP INDEX IF EXISTS idx_notion_sync_map_notion;
+-- DOWN: DROP INDEX IF EXISTS idx_notion_sync_map_status;
+-- DOWN: DROP INDEX IF EXISTS idx_notion_field_mappings_user;
+-- DOWN: DROP INDEX IF EXISTS idx_notion_sync_history_user;
+-- DOWN: DROP INDEX IF EXISTS idx_notion_sync_conflicts_user;
+-- DOWN: DROP TABLE IF EXISTS notion_sync_conflicts;
+-- DOWN: DROP TABLE IF EXISTS notion_sync_history;
+-- DOWN: DROP TABLE IF EXISTS notion_field_mappings;
+-- DOWN: DROP TABLE IF EXISTS notion_sync_map;
+-- DOWN: DROP TABLE IF EXISTS notion_settings;

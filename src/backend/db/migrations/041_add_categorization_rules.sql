@@ -13,3 +13,7 @@ CREATE TABLE IF NOT EXISTS categorization_rules (
 
 CREATE INDEX IF NOT EXISTS idx_categorization_rules_user ON categorization_rules(user_id);
 CREATE INDEX IF NOT EXISTS idx_categorization_rules_pattern ON categorization_rules(pattern);
+
+-- DOWN: DROP INDEX IF EXISTS idx_categorization_rules_user;
+-- DOWN: DROP INDEX IF EXISTS idx_categorization_rules_pattern;
+-- DOWN: DROP TABLE IF EXISTS categorization_rules;

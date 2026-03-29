@@ -51,3 +51,17 @@ SELECT
     updated_at
 FROM feedback_submissions
 WHERE admin_response IS NOT NULL AND admin_response != '';
+
+-- DOWN: DROP INDEX IF EXISTS idx_feedback_votes_feedback;
+-- DOWN: DROP INDEX IF EXISTS idx_feedback_votes_user;
+-- DOWN: DROP INDEX IF EXISTS idx_feedback_responses_feedback;
+-- DOWN: DROP TABLE IF EXISTS feedback_responses;
+-- DOWN: DROP TABLE IF EXISTS feedback_votes;
+-- DOWN: ALTER TABLE feedback_submissions DROP COLUMN IF EXISTS votes_up;
+-- DOWN: ALTER TABLE feedback_submissions DROP COLUMN IF EXISTS votes_down;
+-- DOWN: ALTER TABLE feedback_submissions DROP COLUMN IF EXISTS view_count;
+-- DOWN: ALTER TABLE feedback_submissions DROP COLUMN IF EXISTS is_anonymous;
+-- DOWN: ALTER TABLE feedback_submissions DROP COLUMN IF EXISTS screenshot_data;
+-- DOWN: ALTER TABLE feedback_submissions DROP COLUMN IF EXISTS screenshot_mime;
+-- DOWN: ALTER TABLE feedback_submissions DROP COLUMN IF EXISTS roadmap_feature_id;
+-- DOWN: -- (includes data migration — manual data rollback required)

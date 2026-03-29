@@ -18,3 +18,7 @@ END;
 
 -- Rebuild FTS5 index to clean up stale entries from deleted inventory rows
 INSERT INTO inventory_fts(inventory_fts) VALUES('rebuild');
+
+-- DOWN: DROP TRIGGER IF EXISTS inventory_ad;
+-- DOWN: DROP TRIGGER IF EXISTS inventory_au;
+-- DOWN: -- (includes data migration — manual data rollback required)

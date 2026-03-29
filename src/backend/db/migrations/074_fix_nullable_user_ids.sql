@@ -49,3 +49,10 @@ DROP TABLE IF EXISTS push_devices;
 ALTER TABLE push_devices_new RENAME TO push_devices;
 
 CREATE INDEX IF NOT EXISTS idx_push_devices_user ON push_devices(user_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_demand_forecasts_user;
+-- DOWN: DROP INDEX IF EXISTS idx_demand_forecasts_date;
+-- DOWN: DROP INDEX IF EXISTS idx_push_devices_user;
+-- DOWN: DROP TABLE IF EXISTS push_devices_new;
+-- DOWN: DROP TABLE IF EXISTS demand_forecasts_new;
+-- DOWN: -- (includes data migration — manual data rollback required)

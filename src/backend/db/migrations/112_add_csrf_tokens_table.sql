@@ -12,3 +12,7 @@ CREATE TABLE IF NOT EXISTS csrf_tokens (
 
 CREATE INDEX IF NOT EXISTS idx_csrf_tokens_expires_at ON csrf_tokens(expires_at);
 CREATE INDEX IF NOT EXISTS idx_csrf_tokens_session_id ON csrf_tokens(session_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_csrf_tokens_expires_at;
+-- DOWN: DROP INDEX IF EXISTS idx_csrf_tokens_session_id;
+-- DOWN: DROP TABLE IF EXISTS csrf_tokens;

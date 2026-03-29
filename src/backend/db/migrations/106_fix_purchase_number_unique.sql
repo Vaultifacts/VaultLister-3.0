@@ -5,3 +5,5 @@
 -- Create UNIQUE index on purchase_number (per user scope)
 CREATE UNIQUE INDEX IF NOT EXISTS idx_purchases_number_unique ON purchases(user_id, purchase_number)
 WHERE purchase_number IS NOT NULL;
+
+-- DOWN: DROP INDEX IF EXISTS idx_purchases_number_unique;

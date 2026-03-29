@@ -35,3 +35,9 @@ CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_platform ON orders(platform);
 CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at);
+
+-- DOWN: DROP INDEX IF EXISTS idx_orders_user;
+-- DOWN: DROP INDEX IF EXISTS idx_orders_status;
+-- DOWN: DROP INDEX IF EXISTS idx_orders_platform;
+-- DOWN: DROP INDEX IF EXISTS idx_orders_created;
+-- DOWN: DROP TABLE IF EXISTS orders;

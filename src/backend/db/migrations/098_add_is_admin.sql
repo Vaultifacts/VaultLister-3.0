@@ -3,3 +3,5 @@
 -- migration runner's duplicate-column catch block handles the case where the
 -- column already exists.
 ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0;
+
+-- DOWN: ALTER TABLE users DROP COLUMN IF EXISTS is_admin;

@@ -16,3 +16,6 @@ CREATE TABLE IF NOT EXISTS poshmark_monitoring_log (
 
 CREATE INDEX IF NOT EXISTS idx_poshmark_monitoring_user_checked
     ON poshmark_monitoring_log (user_id, checked_at DESC);
+
+-- DOWN: DROP INDEX IF EXISTS idx_poshmark_monitoring_user_checked;
+-- DOWN: DROP TABLE IF EXISTS poshmark_monitoring_log;

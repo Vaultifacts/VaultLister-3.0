@@ -51,3 +51,10 @@ ON email_oauth_states(state_token);
 -- Cleanup expired states automatically (states expire after 10 minutes)
 CREATE INDEX IF NOT EXISTS idx_email_oauth_states_expires
 ON email_oauth_states(expires_at);
+
+-- DOWN: DROP INDEX IF EXISTS idx_email_accounts_user_enabled;
+-- DOWN: DROP INDEX IF EXISTS idx_email_accounts_sync;
+-- DOWN: DROP INDEX IF EXISTS idx_email_oauth_states_token;
+-- DOWN: DROP INDEX IF EXISTS idx_email_oauth_states_expires;
+-- DOWN: DROP TABLE IF EXISTS email_oauth_states;
+-- DOWN: DROP TABLE IF EXISTS email_accounts;

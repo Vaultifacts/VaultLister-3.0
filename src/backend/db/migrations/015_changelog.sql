@@ -29,3 +29,9 @@ CREATE TABLE IF NOT EXISTS changelog_items (
 CREATE INDEX IF NOT EXISTS idx_changelog_version ON changelog(version);
 CREATE INDEX IF NOT EXISTS idx_changelog_date ON changelog(date DESC);
 CREATE INDEX IF NOT EXISTS idx_changelog_items_changelog ON changelog_items(changelog_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_changelog_version;
+-- DOWN: DROP INDEX IF EXISTS idx_changelog_date;
+-- DOWN: DROP INDEX IF EXISTS idx_changelog_items_changelog;
+-- DOWN: DROP TABLE IF EXISTS changelog_items;
+-- DOWN: DROP TABLE IF EXISTS changelog;

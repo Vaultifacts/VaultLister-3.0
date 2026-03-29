@@ -16,3 +16,6 @@ DELETE FROM listings WHERE rowid NOT IN (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_listings_inv_platform ON listings(inventory_id, platform);
+
+-- DOWN: DROP INDEX IF EXISTS idx_listings_inv_platform;
+-- DOWN: -- (includes data migration — manual data rollback required)

@@ -133,3 +133,28 @@ CREATE INDEX IF NOT EXISTS idx_email_queue_status ON email_parse_queue(status);
 -- Equity: Equity
 -- Income: Income, Other Income
 -- Expenses: COGS, Expense, Other Expense
+
+-- DOWN: DROP INDEX IF EXISTS idx_accounts_user;
+-- DOWN: DROP INDEX IF EXISTS idx_accounts_type;
+-- DOWN: DROP INDEX IF EXISTS idx_accounts_parent;
+-- DOWN: DROP INDEX IF EXISTS idx_purchases_user;
+-- DOWN: DROP INDEX IF EXISTS idx_purchases_date;
+-- DOWN: DROP INDEX IF EXISTS idx_purchases_vendor;
+-- DOWN: DROP INDEX IF EXISTS idx_purchases_status;
+-- DOWN: DROP INDEX IF EXISTS idx_purchase_items_purchase;
+-- DOWN: DROP INDEX IF EXISTS idx_purchase_items_inventory;
+-- DOWN: DROP INDEX IF EXISTS idx_financial_transactions_user;
+-- DOWN: DROP INDEX IF EXISTS idx_financial_transactions_date;
+-- DOWN: DROP INDEX IF EXISTS idx_financial_transactions_account;
+-- DOWN: DROP INDEX IF EXISTS idx_financial_transactions_ref;
+-- DOWN: DROP INDEX IF EXISTS idx_cost_layers_inventory;
+-- DOWN: DROP INDEX IF EXISTS idx_cost_layers_remaining;
+-- DOWN: DROP INDEX IF EXISTS idx_cost_layers_date;
+-- DOWN: DROP INDEX IF EXISTS idx_email_queue_user;
+-- DOWN: DROP INDEX IF EXISTS idx_email_queue_status;
+-- DOWN: DROP TABLE IF EXISTS email_parse_queue;
+-- DOWN: DROP TABLE IF EXISTS inventory_cost_layers;
+-- DOWN: DROP TABLE IF EXISTS financial_transactions;
+-- DOWN: DROP TABLE IF EXISTS purchase_items;
+-- DOWN: DROP TABLE IF EXISTS purchases;
+-- DOWN: DROP TABLE IF EXISTS accounts;

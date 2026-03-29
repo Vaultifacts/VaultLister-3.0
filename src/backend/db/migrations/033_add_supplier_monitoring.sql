@@ -58,3 +58,15 @@ CREATE INDEX IF NOT EXISTS idx_supplier_items_supplier ON supplier_items(supplie
 CREATE INDEX IF NOT EXISTS idx_supplier_items_alert ON supplier_items(alert_enabled);
 CREATE INDEX IF NOT EXISTS idx_price_history_item ON supplier_price_history(supplier_item_id);
 CREATE INDEX IF NOT EXISTS idx_price_history_date ON supplier_price_history(recorded_at);
+
+-- DOWN: DROP INDEX IF EXISTS idx_suppliers_user;
+-- DOWN: DROP INDEX IF EXISTS idx_suppliers_type;
+-- DOWN: DROP INDEX IF EXISTS idx_suppliers_active;
+-- DOWN: DROP INDEX IF EXISTS idx_supplier_items_user;
+-- DOWN: DROP INDEX IF EXISTS idx_supplier_items_supplier;
+-- DOWN: DROP INDEX IF EXISTS idx_supplier_items_alert;
+-- DOWN: DROP INDEX IF EXISTS idx_price_history_item;
+-- DOWN: DROP INDEX IF EXISTS idx_price_history_date;
+-- DOWN: DROP TABLE IF EXISTS supplier_price_history;
+-- DOWN: DROP TABLE IF EXISTS supplier_items;
+-- DOWN: DROP TABLE IF EXISTS suppliers;

@@ -23,3 +23,8 @@ CREATE TABLE IF NOT EXISTS calendar_events (
 CREATE INDEX IF NOT EXISTS idx_calendar_user ON calendar_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_calendar_date ON calendar_events(date);
 CREATE INDEX IF NOT EXISTS idx_calendar_type ON calendar_events(type);
+
+-- DOWN: DROP INDEX IF EXISTS idx_calendar_user;
+-- DOWN: DROP INDEX IF EXISTS idx_calendar_date;
+-- DOWN: DROP INDEX IF EXISTS idx_calendar_type;
+-- DOWN: DROP TABLE IF EXISTS calendar_events;

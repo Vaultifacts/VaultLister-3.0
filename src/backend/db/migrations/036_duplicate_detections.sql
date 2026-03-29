@@ -27,3 +27,11 @@ CREATE INDEX IF NOT EXISTS idx_duplicate_detections_created ON duplicate_detecti
 -- Unique constraint to prevent duplicate detection records
 CREATE UNIQUE INDEX IF NOT EXISTS idx_duplicate_detections_unique_pair
 ON duplicate_detections(user_id, primary_item_id, duplicate_item_id);
+
+-- DOWN: DROP INDEX IF EXISTS idx_duplicate_detections_user_id;
+-- DOWN: DROP INDEX IF EXISTS idx_duplicate_detections_primary_item;
+-- DOWN: DROP INDEX IF EXISTS idx_duplicate_detections_duplicate_item;
+-- DOWN: DROP INDEX IF EXISTS idx_duplicate_detections_user_action;
+-- DOWN: DROP INDEX IF EXISTS idx_duplicate_detections_created;
+-- DOWN: DROP INDEX IF EXISTS idx_duplicate_detections_unique_pair;
+-- DOWN: DROP TABLE IF EXISTS duplicate_detections;

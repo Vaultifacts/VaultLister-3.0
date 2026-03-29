@@ -19,3 +19,8 @@ CREATE TABLE IF NOT EXISTS feedback_submissions (
 CREATE INDEX IF NOT EXISTS idx_feedback_user ON feedback_submissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback_submissions(status);
 CREATE INDEX IF NOT EXISTS idx_feedback_type ON feedback_submissions(type);
+
+-- DOWN: DROP INDEX IF EXISTS idx_feedback_user;
+-- DOWN: DROP INDEX IF EXISTS idx_feedback_status;
+-- DOWN: DROP INDEX IF EXISTS idx_feedback_type;
+-- DOWN: DROP TABLE IF EXISTS feedback_submissions;
