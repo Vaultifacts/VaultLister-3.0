@@ -118,7 +118,6 @@ const navProgress = {
         bar.style.width = '0%';
         bar.style.opacity = '1';
         bar.classList.add('nav-progress-active');
-        // Animate to 80% quickly, hold there until done()
         requestAnimationFrame(() => { bar.style.width = '80%'; });
     },
 
@@ -133,6 +132,42 @@ const navProgress = {
         }, 200);
     }
 };
+
+// ============================================
+// Page lifecycle cleanup registry (#202, #275)
+// ============================================
+const pageCleanupRegistry = {
+    _listeners: [],
+    _intervals: [],
+    _timeouts: [],
+
+    addListener(target, type, handler, options) {
+        target.addEventListener(type, handler, options);
+        this._listeners.push({ target, type, handler, options });
+    },
+
+    addInterval(id) {
+        this._intervals.push(id);
+        return id;
+    },
+
+    addTimeout(id) {
+        this._timeouts.push(id);
+        return id;
+    },
+
+    cleanAll() {
+        for (const { target, type, handler, options } of this._listeners) {
+            try { target.removeEventListener(type, handler, options); } catch (_) {}
+        }
+        for (const id of this._intervals) { clearInterval(id); }
+        for (const id of this._timeouts) { clearTimeout(id); }
+        this._listeners = [];
+        this._intervals = [];
+        this._timeouts = [];
+    }
+};
+
 
 /**
  * Dynamically load a built route-group chunk (dist/chunk-{name}.js).
@@ -266,6 +301,9 @@ const router = {
             store.setState({ activeTab: alias.tab });
             window.history.replaceState({}, '', `#${path}`);
         }
+
+        // Run page lifecycle cleanup for registered listeners/intervals/timeouts (#202, #275)
+        pageCleanupRegistry.cleanAll();
 
         // Clear timers/intervals on navigation to prevent leaks
         if (window._lockoutCountdown) {
@@ -541,13 +579,11 @@ const router = {
     },
 
     init() {
-        // Use browser-managed scroll restoration so the browser doesn't restore
-        // scroll on its own for popstate — we handle it in _scrollPositions.
+        window.pageCleanupRegistry = pageCleanupRegistry;
         if ('scrollRestoration' in history) {
             history.scrollRestoration = 'manual';
         }
         window.addEventListener('popstate', (e) => {
-            // Cancel pending requests from the previous page on back/forward nav
             if (typeof api !== 'undefined') api.cancelPending();
             this.handleRoute();
         });

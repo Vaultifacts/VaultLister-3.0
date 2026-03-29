@@ -1,17 +1,18 @@
 {
   "name": "VaultLister",
   "short_name": "VaultLister",
-  "description": "All-in-one multi-channel reselling platform",
-  "start_url": "/",
+  "description": "Multi-channel reselling platform for managing inventory, listings, and sales across marketplaces",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "browser"],
-  "background_color": "#ffffff",
+  "background_color": "#1a1a2e",
   "theme_color": "#6366f1",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "scope": "/",
   "id": "com.vaultlister.app",
   "lang": "en-US",
   "dir": "ltr",
+  "categories": ["business", "productivity", "shopping"],
   "icons": [
     {
       "src": "/assets/icon-192.svg",
@@ -26,9 +27,6 @@
       "purpose": "maskable"
     }
   ],
-  "categories": ["business", "shopping", "productivity"],
-  "related_applications": [],
-  "prefer_related_applications": false,
   "shortcuts": [
     {
       "name": "Add Item",
@@ -44,9 +42,35 @@
       ]
     },
     {
+      "name": "View Sales",
+      "short_name": "Sales",
+      "description": "View recent sales",
+      "url": "/#sales",
+      "icons": [
+        {
+          "src": "/assets/icon-192.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Cross-list",
+      "short_name": "List",
+      "description": "Cross-list items to marketplaces",
+      "url": "/#crosslist",
+      "icons": [
+        {
+          "src": "/assets/icon-192.svg",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
       "name": "Scan Receipt",
       "short_name": "Scan",
-      "url": "/#receipts?action=scan",
+      "url": "/#receipt-parser?action=scan",
       "description": "Scan and parse a receipt",
       "icons": [
         {
@@ -72,5 +96,14 @@
         }
       ]
     }
+  },
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
   }
 }
