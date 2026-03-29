@@ -115,14 +115,21 @@ const IS_PROD = process.env.NODE_ENV === 'production' || process.env.NODE_ENV ==
 
 // Build hash — injected into sw.js at serve time so every deploy busts the SW cache.
 // Falls back to a startup timestamp so the cache always invalidates on server restart.
+// Sanitized to only allow alphanumeric/hex characters to prevent injection via git output.
 const BUILD_HASH = (() => {
     try {
-        return Bun.spawnSync(['git', 'rev-parse', '--short', 'HEAD'], { cwd: ROOT_DIR })
+        const raw = Bun.spawnSync(['git', 'rev-parse', '--short', 'HEAD'], { cwd: ROOT_DIR })
             .stdout.toString().trim() || Date.now().toString(36);
+        // Allow only hex chars (git short hash) or base-36 digits (timestamp fallback)
+        return /^[0-9a-z]+$/i.test(raw) ? raw : Date.now().toString(36);
     } catch {
         return Date.now().toString(36);
     }
 })();
+
+// Valid chunk filename pattern: alphanumeric, hyphens, dots, forward slashes for subdirs.
+// Prevents path traversal via chunk filenames requested by the SPA router.
+const SAFE_CHUNK_RE = /^\/[a-zA-Z0-9_\-./]+\.(js|css|json|html|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|webp|webmanifest|xml|txt)$/;
 
 // File extensions to gzip on the fly
 const GZIP_EXTS = new Set(['.js', '.css', '.json', '.html', '.svg']);
@@ -196,7 +203,9 @@ const MIME_TYPES = {
     '.woff2': 'font/woff2',
     '.ttf': 'font/ttf',
     '.webp': 'image/webp',
-    '.webmanifest': 'application/manifest+json'
+    '.webmanifest': 'application/manifest+json',
+    '.xml': 'application/xml',
+    '.txt': 'text/plain'
 };
 
 // CORS configuration
@@ -725,6 +734,11 @@ const gzipCache = new Map();
 function serveStatic(pathname, request) {
     // Reject null bytes in path (potential bypass vector)
     if (pathname.includes('\0')) return null;
+
+    // Reject paths that don't match the safe filename pattern.
+    // This blocks path traversal sequences (../, ..\) and unexpected characters
+    // before the directory-resolution checks below have a chance to run.
+    if (!SAFE_CHUNK_RE.test(pathname)) return null;
 
     // In production, prefer dist/ for app.js (minified build)
     let filePath;

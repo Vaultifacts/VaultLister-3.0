@@ -2,85 +2,85 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://vaultlister.com/</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/#login</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/#register</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/status.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/schema.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/er-diagram.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/api-docs.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/api-changelog.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/rate-limits.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/quickstart.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/platforms.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/changelog.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/terms.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://vaultlister.com/privacy.html</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

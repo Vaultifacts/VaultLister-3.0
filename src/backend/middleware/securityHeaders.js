@@ -155,15 +155,18 @@ export const securityHeadersConfig = {
 
     // Permissions policy (feature policy)
     'Permissions-Policy': [
-        'geolocation=()', // Disable geolocation
-        'microphone=()',  // Disable microphone
-        'camera=()',      // Disable camera
-        'payment=()',     // Disable payment API
-        'usb=()',         // Disable USB
-        'magnetometer=()' // Disable magnetometer
+        'geolocation=()',   // Disable geolocation
+        'microphone=()',    // Disable microphone
+        'camera=(self)',    // Allow camera for AR preview (self only)
+        'payment=()',       // Disable payment API
+        'usb=()',           // Disable USB
+        'magnetometer=()'   // Disable magnetometer
     ].join(', '),
 
     // Cross-Origin policies
+    // COEP is 'unsafe-none' (not 'require-corp') to allow loading cross-origin
+    // images and resources required by the AR preview feature without needing
+    // CORP headers on every third-party asset.
     'Cross-Origin-Embedder-Policy': 'unsafe-none',
     'Cross-Origin-Opener-Policy': 'same-origin',
     'Cross-Origin-Resource-Policy': 'same-origin',
