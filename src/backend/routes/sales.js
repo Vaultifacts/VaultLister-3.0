@@ -43,8 +43,10 @@ export async function salesRouter(ctx) {
         }
 
         sql += ' ORDER BY s.created_at DESC LIMIT ? OFFSET ?';
-        const cappedLimit = Math.min(parseInt(limit) || 50, 100);
-        const cappedOffset = Math.max(parseInt(offset) || 0, 0);
+        const parsedLimit = parseInt(limit);
+        const parsedOffset = parseInt(offset);
+        const cappedLimit = Math.min(!isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : 50, 100);
+        const cappedOffset = !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0;
         params.push(cappedLimit, cappedOffset);
 
         const sales = await query.all(sql, params);
@@ -116,6 +118,11 @@ export async function salesRouter(ctx) {
 
         if (!platform || !salePrice) {
             return { status: 400, data: { error: { message: 'Platform and sale price required', code: 'BAD_REQUEST' } } };
+        }
+
+        const parsedSalePrice = parseFloat(salePrice);
+        if (isNaN(parsedSalePrice) || parsedSalePrice <= 0 || parsedSalePrice > 999999.99) {
+            return { status: 400, data: { error: 'Sale price must be a valid positive number' } };
         }
 
         // Validate platform enum

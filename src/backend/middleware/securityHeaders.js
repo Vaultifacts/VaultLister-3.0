@@ -285,10 +285,11 @@ export function buildCSPWithNonce(nonce) {
             "'unsafe-inline'",
             ...(IS_PRODUCTION ? [] : ['http://localhost:*'])
         ],
-        // Allow inline event handlers (onclick, onsubmit, etc.) in dev.
+        // Allow inline event handlers (onclick, onsubmit, etc.) in all envs.
         // When a nonce is present, 'unsafe-inline' in script-src is ignored for
-        // event handlers — this directive re-enables them explicitly.
-        ...(!IS_PRODUCTION ? { 'script-src-attr': ["'unsafe-inline'"] } : {})
+        // event handlers — script-src-attr re-enables them explicitly without
+        // weakening the nonce-based inline <script> block protection.
+        'script-src-attr': ["'unsafe-inline'"]
     };
     return buildCSPHeader(noncedConfig);
 }
