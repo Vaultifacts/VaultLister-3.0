@@ -778,8 +778,12 @@ Object.assign(handlers, {
             { keys: ['⌘', '⇧', 'P'], action: 'Command palette' }
         ];
 
-        modals.show('Keyboard Shortcuts', `
-            <div style="padding: 8px;">
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Keyboard Shortcuts</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
+            </div>
+            <div class="modal-body">
                 <div style="display: grid; gap: 8px;">
                     ${shortcuts.map(s => `
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px;">

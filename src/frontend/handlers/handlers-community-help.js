@@ -339,6 +339,11 @@ Object.assign(handlers, {
     searchChangelog: function(query) {
         store.setState({ changelogSearch: query });
         renderApp(pages.changelog());
+        const input = document.querySelector('[aria-label="Search changelog"]');
+        if (input) {
+            input.focus();
+            input.selectionStart = input.selectionEnd = input.value.length;
+        }
     },
 
 

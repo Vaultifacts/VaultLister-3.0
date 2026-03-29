@@ -5855,8 +5855,12 @@ Object.assign(handlers, {
             { keys: ['⌘', '⇧', 'P'], action: 'Command palette' }
         ];
 
-        modals.show('Keyboard Shortcuts', `
-            <div style="padding: 8px;">
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Keyboard Shortcuts</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
+            </div>
+            <div class="modal-body">
                 <div style="display: grid; gap: 8px;">
                     ${shortcuts.map(s => `
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px;">
@@ -6360,6 +6364,11 @@ Object.assign(handlers, {
     searchChangelog: function(query) {
         store.setState({ changelogSearch: query });
         renderApp(pages.changelog());
+        const input = document.querySelector('[aria-label="Search changelog"]');
+        if (input) {
+            input.focus();
+            input.selectionStart = input.selectionEnd = input.value.length;
+        }
     },
 
     filterChangelogType: function(type) {
@@ -17453,18 +17462,27 @@ Object.assign(handlers, {
             { keys: ['?'], label: 'Show keyboard shortcuts' }
         ];
 
-        modals.show('Keyboard Shortcuts', `
-            <div class="keyboard-shortcuts-grid">
-                ${shortcuts.map(s => `
-                    <div class="keyboard-shortcut-item">
-                        <span class="keyboard-shortcut-label">${s.label}</span>
-                        <div class="keyboard-shortcut-keys">
-                            ${s.keys.map(k => `<span class="keyboard-key">${k}</span>`).join(' + ')}
-                        </div>
-                    </div>
-                `).join('')}
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Keyboard Shortcuts</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('x', 20)}</button>
             </div>
-        `, `<button class="btn btn-primary" onclick="modals.close()">Got it</button>`);
+            <div class="modal-body">
+                <div class="keyboard-shortcuts-grid">
+                    ${shortcuts.map(s => `
+                        <div class="keyboard-shortcut-item">
+                            <span class="keyboard-shortcut-label">${s.label}</span>
+                            <div class="keyboard-shortcut-keys">
+                                ${s.keys.map(k => `<span class="keyboard-key">${k}</span>`).join(' + ')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="modals.close()">Got it</button>
+                </div>
+            </div>
+        `);
     },
 
     // Vault Buddy (Chatbot) Management
