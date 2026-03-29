@@ -8234,6 +8234,12 @@ const api = {
                 });
 
                 if (!response.ok) {
+                    if (response.status === 401) {
+                        // Clear expired tokens but do NOT navigate here — this function
+                        // is called during app init (before the router is ready) and
+                        // by request() which handles its own redirect after we return false.
+                        store.setState({ user: null, token: null, refreshToken: null });
+                    }
                     return false;
                 }
 
@@ -8322,6 +8328,11 @@ const api = {
                 return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
             }
 
+            // All retries exhausted for a 5xx — show error toast
+            if (response.status >= 500) {
+                toast.error('Server error. Please try again later.');
+            }
+
             // Store CSRF token from response
             const csrfToken = response.headers.get('X-CSRF-Token') || response.headers.get('CSRF-Token');
             if (csrfToken) {
@@ -8348,25 +8359,22 @@ const api = {
 
             // Handle token expiration - try to refresh and retry
             if (!response.ok && response.status === 401 && !isRetryAfterRefresh && !endpoint.includes('/auth/login')) {
-                const errorMsg = data.error || '';
-                if (errorMsg.includes('expired') || errorMsg.includes('Invalid')) {
+                if (!navigator.onLine) {
+                    throw new Error('You are offline. Please reconnect to continue.');
+                }
+                const refreshed = await this.refreshAccessToken();
+                if (refreshed) {
+                    // Retry the original request with new token
+                    return this.request(endpoint, options, 0, true);
+                } else {
+                    // Refresh failed — only redirect if we are actually online.
+                    // An offline 401 is a network artifact, not a real auth failure.
                     if (!navigator.onLine) {
                         throw new Error('You are offline. Please reconnect to continue.');
                     }
-                    const refreshed = await this.refreshAccessToken();
-                    if (refreshed) {
-                        // Retry the original request with new token
-                        return this.request(endpoint, options, 0, true);
-                    } else {
-                        // Refresh failed — only redirect if we are actually online.
-                        // An offline 401 is a network artifact, not a real auth failure.
-                        if (!navigator.onLine) {
-                            throw new Error('You are offline. Please reconnect to continue.');
-                        }
-                        store.setState({ user: null, token: null, refreshToken: null });
-                        router.navigate('login');
-                        throw new Error('Session expired. Please log in again.');
-                    }
+                    store.setState({ user: null, token: null, refreshToken: null });
+                    router.navigate('login');
+                    throw new Error('Session expired. Please log in again.');
                 }
             }
 
@@ -15301,6 +15309,40 @@ const pageChunkMap = {
 const _loadedChunks = new Set();
 const _loadingChunks = {};
 
+// Thin top-bar progress indicator for page transitions
+const navProgress = {
+    _el: null,
+    _timer: null,
+
+    _getEl() {
+        if (!this._el) {
+            this._el = document.getElementById('nav-progress-bar');
+        }
+        return this._el;
+    },
+
+    start() {
+        const bar = this._getEl();
+        if (!bar) return;
+        clearTimeout(this._timer);
+        bar.style.width = '0%';
+        bar.style.opacity = '1';
+        bar.classList.add('nav-progress-active');
+        requestAnimationFrame(() => { bar.style.width = '80%'; });
+    },
+
+    done() {
+        const bar = this._getEl();
+        if (!bar) return;
+        bar.style.width = '100%';
+        this._timer = setTimeout(() => {
+            bar.style.opacity = '0';
+            bar.classList.remove('nav-progress-active');
+            setTimeout(() => { bar.style.width = '0%'; }, 300);
+        }, 200);
+    }
+};
+
 /**
  * Dynamically load a built route-group chunk (dist/chunk-{name}.js).
  * Returns a promise that resolves when the script has loaded.
@@ -15422,6 +15464,7 @@ const router = {
     },
 
     async handleRoute(isInitialLoad = false) {
+        navProgress.start();
         let path = (window.location.hash.slice(1) || 'dashboard').split('?')[0];
         const previousPage = store.state.currentPage;
 
@@ -15653,6 +15696,8 @@ const router = {
                 appEl.scrollTop = this._scrollPositions[path];
             }
         });
+
+        navProgress.done();
 
         // Load data AFTER rendering on initial load
         if (isInitialLoad) {

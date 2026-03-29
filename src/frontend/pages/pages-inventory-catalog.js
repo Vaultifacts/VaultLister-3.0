@@ -1191,18 +1191,8 @@ Object.assign(pages, {
                                 }).join('')}
                 ` : `
                             <tr>
-                                <td colspan="${2 + visibleColumns.length}" style="text-align: center; padding: 48px 24px;">
-                                    <div style="color: var(--gray-400); margin-bottom: 8px;">
-                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto;">
-                                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path>
-                                            <rect x="9" y="3" width="6" height="4" rx="1"></rect>
-                                        </svg>
-                                    </div>
-                                    <h3 style="color: var(--gray-700); font-weight: 600; margin-bottom: 4px;">No listings yet</h3>
-                                    <p style="color: var(--gray-500); font-size: 14px; margin-bottom: 16px;">Create listings to start selling across platforms</p>
-                                    <button class="btn btn-primary" onclick="modals.chooseListingMode()">
-                                        ${components.icon('plus', 16)} Add New Listing(s)
-                                    </button>
+                                <td colspan="${2 + visibleColumns.length}" style="padding: 0;">
+                                    ${components.emptyState('crosslist', 'No listings yet', 'Create listings to start selling across platforms', 'Add New Listing(s)', 'modals.chooseListingMode()', 'plus')}
                                 </td>
                             </tr>
                 `}

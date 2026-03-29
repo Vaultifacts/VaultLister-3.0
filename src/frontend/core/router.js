@@ -99,6 +99,41 @@ const pageChunkMap = {
 const _loadedChunks = new Set();
 const _loadingChunks = {};
 
+// Thin top-bar progress indicator for page transitions
+const navProgress = {
+    _el: null,
+    _timer: null,
+
+    _getEl() {
+        if (!this._el) {
+            this._el = document.getElementById('nav-progress-bar');
+        }
+        return this._el;
+    },
+
+    start() {
+        const bar = this._getEl();
+        if (!bar) return;
+        clearTimeout(this._timer);
+        bar.style.width = '0%';
+        bar.style.opacity = '1';
+        bar.classList.add('nav-progress-active');
+        // Animate to 80% quickly, hold there until done()
+        requestAnimationFrame(() => { bar.style.width = '80%'; });
+    },
+
+    done() {
+        const bar = this._getEl();
+        if (!bar) return;
+        bar.style.width = '100%';
+        this._timer = setTimeout(() => {
+            bar.style.opacity = '0';
+            bar.classList.remove('nav-progress-active');
+            setTimeout(() => { bar.style.width = '0%'; }, 300);
+        }, 200);
+    }
+};
+
 /**
  * Dynamically load a built route-group chunk (dist/chunk-{name}.js).
  * Returns a promise that resolves when the script has loaded.
@@ -220,6 +255,7 @@ const router = {
     },
 
     async handleRoute(isInitialLoad = false) {
+        navProgress.start();
         let path = (window.location.hash.slice(1) || 'dashboard').split('?')[0];
         const previousPage = store.state.currentPage;
 
@@ -451,6 +487,8 @@ const router = {
                 appEl.scrollTop = this._scrollPositions[path];
             }
         });
+
+        navProgress.done();
 
         // Load data AFTER rendering on initial load
         if (isInitialLoad) {

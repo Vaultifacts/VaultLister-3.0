@@ -46,6 +46,12 @@ const api = {
                 });
 
                 if (!response.ok) {
+                    if (response.status === 401) {
+                        // Clear expired tokens but do NOT navigate here — this function
+                        // is called during app init (before the router is ready) and
+                        // by request() which handles its own redirect after we return false.
+                        store.setState({ user: null, token: null, refreshToken: null });
+                    }
                     return false;
                 }
 
@@ -134,6 +140,11 @@ const api = {
                 return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
             }
 
+            // All retries exhausted for a 5xx — show error toast
+            if (response.status >= 500) {
+                toast.error('Server error. Please try again later.');
+            }
+
             // Store CSRF token from response
             const csrfToken = response.headers.get('X-CSRF-Token') || response.headers.get('CSRF-Token');
             if (csrfToken) {
@@ -160,25 +171,22 @@ const api = {
 
             // Handle token expiration - try to refresh and retry
             if (!response.ok && response.status === 401 && !isRetryAfterRefresh && !endpoint.includes('/auth/login')) {
-                const errorMsg = data.error || '';
-                if (errorMsg.includes('expired') || errorMsg.includes('Invalid')) {
+                if (!navigator.onLine) {
+                    throw new Error('You are offline. Please reconnect to continue.');
+                }
+                const refreshed = await this.refreshAccessToken();
+                if (refreshed) {
+                    // Retry the original request with new token
+                    return this.request(endpoint, options, 0, true);
+                } else {
+                    // Refresh failed — only redirect if we are actually online.
+                    // An offline 401 is a network artifact, not a real auth failure.
                     if (!navigator.onLine) {
                         throw new Error('You are offline. Please reconnect to continue.');
                     }
-                    const refreshed = await this.refreshAccessToken();
-                    if (refreshed) {
-                        // Retry the original request with new token
-                        return this.request(endpoint, options, 0, true);
-                    } else {
-                        // Refresh failed — only redirect if we are actually online.
-                        // An offline 401 is a network artifact, not a real auth failure.
-                        if (!navigator.onLine) {
-                            throw new Error('You are offline. Please reconnect to continue.');
-                        }
-                        store.setState({ user: null, token: null, refreshToken: null });
-                        router.navigate('login');
-                        throw new Error('Session expired. Please log in again.');
-                    }
+                    store.setState({ user: null, token: null, refreshToken: null });
+                    router.navigate('login');
+                    throw new Error('Session expired. Please log in again.');
                 }
             }
 
