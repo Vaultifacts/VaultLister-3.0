@@ -1345,6 +1345,102 @@ async function cmdCompare(name) {
     }
 }
 
+// compare-responsive: capture current screenshots at all viewports then pixel-diff against baselines
+// Usage: node scripts/visual-test.js compare-responsive <route> [--threshold <percent>]
+async function cmdCompareResponsive(route) {
+    if (!route) {
+        console.error('Usage: node scripts/visual-test.js compare-responsive <route> [--threshold <percent>]');
+        process.exit(1);
+    }
+
+    if (!(await checkServer())) process.exit(1);
+
+    const threshold = parseFloat(getFlag('threshold')) || 0;
+    const safeName = sanitizeRoute(route);
+    const hash = route.startsWith('#') ? route : `#${route}`;
+    const vpEntries = Object.entries(VIEWPORTS);
+    const results = [];
+
+    for (let i = 0; i < vpEntries.length; i++) {
+        const [vpName, vpSize] = vpEntries[i];
+        if (i > 0) await new Promise(r => setTimeout(r, 1000));
+        console.log(`\nCapturing ${vpName} (${vpSize.width}x${vpSize.height}) for comparison...`);
+        const { browser, page } = await launchBrowser(vpName);
+        try {
+            await login(page);
+            await page.goto(`${BASE_URL}/${hash}`);
+            await waitForPageReady(page);
+            await takeScreenshot(page, `${safeName}-${vpName}`);
+        } finally {
+            await browser.close();
+        }
+
+        const result = await compareScreenshots(`${safeName}-${vpName}`, threshold);
+        if (result) {
+            results.push({ viewport: vpName, ...result });
+            if (hasFlag('update-baselines') && !result.match) {
+                const currentPath = join(CURRENT_DIR, `${sanitizeRoute(`${safeName}-${vpName}`)}.png`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+                const baselinePath = join(BASELINES_DIR, `${sanitizeRoute(`${safeName}-${vpName}`)}.png`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+                copyFileSync(currentPath, baselinePath);
+                console.log(`  Baseline updated: ${safeName}-${vpName}`);
+            }
+        }
+    }
+
+    const passed = results.filter(r => r.match).length;
+    const failed = results.filter(r => !r.match).length;
+    console.log(`\nResponsive comparison complete: ${passed}/${results.length} viewports passed${failed > 0 ? `, ${failed} failed` : ''}.`);
+    console.log(`\nRESULT_JSON: ${JSON.stringify(results)}`);
+    if (failed > 0) process.exit(1);
+}
+
+// compare-dark: capture current screenshots in light and dark modes then pixel-diff against baselines
+// Usage: node scripts/visual-test.js compare-dark <route> [--threshold <percent>]
+async function cmdCompareDark(route) {
+    if (!route) {
+        console.error('Usage: node scripts/visual-test.js compare-dark <route> [--threshold <percent>]');
+        process.exit(1);
+    }
+
+    if (!(await checkServer())) process.exit(1);
+
+    const threshold = parseFloat(getFlag('threshold')) || 0;
+    const safeName = sanitizeRoute(route);
+    const hash = route.startsWith('#') ? route : `#${route}`;
+    const results = [];
+
+    for (const themeName of ['light', 'dark']) {
+        console.log(`\nCapturing ${themeName} mode for comparison...`);
+        const { browser, page } = await launchBrowser();
+        try {
+            await login(page);
+            await page.goto(`${BASE_URL}/${hash}`);
+            await waitForPageReady(page);
+            await setTheme(page, themeName);
+            await takeScreenshot(page, `${safeName}-${themeName}`);
+        } finally {
+            await browser.close();
+        }
+
+        const result = await compareScreenshots(`${safeName}-${themeName}`, threshold);
+        if (result) {
+            results.push({ theme: themeName, ...result });
+            if (hasFlag('update-baselines') && !result.match) {
+                const currentPath = join(CURRENT_DIR, `${sanitizeRoute(`${safeName}-${themeName}`)}.png`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+                const baselinePath = join(BASELINES_DIR, `${sanitizeRoute(`${safeName}-${themeName}`)}.png`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+                copyFileSync(currentPath, baselinePath);
+                console.log(`  Baseline updated: ${safeName}-${themeName}`);
+            }
+        }
+    }
+
+    const passed = results.filter(r => r.match).length;
+    const failed = results.filter(r => !r.match).length;
+    console.log(`\nDark mode comparison complete: ${passed}/${results.length} themes passed${failed > 0 ? `, ${failed} failed` : ''}.`);
+    console.log(`\nRESULT_JSON: ${JSON.stringify(results)}`);
+    if (failed > 0) process.exit(1);
+}
+
 // Substitute $varName references in step string values (recursive for nested objects/arrays)
 function substituteVars(step, variables) {
     if (variables.size === 0) return step;
@@ -6223,6 +6319,14 @@ async function cmdClick(selector, options = {}) {
             await cmdCompare(args[1]);
             break;
 
+        case 'compare-responsive':
+            await cmdCompareResponsive(args[1]);
+            break;
+
+        case 'compare-dark':
+            await cmdCompareDark(args[1]);
+            break;
+
         case 'test-flow':
             await cmdTestFlow(args[1]);
             break;
@@ -6283,7 +6387,9 @@ Commands:
   validate <route>            Test form validation with screenshots
   audit <route>               Page health check (console, network, perf, a11y)
   audit-all                   Audit all major routes with combined report
-  compare <name>              Pixel-diff compare baseline vs current screenshot
+  compare <name>              Pixel-diff compare baseline vs current screenshot (--threshold <pct>)
+  compare-responsive <route>  Capture + compare all viewports (desktop/tablet/mobile) against baselines
+  compare-dark <route>        Capture + compare light and dark mode variants against baselines
   baseline-all                Screenshot all major routes as baselines
   test-flow <name>            Run a built-in test flow
   interact --steps '<json>'   Run multi-step interaction scenario

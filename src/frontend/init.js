@@ -671,13 +671,21 @@ initApp();
     });
 })();
 
-// Service Worker auth token listener (responds to GET_AUTH_TOKEN from SW)
+// Service Worker message listener
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', function(event) { // nosemgrep: javascript.browser.security.postmessage-origin-validation
-        if (event.data && event.data.type === 'GET_AUTH_TOKEN') {
+        if (!event.data) return;
+        // Respond to GET_AUTH_TOKEN requests from the SW (used by background sync)
+        if (event.data.type === 'GET_AUTH_TOKEN') {
             var token = (typeof store !== 'undefined' && store.state && store.state.token) || null;
             if (event.ports && event.ports[0]) {
                 event.ports[0].postMessage({ token: token });
+            }
+        }
+        // SW requests client to flush the offline queue after background sync fires
+        if (event.data.type === 'SW_FLUSH_OFFLINE_QUEUE') {
+            if (typeof offlineManager !== 'undefined' && navigator.onLine) {
+                offlineManager.syncQueue();
             }
         }
     });

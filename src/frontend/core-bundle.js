@@ -9634,6 +9634,7 @@ const offlineManager = {
     queue: [],
     _onlineHandler: null,
     _offlineHandler: null,
+    _syncing: false,
 
     init() {
         // Remove previous listeners to prevent accumulation on re-init
@@ -9643,6 +9644,16 @@ const offlineManager = {
         this._offlineHandler = () => this.onOffline();
         window.addEventListener('online', this._onlineHandler);
         window.addEventListener('offline', this._offlineHandler);
+
+        // Restore persisted queue from localStorage
+        try {
+            const saved = localStorage.getItem('vaultlister_offline_queue');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) this.queue = parsed;
+            }
+        } catch (_e) {}
+        this.updateQueueIndicator();
 
         // Check initial state
         if (!navigator.onLine) this.onOffline();
@@ -9657,7 +9668,9 @@ const offlineManager = {
     onOnline() {
         store.setState({ isOffline: false });
         document.getElementById('offline-indicator')?.classList.add('hidden');
+        // Auto-flush: automatically sync any queued changes when back online
         if (this.queue.length > 0) {
+            toast.info(`Back online. Syncing ${this.queue.length} queued change(s)...`);
             this.syncQueue();
         } else {
             toast.success('Back online!');
@@ -9680,6 +9693,9 @@ const offlineManager = {
     },
 
     async syncQueue() {
+        if (this._syncing) return;
+        this._syncing = true;
+
         const queueEl = document.getElementById('offline-queue');
         if (queueEl) queueEl.textContent = `Syncing ${this.queue.length} changes...`;
 
@@ -9691,7 +9707,12 @@ const offlineManager = {
                 synced++;
             } catch (e) {
                 console.error('Failed to sync action:', e);
-                failedActions.push(action);
+                // Conflict resolution: server wins — notify user and discard conflicting item
+                if (e.status === 409) {
+                    toast.warning(`A conflict was detected for a queued change. The server version has been kept.`);
+                } else {
+                    failedActions.push(action);
+                }
             }
         }
 
@@ -9706,6 +9727,7 @@ const offlineManager = {
                 console.error('Failed to update offline queue:', e);
             }
         }
+        this._syncing = false;
         this.updateQueueIndicator();
 
         if (failedActions.length === 0) {
@@ -9716,15 +9738,22 @@ const offlineManager = {
     },
 
     async executeAction(action) {
-        // Execute queued action based on type
-        // This would integrate with actual API calls
-        // Action execution integrates with API calls — type determines handler
+        if (!action || !action.endpoint) return;
+        const response = await api.request(action.endpoint, action.options || {});
+        return response;
     },
 
     updateQueueIndicator() {
+        const count = this.queue.length;
         const queueEl = document.getElementById('offline-queue');
         if (queueEl) {
-            queueEl.textContent = this.queue.length > 0 ? `(${this.queue.length} pending)` : '';
+            queueEl.textContent = count > 0 ? `${count} pending` : '';
+            queueEl.setAttribute('aria-label', count > 0 ? `${count} offline changes pending sync` : '');
+        }
+        // Update aria-label on the offline indicator for screen readers
+        const indicator = document.getElementById('offline-indicator');
+        if (indicator && count > 0) {
+            indicator.setAttribute('aria-label', `Offline — ${count} change(s) queued`);
         }
     }
 };

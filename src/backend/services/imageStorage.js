@@ -435,10 +435,128 @@ export async function importFromInventory(inventoryId, userId) {
     }
 }
 
+/**
+ * Generate optimized image variants: WebP conversion, EXIF stripping, medium-size variant.
+ * Falls back gracefully when sharp is unavailable.
+ *
+ * @param {Buffer|string} source - Image data as Buffer or local file path
+ * @param {string} userId - User ID for storage path organization
+ * @param {string} imageId - Unique image ID (used as filename base)
+ * @returns {Promise<{ webp?: string, medium?: string, original?: string }>} Paths to variants
+ */
+export async function generateOptimizedVariants(source, userId, imageId) {
+    const safeUserId = String(userId).replace(/[^a-zA-Z0-9\-_]/g, '');
+    const variants = {};
+
+    let sharp;
+    try {
+        sharp = (await import('sharp')).default;
+    } catch (_err) {
+        logger.warn('[ImageStorage] sharp not available; skipping optimized variants');
+        return variants;
+    }
+
+    // Resolve source buffer
+    let inputBuffer;
+    if (typeof source === 'string') {
+        const { readFileSync } = await import('fs');
+        inputBuffer = readFileSync(source);
+    } else {
+        inputBuffer = source;
+    }
+
+    if (USE_R2) {
+        const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+        const s3 = await getS3();
+
+        // WebP conversion + EXIF strip
+        try {
+            const webpBuffer = await sharp(inputBuffer)
+                .rotate()  // auto-rotate based on EXIF orientation, then strip EXIF
+                .withMetadata({})  // strip all metadata
+                .webp({ quality: 82 })
+                .toBuffer();
+            const webpKey = `images/${safeUserId}/webp/${imageId}.webp`;
+            await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: webpKey, Body: webpBuffer, ContentType: 'image/webp' }));
+            variants.webp = webpKey;
+        } catch (err) {
+            logger.error('[ImageStorage] WebP conversion failed (R2)', null, { detail: err.message });
+        }
+
+        // Medium variant (800px max width) + EXIF strip
+        try {
+            const mediumBuffer = await sharp(inputBuffer)
+                .rotate()
+                .withMetadata({})
+                .resize(800, null, { fit: 'inside', withoutEnlargement: true })
+                .jpeg({ quality: 85 })
+                .toBuffer();
+            const mediumKey = `images/${safeUserId}/medium/${imageId}_medium.jpg`;
+            await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: mediumKey, Body: mediumBuffer, ContentType: 'image/jpeg' }));
+            variants.medium = mediumKey;
+        } catch (err) {
+            logger.error('[ImageStorage] Medium variant failed (R2)', null, { detail: err.message });
+        }
+    } else {
+        // Strip EXIF from original in place
+        try {
+            const strippedBuffer = await sharp(inputBuffer)
+                .rotate()
+                .withMetadata({})
+                .jpeg({ quality: 95 })
+                .toBuffer();
+            const userOriginalDir = join(UPLOADS_DIR, 'original', safeUserId);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            if (!resolve(userOriginalDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            mkdirSync(userOriginalDir, { recursive: true });
+            const originalPath = join(userOriginalDir, `${imageId}.jpg`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            writeFileSync(originalPath, strippedBuffer);
+            variants.original = `/uploads/images/original/${safeUserId}/${imageId}.jpg`;
+        } catch (err) {
+            logger.error('[ImageStorage] EXIF strip failed', null, { detail: err.message });
+        }
+
+        // WebP variant
+        try {
+            const webpDir = join(UPLOADS_DIR, 'webp', safeUserId);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            if (!resolve(webpDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            mkdirSync(webpDir, { recursive: true });
+            const webpPath = join(webpDir, `${imageId}.webp`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            await sharp(inputBuffer)
+                .rotate()
+                .withMetadata({})
+                .webp({ quality: 82 })
+                .toFile(webpPath);
+            variants.webp = `/uploads/images/webp/${safeUserId}/${imageId}.webp`;
+        } catch (err) {
+            logger.error('[ImageStorage] WebP variant failed', null, { detail: err.message });
+        }
+
+        // Medium variant (800px max width)
+        try {
+            const mediumDir = join(UPLOADS_DIR, 'medium', safeUserId);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            if (!resolve(mediumDir).startsWith(resolve(UPLOADS_DIR))) throw new Error('Invalid user path');  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            mkdirSync(mediumDir, { recursive: true });
+            const mediumPath = join(mediumDir, `${imageId}_medium.jpg`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+            await sharp(inputBuffer)
+                .rotate()
+                .withMetadata({})
+                .resize(800, null, { fit: 'inside', withoutEnlargement: true })
+                .jpeg({ quality: 85 })
+                .toFile(mediumPath);
+            variants.medium = `/uploads/images/medium/${safeUserId}/${imageId}_medium.jpg`;
+        } catch (err) {
+            logger.error('[ImageStorage] Medium variant failed', null, { detail: err.message });
+        }
+    }
+
+    return variants;
+}
+
 export default {
     validateImage,
     saveImage,
     generateThumbnail,
+    generateOptimizedVariants,
     deleteImage,
     getImageUrl,
     importFromInventory

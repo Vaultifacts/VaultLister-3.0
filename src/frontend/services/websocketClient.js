@@ -1,6 +1,10 @@
 // WebSocket Client for VaultLister Frontend
 // Real-time updates for inventory, sales, and notifications
 
+// Maximum number of message IDs to retain for deduplication.
+// Older entries are evicted when the set exceeds this size.
+const MAX_DEDUP_SET_SIZE = 500;
+
 class VaultListerSocket {
     constructor() {
         this.ws = null;
@@ -21,6 +25,11 @@ class VaultListerSocket {
         // If 60s pass without a ping the server is considered gone and we reconnect.
         this._pingTimeoutId = null;
         this._pingTimeoutMs = 60000;
+        // Bounded set of recently processed message IDs for reconnect deduplication.
+        // Keys: message id strings. On overflow, the oldest entry is removed.
+        this._seenMessageIds = new Set();
+        // Timestamp of the last processed message (used when server sends timestamp but no id)
+        this._lastMessageTimestamp = 0;
     }
 
     // Initialize WebSocket connection
@@ -117,6 +126,17 @@ class VaultListerSocket {
         }
     }
 
+    // Track a message ID in the bounded dedup set.
+    // Evicts the oldest entry when the set exceeds MAX_DEDUP_SET_SIZE.
+    _trackMessageId(id) {
+        if (this._seenMessageIds.size >= MAX_DEDUP_SET_SIZE) {
+            // Set iteration order is insertion order — delete the first (oldest) entry
+            const oldest = this._seenMessageIds.values().next().value;
+            this._seenMessageIds.delete(oldest);
+        }
+        this._seenMessageIds.add(id);
+    }
+
     // Handle incoming messages
     handleMessage(data) {
         // Respond to server pings with a pong and reset the watchdog.
@@ -124,6 +144,22 @@ class VaultListerSocket {
             this.send({ type: 'pong', timestamp: data.timestamp || Date.now() });
             this._resetPingTimeout();
             return;
+        }
+
+        // Deduplication: skip messages already processed (protects against reconnect replay)
+        const msgId = data.id || data.messageId;
+        if (msgId) {
+            if (this._seenMessageIds.has(String(msgId))) {
+                return; // duplicate — already processed
+            }
+            this._trackMessageId(String(msgId));
+        } else if (data.timestamp) {
+            // Fall back to timestamp-based dedup for servers that don't send message IDs
+            const ts = Number(data.timestamp);
+            if (ts > 0 && ts <= this._lastMessageTimestamp) {
+                return; // timestamp not newer — likely a replay
+            }
+            if (ts > this._lastMessageTimestamp) this._lastMessageTimestamp = ts;
         }
 
         // Handle auth response

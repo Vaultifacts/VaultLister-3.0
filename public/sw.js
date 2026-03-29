@@ -5,6 +5,21 @@ const CACHE_VERSION = 'v4.9';
 const STATIC_CACHE = `vaultlister-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `vaultlister-runtime-${CACHE_VERSION}`;
 
+// TTL map for API routes (milliseconds). Routes not listed fall back to MAX_AGE_MS.
+const API_TTL_MAP = {
+    '/api/inventory':      5 * 60 * 1000,       // 5 min
+    '/api/listings':       5 * 60 * 1000,        // 5 min
+    '/api/analytics':      5 * 60 * 1000,        // 5 min
+    '/api/notifications':  1 * 60 * 1000,        // 1 min
+    '/api/sales':          5 * 60 * 1000,        // 5 min
+    '/api/offers':         2 * 60 * 1000,        // 2 min
+    '/api/health':         30 * 1000,            // 30 s
+    '/api/size-charts':    60 * 60 * 1000,       // 1 hour (stable)
+    '/api/shipping-profiles': 60 * 60 * 1000,   // 1 hour (stable)
+    '/api/templates':      15 * 60 * 1000,       // 15 min
+    '/api/checklist':      10 * 60 * 1000,       // 10 min
+};
+
 // Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
@@ -74,6 +89,22 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('fetch', (event) => {
     const { request } = event;
+
+    // Background sync registration for failed mutations (POST/PUT/PATCH/DELETE to /api/)
+    if (request.method !== 'GET' && new URL(request.url).pathname.startsWith('/api/')) {
+        event.waitUntil((async () => {
+            try {
+                await fetch(request.clone());
+            } catch (_err) {
+                // Network failed — register a background sync so the browser retries
+                if ('serviceWorker' in self && 'sync' in self.registration) {
+                    await self.registration.sync.register('sync-failed-mutations').catch(() => {});
+                }
+            }
+        })());
+        return;
+    }
+
     if (request.method !== 'GET') return;
 
     const url = new URL(request.url);
@@ -104,19 +135,29 @@ self.addEventListener('fetch', (event) => {
 
     if (url.pathname.startsWith('/api/') && isSWRRoute) {
         const SWR_CACHE = 'vaultlister-swr-api';
-        const MAX_AGE_MS = 10 * 60 * 1000; // evict entries older than 10 minutes
+        const DEFAULT_TTL_MS = 10 * 60 * 1000; // 10 min fallback eviction TTL
 
-        const SWR_WINDOW_MS = 30 * 1000; // serve from cache without waiting if < 30s old
+        // Resolve per-route TTL from the map; use the longest prefix match
+        function resolveApiTtl(pathname) {
+            for (const [prefix, ttl] of Object.entries(API_TTL_MAP)) {
+                if (pathname.startsWith(prefix)) return ttl;
+            }
+            return DEFAULT_TTL_MS;
+        }
+
+        const ttlMs = resolveApiTtl(url.pathname);
+        // Serve from cache without re-fetching if entry is less than half the TTL old
+        const SWR_WINDOW_MS = Math.min(ttlMs / 2, 30 * 1000);
 
         event.respondWith((async () => {
             const cache = await caches.open(SWR_CACHE);
             const cached = await cache.match(request);
 
-            // Evict if too old (Cache-Control max-age isn't enforced by the Cache API)
+            // Evict if beyond TTL (Cache-Control max-age isn't enforced by the Cache API)
             if (cached) {
                 const dateHeader = cached.headers.get('date');
                 const age = dateHeader ? Date.now() - new Date(dateHeader).getTime() : Infinity;
-                if (age > MAX_AGE_MS) {
+                if (age > ttlMs) {
                     await cache.delete(request);
                 }
             }
@@ -366,7 +407,13 @@ self.addEventListener('sync', (event) => {
         event.waitUntil(syncWithLock('sync-inventory', syncInventory));
     } else if (event.tag === 'sync-sales') {
         event.waitUntil(syncWithLock('sync-sales', syncSales));
-    }
+    } else if (event.tag === 'sync-failed-mutations') {
+        // Notify all clients to flush their offline queue now that connectivity is restored
+        event.waitUntil(
+            self.clients.matchAll({ type: 'window' }).then((clients) => {
+                clients.forEach(client => client.postMessage({ type: 'SW_FLUSH_OFFLINE_QUEUE' }));
+            })
+        );    }
 });
 
 function syncWithLock(tag, fn) {
