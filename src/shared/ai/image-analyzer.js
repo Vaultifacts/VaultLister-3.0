@@ -46,6 +46,52 @@ const CATEGORY_KEYWORDS = {
     'Accessories': ['hat', 'scarf', 'belt', 'sunglasses', 'watch', 'jewelry', 'necklace', 'bracelet', 'earrings', 'ring']
 };
 
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const MAX_BASE64_BYTES = 5 * 1024 * 1024; // 5 MB
+
+/**
+ * Validate image data before sending to API.
+ * @param {string} imageData - URL or base64 data URI
+ * @returns {{ valid: boolean, error?: string, imageSource?: object }}
+ */
+function validateImageData(imageData) {
+    if (!imageData || typeof imageData !== 'string') {
+        return { valid: false, error: 'Image data must be a non-empty string' };
+    }
+
+    if (imageData.startsWith('data:')) {
+        const m = imageData.match(/^data:([^;]+);base64,(.+)$/);
+        if (!m) {
+            return { valid: false, error: 'Invalid base64 data URI format' };
+        }
+        const mimeType = m[1].toLowerCase();
+        const base64Data = m[2];
+
+        if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+            return { valid: false, error: `Unsupported image format: ${mimeType}. Allowed: jpeg, png, webp, gif` };
+        }
+
+        // Validate base64 characters
+        if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64Data)) {
+            return { valid: false, error: 'Invalid base64 encoding in image data' };
+        }
+
+        // Approximate byte size: base64 encodes 3 bytes per 4 chars
+        const approxBytes = Math.floor(base64Data.length * 0.75);
+        if (approxBytes > MAX_BASE64_BYTES) {
+            return { valid: false, error: `Image too large: ~${Math.round(approxBytes / 1024 / 1024)}MB exceeds the 5MB limit` };
+        }
+
+        return { valid: true, imageSource: { type: 'base64', media_type: mimeType, data: base64Data } };
+    }
+
+    if (imageData.startsWith('http://') || imageData.startsWith('https://')) {
+        return { valid: true, imageSource: { type: 'url', url: imageData } };
+    }
+
+    return { valid: false, error: 'Image data must be a base64 data URI or an http(s) URL' };
+}
+
 /**
  * Analyze an image and extract product information.
  * Calls Claude Haiku Vision API first; falls back to text-based helpers on failure.
@@ -57,13 +103,17 @@ export async function analyzeImage(imageData) {
         try {
             const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-            let imageSource;
-            if (typeof imageData === 'string' && imageData.startsWith('data:')) {
-                const m = imageData.match(/^data:([^;]+);base64,(.+)$/);
-                if (m) imageSource = { type: 'base64', media_type: m[1], data: m[2] };
-            } else if (typeof imageData === 'string' && (imageData.startsWith('http://') || imageData.startsWith('https://'))) {
-                imageSource = { type: 'url', url: imageData };
+            const validation = validateImageData(imageData);
+            if (!validation.valid) {
+                logger.warn('AI image analysis skipped: invalid input', { reason: validation.error });
+                return {
+                    category: null, brand: null, colors: [], style: null, tags: [],
+                    condition: null, confidence: 0,
+                    metadata: { analyzed: false, reason: validation.error }
+                };
             }
+
+            const imageSource = validation.imageSource;
 
             if (imageSource) {
                 const response = await circuitBreaker('anthropic-image', () =>

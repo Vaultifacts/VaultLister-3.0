@@ -499,6 +499,30 @@ export function scoreListingQuality(listing, context = {}) {
 }
 
 /**
+ * Strip prompt-injection patterns and enforce length limits on a listing field.
+ * Delegates to sanitizeForAI for base stripping, then applies field-specific limits.
+ */
+function sanitizeListingField(value, maxLength) {
+    if (!value || typeof value !== 'string') return '';
+    return sanitizeForAI(value, maxLength);
+}
+
+/**
+ * Validate that the AI response object is well-formed before returning it.
+ * Returns null if the response does not meet minimum structural requirements.
+ */
+function validateListingResponse(r) {
+    if (!r || typeof r !== 'object') return null;
+    if (typeof r.title !== 'string' || r.title.trim().length === 0) return null;
+    if (typeof r.description !== 'string' || r.description.trim().length === 0) return null;
+    if (!Array.isArray(r.tags)) return null;
+    // Ensure title and description are within bounds
+    if (r.title.length > TITLE_MAX_LENGTH) return null;
+    if (r.description.length > DESCRIPTION_MAX_LENGTH) return null;
+    return r;
+}
+
+/**
  * Generate title, description, and tags via Claude Haiku in one API call.
  * Falls back to local template functions if API is unavailable or fails.
  *
@@ -513,13 +537,13 @@ export async function generateListing(context, platform) {
         try {
             const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-            const safeBrand = sanitizeForAI(brand || 'Unknown', 100);
-            const safeCategory = sanitizeForAI(category || 'Clothing', 100);
-            const safeCondition = sanitizeForAI(condition || 'good', 50);
-            const safeColor = sanitizeForAI(color || 'N/A', 50);
-            const safeSize = sanitizeForAI(size || 'N/A', 20);
-            const safePrice = originalPrice ? `$${sanitizeForAI(String(originalPrice), 20)}` : 'N/A';
-            const safeNotes = sanitizeForAI(notes || (keywords.length ? keywords.join(', ') : 'None'), 500);
+            const safeBrand = sanitizeListingField(brand || 'Unknown', 100);
+            const safeCategory = sanitizeListingField(category || 'Clothing', 100);
+            const safeCondition = sanitizeListingField(condition || 'good', 50);
+            const safeColor = sanitizeListingField(color || 'N/A', 50);
+            const safeSize = sanitizeListingField(size || 'N/A', 20);
+            const safePrice = originalPrice ? `$${sanitizeListingField(String(originalPrice), 20)}` : 'N/A';
+            const safeNotes = sanitizeListingField(notes || (keywords.length ? keywords.join(', ') : 'None'), 500);
 
             // Structured user content block — separated from system prompt by design
             const userContent = [
@@ -553,8 +577,10 @@ export async function generateListing(context, platform) {
 
             const m = response.content[0].text.trim().match(/\{[\s\S]*\}/);
             if (m) {
-                const r = JSON.parse(m[0]);
-                if (r.title && r.description && Array.isArray(r.tags)) {
+                let parsed;
+                try { parsed = JSON.parse(m[0]); } catch { parsed = null; }
+                const r = validateListingResponse(parsed);
+                if (r) {
                     // Validate output doesn't contain injected instructions
                     if (!isOutputClean(r.title) || !isOutputClean(r.description)) {
                         logger.warn('AI listing output failed injection check, falling back to templates', {
