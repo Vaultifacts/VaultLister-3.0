@@ -15,7 +15,7 @@ export async function waitForSpaRender(page, timeout = 10_000) {
 /**
  * Wait for a table to have at least one row
  */
-export async function waitForTableRows(page, selector = '.table tbody tr', timeout = 15_000) {
+export async function waitForTableRows(page, selector = '.table tbody tr', timeout = 5_000) {
   await page.waitForFunction(
     (sel) => document.querySelectorAll(sel).length > 0,
     selector,

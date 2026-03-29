@@ -56,40 +56,40 @@ export async function seedDemoData() {
         // Always reseed inventory items for demo user
         console.log('  Reseeding inventory items...');
         await query.run('DELETE FROM inventory WHERE user_id = ?', [userId]);
-        seedInventoryItems(userId);
+        await seedInventoryItems(userId);
 
         // Always reseed orders for demo user to ensure they exist
         console.log('  Reseeding orders for demo user...');
         await query.run('DELETE FROM orders WHERE user_id = ?', [userId]);
-        seedOrders(userId);
+        await seedOrders(userId);
 
         // Always reseed listings for demo user to ensure they exist
         console.log('  Reseeding listings for demo user...');
         await query.run('DELETE FROM listings WHERE user_id = ?', [userId]);
-        const listingIds = seedListings(userId);
+        const listingIds = await seedListings(userId);
 
         // Always reseed offers for demo user
         if (listingIds.length > 0) {
             console.log('  Reseeding offers for demo user...');
             await query.run('DELETE FROM offers WHERE user_id = ?', [userId]);
-            seedOffers(userId, listingIds);
+            await seedOffers(userId, listingIds);
         }
 
         // Always reseed sales for demo user (for dashboard analytics)
         console.log('  Reseeding sales for demo user...');
         await query.run('DELETE FROM sales WHERE user_id = ?', [userId]);
-        seedSales(userId, listingIds);
+        await seedSales(userId, listingIds);
 
         // Seed roadmap features (global, not user-specific)
-        seedRoadmapFeatures();
+        await seedRoadmapFeatures();
 
         // Seed calendar events for demo user
         const existingEvents = await query.get('SELECT COUNT(*) as count FROM calendar_events WHERE user_id = ?', [userId]);
-        if (!existingEvents?.count) seedCalendarEvents(userId);
+        if (!existingEvents?.count) await seedCalendarEvents(userId);
 
         // Seed teams for demo user
         const existingTeams = await query.get('SELECT COUNT(*) as count FROM team_members WHERE user_id = ?', [userId]);
-        if (!existingTeams?.count) seedTeams(userId);
+        if (!existingTeams?.count) await seedTeams(userId);
 
         console.log('✓ Demo data seeded successfully');
     } catch (error) {
