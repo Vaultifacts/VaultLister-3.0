@@ -325,6 +325,9 @@ function getCategoryTags(category) {
 export { analyzeImage };
 
 // Platform-specific character limits for title and description
+const TITLE_MAX_LENGTH = 200;
+const DESCRIPTION_MAX_LENGTH = 5000;
+
 const PLATFORM_CHAR_LIMITS = {
     poshmark:    { title: 80,  description: 1500 },
     ebay:        { title: 80,  description: 4000 },

@@ -24,6 +24,7 @@ export default [
                 Headers: 'readonly',
                 FormData: 'readonly',
                 AbortController: 'readonly',
+                AbortSignal: 'readonly',
                 performance: 'readonly',
                 __dirname: 'readonly',
             }
@@ -37,6 +38,22 @@ export default [
             'no-duplicate-case': 'error',
             'no-unreachable': 'warn',
             'eqeqeq': ['warn', 'smart'],
+        }
+    },
+    {
+        files: ['src/shared/utils/ar-preview.js', 'src/frontend/**/*.js'],
+        languageOptions: {
+            globals: {
+                document: 'readonly',
+                window: 'readonly',
+                navigator: 'readonly',
+                requestAnimationFrame: 'readonly',
+                cancelAnimationFrame: 'readonly',
+                Image: 'readonly',
+                HTMLElement: 'readonly',
+                Event: 'readonly',
+                CustomEvent: 'readonly',
+            }
         }
     },
     {
