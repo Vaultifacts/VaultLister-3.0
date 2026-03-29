@@ -5,10 +5,8 @@ import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 /**
  * Extension router

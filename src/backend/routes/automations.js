@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { checkTierPermission } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 // Validate cron schedule format (5 or 6 fields, valid characters only)
 function validateCronSchedule(schedule) {
@@ -19,10 +20,6 @@ function validateCronSchedule(schedule) {
     }
 }
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 export async function automationsRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
@@ -993,7 +990,7 @@ export async function automationsRouter(ctx) {
     if (method === 'GET' && path === '/stats') {
         const stats = {
             totalRules: Number((await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ?', [user.id]))?.count) || 0,
-            activeRules: Number((await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = 1', [user.id]))?.count) || 0,
+            activeRules: Number((await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = TRUE', [user.id]))?.count) || 0,
             totalRuns: Number((await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ?', [user.id]))?.count) || 0,
             successfulRuns: Number((await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ? AND status = ?', [user.id, 'success']))?.count) || 0,
             failedRuns: Number((await query.get('SELECT COUNT(*) as count FROM automation_logs WHERE user_id = ? AND status = ?', [user.id, 'failure']))?.count) || 0,
@@ -1213,7 +1210,7 @@ export async function automationsRouter(ctx) {
 
                 // Disable the loser
                 const loserId = winner === 'base' ? exp.variant_rule_id : exp.base_rule_id;
-                await query.run('UPDATE automation_rules SET is_enabled = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [loserId]);
+                await query.run('UPDATE automation_rules SET is_enabled = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [loserId]);
             } else if (newStatus) {
                 await query.run('UPDATE automation_experiments SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newStatus, experimentId]);
             }
@@ -1274,7 +1271,7 @@ export async function automationsRouter(ctx) {
                     (SELECT COUNT(*) FROM automation_template_installs WHERE template_id = t.id) as install_count
                 FROM automation_templates t
                 LEFT JOIN users u ON t.author_id = u.id
-                WHERE t.is_public = 1
+                WHERE t.is_public = TRUE
                 ORDER BY t.created_at DESC
                 LIMIT 50
             `);
@@ -1314,7 +1311,7 @@ export async function automationsRouter(ctx) {
         const { templateId } = body;
         if (!templateId) return { status: 400, data: { error: 'templateId required' } };
         try {
-            const tpl = await query.get('SELECT * FROM automation_templates WHERE id = ? AND is_public = 1', [templateId]);
+            const tpl = await query.get('SELECT * FROM automation_templates WHERE id = ? AND is_public = TRUE', [templateId]);
             if (!tpl) return { status: 404, data: { error: 'Template not found' } };
             const ruleId = uuidv4();
             await query.run(`INSERT INTO automation_rules (id, user_id, name, type, platform, schedule, conditions, actions, is_enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
@@ -1496,11 +1493,11 @@ export async function automationsRouter(ctx) {
                 WHERE user_id = ? AND started_at > NOW() - INTERVAL '24 hours'
             `, [user.id]);
 
-            const enabledRules = await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = 1', [user.id]);
+            const enabledRules = await query.get('SELECT COUNT(*) as count FROM automation_rules WHERE user_id = ? AND is_enabled = TRUE', [user.id]);
 
             const nextScheduled = await query.get(`
                 SELECT name, schedule, last_run_at FROM automation_rules
-                WHERE user_id = ? AND is_enabled = 1 AND schedule IS NOT NULL
+                WHERE user_id = ? AND is_enabled = TRUE AND schedule IS NOT NULL
                 ORDER BY last_run_at ASC LIMIT 1
             `, [user.id]);
 

@@ -144,7 +144,7 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
     const escapedEvent = eventType.replace(/\\/g, '\\\\').replace(/[%_]/g, '\\$&');
     const endpoints = await queryWithTimeout(() => query.all(`
         SELECT * FROM webhook_endpoints
-        WHERE user_id = ? AND is_enabled = 1
+        WHERE user_id = ? AND is_enabled = TRUE
         AND (events ILIKE '%"' || ? || '"%' ESCAPE '\\' OR events = '[]')
     `, [userId, escapedEvent]));
 
@@ -203,7 +203,7 @@ export async function dispatchToUserEndpoints(userId, eventType, payload) {
 
             if (failures && failures.failure_count >= 10) {
                 await queryWithTimeout(() => query.run(`
-                    UPDATE webhook_endpoints SET is_enabled = 0, updated_at = NOW()
+                    UPDATE webhook_endpoints SET is_enabled = FALSE, updated_at = NOW()
                     WHERE id = ?
                 `, [endpoint.id]));
 

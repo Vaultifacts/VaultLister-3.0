@@ -7,14 +7,11 @@ import { query } from '../db/database.js';
 import { processWebhookEvent, verifySignature } from '../services/webhookProcessor.js';
 import { logger } from '../shared/logger.js';
 import { constructWebhookEvent, TIER_FOR_PRICE } from '../services/stripeService.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
  */
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Helper: Block internal network addresses to prevent SSRF
 function isInternalUrl(urlString) {
@@ -265,7 +262,7 @@ export async function webhooksRouter(ctx) {
             // Look up webhook configuration for this source (most recent if duplicates)
             const webhookConfig = await query.get(`
                 SELECT secret, user_id FROM webhook_endpoints
-                WHERE name = ? AND is_enabled = 1
+                WHERE name = ? AND is_enabled = TRUE
                 ORDER BY rowid DESC
                 LIMIT 1
             `, [source]);
@@ -376,7 +373,7 @@ export async function webhooksRouter(ctx) {
 
         // Check for existing endpoint with same name for this user
         const existingEndpoint = await query.get(
-            'SELECT id FROM webhook_endpoints WHERE user_id = ? AND name = ? AND is_enabled = 1',
+            'SELECT id FROM webhook_endpoints WHERE user_id = ? AND name = ? AND is_enabled = TRUE',
             [user.id, name]
         );
 

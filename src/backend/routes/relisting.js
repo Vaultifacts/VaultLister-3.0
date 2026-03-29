@@ -3,14 +3,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { predictPrice } from '../../shared/ai/price-predictor.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
  */
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 export async function relistingRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
@@ -98,7 +95,7 @@ export async function relistingRouter(ctx) {
 
             // If setting as default, unset other defaults
             if (is_default) {
-                await query.run('UPDATE relisting_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE relisting_rules SET is_default = FALSE WHERE user_id = ?', [user.id]);
             }
 
             await query.run(`
@@ -180,8 +177,8 @@ export async function relistingRouter(ctx) {
             }
 
             if (body.is_default) {
-                await query.run('UPDATE relisting_rules SET is_default = 0 WHERE user_id = ?', [user.id]);
-                updates.push('is_default = 1');
+                await query.run('UPDATE relisting_rules SET is_default = FALSE WHERE user_id = ?', [user.id]);
+                updates.push('is_default = TRUE');
             }
 
             if (updates.length === 0) {
@@ -585,7 +582,7 @@ export async function relistingRouter(ctx) {
             if (rule_id) {
                 rule = await query.get('SELECT * FROM relisting_rules WHERE id = ? AND user_id = ?', [rule_id, user.id]);
             } else {
-                rule = await query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = 1', [user.id]);
+                rule = await query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = TRUE', [user.id]);
             }
 
             if (!rule) {
@@ -676,7 +673,7 @@ export async function relistingRouter(ctx) {
     // GET /api/relisting/schedule-preview - Preview what auto-schedule would do
     if (method === 'GET' && path === '/schedule-preview') {
         try {
-            const defaultRule = await query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = 1', [user.id]);
+            const defaultRule = await query.get('SELECT * FROM relisting_rules WHERE user_id = ? AND is_default = TRUE', [user.id]);
             const threshold = defaultRule ? (defaultRule.stale_days || 30) : 30;
 
             const eligible = await query.all(`

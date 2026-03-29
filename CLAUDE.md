@@ -198,6 +198,7 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 - Use `git add -A` (add specific files by name instead)
 - Use `--no-verify` to bypass git hooks
 - Delete `.husky/pre-commit`, `.husky/pre-push`, or `.husky/commit-msg` (modification for improvement is OK)
+- Dismiss or close code scanning alerts via the GitHub API — alerts close automatically when fixed in code. Never use `gh api -X PATCH` on `code-scanning/alerts` with `state=dismissed`.
 
 ## Automation Safety Rules (Playwright Bots)
 - NEVER run automations against a live marketplace without explicit user confirmation

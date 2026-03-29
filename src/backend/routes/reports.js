@@ -1,10 +1,8 @@
 import { query } from '../db/database.js';
 import { nanoid } from 'nanoid';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Whitelist of allowed tables for custom queries
 const ALLOWED_TABLES = [
@@ -1059,7 +1057,7 @@ export async function reportsRouter(ctx) {
         // Update existing schedule
         await query.run(
           `UPDATE report_schedules
-           SET frequency = ?, recipients = ?, format = ?, next_run_at = ?, is_active = 1
+           SET frequency = ?, recipients = ?, format = ?, next_run_at = ?, is_active = TRUE
            WHERE report_id = ? AND user_id = ?`,
           [
             frequency,

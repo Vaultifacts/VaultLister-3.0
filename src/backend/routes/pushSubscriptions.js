@@ -5,11 +5,8 @@ import webpush from 'web-push';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Configure VAPID — generate keys with: npx web-push generate-vapid-keys
 // Required env vars: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
@@ -100,7 +97,7 @@ export async function pushSubscriptionsRouter(ctx) {
                         p256dh_key = ?,
                         auth_key = ?,
                         user_agent = ?,
-                        is_active = 1,
+                        is_active = TRUE,
                         updated_at = NOW()
                     WHERE endpoint = ?
                 `, [user.id, keys.p256dh, keys.auth, userAgent || null, endpoint]);
@@ -141,7 +138,7 @@ export async function pushSubscriptionsRouter(ctx) {
         }
 
         await query.run(`
-            UPDATE push_subscriptions SET is_active = 0, updated_at = NOW()
+            UPDATE push_subscriptions SET is_active = FALSE, updated_at = NOW()
             WHERE endpoint = ? AND user_id = ?
         `, [endpoint, user.id]);
 
@@ -159,7 +156,7 @@ export async function pushSubscriptionsRouter(ctx) {
         const subscriptions = await query.all(`
             SELECT id, endpoint, user_agent, is_active, created_at, last_used_at
             FROM push_subscriptions
-            WHERE user_id = ? AND is_active = 1
+            WHERE user_id = ? AND is_active = TRUE
             ORDER BY created_at DESC
         `, [user.id]);
 
@@ -185,7 +182,7 @@ export async function pushSubscriptionsRouter(ctx) {
 
         const subscriptions = await query.all(`
             SELECT * FROM push_subscriptions
-            WHERE user_id = ? AND is_active = 1
+            WHERE user_id = ? AND is_active = TRUE
         `, [user.id]);
 
         if (subscriptions.length === 0) {
@@ -220,7 +217,7 @@ export async function pushSubscriptionsRouter(ctx) {
 
                 if (error.statusCode === 410 || error.statusCode === 404) {
                     await query.run(`
-                        UPDATE push_subscriptions SET is_active = 0, updated_at = NOW()
+                        UPDATE push_subscriptions SET is_active = FALSE, updated_at = NOW()
                         WHERE id = ?
                     `, [sub.id]);
                 }
@@ -253,7 +250,7 @@ export async function pushSubscriptionsRouter(ctx) {
 
         const subscriptions = await query.all(`
             SELECT * FROM push_subscriptions
-            WHERE user_id = ? AND is_active = 1
+            WHERE user_id = ? AND is_active = TRUE
         `, [userId]);
 
         if (subscriptions.length === 0) {
@@ -288,7 +285,7 @@ export async function pushSubscriptionsRouter(ctx) {
 
                 if (error.statusCode === 410 || error.statusCode === 404) {
                     await query.run(`
-                        UPDATE push_subscriptions SET is_active = 0, updated_at = NOW()
+                        UPDATE push_subscriptions SET is_active = FALSE, updated_at = NOW()
                         WHERE id = ?
                     `, [sub.id]);
                 }

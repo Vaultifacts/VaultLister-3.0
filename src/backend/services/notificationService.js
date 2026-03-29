@@ -50,7 +50,7 @@ export async function getUnreadNotifications(userId, limit = 50) {
     try {
         const notifications = await query.all(`
             SELECT * FROM notifications
-            WHERE user_id = ? AND is_read = 0
+            WHERE user_id = ? AND is_read = FALSE
             ORDER BY created_at DESC
             LIMIT ?
         `, [userId, limit]);
@@ -116,7 +116,7 @@ export async function markAsRead(notificationId, userId) {
     try {
         const result = await query.run(`
             UPDATE notifications
-            SET is_read = 1, read_at = CURRENT_TIMESTAMP
+            SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
             WHERE id = ? AND user_id = ?
         `, [notificationId, userId]);
 
@@ -136,8 +136,8 @@ export async function markAllAsRead(userId) {
     try {
         const result = await query.run(`
             UPDATE notifications
-            SET is_read = 1, read_at = CURRENT_TIMESTAMP
-            WHERE user_id = ? AND is_read = 0
+            SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
+            WHERE user_id = ? AND is_read = FALSE
         `, [userId]);
 
         return result.changes;
@@ -175,7 +175,7 @@ export async function cleanupOldNotifications(daysOld = 30) {
     try {
         const result = await query.run(`
             DELETE FROM notifications
-            WHERE is_read = 1 AND created_at < NOW() - (?::text || ' days')::interval
+            WHERE is_read = TRUE AND created_at < NOW() - (?::text || ' days')::interval
         `, [daysOld]);
 
         return result.changes;
@@ -194,7 +194,7 @@ export async function getUnreadCount(userId) {
     try {
         const result = await query.get(`
             SELECT COUNT(*) as count FROM notifications
-            WHERE user_id = ? AND is_read = 0
+            WHERE user_id = ? AND is_read = FALSE
         `, [userId]);
 
         return result?.count || 0;

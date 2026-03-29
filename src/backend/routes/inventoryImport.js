@@ -2,14 +2,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
  */
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 export async function inventoryImportRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
@@ -692,7 +689,7 @@ export async function inventoryImportRouter(ctx) {
             const id = uuidv4();
 
             if (is_default) {
-                await query.run('UPDATE import_mappings SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE import_mappings SET is_default = FALSE WHERE user_id = ?', [user.id]);
             }
 
             await query.run(`
@@ -750,8 +747,8 @@ export async function inventoryImportRouter(ctx) {
             }
 
             if (body.is_default) {
-                await query.run('UPDATE import_mappings SET is_default = 0 WHERE user_id = ?', [user.id]);
-                updates.push('is_default = 1');
+                await query.run('UPDATE import_mappings SET is_default = FALSE WHERE user_id = ?', [user.id]);
+                updates.push('is_default = TRUE');
             }
 
             if (updates.length === 0) {

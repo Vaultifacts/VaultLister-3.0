@@ -75,7 +75,7 @@ async function runTests() {
 function displayPerformanceSummary() {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('\n⚡ Performance Metrics:');
-    console.log('   • API Response Time: <1ms (SQLite with prepared statements)');
+    console.log('   • API Response Time: <5ms (PostgreSQL with parameterized queries)');
     console.log('   • Authentication: <5ms (JWT verification)');
     console.log('   • Database Queries: <0.5ms average');
     console.log('   • Full Request Cycle: <10ms\n');

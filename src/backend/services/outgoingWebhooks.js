@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { TIMEOUTS } from '../shared/constants.js';
 
 // Strip sensitive fields from webhook payload data
 const SENSITIVE_FIELD_PATTERNS = ['password', 'secret', 'token', 'api_key', 'apikey', 'encryption_key', 'hash', 'oauth'];
@@ -108,7 +109,7 @@ async function sendWebhook(endpoint, event, payload, secret) {
     }
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeout = setTimeout(() => controller.abort(), TIMEOUTS.API_REQUEST_MS);
 
     try {
         const response = await fetch(endpoint.url, {
@@ -214,7 +215,7 @@ const outgoingWebhooks = {
         const escapedEvent = eventType.replace(/\\/g, '\\\\').replace(/[%_]/g, '\\$&');
         const webhooks = await query.all(`
             SELECT * FROM user_webhooks
-            WHERE user_id = ? AND is_active = 1 AND (events ILIKE ? ESCAPE '\\' OR events = '*')
+            WHERE user_id = ? AND is_active = TRUE AND (events ILIKE ? ESCAPE '\\' OR events = '*')
         `, [userId, `%${escapedEvent}%`]);
 
         if (!webhooks || webhooks.length === 0) return;

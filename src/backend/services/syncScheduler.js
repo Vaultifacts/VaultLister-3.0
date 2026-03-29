@@ -50,7 +50,7 @@ async function checkAndQueueDueShops() {
                 SELECT id, user_id, platform, sync_status, auto_sync_interval_minutes
                 FROM shops
                 WHERE auto_sync_enabled = 1
-                  AND is_connected = 1
+                  AND is_connected = TRUE
                   AND connection_type = 'oauth'
                   AND sync_status != 'syncing'
                   AND (

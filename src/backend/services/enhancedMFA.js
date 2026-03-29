@@ -125,8 +125,8 @@ const enhancedMFA = {
 
         // Enable MFA if not already
         await query.run(`
-            UPDATE users SET mfa_enabled = 1, mfa_method = 'webauthn', updated_at = NOW()
-            WHERE id = ? AND mfa_enabled = 0
+            UPDATE users SET mfa_enabled = TRUE, mfa_method = 'webauthn', updated_at = NOW()
+            WHERE id = ? AND mfa_enabled = FALSE
         `, [userId]);
 
         return { credentialId, message: 'Security key registered successfully' };
@@ -253,8 +253,8 @@ const enhancedMFA = {
 
         // Enable MFA if not already
         await query.run(`
-            UPDATE users SET mfa_enabled = 1, updated_at = NOW()
-            WHERE id = ? AND mfa_enabled = 0
+            UPDATE users SET mfa_enabled = TRUE, updated_at = NOW()
+            WHERE id = ? AND mfa_enabled = FALSE
         `, [userId]);
 
         return {
@@ -497,7 +497,7 @@ const enhancedMFA = {
 
         await query.run(`
             UPDATE users SET
-                mfa_enabled = 0,
+                mfa_enabled = FALSE,
                 mfa_method = NULL,
                 phone_number = NULL,
                 phone_verified = 0,

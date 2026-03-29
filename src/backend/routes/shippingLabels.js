@@ -224,7 +224,7 @@ export async function shippingLabelsRouter(ctx) {
             const id = uuidv4();
 
             if (is_default) {
-                await query.run('UPDATE return_addresses SET is_default = 0 WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE return_addresses SET is_default = FALSE WHERE user_id = ?', [user.id]);
             }
 
             await query.run(`
@@ -260,8 +260,8 @@ export async function shippingLabelsRouter(ctx) {
             });
 
             if (body.is_default) {
-                await query.run('UPDATE return_addresses SET is_default = 0 WHERE user_id = ?', [user.id]);
-                updates.push('is_default = 1');
+                await query.run('UPDATE return_addresses SET is_default = FALSE WHERE user_id = ?', [user.id]);
+                updates.push('is_default = TRUE');
             }
 
             if (updates.length === 0) {

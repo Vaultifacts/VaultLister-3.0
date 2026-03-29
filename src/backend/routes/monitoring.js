@@ -6,11 +6,8 @@ import { query, getQueryMetrics } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import websocketService from '../services/websocket.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 export async function monitoringRouter(ctx) {
     const { method, path, user } = ctx;

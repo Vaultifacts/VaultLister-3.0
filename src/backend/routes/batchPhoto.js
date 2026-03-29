@@ -482,7 +482,7 @@ export async function batchPhotoRouter(context) {
             // If setting as default, clear other defaults
             if (isDefault) {
                 await query.run(
-                    'UPDATE batch_photo_presets SET is_default = 0 WHERE user_id = ?',
+                    'UPDATE batch_photo_presets SET is_default = FALSE WHERE user_id = ?',
                     [user.id]
                 );
             }
@@ -530,7 +530,7 @@ export async function batchPhotoRouter(context) {
             // If setting as default, clear other defaults
             if (isDefault) {
                 await query.run(
-                    'UPDATE batch_photo_presets SET is_default = 0 WHERE user_id = ?',
+                    'UPDATE batch_photo_presets SET is_default = FALSE WHERE user_id = ?',
                     [user.id]
                 );
             }
@@ -594,8 +594,8 @@ export async function batchPhotoRouter(context) {
 
             // Clear all defaults for user, then set this one (atomic transaction)
             await query.transaction(async () => {
-                await query.run('UPDATE batch_photo_presets SET is_default = 0 WHERE user_id = ?', [user.id]);
-                await query.run('UPDATE batch_photo_presets SET is_default = 1, updated_at = ? WHERE id = ? AND user_id = ?', [now(), presetId, user.id]);
+                await query.run('UPDATE batch_photo_presets SET is_default = FALSE WHERE user_id = ?', [user.id]);
+                await query.run('UPDATE batch_photo_presets SET is_default = TRUE, updated_at = ? WHERE id = ? AND user_id = ?', [now(), presetId, user.id]);
             });
 
             return { status: 200, data: { message: 'Default preset updated' } };

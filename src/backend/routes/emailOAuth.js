@@ -9,11 +9,8 @@ import { getUserEmail as getOutlookUserEmail } from '../services/outlookService.
 import { DEFAULT_RECEIPT_SENDERS } from '../services/receiptDetector.js';
 import { queueTask } from '../workers/taskWorker.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Gmail OAuth configuration
 const GMAIL_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
@@ -204,7 +201,7 @@ export async function emailOAuthRouter(ctx) {
                         oauth_token = ?,
                         oauth_refresh_token = COALESCE(?, oauth_refresh_token),
                         oauth_token_expires_at = ?,
-                        is_enabled = 1,
+                        is_enabled = TRUE,
                         consecutive_failures = 0,
                         last_error = NULL,
                         updated_at = ?
@@ -401,7 +398,7 @@ export async function emailOAuthRouter(ctx) {
         const account = await query.get(`
             SELECT id, email_address, provider, sync_status
             FROM email_accounts
-            WHERE id = ? AND user_id = ? AND is_enabled = 1
+            WHERE id = ? AND user_id = ? AND is_enabled = TRUE
         `, [accountId, user.id]);
 
         if (!account) {
@@ -569,7 +566,7 @@ export async function emailOAuthRouter(ctx) {
                         oauth_token = ?,
                         oauth_refresh_token = COALESCE(?, oauth_refresh_token),
                         oauth_token_expires_at = ?,
-                        is_enabled = 1,
+                        is_enabled = TRUE,
                         consecutive_failures = 0,
                         last_error = NULL,
                         updated_at = ?

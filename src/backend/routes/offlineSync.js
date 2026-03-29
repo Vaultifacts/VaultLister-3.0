@@ -2,6 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 // Allowed columns per table for offline sync (prevents SQL injection via dynamic keys)
 const ALLOWED_SYNC_COLUMNS = {
@@ -10,10 +11,6 @@ const ALLOWED_SYNC_COLUMNS = {
     orders: ['id', 'order_number', 'platform', 'status', 'buyer_username', 'buyer_email', 'buyer_address', 'item_id', 'item_title', 'item_sku', 'sale_price', 'shipping_cost', 'platform_fee', 'tracking_number', 'shipping_provider', 'shipping_label_url', 'expected_delivery', 'actual_delivery', 'notes', 'shipped_at', 'delivered_at']
 };
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 function sanitizeSyncPayload(payload, table) {
     const allowed = ALLOWED_SYNC_COLUMNS[table];

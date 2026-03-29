@@ -103,6 +103,7 @@ import { startTaskWorker, stopTaskWorker, getTaskWorkerStatus } from './workers/
 import { startEmailPollingWorker, stopEmailPollingWorker, getEmailPollingStatus } from './workers/emailPollingWorker.js';
 import { startPriceCheckWorker, stopPriceCheckWorker, getPriceCheckWorkerStatus } from './workers/priceCheckWorker.js';
 import { logger } from './shared/logger.js';
+import { TIMEOUTS, INTERVALS } from './shared/constants.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..', '..');
@@ -450,7 +451,7 @@ const apiRoutes = {
             if (redisClient) {
                 const pong = await Promise.race([
                     redisClient.ping(),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), TIMEOUTS.DB_HEALTH_CHECK_MS))
                 ]);
                 checks.redis = pong === 'PONG' ? 'ok' : 'degraded';
             } else {
@@ -1535,7 +1536,7 @@ server = Bun.serve({
 websocketService.server = server;
 websocketService.heartbeatInterval = setInterval(
     () => websocketService.heartbeat(),
-    30000
+    INTERVALS.WEBSOCKET_HEARTBEAT_MS
 );
 
 // Generate development HTML if index.html doesn't exist
@@ -1593,10 +1594,10 @@ monitoring.init();
 log('Background services started (including GDPR worker and monitoring)');
 
 // Start cleanup scheduler (delayed startup call + daily interval)
-setTimeout(() => cleanupExpiredData(), 30 * 1000); // 30-second delay on startup
+setTimeout(() => cleanupExpiredData(), TIMEOUTS.STARTUP_CLEANUP_DELAY_MS);
 cleanupInterval = setInterval(() => {
     cleanupExpiredData();
-}, 24 * 60 * 60 * 1000); // 24 hours
+}, INTERVALS.DAILY_CLEANUP_MS);
 log('Database cleanup scheduler started (runs daily, first run in 30s)');
 
 } // end async function main()
@@ -1615,7 +1616,7 @@ async function gracefulShutdown(signal) {
         logger.error('Graceful shutdown timed out after 30s, forcing exit');
         log('Forced shutdown after 30s timeout');
         process.exit(1);
-    }, 30000);
+    }, TIMEOUTS.GRACEFUL_SHUTDOWN_MS);
     forceExitTimer.unref();
 
     // Stop background services first

@@ -5,11 +5,8 @@ import webpush from 'web-push';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Configure VAPID for Web Push delivery
 (function configureVapid() {
@@ -245,7 +242,7 @@ export async function pushNotificationsRouter(ctx) {
             const targetUserId = user.id;
 
             const subscriptions = await query.all(
-                'SELECT * FROM push_subscriptions WHERE user_id = ? AND is_active = 1',
+                'SELECT * FROM push_subscriptions WHERE user_id = ? AND is_active = TRUE',
                 [targetUserId]
             );
 
@@ -276,7 +273,7 @@ export async function pushNotificationsRouter(ctx) {
                     logger.error('[PushNotifications] Delivery failed', targetUserId, { detail: pushError.message });
                     if (pushError.statusCode === 410 || pushError.statusCode === 404) {
                         await query.run(
-                            'UPDATE push_subscriptions SET is_active = 0, updated_at = NOW() WHERE id = ?',
+                            'UPDATE push_subscriptions SET is_active = FALSE, updated_at = NOW() WHERE id = ?',
                             [sub.id]
                         );
                     }
@@ -335,7 +332,7 @@ export async function pushNotificationsRouter(ctx) {
             let usersNotified = 0;
             for (const userId of allowedIds) {
                 const subscriptions = await query.all(
-                    'SELECT * FROM push_subscriptions WHERE user_id = ? AND is_active = 1 LIMIT 20',
+                    'SELECT * FROM push_subscriptions WHERE user_id = ? AND is_active = TRUE LIMIT 20',
                     [userId]
                 );
 
@@ -357,7 +354,7 @@ export async function pushNotificationsRouter(ctx) {
                         logger.error('[PushNotifications] Batch delivery failed', userId, { detail: pushError.message });
                         if (pushError.statusCode === 410 || pushError.statusCode === 404) {
                             await query.run(
-                                'UPDATE push_subscriptions SET is_active = 0, updated_at = NOW() WHERE id = ?',
+                                'UPDATE push_subscriptions SET is_active = FALSE, updated_at = NOW() WHERE id = ?',
                                 [sub.id]
                             );
                         }

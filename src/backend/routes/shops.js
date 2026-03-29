@@ -5,10 +5,8 @@ import { checkTierPermission } from '../middleware/auth.js';
 import { logger } from '../shared/logger.js';
 import { encryptToken, decryptToken } from '../utils/encryption.js';
 import { cacheForUser } from '../middleware/cache.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 export async function shopsRouter(ctx) {
     const { method, path, body, user } = ctx;
@@ -207,7 +205,7 @@ export async function shopsRouter(ctx) {
 
             // Soft disconnect
             await query.run(
-                'UPDATE shops SET is_connected = 0, credentials = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND platform = ?',
+                'UPDATE shops SET is_connected = FALSE, credentials = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND platform = ?',
                 [user.id, platform]
             );
 
@@ -224,7 +222,7 @@ export async function shopsRouter(ctx) {
             const platform = path.split('/')[1];
 
             const shop = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
                 [user.id, platform]
             );
 
@@ -292,7 +290,7 @@ export async function shopsRouter(ctx) {
     if (method === 'POST' && path === '/sync-all') {
         try {
             const shops = await query.all(
-                'SELECT * FROM shops WHERE user_id = ? AND is_connected = 1',
+                'SELECT * FROM shops WHERE user_id = ? AND is_connected = TRUE',
                 [user.id]
             );
 

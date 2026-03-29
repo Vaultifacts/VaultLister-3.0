@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 import { logger } from '../shared/logger.js';
+import { INTERVALS } from '../shared/constants.js';
 
 // Use same JWT secret resolution as auth.js
 const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-only-secret-not-for-production' : null);
@@ -78,7 +79,7 @@ const websocketService = {
         logger.info('[WebSocket] Service initialized');
 
         // Start heartbeat interval
-        this.heartbeatInterval = setInterval(() => this.heartbeat(), 30000);
+        this.heartbeatInterval = setInterval(() => this.heartbeat(), INTERVALS.WEBSOCKET_HEARTBEAT_MS);
 
         return this;
     },
@@ -472,7 +473,7 @@ const websocketService = {
                 }
 
                 // Re-verify JWT every 5 minutes
-                if (ws.data.authToken && now - (ws.data.lastTokenCheck || 0) > 5 * 60 * 1000) {
+                if (ws.data.authToken && now - (ws.data.lastTokenCheck || 0) > INTERVALS.TOKEN_CHECK_MS) {
                     try {
                         jwt.verify(ws.data.authToken, JWT_SECRET, { algorithms: ['HS256'] });
                         ws.data.lastTokenCheck = now;

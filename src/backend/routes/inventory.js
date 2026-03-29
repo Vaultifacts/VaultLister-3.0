@@ -6,6 +6,7 @@ import { generateBlockchainHash } from '../../shared/utils/blockchain.js';
 import { calculateSustainability } from '../../shared/utils/sustainability.js';
 import { validateInventoryData, validatePrice } from '../../shared/utils/sanitize.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 function detectMarketplace(url) {
     const host = (() => { try { return new URL(url).hostname; } catch { return ''; } })();
@@ -24,10 +25,6 @@ function detectMarketplace(url) {
 /**
  * Safe JSON parse helper — returns fallback on malformed data instead of throwing
  */
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 // Helper function to generate SKU from a rule
 function generateSkuFromRule(rule, itemData) {
@@ -110,7 +107,7 @@ export async function inventoryRouter(ctx) {
         if (search) {
             // Limit search length to prevent CPU exhaustion
             if (search.length > 500) {
-                return { status: 400, data: { error: 'Search query too long (max 500 characters)' } };
+                return { status: 400, data: { error: { message: 'Search query too long (max 500 characters)', code: 'BAD_REQUEST' } } };
             }
 
             // Sanitize search term for FTS5 (strip quotes, operators, special chars)
@@ -249,7 +246,7 @@ export async function inventoryRouter(ctx) {
         // Verify item exists and belongs to user
         const item = await query.get('SELECT id FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!item) {
-            return { status: 404, data: { error: 'Item not found' } };
+            return { status: 404, data: { error: { message: 'Item not found', code: 'NOT_FOUND' } } };
         }
 
         // Get purchases associated with this item
@@ -298,7 +295,7 @@ export async function inventoryRouter(ctx) {
         const item = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
 
         if (!item) {
-            return { status: 404, data: { error: 'Item not found' } };
+            return { status: 404, data: { error: { message: 'Item not found', code: 'NOT_FOUND' } } };
         }
 
         item.tags = safeJsonParse(item.tags, []);
@@ -357,43 +354,43 @@ export async function inventoryRouter(ctx) {
         // Validate condition enum
         const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'];
         if (condition && !validConditions.includes(condition)) {
-            return { status: 400, data: { error: `Invalid condition. Must be one of: ${validConditions.join(', ')}` } };
+            return { status: 400, data: { error: { message: `Invalid condition. Must be one of: ${validConditions.join(', ')}`, code: 'BAD_REQUEST' } } };
         }
 
         // Validate customFields
         if (customFields !== undefined && customFields !== null) {
             if (typeof customFields !== 'object' || Array.isArray(customFields)) {
-                return { status: 400, data: { error: 'Custom fields must be an object' } };
+                return { status: 400, data: { error: { message: 'Custom fields must be an object', code: 'BAD_REQUEST' } } };
             }
             const cfKeys = Object.keys(customFields);
             if (cfKeys.length > 50) {
-                return { status: 400, data: { error: 'Custom fields limited to 50 keys' } };
+                return { status: 400, data: { error: { message: 'Custom fields limited to 50 keys', code: 'BAD_REQUEST' } } };
             }
             if (JSON.stringify(customFields).length > 10240) {
-                return { status: 400, data: { error: 'Custom fields too large (max 10KB)' } };
+                return { status: 400, data: { error: { message: 'Custom fields too large (max 10KB)', code: 'BAD_REQUEST' } } };
             }
         }
 
         // Additional required field check
         if (!listPrice) {
-            return { status: 400, data: { error: 'List price is required' } };
+            return { status: 400, data: { error: { message: 'List price is required', code: 'BAD_REQUEST' } } };
         }
 
         // Validate prices
         const listPriceValidation = validatePrice(listPrice, 'List price');
         if (!listPriceValidation.valid) {
-            return { status: 400, data: { error: listPriceValidation.error } };
+            return { status: 400, data: { error: { message: listPriceValidation.error, code: 'BAD_REQUEST' } } };
         }
 
         const costPriceValidation = validatePrice(costPrice, 'Cost price');
         if (!costPriceValidation.valid) {
-            return { status: 400, data: { error: costPriceValidation.error } };
+            return { status: 400, data: { error: { message: costPriceValidation.error, code: 'BAD_REQUEST' } } };
         }
 
         // Validate quantity (default to 1 if not provided)
         const qty = parseInt(quantity ?? 1);
         if (isNaN(qty) || qty < 0 || qty > 999999 || !Number.isInteger(Number(quantity ?? 1))) {
-            return { status: 400, data: { error: 'Quantity must be a positive integer (max 999999)' } };
+            return { status: 400, data: { error: { message: 'Quantity must be a positive integer (max 999999)', code: 'BAD_REQUEST' } } };
         }
 
         const id = uuidv4();
@@ -405,7 +402,7 @@ export async function inventoryRouter(ctx) {
         if (!finalSku) {
             // Check for default SKU rule
             const defaultRule = await query.get(
-                'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = 1 AND is_active = 1',
+                'SELECT * FROM sku_rules WHERE user_id = ? AND is_default = TRUE AND is_active = TRUE',
                 [user.id]
             );
 
@@ -463,7 +460,7 @@ export async function inventoryRouter(ctx) {
 
         const existing = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
-            return { status: 404, data: { error: 'Item not found' } };
+            return { status: 404, data: { error: { message: 'Item not found', code: 'NOT_FOUND' } } };
         }
 
         // Validate and sanitize input data (isUpdate = true allows partial data)
@@ -482,14 +479,14 @@ export async function inventoryRouter(ctx) {
         if (body.listPrice !== undefined) {
             const listPriceValidation = validatePrice(body.listPrice, 'List price');
             if (!listPriceValidation.valid) {
-                return { status: 400, data: { error: listPriceValidation.error } };
+                return { status: 400, data: { error: { message: listPriceValidation.error, code: 'BAD_REQUEST' } } };
             }
         }
 
         if (body.costPrice !== undefined) {
             const costPriceValidation = validatePrice(body.costPrice, 'Cost price');
             if (!costPriceValidation.valid) {
-                return { status: 400, data: { error: costPriceValidation.error } };
+                return { status: 400, data: { error: { message: costPriceValidation.error, code: 'BAD_REQUEST' } } };
             }
         }
 
@@ -503,25 +500,25 @@ export async function inventoryRouter(ctx) {
         // Validate condition enum
         const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'];
         if (condition && !validConditions.includes(condition)) {
-            return { status: 400, data: { error: `Invalid condition. Must be one of: ${validConditions.join(', ')}` } };
+            return { status: 400, data: { error: { message: `Invalid condition. Must be one of: ${validConditions.join(', ')}`, code: 'BAD_REQUEST' } } };
         }
 
         // Validate status enum
         const validStatuses = ['draft', 'active', 'sold', 'archived', 'deleted'];
         if (status && !validStatuses.includes(status)) {
-            return { status: 400, data: { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` } };
+            return { status: 400, data: { error: { message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`, code: 'BAD_REQUEST' } } };
         }
 
         // Validate customFields
         if (customFields !== undefined && customFields !== null) {
             if (typeof customFields !== 'object' || Array.isArray(customFields)) {
-                return { status: 400, data: { error: 'Custom fields must be an object' } };
+                return { status: 400, data: { error: { message: 'Custom fields must be an object', code: 'BAD_REQUEST' } } };
             }
             if (Object.keys(customFields).length > 50) {
-                return { status: 400, data: { error: 'Custom fields limited to 50 keys' } };
+                return { status: 400, data: { error: { message: 'Custom fields limited to 50 keys', code: 'BAD_REQUEST' } } };
             }
             if (JSON.stringify(customFields).length > 10240) {
-                return { status: 400, data: { error: 'Custom fields too large (max 10KB)' } };
+                return { status: 400, data: { error: { message: 'Custom fields too large (max 10KB)', code: 'BAD_REQUEST' } } };
             }
         }
 
@@ -580,7 +577,7 @@ export async function inventoryRouter(ctx) {
 
         const existing = await query.get('SELECT * FROM inventory WHERE id = ? AND user_id = ?', [id, user.id]);
         if (!existing) {
-            return { status: 404, data: { error: 'Item not found' } };
+            return { status: 404, data: { error: { message: 'Item not found', code: 'NOT_FOUND' } } };
         }
 
         // Soft delete by setting status and deleted_at timestamp
@@ -596,17 +593,17 @@ export async function inventoryRouter(ctx) {
     if (method === 'POST' && path === '/bulk') {
         const permission = await checkTierPermission(user, 'bulkActions');
         if (!permission.allowed) {
-            return { status: 403, data: { error: 'Bulk actions not available on your plan' } };
+            return { status: 403, data: { error: { message: 'Bulk actions not available on your plan', code: 'FORBIDDEN' } } };
         }
 
         const { action, ids, data } = body;
 
         if (!action || !ids || !Array.isArray(ids)) {
-            return { status: 400, data: { error: 'Action and ids required' } };
+            return { status: 400, data: { error: { message: 'Action and ids required', code: 'BAD_REQUEST' } } };
         }
 
         if (ids.length > 500) {
-            return { status: 400, data: { error: 'Too many items (max 500 per bulk operation)' } };
+            return { status: 400, data: { error: { message: 'Too many items (max 500 per bulk operation)', code: 'BAD_REQUEST' } } };
         }
 
         let affected = 0;
@@ -623,10 +620,10 @@ export async function inventoryRouter(ctx) {
 
             case 'updateStatus':
                 if (!data?.status) {
-                    return { status: 400, data: { error: 'Status required' } };
+                    return { status: 400, data: { error: { message: 'Status required', code: 'BAD_REQUEST' } } };
                 }
                 if (!['draft', 'active', 'sold', 'archived', 'deleted'].includes(data.status)) {
-                    return { status: 400, data: { error: 'Invalid status' } };
+                    return { status: 400, data: { error: { message: 'Invalid status', code: 'BAD_REQUEST' } } };
                 }
                 await query.run(
                     `UPDATE inventory SET status = ?, updated_at = CURRENT_TIMESTAMP
@@ -638,7 +635,7 @@ export async function inventoryRouter(ctx) {
 
             case 'updatePrice':
                 if (!data?.adjustment) {
-                    return { status: 400, data: { error: 'Price adjustment required' } };
+                    return { status: 400, data: { error: { message: 'Price adjustment required', code: 'BAD_REQUEST' } } };
                 }
                 const { type, value } = data.adjustment;
                 if (type === 'percentage') {
@@ -658,7 +655,7 @@ export async function inventoryRouter(ctx) {
                 break;
 
             default:
-                return { status: 400, data: { error: 'Unknown action' } };
+                return { status: 400, data: { error: { message: 'Unknown action', code: 'BAD_REQUEST' } } };
         }
 
         return { status: 200, data: { affected } };
@@ -817,7 +814,7 @@ export async function inventoryRouter(ctx) {
         );
 
         if (!existing) {
-            return { status: 404, data: { error: 'Deleted item not found' } };
+            return { status: 404, data: { error: { message: 'Deleted item not found', code: 'NOT_FOUND' } } };
         }
 
         // Restore item by setting status back to draft and clearing deleted_at
@@ -844,7 +841,7 @@ export async function inventoryRouter(ctx) {
         );
 
         if (!existing) {
-            return { status: 404, data: { error: 'Deleted item not found' } };
+            return { status: 404, data: { error: { message: 'Deleted item not found', code: 'NOT_FOUND' } } };
         }
 
         // Permanently delete the item
@@ -875,16 +872,11 @@ export async function inventoryRouter(ctx) {
 
         const allowedPlatforms = ['poshmark', 'ebay'];
         if (!platform) {
-            return { status: 400, data: { error: 'platform is required' } };
+            return { status: 400, data: { error: { message: 'platform is required', code: 'BAD_REQUEST' } } };
         }
 
         if (!allowedPlatforms.includes(platform)) {
-            return {
-                status: 400,
-                data: {
-                    error: `Import from ${platform} requires manual CSV export. Use Import → CSV.`
-                }
-            };
+            return { status: 400, data: { error: { message: `Import from ${platform} requires manual CSV export. Use Import → CSV.`, code: 'BAD_REQUEST' } } };
         }
 
         const cap = Math.min(parseInt(maxItems) || 100, 500);
@@ -896,16 +888,13 @@ export async function inventoryRouter(ctx) {
 
             // Resolve username: connected shop first, then env fallback
             const shop = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
                 [user.id, 'poshmark']
             );
             const username = shop?.platform_username || process.env.POSHMARK_USERNAME;
 
             if (!username) {
-                return {
-                    status: 400,
-                    data: { error: 'No connected Poshmark account. Connect your shop under Settings → Marketplaces.' }
-                };
+                return { status: 400, data: { error: { message: 'No connected Poshmark account. Connect your shop under Settings → Marketplaces.', code: 'BAD_REQUEST' } } };
             }
 
             let bot;
@@ -954,7 +943,7 @@ export async function inventoryRouter(ctx) {
 
             } catch (err) {
                 logger.error('[Inventory] Poshmark platform import failed', user.id, { detail: err?.message });
-                return { status: 500, data: { error: `Poshmark import failed: ${err.message}` } };
+                return { status: 500, data: { error: { message: `Poshmark import failed: ${err.message}`, code: 'INTERNAL_ERROR' } } };
             } finally {
                 if (bot) await closePoshmarkBot();
             }
@@ -967,14 +956,11 @@ export async function inventoryRouter(ctx) {
             const { fetchWithTimeout } = await import('../shared/fetchWithTimeout.js');
 
             const shop = await query.get(
-                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1',
+                'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
                 [user.id, 'ebay']
             );
             if (!shop || !shop.oauth_token) {
-                return {
-                    status: 400,
-                    data: { error: 'No connected eBay account. Connect your shop under Settings → Marketplaces.' }
-                };
+                return { status: 400, data: { error: { message: 'No connected eBay account. Connect your shop under Settings → Marketplaces.', code: 'BAD_REQUEST' } } };
             }
 
             try {
@@ -1076,7 +1062,7 @@ export async function inventoryRouter(ctx) {
 
             } catch (err) {
                 logger.error('[Inventory] eBay platform import failed', user.id, { detail: err?.message });
-                return { status: 500, data: { error: `eBay import failed: ${err.message}` } };
+                return { status: 500, data: { error: { message: `eBay import failed: ${err.message}`, code: 'INTERNAL_ERROR' } } };
             }
         }
     }
@@ -1086,11 +1072,11 @@ export async function inventoryRouter(ctx) {
         const { items } = body;
 
         if (!items || !Array.isArray(items)) {
-            return { status: 400, data: { error: 'Items array required' } };
+            return { status: 400, data: { error: { message: 'Items array required', code: 'BAD_REQUEST' } } };
         }
 
         if (items.length > 1000) {
-            return { status: 400, data: { error: 'Maximum 1000 items per import' } };
+            return { status: 400, data: { error: { message: 'Maximum 1000 items per import', code: 'BAD_REQUEST' } } };
         }
 
         let imported = 0;
@@ -1195,14 +1181,14 @@ export async function inventoryRouter(ctx) {
         const { url, marketplace } = body;
 
         if (!url) {
-            return { status: 400, data: { error: 'URL required' } };
+            return { status: 400, data: { error: { message: 'URL required', code: 'BAD_REQUEST' } } };
         }
 
         // SSRF protection — block private/loopback/link-local addresses
         try {
             const parsed = new URL(url);
             if (!['http:', 'https:'].includes(parsed.protocol)) {
-                return { status: 400, data: { error: 'URL must use http or https' } };
+                return { status: 400, data: { error: { message: 'URL must use http or https', code: 'BAD_REQUEST' } } };
             }
             const host = parsed.hostname.toLowerCase();
             if (
@@ -1213,10 +1199,10 @@ export async function inventoryRouter(ctx) {
                 /^192\.168\./.test(host) ||
                 /^172\.(1[6-9]|2[0-9]|3[01])\./.test(host)
             ) {
-                return { status: 400, data: { error: 'URL not allowed' } };
+                return { status: 400, data: { error: { message: 'URL not allowed', code: 'BAD_REQUEST' } } };
             }
         } catch {
-            return { status: 400, data: { error: 'Invalid URL' } };
+            return { status: 400, data: { error: { message: 'Invalid URL', code: 'BAD_REQUEST' } } };
         }
 
         let html = '';
@@ -1324,9 +1310,9 @@ export async function inventoryRouter(ctx) {
     // POST /api/inventory/categories - Create category
     if (method === 'POST' && path === '/categories') {
         const { name, color } = body;
-        if (!name || !name.trim()) return { status: 400, data: { error: 'Category name required' } };
+        if (!name || !name.trim()) return { status: 400, data: { error: { message: 'Category name required', code: 'BAD_REQUEST' } } };
         const existing = await query.get('SELECT id FROM inventory_categories WHERE user_id = ? AND name = ?', [user.id, name.trim()]);
-        if (existing) return { status: 409, data: { error: 'Category already exists' } };
+        if (existing) return { status: 409, data: { error: { message: 'Category already exists', code: 'CONFLICT' } } };
         const maxOrder = await query.get('SELECT MAX(sort_order) as m FROM inventory_categories WHERE user_id = ?', [user.id]);
         const id = uuidv4();
         await query.run('INSERT INTO inventory_categories (id, user_id, name, color, sort_order) VALUES (?, ?, ?, ?, ?)',
@@ -1338,7 +1324,7 @@ export async function inventoryRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/categories\/[a-f0-9-]+$/)) {
         const catId = path.split('/')[2];
         const cat = await query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
-        if (!cat) return { status: 404, data: { error: 'Category not found' } };
+        if (!cat) return { status: 404, data: { error: { message: 'Category not found', code: 'NOT_FOUND' } } };
         const { name, color, sort_order } = body;
         const updates = [];
         const vals = [];
@@ -1361,7 +1347,7 @@ export async function inventoryRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/categories\/[a-f0-9-]+$/)) {
         const catId = path.split('/')[2];
         const cat = await query.get('SELECT * FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
-        if (!cat) return { status: 404, data: { error: 'Category not found' } };
+        if (!cat) return { status: 404, data: { error: { message: 'Category not found', code: 'NOT_FOUND' } } };
         await query.run('DELETE FROM inventory_categories WHERE id = ? AND user_id = ?', [catId, user.id]);
         // Clear category on items (set to null)
         await query.run('UPDATE inventory SET category = NULL WHERE user_id = ? AND category = ?', [user.id, cat.name]);
@@ -1386,7 +1372,7 @@ export async function inventoryRouter(ctx) {
     // POST /api/inventory/suppliers - Create supplier
     if (method === 'POST' && path === '/suppliers') {
         const { name, type, website, contact_email, contact_phone, address, notes, rating } = body;
-        if (!name?.trim()) return { status: 400, data: { error: 'Supplier name required' } };
+        if (!name?.trim()) return { status: 400, data: { error: { message: 'Supplier name required', code: 'BAD_REQUEST' } } };
         const id = uuidv4();
         await query.run(`INSERT INTO suppliers (id, user_id, name, type, website, contact_email, contact_phone, address, notes, rating)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1399,7 +1385,7 @@ export async function inventoryRouter(ctx) {
     if (method === 'PUT' && path.match(/^\/suppliers\/[a-f0-9-]+$/)) {
         const supId = path.split('/')[2];
         const sup = await query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
-        if (!sup) return { status: 404, data: { error: 'Supplier not found' } };
+        if (!sup) return { status: 404, data: { error: { message: 'Supplier not found', code: 'NOT_FOUND' } } };
         const fields = ['name', 'type', 'website', 'contact_email', 'contact_phone', 'address', 'notes', 'rating', 'is_active'];
         const updates = [];
         const vals = [];
@@ -1417,7 +1403,7 @@ export async function inventoryRouter(ctx) {
     if (method === 'GET' && path.match(/^\/suppliers\/[a-f0-9-]+\/performance$/)) {
         const supId = path.split('/')[2];
         const sup = await query.get('SELECT * FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
-        if (!sup) return { status: 404, data: { error: 'Supplier not found' } };
+        if (!sup) return { status: 404, data: { error: { message: 'Supplier not found', code: 'NOT_FOUND' } } };
 
         // Items from this supplier
         const items = await query.all(`
@@ -1466,10 +1452,10 @@ export async function inventoryRouter(ctx) {
     if (method === 'DELETE' && path.match(/^\/suppliers\/[a-f0-9-]+$/)) {
         const supId = path.split('/')[2];
         const sup = await query.get('SELECT id FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
-        if (!sup) return { status: 404, data: { error: 'Supplier not found' } };
+        if (!sup) return { status: 404, data: { error: { message: 'Supplier not found', code: 'NOT_FOUND' } } };
         await query.run('DELETE FROM suppliers WHERE id = ? AND user_id = ?', [supId, user.id]);
         return { status: 200, data: { message: 'Supplier deleted' } };
     }
 
-    return { status: 404, data: { error: 'Route not found' } };
+    return { status: 404, data: { error: { message: 'Route not found', code: 'NOT_FOUND' } } };
 }

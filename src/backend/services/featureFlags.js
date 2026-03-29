@@ -74,7 +74,7 @@ const featureFlags = {
     // Load flags from database
     async loadFlags() {
         try {
-            const dbFlags = await query.all('SELECT * FROM feature_flags WHERE is_active = 1') || [];
+            const dbFlags = await query.all('SELECT * FROM feature_flags WHERE is_active = TRUE') || [];
 
             for (const flag of dbFlags) {
                 flagsCache[flag.name] = {

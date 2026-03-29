@@ -328,7 +328,7 @@ export async function financialsRouter(ctx) {
                        (SELECT COALESCE(SUM(amount), 0) FROM financial_transactions WHERE account_id = a.id) as calculated_balance,
                        (SELECT COUNT(*) FROM financial_transactions WHERE account_id = a.id) as transaction_count
                 FROM accounts a
-                WHERE a.user_id = ? AND a.is_active = 1
+                WHERE a.user_id = ? AND a.is_active = TRUE
                 ORDER BY a.account_type, a.account_name
             `, [user.id]);
 
@@ -632,7 +632,7 @@ export async function financialsRouter(ctx) {
                            COALESCE(SUM(t.amount), 0) as balance
                     FROM accounts a
                     LEFT JOIN financial_transactions t ON t.account_id = a.id ${dateFilter}
-                    WHERE a.user_id = ? AND a.account_type IN (${placeholders}) AND a.is_active = 1
+                    WHERE a.user_id = ? AND a.account_type IN (${placeholders}) AND a.is_active = TRUE
                     GROUP BY a.id
                     ORDER BY a.account_type, a.account_name
                 `;
@@ -714,7 +714,7 @@ export async function financialsRouter(ctx) {
                            COALESCE(SUM(t.amount), 0) as total
                     FROM accounts a
                     LEFT JOIN financial_transactions t ON t.account_id = a.id ${dateFilter}
-                    WHERE a.user_id = ? AND a.account_type IN (${placeholders}) AND a.is_active = 1
+                    WHERE a.user_id = ? AND a.account_type IN (${placeholders}) AND a.is_active = TRUE
                     GROUP BY a.id
                     ORDER BY a.account_name
                 `;

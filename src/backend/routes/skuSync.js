@@ -203,7 +203,7 @@ export async function skuSyncRouter(ctx) {
       for (const platform of platformsToSync) {
         try {
           const shop = await query.get(
-            `SELECT id FROM shops WHERE user_id = ? AND platform = ? AND is_connected = 1 AND connection_type = 'oauth'`,
+            `SELECT id FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE AND connection_type = 'oauth'`,
             [userId, platform]
           );
           if (shop) {

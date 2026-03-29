@@ -5,14 +5,11 @@ import crypto from 'crypto';
 import { query, escapeLike } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { cacheFor } from '../middleware/cache.js';
+import { safeJsonParse } from '../shared/utils.js';
 
 const ALLOWED_TICKET_FIELDS = new Set(['status', 'priority']);
 // TECH-DEBT: Migrate error responses to AppError classes (errorHandler.js)
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 /**
  * Help router

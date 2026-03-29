@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
+import { INTERVALS } from '../shared/constants.js';
 
 // Audit event categories
 const CATEGORIES = {
@@ -60,7 +61,7 @@ const auditLog = {
             return;
         }
         // Start cleanup job (runs daily)
-        this.cleanupInterval = setInterval(() => this.cleanup(), 86400000);
+        this.cleanupInterval = setInterval(() => this.cleanup(), INTERVALS.DAILY_CLEANUP_MS);
         logger.info('[AuditLog] Service initialized');
     },
 

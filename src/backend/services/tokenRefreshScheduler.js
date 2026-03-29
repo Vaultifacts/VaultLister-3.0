@@ -38,12 +38,12 @@ export async function startTokenRefreshScheduler() {
     try {
         const resetResult = await query.run(`
             UPDATE shops SET
-                is_connected = 1,
+                is_connected = TRUE,
                 consecutive_refresh_failures = 0,
                 token_refresh_error = NULL,
                 token_refresh_error_at = NULL,
                 updated_at = NOW()
-            WHERE is_connected = 0
+            WHERE is_connected = FALSE
               AND consecutive_refresh_failures >= ?
               AND oauth_refresh_token IS NOT NULL
               AND connection_type = 'oauth'
@@ -129,7 +129,7 @@ export async function refreshExpiringTokens() {
                 FROM shops s
                 LEFT JOIN users u ON s.user_id = u.id
                 WHERE s.connection_type = 'oauth'
-                AND s.is_connected = 1
+                AND s.is_connected = TRUE
                 AND s.oauth_refresh_token IS NOT NULL
                 AND s.oauth_token_expires_at IS NOT NULL
                 AND s.oauth_token_expires_at <= ?
@@ -144,7 +144,7 @@ export async function refreshExpiringTokens() {
                     FROM shops s
                     LEFT JOIN users u ON s.user_id = u.id
                     WHERE s.connection_type = 'oauth'
-                    AND s.is_connected = 1
+                    AND s.is_connected = TRUE
                     AND s.oauth_refresh_token IS NOT NULL
                     AND s.oauth_token_expires_at IS NOT NULL
                     AND s.oauth_token_expires_at <= ?
@@ -206,7 +206,7 @@ async function checkPlatformHealthAlerts() {
         SELECT s.id, s.user_id, s.platform, s.platform_username, s.is_connected,
             s.oauth_token_expires_at, s.consecutive_refresh_failures, s.last_sync_at,
             s.connection_type, s.sync_status
-        FROM shops s WHERE s.is_connected = 1
+        FROM shops s WHERE s.is_connected = TRUE
     `);
 
     for (const shop of allShops) {
@@ -504,7 +504,7 @@ export async function refreshShopToken(shop) {
 
             await query.run(`
                 UPDATE shops SET
-                    is_connected = 0,
+                    is_connected = FALSE,
                     updated_at = ?
                 WHERE id = ?
             `, [now, shop.id]);
@@ -695,9 +695,9 @@ export async function getRefreshSchedulerStatus() {
         stats = await query.get(`
             SELECT
                 COUNT(*) as total_oauth_shops,
-                SUM(CASE WHEN is_connected = 1 THEN 1 ELSE 0 END) as connected_shops,
+                SUM(CASE WHEN is_connected = TRUE THEN 1 ELSE 0 END) as connected_shops,
                 SUM(CASE WHEN consecutive_refresh_failures > 0 THEN 1 ELSE 0 END) as shops_with_errors,
-                SUM(CASE WHEN oauth_token_expires_at <= NOW() + INTERVAL '15 minutes' AND is_connected = 1 THEN 1 ELSE 0 END) as expiring_soon
+                SUM(CASE WHEN oauth_token_expires_at <= NOW() + INTERVAL '15 minutes' AND is_connected = TRUE THEN 1 ELSE 0 END) as expiring_soon
             FROM shops
             WHERE connection_type = 'oauth'
         `);
@@ -707,9 +707,9 @@ export async function getRefreshSchedulerStatus() {
             stats = await query.get(`
                 SELECT
                     COUNT(*) as total_oauth_shops,
-                    SUM(CASE WHEN is_connected = 1 THEN 1 ELSE 0 END) as connected_shops,
+                    SUM(CASE WHEN is_connected = TRUE THEN 1 ELSE 0 END) as connected_shops,
                     0 as shops_with_errors,
-                    SUM(CASE WHEN oauth_token_expires_at <= NOW() + INTERVAL '15 minutes' AND is_connected = 1 THEN 1 ELSE 0 END) as expiring_soon
+                    SUM(CASE WHEN oauth_token_expires_at <= NOW() + INTERVAL '15 minutes' AND is_connected = TRUE THEN 1 ELSE 0 END) as expiring_soon
                 FROM shops
                 WHERE connection_type = 'oauth'
             `);

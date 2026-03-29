@@ -6,6 +6,7 @@ import { createHmac } from 'crypto';
 import { query } from '../db/database.js';
 import emailService from './email.js';
 import { logger } from '../shared/logger.js';
+import { INTERVALS } from '../shared/constants.js';
 
 // Email templates
 const EMAIL_TEMPLATES = {
@@ -55,13 +56,13 @@ const emailMarketing = {
     // Start scheduled jobs
     startScheduledJobs() {
         // Run welcome sequence check every hour
-        this.welcomeInterval = setInterval(() => this.processWelcomeSequence(), 3600000);
+        this.welcomeInterval = setInterval(() => this.processWelcomeSequence(), INTERVALS.HOURLY_TASK_MS);
 
         // Run weekly digest on Sundays at 9 AM (check every hour)
-        this.digestInterval = setInterval(() => this.processWeeklyDigests(), 3600000);
+        this.digestInterval = setInterval(() => this.processWeeklyDigests(), INTERVALS.HOURLY_TASK_MS);
 
         // Run inactivity check daily
-        this.inactivityInterval = setInterval(() => this.processInactivityReminders(), 86400000);
+        this.inactivityInterval = setInterval(() => this.processInactivityReminders(), INTERVALS.DAILY_CLEANUP_MS);
     },
 
     // Stop scheduled jobs and release interval handles
@@ -113,7 +114,7 @@ const emailMarketing = {
 
     // Generate and send weekly digest
     async sendWeeklyDigest(userId) {
-        const user = await query.get('SELECT id, email, username, full_name, display_name, avatar_url, subscription_tier, last_login_at FROM users WHERE id = ? AND is_active = 1', [userId]);
+        const user = await query.get('SELECT id, email, username, full_name, display_name, avatar_url, subscription_tier, last_login_at FROM users WHERE id = ? AND is_active = TRUE', [userId]);
         if (!user || !await this.hasConsent(userId, 'marketing_emails')) return;
 
         // Get stats for the week
@@ -195,7 +196,7 @@ const emailMarketing = {
         const users = await query.all(`
             SELECT u.id FROM users u
             JOIN user_consents uc ON u.id = uc.user_id
-            WHERE u.is_active = 1
+            WHERE u.is_active = TRUE
             AND uc.consent_type = 'marketing_emails'
             AND uc.granted = 1
         `);
@@ -211,7 +212,7 @@ const emailMarketing = {
 
         const inactiveUsers = await query.all(`
             SELECT id, email, username, full_name, last_login_at FROM users
-            WHERE is_active = 1
+            WHERE is_active = TRUE
             AND last_login_at < ?
             AND id NOT IN (
                 SELECT user_id FROM email_queue

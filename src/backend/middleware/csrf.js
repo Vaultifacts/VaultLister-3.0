@@ -3,6 +3,7 @@
 
 import crypto from 'crypto';
 import { query } from '../db/database.js';
+import { INTERVALS } from '../shared/constants.js';
 
 /**
  * CSRF Token Manager — PostgreSQL-backed (B-09)
@@ -11,7 +12,7 @@ import { query } from '../db/database.js';
 class CSRFManager {
     constructor() {
         // Clean up expired tokens every 10 minutes
-        this._cleanupInterval = setInterval(() => this.cleanup(), 10 * 60 * 1000);
+        this._cleanupInterval = setInterval(() => this.cleanup(), INTERVALS.CSRF_TOKEN_CLEANUP_MS);
     }
 
     async generateToken(sessionId = null) {

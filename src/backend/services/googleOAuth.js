@@ -131,7 +131,7 @@ export async function exchangeGoogleCode(code, state) {
                 oauth_refresh_token = COALESCE(?, oauth_refresh_token),
                 oauth_token_expires_at = ?,
                 email = ?,
-                is_connected = 1,
+                is_connected = TRUE,
                 updated_at = ?
              WHERE id = ?`,
             [encryptedAccess, encryptedRefresh, expiresAt, userInfo.email, now, existing.id]
@@ -155,7 +155,7 @@ export async function exchangeGoogleCode(code, state) {
  */
 export async function getAccessToken(userId, scope) {
     const record = await query.get(
-        `SELECT * FROM google_tokens WHERE user_id = ? AND scope = ? AND is_connected = 1`,
+        `SELECT * FROM google_tokens WHERE user_id = ? AND scope = ? AND is_connected = TRUE`,
         [userId, scope]
     );
     if (!record) return null;
@@ -220,7 +220,7 @@ export async function revokeGoogleToken(userId, scope) {
     }
 
     await query.run(
-        `UPDATE google_tokens SET is_connected = 0, oauth_token = NULL, oauth_refresh_token = NULL, updated_at = ? WHERE id = ?`,
+        `UPDATE google_tokens SET is_connected = FALSE, oauth_token = NULL, oauth_refresh_token = NULL, updated_at = ? WHERE id = ?`,
         [new Date().toISOString(), record.id]
     );
 }

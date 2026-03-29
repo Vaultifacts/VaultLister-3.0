@@ -633,7 +633,7 @@ export async function ordersRouter(ctx) {
         try {
             // Find all connected shops for this user
             const shops = await query.all(
-                'SELECT id, platform FROM shops WHERE user_id = ? AND is_connected = 1',
+                'SELECT id, platform FROM shops WHERE user_id = ? AND is_connected = TRUE',
                 [user.id]
             );
 
@@ -684,7 +684,7 @@ export async function ordersRouter(ctx) {
         try {
             if (platform === 'ebay') {
                 const shop = await query.get(
-                    "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = 1",
+                    "SELECT * FROM shops WHERE user_id = ? AND platform = 'ebay' AND is_connected = TRUE",
                     [user.id]
                 );
                 if (!shop) {

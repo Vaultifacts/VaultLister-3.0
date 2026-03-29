@@ -103,7 +103,7 @@ export async function analyticsRouter(ctx) {
 
             const autoRow = await query.get(`
                 SELECT
-                    (SELECT COUNT(*) FROM automation_rules WHERE user_id = ? AND is_enabled = 1) as active,
+                    (SELECT COUNT(*) FROM automation_rules WHERE user_id = ? AND is_enabled = TRUE) as active,
                     (SELECT COUNT(*) FROM automation_logs WHERE user_id = ? AND created_at >= date('now')) as runsToday
             `, [user.id, user.id]) || {};
 

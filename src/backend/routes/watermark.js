@@ -244,8 +244,8 @@ export async function watermarkRouter(ctx) {
 
             // Use transaction to ensure atomicity
             await query.transaction(async (tx) => {
-                await tx.run('UPDATE watermark_presets SET is_default = 0 WHERE user_id = ?', [user.id]);
-                await tx.run('UPDATE watermark_presets SET is_default = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [presetId, user.id]);
+                await tx.run('UPDATE watermark_presets SET is_default = FALSE WHERE user_id = ?', [user.id]);
+                await tx.run('UPDATE watermark_presets SET is_default = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?', [presetId, user.id]);
             });
 
             const updated = await query.get('SELECT * FROM watermark_presets WHERE id = ? AND user_id = ?', [presetId, user.id]);

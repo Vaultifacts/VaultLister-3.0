@@ -191,7 +191,7 @@ export async function completeSetup(userId, secret, totpCode, ip, userAgent) {
     // Store MFA settings
     await query.run(`
         UPDATE users
-        SET mfa_enabled = 1,
+        SET mfa_enabled = TRUE,
             mfa_secret = ?,
             mfa_backup_codes = ?,
             updated_at = CURRENT_TIMESTAMP
@@ -222,7 +222,7 @@ export async function disableMFA(userId, password, userPasswordHash, ip, userAge
     // Clear MFA settings
     await query.run(`
         UPDATE users
-        SET mfa_enabled = 0,
+        SET mfa_enabled = FALSE,
             mfa_secret = NULL,
             mfa_backup_codes = NULL,
             updated_at = CURRENT_TIMESTAMP

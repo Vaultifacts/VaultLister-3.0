@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { createNotification } from '../services/notificationService.js';
 import { logger } from '../shared/logger.js';
+import { TIMEOUTS } from '../shared/constants.js';
 
 const POLL_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 const MAX_ITEMS_PER_CYCLE = 50;
@@ -71,7 +72,7 @@ async function runPriceChecks() {
             FROM supplier_items si
             JOIN suppliers s ON si.supplier_id = s.id
             WHERE si.alert_enabled = 1
-            AND s.is_active = 1
+            AND s.is_active = TRUE
             ORDER BY si.last_checked_at ASC NULLS FIRST
             LIMIT ?
         `, [MAX_ITEMS_PER_CYCLE]);
@@ -221,7 +222,7 @@ async function fetchPriceFromUrl(item) {
 
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
+        const timeout = setTimeout(() => controller.abort(), TIMEOUTS.FETCH_ABORT_MS);
 
         const response = await fetch(url, {
             headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VaultLister/3.0; +https://vaultlister.com)' },

@@ -12,11 +12,8 @@ import {
 } from '../services/marketDataService.js';
 import { queueTask } from '../workers/taskWorker.js';
 import { logger } from '../shared/logger.js';
+import { safeJsonParse } from '../shared/utils.js';
 
-function safeJsonParse(str, fallback = null) {
-    if (str == null) return fallback;
-    try { return JSON.parse(str); } catch { return fallback; }
-}
 
 export async function marketIntelRouter(ctx) {
     const { method, path, body, query: queryParams, user } = ctx;
@@ -38,7 +35,7 @@ export async function marketIntelRouter(ctx) {
 
         let sql = `
             SELECT * FROM competitors
-            WHERE user_id = ? AND is_active = 1
+            WHERE user_id = ? AND is_active = TRUE
         `;
         const params = [user.id];
 
@@ -394,7 +391,7 @@ export async function marketIntelRouter(ctx) {
 
         try {
             const competitorStats = await query.get(`
-                SELECT COUNT(*) as count FROM competitors WHERE user_id = ? AND is_active = 1
+                SELECT COUNT(*) as count FROM competitors WHERE user_id = ? AND is_active = TRUE
             `, [user.id]);
 
             const listingStats = await query.get(`
