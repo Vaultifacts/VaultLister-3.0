@@ -652,6 +652,30 @@ function renderApp(pageContent) {
     });
 })();
 
+// Expose globals before initApp() so route handlers (called synchronously
+// during router.init()) can access window.pages, window.renderApp, etc.
+// Without this, the first navigation fires before window.pages is assigned
+// and throws "Cannot read properties of undefined (reading 'login')".
+window.router = router;
+window.store = store;
+window.api = api;
+window.toast = toast;
+window.auth = auth;
+window.modals = modals;
+window.handlers = handlers;
+window.voiceCommands = voiceCommands;
+window.onboarding = onboarding;
+window.widgetManager = widgetManager;
+window.tablePrefs = tablePrefs;
+window.renderApp = renderApp;
+window.pages = pages;
+window.components = components;
+window.pomodoroTimer = pomodoroTimer;
+window.kanbanBoard = kanbanBoard;
+window.taskTemplates = taskTemplates;
+window.measurementTool = measurementTool;
+window.sizeConverter = sizeConverter;
+
 // Start the app
 initApp();
 
