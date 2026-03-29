@@ -55,6 +55,8 @@ const chunkFiles = [
     'src/frontend/handlers/handlers-settings-account.js',
     'src/frontend/pages/pages-community-help.js',
     'src/frontend/handlers/handlers-community-help.js',
+    'src/frontend/pages/pages-deferred.js',
+    'src/frontend/handlers/handlers-deferred.js',
     'src/frontend/services/websocketClient.js',
 ];
 const hashableFiles = [

@@ -186,7 +186,7 @@ async function initApp() {
         renderApp(window.pages.adminMetrics());
     });
     router.register('community', () => renderApp(window.pages.community()));
-    router.register('help', () => renderApp(window.pages.help()));
+    router.register('help', () => router.navigate('help-support'));
 
     // Main section pages
     router.register('orders', async () => {

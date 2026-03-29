@@ -91,8 +91,8 @@ const pageChunkMap = {
     // admin
     'admin-metrics': 'admin',
 
-    // AR Preview — no separate chunk (lives in core deferred scripts)
-    'ar-preview': null,
+    // AR Preview — lives in pages-deferred.js (deferred chunk)
+    'ar-preview': 'deferred',
 };
 
 // Track which chunks are loaded
@@ -271,17 +271,17 @@ const router = {
         'my-listings': { target: 'listings', tab: null },
         'orders': { target: 'orders-sales', tab: 'orders' },
         'sales': { target: 'orders-sales', tab: 'sales-summary' },
-        'transactions': { target: 'financials', tab: 'transactions' },
-        'report-builder': { target: 'analytics', tab: 'reports' },
-        'predictions': { target: 'analytics', tab: 'predictions' },
-        'market-intel': { target: 'analytics', tab: 'market-intel' },
-        'suppliers': { target: 'analytics', tab: 'sourcing' },
+        'transactions': { target: 'financials', tab: 'transactions', storeKey: 'financialsTab' },
+        'report-builder': { target: 'analytics', tab: 'reports', storeKey: 'analyticsTab' },
+        'predictions': { target: 'analytics', tab: 'predictions', storeKey: 'analyticsTab' },
+        'market-intel': { target: 'analytics', tab: 'market-intel', storeKey: 'analyticsTab' },
+        'suppliers': { target: 'analytics', tab: 'sourcing', storeKey: 'analyticsTab' },
         'platform-health': { target: 'shops', tab: 'health' },
         // checklist + calendar: standalone routes (aliases removed — pages.planner() doesn't exist)
         // roadmap: standalone route — pages.roadmap() handles it directly
         'feedback-suggestions': { target: 'help-support', tab: 'feedback' },
-        'teams': { target: 'settings', tab: 'teams' },
-        'size-charts': { target: 'settings', tab: 'reference-data' },
+        'teams': { target: 'settings', tab: 'teams', storeKey: 'settingsTab' },
+        'size-charts': { target: 'settings', tab: 'reference-data', storeKey: 'settingsTab' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
         'about': { target: 'help-support', tab: 'about' },
         'terms-of-service': { target: 'help-support', tab: 'terms' },
@@ -298,7 +298,9 @@ const router = {
         const alias = this.routeAliases[path];
         if (alias) {
             path = alias.target;
-            store.setState({ activeTab: alias.tab });
+            if (alias.storeKey && alias.tab) {
+                store.setState({ [alias.storeKey]: alias.tab });
+            }
             window.history.replaceState({}, '', `#${path}`);
         }
 

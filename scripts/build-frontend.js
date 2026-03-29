@@ -82,6 +82,13 @@ const chunkDefs = [
             'src/frontend/handlers/handlers-admin.js',
         ]
     },
+    {
+        name: 'deferred',
+        files: [
+            'src/frontend/pages/pages-deferred.js',
+            'src/frontend/handlers/handlers-deferred.js',
+        ]
+    },
 ];
 
 // All source files for hash computation

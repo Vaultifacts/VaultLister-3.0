@@ -577,7 +577,7 @@ const handlers = {
             store.setState({ orders: [] });
             // Show more helpful error message
             const errorMsg = error.message || 'Unknown error';
-            if (errorMsg.includes('401') || errorMsg.includes('Authentication') || errorMsg.includes('token')) {
+            if (errorMsg.includes('401') || errorMsg.includes('Authentication') || errorMsg.includes('token') || errorMsg.includes('Session expired')) {
                 toast.error('Please log in to view orders');
             } else {
                 toast.error('Failed to load orders: ' + errorMsg);
