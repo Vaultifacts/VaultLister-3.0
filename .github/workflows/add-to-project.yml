@@ -6,7 +6,10 @@ on:
   pull_request:
     types: [opened, reopened]
 
-permissions: {}
+permissions:
+  issues: read
+  pull-requests: read
+  repository-projects: write
 
 jobs:
   add-to-development-board:

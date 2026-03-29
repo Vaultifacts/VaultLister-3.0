@@ -46,7 +46,13 @@ jobs:
         run: |
           # Use bun build --no-bundle to validate syntax without producing output.
           # node --check hangs on ESM files with Bun-specific imports (bun:test).
-          find src -name "*.js" -not -path "*/node_modules/*" | xargs bun build --no-bundle --outdir /dev/null 2>&1 | { grep -i "error" && exit 1 || true; }
+          SYNTAX_OUTPUT=$(find src -name "*.js" -not -path "*/node_modules/*" | xargs bun build --no-bundle --outdir /dev/null 2>&1 || true)
+          if echo "$SYNTAX_OUTPUT" | grep -qi "error"; then
+            echo "::error::Syntax errors detected:"
+            echo "$SYNTAX_OUTPUT"
+            exit 1
+          fi
+          echo "Syntax check passed"
 
   test-unit:
     name: Unit Tests
@@ -97,8 +103,21 @@ jobs:
       - name: Start server
         run: |
           bun run start &
-          for i in $(seq 1 30); do curl -sf http://localhost:3000/api/health > /dev/null && break; sleep 1; done
-          curl -sf http://localhost:3000/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+          SERVER_PID=$!
+          echo "Waiting for server (PID $SERVER_PID) to become ready..."
+          TIMEOUT=60
+          for i in $(seq 1 $TIMEOUT); do
+            if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+              echo "Server ready after ${i}s"
+              break
+            fi
+            if ! kill -0 $SERVER_PID 2>/dev/null; then
+              echo "::error::Server process exited unexpectedly"
+              exit 1
+            fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000/api/health > /dev/null || { echo "::error::Server failed to start within ${TIMEOUT}s"; exit 1; }
 
       - name: Run unit tests with coverage
         run: |
@@ -233,8 +252,21 @@ jobs:
       - name: Start server and wait for ready
         run: |
           bun run start &
-          for i in $(seq 1 30); do curl -sf http://localhost:3000/api/health > /dev/null && break; sleep 1; done
-          curl -sf http://localhost:3000/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+          SERVER_PID=$!
+          echo "Waiting for server (PID $SERVER_PID) to become ready..."
+          TIMEOUT=60
+          for i in $(seq 1 $TIMEOUT); do
+            if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+              echo "Server ready after ${i}s"
+              break
+            fi
+            if ! kill -0 $SERVER_PID 2>/dev/null; then
+              echo "::error::Server process exited unexpectedly"
+              exit 1
+            fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000/api/health > /dev/null || { echo "::error::Server failed to start within ${TIMEOUT}s"; exit 1; }
 
       - name: Run E2E tests
         run: npx playwright test --project=chromium
@@ -293,8 +325,21 @@ jobs:
           bun run db:init
           bun run db:seed
           bun run start &
-          for i in $(seq 1 30); do curl -sf http://localhost:3000/api/health > /dev/null && break; sleep 1; done
-          curl -sf http://localhost:3000/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+          SERVER_PID=$!
+          echo "Waiting for server (PID $SERVER_PID) to become ready..."
+          TIMEOUT=60
+          for i in $(seq 1 $TIMEOUT); do
+            if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+              echo "Server ready after ${i}s"
+              break
+            fi
+            if ! kill -0 $SERVER_PID 2>/dev/null; then
+              echo "::error::Server process exited unexpectedly"
+              exit 1
+            fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000/api/health > /dev/null || { echo "::error::Server failed to start within ${TIMEOUT}s"; exit 1; }
           bun test src/tests/security.test.js
 
       - name: Check for hardcoded secrets
@@ -442,8 +487,21 @@ jobs:
       - name: Start server and wait for ready
         run: |
           bun run start &
-          for i in $(seq 1 30); do curl -sf http://localhost:3000/api/health > /dev/null && break; sleep 1; done
-          curl -sf http://localhost:3000/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+          SERVER_PID=$!
+          echo "Waiting for server (PID $SERVER_PID) to become ready..."
+          TIMEOUT=60
+          for i in $(seq 1 $TIMEOUT); do
+            if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+              echo "Server ready after ${i}s"
+              break
+            fi
+            if ! kill -0 $SERVER_PID 2>/dev/null; then
+              echo "::error::Server process exited unexpectedly"
+              exit 1
+            fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000/api/health > /dev/null || { echo "::error::Server failed to start within ${TIMEOUT}s"; exit 1; }
 
       - name: Run visual tests (shard ${{ matrix.shard }}/3)
         run: |
@@ -523,8 +581,21 @@ jobs:
       - name: Start server and wait for ready
         run: |
           bun run start &
-          for i in $(seq 1 30); do curl -sf http://localhost:3000/api/health > /dev/null && break; sleep 1; done
-          curl -sf http://localhost:3000/api/health > /dev/null || { echo "Server failed to start"; exit 1; }
+          SERVER_PID=$!
+          echo "Waiting for server (PID $SERVER_PID) to become ready..."
+          TIMEOUT=60
+          for i in $(seq 1 $TIMEOUT); do
+            if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+              echo "Server ready after ${i}s"
+              break
+            fi
+            if ! kill -0 $SERVER_PID 2>/dev/null; then
+              echo "::error::Server process exited unexpectedly"
+              exit 1
+            fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000/api/health > /dev/null || { echo "::error::Server failed to start within ${TIMEOUT}s"; exit 1; }
 
       - name: Run load test (baseline)
         run: |

@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+# $3 is 1 for branch checkout, 0 for file checkout — only act on branch switches
+CHECKOUT_TYPE=$3
+if [ "$CHECKOUT_TYPE" != "1" ]; then
+    exit 0
+fi
+
+PREV_HEAD=$1
+NEW_HEAD=$2
+
+# Run bun install if package.json or bun.lock changed between the two refs
+CHANGED=$(git diff-tree -r --name-only --no-commit-id "$PREV_HEAD" "$NEW_HEAD" 2>/dev/null || true)
+
+if echo "$CHANGED" | grep -qE "(^|/)package\.json$|(^|/)bun\.lock(b)?$"; then
+    echo "package.json or bun.lock changed — running bun install..."
+    bun install
+    echo "bun install complete."
+fi

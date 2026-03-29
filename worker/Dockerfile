@@ -28,4 +28,8 @@ COPY worker/ worker/
 
 ENV NODE_ENV=production
 
+# Verify the BullMQ worker process is alive by checking its PID file or process list
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD pgrep -f "bun worker/index.js" > /dev/null || exit 1
+
 CMD ["bun", "worker/index.js"]

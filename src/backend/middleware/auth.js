@@ -14,6 +14,15 @@ if (!JWT_SECRET && IS_PRODUCTION) {
     process.exit(1);
 }
 
+if (JWT_SECRET && JWT_SECRET.length < 32) {
+    if (IS_PRODUCTION) {
+        logger.error('[Auth] FATAL: JWT_SECRET must be at least 32 characters long');
+        process.exit(1);
+    } else {
+        logger.warn('[Auth] WARNING: JWT_SECRET is shorter than 32 characters — use a stronger secret in production');
+    }
+}
+
 if (JWT_SECRET_OLD) {
     logger.info('[Auth] JWT_SECRET_OLD is set — dual-key verification enabled for rotation window');
 }

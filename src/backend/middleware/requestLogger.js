@@ -89,23 +89,50 @@ export function sanitizeBody(body) {
     return sanitized;
 }
 
+const SENSITIVE_QUERY_PARAMS = new Set(['token', 'password', 'key', 'secret', 'access_token', 'refresh_token', 'api_key', 'apikey', 'auth']);
+const MAX_USER_AGENT_LENGTH = 200;
+const AUTH_PATH_PREFIXES = ['/api/auth', '/api/oauth'];
+
+/**
+ * Redact sensitive query parameters from a params object
+ */
+function redactQueryParams(params) {
+    const redacted = { ...params };
+    for (const key of Object.keys(redacted)) {
+        if (SENSITIVE_QUERY_PARAMS.has(key.toLowerCase())) {
+            redacted[key] = '[REDACTED]';
+        }
+    }
+    return redacted;
+}
+
+/**
+ * Return true if the path belongs to an auth endpoint that should not have
+ * its request body logged.
+ */
+function isAuthPath(path) {
+    return AUTH_PATH_PREFIXES.some(prefix => path.startsWith(prefix));
+}
+
 /**
  * Create request context with unique ID
  */
 export function createRequestContext(request) {
     const headers = Object.fromEntries(request.headers.entries());
     const url = new URL(request.url);
+    const rawUserAgent = headers['user-agent'] || 'unknown';
 
     return {
         requestId: generateId(),
         method: request.method,
         path: url.pathname,
-        query: Object.fromEntries(url.searchParams),
+        query: redactQueryParams(Object.fromEntries(url.searchParams)),
         ip: getClientIP(request, headers),
-        userAgent: headers['user-agent'] || 'unknown',
+        userAgent: rawUserAgent.substring(0, MAX_USER_AGENT_LENGTH),
         referer: headers['referer'] || null,
         timestamp: now(),
-        startTime: performance.now()
+        startTime: performance.now(),
+        isAuthPath: isAuthPath(url.pathname)
     };
 }
 
@@ -120,7 +147,8 @@ export function logRequestStart(ctx) {
         method: ctx.method,
         path: ctx.path,
         ip: ctx.ip,
-        userAgent: ctx.userAgent
+        userAgent: ctx.userAgent,
+        ...(ctx.isAuthPath ? {} : { query: ctx.query })
     });
 }
 
@@ -202,7 +230,7 @@ async function storeRequestLog(ctx, status, duration, error = null) {
             duration,
             ctx.user?.id || null,
             anonymizeIP(ctx.ip) || null,
-            ctx.userAgent?.substring(0, 500) || null,
+            ctx.userAgent?.substring(0, MAX_USER_AGENT_LENGTH) || null,
             error?.message || null,
             ctx.timestamp || now()
         ]);
@@ -229,7 +257,7 @@ export async function logAuditEvent(ctx, action, resourceType, resourceId, detai
             resourceId,
             JSON.stringify(details),
             anonymizeIP(ctx.ip),
-            ctx.userAgent?.substring(0, 500) || null,
+            ctx.userAgent?.substring(0, MAX_USER_AGENT_LENGTH) || null,
             now()
         ]);
 
