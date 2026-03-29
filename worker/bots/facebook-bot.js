@@ -221,15 +221,7 @@ export class FacebookBot {
         }
     }
 
-    /**
-     * Share a Marketplace listing (AU-11: TODO)
-     * Currently unimplemented. Expected behavior:
-     * 1. Click share button
-     * 2. Confirm share action
-     * 3. Wait for confirmation message
-     * 4. Log to audit trail
-     * 5. Return success/failure status
-     */
+    // Facebook Marketplace does not have a share action — use refreshListing or relistItem instead.
     async shareListing(listingUrl) {
         throw new Error('Facebook Marketplace does not support share actions — use relist instead');
     }

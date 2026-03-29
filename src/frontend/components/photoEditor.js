@@ -67,7 +67,7 @@ const PhotoEditor = {
 
     // Setup canvas element
     setupCanvas() {
-        this.canvas = document.getElementById('photo-editor-canvas');
+        this.canvas = document.getElementById('photo-editor-canvas'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         if (!this.canvas) return;
 
         this.ctx = this.canvas.getContext('2d');
@@ -257,7 +257,7 @@ const PhotoEditor = {
 
     // Update slider value display
     updateSliderValue(name, value) {
-        const display = document.getElementById(`${name}-value`);
+        const display = document.getElementById(`${name}-value`); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         if (display) {
             display.textContent = value > 0 ? `+${value}` : value;
         }
@@ -277,7 +277,7 @@ const PhotoEditor = {
 
         // Reset slider inputs
         ['brightness', 'contrast', 'saturation'].forEach(name => {
-            const slider = document.getElementById(`${name}-slider`);
+            const slider = document.getElementById(`${name}-slider`); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             if (slider) slider.value = 0;
             this.updateSliderValue(name, 0);
         });

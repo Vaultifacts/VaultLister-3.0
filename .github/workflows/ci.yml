@@ -191,7 +191,11 @@ jobs:
     name: E2E Tests
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: false
+    # To temporarily disable E2E in CI (e.g. during a Playwright infrastructure issue),
+    # change the condition below to: if: false
+    # Re-enable by restoring: if: github.event_name == 'push' || github.event_name == 'pull_request'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    needs: [test-unit]
     continue-on-error: true
     env:
       DISABLE_CSRF: 'true'

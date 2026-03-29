@@ -109,12 +109,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vaultifacts/vaultlister.git"
+    "url": "https://github.com/Vaultifacts/VaultLister-3.0.git"
   },
   "bugs": {
-    "url": "https://github.com/Vaultifacts/vaultlister/issues"
+    "url": "https://github.com/Vaultifacts/VaultLister-3.0/issues"
   },
-  "homepage": "https://github.com/Vaultifacts/vaultlister#readme",
+  "homepage": "https://github.com/Vaultifacts/VaultLister-3.0#readme",
   "engines": {
     "bun": ">=1.0.0",
     "node": ">=18.0.0"

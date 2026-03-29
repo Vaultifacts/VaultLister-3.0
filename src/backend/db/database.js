@@ -76,12 +76,47 @@ export function _resetQueryMetrics() {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const POOL_MAX = 25;
+const POOL_WARNING_THRESHOLD = 0.8; // warn when >80% of connections are in use
+
 const sql = postgres(process.env.DATABASE_URL || 'postgresql://vaultlister:localdev@localhost:5432/vaultlister_dev', {
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false, // nosemgrep: problem-based-packs.insecure-transport.js-node.bypass-tls-verification.bypass-tls-verification -- Railway managed PostgreSQL uses self-signed cert; internal private network connection
-    max: 25,
+    max: POOL_MAX,
     idle_timeout: 20,
     connect_timeout: 10,
 });
+
+// Pool monitoring state
+let _poolMonitorInterval = null;
+let _isShuttingDown = false;
+
+// Track active query count manually since postgres.js does not expose per-query hooks
+let _activeQueries = 0;
+
+function _startPoolMonitor() {
+    if (_poolMonitorInterval) return;
+    _poolMonitorInterval = setInterval(() => {
+        const stats = sql.options;
+        // postgres.js exposes current connection state via internal properties;
+        // approximate active connections from our own counter
+        const activeConnections = _activeQueries;
+        const utilizationRatio = activeConnections / POOL_MAX;
+        if (utilizationRatio >= POOL_WARNING_THRESHOLD) {
+            logger.warn('[DB] Connection pool high utilization', {
+                activeQueries: activeConnections,
+                poolMax: POOL_MAX,
+                utilizationPct: Math.round(utilizationRatio * 100)
+            });
+        }
+    }, 10000);
+}
+
+function _stopPoolMonitor() {
+    if (_poolMonitorInterval) {
+        clearInterval(_poolMonitorInterval);
+        _poolMonitorInterval = null;
+    }
+}
 
 // Convert ? positional params to $1, $2, ... for postgres.js
 // Skips ? inside single-quoted string literals
@@ -118,6 +153,8 @@ export function getStatementCacheStats() {
 export const query = {
     // Get single row
     async get(sqlStr, params = [], requestId = null) {
+        if (_isShuttingDown) throw new Error('Database is shutting down — not accepting new queries');
+        _activeQueries++;
         const start = performance.now();
         try {
             const converted = convertPlaceholders(sqlStr);
@@ -136,11 +173,15 @@ export const query = {
             recordQueryMetric(sqlStr, duration, requestId);
             logger.error('Query error:', error.message, process.env.NODE_ENV !== 'production' ? sqlStr : '');
             throw error;
+        } finally {
+            _activeQueries--;
         }
     },
 
     // Get all rows
     async all(sqlStr, params = [], requestId = null) {
+        if (_isShuttingDown) throw new Error('Database is shutting down — not accepting new queries');
+        _activeQueries++;
         const start = performance.now();
         try {
             const converted = convertPlaceholders(sqlStr);
@@ -159,11 +200,15 @@ export const query = {
             recordQueryMetric(sqlStr, duration, requestId);
             logger.error('Query error:', error.message, process.env.NODE_ENV !== 'production' ? sqlStr : '');
             throw error;
+        } finally {
+            _activeQueries--;
         }
     },
 
     // Execute mutation (INSERT, UPDATE, DELETE)
     async run(sqlStr, params = [], requestId = null) {
+        if (_isShuttingDown) throw new Error('Database is shutting down — not accepting new queries');
+        _activeQueries++;
         const start = performance.now();
         try {
             const converted = convertPlaceholders(sqlStr);
@@ -182,16 +227,22 @@ export const query = {
             recordQueryMetric(sqlStr, duration, requestId);
             logger.error('Query error:', error.message, process.env.NODE_ENV !== 'production' ? sqlStr : '');
             throw error;
+        } finally {
+            _activeQueries--;
         }
     },
 
     // Execute raw SQL (DDL, no params)
     async exec(sqlStr) {
+        if (_isShuttingDown) throw new Error('Database is shutting down — not accepting new queries');
+        _activeQueries++;
         try {
             await sql.unsafe(sqlStr);
         } catch (error) {
             logger.error('Exec error:', error.message);
             throw error;
+        } finally {
+            _activeQueries--;
         }
     },
 
@@ -423,6 +474,9 @@ export async function initializeDatabase() {
         await sql.unsafe('SELECT 1');
         logger.info('✓ PostgreSQL connection established');
 
+        // Start pool utilization monitor
+        _startPoolMonitor();
+
         // Run migrations
         await runMigrations();
 
@@ -500,10 +554,36 @@ export async function cleanupExpiredData() {
     return results;
 }
 
-// Close database connection pool
+// Close database connection pool with graceful drain
 export async function closeDatabase() {
+    _isShuttingDown = true;
+    _stopPoolMonitor();
+
+    logger.info(`[DB] Draining connection pool (${_activeQueries} active queries)...`);
+
+    // Wait for in-flight queries to finish (up to 10 seconds)
+    const drainDeadline = Date.now() + 10000;
+    while (_activeQueries > 0 && Date.now() < drainDeadline) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    if (_activeQueries > 0) {
+        logger.warn(`[DB] Drain timeout — ${_activeQueries} queries still in flight; closing pool`);
+    } else {
+        logger.info('[DB] All queries drained, closing pool');
+    }
+
     await sql.end();
 }
+
+// Graceful shutdown on SIGTERM/SIGINT — stop accepting new queries and drain pool
+async function _gracefulDbShutdown(signal) {
+    logger.info(`[DB] Received ${signal} — initiating graceful pool drain`);
+    await closeDatabase();
+}
+
+process.on('SIGTERM', () => _gracefulDbShutdown('SIGTERM').catch(() => {}));
+process.on('SIGINT', () => _gracefulDbShutdown('SIGINT').catch(() => {}));
 
 // Close database on process exit
 process.on('exit', () => {

@@ -74,6 +74,7 @@ import { competitorTrackingRouter } from './routes/competitorTracking.js';
 import { searchAnalyticsRouter } from './routes/searchAnalytics.js';
 import { expenseTrackerRouter } from './routes/expenseTracker.js';
 import { skuSyncRouter } from './routes/skuSync.js';
+import { syncAuditLogRouter } from './routes/syncAuditLog.js';
 
 import { qrAnalyticsRouter } from './routes/qrAnalytics.js';
 import { watermarkRouter } from './routes/watermark.js';
@@ -330,6 +331,7 @@ const apiRoutes = {
     '/api/search-analytics': searchAnalyticsRouter,
     '/api/expenses': expenseTrackerRouter,
     '/api/sku-sync': skuSyncRouter,
+    '/api/sync': syncAuditLogRouter,
     '/api/qr-analytics': qrAnalyticsRouter,
     '/api/watermark': watermarkRouter,
     '/api/whatnot-enhanced': whatnotEnhancedRouter,

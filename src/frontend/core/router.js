@@ -258,7 +258,7 @@ const router = {
         }
 
         // Save sidebar scroll position before navigating
-        const sidebar = document.querySelector('.sidebar-nav');
+        const sidebar = document.querySelector('.sidebar-nav'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         if (sidebar) {
             store.setState({ sidebarScrollPos: sidebar.scrollTop });
         }
@@ -517,7 +517,7 @@ const router = {
 
         // Restore sidebar scroll position and main content scroll after rendering
         requestAnimationFrame(() => {
-            const sidebar = document.querySelector('.sidebar-nav');
+            const sidebar = document.querySelector('.sidebar-nav'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             if (sidebar && store.state.sidebarScrollPos !== undefined) {
                 sidebar.scrollTop = store.state.sidebarScrollPos;
             }

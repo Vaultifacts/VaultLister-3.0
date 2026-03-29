@@ -13,11 +13,58 @@ const POSHMARK_URL = POSHMARK_DOMAINS[process.env.POSHMARK_COUNTRY?.toLowerCase(
 
 const AUDIT_LOG = path.join(process.cwd(), 'data', 'automation-audit.log');
 const COOKIE_FILE = path.join(process.cwd(), 'data', 'poshmark-cookies.json');
+const SCREENSHOT_DIR = path.join(process.cwd(), 'data', 'bot-screenshots');
 
 // Random delay for human-like typing and short navigation pauses only
 // Inter-action delays use jitteredDelay(RATE_LIMITS.poshmark.*) instead
 function randomDelay(min = 1000, max = 3000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/**
+ * Retry an async action with exponential backoff.
+ * Delays: 1s, 2s, 4s (doubles each attempt).
+ * @param {Function} fn - Async function to retry (receives attempt number 0-indexed)
+ * @param {number} maxRetries - Maximum retry attempts (default 3)
+ * @returns {Promise<*>} Result of fn on success
+ * @throws Last error if all attempts exhausted
+ */
+async function retryAction(fn, maxRetries = 3) {
+    let lastError;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            return await fn(attempt);
+        } catch (err) {
+            lastError = err;
+            if (attempt < maxRetries - 1) {
+                const delay = 1000 * Math.pow(2, attempt);
+                logger.warn(`[PoshmarkBot] retryAction attempt ${attempt + 1}/${maxRetries} failed — retrying in ${delay}ms`, { error: err.message });
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+    throw lastError;
+}
+
+/**
+ * Capture a failure screenshot for debugging.
+ * Saves to data/bot-screenshots/<timestamp>-<actionName>.png and logs the path.
+ * @param {import('playwright').Page} page - Playwright page
+ * @param {string} actionName - Name of the action that failed (used in filename)
+ */
+async function captureFailureScreenshot(page, actionName) {
+    try {
+        fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `${timestamp}-${actionName.replace(/[^a-z0-9_-]/gi, '_')}.png`;
+        const filePath = path.join(SCREENSHOT_DIR, filename);
+        await page.screenshot({ path: filePath, fullPage: false });
+        logger.info(`[PoshmarkBot] Failure screenshot saved: ${filePath}`);
+        return filePath;
+    } catch (screenshotErr) {
+        logger.warn('[PoshmarkBot] Failed to capture failure screenshot', { error: screenshotErr.message });
+        return null;
+    }
 }
 
 function writeAuditLog(event, metadata = {}) {
@@ -206,6 +253,7 @@ export class PoshmarkBot {
             return this.isLoggedIn;
         } catch (error) {
             logger.error('[PoshmarkBot] Login error', error);
+            await captureFailureScreenshot(this.page, 'login');
             writeAuditLog('login', { username, method: 'form', success: false, error: error.message });
             this.stats.errors++;
             throw error;
@@ -219,35 +267,38 @@ export class PoshmarkBot {
         logger.info('[PoshmarkBot] Sharing item', { listingUrl });
 
         try {
-            await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
-            await mouseWiggle(this.page);
-            await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
+            return await retryAction(async () => {
+                await this.page.goto(listingUrl, { waitUntil: 'domcontentloaded' });
+                await mouseWiggle(this.page);
+                await this.page.waitForTimeout(jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
 
-            // Find and click share button
-            const shareButton = await this.page.$('[data-test="social-action-bar-share"]');
-            if (!shareButton) {
-                logger.info('[PoshmarkBot] Share button not found');
+                // Find and click share button
+                const shareButton = await this.page.$('[data-test="social-action-bar-share"]');
+                if (!shareButton) {
+                    logger.info('[PoshmarkBot] Share button not found');
+                    return false;
+                }
+
+                await humanClick(this.page, shareButton);
+                await this.page.waitForTimeout(randomDelay(500, 1000));
+
+                // Click "To My Followers" option
+                const toFollowersOption = await this.page.$('[data-test="share-to-followers"]');
+                if (toFollowersOption) {
+                    await humanClick(this.page, toFollowersOption);
+                    // Enforce session-level rate limit before next share
+                    await this.enforceRateLimit('share', jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
+                    this.stats.shares++;
+                    writeAuditLog('share_item', { listingUrl });
+                    logger.info('[PoshmarkBot] Item shared successfully');
+                    return true;
+                }
+
                 return false;
-            }
-
-            await humanClick(this.page, shareButton);
-            await this.page.waitForTimeout(randomDelay(500, 1000));
-
-            // Click "To My Followers" option
-            const toFollowersOption = await this.page.$('[data-test="share-to-followers"]');
-            if (toFollowersOption) {
-                await humanClick(this.page, toFollowersOption);
-                // Enforce session-level rate limit before next share
-                await this.enforceRateLimit('share', jitteredDelay(RATE_LIMITS.poshmark.shareDelay));
-                this.stats.shares++;
-                writeAuditLog('share_item', { listingUrl });
-                logger.info('[PoshmarkBot] Item shared successfully');
-                return true;
-            }
-
-            return false;
+            });
         } catch (error) {
             logger.error('[PoshmarkBot] Share error', error);
+            await captureFailureScreenshot(this.page, 'share_item');
             this.stats.errors++;
             return false;
         }
@@ -305,6 +356,7 @@ export class PoshmarkBot {
             return shared;
         } catch (error) {
             logger.error('[PoshmarkBot] Closet share error', error);
+            await captureFailureScreenshot(this.page, 'share_closet');
             this.stats.errors++;
             throw error;
         }
@@ -317,26 +369,29 @@ export class PoshmarkBot {
         logger.info('[PoshmarkBot] Following user', { username });
 
         try {
-            await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
-            await mouseWiggle(this.page);
+            return await retryAction(async () => {
+                await this.page.goto(`${POSHMARK_URL}/closet/${username}`, { waitUntil: 'domcontentloaded' });
+                await mouseWiggle(this.page);
 
-            // Find follow button
-            const followBtn = await this.page.$('[data-test="follow-button"]:not([data-test-value="following"])');
+                // Find follow button
+                const followBtn = await this.page.$('[data-test="follow-button"]:not([data-test-value="following"])');
 
-            if (followBtn) {
-                await humanClick(this.page, followBtn);
-                // Enforce session-level rate limit for next follow
-                await this.enforceRateLimit('follow', jitteredDelay(RATE_LIMITS.poshmark.followDelay));
-                this.stats.follows++;
-                writeAuditLog('follow_user', { username });
-                logger.info('[PoshmarkBot] Followed user successfully');
-                return true;
-            }
+                if (followBtn) {
+                    await humanClick(this.page, followBtn);
+                    // Enforce session-level rate limit for next follow
+                    await this.enforceRateLimit('follow', jitteredDelay(RATE_LIMITS.poshmark.followDelay));
+                    this.stats.follows++;
+                    writeAuditLog('follow_user', { username });
+                    logger.info('[PoshmarkBot] Followed user successfully');
+                    return true;
+                }
 
-            logger.info('[PoshmarkBot] Already following or button not found');
-            return false;
+                logger.info('[PoshmarkBot] Already following or button not found');
+                return false;
+            });
         } catch (error) {
             logger.error('[PoshmarkBot] Follow error', error);
+            await captureFailureScreenshot(this.page, 'follow_user');
             this.stats.errors++;
             return false;
         }

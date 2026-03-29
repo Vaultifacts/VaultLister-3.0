@@ -29,15 +29,15 @@ const handlers = {
 
         if (value.length === 0) {
             input.classList.remove('field-error', 'field-valid');
-            if (errorSpan) errorSpan.style.display = 'none';
+            if (errorSpan) { errorSpan.style.display = 'none'; errorSpan.classList.remove('visible'); }
         } else if (isValid) {
             input.classList.remove('field-error');
             input.classList.add('field-valid');
-            if (errorSpan) errorSpan.style.display = 'none';
+            if (errorSpan) { errorSpan.style.display = 'none'; errorSpan.classList.remove('visible'); }
         } else {
             input.classList.remove('field-valid');
             input.classList.add('field-error');
-            if (errorSpan) errorSpan.style.display = 'block';
+            if (errorSpan) { errorSpan.style.display = 'block'; errorSpan.classList.add('visible'); }
         }
     },
 

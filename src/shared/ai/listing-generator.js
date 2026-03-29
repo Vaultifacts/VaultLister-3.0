@@ -365,6 +365,140 @@ function isOutputClean(text) {
 }
 
 /**
+ * Score a generated listing on title quality, description completeness, and overall quality.
+ * Returns an object with individual dimension scores and an overall 0-100 score.
+ *
+ * @param {Object} listing - { title, description, tags }
+ * @param {Object} context - Original generation context for validation
+ * @returns {Object} { titleScore, descriptionScore, overallScore, breakdown }
+ */
+export function scoreListingQuality(listing, context = {}) {
+    const { title = '', description = '', tags = [] } = listing;
+    const breakdown = {};
+
+    // ── Title quality (0-40 points) ──────────────────────────────────────────
+    let titleScore = 0;
+
+    // Length: 20-80 chars is ideal
+    const titleLen = title.length;
+    if (titleLen >= 20 && titleLen <= 80) {
+        titleScore += 15;
+    } else if (titleLen > 10 && titleLen < 20) {
+        titleScore += 8;
+    } else if (titleLen > 80 && titleLen <= 100) {
+        titleScore += 10;
+    }
+
+    // Contains brand (if provided in context)
+    if (context.brand && title.toLowerCase().includes(context.brand.toLowerCase())) {
+        titleScore += 8;
+    }
+
+    // Contains category or item type keyword
+    const categoryKeywords = ['shirt', 'top', 'dress', 'jacket', 'coat', 'pants', 'jeans',
+        'skirt', 'shorts', 'sweater', 'blouse', 'bag', 'shoes', 'boots',
+        'sneakers', 'heels', 'accessories', 'watch', 'jewelry'];
+    const titleLower = title.toLowerCase();
+    if (context.category && titleLower.includes(context.category.toLowerCase())) {
+        titleScore += 7;
+    } else if (categoryKeywords.some(k => titleLower.includes(k))) {
+        titleScore += 4;
+    }
+
+    // Contains condition hint (NWT, like new, etc.)
+    if (/\b(nwt|nwot|like new|pre-owned|vintage|used|new with tags)\b/i.test(title)) {
+        titleScore += 5;
+    }
+
+    // Contains size
+    if (context.size && titleLower.includes(context.size.toLowerCase())) {
+        titleScore += 5;
+    }
+
+    breakdown.title = { score: titleScore, max: 40 };
+
+    // ── Description completeness (0-40 points) ───────────────────────────────
+    let descScore = 0;
+    const descLower = description.toLowerCase();
+
+    // Length: 150+ words is complete
+    const wordCount = description.split(/\s+/).filter(Boolean).length;
+    if (wordCount >= 150) {
+        descScore += 12;
+    } else if (wordCount >= 80) {
+        descScore += 8;
+    } else if (wordCount >= 40) {
+        descScore += 4;
+    }
+
+    // Has a DETAILS section
+    if (/details?:/i.test(description)) {
+        descScore += 6;
+    }
+
+    // Mentions brand
+    if (context.brand && descLower.includes(context.brand.toLowerCase())) {
+        descScore += 4;
+    }
+
+    // Mentions size
+    if (context.size && descLower.includes(context.size.toLowerCase())) {
+        descScore += 4;
+    }
+
+    // Mentions condition
+    if (context.condition && descLower.includes(context.condition.replace('_', ' ').toLowerCase())) {
+        descScore += 4;
+    }
+
+    // Has measurements section
+    if (/measurements?:/i.test(description)) {
+        descScore += 5;
+    }
+
+    // Has a friendly closing / call to action
+    if (/bundle|shipping|closet|shop|thank/i.test(description)) {
+        descScore += 5;
+    }
+
+    breakdown.description = { score: descScore, max: 40 };
+
+    // ── Tags quality (0-20 points) ────────────────────────────────────────────
+    let tagsScore = 0;
+    const tagCount = Array.isArray(tags) ? tags.length : 0;
+
+    if (tagCount >= 10) {
+        tagsScore += 10;
+    } else if (tagCount >= 5) {
+        tagsScore += 6;
+    } else if (tagCount > 0) {
+        tagsScore += 3;
+    }
+
+    // Tags contain brand
+    if (context.brand && tags.some(t => t.toLowerCase().includes(context.brand.toLowerCase()))) {
+        tagsScore += 5;
+    }
+
+    // Tags contain category
+    if (context.category && tags.some(t => t.toLowerCase().includes(context.category.toLowerCase()))) {
+        tagsScore += 5;
+    }
+
+    breakdown.tags = { score: tagsScore, max: 20 };
+
+    const overallScore = Math.min(100, titleScore + descScore + tagsScore);
+
+    return {
+        titleScore,
+        descriptionScore: descScore,
+        tagsScore,
+        overallScore,
+        breakdown
+    };
+}
+
+/**
  * Generate title, description, and tags via Claude Haiku in one API call.
  * Falls back to local template functions if API is unavailable or fails.
  *
@@ -427,12 +561,14 @@ export async function generateListing(context, platform) {
                             brand: brand || 'unknown'
                         });
                     } else {
-                        return {
+                        const listing = {
                             title: r.title.slice(0, limits.title),
                             description: r.description.slice(0, limits.description),
                             tags: r.tags.slice(0, 20),
                             source: 'claude'
                         };
+                        listing.qualityScore = scoreListingQuality(listing, context);
+                        return listing;
                     }
                 }
             }
@@ -445,10 +581,12 @@ export async function generateListing(context, platform) {
         }
     }
 
-    return {
+    const listing = {
         title: generateTitle(context).slice(0, limits.title),
         description: generateDescription(context).slice(0, limits.description),
         tags: generateTags(context),
         source: 'template'
     };
+    listing.qualityScore = scoreListingQuality(listing, context);
+    return listing;
 }
