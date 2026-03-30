@@ -32,8 +32,15 @@ export function initRedis() {
             retryDelayOnFailover: 100,
             enableReadyCheck: true,
             lazyConnect: true,
-            connectTimeout: 5000,
+            connectTimeout: 10000,
             commandTimeout: 3000,
+            family: 4, // Force IPv4 — Railway internal network uses IPv4 for Redis
+            retryStrategy: (times) => {
+                if (times > MAX_RECONNECT_ATTEMPTS) {
+                    return null; // Stop retrying — in-memory fallback is active
+                }
+                return Math.min(times * 500, 3000);
+            },
         });
 
         redisClient.on('connect', () => {
