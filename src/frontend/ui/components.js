@@ -231,8 +231,8 @@ const components = {
                 </div>
                 ${connectedShops.length > 0 ? `
                     <div class="shop-quick-switch">
-                        <div class="shop-switch-dropdown dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
-                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="listbox" tabindex="-1">
+                        <div class="shop-switch-dropdown dropdown">
+                            <button class="shop-switch-btn" title="Switch Shop" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.shop-switch-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.shop-switch-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
                                 <div class="shop-switch-current">
                                     ${activeShop ? `
                                         <span class="shop-switch-platform" style="background: ${this.getPlatformColor(activeShop.platform)}">${activeShop.platform.charAt(0).toUpperCase()}</span>
@@ -322,8 +322,8 @@ const components = {
                     <button class="header-icon-btn" onclick="handlers.showKeyboardShortcuts()" title="Keyboard Shortcuts (?)" aria-label="Keyboard shortcuts">
                         ${this.icon('help')}
                     </button>
-                    <div class="notifications-dropdown dropdown" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _open=this.classList.toggle('open'); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _open=this.classList.toggle('open');this.setAttribute('aria-expanded',_open);}">
-                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="listbox" tabindex="-1">
+                    <div class="notifications-dropdown dropdown">
+                        <button class="header-icon-btn" aria-label="Notifications" aria-haspopup="listbox" aria-expanded="false" onclick="event.stopPropagation(); const _dd=this.closest('.notifications-dropdown'); const _open=_dd.classList.toggle('open'); _dd.setAttribute('aria-expanded',_open); this.setAttribute('aria-expanded',_open);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();const _dd=this.closest('.notifications-dropdown');const _open=_dd.classList.toggle('open');_dd.setAttribute('aria-expanded',_open);this.setAttribute('aria-expanded',_open);}">
                             ${this.icon('bell')}
                             <span id="notification-badge" class="badge" style="${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) > 0 ? 'display:flex' : 'display:none'}">${(typeof notificationCenter !== 'undefined' ? notificationCenter.unreadCount : store.state.notifications.length) || ''}</span>
                         </button>
@@ -341,7 +341,7 @@ const components = {
                                 <button class="dropdown-item" onclick="event.stopPropagation(); handlers.viewNotification('${notif.id}')" style="display: block; padding: 12px 16px; border-bottom: 1px solid var(--gray-100);">
                                     <div style="font-weight: 600; margin-bottom: 4px; font-size: 14px;">${escapeHtml(notif.title)}</div>
                                     <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 4px;">${escapeHtml(notif.message)}</div>
-                                    <div style="font-size: 11px; color: var(--gray-400);">${notif.time || 'Just now'}</div>
+                                    <div style="font-size: 11px; color: var(--gray-500);">${notif.time || 'Just now'}</div>
                                 </button>
                             `).join('')}
                             <div class="dropdown-divider" style="margin: 0;"></div>

@@ -753,8 +753,8 @@ Object.assign(pages, {
                                     <input type="text" class="form-input" id="settings-full-name" value="${escapeHtml(user.full_name || '')}" oninput="handlers.markSettingsChanged()">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-input" value="${escapeHtml(user.email || '')}" disabled>
+                                    <label class="form-label" for="settings-email">Email</label>
+                                    <input type="email" id="settings-email" class="form-input" value="${escapeHtml(user.email || '')}" disabled>
                                     <span class="form-hint">Contact support to change email</span>
                                 </div>
                                 <div class="form-group">

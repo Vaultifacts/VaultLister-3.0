@@ -207,6 +207,7 @@ jobs:
     env:
       DISABLE_CSRF: 'true'
       DISABLE_RATE_LIMIT: 'true'
+      FEATURE_AI_LISTING: 'true'
       DATABASE_URL: postgres://vaultlister:testpassword@localhost:5432/vaultlister_test
     services:
       postgres:
