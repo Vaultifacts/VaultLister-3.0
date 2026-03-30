@@ -190,7 +190,7 @@ export async function integrationsRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        const csrf = validateCSRF(ctx);
+        const csrf = await validateCSRF(ctx);
         if (!csrf.valid) return { status: csrf.status || 403, data: { error: csrf.error } };
 
         if (!driveEnabled) {
@@ -275,7 +275,7 @@ export async function integrationsRouter(ctx) {
         const authError = requireAuth();
         if (authError) return authError;
 
-        const csrf = validateCSRF(ctx);
+        const csrf = await validateCSRF(ctx);
         if (!csrf.valid) return { status: csrf.status || 403, data: { error: csrf.error } };
 
         try {

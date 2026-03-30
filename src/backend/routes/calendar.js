@@ -468,7 +468,7 @@ export async function calendarRouter(ctx) {
             return { status: 503, data: { error: 'Google Calendar sync is not enabled.' } };
         }
 
-        const csrf = validateCSRF(ctx);
+        const csrf = await validateCSRF(ctx);
         if (!csrf.valid) return { status: csrf.status || 403, data: { error: csrf.error } };
 
         const accessToken = await getAccessToken(user.id, 'calendar');
@@ -537,7 +537,7 @@ export async function calendarRouter(ctx) {
 
     // DELETE /api/calendar/google/revoke — disconnect Google Calendar
     if (method === 'DELETE' && path === '/google/revoke') {
-        const csrf = validateCSRF(ctx);
+        const csrf = await validateCSRF(ctx);
         if (!csrf.valid) return { status: csrf.status || 403, data: { error: csrf.error } };
 
         try {

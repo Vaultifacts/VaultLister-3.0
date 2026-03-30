@@ -174,7 +174,7 @@ export async function onboardingRouter(ctx) {
 
             // Check if already completed
             if (completedSteps.includes(step_id)) {
-                return { status: 200, data: { message: 'Step already completed', progress } };
+                return { status: 200, data: { message: 'Step already completed', completed_steps: completedSteps, points_awarded: 0 } };
             }
 
             // Add to completed steps

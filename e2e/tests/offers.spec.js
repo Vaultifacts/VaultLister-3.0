@@ -317,13 +317,13 @@ test.describe('@quinn-v3-guardian Offer Accept / Decline / Counter', () => {
         expect(getBody.offer.status).toBe('declined');
     });
 
-    test('POST /api/offers/:id/decline — rejects already-declined offer with 400', async ({ request }) => {
+    test('POST /api/offers/:id/decline — rejects already-declined offer with 409', async ({ request }) => {
         if (!declineOfferId) test.skip();
         const ph = await postHeaders(request);
         const res = await request.post(`${BASE_URL}/api/offers/${declineOfferId}/decline`, {
             headers: ph
         });
-        expect(res.status()).toBe(400);
+        expect(res.status()).toBe(409);
     });
 
     test('Offers list reflects updated statuses after actions', async ({ request }) => {

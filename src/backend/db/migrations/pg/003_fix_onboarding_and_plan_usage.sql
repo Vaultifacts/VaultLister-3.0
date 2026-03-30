@@ -12,6 +12,13 @@ ALTER TABLE onboarding_progress
 
 -- Add unique constraint to plan_usage so ON CONFLICT works
 -- Required by billing/usage/refresh route
-ALTER TABLE plan_usage
-    ADD CONSTRAINT plan_usage_user_metric_period_unique
-    UNIQUE (user_id, metric, period_start);
+-- Idempotent: skip if constraint already exists (created by pg-schema.sql on fresh installs)
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'plan_usage_user_metric_period_unique'
+    ) THEN
+        ALTER TABLE plan_usage
+            ADD CONSTRAINT plan_usage_user_metric_period_unique
+            UNIQUE (user_id, metric, period_start);
+    END IF;
+END $$;
