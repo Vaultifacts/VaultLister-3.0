@@ -70,7 +70,7 @@ jobs:
           POSTGRES_PASSWORD: testpassword
           POSTGRES_DB: vaultlister_test
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U vaultlister"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -217,7 +217,7 @@ jobs:
           POSTGRES_PASSWORD: testpassword
           POSTGRES_DB: vaultlister_test
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U vaultlister"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -318,7 +318,7 @@ jobs:
           POSTGRES_PASSWORD: testpassword
           POSTGRES_DB: vaultlister_test
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U vaultlister"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -488,7 +488,7 @@ jobs:
           POSTGRES_PASSWORD: testpassword
           POSTGRES_DB: vaultlister_test
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U vaultlister"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -603,7 +603,7 @@ jobs:
           POSTGRES_PASSWORD: testpassword
           POSTGRES_DB: vaultlister_test
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U vaultlister"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10

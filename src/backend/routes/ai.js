@@ -46,7 +46,7 @@ export async function aiRouter(ctx) {
     if (method === 'POST' && path === '/analyze-listing-image') {
         // Rate limit: 10 API calls per minute per user
         const rateLimitKey = aiRateLimiter.getKey('claude-api', user?.id);
-        const rateLimitResult = aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
+        const rateLimitResult = await aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
         if (!rateLimitResult.allowed) {
             return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
         }
@@ -213,7 +213,7 @@ Important:
     if (method === 'POST' && path === '/generate-listing') {
         // Rate limit: 10 API calls per minute per user
         const rateLimitKey = aiRateLimiter.getKey('claude-api', user?.id);
-        const rateLimitResult = aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
+        const rateLimitResult = await aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
         if (!rateLimitResult.allowed) {
             return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
         }
@@ -597,7 +597,7 @@ Important:
     if (method === 'POST' && path === '/bulk-generate') {
         // Rate limit: 10 API calls per minute per user (bulk operations consume more allowance)
         const rateLimitKey = aiRateLimiter.getKey('claude-api', user?.id);
-        const rateLimitResult = aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
+        const rateLimitResult = await aiRateLimiter.check(rateLimitKey, 'expensive', 'claude-api');
         if (!rateLimitResult.allowed) {
             return { status: 429, data: { error: 'Too many AI requests. Please wait before trying again.' } };
         }

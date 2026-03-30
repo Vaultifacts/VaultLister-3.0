@@ -72,7 +72,9 @@ export default defineConfig({
             PORT: String(APP_PORT),
             DISABLE_RATE_LIMIT: 'true',
             DISABLE_CSRF: 'true',
-            DISPLAY: process.env.DISPLAY || ':99'
+            DISPLAY: process.env.DISPLAY || ':99',
+            DATABASE_URL: process.env.DATABASE_URL || 'postgresql://vaultlister:localdev@localhost:5432/vaultlister_dev',
+            JWT_SECRET: process.env.JWT_SECRET || 'ci-test-secret-do-not-use-in-production'
         }
     }
 });

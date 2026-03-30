@@ -232,7 +232,7 @@ async function storeRequestLog(ctx, status, duration, error = null) {
             ctx.method,
             ctx.path,
             status,
-            duration,
+            Number.isFinite(duration) ? Math.trunc(duration) : null,
             ctx.user?.id || null,
             anonymizeIP(ctx.ip) || null,
             ctx.userAgent?.substring(0, MAX_USER_AGENT_LENGTH) || null,

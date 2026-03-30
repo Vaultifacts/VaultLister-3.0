@@ -1254,7 +1254,8 @@ server = Bun.serve({
             ].includes(effectivePath);
 
             const isPublicMonitoring = effectivePath === '/api/monitoring/rum' && method === 'POST';
-            if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity && !isPublicMonitoring) {
+            const isPublicAnnouncement = effectivePath === '/api/settings/announcement' && method === 'GET';
+            if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity && !isPublicMonitoring && !isPublicAnnouncement) {
                 const authResult = await authenticateToken(request);
                 if (!authResult.success) {
                     return new Response(JSON.stringify({ error: 'Authentication required' }), {

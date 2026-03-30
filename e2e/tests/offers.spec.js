@@ -289,15 +289,15 @@ test.describe('@quinn-v3-guardian Offer Accept / Decline / Counter', () => {
         expect(getBody.offer.status).toBe('accepted');
     });
 
-    test('POST /api/offers/:id/accept — rejects already-accepted offer with 400', async ({ request }) => {
+    test('POST /api/offers/:id/accept — rejects already-accepted offer with 409', async ({ request }) => {
         if (!acceptOfferId) test.skip();
         const ph = await postHeaders(request);
         const res = await request.post(`${BASE_URL}/api/offers/${acceptOfferId}/accept`, {
             headers: ph
         });
-        expect(res.status()).toBe(400);
+        expect(res.status()).toBe(409);
         const data = await res.json();
-        expect(data.error).toMatch(/already been responded/i);
+        expect(data.error).toMatch(/already been processed/i);
     });
 
     test('POST /api/offers/:id/decline — declines pending offer and returns taskId', async ({ request }) => {
