@@ -2,6 +2,7 @@
 // Provides Redis connection management with graceful fallback to in-memory
 
 import Redis from 'ioredis';
+import { lookup } from 'dns/promises';
 import { logger } from '../shared/logger.js';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
@@ -27,6 +28,14 @@ export function initRedis() {
     }
 
     try {
+        // Diagnostic: log what IPs redis.railway.internal resolves to
+        const redisHost = new URL(REDIS_URL).hostname;
+        lookup(redisHost, { all: true }).then(results => {
+            logger.info('[Redis] DNS resolved ' + redisHost + ':', JSON.stringify(results));
+        }).catch(err => {
+            logger.warn('[Redis] DNS lookup failed for ' + redisHost + ':', err.message);
+        });
+
         redisClient = new Redis(REDIS_URL, {
             maxRetriesPerRequest: 3,
             retryDelayOnFailover: 100,
@@ -34,7 +43,6 @@ export function initRedis() {
             lazyConnect: true,
             connectTimeout: 10000,
             commandTimeout: 3000,
-            family: 4, // Force IPv4 — Railway internal network uses IPv4 for Redis
             retryStrategy: (times) => {
                 if (times > MAX_RECONNECT_ATTEMPTS) {
                     return null; // Stop retrying — in-memory fallback is active
