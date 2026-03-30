@@ -12,6 +12,7 @@ let redisClient = null;
 let isConnected = false;
 let connectionAttempts = 0;
 let _shutdownRegistered = false;
+let _heartbeatTimer = null;
 const MAX_RECONNECT_ATTEMPTS = 3;
 
 // In-memory fallback for when Redis is unavailable
@@ -54,6 +55,13 @@ export function initRedis() {
             isConnected = true;
             connectionAttempts = 0;
             logger.info('[Redis] Connected successfully');
+            // Heartbeat: keep Railway public proxy connection alive (7s idle timeout)
+            if (_heartbeatTimer) clearInterval(_heartbeatTimer);
+            _heartbeatTimer = setInterval(() => {
+                if (redisClient && isConnected) {
+                    redisClient.ping().catch(() => {});
+                }
+            }, 5000);
         });
 
         redisClient.on('error', (err) => {
@@ -62,6 +70,7 @@ export function initRedis() {
         });
 
         redisClient.on('close', () => {
+            if (_heartbeatTimer) { clearInterval(_heartbeatTimer); _heartbeatTimer = null; }
             isConnected = false;
             logger.info('[Redis] Connection closed');
         });
@@ -283,6 +292,7 @@ export function getClient() {
  */
 export async function closeRedis() {
     if (redisClient) {
+        if (_heartbeatTimer) { clearInterval(_heartbeatTimer); _heartbeatTimer = null; }
         try {
             redisClient.removeAllListeners();
             await redisClient.quit();
