@@ -267,6 +267,9 @@ jobs:
       - name: Seed test data
         run: bun run db:seed
 
+      - name: Build frontend chunks
+        run: bun run build
+
       - name: Start server and wait for ready
         run: |
           bun run start &
