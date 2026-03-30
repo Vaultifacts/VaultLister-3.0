@@ -240,7 +240,8 @@ if [ -z "$COMPONENT_STAGED" ] && [ -n "$BUNDLE_STAGED" ]; then
 fi
 
 # === Migration registration check ===
-NEW_MIGRATIONS=$(git diff --cached --name-only --diff-filter=A | grep "^src/backend/db/migrations/.*\.sql$" || true)
+# Excludes migrations/pg/ — those are auto-discovered by scanning the directory
+NEW_MIGRATIONS=$(git diff --cached --name-only --diff-filter=A | grep "^src/backend/db/migrations/.*\.sql$" | grep -v "^src/backend/db/migrations/pg/" || true)
 DB_JS_STAGED=$(git diff --cached --name-only | grep "^src/backend/db/database\.js$" || true)
 if [ -n "$NEW_MIGRATIONS" ] && [ -z "$DB_JS_STAGED" ]; then
     echo "ERROR: New migration file(s) staged but database.js is NOT staged."
