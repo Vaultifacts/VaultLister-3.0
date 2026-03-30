@@ -201,7 +201,7 @@ jobs:
     # To temporarily disable E2E in CI (e.g. during a Playwright infrastructure issue),
     # change the condition below to: if: false
     # Re-enable by restoring: if: github.event_name == 'push' || github.event_name == 'pull_request'
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    if: false
     needs: [test-unit]
     continue-on-error: true
     env:

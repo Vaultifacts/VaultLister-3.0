@@ -2,6 +2,7 @@
 // Provides visibility into rate limiting metrics and abuse patterns
 
 import { query } from '../db/database.js';
+import { rateLimiter } from '../middleware/rateLimiter.js';
 
 // In-memory rate limit statistics
 const rateLimitStats = {
@@ -282,6 +283,16 @@ export async function rateLimitDashboardRouter(ctx) {
                 })
             }
         };
+    }
+
+    // POST /api/rate-limits/unblock  { key: "ip:1.2.3.4" }
+    if (method === 'POST' && path === '/unblock') {
+        const key = ctx.body?.key;
+        if (!key) {
+            return { status: 400, data: { error: 'key is required (e.g. "ip:1.2.3.4")' } };
+        }
+        await rateLimiter.unblock(key);
+        return { status: 200, data: { message: `Unblocked ${key}` } };
     }
 
     // POST /api/rate-limits/reset
