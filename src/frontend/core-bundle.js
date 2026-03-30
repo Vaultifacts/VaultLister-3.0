@@ -8240,13 +8240,15 @@ const api = {
             });
             clearTimeout(timeoutId);
 
-            // Handle rate limiting with retry
+            // Handle rate limiting with retry — only auto-retry for short waits (< 30s)
             if (response.status === 429 && retryCount < this.maxRetries) {
                 const retryAfter = parseInt(response.headers.get('Retry-After') || '1', 10);
-                const delay = Math.max(retryAfter * 1000, this.retryDelay * (retryCount + 1));
-                toast.warning(`Rate limited. Retrying in ${Math.ceil(delay / 1000)}s...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-                return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
+                if (retryAfter < 30) {
+                    const delay = Math.max(retryAfter * 1000, this.retryDelay * (retryCount + 1));
+                    toast.warning(`Rate limited. Retrying in ${Math.ceil(delay / 1000)}s...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
+                }
             }
 
             // Handle server errors with retry (except for client errors)
@@ -15320,7 +15322,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '0fe9bde2';
+    const v = '5dacba41';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
