@@ -48,7 +48,7 @@ COPY --from=builder --chown=vaultlister:nodejs /app/package.json ./
 # Install libvips for sharp image processing (required for thumbnail generation)
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gnupg && \
     curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] https://apt.postgresql.org/pub/repos/apt trixie-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
     apt-get update && apt-get install -y --no-install-recommends libvips42 postgresql-client-18 && \
     rm -rf /var/lib/apt/lists/*
 
