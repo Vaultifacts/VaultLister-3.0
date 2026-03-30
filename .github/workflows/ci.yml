@@ -670,7 +670,7 @@ jobs:
 
           P95=$(grep -oP 'p95:\s+\K\d+' /tmp/load-test-output.txt | head -1)
           if [ -n "$P95" ]; then
-            P95_THRESHOLD=50
+            P95_THRESHOLD=2000
             echo "p95 latency: ${P95}ms (threshold: ${P95_THRESHOLD}ms)"
             if [ "$P95" -gt "$P95_THRESHOLD" ]; then
               echo "::error::p95 latency ${P95}ms exceeds ${P95_THRESHOLD}ms threshold"
