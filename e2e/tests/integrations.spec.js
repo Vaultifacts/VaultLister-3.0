@@ -167,6 +167,7 @@ test.describe('GET /api/integrations/google/drive/files', () => {
 
 test.describe('POST /api/integrations/google/drive/backup', () => {
     test('should return 403 when CSRF token is missing', async ({ request }) => {
+        test.skip(process.env.DISABLE_CSRF === 'true', 'CSRF enforcement disabled in this environment');
         const res = await request.post(`${BASE_URL}/api/integrations/google/drive/backup`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -204,6 +205,7 @@ test.describe('POST /api/integrations/google/drive/backup', () => {
 
 test.describe('DELETE /api/integrations/google/drive/revoke', () => {
     test('should return 403 when CSRF token is missing', async ({ request }) => {
+        test.skip(process.env.DISABLE_CSRF === 'true', 'CSRF enforcement disabled in this environment');
         const res = await request.delete(`${BASE_URL}/api/integrations/google/drive/revoke`, {
             headers: authHeaders
         });

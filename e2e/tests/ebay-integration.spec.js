@@ -67,8 +67,8 @@ test.describe('P3-1: eBay OAuth Flow', () => {
         if (status === 200) {
             const body = await res.json();
             const authUrl = body.authUrl || body.url || body.redirectUrl || '';
-            // Must point to eBay's auth domain (sandbox or production)
-            expect(authUrl).toMatch(/ebay\.com\/oauth2\/authorize/);
+            // Must point to eBay's auth domain (sandbox/production) or mock endpoint in CI
+            expect(authUrl).toMatch(/ebay\.com\/oauth2\/authorize|mock-oauth\/ebay/);
         }
     });
 
@@ -156,7 +156,8 @@ test.describe('P3-2: eBay Listing Publish', () => {
         });
         expect(res.status()).toBe(400);
         const body = await res.json();
-        expect(body.error).toMatch(/no connected ebay shop/i);
+        const errMsg = typeof body.error === 'string' ? body.error : body.error?.message || '';
+        expect(errMsg).toMatch(/no connected ebay shop/i);
     });
 
     test('POST /api/listings/:id/publish-ebay returns 404 for non-existent listing', async ({ request }) => {

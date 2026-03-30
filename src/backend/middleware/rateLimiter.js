@@ -105,6 +105,9 @@ class RateLimiter {
      * @returns { allowed: boolean, retryAfter: number }
      */
     async check(key, limitType = 'default', ip = '') {
+        if (isRateLimitBypassed()) {
+            return { allowed: true, remaining: 999, resetTime: Date.now() + 60000 };
+        }
         const now = Date.now();
         const config = RateLimiter.config[limitType];
 

@@ -1245,7 +1245,8 @@ server = Bun.serve({
             const isOAuthCallback = effectivePath.startsWith('/api/oauth/callback') ||
                 /^\/api\/oauth\/[^/]+\/callback$/.test(effectivePath) ||
                 effectivePath.match(/^\/api\/social-auth\/[^/]+\/callback/) ||
-                effectivePath.startsWith('/api/email/callback');
+                effectivePath.startsWith('/api/email/callback') ||
+                effectivePath === '/api/integrations/google/callback';
             const isPublicSecurity = [
                 '/api/security/verify-email',
                 '/api/security/forgot-password',
@@ -1256,7 +1257,7 @@ server = Bun.serve({
             if (isProtected && !isPublicWebhook && !isOAuthCallback && !isPublicSecurity && !isPublicMonitoring) {
                 const authResult = await authenticateToken(request);
                 if (!authResult.success) {
-                    return new Response(JSON.stringify({ error: authResult.error }), {
+                    return new Response(JSON.stringify({ error: 'Authentication required' }), {
                         status: 401,
                         headers: { 'Content-Type': 'application/json', ...dynamicCorsHeaders }
                     });

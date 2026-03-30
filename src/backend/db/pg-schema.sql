@@ -2792,7 +2792,8 @@ CREATE TABLE IF NOT EXISTS plan_usage (
     period_start DATE NOT NULL,
     period_end DATE NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT plan_usage_user_metric_period_unique UNIQUE (user_id, metric, period_start)
 );
 
 -- ============================================================
@@ -2934,12 +2935,13 @@ CREATE TABLE IF NOT EXISTS onboarding_progress (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     role TEXT DEFAULT 'reseller',
-    current_step INTEGER DEFAULT 0,
+    current_step TEXT DEFAULT 'welcome',
     completed_steps JSONB DEFAULT '[]'::jsonb,
     badges JSONB DEFAULT '[]'::jsonb,
     points INTEGER DEFAULT 0,
     completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

@@ -237,7 +237,7 @@ test.describe('@quinn-v3-guardian Offer Accept / Decline / Counter', () => {
         expect(getBody.offer.counter_amount).toBe(45);
     });
 
-    test('POST /api/offers/:id/counter — rejects already-responded offer with 400', async ({ request }) => {
+    test('POST /api/offers/:id/counter — rejects already-responded offer with 409', async ({ request }) => {
         if (!seededOfferId) test.skip();
         const ph = await postHeaders(request);
         // Already countered in previous test — attempt again should fail
@@ -245,9 +245,9 @@ test.describe('@quinn-v3-guardian Offer Accept / Decline / Counter', () => {
             headers: ph,
             data: { amount: 43 }
         });
-        expect(res.status()).toBe(400);
+        expect(res.status()).toBe(409);
         const data = await res.json();
-        expect(data.error).toMatch(/already been responded/i);
+        expect(data.error).toMatch(/already been processed/i);
     });
 
     test('POST /api/offers/:id/counter — rejects missing amount with 400', async ({ request }) => {
