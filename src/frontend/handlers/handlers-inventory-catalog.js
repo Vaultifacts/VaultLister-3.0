@@ -6090,7 +6090,7 @@ Object.assign(handlers, {  // nosemgrep: javascript.lang.security.insecure-objec
             toast.success(`Successfully cross-listed ${itemIdArray.length} item(s) to ${platforms.length} platform(s)!`);
 
             // Refresh the page
-            renderApp(pages.crosslist());
+            renderApp(pages.listings());
         } catch (error) {
             toast.error('Failed to cross-list: ' + error.message);
         }
