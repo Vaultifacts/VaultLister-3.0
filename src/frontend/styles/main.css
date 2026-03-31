@@ -30570,8 +30570,8 @@ body.dark-mode .storage-overview {
 .dark-mode .quick-upload-zone,
 .dark-mode .storage-overview,
 .dark-mode .quick-action-btn {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+    background: #1f2937;
+    border-color: #374151;
 }
 
 /* Automation category card icons — inline style sets background to ${color}20 (12% opacity),
@@ -31701,8 +31701,8 @@ body.dark-mode .storage-overview {
 .dark-mode .highlight-card,
 .dark-mode .quick-insight,
 .dark-mode .shop-quick-action {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+    background: #1f2937;
+    border-color: #374151;
 }
 
 .dark-mode .platform-pill {
