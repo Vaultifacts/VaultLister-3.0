@@ -718,7 +718,9 @@ Object.assign(handlers, {
                 pendingMfaToken: null
             });
             modals.close();
-            router.navigate('dashboard');
+            const dest = store.state._intendedRoute || 'dashboard';
+            store.setState({ _intendedRoute: null });
+            router.navigate(dest);
             toast.success('Welcome back!');
         } catch (err) {
             toast.error(err.message || 'Invalid verification code');

@@ -367,7 +367,7 @@ const router = {
                         const refreshed = await api.refreshAccessToken().catch(() => false);
                         if (!refreshed) {
                             store.setState({ user: null, token: null, refreshToken: null });
-                            store.setState({ currentPage: 'login' });
+                            store.setState({ currentPage: 'login', _intendedRoute: path });
                             window.location.hash = '#login';
                             const handler = this.routes['login'];
                             if (handler) handler();
@@ -376,7 +376,7 @@ const router = {
                         // Token refreshed successfully — continue navigation
                     }
                 } else if (!auth.isAuthenticated()) {
-                    store.setState({ currentPage: 'login' });
+                    store.setState({ currentPage: 'login', _intendedRoute: path });
                     window.location.hash = '#login';
                     const handler = this.routes['login'];
                     if (handler) handler();

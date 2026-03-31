@@ -566,6 +566,9 @@ function renderApp(pageContent) {
         const mainEl = document.getElementById('main-content');
         if (mainEl) mainEl.focus({ preventScroll: true });
 
+        // Update mobile bottom nav active state
+        mobileUI.updateBottomNav();
+
         hideLoadingScreen();
 
         // Update browser tab badge with unread notification count

@@ -14823,6 +14823,10 @@ body.dark-mode .table-sticky-header thead th {
    MOBILE STYLES
    ============================================ */
 
+.mobile-bottom-nav {
+    display: none;
+}
+
 @media (max-width: 768px) {
     /* Bottom navigation */
     .mobile-bottom-nav {

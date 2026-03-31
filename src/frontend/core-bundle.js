@@ -9829,6 +9829,7 @@ const widgetManager = {
                 }
                 return def;
             });
+            merged.sort((a, b) => a.order - b.order);
             return merged;
         }
         return [...this.defaultWidgets];
@@ -11837,7 +11838,6 @@ const mobileUI = {
     },
 
     renderBottomNav() {
-        if (!this.isMobile()) return '';
         const cp = store.state.currentPage;
         return `
             <nav class="mobile-bottom-nav">
@@ -11863,6 +11863,18 @@ const mobileUI = {
                 </a>
             </nav>
         `;
+    },
+
+    updateBottomNav() {
+        const nav = document.querySelector('.mobile-bottom-nav');
+        if (!nav) return;
+        const cp = store.state.currentPage;
+        nav.querySelectorAll('.mobile-nav-item').forEach(item => {
+            const route = item.getAttribute('onclick')?.match(/navigate\('([^']+)'\)/)?.[1];
+            item.classList.toggle('active', route === cp);
+            if (route === cp) item.setAttribute('aria-current', 'page');
+            else item.removeAttribute('aria-current');
+        });
     },
 
     renderFAB(action = "modals.addItem()") {
@@ -15322,7 +15334,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '5dacba41';
+    const v = '08c3a4b3';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15512,7 +15524,7 @@ const router = {
                         const refreshed = await api.refreshAccessToken().catch(() => false);
                         if (!refreshed) {
                             store.setState({ user: null, token: null, refreshToken: null });
-                            store.setState({ currentPage: 'login' });
+                            store.setState({ currentPage: 'login', _intendedRoute: path });
                             window.location.hash = '#login';
                             const handler = this.routes['login'];
                             if (handler) handler();
@@ -15521,7 +15533,7 @@ const router = {
                         // Token refreshed successfully — continue navigation
                     }
                 } else if (!auth.isAuthenticated()) {
-                    store.setState({ currentPage: 'login' });
+                    store.setState({ currentPage: 'login', _intendedRoute: path });
                     window.location.hash = '#login';
                     const handler = this.routes['login'];
                     if (handler) handler();
@@ -21206,7 +21218,9 @@ const auth = {
                 clearInterval(window._loginBanCountdown);
                 window._loginBanCountdown = null;
             }
-            router.navigate('dashboard');
+            const dest = store.state._intendedRoute || 'dashboard';
+            store.setState({ _intendedRoute: null });
+            router.navigate(dest);
             toast.success('Welcome back!');
         } catch (error) {
             // Show specific message for rate limiting (429)
@@ -27703,6 +27717,9 @@ function renderApp(pageContent) {
         // Move focus to main content on route change for screen readers
         const mainEl = document.getElementById('main-content');
         if (mainEl) mainEl.focus({ preventScroll: true });
+
+        // Update mobile bottom nav active state
+        mobileUI.updateBottomNav();
 
         hideLoadingScreen();
 

@@ -1087,6 +1087,7 @@ const widgetManager = {
                 }
                 return def;
             });
+            merged.sort((a, b) => a.order - b.order);
             return merged;
         }
         return [...this.defaultWidgets];
@@ -3095,7 +3096,6 @@ const mobileUI = {
     },
 
     renderBottomNav() {
-        if (!this.isMobile()) return '';
         const cp = store.state.currentPage;
         return `
             <nav class="mobile-bottom-nav">
@@ -3121,6 +3121,18 @@ const mobileUI = {
                 </a>
             </nav>
         `;
+    },
+
+    updateBottomNav() {
+        const nav = document.querySelector('.mobile-bottom-nav');
+        if (!nav) return;
+        const cp = store.state.currentPage;
+        nav.querySelectorAll('.mobile-nav-item').forEach(item => {
+            const route = item.getAttribute('onclick')?.match(/navigate\('([^']+)'\)/)?.[1];
+            item.classList.toggle('active', route === cp);
+            if (route === cp) item.setAttribute('aria-current', 'page');
+            else item.removeAttribute('aria-current');
+        });
     },
 
     renderFAB(action = "modals.addItem()") {

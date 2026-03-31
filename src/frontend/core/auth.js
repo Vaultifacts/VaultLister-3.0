@@ -71,7 +71,9 @@ const auth = {
                 clearInterval(window._loginBanCountdown);
                 window._loginBanCountdown = null;
             }
-            router.navigate('dashboard');
+            const dest = store.state._intendedRoute || 'dashboard';
+            store.setState({ _intendedRoute: null });
+            router.navigate(dest);
             toast.success('Welcome back!');
         } catch (error) {
             // Show specific message for rate limiting (429)

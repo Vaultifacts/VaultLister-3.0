@@ -2041,6 +2041,22 @@ Object.assign(pages, {
                                 </button>
                             </div>
                         </div>
+
+                        <hr style="margin: 24px 0; border-color: var(--gray-200);">
+
+                        <h3 class="font-semibold mb-4">Two-Factor Authentication</h3>
+                        <div style="display: flex; align-items: center; justify-content: space-between; max-width: 400px;">
+                            <div>
+                                <p style="font-size: 14px; color: var(--gray-600);">
+                                    ${store.state.twoFactorEnabled
+                                        ? 'Enabled via ' + escapeHtml(store.state.twoFactorMethod || 'authenticator')
+                                        : 'Add an extra layer of security to your account'}
+                                </p>
+                            </div>
+                            <button class="btn ${store.state.twoFactorEnabled ? 'btn-secondary' : 'btn-primary'}" onclick="handlers.enable2FA()">
+                                ${store.state.twoFactorEnabled ? 'Manage' : 'Enable 2FA'}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
