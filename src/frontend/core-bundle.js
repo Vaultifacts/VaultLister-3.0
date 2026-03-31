@@ -14661,6 +14661,19 @@ const aiConfidenceGauge = {
     }
 };
 
+// Expose financial/chunk-used widgets on window for deferred chunk access
+window.viewModeToggle = viewModeToggle;
+window.transactionTimeline = transactionTimeline;
+window.expensePieChart = expensePieChart;
+window.monthlyComparisonChart = monthlyComparisonChart;
+window.runningBalance = runningBalance;
+window.financialDashboardHeader = financialDashboardHeader;
+window.businessFAB = businessFAB;
+window.budgetProgress = budgetProgress;
+window.shopHealthDashboard = shopHealthDashboard;
+window.platformComparison = platformComparison;
+window.syncStatusBar = syncStatusBar;
+
 // Recommendation Cards
 const recommendationCards = {
     types: {
@@ -15338,7 +15351,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'b0621c08';
+    const v = 'bbbe34c1';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {

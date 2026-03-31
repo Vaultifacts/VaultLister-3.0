@@ -5919,6 +5919,19 @@ const aiConfidenceGauge = {
     }
 };
 
+// Expose financial/chunk-used widgets on window for deferred chunk access
+window.viewModeToggle = viewModeToggle;
+window.transactionTimeline = transactionTimeline;
+window.expensePieChart = expensePieChart;
+window.monthlyComparisonChart = monthlyComparisonChart;
+window.runningBalance = runningBalance;
+window.financialDashboardHeader = financialDashboardHeader;
+window.businessFAB = businessFAB;
+window.budgetProgress = budgetProgress;
+window.shopHealthDashboard = shopHealthDashboard;
+window.platformComparison = platformComparison;
+window.syncStatusBar = syncStatusBar;
+
 // Recommendation Cards
 const recommendationCards = {
     types: {
