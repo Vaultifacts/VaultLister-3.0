@@ -1206,7 +1206,7 @@ Object.assign(pages, {
                 ` : `
                             <tr>
                                 <td colspan="${2 + visibleColumns.length}" style="padding: 0;">
-                                    ${components.emptyState('crosslist', 'No listings yet', 'Create listings to start selling across platforms', 'Add New Listing(s)', 'modals.chooseListingMode()', 'plus')}
+                                    ${components.emptyState('listings', 'No listings yet', 'Create listings to start selling across platforms', 'Add New Listing(s)', 'modals.chooseListingMode()', 'plus')}
                                 </td>
                             </tr>
                 `}

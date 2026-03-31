@@ -73,10 +73,13 @@ Object.assign(pages, {
         const platformColors = {
             poshmark: '#7c3aed',
             ebay: '#0064d2',
-            whatnot: '#ff4757',
+            mercari: '#4dc9f6',
             depop: '#ff2300',
+            grailed: '#000000',
+            etsy: '#f56400',
             shopify: '#96bf48',
-            facebook: '#1877f2'
+            facebook: '#1877f2',
+            whatnot: '#ff4757'
         };
 
         return `
@@ -111,7 +114,7 @@ Object.assign(pages, {
                             </svg>
                             <div class="connection-count">
                                 <span class="count-value">${connectedShops.length}</span>
-                                <span class="count-label">of 6</span>
+                                <span class="count-label">of 9</span>
                             </div>
                         </div>
                         <div class="connection-info">
@@ -310,7 +313,7 @@ Object.assign(pages, {
 
             <!-- Shop Cards Grid -->
             <div class="grid grid-cols-3 gap-6">
-                ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(platform => {
+                ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot'].map(platform => {
                     const shop = shops.find(s => s.platform === platform);
                     const isConnected = shop?.is_connected || false;
                     const connectionType = shop?.connection_type || 'manual';

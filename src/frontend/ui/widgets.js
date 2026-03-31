@@ -5589,6 +5589,7 @@ const profitMarginGauge = {
 window.profitMarginGauge = profitMarginGauge;
 
 // Cash Flow Waterfall Chart
+// NOTE: waterfallChart + financialRatios must be on window — used by chunk-sales.js (financials page)
 const waterfallChart = {
     render(data) {
         const values = data.map(d => d.value);
@@ -5621,6 +5622,7 @@ const waterfallChart = {
         `;
     }
 };
+window.waterfallChart = waterfallChart;
 
 // Financial Ratios
 const financialRatios = {
@@ -5664,6 +5666,7 @@ const financialRatios = {
         `;
     }
 };
+window.financialRatios = financialRatios;
 
 // KPI Dashboard
 const kpiDashboard = {

@@ -14331,6 +14331,7 @@ const profitMarginGauge = {
 window.profitMarginGauge = profitMarginGauge;
 
 // Cash Flow Waterfall Chart
+// NOTE: waterfallChart + financialRatios must be on window — used by chunk-sales.js (financials page)
 const waterfallChart = {
     render(data) {
         const values = data.map(d => d.value);
@@ -14363,6 +14364,7 @@ const waterfallChart = {
         `;
     }
 };
+window.waterfallChart = waterfallChart;
 
 // Financial Ratios
 const financialRatios = {
@@ -14406,6 +14408,7 @@ const financialRatios = {
         `;
     }
 };
+window.financialRatios = financialRatios;
 
 // KPI Dashboard
 const kpiDashboard = {
@@ -15335,7 +15338,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '7faa0a57';
+    const v = 'b0621c08';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
