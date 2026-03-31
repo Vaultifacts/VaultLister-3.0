@@ -4884,21 +4884,21 @@ Object.assign(handlers, {
 
     // Inventory category management
 
-    loadCategories: async function() {
+    loadCategories: async function(showError) {
         try {
             const res = await api.get('/inventory/categories');
             const data = res.data || res;
             store.setState({ inventoryCategories: data.categories || [] });
             return data.categories || [];
         } catch (e) {
-            toast.error('Failed to load categories');
+            if (showError) toast.error('Failed to load categories');
             return [];
         }
     },
 
 
     showCategoryManager: async function() {
-        const categories = await handlers.loadCategories();
+        const categories = await handlers.loadCategories(true);
         const renderList = (cats) => {
             if (!cats || cats.length === 0) return '<p class="text-gray-500 text-sm text-center py-4">No categories yet. Add one below.</p>';
             return '<div class="flex flex-col gap-2">' + cats.map(c =>

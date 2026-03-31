@@ -2368,7 +2368,7 @@ Object.assign(pages, {
                         </table>
                     </div>
                 ` : components.emptyState(
-                    'sales',
+                    'orders',
                     'No orders yet',
                     searchQuery ? 'No orders match your search' : 'Orders will appear here when customers purchase your listings',
                     searchQuery ? 'Clear Search' : null,
