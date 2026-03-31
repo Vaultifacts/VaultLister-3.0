@@ -7804,4 +7804,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+window.sanitizeHTML = sanitizeHTML;
+
 // ============================================
