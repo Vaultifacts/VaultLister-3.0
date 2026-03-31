@@ -1817,44 +1817,44 @@ Object.assign(pages, {
                 <p class="page-description">Customize your VaultLister experience</p>
             </div>
 
-            <div class="settings-container">
-                <!-- Feature 5: Settings Changelog Banner -->
-                ${(() => {
-                    const lastVisit = localStorage.getItem('vaultlister_settings_last_visit');
-                    let changes = [];
-                    try {
-                        changes = JSON.parse(localStorage.getItem('vaultlister_settings_changes') || '[]');
-                    } catch (e) {
-                        console.error('Failed to parse settings changes:', e); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring
-                        changes = [];
-                    }
-                    if (changes.length > 0 && lastVisit) {
-                        const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
-                        const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
-                        return `
-                            <div class="settings-changelog-banner" style="background: #dbeafe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 600; color: #0c4a6e; margin-bottom: 4px;">Settings Updated</div>
-                                    <div style="font-size: 13px; color: #0c4a6e; margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
-                                </div>
-                                <button class="btn btn-sm btn-secondary" onclick="handlers.dismissSettingsChangelog()" style="white-space: nowrap;">Dismiss</button>
+            <!-- Feature 5: Settings Changelog Banner -->
+            ${(() => {
+                const lastVisit = localStorage.getItem('vaultlister_settings_last_visit');
+                let changes = [];
+                try {
+                    changes = JSON.parse(localStorage.getItem('vaultlister_settings_changes') || '[]');
+                } catch (e) {
+                    console.error('Failed to parse settings changes:', e); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring
+                    changes = [];
+                }
+                if (changes.length > 0 && lastVisit) {
+                    const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
+                    const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
+                    return `
+                        <div class="settings-changelog-banner" style="background: #dbeafe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #0c4a6e; margin-bottom: 4px;">Settings Updated</div>
+                                <div style="font-size: 13px; color: #0c4a6e; margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
                             </div>
-                        `;
-                    }
-                    return '';
-                })()}
+                            <button class="btn btn-sm btn-secondary" onclick="handlers.dismissSettingsChangelog()" style="white-space: nowrap;">Dismiss</button>
+                        </div>
+                    `;
+                }
+                return '';
+            })()}
 
-                <!-- Settings Search -->
-                <div class="settings-search-wrapper" style="margin-bottom: 12px; position: relative;">
-                    <input type="text" class="form-input" id="settings-search-input" placeholder="Search settings..."
-                        oninput="handlers.settingsSearch(this.value)" autocomplete="off"
-                        style="padding-left: 36px; max-width: 320px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;">
-                        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <div id="settings-search-results" style="display:none; position:absolute; top:100%; left:0; width:320px; background:var(--card-bg, #fff); border:1px solid var(--gray-200); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:10; max-height:240px; overflow-y:auto; margin-top:4px;"></div>
-                </div>
+            <!-- Settings Search -->
+            <div class="settings-search-wrapper" style="margin-bottom: 12px; position: relative;">
+                <input type="text" class="form-input" id="settings-search-input" placeholder="Search settings..."
+                    oninput="handlers.settingsSearch(this.value)" autocomplete="off"
+                    style="padding-left: 36px; max-width: 320px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <div id="settings-search-results" style="display:none; position:absolute; top:100%; left:0; width:320px; background:var(--card-bg, #fff); border:1px solid var(--gray-200); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:10; max-height:240px; overflow-y:auto; margin-top:4px;"></div>
+            </div>
 
+            <div class="settings-container">
                 <!-- Settings Tabs -->
                 <div class="settings-tabs">
                     <button class="settings-tab ${activeTab === 'profile' ? 'active' : ''}" onclick="handlers.setSettingsTab('profile')">
