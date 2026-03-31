@@ -10616,6 +10616,7 @@ const commandPalette = {
                     <span class="command-palette-icon">${components.icon('search', 20)}</span>
                     <input type="text" id="command-palette-input" class="command-palette-input"
                            placeholder="Search commands, pages, or inventory..."
+                           aria-label="Search commands, pages, or inventory"
                            oninput="commandPalette.filter(this.value)"
                            onkeydown="commandPalette.handleKeydown(event)">
                     <span class="command-palette-shortcut">ESC</span>
@@ -15334,7 +15335,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '65cd9eb5';
+    const v = '5932cbfe';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16492,7 +16493,7 @@ const components = {
         const info = pageInfo[currentPage] || { label: currentPage, section: '' };
 
         return `
-            <nav class="breadcrumb">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
                 <a href="#" class="breadcrumb-item" aria-label="Dashboard home" onclick="router.navigate('dashboard'); return false;">
                     <span class="breadcrumb-home">${this.icon('home', 16)}</span>
                 </a>
@@ -16501,7 +16502,7 @@ const components = {
                     <span class="breadcrumb-item">${info.section}</span>
                     <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>
                 ` : ''}
-                <span class="breadcrumb-item current">${info.label}</span>
+                <span class="breadcrumb-item current" aria-current="page">${info.label}</span>
             </nav>
         `;
     },
@@ -16822,7 +16823,7 @@ const components = {
     // Back to top button
     backToTop() {
         return `
-            <button class="back-to-top hidden" id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Back to top">
+            <button class="back-to-top hidden" id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Back to top" aria-label="Back to top">
                 ${this.icon('chevron-down', 20)}
             </button>
         `;
@@ -20978,6 +20979,12 @@ const pages = {
                                 <label for="reg-confirm-password" class="form-label">Confirm Password</label>
                                 <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password" minlength="12" maxlength="128">
                             </div>
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
+                                    <input type="checkbox" name="terms" required>
+                                    I agree to the <a href="#terms" style="color: var(--primary-600);">Terms of Service</a> and <a href="#privacy" style="color: var(--primary-600);">Privacy Policy</a>
+                                </label>
+                            </div>
                             <button type="submit" id="register-submit-btn" class="btn btn-primary w-full mb-4">Create Account</button>
                             <div class="social-divider">Or continue with</div>
                             <div class="social-buttons">
@@ -21287,6 +21294,11 @@ const auth = {
                 }
             }
             toast.error(error.message || 'Invalid email or password');
+            // Set aria-invalid on email/password fields for screen readers
+            form.querySelectorAll('input[name="email"], input[name="password"]').forEach(input => {
+                input.setAttribute('aria-invalid', 'true');
+                input.classList.add('field-error');
+            });
         } finally {
             this._isSubmitting = false;
             // Restore form state

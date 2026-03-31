@@ -3249,6 +3249,12 @@ const pages = {
                                 <label for="reg-confirm-password" class="form-label">Confirm Password</label>
                                 <input id="reg-confirm-password" type="password" class="form-input" name="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password" aria-label="Confirm password" data-testid="reg-confirm-password" minlength="12" maxlength="128">
                             </div>
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
+                                    <input type="checkbox" name="terms" required>
+                                    I agree to the <a href="#terms" style="color: var(--primary-600);">Terms of Service</a> and <a href="#privacy" style="color: var(--primary-600);">Privacy Policy</a>
+                                </label>
+                            </div>
                             <button type="submit" id="register-submit-btn" class="btn btn-primary w-full mb-4">Create Account</button>
                             <div class="social-divider">Or continue with</div>
                             <div class="social-buttons">

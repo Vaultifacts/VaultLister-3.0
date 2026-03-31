@@ -43755,7 +43755,7 @@ body.dark-mode .menu-search {
 
 /* Skip link for keyboard users */
 .skip-link {
-    position: absolute;
+    position: fixed;
     top: -40px;
     left: 0;
     background: var(--primary-600);

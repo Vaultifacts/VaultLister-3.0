@@ -1874,6 +1874,7 @@ const commandPalette = {
                     <span class="command-palette-icon">${components.icon('search', 20)}</span>
                     <input type="text" id="command-palette-input" class="command-palette-input"
                            placeholder="Search commands, pages, or inventory..."
+                           aria-label="Search commands, pages, or inventory"
                            oninput="commandPalette.filter(this.value)"
                            onkeydown="commandPalette.handleKeydown(event)">
                     <span class="command-palette-shortcut">ESC</span>

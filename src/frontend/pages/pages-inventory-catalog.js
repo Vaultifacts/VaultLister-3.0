@@ -438,6 +438,12 @@ Object.assign(pages, {
                                             <button class="btn btn-secondary btn-sm" data-testid="edit-item-${item.id}" onclick="handlers.editItem('${item.id}')" title="Edit item">
                                                 ${components.icon('settings', 14)} Edit
                                             </button>
+                                            <button class="btn btn-secondary btn-sm" data-testid="ai-generate-${item.id}" onclick="modals.generateListingFromItem('${item.id}')" title="Generate Listing (AI)">
+                                                ${components.icon('sparkles', 14)} AI
+                                            </button>
+                                            <button class="btn btn-secondary btn-sm" data-testid="ar-preview-${item.id}" onclick="modals.arPreview('${item.id}')" title="AR Preview">
+                                                ${components.icon('eye', 14)} AR
+                                            </button>
                                             <button class="btn btn-danger btn-sm" data-testid="delete-item-${item.id}" onclick="handlers.deleteItem('${item.id}')" title="Delete item">
                                                 ${components.icon('trash', 14)}
                                             </button>

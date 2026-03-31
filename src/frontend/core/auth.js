@@ -140,6 +140,11 @@ const auth = {
                 }
             }
             toast.error(error.message || 'Invalid email or password');
+            // Set aria-invalid on email/password fields for screen readers
+            form.querySelectorAll('input[name="email"], input[name="password"]').forEach(input => {
+                input.setAttribute('aria-invalid', 'true');
+                input.classList.add('field-error');
+            });
         } finally {
             this._isSubmitting = false;
             // Restore form state

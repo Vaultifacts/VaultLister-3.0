@@ -729,7 +729,7 @@ const components = {
         const info = pageInfo[currentPage] || { label: currentPage, section: '' };
 
         return `
-            <nav class="breadcrumb">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
                 <a href="#" class="breadcrumb-item" aria-label="Dashboard home" onclick="router.navigate('dashboard'); return false;">
                     <span class="breadcrumb-home">${this.icon('home', 16)}</span>
                 </a>
@@ -738,7 +738,7 @@ const components = {
                     <span class="breadcrumb-item">${info.section}</span>
                     <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>
                 ` : ''}
-                <span class="breadcrumb-item current">${info.label}</span>
+                <span class="breadcrumb-item current" aria-current="page">${info.label}</span>
             </nav>
         `;
     },
@@ -1059,7 +1059,7 @@ const components = {
     // Back to top button
     backToTop() {
         return `
-            <button class="back-to-top hidden" id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Back to top">
+            <button class="back-to-top hidden" id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Back to top" aria-label="Back to top">
                 ${this.icon('chevron-down', 20)}
             </button>
         `;
