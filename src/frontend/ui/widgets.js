@@ -6296,6 +6296,7 @@ const competitorActivityFeed = {
     }
 };
 window.competitorActivityFeed = competitorActivityFeed;
+window.autoSave = autoSave;
 
 // Market Opportunity Cards
 const opportunityCards = {
