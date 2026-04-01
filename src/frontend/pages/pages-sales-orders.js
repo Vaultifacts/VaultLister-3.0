@@ -625,7 +625,7 @@ Object.assign(pages, {
                     </div>
                 ` : `
                     <div class="card-body">
-                        ${components.emptyState('sales', 'No sales yet', 'Sales you make across connected platforms will appear here. Connect a platform to get started.', 'Connect a Platform', "router.navigate('shops')", 'shops')}
+                        ${components.emptyState('No sales yet', 'Sales you make across connected platforms will appear here. Connect a platform to get started.', 'Connect a Platform', "router.navigate('shops')")}
                     </div>
                 `}
             </div>
@@ -2368,7 +2368,6 @@ Object.assign(pages, {
                         </table>
                     </div>
                 ` : components.emptyState(
-                    'orders',
                     'No orders yet',
                     searchQuery ? 'No orders match your search' : 'Orders will appear here when customers purchase your listings',
                     searchQuery ? 'Clear Search' : null,

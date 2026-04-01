@@ -448,7 +448,6 @@ Object.assign(pages, {
                             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('inventory-search').value=''; handlers.debouncedSearch('')">Clear Search</button>
                         </div>
                     ` : components.emptyState(
-                        'inventory',
                         'No inventory items yet',
                         'Start by adding your first item to track and manage your stock',
                         'Add Your First Item',
@@ -6759,7 +6758,6 @@ Object.assign(pages, {
                         </table>
                     </div>
                 ` : components.emptyState(
-                    'sales',
                     'No orders yet',
                     searchQuery ? 'No orders match your search' : 'Orders will appear here when customers purchase your listings',
                     searchQuery ? 'Clear Search' : null,

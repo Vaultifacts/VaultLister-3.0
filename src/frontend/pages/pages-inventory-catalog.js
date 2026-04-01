@@ -461,7 +461,6 @@ Object.assign(pages, {
                             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('inventory-search').value=''; handlers.debouncedSearch('')">Clear Search</button>
                         </div>
                     ` : components.emptyState(
-                        'inventory',
                         'No inventory items yet',
                         'Start by adding your first item to track and manage your stock',
                         'Add Your First Item',
@@ -1206,7 +1205,7 @@ Object.assign(pages, {
                 ` : `
                             <tr>
                                 <td colspan="${2 + visibleColumns.length}" style="padding: 0;">
-                                    ${components.emptyState('listings', 'No listings yet', 'Create listings to start selling across platforms', 'Add New Listing(s)', 'modals.chooseListingMode()', 'plus')}
+                                    ${components.emptyState('No listings yet', 'Create listings to start selling across platforms', 'Add New Listing(s)', 'modals.chooseListingMode()')}
                                 </td>
                             </tr>
                 `}
