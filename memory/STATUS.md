@@ -1,7 +1,30 @@
 # Status — VaultLister 3.0
 
+## QA Walkthrough v3 — COMPLETE (2026-03-30)
+All 498 items tested. 478 Pass / 4 Fail / 15 Issue / 1 Skipped (96% pass rate).
+
+### P0 Fixes — COMMITTED (a9642f5)
+- **#64** Widget drag-reorder: `getWidgets()` now sorts by saved order ✅
+- **#31** Mobile bottom nav: always renders, CSS hides on desktop, active state updates ✅
+- **#27** Deep-link redirect: auth guard saves `_intendedRoute`, login redirects to it ✅
+- **#13** MFA/TOTP: wired into Account page + login flow, `verifyMfaLogin` uses `_intendedRoute` ✅
+
+### Remaining Issues (15 total)
+- **#101** (HIGH): Crosslist page missing from chunk build
+- **#81** (Medium): Per-row AI+AR buttons not wired
+- 13 other minor issues (see WALKTHROUGH-FINAL-SUMMARY.md)
+
 ## Commit Log
 <!-- Most recent 10 commits — run `git log --oneline` for full history -->
+- **2026-03-29 CLI** (a70e6da): fix(ci): build frontend chunks before E2E tests
+- **2026-03-29 CLI** (002e478): fix: await all async seed functions and reduce E2E wait timeout
+- **2026-03-29 CLI** (acdc6cd): fix: normalize SQL boolean literals to integers for PostgreSQL INTEGER columns
+- **2026-03-29 CLI** (55c617f): fix: correct third shortcuts modal parameter swap in handlers-settings-account.js:3047
+- **2026-03-29 CLI** (12c2a4c): chore: fix planner registration in legacy app.js (cosmetic — not served)
+- **2026-03-29 CLI** (91595fb): fix: changelog search focus, shortcuts modal, remove dead crosslist code
+- **2026-03-29 CLI** (fe69493): fix: ar-preview chunk mapping, routeAliases storeKey, #help redirect, session expired error
+- **2026-03-29 CLI** (983262f): fix: prevent #community crash on missing email in leaderboard and posts
+- **2026-03-29 CLI** (9a43853): Merge branch 'fix/339-rebase' (P0: CSP fix for inline onclick handlers)
 - **2026-03-29 CLI** (2540c24): chore: update consistency manifest memory_rules count (39 -> 40)
 - **2026-03-29 CLI** (935c3cd): fix: security scan uses regression detection instead of hard-failing on known failures
 - **2026-03-29 CLI** (19ee478): fix: backup-verify uses pg_restore for custom-format dumps, fix PG path
@@ -45,20 +68,78 @@
 ## Pending Review
 <!-- Post-commit hook auto-adds Bot commits here -->
 
-## Current State (2026-03-29) — Updated
+## Current State (2026-03-29) — COMPLETE ✅ Walkthrough fixes verified on live site
+
+### Verification Plan — Phase 1 COMPLETE ✅, Phase 2 PENDING
+Plan file: `C:\Users\Matt1\.claude\plans\verify-walkthrough-fixes-2026-03-29.md`
+Post-compact prompt: "Resume verification plan Phase 2 browser tests. Plan at C:\Users\Matt1\.claude\plans\verify-walkthrough-fixes-2026-03-29.md. Phase 1 (Tasks 1-11 static checks) is 100% complete and verified. All 11 checks passed with exact evidence. Now execute Task 12 (browser behavioral tests, Steps 1-10) using Chrome DevTools MCP — Chrome is open. Then Task 13 (live site spot-check). Use inline execution, no subagents."
+
+**Phase 1 Results (all 11/11 pass):**
+- T1 P0 CSP: `script-src-attr: ["'unsafe-inline'"]` at securityHeaders.js:295 inside buildCSPWithNonce ✅
+- T2 Community crash: `user.email?.split` :65, `author_email?.split` :94 in pages-community-help.js; :6233, :6262 in pages-deferred.js; zero bare .split ✅
+- T3 AR preview: `'ar-preview': 'deferred'` router.js:95 + core-bundle.js:15238; deferred chunk in build-frontend.js:86-91 ✅
+- T4 storeKey: 7 entries + 2 handler lines = 9; `store.setState({ [alias.storeKey]: alias.tab })` core-bundle:15444-15445; zero old activeTab ✅
+- T5 #help: `router.navigate('help-support')` init.js:189 + core-bundle:27325; zero pages.help() ✅
+- T6 Session expired: full || chain at handlers-core:580 + core-bundle:25850 ✅
+- T7 crosslist: zero function definitions in both files; route still redirects init.js:151 ✅
+- T8 Changelog focus: focus + selectionStart restore at community-help:344-345 and deferred:6369-6370 ✅
+- T9 Shortcuts modal: zero broken modals.show('Keyboard Shortcuts') calls; h2 title in 4 locations ✅
+- T10 Planner: zero pages.planner(); window.pages.checklist() ×2 at app.js:70368,70370 ✅
+- T11 Core bundle: all 4 fixes present; hash 30280a08 matches index.html + sw.js ✅
+
+### Walkthrough Fix Plan — COMPLETE ✅ (6 commits: 9a43853–55c617f)
+All batches from plan `parsed-coalescing-sky.md` executed and pushed. 16 files changed.
+
+**Batch 0 — P0: CSP inline onclick fix (9a43853 merge)**
+- Merged `fix/339-rebase`: `script-src-attr: 'unsafe-inline'` in `buildCSPWithNonce()` — sidebar nav buttons were dead on live site. 3 merge conflicts resolved (keep master's additions in all 3 files).
+
+**Batch 1 — P2.1: #community crash fix (983262f)**
+- `pages-community-help.js:65,94` + `pages-deferred.js:6335,6364`: `user.email?.split('@')[0] || user.username || 'User'` — prevented crash on leaderboard entries without email.
+
+**Batch 2 — Core bundle fixes (fe69493 + bun run dev:bundle)**
+- P2.2: `router.js` `pageChunkMap['ar-preview']` `null` → `'deferred'` (new chunk created in `build-frontend.js`)
+- P3.A: `router.js` routeAliases: added `storeKey` to 7 entries; handler now uses `alias.storeKey` instead of generic `activeTab`
+- P4.3: `init.js` `#help` → `router.navigate('help-support')`
+- P5.4: `handlers-core.js` added `|| errorMsg.includes('Session expired')` to auth error check
+- New `deferred` chunk: `pages-deferred.js` + `handlers-deferred.js` added to `build-frontend.js` + `build-dev-bundle.js`
+
+**Batch 3 — UX fixes + dead code removal (91595fb + 55c617f)**
+- P4.2: Deleted dead `crosslist()` from `pages-inventory-catalog.js` (~103 lines) and `pages-deferred.js` (~100 lines)
+- P5.1: `handlers-community-help.js` + `handlers-deferred.js` changelog search: focus + cursor restore after re-render
+- P5.2: Fixed `modals.show('Keyboard Shortcuts', html)` parameter swap in 4 locations:
+  - `handlers-settings-account.js:781` + `handlers-settings-account.js:3047` (supplemental commit 55c617f)
+  - `handlers-deferred.js:5858` + `handlers-deferred.js:17465`
+
+**Batch 4 — P1: Legacy cosmetic fix (12c2a4c)**
+- `app.js:70368,70370`: `pages.planner()` → `window.pages.checklist()` (app.js NOT served — zero runtime impact)
+
+### Remaining Walkthrough Plan Items (future sessions)
+- **P3.B-D**: Add Teams + Reference Data tabs to settings; tab system to help-support, inventory, shops, orders-sales
+- **P6**: Add Mercari, Etsy (stub), Grailed shop cards to My Shops page
+- **P7**: Polish sprint — shops/planner/image-bank pre-existing bugs
+
+### Post-Deploy Verification Checklist — ALL PASS ✅ (2026-03-29, live vaultlister.com)
+- [x] Sidebar nav buttons work (P0 CSP fix)
+- [x] `#community` renders without crash — crashed:false, 31KB content (P2.1)
+- [x] `#ar-preview` shows AR grid page — h1 "AR Preview" on fresh load (P2.2)
+- [x] `#predictions` → analyticsTab:predictions, DOM tab active (P3.A)
+- [x] `#market-intel` → analyticsTab:market-intel (P3.A)
+- [x] `#suppliers` → analyticsTab:sourcing (P3.A)
+- [x] `#report-builder` → analyticsTab:reports (P3.A)
+- [x] `#transactions` → financialsTab:transactions (P3.A)
+- [x] `#help` redirects to `#help-support`, h1 "Help & Support" (P4.3)
+- [x] Changelog search: focus restored, cursor at end after re-render (P5.1)
+- [x] Settings Appearance → View All Shortcuts: modal opens with shortcut table (P5.2)
+- [x] Session expired error shows clean message — `Z.includes("Session expired")` in live loadOrders handler (P5.4)
+- [x] `#planner` renders "Daily Checklist" — navigate-away-and-back LIVE BROWSER VERIFIED: `#inventory` → h1 "Inventory (0 items)" → `#planner` → h1 "Daily Checklist", h2 "Night owl mode!", h3 "Today's Tasks (0)" auto-rendered via router ✅ (2026-03-30)
 
 ### All 26 PRs Merged + CI Green ✅
 All open PRs (#213, #215, #270, #292, #315, #316, #323–#345) merged to master. CI run 23703219371 shows all jobs passing: Lint, Docker Build, Dependency Audit, Accessibility Audit, Unit Tests, Visual Tests (3/3 shards), Security Scan, Performance Check, Build. E2E running (continue-on-error).
 
-### CI Fixes Applied This Session
-1. **db:init hang** (0fb537c): `_startPoolMonitor()` setInterval kept Bun alive forever after init. Added `process.exit(0)` to `src/backend/db/init.js`.
-2. **backup-verify pg_restore** (19ee478): Backup is custom-format dump but workflow used `psql -f`. Changed to `pg_restore --no-owner --no-privileges`. Also fixed PATH `18/bin` → `17/bin`.
-3. **Security scan regression detection** (935c3cd): Added 10 pre-existing known failures to `.test-baseline`. Security scan now only fails CI on NEW regressions.
-
 ### Local Branches to Clean Up
 The `fix/*-rebase` branches (12 total) are stale post-merge rebase working branches. Safe to delete:
 ```
-git branch -D fix/324-rebase fix/325-rebase fix/326-rebase fix/329-rebase fix/332-rebase fix/333-rebase fix/336-rebase fix/339-rebase fix/340-rebase fix/342-rebase fix/343-rebase fix/344-rebase
+git branch -D fix/324-rebase fix/325-rebase fix/326-rebase fix/329-rebase fix/332-rebase fix/333-rebase fix/336-rebase fix/340-rebase fix/342-rebase fix/343-rebase fix/344-rebase
 ```
 
 ## Current State (2026-03-28) — Updated
@@ -221,7 +302,14 @@ All fixes committed in 5b18357. UI changes done via browser automation.
   - **Next:** Phase 3 (query migration — 119 files: await, datetime→NOW(), LIKE→ILIKE, etc.)
 
 ## Next Tasks
-1. **Sprint Board P0/P1 config (user action required):**
+1. **QA Walkthrough v3 — PLAN APPROVED, READY TO EXECUTE**
+   - Plan: `C:\Users\Matt1\.claude\plans\vectorized-booping-hare.md`
+   - Step 0 is NEXT: enhance notion-qa-audit.py (add `sections` + `reset-all` commands), audit Notion sections vs route inventory, verify demo data on live site, reset all 498 items to "To Do", create screenshot dirs
+   - Then: ~25 sessions of ~20 items each, page-by-page, Chrome DevTools MCP on vaultlister.com
+   - Current Notion state: 442 Pass / 24 Issue / 32 Skipped (prior walkthrough — all to be reset)
+   - Post-compact prompt: see memory/WALKTHROUGH-SESSION-RESUME.md
+
+2. **Sprint Board P0/P1 config (user action required):**
    - SSL certificate + domain configuration (Blocked, P0-Critical)
    - Set real Stripe price IDs in .env (P0-Critical)
    - Configure SMTP for production email (Blocked)

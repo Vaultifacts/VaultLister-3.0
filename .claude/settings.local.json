@@ -1,17 +1,4 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python C:/Users/Matt1/OneDrive/Desktop/vaultlister-3/.claude/hooks/block-alert-dismiss.py"
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "mcp__claude_ai_Notion__notion-search",
@@ -47,7 +34,35 @@
       "WebFetch(domain:vaultlister-app-production.up.railway.app)",
       "WebFetch(domain:vaultlister.com)",
       "WebFetch(domain:api.github.com)",
-      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_console_messages"
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_console_messages",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__type_text",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__get_console_message",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_network_requests",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__fill",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__resize_page",
+      "WebFetch(domain:apps.dtic.mil)",
+      "WebFetch(domain:www.sei.cmu.edu)",
+      "WebFetch(domain:www.linkedin.com)",
+      "WebFetch(domain:testgrid.io)",
+      "WebFetch(domain:www.repeato.app)",
+      "WebFetch(domain:insights.sei.cmu.edu)",
+      "Skill(update-config)",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__fill_form",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__press_key",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__wait_for"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Matt1/OneDrive/Desktop/vaultlister-3/.claude/hooks/block-alert-dismiss.py"
+          }
+        ]
+      }
     ]
   },
   "remote": {
