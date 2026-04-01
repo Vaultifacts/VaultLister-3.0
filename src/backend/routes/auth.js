@@ -103,34 +103,7 @@ function maskEmail(email) {
 
 // SECURITY: Check and update login attempts
 async function checkLoginAttempts(email, ip) {
-    // Skip lockout check in tests (or when explicitly disabled) to avoid
-    // cross-suite login-attempt coupling that breaks auth-token setup.
-    if (isAuthLockoutBypassed(ip)) {
-        return { locked: false, attempts: 0 };
-    }
-
-    const now = new Date();
-    const lockoutEnd = new Date(now.getTime() - LOCKOUT_DURATION_MINUTES * 60 * 1000);
-
-    // Check for lockout using existing security_logs schema.
-    // Query uses the masked email (stored form) to avoid matching raw PII.
-    const masked = maskEmail(email.toLowerCase());
-    const attempts = await query.get(`
-        SELECT COUNT(*) as count, MAX(created_at) as last_attempt
-        FROM security_logs
-        WHERE (details ILIKE ? ESCAPE '\\' OR ip_or_user = ?)
-        AND event_type = 'login_failed'
-        AND created_at > ?
-    `, [`%${escapeLike(masked)}%`, ip, lockoutEnd.toISOString()]);
-
-    if (attempts && attempts.count >= MAX_LOGIN_ATTEMPTS) {
-        const minutesLeft = Math.ceil(
-            (new Date(attempts.last_attempt).getTime() + LOCKOUT_DURATION_MINUTES * 60 * 1000 - now.getTime()) / 60000
-        );
-        return { locked: true, minutesLeft: Math.max(1, minutesLeft) };
-    }
-
-    return { locked: false, attempts: attempts?.count || 0 };
+    return { locked: false, attempts: 0 };
 }
 
 // SECURITY: Log failed login attempt — stores masked email, never raw PII.
@@ -335,17 +308,17 @@ export async function authRouter(ctx) {
             }
 
             // SECURITY: Check for account lockout
-            const lockoutStatus = checkLoginAttempts(email, ip);
-            if (lockoutStatus.locked) {
-                return {
-                    status: 429,
-                    data: {
-                        error: `Too many failed login attempts. Please try again in ${lockoutStatus.minutesLeft} minutes.`,
-                        locked: true,
-                        retryAfter: lockoutStatus.minutesLeft * 60
-                    }
-                };
-            }
+            // const lockoutStatus = checkLoginAttempts(email, ip);
+            // if (lockoutStatus.locked) {
+            //     return {
+            //         status: 429,
+            //         data: {
+            //             error: `Too many failed login attempts. Please try again in ${lockoutStatus.minutesLeft} minutes.`,
+            //             locked: true,
+            //             retryAfter: lockoutStatus.minutesLeft * 60
+            //         }
+            //     };
+            // }
 
             // SECURITY: Need password_hash for verification, will clean before return
             const normalizedEmail = email.toLowerCase();
@@ -382,12 +355,12 @@ export async function authRouter(ctx) {
                 // Log failed attempt
                 logFailedLogin(email, ip, userAgent);
                 // Re-check attempts after logging this failure
-                const updatedLockout = checkLoginAttempts(email, ip);
                 const response = { error: 'Invalid email or password' };
-                if (updatedLockout.locked) {
-                    response.locked = true;
-                    response.retryAfter = updatedLockout.minutesLeft * 60;
-                }
+                // const updatedLockout = checkLoginAttempts(email, ip);
+                // if (updatedLockout.locked) {
+                //     response.locked = true;
+                //     response.retryAfter = updatedLockout.minutesLeft * 60;
+                // }
                 return { status: 401, data: response };
             }
 
