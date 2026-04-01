@@ -13,6 +13,10 @@ Usage:
   python scripts/notion-qa-audit.py update <page-id> Pass --verified "Browser: description of evidence"
   python scripts/notion-qa-audit.py update <page-id> Issue "notes"
   python scripts/notion-qa-audit.py verify-log
+  python scripts/notion-qa-audit.py sections
+  python scripts/notion-qa-audit.py reset-all
+  python scripts/notion-qa-audit.py list-section "1. Auth & Session"
+  python scripts/notion-qa-audit.py list-empty
 
 SAFEGUARD: Setting Result to Pass requires:
   1. A prior `verify <page-id>` call within the last 30 minutes
@@ -105,6 +109,14 @@ def extract_item(page):
     notes_parts = props.get("Notes", {}).get("rich_text", [])
     notes = "".join(t.get("plain_text", "") for t in notes_parts)
 
+    pattern = (props.get("Test Pattern", {}).get("select") or {}).get("name", "")
+
+    test_steps_parts = props.get("Test Steps", {}).get("rich_text", [])
+    test_steps = "".join(t.get("plain_text", "") for t in test_steps_parts)
+
+    expected_parts = props.get("Expected Result", {}).get("rich_text", [])
+    expected = "".join(t.get("plain_text", "") for t in expected_parts)
+
     return {
         "id": page_id,
         "num": num,
@@ -114,6 +126,9 @@ def extract_item(page):
         "severity": severity,
         "priority": priority,
         "notes": notes,
+        "pattern": pattern,
+        "test_steps": test_steps,
+        "expected": expected,
     }
 
 
@@ -178,6 +193,51 @@ def cmd_audit(db_id):
     print()
 
 
+def cmd_sections(db_id):
+    """Show item counts by Section."""
+    items = query_database(db_id)
+    counts = {}
+    for item in items:
+        s = item["section"] or "(no section)"
+        counts[s] = counts.get(s, 0) + 1
+
+    print(f"\nQA Walkthrough — Sections ({len(items)} items total)\n")
+    print(f"  {'Section':40s}  {'Count':>5s}")
+    print(f"  {'-'*40}  {'-'*5}")
+    for section, count in sorted(counts.items(), key=lambda x: (-x[1], x[0])):
+        print(f"  {section:40s}  {count:>5d}")
+    print(f"\n  Total sections: {len(counts)}")
+    print()
+
+
+def cmd_reset_all(db_id):
+    """Clear all items' Result to empty (with confirmation)."""
+    items = query_database(db_id)
+    non_empty = [i for i in items if i["result"]]
+
+    if not non_empty:
+        print("All items already have empty Result. Nothing to reset.")
+        return
+
+    print(f"\nAbout to clear Result for {len(non_empty)} items (out of {len(items)} total).")
+    if "--yes" not in sys.argv:
+        print("Type 'yes' to confirm (or pass --yes flag): ", end="", flush=True)
+        answer = input().strip().lower()
+        if answer != "yes":
+            print("Aborted.")
+            return
+
+    print(f"\nResetting {len(non_empty)} items...")
+    for i, item in enumerate(non_empty, 1):
+        url = f"https://api.notion.com/v1/pages/{item['id']}"
+        api_request("PATCH", url, {"properties": {"Result": {"select": None}}})
+        if i % 10 == 0 or i == len(non_empty):
+            print(f"  {i}/{len(non_empty)} done")
+        time.sleep(0.35)  # stay under Notion rate limits (~3 req/s)
+
+    print(f"\nDone. {len(non_empty)} items reset to empty.")
+
+
 def cmd_list(db_id, status):
     """List all items with a given Result status."""
     status = normalize_result(status)
@@ -194,6 +254,61 @@ def cmd_list(db_id, status):
         section = item["section"][:30]
         sev = item["severity"][:8]
         print(f"{item['num']:4.0f}  {item['id']:32s}  {section:30s}  {sev:8s}  {title:40s}  {notes}")
+    print()
+
+
+def cmd_list_section(db_id, section_name):
+    """List items with empty Result in a given section, sorted by #."""
+    filter_obj = {
+        "and": [
+            {"property": "Section", "select": {"equals": section_name}},
+            {"property": "Result", "select": {"is_empty": True}}
+        ]
+    }
+    url = f"https://api.notion.com/v1/databases/{db_id}/query"
+    body = {"page_size": 100, "filter": filter_obj, "sorts": [{"property": "#", "direction": "ascending"}]}
+    items = []
+    has_more = True
+    start_cursor = None
+    while has_more:
+        if start_cursor:
+            body["start_cursor"] = start_cursor
+        result = api_request("POST", url, body)
+        for page in result.get("results", []):
+            items.append(extract_item(page))
+        has_more = result.get("has_more", False)
+        start_cursor = result.get("next_cursor")
+
+    print(f"\nSection: {section_name} — {len(items)} untested items\n")
+    print(f"{'#':>4s}  {'Page ID':32s}  {'Pattern':20s}  {'Priority':8s}  Title")
+    print("-" * 110)
+    for item in items:
+        print(f"{item['num']:4.0f}  {item['id']:32s}  {item.get('pattern','')[:20]:20s}  {item['priority']:8s}  {item['title'][:60]}")
+    print()
+
+
+def cmd_list_empty(db_id):
+    """List all items with empty Result, sorted by #."""
+    filter_obj = {"property": "Result", "select": {"is_empty": True}}
+    url = f"https://api.notion.com/v1/databases/{db_id}/query"
+    body = {"page_size": 100, "filter": filter_obj, "sorts": [{"property": "#", "direction": "ascending"}]}
+    items = []
+    has_more = True
+    start_cursor = None
+    while has_more:
+        if start_cursor:
+            body["start_cursor"] = start_cursor
+        result = api_request("POST", url, body)
+        for page in result.get("results", []):
+            items.append(extract_item(page))
+        has_more = result.get("has_more", False)
+        start_cursor = result.get("next_cursor")
+
+    print(f"\nUntested items (empty Result): {len(items)}\n")
+    print(f"{'#':>4s}  {'Page ID':32s}  {'Section':30s}  Title")
+    print("-" * 110)
+    for item in items:
+        print(f"{item['num']:4.0f}  {item['id']:32s}  {item['section'][:30]:30s}  {item['title'][:50]}")
     print()
 
 
@@ -324,6 +439,17 @@ def main():
         cmd_update(db_id, page_id, result, notes, verified)
     elif cmd in ("verify-log", "log"):
         cmd_verify_log()
+    elif cmd == "sections":
+        cmd_sections(db_id)
+    elif cmd in ("reset-all", "reset"):
+        cmd_reset_all(db_id)
+    elif cmd in ("list-section", "section"):
+        if len(argv_clean) < 3:
+            print("Usage: notion-qa-audit.py list-section <section-name>", file=sys.stderr)
+            sys.exit(1)
+        cmd_list_section(db_id, argv_clean[2])
+    elif cmd in ("list-empty", "empty"):
+        cmd_list_empty(db_id)
     else:
         print(f"Unknown command: {cmd}", file=sys.stderr)
         print(__doc__)
