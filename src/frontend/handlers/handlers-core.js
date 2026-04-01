@@ -1859,5 +1859,59 @@ const handlers = {
             window.print();
             document.body.classList.remove('dashboard-print-mode');
         }
+
+    togglePlatformPricing: function(enabled) {
+        const section = document.getElementById('platform-pricing-section');
+        if (section) {
+            section.classList.toggle('hidden', !enabled);
+            if (enabled) {
+                const basePrice = document.getElementById('base-list-price')?.value;
+                if (basePrice) this.syncPlatformPrices(basePrice);
+            }
+        }
     },
+
+    syncPlatformPrices: function(basePrice) {
+        const platforms = ['ebay', 'poshmark', 'whatnot', 'depop', 'shopify', 'facebook'];
+        platforms.forEach(platform => {
+            const input = document.getElementById('price-' + platform);
+            if (input && !input.dataset.customized) input.value = basePrice;
+        });
+    },
+
+    markPriceCustomized: function(platform) {
+        const input = document.getElementById('price-' + platform);
+        if (input) input.dataset.customized = 'true';
+    },
+
+    updateSizeOptions: function(sizeType) {
+        const sizeSelect = document.getElementById('size-select');
+        const customSizeInput = document.getElementById('custom-size-input');
+        if (!sizeSelect) return;
+        const sizeOptions = {
+            clothing: ['XXS','XS','S','M','L','XL','XXL','3XL','4XL','5XL'],
+            shoes_us: ['4','4.5','5','5.5','6','6.5','7','7.5','8','8.5','9','9.5','10','10.5','11','11.5','12','13','14','15'],
+            shoes_eu: ['35','36','37','38','39','40','41','42','43','44','45','46','47','48'],
+            pants: ['26','27','28','29','30','31','32','33','34','36','38','40','42','44'],
+            numeric: ['0','2','4','6','8','10','12','14','16','18','20'],
+            one_size: ['One Size','OS','OSFA']
+        };
+        if (sizeType === 'custom') { sizeSelect.classList.add('hidden'); customSizeInput?.classList.remove('hidden'); return; }
+        sizeSelect.classList.remove('hidden');
+        customSizeInput?.classList.add('hidden');
+        const options = sizeOptions[sizeType] || sizeOptions.clothing;
+        sizeSelect.innerHTML = sanitizeHTML('<option value="">Select size...</option>') + options.map(s => '<option value="' + s + '">' + s + '</option>').join('');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+    },
+
+    validateCustomSize: function(input) {
+        const error = document.getElementById('custom-size-error');
+        if (!error) return;
+        const val = input.value.trim();
+        if (!val) { error.style.display = 'none'; input.style.borderColor = ''; return; }
+        if (val.length > 20) { error.textContent = 'Maximum 20 characters'; error.style.display = 'block'; input.style.borderColor = 'var(--error)'; return; }
+        if (/[^A-Za-z0-9/. -]/.test(val)) { error.textContent = 'Only letters, numbers, spaces, hyphens, dots, and slashes allowed'; error.style.display = 'block'; input.style.borderColor = 'var(--error)'; return; }
+        error.style.display = 'none';
+        input.style.borderColor = 'var(--success)';
+    },
+
 };
