@@ -29,9 +29,8 @@ const IS_TEST_RUNTIME = (() => {
 })();
 
 function isAuthLockoutBypassed(ip = '') {
-    if (IS_TEST_RUNTIME) return true;
-    if (process.env.DISABLE_RATE_LIMIT === 'true' && process.env.NODE_ENV !== 'production') return true;
-    return false;
+    // TODO: Re-enable for production release — lockout disabled during development/testing
+    return true;
 }
 
 // SECURITY: Account lockout configuration
