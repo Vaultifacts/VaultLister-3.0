@@ -6297,6 +6297,15 @@ const competitorActivityFeed = {
 };
 window.competitorActivityFeed = competitorActivityFeed;
 window.autoSave = autoSave;
+window.calendarLegend = calendarLegend;
+window.calendarTimeline = calendarTimeline;
+window.kanban = kanban;
+window.kanbanBoard = kanbanBoard;
+window.measurementTool = measurementTool;
+window.pomodoroTimer = pomodoroTimer;
+window.sizeConverter = sizeConverter;
+window.storageGauge = storageGauge;
+window.streakCounter = streakCounter;
 
 // Market Opportunity Cards
 const opportunityCards = {
