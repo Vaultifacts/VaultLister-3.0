@@ -6437,3 +6437,22 @@ const pricePositionChart = {
         `;
     }
 };
+
+window.aiConfidenceGauge = aiConfidenceGauge;
+window.autocomplete = autocomplete;
+window.banners = banners;
+window.bulkSelection = bulkSelection;
+window.demandHeatmap = demandHeatmap;
+window.forecastTimeline = forecastTimeline;
+window.keyboardShortcuts = keyboardShortcuts;
+window.marketTrendsRadar = marketTrendsRadar;
+window.opportunityCards = opportunityCards;
+window.priceDropBanner = priceDropBanner;
+window.pricePositionChart = pricePositionChart;
+window.priceTrendSparkline = priceTrendSparkline;
+window.runHistoryTimeline = runHistoryTimeline;
+window.skeleton = skeleton;
+window.supplierCardEnhanced = supplierCardEnhanced;
+window.tablePrefs = tablePrefs;
+window.themeManager = themeManager;
+window.trendingKeywords = trendingKeywords;

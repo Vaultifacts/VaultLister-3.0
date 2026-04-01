@@ -15182,6 +15182,25 @@ const pricePositionChart = {
     }
 };
 
+window.aiConfidenceGauge = aiConfidenceGauge;
+window.autocomplete = autocomplete;
+window.banners = banners;
+window.bulkSelection = bulkSelection;
+window.demandHeatmap = demandHeatmap;
+window.forecastTimeline = forecastTimeline;
+window.keyboardShortcuts = keyboardShortcuts;
+window.marketTrendsRadar = marketTrendsRadar;
+window.opportunityCards = opportunityCards;
+window.priceDropBanner = priceDropBanner;
+window.pricePositionChart = pricePositionChart;
+window.priceTrendSparkline = priceTrendSparkline;
+window.runHistoryTimeline = runHistoryTimeline;
+window.skeleton = skeleton;
+window.supplierCardEnhanced = supplierCardEnhanced;
+window.tablePrefs = tablePrefs;
+window.themeManager = themeManager;
+window.trendingKeywords = trendingKeywords;
+
 
 // ──── src/frontend/core/router.js ────
 'use strict';
@@ -15363,7 +15382,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '27eed4b1';
+    const v = 'bf91c70c';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
