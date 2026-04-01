@@ -15354,7 +15354,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '43e54e6f';
+    const v = '56c0a90b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27918,7 +27918,9 @@ window.sizeConverter = sizeConverter;
 // Start the app
 initApp();
 
-// Preload the current route's chunk after first render
+// Preload current route chunk + eagerly load deferred chunk after first render
+// The deferred chunk contains handlers called from inline onclick in core templates;
+// it must be loaded before users can interact with modals and pages.
 (function preloadCurrentChunk() {
     requestAnimationFrame(function() {
         setTimeout(function() {
@@ -27930,7 +27932,14 @@ initApp();
                     console.warn('[Preload] Failed to preload chunk:', chunk, err);
                 });
             }
-        }, 0);
+            // Always eagerly load the deferred chunk — it registers handlers used by
+            // inline onclick attributes in modals.js and other core bundle templates.
+            if (typeof loadChunk === 'function') {
+                loadChunk('deferred').catch(function(err) {
+                    console.warn('[Preload] Failed to preload deferred chunk:', err);
+                });
+            }
+        }, 100);
     });
 })();
 
