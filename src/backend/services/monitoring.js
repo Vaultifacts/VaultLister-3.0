@@ -124,11 +124,7 @@ const monitoring = {
         }
 
         // Report to Sentry if available
-        if (SENTRY_DSN && this._sentryModule) {
-            try {
-                this._sentryModule.captureException(error, { extra: context });
-            } catch (e) {}
-        }
+        this.reportToSentry(error, context);
 
         // Check error rate
         const errorRate = metrics.requests.errors / metrics.requests.total;
@@ -204,6 +200,15 @@ const monitoring = {
                 });
             }
         }, INTERVALS.METRICS_COLLECTION_MS);
+    },
+
+    // Forward error to Sentry SDK (no DB logging or metrics — use trackError for full pipeline)
+    reportToSentry(error, context = {}) {
+        if (SENTRY_DSN && this._sentryModule) {
+            try {
+                this._sentryModule.captureException(error, { extra: context });
+            } catch (e) {}
+        }
     },
 
     // Send alert

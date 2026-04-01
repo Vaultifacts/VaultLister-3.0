@@ -1719,6 +1719,7 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('uncaughtException', (err) => {
     logger.error('Uncaught error:', err.message);
     log(`Uncaught error: ${err.message}`);
+    monitoring.reportToSentry(err, { source: 'uncaughtException' });
     _flushLog(); // Flush buffered logs before exit
     process.exit(1);
 });
@@ -1727,5 +1728,8 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason, promise) => {
     logger.error('Unhandled rejection at:', promise, 'reason:', reason);
     log(`Unhandled rejection: ${reason}`);
+    if (reason instanceof Error) {
+        monitoring.reportToSentry(reason, { source: 'unhandledRejection' });
+    }
     _flushLog();
 });

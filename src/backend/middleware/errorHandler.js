@@ -6,6 +6,7 @@ import { ErrorCodes, logError, now } from '../shared/utils.js';
 import { query } from '../db/database.js';
 import { logger } from '../shared/logger.js';
 import { sanitizeBody } from './requestLogger.js';
+import { monitoring } from '../services/monitoring.js';
 
 /**
  * Custom application error class
@@ -173,6 +174,7 @@ export function handleError(error, ctx = {}) {
     // Log to database for non-operational errors
     if (!error.isOperational || statusCode >= 500) {
         logErrorToDb(error, context);
+        monitoring.reportToSentry(error, context);
     }
 
     // Format response
