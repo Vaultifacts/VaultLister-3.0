@@ -27006,6 +27006,10 @@ body.dark-mode .dashboard-customize-section .btn:hover {
     margin-bottom: var(--space-6);
 }
 
+.orders-hero-title-group {
+    flex-shrink: 0;
+}
+
 .orders-hero-title-group h1, .orders-hero-title {
     font-size: var(--font-size-2xl);
     font-weight: 700;
@@ -27016,12 +27020,15 @@ body.dark-mode .dashboard-customize-section .btn:hover {
 .orders-hero-subtitle {
     color: var(--gray-500);
     margin: var(--space-1) 0 0 0;
+    white-space: nowrap;
 }
 
 .orders-hero-actions {
     display: flex;
     gap: var(--space-2);
     align-items: center;
+    flex-shrink: 0;
+    flex-wrap: wrap;
 }
 
 /* Orders Pipeline */
