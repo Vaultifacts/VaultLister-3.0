@@ -15354,7 +15354,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '56c0a90b';
+    const v = 'c6e42be9';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27176,6 +27176,7 @@ const handlers = {
             window.print();
             document.body.classList.remove('dashboard-print-mode');
         }
+    },
 
     togglePlatformPricing: function(enabled) {
         const section = document.getElementById('platform-pricing-section');

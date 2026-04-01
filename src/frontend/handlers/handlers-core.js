@@ -1859,6 +1859,7 @@ const handlers = {
             window.print();
             document.body.classList.remove('dashboard-print-mode');
         }
+    },
 
     togglePlatformPricing: function(enabled) {
         const section = document.getElementById('platform-pricing-section');
