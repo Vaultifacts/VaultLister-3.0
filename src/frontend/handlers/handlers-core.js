@@ -633,8 +633,10 @@ const handlers = {
             if (res.ok) {
                 const data = await res.json();
                 store.setState({ dashboardStats: data.stats, dashboardLastRefresh: Date.now() });
-                router.navigate('dashboard');
-                toast.success('Metrics updated');
+                if (store.state.currentPage === 'dashboard') {
+                    router.navigate('dashboard');
+                    toast.success('Metrics updated');
+                }
             } else {
                 toast.show('Failed to load metrics', 'error');
             }
@@ -1836,8 +1838,10 @@ const handlers = {
                 handlers.loadPurchases()
             ]);
             store.setState({ dashboardLastRefresh: Date.now() });
-            router.navigate('dashboard');
-            toast.success('Dashboard refreshed');
+            if (store.state.currentPage === 'dashboard') {
+                router.navigate('dashboard');
+                toast.success('Dashboard refreshed');
+            }
         } catch (error) {
             console.error('Dashboard refresh failed:', error);
             toast.show('Refresh failed. Try again.', 'error');

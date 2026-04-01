@@ -1136,7 +1136,8 @@ const widgetManager = {
         const widget = this.getWidgets().find(w => w.id === widgetId);
         const width = widget?.width || defaultWidth;
         const height = widget?.height;
-        return `width: ${width}%; flex: none;${height ? ` height: ${height}px;` : ''}`;
+        const span = width <= 40 ? 2 : width <= 60 ? 3 : width <= 75 ? 4 : 6;
+        return `grid-column: span ${span};${height ? ` height: ${height}px;` : ''}`;
     },
 
     collapseAll() {

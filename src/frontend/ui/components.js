@@ -194,8 +194,10 @@ const components = {
         const draftListings = (store.state.listings || []).filter(l => l.status === 'draft').length;
 
         const navItems = [
-            { section: 'Sell', items: [
+            { section: '', items: [
                 { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+            ]},
+            { section: 'Sell', items: [
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
                 { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
                 { id: 'orders-sales', label: 'Orders & Sales', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
@@ -265,7 +267,7 @@ const components = {
                 <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
                     ${navItems.map(section => `
                         <div class="nav-section${section.divider ? ' nav-section-bottom' : ''}">
-                            ${section.divider ? '<div class="nav-section-divider"></div>' : `<div class="nav-section-title">${section.section}</div>`}
+                            ${section.divider ? '<div class="nav-section-divider"></div>' : section.section ? `<div class="nav-section-title">${section.section}</div>` : ''}
                             ${section.items.map(item => `
                                 <button class="nav-item ${currentPage === item.id ? 'active' : ''}"
                                         onclick="router.navigate('${item.id}')"
@@ -587,8 +589,11 @@ const components = {
             <div class="stat-card">
                 <div class="stat-card-header">
                     <span class="stat-card-title">${title}</span>
-                    <div class="stat-card-icon" style="background: var(--${color}-100); color: var(--${color}-600)">
-                        ${this.icon(icon)}
+                    <div style="display:flex;align-items:center;gap:4px;">
+                        ${dataType ? `<button class="btn btn-ghost btn-xs stat-chart-btn" onclick="event.stopPropagation();handlers.expandSparkline('${escapeHtml(dataType)}')" title="View chart" aria-label="View ${escapeHtml(title)} chart" style="padding:2px 4px;">${this.icon('bar-chart-2', 14)}</button>` : ''}
+                        <div class="stat-card-icon" style="background: var(--${color}-100); color: var(--${color}-600)">
+                            ${this.icon(icon)}
+                        </div>
                     </div>
                 </div>
                 <div class="stat-card-value-row">

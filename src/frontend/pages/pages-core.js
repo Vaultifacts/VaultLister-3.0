@@ -385,7 +385,7 @@ const pages = {
                     ${components.icon('target', 14)} Profit Goals
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="handlers.showQuickNotes()">
-                    ${components.icon('edit-3', 14)} Quick Notes
+                    ${components.icon('file-text', 14)} Quick Notes
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="if(document.getElementById('widget-settings-panel')){store.setState({_widgetPanelOpen:false});document.getElementById('widget-settings-panel').remove();}else{store.setState({_widgetPanelOpen:true});document.querySelector('.dashboard-customize-section').insertAdjacentHTML('afterend',widgetManager.showSettingsPanel());}">
                     ${components.icon('settings', 14)} Customize Dashboard

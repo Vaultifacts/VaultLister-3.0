@@ -9880,7 +9880,8 @@ const widgetManager = {
         const widget = this.getWidgets().find(w => w.id === widgetId);
         const width = widget?.width || defaultWidth;
         const height = widget?.height;
-        return `width: ${width}%; flex: none;${height ? ` height: ${height}px;` : ''}`;
+        const span = width <= 40 ? 2 : width <= 60 ? 3 : width <= 75 ? 4 : 6;
+        return `grid-column: span ${span};${height ? ` height: ${height}px;` : ''}`;
     },
 
     collapseAll() {
@@ -15382,7 +15383,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'bf91c70c';
+    const v = '60815404';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16005,8 +16006,10 @@ const components = {
         const draftListings = (store.state.listings || []).filter(l => l.status === 'draft').length;
 
         const navItems = [
-            { section: 'Sell', items: [
+            { section: '', items: [
                 { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+            ]},
+            { section: 'Sell', items: [
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
                 { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
                 { id: 'orders-sales', label: 'Orders & Sales', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
@@ -16076,7 +16079,7 @@ const components = {
                 <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
                     ${navItems.map(section => `
                         <div class="nav-section${section.divider ? ' nav-section-bottom' : ''}">
-                            ${section.divider ? '<div class="nav-section-divider"></div>' : `<div class="nav-section-title">${section.section}</div>`}
+                            ${section.divider ? '<div class="nav-section-divider"></div>' : section.section ? `<div class="nav-section-title">${section.section}</div>` : ''}
                             ${section.items.map(item => `
                                 <button class="nav-item ${currentPage === item.id ? 'active' : ''}"
                                         onclick="router.navigate('${item.id}')"
@@ -16398,8 +16401,11 @@ const components = {
             <div class="stat-card">
                 <div class="stat-card-header">
                     <span class="stat-card-title">${title}</span>
-                    <div class="stat-card-icon" style="background: var(--${color}-100); color: var(--${color}-600)">
-                        ${this.icon(icon)}
+                    <div style="display:flex;align-items:center;gap:4px;">
+                        ${dataType ? `<button class="btn btn-ghost btn-xs stat-chart-btn" onclick="event.stopPropagation();handlers.expandSparkline('${escapeHtml(dataType)}')" title="View chart" aria-label="View ${escapeHtml(title)} chart" style="padding:2px 4px;">${this.icon('bar-chart-2', 14)}</button>` : ''}
+                        <div class="stat-card-icon" style="background: var(--${color}-100); color: var(--${color}-600)">
+                            ${this.icon(icon)}
+                        </div>
                     </div>
                 </div>
                 <div class="stat-card-value-row">
@@ -18162,7 +18168,7 @@ const pages = {
                     ${components.icon('target', 14)} Profit Goals
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="handlers.showQuickNotes()">
-                    ${components.icon('edit-3', 14)} Quick Notes
+                    ${components.icon('file-text', 14)} Quick Notes
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="if(document.getElementById('widget-settings-panel')){store.setState({_widgetPanelOpen:false});document.getElementById('widget-settings-panel').remove();}else{store.setState({_widgetPanelOpen:true});document.querySelector('.dashboard-customize-section').insertAdjacentHTML('afterend',widgetManager.showSettingsPanel());}">
                     ${components.icon('settings', 14)} Customize Dashboard
@@ -25978,8 +25984,10 @@ const handlers = {
             if (res.ok) {
                 const data = await res.json();
                 store.setState({ dashboardStats: data.stats, dashboardLastRefresh: Date.now() });
-                router.navigate('dashboard');
-                toast.success('Metrics updated');
+                if (store.state.currentPage === 'dashboard') {
+                    router.navigate('dashboard');
+                    toast.success('Metrics updated');
+                }
             } else {
                 toast.show('Failed to load metrics', 'error');
             }
@@ -27181,8 +27189,10 @@ const handlers = {
                 handlers.loadPurchases()
             ]);
             store.setState({ dashboardLastRefresh: Date.now() });
-            router.navigate('dashboard');
-            toast.success('Dashboard refreshed');
+            if (store.state.currentPage === 'dashboard') {
+                router.navigate('dashboard');
+                toast.success('Dashboard refreshed');
+            }
         } catch (error) {
             console.error('Dashboard refresh failed:', error);
             toast.show('Refresh failed. Try again.', 'error');
