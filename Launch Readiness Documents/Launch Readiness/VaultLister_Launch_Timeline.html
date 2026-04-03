@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaultLister — Launch Timeline</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f8f6;color:#1a1a18;padding:2rem;font-size:14px}
+h1{font-size:20px;font-weight:500;margin-bottom:.25rem}
+.sub{color:#666;font-size:13px;margin-bottom:1.5rem}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:2rem}
+.stat{background:#fff;border:0.5px solid #e0e0d8;border-radius:10px;padding:.875rem 1rem}
+.stat-n{font-size:24px;font-weight:500;line-height:1}
+.stat-l{font-size:12px;color:#888;margin-top:4px}
+.card{background:#fff;border:0.5px solid #e0e0d8;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem}
+.gantt-wrap{overflow-x:auto}
+.gantt{min-width:700px}
+.header-row{display:flex;margin-bottom:6px}
+.h-label{width:190px;flex-shrink:0}
+.h-weeks{flex:1;display:flex}
+.wk{flex:1;font-size:10px;color:#aaa;text-align:center;padding-bottom:4px;border-bottom:0.5px solid #e8e8e4}
+.row{display:flex;align-items:center;margin-bottom:3px;min-height:28px}
+.row-label{width:190px;flex-shrink:0;font-size:12px;color:#555;padding-right:10px;text-align:right;line-height:1.3}
+.row-label.phase-lbl{font-weight:500;color:#1a1a18;font-size:13px;margin-top:10px}
+.grid{flex:1;position:relative;height:26px;display:flex;align-items:center}
+.bar{position:absolute;height:18px;border-radius:4px;display:flex;align-items:center;padding:0 7px;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden}
+.ms{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #f8f8f6;z-index:2;top:50%;transform:translateY(-50%)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:1rem}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:#666}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.callout{background:#f3f2fe;border:0.5px solid #afa9ec;border-radius:10px;padding:.875rem 1rem;margin-top:1.25rem;font-size:13px;color:#444;line-height:1.7}
+.callout strong{color:#26215C;font-weight:500}
+.soft-launch-line{position:absolute;background:#e24b4a;width:1.5px;top:0;bottom:0;z-index:1;opacity:.5}
+</style>
+</head>
+<body>
+<h1>VaultLister — Launch Timeline</h1>
+<p class="sub">Solo developer · Starting from scratch · April 2026</p>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n" style="color:#534AB7">~16</div><div class="stat-l">weeks to full launch</div></div>
+  <div class="stat"><div class="stat-n" style="color:#E24B4A">28</div><div class="stat-l">critical issues to fix</div></div>
+  <div class="stat"><div class="stat-n" style="color:#0F6E56">8</div><div class="stat-l">platform integrations needed</div></div>
+  <div class="stat"><div class="stat-n" style="color:#3C3489">~12</div><div class="stat-l">weeks to soft launch (2 platforms)</div></div>
+</div>
+
+<div class="card">
+  <div class="gantt-wrap">
+  <div class="gantt" id="gantt"></div>
+  </div>
+  <div class="legend">
+    <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>Code fixes</span>
+    <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>Integrations</span>
+    <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>Infrastructure</span>
+    <span class="leg"><span class="leg-dot" style="background:#BA7517"></span>Legal / admin</span>
+    <span class="leg"><span class="leg-dot" style="background:#D4537E"></span>Testing / beta</span>
+    <span class="leg"><span class="leg-dot" style="background:#E24B4A;border-radius:50%"></span>Milestone</span>
+  </div>
+  <div class="callout" style="margin-top:1rem">
+    <strong>Critical path (can't be skipped or parallelised):</strong> Fix handlers → Core loop criticals → Platform integrations → Beta → Launch.<br>
+    <strong>Start in parallel immediately:</strong> Apply for platform APIs today — approvals take 2–6 weeks each and nothing unblocks that wait. Same with Stripe verification and getting a lawyer to review your ToS/Privacy Policy.<br>
+    <strong>Soft launch option:</strong> Go live on eBay + Poshmark only at week 12, then add remaining platforms. Gets real user data 4 weeks earlier.
+  </div>
+</div>
+
+<script>
+const W=17;
+const tasks=[
+  {label:'Phase 0 — Foundation',phase:true},
+  {label:'Fix handlers architecture',s:1,e:2,c:'#7F77DD',note:'Unblocks ~70% of all criticals'},
+  {label:'Apply for all platform APIs',s:1,e:1,c:'#1D9E75',note:'Start TODAY'},
+  {label:'Error monitoring setup',s:1,e:2,c:'#378ADD',note:''},
+  {label:'Phase 1 — Core loop',phase:true},
+  {label:'All 28 critical issues',s:2,e:5,c:'#7F77DD',note:''},
+  {label:'richTextEditor + form validation',s:3,e:5,c:'#7F77DD',note:''},
+  {label:'Add & Publish working',s:4,e:6,c:'#7F77DD',note:''},
+  {label:'Save as Draft working',s:4,e:6,c:'#7F77DD',note:''},
+  {label:'MILESTONE: core loop ships',s:6,e:6,c:'#E24B4A',ms:true},
+  {label:'Phase 2 — Workflows',phase:true},
+  {label:'Bundle Builder functional',s:5,e:7,c:'#7F77DD',note:''},
+  {label:'~116 significant issues',s:6,e:9,c:'#7F77DD',note:''},
+  {label:'Stripe billing flow',s:5,e:8,c:'#1D9E75',note:''},
+  {label:'Carrier API (EasyPost/Shippo)',s:5,e:8,c:'#1D9E75',note:''},
+  {label:'Ship Calc live rates',s:7,e:9,c:'#7F77DD',note:'needs carrier API'},
+  {label:'Generate Labels functional',s:8,e:10,c:'#7F77DD',note:''},
+  {label:'Phase 3 — Platform integrations',phase:true},
+  {label:'Platform API integrations',s:4,e:12,c:'#1D9E75',note:'Approval timeline varies per platform'},
+  {label:'Live listing test (each platform)',s:10,e:12,c:'#1D9E75',note:''},
+  {label:'Sold / delist sync tested',s:11,e:12,c:'#1D9E75',note:''},
+  {label:'MILESTONE: integrations verified',s:12,e:12,c:'#E24B4A',ms:true},
+  {label:'Phase 4 — Infra + Security',phase:true},
+  {label:'Hosting, backups, uptime SLA',s:8,e:11,c:'#378ADD',note:''},
+  {label:'Security + auth hardening',s:9,e:12,c:'#378ADD',note:''},
+  {label:'Cross-browser + mobile testing',s:11,e:13,c:'#D4537E',note:''},
+  {label:'Accessibility fixes',s:10,e:13,c:'#7F77DD',note:''},
+  {label:'Phase 5 — Legal',phase:true},
+  {label:"ToS + Privacy (lawyer review)",s:6,e:10,c:'#BA7517',note:"Don't wait on this"},
+  {label:'Tax / GST assessment',s:8,e:11,c:'#BA7517',note:''},
+  {label:'Platform ToS compliance check',s:9,e:12,c:'#BA7517',note:''},
+  {label:'Phase 6 — Beta + Launch',phase:true},
+  {label:'Recruit 5 reseller beta users',s:11,e:13,c:'#D4537E',note:''},
+  {label:'Closed beta',s:13,e:15,c:'#D4537E',note:'Fix critical feedback'},
+  {label:'Fix critical beta feedback',s:15,e:16,c:'#7F77DD',note:''},
+  {label:'All 9 checklist sign-offs',s:16,e:16,c:'#BA7517',note:''},
+  {label:'MILESTONE: public launch',s:17,e:17,c:'#E24B4A',ms:true},
+];
+
+const g=document.getElementById('gantt');
+
+// Header
+const hr=document.createElement('div');
+hr.className='header-row';
+const hl=document.createElement('div');
+hl.className='h-label';
+hr.appendChild(hl);
+const hw=document.createElement('div');
+hw.className='h-weeks';
+for(let w=1;w<=W;w++){
+  const d=document.createElement('div');
+  d.className='wk';
+  d.textContent='W'+w;
+  hw.appendChild(d);
+}
+hr.appendChild(hw);
+g.appendChild(hr);
+
+tasks.forEach(t=>{
+  const row=document.createElement('div');
+  row.className='row';
+  const lbl=document.createElement('div');
+  lbl.className='row-label'+(t.phase?' phase-lbl':'');
+  lbl.textContent=t.label;
+  row.appendChild(lbl);
+  const grid=document.createElement('div');
+  grid.className='grid';
+  if(!t.phase&&!t.ms){
+    const bar=document.createElement('div');
+    bar.className='bar';
+    const p=100/W;
+    bar.style.left=((t.s-1)*p)+'%';
+    bar.style.width=((t.e-t.s+1)*p)+'%';
+    bar.style.background=t.c+'18';
+    bar.style.border='1px solid '+t.c+'99';
+    bar.style.color=t.c;
+    if((t.e-t.s)>=1&&t.note) bar.textContent=t.note;
+    grid.appendChild(bar);
+  }
+  if(t.ms){
+    const p=100/W;
+    const m=document.createElement('div');
+    m.className='ms';
+    m.style.background=t.c;
+    m.style.left='calc('+((t.s-1)*p)+'% + '+(p/2)+'% - 7px)';
+    grid.appendChild(m);
+  }
+  row.appendChild(grid);
+  g.appendChild(row);
+});
+</script>
+</body>
+</html>
