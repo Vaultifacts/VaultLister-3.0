@@ -63,7 +63,7 @@ import { emailMarketingRouter, emailMarketing } from './services/emailMarketing.
 import { enhancedMFARouter } from './services/enhancedMFA.js';
 import { auditLogRouter, auditLog } from './services/auditLog.js';
 import { pushNotificationsRouter } from './routes/pushNotifications.js';
-import { notionRouter } from './routes/notion.js';
+// Notion integration removed 2026-04-03 (see docs/LAUNCH_AUDIT_2026-04-03.md)
 import { sizeChartsRouter } from './routes/sizeCharts.js';
 import { legalRouter } from './routes/legal.js';
 import { affiliateRouter } from './routes/affiliate.js';
@@ -328,7 +328,7 @@ const apiRoutes = {
     '/api/mfa': enhancedMFARouter,
     '/api/audit': auditLogRouter,
     '/api/push-notifications': pushNotificationsRouter,
-    '/api/notion': notionRouter,
+    // '/api/notion': removed 2026-04-03
     '/api/competitor-tracking': competitorTrackingRouter,
     '/api/search-analytics': searchAnalyticsRouter,
     '/api/expenses': expenseTrackerRouter,
@@ -671,7 +671,7 @@ const protectedPrefixes = [
     '/api/csrf-token',
     '/api/security',
     '/api/push-notifications',
-    '/api/notion',
+    // '/api/notion', // removed 2026-04-03
     '/api/competitor-tracking',
     '/api/search-analytics',
     '/api/expenses',

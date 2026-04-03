@@ -41,18 +41,8 @@ async function main() {
   console.log('\n');
 
   try {
-    // First, show completed features (to avoid suggesting them)
-    console.log('STEP 1: Loading completed features...\n');
-    await runScript('fetch-completed-features.js');
-
-    console.log('\n\n');
-
-    // Then, show current Notion status
-    console.log('STEP 2: Checking Notion status...\n');
-    await runScript('check-notion-status.js');
-
     // Check server status
-    console.log('STEP 3: Checking server status...\n');
+    console.log('STEP 1: Checking server status...\n');
     let serverStatus = 'NOT RUNNING';
     try {
       const controller = new AbortController();
@@ -87,7 +77,7 @@ async function main() {
     console.log('║                                                            ║');
     console.log('║  REMINDERS:                                                ║');
     console.log('║  • Do NOT suggest features from "Completed" list above     ║');
-    console.log('║  • Work on "Pending" items from Notion status              ║');
+    console.log('║  • Work on pending items from STATUS.md                    ║');
     console.log('║  • Transfer "Approved to Move" items to Complete           ║');
     console.log('╚════════════════════════════════════════════════════════════╝');
     console.log('\n');

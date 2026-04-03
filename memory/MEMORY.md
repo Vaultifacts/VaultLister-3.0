@@ -22,9 +22,8 @@
 
 ## Behaviour Rules
 - **Never assume or guess** — always verify with a tool (Read, Grep, Bash) before stating something is true. This includes checklist status, file contents, env values, and test counts. Taking the user's word is fine, but stating facts without verification is not.
-- **Verify before creating tasks** — before marking any task as "remaining" in the Notion checklist, cross-check ALL available evidence: STATUS.md, MEMORY.md, git log, commit messages, audit-log.md, and codebase artifacts. If working code proves a feature exists (e.g. a live published listing proves bot credentials are configured), mark the prerequisite tasks as done. Never create open tasks for things already proven complete by evidence.
+- **Verify before creating tasks** — before marking any task as "remaining", cross-check ALL available evidence: STATUS.md, MEMORY.md, git log, commit messages, audit-log.md, and codebase artifacts. If working code proves a feature exists, mark the prerequisite tasks as done. Never create open tasks for things already proven complete by evidence.
 - **Always run long operations in background** — test suite runs (`npx playwright test`, `bun test`), server starts, build scripts, and any operation taking >10s must use `run_in_background: true` on Bash or be launched as a background agent. Never block the main conversation waiting for them.
-- **Update Notion immediately on task completion** — the moment a task's tests pass, PATCH the Notion block to `checked=true` BEFORE making any commit or moving to the next task. Never commit code for a task while its Notion item is still unchecked. Order must be: tests pass → Notion checked → commit. Do not batch Notion updates to the end of a session or wait for the user to ask.
 
 ## Critical Rules
 - Never push to main directly — use feature branches

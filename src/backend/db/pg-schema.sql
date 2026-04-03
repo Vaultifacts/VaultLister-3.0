@@ -2973,6 +2973,7 @@ CREATE TABLE IF NOT EXISTS ab_test_conversions (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- DEPRECATED: Notion integration removed 2026-04-03 (tables kept to avoid drop-table migration)
 -- Notion integration (migration 049)
 CREATE TABLE IF NOT EXISTS notion_settings (
     id TEXT PRIMARY KEY,

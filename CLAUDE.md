@@ -4,9 +4,6 @@
 
 # CLAUDE.md – VaultLister 3.0
 
-## Notion Dashboard
-https://www.notion.so/VaultLister-3-0-2799f0c81de682f49f9e81d8cb0f8aaf
-
 ## Core Mission
 Zero-cost, offline-capable multi-channel reselling platform for listing to 9+ marketplaces, managing inventory, and automating reseller workflows with AI-powered tools.
 
@@ -52,9 +49,6 @@ Key decisions:
 ```
 1. Read memory/STATUS.md + memory/MEMORY.md  # Auto-loaded by settings.json
 2. Work on pending items                      # Update STATUS.md immediately after each fix
-3. bun scripts/session-end.js                 # Safety net for missed updates
-4. bash scripts/reconcile-notion.sh           # Verify manifest counts + Notion reminders
-5. bun scripts/transfer-approved.js           # After user approves items
 ```
 
 ## Specialized Agents
@@ -168,7 +162,7 @@ renderApp(pages.currentPage());
 6. **Always escape HTML** for user content (`escapeHtml()`)
 7. **Use TEXT for all ID columns** (UUIDs, not INTEGER)
 8. **Include CSRF token** for POST/PUT/PATCH/DELETE requests
-9. **Notion page IDs are in `.env`** — never hardcode them in scripts
+9. **Environment variables are in `.env`** — never hardcode secrets in scripts
 10. **Never call `router.handleRoute()` from data loading functions** — causes infinite loops
 
 ## Bot Safety Rules (MANDATORY for automated agents)
@@ -214,7 +208,7 @@ The following functions in `app.js` form the auth persistence chain. Removing an
 - Always check file existence before Write — never overwrite unknown files
 - Never commit `.env`, secrets, or credentials
 - Git commits: `[AUTO]` prefix + conventional commit style (`feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `ci`, `build`, `revert`)
-- ALL `[AUTO]` commits MUST include `Notion-Skip: <reason>` (or `Notion-Done: <page-id>`) and `Verified: <how tested>` trailers. Commit-msg and pre-push enforce for all types except docs/style/ci.
+- ALL `[AUTO]` commits MUST include `Verified: <how tested>` trailers. Commit-msg hook enforces for all types except docs/style/ci.
 - Push to `master` directly (single-developer workflow). Use feature branches for large multi-day changes only.
 - Do not manually compact — global autocompact fires at 90%. Save findings to memory before compacting.
 - Use Explore subagent for codebase exploration > 5K LOC

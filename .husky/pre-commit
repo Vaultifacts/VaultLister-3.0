@@ -63,7 +63,7 @@ fi
 
 # Prevent committing temp/debug files
 echo "Checking for temp files..."
-TEMP_FILES=$(git diff --cached --name-only | grep -iE "(temp_.*\.json|notion_tmp\.json|tempnotion)" || true)
+TEMP_FILES=$(git diff --cached --name-only | grep -iE "(temp_.*\.json)" || true)
 if [ -n "$TEMP_FILES" ]; then
     echo "Error: Attempting to commit temporary files:"
     echo "$TEMP_FILES"
@@ -336,8 +336,7 @@ if [ -f "$MANIFEST" ] && command -v grep >/dev/null 2>&1; then
         echo ""
         echo "  Action required:"
         echo "  1. Update .claude/consistency-manifest.json with the new counts"
-        echo "  2. Update the Notion Rules Architecture page to reflect the changes"
-        echo "  3. Run: bash scripts/reconcile-notion.sh"
+        echo "  2. Verify the changes are intentional"
         echo ""
         echo "  (This is a warning, not a blocker. Commit proceeds — but update the manifest.)"
         echo ""
