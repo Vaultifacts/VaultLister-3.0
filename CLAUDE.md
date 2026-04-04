@@ -118,12 +118,12 @@ Load on demand based on task — do not read all at once:
 
 | Task | Reference |
 |------|-----------|
-| API endpoints, routes | `claude-docs/docs/reference/api.md` |
-| Backend architecture, services | `claude-docs/docs/reference/backend.md` |
-| Frontend components, state, handlers | `claude-docs/docs/reference/frontend.md` |
-| Database schema, migrations, queries | `claude-docs/docs/reference/database.md` |
-| CSRF, rate limiting, auth | `claude-docs/docs/reference/security.md` |
-| Test patterns, commands | `claude-docs/docs/reference/testing.md` |
+| API endpoints, routes | `docs/reference/api.md` |
+| Backend architecture, services | `docs/reference/backend.md` |
+| Frontend components, state, handlers | `docs/reference/frontend.md` |
+| Database schema, migrations, queries | `docs/reference/database.md` |
+| CSRF, rate limiting, auth | `docs/reference/security.md` |
+| Test patterns, commands | `docs/reference/testing.md` |
 | **Launch readiness, blockers, audit** | **`docs/LAUNCH_AUDIT_2026-04-03.md`** |
 
 > **Launch Audit (2026-04-03):** 33 verified findings, 12 hard launch blockers, cleanup matrix, and canonical source-of-truth proposal. Read before any launch-related work. Internal docs/evidence from March 5-15 overstate readiness — the audit is the current truth.

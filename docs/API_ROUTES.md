@@ -39,7 +39,6 @@ Generated from `src/backend/server.js` route map.
 | /api/mfa | enhancedMFARouter |
 | /api/monitoring | monitoringRouter |
 | /api/notifications | notificationsRouter |
-| /api/notion | notionRouter |
 | /api/oauth | oauthRouter |
 | /api/offers | offersRouter |
 | /api/offline-sync | offlineSyncRouter |
