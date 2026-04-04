@@ -284,6 +284,9 @@ const router = {
         'size-charts': { target: 'settings', tab: 'reference-data', storeKey: 'settingsTab' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
         'about': { target: 'help-support', tab: 'about' },
+        'my-shops': { target: 'shops' },
+        'billing': { target: 'plans-billing' },
+        'upgrade': { target: 'plans-billing' },
         'terms-of-service': { target: 'help-support', tab: 'terms' },
         'privacy-policy': { target: 'help-support', tab: 'privacy' },
         // admin-metrics: standalone page (no alias — loads admin chunk directly)

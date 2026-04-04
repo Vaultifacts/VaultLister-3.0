@@ -15398,7 +15398,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'cf4821e5';
+    const v = 'a06e9589';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15505,6 +15505,9 @@ const router = {
         'size-charts': { target: 'settings', tab: 'reference-data', storeKey: 'settingsTab' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
         'about': { target: 'help-support', tab: 'about' },
+        'my-shops': { target: 'shops' },
+        'billing': { target: 'plans-billing' },
+        'upgrade': { target: 'plans-billing' },
         'terms-of-service': { target: 'help-support', tab: 'terms' },
         'privacy-policy': { target: 'help-support', tab: 'privacy' },
         // admin-metrics: standalone page (no alias — loads admin chunk directly)
@@ -18067,7 +18070,7 @@ const pages = {
             <div class="dashboard-hero">
                 <div class="dashboard-hero-content">
                     <div class="dashboard-hero-greeting">
-                        <h1>${getGreeting()}, Reseller!</h1>
+                        <h1>${getGreeting()}, ${store.state.user?.display_name || store.state.user?.username || 'Reseller'}!</h1>
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">
@@ -20962,6 +20965,7 @@ const pages = {
                                 <input id="login-password" type="password" class="form-input" name="password" required
                                        autocomplete="current-password" aria-label="Password"
                                        aria-describedby="login-password-error"
+                                       placeholder="Enter your password"
                                        minlength="8" maxlength="128"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-password-error" role="alert">Password is required</span>
@@ -27983,6 +27987,10 @@ window.SUPPORTED_PLATFORMS = SUPPORTED_PLATFORMS;
 
 // Start the app
 initApp();
+
+// Startup assertions — surface immediately if init failed (Build Order T1.1)
+if (typeof handlers === 'undefined') console.error('[VaultLister] CRITICAL: handlers not initialised — interactive buttons will not work');
+if (typeof modals === 'undefined') console.error('[VaultLister] CRITICAL: modals not initialised');
 
 // Preload current route chunk + eagerly load deferred chunk after first render
 // The deferred chunk contains handlers called from inline onclick in core templates;

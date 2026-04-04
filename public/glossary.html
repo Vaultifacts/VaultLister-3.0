@@ -299,6 +299,28 @@
         <a href="#T">T</a>
     </nav>
 
+    <section class="glossary-section" aria-labelledby="letter-A">
+        <h2 class="glossary-letter" id="A">A</h2>
+        <dl class="glossary-list">
+
+            <div class="glossary-item" id="term-arbitrage">
+                <dt class="term">Arbitrage</dt>
+                <dd class="definition">The practice of buying items at a lower price from one marketplace and reselling them at a higher price on another. Common in reselling when price discrepancies exist between platforms like eBay, Poshmark, and Mercari.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-authentication">
+                <dt class="term">Authentication</dt>
+                <dd class="definition">The process of verifying a user's identity before granting access to VaultLister features. VaultLister uses JWT-based authentication with optional two-factor authentication (TOTP) for enhanced security.</dd>
+            </div>
+
+            <div class="glossary-item" id="term-average-order-value">
+                <dt class="term">Average Order Value (AOV)</dt>
+                <dd class="definition">A key metric calculated by dividing total revenue by the number of orders. Used in VaultLister's Analytics dashboard to track sales performance over time.</dd>
+            </div>
+
+        </dl>
+    </section>
+
     <section class="glossary-section" aria-labelledby="letter-B">
         <h2 class="glossary-letter" id="B">B</h2>
         <dl class="glossary-list">
@@ -482,8 +504,9 @@
 </main>
 
 <footer class="footer">
-    <p>&copy; 2026 VaultLister &mdash; <a href="/terms.html">Terms</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/glossary.html" aria-current="page">Glossary</a></p>
+    <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/terms.html">Terms</a> &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/glossary.html" aria-current="page">Glossary</a></p>
 </footer>
+<script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
 
 </body>
 </html>

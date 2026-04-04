@@ -261,7 +261,7 @@ const pages = {
             <div class="dashboard-hero">
                 <div class="dashboard-hero-content">
                     <div class="dashboard-hero-greeting">
-                        <h1>${getGreeting()}, Reseller!</h1>
+                        <h1>${getGreeting()}, ${store.state.user?.display_name || store.state.user?.username || 'Reseller'}!</h1>
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">
@@ -3156,6 +3156,7 @@ const pages = {
                                 <input id="login-password" type="password" class="form-input" name="password" required
                                        autocomplete="current-password" aria-label="Password"
                                        aria-describedby="login-password-error"
+                                       placeholder="Enter your password"
                                        minlength="8" maxlength="128"
                                        oninput="handlers.validateLoginField(this)">
                                 <span class="field-error-text" id="login-password-error" role="alert">Password is required</span>

@@ -774,7 +774,8 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 VaultLister &mdash; <a href="/#help-support">Help</a></p>
+            <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash; <a href="/#help-support">Help</a></p>
+            <script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
         </div>
     </div>
 </footer>

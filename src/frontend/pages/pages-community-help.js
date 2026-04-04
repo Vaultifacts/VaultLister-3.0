@@ -233,7 +233,7 @@ Object.assign(pages, {
                         <p style="margin-bottom: 1rem;">The Service and its original content, features, and functionality are owned by VaultLister and are protected by international copyright, trademark, and other intellectual property laws.</p>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">7. Data Storage</h2>
-                        <p style="margin-bottom: 1rem;">VaultLister stores your data locally on your device by default. You are responsible for backing up your data. We are not liable for any data loss that may occur.</p>
+                        <p style="margin-bottom: 1rem;">VaultLister stores your data securely in the cloud using encrypted PostgreSQL databases. Regular automated backups are performed. You are responsible for maintaining the security of your account credentials.</p>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">8. Limitation of Liability</h2>
                         <p style="margin-bottom: 1rem;">In no event shall VaultLister be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.</p>
@@ -2644,7 +2644,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
 
     helpSupport() {
-        const supportStats = store.state.supportStats || { articlesRead: 12, ticketsOpen: 1, avgResponseTime: '2h' };
+        const supportStats = store.state.supportStats || { articlesRead: 0, ticketsOpen: 0, avgResponseTime: '0h' };
         const popularArticles = store.state.popularArticles || [
             { id: 1, title: 'Getting Started with Cross-Listing', views: 1240, category: 'Basics' },
             { id: 2, title: 'How to Connect Your eBay Account', views: 980, category: 'Integrations' },

@@ -312,12 +312,13 @@
 </main>
 
 <footer class="footer">
-    <p>&copy; 2026 VaultLister &mdash;
+    <p>&copy; <span class="copyright-year">2026</span> VaultLister &mdash;
         <a href="/terms.html">Terms</a> &middot;
         <a href="/privacy.html">Privacy</a> &middot;
         <a href="/">Home</a>
     </p>
 </footer>
+<script>document.querySelectorAll('.copyright-year').forEach(function(el){el.textContent=new Date().getFullYear()})</script>
 
 </body>
 </html>

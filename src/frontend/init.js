@@ -686,6 +686,10 @@ window.SUPPORTED_PLATFORMS = SUPPORTED_PLATFORMS;
 // Start the app
 initApp();
 
+// Startup assertions — surface immediately if init failed (Build Order T1.1)
+if (typeof handlers === 'undefined') console.error('[VaultLister] CRITICAL: handlers not initialised — interactive buttons will not work');
+if (typeof modals === 'undefined') console.error('[VaultLister] CRITICAL: modals not initialised');
+
 // Preload current route chunk + eagerly load deferred chunk after first render
 // The deferred chunk contains handlers called from inline onclick in core templates;
 // it must be loaded before users can interact with modals and pages.

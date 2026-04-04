@@ -7,7 +7,12 @@ import { logger } from '../shared/logger.js';
 import websocketService from '../services/websocket.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
 import { safeJsonParse } from '../shared/utils.js';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8'));
 
 export async function monitoringRouter(ctx) {
     const { method, path, user } = ctx;
@@ -23,7 +28,7 @@ export async function monitoringRouter(ctx) {
                 data: {
                     status: 'healthy',
                     timestamp: new Date().toISOString(),
-                    version: '1.0.0'
+                    version: pkg.version
                 }
             };
         } catch (error) {
