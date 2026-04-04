@@ -11770,7 +11770,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
         const keyPoints = [
             { icon: '✓', title: 'Free to Use', description: 'VaultLister is free for personal use' },
-            { icon: '🔒', title: 'Your Data, Your Control', description: 'Data stored locally on your device' },
+            { icon: '🔒', title: 'Your Data, Your Control', description: 'Data stored securely in encrypted cloud databases' },
             { icon: '📋', title: 'Fair Use Policy', description: 'Use responsibly and ethically' }
         ];
 
@@ -11908,7 +11908,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
         const dataCategories = [
             { icon: '👤', category: 'Account Data', examples: 'Name, email, username', retention: 'Until account deletion' },
-            { icon: '📦', category: 'Inventory Data', examples: 'Listings, photos, prices', retention: 'Stored locally on your device' },
+            { icon: '📦', category: 'Inventory Data', examples: 'Listings, photos, prices', retention: 'Until account deletion' },
             { icon: '📈', category: 'Usage Data', examples: 'Features used, preferences', retention: '90 days' },
             { icon: '🔗', category: 'Integration Data', examples: 'Connected platform tokens', retention: 'Until disconnection' }
         ];
@@ -13678,7 +13678,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Active Competitors</div>
                     <div style="font-size: 36px; font-weight: 700; color: var(--primary-600);">${competitors.length || 0}</div>
-                    <div style="font-size: 11px; color: var(--success); margin-top: 4px;">+3 this week</div>
+                    <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">Tracking active</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Avg Competitor Items</div>
@@ -14014,21 +14014,9 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 </div>
                 <div class="card-body">
                     <div class="space-y-2">
-                        ${[
-                            { type: 'price_surge', severity: 'high', title: 'Vintage Electronics prices up 15%', description: 'Average selling price increased significantly in the last 7 days', time: '2 hours ago', color: 'success' },
-                            { type: 'demand_spike', severity: 'medium', title: 'Sports Memorabilia demand spike', description: 'Listing-to-sale ratio improved by 23% this week', time: '5 hours ago', color: 'primary' },
-                            { type: 'price_drop', severity: 'high', title: 'Designer Handbag prices dropping', description: 'Market oversupply causing 12% average price decline', time: '1 day ago', color: 'danger' },
-                            { type: 'new_competitor', severity: 'low', title: 'New high-volume seller detected', description: 'A seller listed 50+ items in your top categories', time: '2 days ago', color: 'warning' }
-                        ].map(alert => `
-                            <div style="display: flex; gap: 12px; padding: 12px; background: var(--gray-50); border-left: 3px solid var(--${alert.color}); border-radius: 4px;">
-                                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--${alert.color}); margin-top: 6px; flex-shrink: 0;"></div>
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 600; font-size: 13px;">${alert.title}</div>
-                                    <p style="font-size: 12px; color: var(--gray-500); margin: 2px 0 0;">${alert.description}</p>
-                                </div>
-                                <span style="font-size: 11px; color: var(--gray-400); white-space: nowrap;">${alert.time}</span>
-                            </div>
-                        `).join('')}
+                        <div style="text-align: center; padding: 24px; color: var(--gray-400);">
+                            <p style="font-size: 13px;">No market alerts yet. Alerts will appear as market conditions change.</p>
+                        </div>
                     </div>
                 </div>
             </div>

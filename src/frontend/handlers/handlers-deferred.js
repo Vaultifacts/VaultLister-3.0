@@ -4587,10 +4587,7 @@ Object.assign(handlers, {
 
     createPurchaseOrder: function() {
         const suppliers = store.state.suppliers || [];
-        const displaySuppliers = suppliers.length > 0 ? suppliers : [
-            { id: '1', name: 'ThriftWholesale' }, { id: '2', name: 'VintageSupply Co' },
-            { id: '3', name: 'BulkClothing Direct' }, { id: '4', name: 'Designer Liquidators' }
-        ];
+        const displaySuppliers = suppliers;
         modals.show('Create Purchase Order', `
             <form onsubmit="handlers.savePurchaseOrder(event)" style="padding: 8px;">
                 <div class="form-group">
