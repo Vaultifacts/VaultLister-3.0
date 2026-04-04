@@ -2041,9 +2041,9 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         const versionFilter = store.state.changelogVersionFilter || 'all';
 
         // Track "New since last visit"
-        const lastChangelogVisit = localStorage.getItem('vaultlister_changelog_last_visit');
+        const lastChangelogVisit = (() => { try { return localStorage.getItem('vaultlister_changelog_last_visit'); } catch { return null; } })();
         const lastVisitDate = lastChangelogVisit ? new Date(lastChangelogVisit) : null;
-        setTimeout(() => localStorage.setItem('vaultlister_changelog_last_visit', new Date().toISOString()), 2000);
+        setTimeout(() => { try { localStorage.setItem('vaultlister_changelog_last_visit', new Date().toISOString()); } catch(e) {} }, 2000);
 
         // Count changes by type
         const allChanges = versions.flatMap(v => v.changes);

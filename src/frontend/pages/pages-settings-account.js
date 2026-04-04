@@ -73,13 +73,10 @@ Object.assign(pages, {
         const platformColors = {
             poshmark: '#7c3aed',
             ebay: '#0064d2',
-            mercari: '#4dc9f6',
+            whatnot: '#ff4757',
             depop: '#ff2300',
-            grailed: '#000000',
-            etsy: '#f56400',
             shopify: '#96bf48',
-            facebook: '#1877f2',
-            whatnot: '#ff4757'
+            facebook: '#1877f2'
         };
 
         return `
@@ -114,7 +111,7 @@ Object.assign(pages, {
                             </svg>
                             <div class="connection-count">
                                 <span class="count-value">${connectedShops.length}</span>
-                                <span class="count-label">of 9</span>
+                                <span class="count-label">of 6</span>
                             </div>
                         </div>
                         <div class="connection-info">
@@ -313,7 +310,7 @@ Object.assign(pages, {
 
             <!-- Shop Cards Grid -->
             <div class="grid grid-cols-3 gap-6">
-                ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot'].map(platform => {
+                ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(platform => {
                     const shop = shops.find(s => s.platform === platform);
                     const isConnected = shop?.is_connected || false;
                     const connectionType = shop?.connection_type || 'manual';
@@ -710,6 +707,7 @@ Object.assign(pages, {
 
 
     settings() {
+        const safeGet = (key, fallback = null) => { try { return localStorage.getItem(key); } catch { return fallback; } };
         const hasUnsavedChanges = store.state.settingsChanged || false;
         const activeTab = store.state.settingsTab || 'profile';
         const user = store.state.user || {};
@@ -756,8 +754,8 @@ Object.assign(pages, {
                                     <input type="text" class="form-input" id="settings-full-name" value="${escapeHtml(user.full_name || '')}" oninput="handlers.markSettingsChanged()">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="settings-email">Email</label>
-                                    <input type="email" id="settings-email" class="form-input" value="${escapeHtml(user.email || '')}" disabled>
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-input" value="${escapeHtml(user.email || '')}" disabled>
                                     <span class="form-hint">Contact support to change email</span>
                                 </div>
                                 <div class="form-group">
@@ -882,7 +880,7 @@ Object.assign(pages, {
                             <h4 class="settings-section-title">Accent Color</h4>
                             <div class="accent-colors">
                                 ${['blue', 'green', 'purple', 'orange', 'pink', 'red', 'teal', 'indigo'].map(color => `
-                                    <button class="accent-color-option ${localStorage.getItem('vaultlister_accent') === color ? 'active' : ''}"
+                                    <button class="accent-color-option ${safeGet('vaultlister_accent') === color ? 'active' : ''}"
                                             style="--accent-preview: var(--${color}-500);"
                                             onclick="handlers.setAccentColor('${color}')">
                                         <span class="accent-color-swatch"></span>
@@ -898,17 +896,17 @@ Object.assign(pages, {
                                 <div class="form-group">
                                     <label class="form-label">Density</label>
                                     <select class="form-select" onchange="themeManager.setDensity(this.value)">
-                                        <option value="compact" ${localStorage.getItem('vaultlister_density') === 'compact' ? 'selected' : ''}>Compact</option>
-                                        <option value="default" ${localStorage.getItem('vaultlister_density') === 'default' || !localStorage.getItem('vaultlister_density') ? 'selected' : ''}>Default</option>
-                                        <option value="comfortable" ${localStorage.getItem('vaultlister_density') === 'comfortable' ? 'selected' : ''}>Comfortable</option>
+                                        <option value="compact" ${safeGet('vaultlister_density') === 'compact' ? 'selected' : ''}>Compact</option>
+                                        <option value="default" ${safeGet('vaultlister_density') === 'default' || !safeGet('vaultlister_density') ? 'selected' : ''}>Default</option>
+                                        <option value="comfortable" ${safeGet('vaultlister_density') === 'comfortable' ? 'selected' : ''}>Comfortable</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Font Size</label>
                                     <select class="form-select" onchange="themeManager.setFontSize(this.value)">
-                                        <option value="small" ${localStorage.getItem('vaultlister_fontsize') === 'small' ? 'selected' : ''}>Small (14px)</option>
-                                        <option value="default" ${localStorage.getItem('vaultlister_fontsize') === 'default' || !localStorage.getItem('vaultlister_fontsize') ? 'selected' : ''}>Default (16px)</option>
-                                        <option value="large" ${localStorage.getItem('vaultlister_fontsize') === 'large' ? 'selected' : ''}>Large (18px)</option>
+                                        <option value="small" ${safeGet('vaultlister_fontsize') === 'small' ? 'selected' : ''}>Small (14px)</option>
+                                        <option value="default" ${safeGet('vaultlister_fontsize') === 'default' || !safeGet('vaultlister_fontsize') ? 'selected' : ''}>Default (16px)</option>
+                                        <option value="large" ${safeGet('vaultlister_fontsize') === 'large' ? 'selected' : ''}>Large (18px)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1544,14 +1542,7 @@ Object.assign(pages, {
                             <p class="text-sm text-gray-500 mb-4">Recent login activity and security events for your account.</p>
                             <div class="activity-log-container">
                                 ${(() => {
-                                    const activityLog = store.state.accountActivityLog || [
-                                        { type: 'login', device: 'Windows PC', browser: 'Chrome 120', ip: '192.168.1.100', location: 'New York, US', timestamp: new Date().toISOString(), current: true },
-                                        { type: 'login', device: 'iPhone 15', browser: 'Safari Mobile', ip: '192.168.1.105', location: 'New York, US', timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-                                        { type: 'password_change', device: 'Windows PC', browser: 'Chrome 120', ip: '192.168.1.100', location: 'New York, US', timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
-                                        { type: 'login', device: 'MacBook Pro', browser: 'Firefox 121', ip: '10.0.0.15', location: 'Boston, US', timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() },
-                                        { type: '2fa_enabled', device: 'Windows PC', browser: 'Chrome 120', ip: '192.168.1.100', location: 'New York, US', timestamp: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() },
-                                        { type: 'login_failed', device: 'Unknown', browser: 'Unknown', ip: '45.33.32.156', location: 'Unknown', timestamp: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString() }
-                                    ];
+                                    const activityLog = store.state.accountActivityLog || [];
 
                                     const getActivityIcon = (type) => {
                                         switch(type) {
@@ -1820,44 +1811,44 @@ Object.assign(pages, {
                 <p class="page-description">Customize your VaultLister experience</p>
             </div>
 
-            <!-- Feature 5: Settings Changelog Banner -->
-            ${(() => {
-                const lastVisit = localStorage.getItem('vaultlister_settings_last_visit');
-                let changes = [];
-                try {
-                    changes = JSON.parse(localStorage.getItem('vaultlister_settings_changes') || '[]');
-                } catch (e) {
-                    console.error('Failed to parse settings changes:', e); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring
-                    changes = [];
-                }
-                if (changes.length > 0 && lastVisit) {
-                    const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
-                    const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
-                    return `
-                        <div class="settings-changelog-banner" style="background: #dbeafe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; color: #0c4a6e; margin-bottom: 4px;">Settings Updated</div>
-                                <div style="font-size: 13px; color: #0c4a6e; margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
-                            </div>
-                            <button class="btn btn-sm btn-secondary" onclick="handlers.dismissSettingsChangelog()" style="white-space: nowrap;">Dismiss</button>
-                        </div>
-                    `;
-                }
-                return '';
-            })()}
-
-            <!-- Settings Search -->
-            <div class="settings-search-wrapper" style="margin-bottom: 12px; position: relative;">
-                <input type="text" class="form-input" id="settings-search-input" placeholder="Search settings..."
-                    oninput="handlers.settingsSearch(this.value)" autocomplete="off"
-                    style="padding-left: 36px; max-width: 320px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;">
-                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <div id="settings-search-results" style="display:none; position:absolute; top:100%; left:0; width:320px; background:var(--card-bg, #fff); border:1px solid var(--gray-200); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:10; max-height:240px; overflow-y:auto; margin-top:4px;"></div>
-            </div>
-
             <div class="settings-container">
+                <!-- Feature 5: Settings Changelog Banner -->
+                ${(() => {
+                    const lastVisit = safeGet('vaultlister_settings_last_visit');
+                    let changes = [];
+                    try {
+                        changes = JSON.parse(safeGet('vaultlister_settings_changes') || '[]');
+                    } catch (e) {
+                        console.error('Failed to parse settings changes:', e);
+                        changes = [];
+                    }
+                    if (changes.length > 0 && lastVisit) {
+                        const changesList = changes.slice(0, 3).map(c => `${c}`).join(', ');
+                        const moreText = changes.length > 3 ? ` and ${changes.length - 3} more` : '';
+                        return `
+                            <div class="settings-changelog-banner" style="background: #dbeafe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; color: #0c4a6e; margin-bottom: 4px;">Settings Updated</div>
+                                    <div style="font-size: 13px; color: #0c4a6e; margin-bottom: 4px;">Recent changes: ${escapeHtml(changesList)}${moreText}</div>
+                                </div>
+                                <button class="btn btn-sm btn-secondary" onclick="handlers.dismissSettingsChangelog()" style="white-space: nowrap;">Dismiss</button>
+                            </div>
+                        `;
+                    }
+                    return '';
+                })()}
+
+                <!-- Settings Search -->
+                <div class="settings-search-wrapper" style="margin-bottom: 12px; position: relative;">
+                    <input type="text" class="form-input" id="settings-search-input" placeholder="Search settings..."
+                        oninput="handlers.settingsSearch(this.value)" autocomplete="off"
+                        style="padding-left: 36px; max-width: 320px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <div id="settings-search-results" style="display:none; position:absolute; top:100%; left:0; width:320px; background:var(--card-bg, #fff); border:1px solid var(--gray-200); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:10; max-height:240px; overflow-y:auto; margin-top:4px;"></div>
+                </div>
+
                 <!-- Settings Tabs -->
                 <div class="settings-tabs">
                     <button class="settings-tab ${activeTab === 'profile' ? 'active' : ''}" onclick="handlers.setSettingsTab('profile')">
@@ -2043,22 +2034,6 @@ Object.assign(pages, {
                                     Update Password
                                 </button>
                             </div>
-                        </div>
-
-                        <hr style="margin: 24px 0; border-color: var(--gray-200);">
-
-                        <h3 class="font-semibold mb-4">Two-Factor Authentication</h3>
-                        <div style="display: flex; align-items: center; justify-content: space-between; max-width: 400px;">
-                            <div>
-                                <p style="font-size: 14px; color: var(--gray-600);">
-                                    ${store.state.twoFactorEnabled
-                                        ? 'Enabled via ' + escapeHtml(store.state.twoFactorMethod || 'authenticator')
-                                        : 'Add an extra layer of security to your account'}
-                                </p>
-                            </div>
-                            <button class="btn ${store.state.twoFactorEnabled ? 'btn-secondary' : 'btn-primary'}" onclick="handlers.enable2FA()">
-                                ${store.state.twoFactorEnabled ? 'Manage' : 'Enable 2FA'}
-                            </button>
                         </div>
                     </div>
                 </div>

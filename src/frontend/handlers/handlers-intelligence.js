@@ -73,41 +73,6 @@ Object.assign(handlers, {
         `);
     },
 
-    // What-If Scenario handler,
-
-
-    runWhatIfScenario: function() {
-        const priceChange = parseInt(document.getElementById('whatif-price-change')?.value || 0);
-        const category = document.getElementById('whatif-category')?.value || 'all';
-        const period = parseInt(document.getElementById('whatif-period')?.value || 30);
-
-        store.setState({ whatIfPriceChange: priceChange });
-
-        toast.info('Running scenario analysis...');
-        setTimeout(() => {
-            const baseRevenue = store.state.sales?.reduce((sum, s) => sum + (s.sale_price || 0), 0) || 2500;
-            const baseSales = store.state.sales?.length || 25;
-            const revenueMultiplier = 1 + (priceChange / 100);
-            const demandImpact = priceChange > 0 ? 1 - (priceChange / 200) : 1 + (Math.abs(priceChange) / 150);
-            const projectedSales = Math.round(baseSales * demandImpact * (period / 30));
-            const projectedRevenue = Math.round(baseRevenue * revenueMultiplier * demandImpact * (period / 30));
-            const baseDays = 12;
-            const daysToSell = Math.max(1, Math.round(baseDays * (priceChange > 0 ? 1 + priceChange / 50 : 1 - Math.abs(priceChange) / 80)));
-            const profitImpact = Math.round((revenueMultiplier * demandImpact - 1) * 100);
-
-            store.setState({
-                whatIfResults: {
-                    revenue: projectedRevenue.toLocaleString(),
-                    sales: projectedSales,
-                    daysToSell: daysToSell,
-                    profitImpact: profitImpact
-                }
-            });
-            toast.success('Scenario analysis complete');
-            renderApp(pages.predictions());
-        }, 800);
-    },
-
     // Prediction Details modal (enhanced),
 
 
@@ -360,7 +325,8 @@ Object.assign(handlers, {
 
 
     setStarRating: function(rating) {
-        document.getElementById('rating-input').value = rating;
+        const ratingInput = document.getElementById('rating-input');
+        if (ratingInput) ratingInput.value = rating;
         document.querySelectorAll('#star-rating span').forEach(star => {
             star.style.color = parseInt(star.dataset.star) <= rating ? 'var(--warning)' : 'var(--gray-300)';
         });
@@ -455,31 +421,6 @@ Object.assign(handlers, {
             const pageContent = pages.suppliers();
             document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
-    },
-
-    // Feature 3: Delete supplier with confirmation,
-
-
-    deleteSupplier: function(id) {
-        const supplier = store.state.suppliers?.find(s => s.id === id);
-        if (!supplier) return;
-
-        const linkedItems = (store.state.inventory || []).filter(item => item.supplier_id === id).length;
-
-        modals.show('Delete Supplier', `
-            <div style="padding: 16px;">
-                <p style="color: var(--gray-700); margin-bottom: 16px;">
-                    Delete <strong>${escapeHtml(supplier.name)}</strong>? This supplier has <strong>${linkedItems} items</strong> linked.
-                </p>
-                <div style="padding: 12px; background: var(--warning-light); border-left: 3px solid var(--warning); border-radius: 4px; margin-bottom: 16px;">
-                    <span style="color: var(--gray-700); font-size: 12px;">This action cannot be undone.</span>
-                </div>
-                <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                    <button class="btn btn-error" onclick="handlers.confirmDeleteSupplier('${id}')">Delete Supplier</button>
-                </div>
-            </div>
-        `);
     },
 
 
@@ -600,8 +541,10 @@ Object.assign(handlers, {
                 </div>
             `;
 
-            document.getElementById('csv-preview').innerHTML = sanitizeHTML(preview);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            document.getElementById('import-suppliers-btn').style.display = 'block';
+            const csvPreviewEl = document.getElementById('csv-preview');
+            if (csvPreviewEl) csvPreviewEl.innerHTML = sanitizeHTML(preview);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            const importBtn = document.getElementById('import-suppliers-btn');
+            if (importBtn) importBtn.style.display = 'block';
         };
         reader.readAsText(file);
     },

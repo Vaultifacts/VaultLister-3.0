@@ -226,17 +226,6 @@ Object.assign(handlers, {
     },
 
 
-    toggleImageSelection: function(imageId) {
-        const selected = store.state.selectedImages || [];
-        if (selected.includes(imageId)) {
-            store.setState({ selectedImages: selected.filter(id => id !== imageId) });
-        } else {
-            store.setState({ selectedImages: [...selected, imageId] });
-        }
-        renderApp(pages.imageBank());
-    },
-
-
     selectAllImages: function() {
         const images = store.state.imageBankImages || [];
         store.setState({ selectedImages: images.map(i => i.id) });
@@ -382,31 +371,6 @@ Object.assign(handlers, {
 
     addCalendarEvent: function(date) {
         modals.addCalendarEvent(date);
-    },
-
-
-    saveCalendarEvent: function(e, defaultDate) {
-        e.preventDefault();
-        const form = e.target;
-        const events = store.state.calendarEvents || [];
-        const recurrence = form.recurrence?.value || 'none';
-        const recurrenceEnd = form.recurrenceEnd?.value || null;
-        const newEvent = {
-            id: Date.now().toString(),
-            date: form.date ? form.date.value : defaultDate,
-            title: form.title.value,
-            time: form.time.value,
-            type: form.type.value,
-            notes: form.notes ? form.notes.value : '',
-            recurrence: recurrence,
-            recurrenceEnd: recurrenceEnd,
-            depends_on: form.depends_on ? form.depends_on.value || null : null
-        };
-        store.setState({ calendarEvents: [...events, newEvent] });
-        modals.close();
-        const recurrenceLabel = recurrence !== 'none' ? ` (repeats ${recurrence})` : '';
-        toast.success('Event added' + recurrenceLabel);
-        renderApp(pages.calendar());
     },
 
     // Whatnot Live scheduling from Calendar,
@@ -747,7 +711,7 @@ Object.assign(handlers, {
             return html;
         };
 
-        container.innerHTML =sanitizeHTML( sanitizeHTML(`<div>${renderMiniChart(selA.value)}</div><div>${renderMiniChart(selB.value)}</div>`));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        container.innerHTML = sanitizeHTML(`<div>${renderMiniChart(selA.value)}</div><div>${renderMiniChart(selB.value)}</div>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     },
 
 
@@ -865,7 +829,7 @@ Object.assign(handlers, {
             const sizeResultEl = document.getElementById('size-recommendation-result');
             if (!sizeResultEl) return;
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            sizeResultEl.innerHTML =sanitizeHTML( sanitizeHTML(`
+            sizeResultEl.innerHTML = sanitizeHTML(`
                 <div class="card" style="padding: 16px; background: var(--bg-success-subtle); border: 1px solid var(--border-success);">
                     <h4>Recommended Size: ${data.recommended_size || 'M'}</h4>
                     <p style="color: var(--text-secondary);">Based on your measurements</p>
@@ -873,9 +837,10 @@ Object.assign(handlers, {
                         ${Object.entries(data.size_conversions || {}).map(([sys, sz]) => `<span class="badge" style="margin: 2px;">${sys}: ${sz}</span>`).join('')}
                     </div>
                 </div>
-            `));
+            `);
         } catch (err) {
-            document.getElementById('size-recommendation-result').innerHTML =sanitizeHTML( sanitizeHTML('<p style="color: var(--text-error);">Failed to get recommendation</p>'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            const sizeResultEl = document.getElementById('size-recommendation-result');
+            if (sizeResultEl) sizeResultEl.innerHTML = sanitizeHTML('<p style="color: var(--text-error);">Failed to get recommendation</p>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             console.error(err);
         }
     },
@@ -987,7 +952,7 @@ Object.assign(handlers, {
 
         const rec = getSize(bust, waist, hips);
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        container.innerHTML =sanitizeHTML( sanitizeHTML(`
+        container.innerHTML = sanitizeHTML(`
             <div class="p-4 bg-green-50 rounded-lg border border-green-200 mt-4">
                 <h4 class="font-semibold text-green-800 mb-2">${components.icon('check-circle', 16)} Your Recommended Size</h4>
                 <div class="grid grid-cols-3 gap-4">
@@ -997,7 +962,7 @@ Object.assign(handlers, {
                 </div>
                 <p class="text-xs text-gray-500 mt-2">Based on: ${bust ? 'Bust ' + bust + '"' : ''}${waist ? ' Waist ' + waist + '"' : ''}${hips ? ' Hips ' + hips + '"' : ''}</p>
             </div>
-        `));
+        `);
     },
 
 
@@ -1470,7 +1435,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 // Animate the new task sliding in
                 setTimeout(() => {
                     const wrapper = document.querySelector('.checklist-items .checklist-item-wrapper:first-child');
@@ -1509,7 +1474,7 @@ Object.assign(handlers, {
 
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 }
             } else {
                 // Optimistic UI update — reflect checkbox immediately
@@ -1520,7 +1485,7 @@ Object.assign(handlers, {
                 store.setState({ checklistItems: updatedItems });
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 }
 
                 // Debounce server request: only the latest toggle state gets sent
@@ -1542,7 +1507,7 @@ Object.assign(handlers, {
 
                         if (store.state.currentPage === 'checklist') {
                             const pageContent = pages.checklist();
-                            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                             setTimeout(() => handlers.checkChecklistCelebration(), 100);
                         }
                     } catch (error) {
@@ -1551,7 +1516,7 @@ Object.assign(handlers, {
                         await handlers.loadChecklistItems();
                         if (store.state.currentPage === 'checklist') {
                             const pageContent = pages.checklist();
-                            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                         }
                     } finally {
                         delete this._pendingToggles[itemId];
@@ -1572,11 +1537,11 @@ Object.assign(handlers, {
             // Show celebration overlay
             const overlay = document.createElement('div');
             overlay.className = 'checklist-celebration';
-            overlay.innerHTML =sanitizeHTML( sanitizeHTML('<div class="celebration-content">' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            overlay.innerHTML = sanitizeHTML('<div class="celebration-content">') +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 '<div class="celebration-icon">🎉</div>' +
                 '<h2 style="font-size: 24px; font-weight: 700; margin: 12px 0 4px;">All Tasks Complete!</h2>' +
                 '<p style="color: var(--gray-500); font-size: 14px;">Great job! You finished everything today.</p>' +
-                '</div>'));
+                '</div>';
             document.body.appendChild(overlay);
             setTimeout(() => {
                 overlay.classList.add('fade-out');
@@ -1612,7 +1577,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
             toast.error('Failed to duplicate: ' + error.message);
@@ -1727,7 +1692,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -1802,7 +1767,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -1827,7 +1792,7 @@ Object.assign(handlers, {
 
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 }
             } else {
                 await api.ensureCSRFToken();
@@ -1838,7 +1803,7 @@ Object.assign(handlers, {
 
                 if (store.state.currentPage === 'checklist') {
                     const pageContent = pages.checklist();
-                    document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 }
             }
         } catch (error) {
@@ -1958,7 +1923,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
             toast.error('Failed to update task: ' + error.message);
@@ -2013,7 +1978,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'checklist') {
                 const pageContent = pages.checklist();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 // Re-focus the quick add input for rapid entry
                 const input = document.getElementById('quick-add-task-input');
                 if (input) input.focus();
@@ -2029,7 +1994,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -2054,7 +2019,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
         toast.success('List created!');
     },
@@ -2064,7 +2029,7 @@ Object.assign(handlers, {
         store.setState({ activeTodoListId: listId });
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -2082,7 +2047,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
         toast.success('List deleted');
     },
@@ -2100,7 +2065,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             // Focus the input again
             setTimeout(() => document.getElementById('todo-quick-add')?.focus(), 100);
         }
@@ -2118,7 +2083,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -2134,7 +2099,7 @@ Object.assign(handlers, {
 
         if (store.state.currentPage === 'checklist') {
             const pageContent = pages.checklist();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -2787,20 +2752,20 @@ Object.assign(handlers, {
                     const items = usageData.usage || [];
                     if (items.length > 0) {
                         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                        usageContainer.innerHTML =sanitizeHTML( sanitizeHTML(items.map(item => `
+                        usageContainer.innerHTML = sanitizeHTML(items.map(item => `
                             <div class="image-usage-item" onclick="modals.close(); router.navigate('inventory/${item.inventory_id}')">
                                 ${components.icon('package', 14)}
                                 <span>${escapeHtml(item.title)}</span>
                             </div>
-                        `).join('')));
+                        `).join(''));
                     } else {
-                        usageContainer.innerHTML =sanitizeHTML( sanitizeHTML('<div class="image-usage-empty">Not used in any listings yet</div>'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        usageContainer.innerHTML = sanitizeHTML('<div class="image-usage-empty">Not used in any listings yet</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     }
                 }
             } catch (err) {
                 const usageContainer = document.getElementById('image-usage-list');
                 if (usageContainer) {
-                    usageContainer.innerHTML =sanitizeHTML( sanitizeHTML('<div class="image-usage-empty">Could not load usage data</div>'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    usageContainer.innerHTML = sanitizeHTML('<div class="image-usage-empty">Could not load usage data</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 }
             }
         } catch (error) {
@@ -3019,7 +2984,7 @@ Object.assign(handlers, {
                     const file = new File([blob], image.original_filename, { type: image.mime_type });
                     files.push(file);
                 } catch (err) {
-                    console.error('Failed to fetch image:', image.id, err); // nosemgrep: javascript.lang.security.audit.unsafe-formatstring
+                    console.error(`Failed to fetch image ${image.id}:`, err);
                 }
             }
 
@@ -3371,7 +3336,7 @@ Object.assign(handlers, {
         event.currentTarget.classList.remove('dragover');
 
         const files = Array.from(event.dataTransfer.files);
-        handlers.uploadReceipt(files);
+        handlers.uploadReceiptPhoto(files);
     },
 
     // Handle receipt file input,
@@ -3379,7 +3344,7 @@ Object.assign(handlers, {
 
     handleReceiptFileSelect: function(event) {
         const files = Array.from(event.target.files);
-        handlers.uploadReceipt(files);
+        handlers.uploadReceiptPhoto(files);
         event.target.value = ''; // Reset input
     },
 
@@ -3543,7 +3508,7 @@ Object.assign(handlers, {
         const newRow = document.createElement('div');
         newRow.className = 'receipt-line-item-row';
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        newRow.innerHTML =sanitizeHTML( sanitizeHTML(`
+        newRow.innerHTML = sanitizeHTML(`
             <input type="text" name="itemDescription" placeholder="Description" class="form-input">
             <input type="number" name="itemQty" value="1" min="1" class="form-input" style="width:60px">
             <input type="number" name="itemUnitPrice" step="0.01" placeholder="0.00" class="form-input" style="width:80px">
@@ -3557,7 +3522,7 @@ Object.assign(handlers, {
             <button type="button" class="btn btn-icon btn-sm btn-ghost" onclick="this.parentElement.remove()" aria-label="Remove tag">
                 <span class="icon">×</span>
             </button>
-        `));
+        `);
         container.appendChild(newRow);
     },
 
@@ -3597,78 +3562,6 @@ Object.assign(handlers, {
     // ==========================================
     // Batch Photo Processing Handlers
     // ==========================================
-
-    // Load batch photo jobs,
-
-
-    loadBatchPhotoJobs: async function() {
-        try {
-            const result = await api.get('/batch-photo/jobs');
-            store.setState({ batchPhotoJobs: result.jobs || [] });
-        } catch (error) {
-            console.error('Failed to load batch jobs:', error);
-            toast.error('Failed to load batch photo jobs');
-        }
-    },
-
-    // Load batch photo presets,
-
-
-    loadBatchPhotoPresets: async function() {
-        try {
-            const result = await api.get('/batch-photo/presets');
-            store.setState({ batchPhotoPresets: result.presets || [] });
-        } catch (error) {
-            console.error('Failed to load batch presets:', error);
-            toast.error('Failed to load batch photo presets');
-        }
-    },
-
-    // Open batch photo modal,
-
-
-    openBatchPhotoModal: async function() {
-        const selectedImages = store.state.selectedImages || [];
-        if (selectedImages.length === 0) {
-            toast.warning('Please select images first');
-            return;
-        }
-        if (selectedImages.length > 50) {
-            toast.warning('Maximum 50 images per batch');
-            return;
-        }
-
-        // Reset transformations
-        store.setState({
-            batchPhotoModalOpen: true,
-            batchPhotoTransformations: {
-                removeBackground: false,
-                enhance: false,
-                upscale: false,
-                cropWidth: null,
-                cropHeight: null,
-                cropPreset: null
-            },
-            batchPhotoProgress: null
-        });
-
-        // Load presets before showing modal
-        await handlers.loadBatchPhotoPresets();
-        modals.batchPhoto();
-    },
-
-    // Close batch photo modal,
-
-
-    closeBatchPhotoModal: function() {
-        store.setState({
-            batchPhotoModalOpen: false,
-            batchPhotoProgress: null,
-            batchPhotoTransformations: {},
-            selectedImages: []
-        });
-        modals.close();
-    },
 
     // Set batch photo transformation,
 
@@ -3777,103 +3670,6 @@ Object.assign(handlers, {
         } catch (error) {
             toast.error('Failed to start batch job: ' + error.message);
             store.setState({ batchPhotoProgress: null });
-        }
-    },
-
-    // Poll for batch photo progress,
-
-
-    pollBatchPhotoProgress: function(jobId) {
-        if (this._batchPhotoPollInterval) {
-            clearInterval(this._batchPhotoPollInterval);
-        }
-        const pollInterval = this._batchPhotoPollInterval = setInterval(async () => {
-            try {
-                const result = await api.get(`/batch-photo/jobs/${jobId}`);
-                const job = result.job;
-
-                store.setState({
-                    batchPhotoProgress: {
-                        jobId: job.id,
-                        total: job.total_images,
-                        processed: job.processed_images,
-                        failed: job.failed_images,
-                        status: job.status
-                    }
-                });
-
-                // Re-render modal to show progress
-                if (store.state.batchPhotoModalOpen) {
-                    modals.batchPhoto();
-                }
-
-                // Stop polling if job is done
-                if (job.status === 'completed' || job.status === 'failed' || job.status === 'cancelled') {
-                    clearInterval(pollInterval);
-
-                    if (job.status === 'completed') {
-                        const successCount = job.processed_images - job.failed_images;
-                        toast.success(`Batch complete: ${successCount} images processed`);
-                    } else if (job.status === 'failed') {
-                        toast.error('Batch job failed');
-                    } else if (job.status === 'cancelled') {
-                        toast.info('Batch job cancelled');
-                    }
-
-                    // Clear selection and reload image bank
-                    store.setState({ selectedImages: [] });
-                    await handlers.loadImageBank();
-                }
-            } catch (error) {
-                console.error('Poll error:', error);
-                clearInterval(pollInterval);
-            }
-        }, 2000); // Poll every 2 seconds
-    },
-
-    // Cancel batch photo job,
-
-
-    cancelBatchPhotoJob: async function(jobId) {
-        try {
-            await api.ensureCSRFToken();
-            await api.post(`/batch-photo/jobs/${jobId}/cancel`);
-            toast.info('Job cancelled');
-        } catch (error) {
-            toast.error('Failed to cancel job: ' + error.message);
-        }
-    },
-
-    // Save batch photo preset,
-
-
-    saveBatchPhotoPreset: async function() {
-        const name = await modals.prompt('Enter a name for this preset:', { title: 'Save Preset', placeholder: 'Preset name' });
-        if (!name) return;
-
-        const transformations = store.state.batchPhotoTransformations;
-
-        try {
-            await api.ensureCSRFToken();
-            await api.post('/batch-photo/presets', {
-                name,
-                transformations: {
-                    removeBackground: transformations.removeBackground,
-                    enhance: transformations.enhance,
-                    upscale: transformations.upscale,
-                    cropWidth: transformations.cropWidth,
-                    cropHeight: transformations.cropHeight
-                }
-            });
-            toast.success('Preset saved');
-            await handlers.loadBatchPhotoPresets();
-
-            // Re-render modal
-            if (store.state.batchPhotoModalOpen) {
-                modals.batchPhoto();
-            }
-        } catch (error) {
-            toast.error('Failed to save preset: ' + error.message);
         }
     },
 
@@ -4266,12 +4062,12 @@ Object.assign(handlers, {
             // Check for camera access
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                document.querySelector('.barcode-scanner-container').innerHTML =sanitizeHTML( sanitizeHTML(`
+                document.querySelector('.barcode-scanner-container').innerHTML = sanitizeHTML(`
                     <div style="padding: 32px; text-align: center; color: var(--gray-600);">
                         <p>Camera not supported in this browser.</p>
                         <p style="font-size: 13px; margin-top: 8px;">Use the manual entry below.</p>
                     </div>
-                `));
+                `);
                 return;
             }
 
@@ -4289,12 +4085,12 @@ Object.assign(handlers, {
             console.error('Camera access failed:', error);
             toast.error('Camera access denied or unavailable');
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            document.querySelector('.barcode-scanner-container').innerHTML =sanitizeHTML( sanitizeHTML(`
+            document.querySelector('.barcode-scanner-container').innerHTML = sanitizeHTML(`
                 <div style="padding: 32px; text-align: center; color: var(--gray-600);">
                     <p>Camera access denied or unavailable.</p>
                     <p style="font-size: 13px; margin-top: 8px;">Use the manual entry below.</p>
                 </div>
-            `));
+            `);
         }
     },
 
@@ -4378,12 +4174,12 @@ Object.assign(handlers, {
         if (!listEl) return;
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        listEl.innerHTML =sanitizeHTML( sanitizeHTML(`
+        listEl.innerHTML = sanitizeHTML(`
             <div style="text-align: center; padding: 32px;">
                 <div class="spinner"></div>
                 <p style="margin-top: 12px; color: var(--gray-600);">Scanning inventory for duplicates...</p>
             </div>
-        `));
+        `);
 
         try {
             await api.ensureCSRFToken();
@@ -4391,13 +4187,13 @@ Object.assign(handlers, {
 
             if (result.duplicates_found === 0) {
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                listEl.innerHTML =sanitizeHTML( sanitizeHTML(`
+                listEl.innerHTML = sanitizeHTML(`
                     <div style="text-align: center; padding: 32px; color: var(--success);">
                         ${components.icon('check', 32)}
                         <p style="margin-top: 12px; font-weight: 600;">No duplicates found!</p>
                         <p style="color: var(--gray-600); font-size: 13px;">Your inventory is clean.</p>
                     </div>
-                `));
+                `);
                 return;
             }
 
@@ -4405,7 +4201,7 @@ Object.assign(handlers, {
             const data = await api.get('/duplicates?status=pending');
             handlers.renderDuplicatesList(data.duplicates || []);
         } catch (error) {
-            listEl.innerHTML =sanitizeHTML( sanitizeHTML(`<p style="color: var(--error);">Error: ${error.message}</p>`));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            listEl.innerHTML = sanitizeHTML(`<p style="color: var(--error);">Error: ${error.message}</p>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -4606,7 +4402,7 @@ Object.assign(handlers, {
 
         const listEl = document.getElementById('event-item-list');
         if (listEl) {
-            listEl.innerHTML =sanitizeHTML( sanitizeHTML(filtered.length === 0 ?  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            listEl.innerHTML = sanitizeHTML(filtered.length === 0 ?  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 '<p class="text-gray-500 text-center py-4">No items found</p>' :
                 filtered.slice(0, 20).map(item => `
                     <div class="flex items-center gap-3 p-3 border-b hover:bg-gray-50 cursor-pointer" onclick="handlers.selectEventItem('', '${item.id}')">
@@ -4619,7 +4415,7 @@ Object.assign(handlers, {
                         </div>
                         <button class="btn btn-sm btn-primary">Add</button>
                     </div>
-                `).join('')));
+                `).join(''));
         }
     },
 
@@ -4953,12 +4749,12 @@ Object.assign(handlers, {
         if (listEl) {
             const arr = mode === 'add' ? handlers._addChecklistAttachments : handlers._editChecklistAttachments;
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            listEl.innerHTML =sanitizeHTML( sanitizeHTML(arr.map((a, i) => `
+            listEl.innerHTML = sanitizeHTML(arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
                     <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
                 </span>
-            `).join('')));
+            `).join(''));
         }
     },
 
@@ -4974,12 +4770,12 @@ Object.assign(handlers, {
         if (listEl) {
             const arr = mode === 'add' ? handlers._addChecklistAttachments : handlers._editChecklistAttachments;
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            listEl.innerHTML =sanitizeHTML( sanitizeHTML(arr.map((a, i) => `
+            listEl.innerHTML = sanitizeHTML(arr.map((a, i) => `
                 <span class="checklist-attachment-tag">
                     ${components.icon('paperclip', 12)} ${escapeHtml(a)}
                     <button type="button" class="btn btn-ghost btn-xs" onclick="handlers.removeChecklistAttachment('${mode}', ${i})" aria-label="Remove attachment">${components.icon('x', 10)}</button>
                 </span>
-            `).join('')));
+            `).join(''));
         }
     },
 

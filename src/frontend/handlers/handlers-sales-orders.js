@@ -569,7 +569,7 @@ Object.assign(handlers, {
             `;
             const warningEl = form.querySelector('.tx-duplicate-warning');
             if (!warningEl) {
-                form.insertAdjacentHTML('afterbegin', '<div class="tx-duplicate-warning">' + warningHtml + '</div>');  // nosemgrep: javascript.browser.security.insecure-document-method, typescript.react.security.audit.react-unsanitized-method.react-unsanitized-method
+                form.insertAdjacentHTML('afterbegin', '<div class="tx-duplicate-warning">' + warningHtml + '</div>');  // nosemgrep: javascript.browser.security.insecure-document-method
                 const submitBtn = form.querySelector('button[type="submit"]');
                 if (submitBtn) submitBtn.textContent = 'Add Anyway';
                 store.setState({ _txDuplicateConfirmed: true });
@@ -1004,7 +1004,8 @@ Object.assign(handlers, {
                             return;
                         }
                         if (file) {
-                            document.getElementById('receipt-file-name').textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+                            const nameEl = document.getElementById('receipt-file-name');
+                            if (nameEl) nameEl.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
                         }
                     ">
                     <p id="receipt-file-name" style="font-size: 12px; color: var(--gray-500); margin-top: 4px;"></p>
@@ -1366,7 +1367,7 @@ Object.assign(handlers, {
             store.setState({ ordersDateFilter: value });
         }
 
-        if (store.state.currentPage === 'orders-sales') {
+        if (store.state.currentPage === 'orders') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
@@ -1376,7 +1377,7 @@ Object.assign(handlers, {
     searchOrders: function(query) {
         store.setState({ ordersSearchQuery: query });
 
-        if (store.state.currentPage === 'orders-sales') {
+        if (store.state.currentPage === 'orders') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
@@ -1391,7 +1392,7 @@ Object.assign(handlers, {
             ordersSearchQuery: ''
         });
 
-        if (store.state.currentPage === 'orders-sales') {
+        if (store.state.currentPage === 'orders') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
@@ -1412,7 +1413,7 @@ Object.assign(handlers, {
 
         store.setState({ ordersVisibleColumns: [...visibleColumns] });
 
-        if (store.state.currentPage === 'orders-sales') {
+        if (store.state.currentPage === 'orders') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
@@ -1778,7 +1779,8 @@ Object.assign(handlers, {
         }
 
         // Store selected type
-        document.getElementById('followup-message').dataset.type = typeId;
+        const followupMsg = document.getElementById('followup-message');
+        if (followupMsg) followupMsg.dataset.type = typeId;
     },
 
 
@@ -1786,7 +1788,8 @@ Object.assign(handlers, {
         const date = new Date();
         date.setDate(date.getDate() + daysFromNow);
         date.setHours(10, 0, 0, 0); // Set to 10 AM
-        document.getElementById('followup-date').value = date.toISOString().slice(0, 16);
+        const followupDateEl = document.getElementById('followup-date');
+        if (followupDateEl) followupDateEl.value = date.toISOString().slice(0, 16);
 
         // Highlight preset button
         document.querySelectorAll('.preset-date-btn').forEach(btn => btn.classList.remove('active'));
@@ -1817,7 +1820,7 @@ Object.assign(handlers, {
         toast.success(`Follow-up reminder set for ${new Date(date).toLocaleDateString()}`);
 
         // Refresh orders page if on it
-        if (store.state.currentPage === 'orders-sales') {
+        if (store.state.currentPage === 'orders') {
             renderApp(pages.orders());
         }
     },
@@ -1831,7 +1834,7 @@ Object.assign(handlers, {
         modals.close();
         toast.info('Reminder removed');
 
-        if (store.state.currentPage === 'orders-sales') {
+        if (store.state.currentPage === 'orders') {
             renderApp(pages.orders());
         }
     },
@@ -3546,10 +3549,11 @@ Object.assign(handlers, {
         } else {
             store.setState({ selectedOrderIds: [] });
         }
-        // Directly update DOM checkboxes to avoid full re-render
-        document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => { cb.checked = checked; });
-        const thead = document.querySelector('thead input[type="checkbox"]');
-        if (thead) thead.checked = checked;
+        // Re-render checkboxes
+        if (store.state.currentPage === 'orders') {
+            const pageContent = pages.orders();
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        }
     },
 
 
@@ -3647,7 +3651,7 @@ Object.assign(handlers, {
 
             // Reload orders
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders-sales') {
+            if (store.state.currentPage === 'orders') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -3676,7 +3680,7 @@ Object.assign(handlers, {
             }
 
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders-sales') {
+            if (store.state.currentPage === 'orders') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -3693,7 +3697,7 @@ Object.assign(handlers, {
             const result = await api.post('/orders/sync/' + platform);
             toast.success(result.message || 'Orders synced from ' + platform);
             await handlers.loadOrders();
-            if (store.state.currentPage === 'orders-sales') {
+            if (store.state.currentPage === 'orders') {
                 renderApp(pages.orders());
             }
         } catch (error) {
@@ -3804,7 +3808,7 @@ Object.assign(handlers, {
         modals.close();
 
         // Re-render to clear checkboxes
-        if (store.state.currentPage === 'orders-sales') {
+        if (store.state.currentPage === 'orders') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
@@ -4787,8 +4791,8 @@ Object.assign(handlers, {
 
 
     loadCustomAnalytics: async function() {
-        const startDate = document.getElementById('analytics-start-date').value;
-        const endDate = document.getElementById('analytics-end-date').value;
+        const startDate = document.getElementById('analytics-start-date')?.value;
+        const endDate = document.getElementById('analytics-end-date')?.value;
 
         if (!startDate || !endDate) {
             return toast.warning('Please select both start and end dates');
@@ -5004,8 +5008,8 @@ Object.assign(handlers, {
 
 
     filterAnalyticsSales: async function() {
-        const start = document.getElementById('analytics-sales-start').value;
-        const end = document.getElementById('analytics-sales-end').value;
+        const start = document.getElementById('analytics-sales-start')?.value;
+        const end = document.getElementById('analytics-sales-end')?.value;
         store.setState({ salesDateStart: start, salesDateEnd: end });
 
         // Reload sales with date filter
@@ -5026,68 +5030,6 @@ Object.assign(handlers, {
             toast.error('Failed to filter sales: ' + error.message);
         }
     },
-
-
-    uploadReceipt: async function(files) {
-        if (!files || files.length === 0) return;
-
-        store.setState({ receiptParsing: true, receiptUploadProgress: 0 });
-
-        try {
-            await api.ensureCSRFToken();
-
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-
-                // Validate file type
-                const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-                if (!validTypes.includes(file.type)) {
-                    toast.error(`${file.name}: Invalid file type. Use JPG, PNG, WebP, or PDF`);
-                    continue;
-                }
-
-                // Validate file size (10MB limit)
-                if (file.size > 10 * 1024 * 1024) {
-                    toast.error(`${file.name}: File too large. Maximum 10MB`);
-                    continue;
-                }
-
-                // Convert to base64
-                const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-
-                // Upload and parse
-                const result = await api.post('/receipts/upload', {
-                    filename: file.name,
-                    mimeType: file.type,
-                    imageBase64: base64
-                });
-
-                store.setState({
-                    receiptUploadProgress: Math.round(((i + 1) / files.length) * 100)
-                });
-
-                if (result.receipt) {
-                    toast.success(`Parsed: ${result.receipt.source_file || file.name}`);
-                }
-            }
-
-            // Reload queue after all uploads
-            await handlers.loadReceiptQueue();
-            toast.success('Receipt parsing complete');
-        } catch (error) {
-            console.error('Upload error:', error);
-            toast.error('Failed to upload receipt: ' + error.message);
-        } finally {
-            store.setState({ receiptParsing: false, receiptUploadProgress: null });
-        }
-    },
-
-    // Handle receipt dropzone,
 
 
     setTransactionsTab: function(tab) {

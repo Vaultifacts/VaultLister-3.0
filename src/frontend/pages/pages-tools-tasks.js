@@ -916,7 +916,7 @@ Object.assign(pages, {
 
     sizeCharts() {
         const activeTab = store.state.sizeChartsTab || 'women-clothing';
-        const sizeUnit = store.state.sizeChartUnit || localStorage.getItem('vaultlister_size_unit') || 'in';
+        const sizeUnit = store.state.sizeChartUnit || (() => { try { return localStorage.getItem('vaultlister_size_unit'); } catch { return null; } })() || 'in';
         const convertCell = (val) => {
             if (sizeUnit === 'in') return val;
             return val.replace(/(\d+\.?\d*)/g, (m) => (parseFloat(m) * 2.54).toFixed(1));
@@ -1208,7 +1208,7 @@ Object.assign(pages, {
                         <button class="btn btn-sm btn-secondary" onclick="handlers.copySizeChart('${activeTab}')" title="Copy size chart">
                             ${components.icon('copy', 14)} Copy
                         </button>
-                        <button class="btn btn-sm ${sizeUnit === 'cm' ? 'btn-primary' : 'btn-secondary'}" onclick="const u = store.state.sizeChartUnit === 'cm' ? 'in' : 'cm'; store.setState({ sizeChartUnit: u }); localStorage.setItem('vaultlister_size_unit', u); renderApp(pages.sizeCharts());" title="Toggle inches/centimeters">
+                        <button class="btn btn-sm ${sizeUnit === 'cm' ? 'btn-primary' : 'btn-secondary'}" onclick="const u = store.state.sizeChartUnit === 'cm' ? 'in' : 'cm'; store.setState({ sizeChartUnit: u }); try { localStorage.setItem('vaultlister_size_unit', u); } catch(e) {} renderApp(pages.sizeCharts());" title="Toggle inches/centimeters">
                             ${components.icon('ruler', 14)} ${sizeUnit === 'cm' ? 'cm' : 'in'}
                         </button>
                         <button class="btn btn-sm btn-secondary" onclick="store.setState({ sizeChartSwapped: !store.state.sizeChartSwapped }); renderApp(pages.sizeCharts());" title="Swap rows and columns">

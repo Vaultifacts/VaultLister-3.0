@@ -249,7 +249,7 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body" style="padding: 0;">
                     <div class="table-container">
-                        <table class="table table-expandable">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th style="width: 40px;">
@@ -313,8 +313,8 @@ Object.assign(pages, {
                                     const isSelected = selectedOffers.includes(offer.id);
                                     const isBestOffer = offer.id === bestOfferId && pendingOffers.length > 1;
 
-                                    return '<tr class="expandable ' + (isSelected ? 'row-selected' : '') + (isBestOffer ? ' best-offer-row' : '') + '" onclick="expandableTable.toggle(this)">' +
-                                        '<td><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' onchange="event.stopPropagation(); handlers.toggleOfferSelection(\'' + offer.id + '\')" aria-label="Select offer"></td>' +
+                                    return '<tr class="' + (isSelected ? 'row-selected' : '') + (isBestOffer ? ' best-offer-row' : '') + '">' +
+                                        '<td><input type="checkbox" ' + (isSelected ? 'checked' : '') + ' onchange="handlers.toggleOfferSelection(\'' + offer.id + '\')" aria-label="Select offer"></td>' +
                                         '<td><div class="flex items-center gap-2">' + (isBestOffer ? '<span class="badge badge-sm" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; font-size: 9px; padding: 2px 6px; font-weight: 700;">BEST</span>' : '') + '<div class="font-medium" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + escapeHtml(listing?.title || offer.listing_title || 'Unknown Item') + '</div></div></td>' +
                                         '<td><div class="text-sm">' + escapeHtml(offer.buyer_name || offer.buyer_username || 'Anonymous') + '</div></td>' +
                                         '<td>' + components.platformBadge(offer.platform || 'unknown') + '</td>' +
@@ -332,12 +332,7 @@ Object.assign(pages, {
                                         '<button class="btn btn-primary btn-xs" onclick="handlers.counterOffer(\'' + offer.id + '\')" title="Send counter offer">' + components.icon('refresh', 12) + '</button>' +
                                         '<button class="btn btn-error btn-xs" onclick="handlers.declineOffer(\'' + offer.id + '\')" title="Decline offer">' + components.icon('x', 12) + '</button>' +
                                         '</div></td>' +
-                                        '</tr>' +
-                                        '<tr class="expand-content" style="display:none"><td colspan="10" class="expand-row"><div class="expand-inner" style="padding:12px 16px;display:flex;gap:16px;align-items:flex-start;">' +
-                                        '<div><div class="font-medium">' + escapeHtml(listing?.title || offer.listing_title || 'Unknown Item') + '</div>' +
-                                        '<div class="text-sm text-gray-500 mt-1">Platform: ' + (offer.platform || 'Unknown') + ' &nbsp;·&nbsp; Offer: $' + offerAmount.toFixed(2) + ' of $' + listingPrice.toFixed(2) + ' (' + offerPercent + '%)' + (offer.expires_at ? ' &nbsp;·&nbsp; Expires: ' + expiresText : '') + '</div>' +
-                                        (offer.listing_description ? '<div class="text-sm mt-2" style="max-width:600px;color:var(--text-secondary);">' + escapeHtml((offer.listing_description || '').slice(0, 200)) + ((offer.listing_description || '').length > 200 ? '...' : '') + '</div>' : '') +
-                                        '</div></div></td></tr>';
+                                        '</tr>';
                                 }).join('')}
                             </tbody>
                         </table>
@@ -625,7 +620,7 @@ Object.assign(pages, {
                     </div>
                 ` : `
                     <div class="card-body">
-                        ${components.emptyState('No sales yet', 'Sales you make across connected platforms will appear here. Connect a platform to get started.', 'Connect a Platform', "router.navigate('shops')")}
+                        ${components.emptyState('No sales yet', 'Your sales will appear here once you make your first sale')}
                     </div>
                 `}
             </div>
@@ -1920,36 +1915,8 @@ Object.assign(pages, {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${[
-                                    { name: 'eBay', gross: 8450, rate: 13.0 },
-                                    { name: 'Poshmark', gross: 4200, rate: 20.0 },
-                                    { name: 'Mercari', gross: 3100, rate: 10.0 },
-                                    { name: 'Whatnot', gross: 1800, rate: 8.0 },
-                                    { name: 'Depop', gross: 950, rate: 10.0 }
-                                ].map(p => {
-                                    const fees = p.gross * (p.rate / 100);
-                                    const net = p.gross - fees;
-                                    const totalGross = 8450 + 4200 + 3100 + 1800 + 950;
-                                    return '<tr>' +
-                                        '<td class="font-medium">' + p.name + '</td>' +
-                                        '<td>$' + p.gross.toLocaleString() + '</td>' +
-                                        '<td><span class="badge badge-' + (p.rate <= 10 ? 'success' : p.rate <= 15 ? 'warning' : 'danger') + '">' + p.rate + '%</span></td>' +
-                                        '<td style="color: var(--danger);">$' + Math.round(fees).toLocaleString() + '</td>' +
-                                        '<td class="font-medium" style="color: var(--success);">$' + Math.round(net).toLocaleString() + '</td>' +
-                                        '<td>' + Math.round(p.gross / totalGross * 100) + '%</td>' +
-                                    '</tr>';
-                                }).join('')}
+                                <tr><td colspan="6" class="text-center text-gray-400" style="padding: 2rem;">No sales data yet. Platform fee analysis will appear once you have sales across connected platforms.</td></tr>
                             </tbody>
-                            <tfoot>
-                                <tr style="font-weight: 700; border-top: 2px solid var(--gray-300);">
-                                    <td>Total</td>
-                                    <td>$18,500</td>
-                                    <td>-</td>
-                                    <td style="color: var(--danger);">$2,549</td>
-                                    <td style="color: var(--success);">$15,951</td>
-                                    <td>100%</td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>

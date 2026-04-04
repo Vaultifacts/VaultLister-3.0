@@ -1173,32 +1173,11 @@ Object.assign(pages, {
         const competitors = sortedCompetitors;
         const marketInsights = store.state.marketInsights || [];
         const marketTrends = store.state.marketTrends || {
-            demand: 72,
-            competition: 58,
-            pricing: 65,
-            opportunity: 81,
-            volatility: 45,
-            growth: 68
+            demand: 0, competition: 0, pricing: 0, opportunity: 0, volatility: 0, growth: 0
         };
-        const competitorActivity = store.state.competitorActivity || [
-            { competitor: 'TopSeller23', action: 'price_drop', item: 'Vintage Watch', change: '-15%', time: '2 min ago' },
-            { competitor: 'RetroFinds', action: 'new_listing', item: 'Rare Comic Book', change: '+1', time: '5 min ago' },
-            { competitor: 'VintageVault', action: 'sold', item: 'Antique Lamp', change: '$125', time: '12 min ago' },
-            { competitor: 'CollectorsPrime', action: 'price_drop', item: 'Baseball Card Set', change: '-8%', time: '18 min ago' },
-            { competitor: 'NostalgiaShop', action: 'new_listing', item: 'Vinyl Records Lot', change: '+5', time: '25 min ago' }
-        ];
-        const opportunities = store.state.marketOpportunities || [
-            { category: 'Vintage Electronics', score: 92, trend: 'up', potential: '$2,400', competition: 'Low' },
-            { category: 'Sports Memorabilia', score: 87, trend: 'up', potential: '$1,800', competition: 'Medium' },
-            { category: 'Antique Jewelry', score: 78, trend: 'stable', potential: '$3,200', competition: 'High' }
-        ];
-        const trendingTerms = store.state.trendingKeywords || [
-            { term: 'vintage nike', volume: 2840, change: 45 },
-            { term: 'pokemon cards', volume: 2150, change: 32 },
-            { term: 'mid century modern', volume: 1920, change: 28 },
-            { term: 'vinyl records', volume: 1680, change: 15 },
-            { term: 'antique brass', volume: 1240, change: -5 }
-        ];
+        const competitorActivity = store.state.competitorActivity || [];
+        const opportunities = store.state.marketOpportunities || [];
+        const trendingTerms = store.state.trendingKeywords || [];
 
         const lastUpdated = store.state.marketIntelLastUpdated ? new Date(store.state.marketIntelLastUpdated) : new Date();
         const minutesAgo = Math.round((Date.now() - lastUpdated.getTime()) / 60000);
@@ -1260,12 +1239,12 @@ Object.assign(pages, {
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Active Competitors</div>
-                    <div style="font-size: 36px; font-weight: 700; color: var(--primary-600);">${competitors.length || 24}</div>
+                    <div style="font-size: 36px; font-weight: 700; color: var(--primary-600);">${competitors.length || 0}</div>
                     <div style="font-size: 11px; color: var(--success); margin-top: 4px;">+3 this week</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Avg Competitor Items</div>
-                    <div style="font-size: 36px; font-weight: 700; color: var(--gray-800);">${competitors.length > 0 ? Math.round(competitors.reduce((sum, c) => sum + (c.item_count || 0), 0) / competitors.length) : 156}</div>
+                    <div style="font-size: 36px; font-weight: 700; color: var(--gray-800);">${competitors.length > 0 ? Math.round(competitors.reduce((sum, c) => sum + (c.item_count || 0), 0) / competitors.length) : 0}</div>
                     <div style="font-size: 11px; color: var(--gray-500); margin-top: 4px;">Your items: 89</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
@@ -1624,29 +1603,26 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
                         ${[
-                            { label: 'Avg Sale Price', value: '$47.50', change: '+5.2%', up: true },
-                            { label: 'Avg Days to Sell', value: '8.3', change: '-1.2d', up: true },
-                            { label: 'Sell-Through Rate', value: '68%', change: '+3%', up: true },
-                            { label: 'Items Analyzed', value: '1,247', change: '+89', up: true }
+                            { label: 'Avg Sale Price', value: 'N/A', change: '', up: true },
+                            { label: 'Avg Days to Sell', value: 'N/A', change: '', up: true },
+                            { label: 'Sell-Through Rate', value: 'N/A', change: '', up: true },
+                            { label: 'Items Analyzed', value: '0', change: '', up: true }
                         ].map(stat => `
                             <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
                                 <div style="font-size: 24px; font-weight: 700;">${stat.value}</div>
                                 <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">${stat.label}</div>
-                                <span style="font-size: 11px; color: ${stat.up ? 'var(--success)' : 'var(--danger)'};">${stat.change}</span>
+                                ${stat.change ? `<span style="font-size: 11px; color: ${stat.up ? 'var(--success)' : 'var(--danger)'};">${stat.change}</span>` : ''}
                             </div>
                         `).join('')}
                     </div>
-                    <div style="overflow-x: auto;">
+                    <div style="text-center; padding: 2rem; color: var(--gray-400);">
+                        <p>Not enough sales data yet. Sold listing analysis will appear once you have completed sales.</p>
+                    </div>
+                    <div style="overflow-x: auto; display: none;">
                         <table class="table">
                             <thead><tr><th>Category</th><th>Avg Price</th><th>Sales Volume</th><th>Avg Days</th><th>Top Brand</th></tr></thead>
                             <tbody>
-                                ${[
-                                    { cat: 'Vintage Electronics', price: '$62.40', vol: '342', days: '6.1', brand: 'Sony' },
-                                    { cat: 'Sports Memorabilia', price: '$55.20', vol: '287', days: '7.4', brand: 'Nike' },
-                                    { cat: 'Designer Handbags', price: '$128.50', vol: '156', days: '12.3', brand: 'Coach' },
-                                    { cat: 'Antique Jewelry', price: '$89.30', vol: '198', days: '9.8', brand: 'Tiffany' },
-                                    { cat: 'Rare Coins', price: '$43.70', vol: '264', days: '5.2', brand: 'N/A' }
-                                ].map(row => `
+                                ${[].map(row => `
                                     <tr>
                                         <td style="font-weight: 500;">${row.cat}</td>
                                         <td>${row.price}</td>

@@ -362,7 +362,7 @@ Object.assign(handlers, {
 
         if (!query || query.trim().length === 0) {
             resultsEl.style.display = 'none';
-            resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(''));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            resultsEl.innerHTML = sanitizeHTML('');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             return;
         }
 
@@ -385,13 +385,13 @@ Object.assign(handlers, {
         );
 
         if (matches.length === 0) {
-            resultsEl.innerHTML =sanitizeHTML( sanitizeHTML('<div style="padding:12px 16px; color:var(--gray-500); font-size:13px;">No matching settings found</div>'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            resultsEl.innerHTML = sanitizeHTML('<div style="padding:12px 16px; color:var(--gray-500); font-size:13px;">No matching settings found</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             resultsEl.style.display = 'block';
             return;
         }
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(matches.map(m => `
+        resultsEl.innerHTML = sanitizeHTML(matches.map(m => `
             <div class="settings-search-result" onclick="handlers.setSettingsTab('${m.tab}'); document.getElementById('settings-search-input').value=''; document.getElementById('settings-search-results').style.display='none';"
                 style="padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--gray-100);"
                 onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
@@ -401,7 +401,7 @@ Object.assign(handlers, {
                     <div style="font-size:11px; color:var(--gray-500); text-transform:capitalize;">${m.tab} tab</div>
                 </div>
             </div>
-        `).join('')));
+        `).join(''));
         resultsEl.style.display = 'block';
     },
 
@@ -718,9 +718,7 @@ Object.assign(handlers, {
                 pendingMfaToken: null
             });
             modals.close();
-            const dest = store.state._intendedRoute || 'dashboard';
-            store.setState({ _intendedRoute: null });
-            router.navigate(dest);
+            router.navigate('dashboard');
             toast.success('Welcome back!');
         } catch (err) {
             toast.error(err.message || 'Invalid verification code');
@@ -893,6 +891,8 @@ Object.assign(handlers, {
             </div>
         `);
     },
+
+    // Help & Support handlers,
 
 
     toggleGettingStartedStep: function(stepId) {
@@ -1225,12 +1225,12 @@ Object.assign(handlers, {
         if (!select) return;
 
         if (!carrier || !serviceTypes[carrier]) {
-            select.innerHTML =sanitizeHTML( sanitizeHTML('<option value="">Select carrier first</option>'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            select.innerHTML = sanitizeHTML('<option value="">Select carrier first</option>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             return;
         }
 
-        select.innerHTML =sanitizeHTML( sanitizeHTML('<option value="">Select Service</option>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            serviceTypes[carrier].map(s => `<option value="${s}">${s}</option>`).join('')));
+        select.innerHTML = sanitizeHTML('<option value="">Select Service</option>') +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            serviceTypes[carrier].map(s => `<option value="${s}">${s}</option>`).join('');
     },
 
 
@@ -1267,7 +1267,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
             toast.error('Failed to create profile: ' + error.message);
@@ -1448,7 +1448,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
             toast.error('Failed to update profile: ' + error.message);
@@ -1466,7 +1466,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
             toast.error('Failed to set default: ' + error.message);
@@ -1486,7 +1486,7 @@ Object.assign(handlers, {
 
             if (store.state.currentPage === 'shipping-profiles') {
                 const pageContent = pages.shippingProfiles();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
             toast.error('Failed to delete profile: ' + error.message);
@@ -1514,7 +1514,7 @@ Object.assign(handlers, {
             await handlers.loadAutomations();
             if (store.state.currentPage === 'automations') {
                 const pageContent = pages.automations();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
             toast.error(error.message);
@@ -1527,7 +1527,7 @@ Object.assign(handlers, {
         try { localStorage.setItem('vaultlister_automation_platform_filter', platform); } catch (e) { console.warn('Failed to save filter preference:', e); }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -1538,7 +1538,7 @@ Object.assign(handlers, {
         else if (!checked) { const idx = selected.indexOf(ruleId); if (idx > -1) selected.splice(idx, 1); }
         store.setState({ selectedAutomationIds: selected });
         if (store.state.currentPage === 'automations') {
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pages.automations()));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -1546,7 +1546,7 @@ Object.assign(handlers, {
     clearAutomationSelection: function() {
         store.setState({ selectedAutomationIds: [] });
         if (store.state.currentPage === 'automations') {
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pages.automations()));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -1564,7 +1564,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pages.automations()));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (e) {
             showToast('Bulk action failed: ' + (e.message || e), 'error');
@@ -1617,7 +1617,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pages.automations()));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (e) {
             showToast('Failed to apply schedule: ' + (e.message || e), 'error');
@@ -1630,7 +1630,7 @@ Object.assign(handlers, {
         try { localStorage.setItem('vaultlister_automation_sort', value); } catch (_) {}
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -1699,7 +1699,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pages.automations()));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (e) {
             showToast('Failed to save schedule: ' + (e.message || e), 'error');
@@ -1733,7 +1733,7 @@ Object.assign(handlers, {
         }
         if (store.state.currentPage === 'automations') {
             const pageContent = pages.automations();
-            document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -1933,7 +1933,7 @@ Object.assign(handlers, {
             // Force re-render
             if (store.state.currentPage === 'shops') {
                 const pageContent = pages.shops();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
             console.error('Shop connection error:', error);
@@ -1959,7 +1959,7 @@ Object.assign(handlers, {
             // Force page re-render
             if (store.state.currentPage === 'shops') {
                 const pageContent = pages.shops();
-                document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
             toast.error(error.message);
@@ -2037,7 +2037,7 @@ Object.assign(handlers, {
                     }
                     if (store.state.currentPage === 'shops') {
                         const pageContent = pages.shops();
-                        document.querySelector('.page-content').innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     }
                 }
             }, 500);
@@ -2341,9 +2341,12 @@ Object.assign(handlers, {
             }
 
             // Clear fields after successful change
-            document.getElementById('account-current-password').value = '';
-            document.getElementById('account-new-password').value = '';
-            document.getElementById('account-confirm-password').value = '';
+            const curPwEl = document.getElementById('account-current-password');
+            const newPwEl = document.getElementById('account-new-password');
+            const confirmPwEl = document.getElementById('account-confirm-password');
+            if (curPwEl) curPwEl.value = '';
+            if (newPwEl) newPwEl.value = '';
+            if (confirmPwEl) confirmPwEl.value = '';
             toast.success('Password updated successfully');
         } catch (err) {
             toast.error(err.message || 'Failed to change password');
@@ -2651,8 +2654,8 @@ Object.assign(handlers, {
         customSizeInput?.classList.add('hidden');
 
         const options = sizeOptions[sizeType] || sizeOptions.clothing;
-        sizeSelect.innerHTML =sanitizeHTML( sanitizeHTML('<option value="">Select size...</option>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            options.map(size => `<option value="${size}">${size}</option>`).join('')));
+        sizeSelect.innerHTML = sanitizeHTML('<option value="">Select size...</option>') +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            options.map(size => `<option value="${size}">${size}</option>`).join('');
     },
 
 
@@ -2899,7 +2902,7 @@ Object.assign(handlers, {
         ];
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        overlay.innerHTML =sanitizeHTML( sanitizeHTML(`
+        overlay.innerHTML = sanitizeHTML(`
             <div class="global-search-modal">
                 <div class="global-search-input-wrapper">
                     ${components.icon('search', 20)}
@@ -2928,7 +2931,7 @@ Object.assign(handlers, {
                     <span>Esc Close</span>
                 </div>
             </div>
-        `));
+        `);
 
         document.body.appendChild(overlay);
 
@@ -2972,7 +2975,7 @@ Object.assign(handlers, {
         if (!resultsEl) return;
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        resultsEl.innerHTML =sanitizeHTML( sanitizeHTML(`
+        resultsEl.innerHTML = sanitizeHTML(`
             <div class="global-search-section">
                 <div class="global-search-section-title">${query ? 'Results' : 'Quick Actions'}</div>
                 ${filtered.length > 0 ? filtered.map((item, idx) => `
@@ -2985,7 +2988,7 @@ Object.assign(handlers, {
                     </div>
                 `).join('') : '<div class="p-4 text-center text-gray-500">No results found</div>'}
             </div>
-        `));
+        `);
 
         store.setState({ globalSearchFiltered: filtered, globalSearchIndex: 0 });
     },
@@ -3075,6 +3078,68 @@ Object.assign(handlers, {
     // Toggle Vault Buddy modal open/closed,
 
 
+    uploadReceiptPhoto: async function(files) {
+        if (!files || files.length === 0) return;
+
+        store.setState({ receiptParsing: true, receiptUploadProgress: 0 });
+
+        try {
+            await api.ensureCSRFToken();
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+                if (!validTypes.includes(file.type)) {
+                    toast.error(`${file.name}: Invalid file type. Use JPG, PNG, WebP, or PDF`);
+                    continue;
+                }
+
+                // Validate file size (10MB limit)
+                if (file.size > 10 * 1024 * 1024) {
+                    toast.error(`${file.name}: File too large. Maximum 10MB`);
+                    continue;
+                }
+
+                // Convert to base64
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                // Upload and parse
+                const result = await api.post('/receipts/upload', {
+                    filename: file.name,
+                    mimeType: file.type,
+                    imageBase64: base64
+                });
+
+                store.setState({
+                    receiptUploadProgress: Math.round(((i + 1) / files.length) * 100)
+                });
+
+                if (result.receipt) {
+                    toast.success(`Parsed: ${result.receipt.source_file || file.name}`);
+                }
+            }
+
+            // Reload queue after all uploads
+            await handlers.loadReceiptQueue();
+            toast.success('Receipt parsing complete');
+        } catch (error) {
+            console.error('Upload error:', error);
+            toast.error('Failed to upload receipt: ' + error.message);
+        } finally {
+            store.setState({ receiptParsing: false, receiptUploadProgress: null });
+        }
+    },
+
+    // Handle receipt dropzone,
+
+
     connectGmail: async function() {
         try {
             store.setState({ emailConnecting: true });
@@ -3118,7 +3183,7 @@ Object.assign(handlers, {
                         const pageContent = pages.receiptParser();
                         const pageElement = document.querySelector('.page-content');
                         if (pageElement) {
-                            pageElement.innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                            pageElement.innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                         }
                     }
                 } else if (event.data && event.data.type === 'email-oauth-error') {
@@ -3163,7 +3228,7 @@ Object.assign(handlers, {
                 const pageContent = pages.receiptParser();
                 const pageElement = document.querySelector('.page-content');
                 if (pageElement) {
-                    pageElement.innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    pageElement.innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 }
             }
         } catch (error) {
@@ -3217,7 +3282,7 @@ Object.assign(handlers, {
                             const pageContent = pages.receiptParser();
                             const pageElement = document.querySelector('.page-content');
                             if (pageElement) {
-                                pageElement.innerHTML =sanitizeHTML( sanitizeHTML(pageContent));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                                pageElement.innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                             }
                         }
                     }
@@ -3258,7 +3323,7 @@ Object.assign(handlers, {
 
             if (teams.length === 0) {
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`
+                contentEl.innerHTML = sanitizeHTML(`
                     <div style="text-align: center; padding: 48px;">
                         ${components.icon('users', 48)}
                         <h3 style="margin-top: 16px; color: var(--gray-700);">No Teams Yet</h3>
@@ -3267,12 +3332,12 @@ Object.assign(handlers, {
                             ${components.icon('plus', 16)} Create Your First Team
                         </button>
                     </div>
-                `));
+                `);
                 return;
             }
 
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`
+            contentEl.innerHTML = sanitizeHTML(`
                 <div class="team-members-grid">
                     ${teams.map(team => `
                         <div class="team-member-card" style="cursor: pointer;" onclick="handlers.viewTeam('${team.id}')">
@@ -3287,9 +3352,9 @@ Object.assign(handlers, {
                         </div>
                     `).join('')}
                 </div>
-            `));
+            `);
         } catch (error) {
-            contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`<p style="color: var(--error);">Error loading teams: ${error.message}</p>`));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            contentEl.innerHTML = sanitizeHTML(`<p style="color: var(--error);">Error loading teams: ${error.message}</p>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -3299,12 +3364,12 @@ Object.assign(handlers, {
         if (!contentEl) return;
 
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`
+        contentEl.innerHTML = sanitizeHTML(`
             <div style="text-align: center; padding: 32px;">
                 <div class="spinner"></div>
                 <p style="margin-top: 12px; color: var(--gray-600);">Loading team...</p>
             </div>
-        `));
+        `);
 
         try {
             const data = await api.get(`/teams/${teamId}`);
@@ -3312,7 +3377,7 @@ Object.assign(handlers, {
             const members = data.members || [];
 
             // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`
+            contentEl.innerHTML = sanitizeHTML(`
                 <div style="margin-bottom: 24px;">
                     <button class="btn btn-sm btn-ghost" onclick="handlers.loadTeams()">
                         ${components.icon('arrow-left', 14)} Back to Teams
@@ -3361,9 +3426,9 @@ Object.assign(handlers, {
                         </button>
                     </div>
                 ` : ''}
-            `));
+            `);
         } catch (error) {
-            contentEl.innerHTML =sanitizeHTML( sanitizeHTML(`<p style="color: var(--error);">Error: ${error.message}</p>`));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            contentEl.innerHTML = sanitizeHTML(`<p style="color: var(--error);">Error: ${error.message}</p>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -4477,7 +4542,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-conditions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 condition-row';
-        row.innerHTML =sanitizeHTML( sanitizeHTML('<select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select condition-type" style="flex:1;" onchange="handlers._updateConditionInput(this)"><option value="">Select...</option><option value="days_listed">Days Listed</option><option value="price_above">Price Above ($)</option><option value="price_below">Price Below ($)</option><option value="no_likes">No Likes After (days)</option><option value="views_below">Views Below</option><option value="category_is">Category Is</option><option value="brand_is">Brand Is</option></select><input type="text" class="form-input condition-value" style="flex:1;" placeholder="Value"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 
@@ -4486,7 +4551,7 @@ Object.assign(handlers, {
         const container = document.getElementById('custom-auto-actions');
         const row = document.createElement('div');
         row.className = 'flex gap-2 mb-2 action-row';
-        row.innerHTML =sanitizeHTML( sanitizeHTML('<select class="form-select action-type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>'));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        row.innerHTML = sanitizeHTML('<select class="form-select action-type" style="flex:1;"><option value="">Select...</option><option value="share_listing">Share Listing</option><option value="send_offer">Send Offer</option><option value="price_drop">Price Drop</option><option value="relist">Relist Item</option><option value="delist">Delist Item</option><option value="cross_list">Cross-List</option><option value="bump">Bump/Refresh</option></select><input type="text" class="form-input action-param" style="flex:1;" placeholder="Parameter (optional)"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--error);">&times;</button>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         container.appendChild(row);
     },
 
@@ -4568,7 +4633,7 @@ Object.assign(handlers, {
         if (tabName === 'analytics' && !store.state.inventoryAnalytics) {
             handlers.loadInventoryAnalytics().then(() => {
                 const pane = document.querySelector('.inv-tab-pane[data-tab="analytics"]');
-                if (pane) pane.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderInventoryAnalyticsContent()));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                if (pane) pane.innerHTML = sanitizeHTML(handlers._renderInventoryAnalyticsContent());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             });
         }
     },
@@ -4601,7 +4666,7 @@ Object.assign(handlers, {
             const salesData = (data.salesData || []).reverse();
             store.setState({ plTimeline: salesData });
             const el = document.getElementById('pl-timeline-chart');
-            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderPLChart(salesData)));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderPLChart(salesData));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (e) {
             toast.error('Failed to load P&L data');
         }
@@ -4652,7 +4717,7 @@ Object.assign(handlers, {
             const data = res.data || res;
             store.setState({ automationExperiments: data.experiments || data || [] });
             const el = document.getElementById('experiments-list');
-            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderExperimentsList(store.state.automationExperiments)));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderExperimentsList(store.state.automationExperiments));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (e) {
             toast.error('Failed to load experiments');
         }
@@ -4785,7 +4850,7 @@ Object.assign(handlers, {
             const data = res.data || res;
             store.setState({ inventoryForecast: data });
             const el = document.getElementById('forecast-content');
-            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderForecastContent(data)));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderForecastContent(data));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (e) { toast.error('Failed to load forecast'); }
     },
 
@@ -4808,7 +4873,7 @@ Object.assign(handlers, {
             const data = res.data || res;
             store.setState({ automationTemplates: data.templates || [] });
             const el = document.getElementById('template-marketplace');
-            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderTemplateMarketplace(store.state.automationTemplates)));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderTemplateMarketplace(store.state.automationTemplates));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (e) { toast.error('Failed to load templates'); }
     },
 
@@ -4884,21 +4949,21 @@ Object.assign(handlers, {
 
     // Inventory category management
 
-    loadCategories: async function(showError) {
+    loadCategories: async function() {
         try {
             const res = await api.get('/inventory/categories');
             const data = res.data || res;
             store.setState({ inventoryCategories: data.categories || [] });
             return data.categories || [];
         } catch (e) {
-            if (showError) toast.error('Failed to load categories');
+            toast.error('Failed to load categories');
             return [];
         }
     },
 
 
     showCategoryManager: async function() {
-        const categories = await handlers.loadCategories(true);
+        const categories = await handlers.loadCategories();
         const renderList = (cats) => {
             if (!cats || cats.length === 0) return '<p class="text-gray-500 text-sm text-center py-4">No categories yet. Add one below.</p>';
             return '<div class="flex flex-col gap-2">' + cats.map(c =>
@@ -5393,7 +5458,7 @@ Object.assign(handlers, {
             const trends = data.trends || [];
             store.setState({ durationTrends: trends });
             const el = document.getElementById('duration-trends-chart');
-            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderDurationTrendsChart(trends)));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderDurationTrendsChart(trends));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (e) {
             toast.error('Failed to load duration trends');
         }
@@ -5466,7 +5531,7 @@ Object.assign(handlers, {
             const data = res.data || res;
             store.setState({ priceSuggestions: data.suggestions || [] });
             const el = document.getElementById('price-suggestions-content');
-            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderPriceSuggestions(data.suggestions || [])));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderPriceSuggestions(data.suggestions || []));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (e) {
             toast.error('Failed to load price suggestions');
         }
@@ -5579,7 +5644,7 @@ Object.assign(handlers, {
             const suggestions = (store.state.priceSuggestions || []).filter(s => s.id !== itemId);
             store.setState({ priceSuggestions: suggestions });
             const el = document.getElementById('price-suggestions-content');
-            if (el) el.innerHTML =sanitizeHTML( sanitizeHTML(handlers._renderPriceSuggestions(suggestions)));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (el) el.innerHTML = sanitizeHTML(handlers._renderPriceSuggestions(suggestions));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (e) {
             toast.error('Failed to update price');
         }
@@ -5747,7 +5812,7 @@ Object.assign(handlers, {
             } catch (err) {
                 const loadingEl = document.getElementById('ar-preview-loading');
                 if (loadingEl) {
-                    loadingEl.innerHTML =sanitizeHTML( sanitizeHTML(`<div style="text-align:center;padding:1rem;color:#fca5a5;">${components.icon('alert-circle', 24)}<p class="text-sm mt-2">Could not start preview</p><p class="text-xs mt-1" style="color:#9ca3af;">${escapeHtml(err.message || 'Unknown error')}</p></div>`));  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    loadingEl.innerHTML = sanitizeHTML(`<div style="text-align:center;padding:1rem;color:#fca5a5;">${components.icon('alert-circle', 24)}<p class="text-sm mt-2">Could not start preview</p><p class="text-xs mt-1" style="color:#9ca3af;">${escapeHtml(err.message || 'Unknown error')}</p></div>`);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 }
                 console.error('[AR] Preview error:', err);
             }
