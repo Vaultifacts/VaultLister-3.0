@@ -678,6 +678,9 @@ window.kanbanBoard = kanbanBoard;
 window.taskTemplates = taskTemplates;
 window.measurementTool = measurementTool;
 window.sizeConverter = sizeConverter;
+window.richTextEditor = richTextEditor;
+window.focusMode = focusMode;
+window.sessionMonitor = sessionMonitor;
 
 // Start the app
 initApp();
@@ -747,6 +750,9 @@ window.kanbanBoard = kanbanBoard;
 window.taskTemplates = taskTemplates;
 window.measurementTool = measurementTool;
 window.sizeConverter = sizeConverter;
+window.richTextEditor = richTextEditor;
+window.focusMode = focusMode;
+window.sessionMonitor = sessionMonitor;
 // Expose utility functions and widgets needed by lazy-loaded chunks
 window.escapeHtml = escapeHtml;
 window.toLocalDate = toLocalDate;

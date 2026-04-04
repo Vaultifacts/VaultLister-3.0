@@ -15383,7 +15383,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '60815404';
+    const v = '5e1975d2';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27953,6 +27953,9 @@ window.kanbanBoard = kanbanBoard;
 window.taskTemplates = taskTemplates;
 window.measurementTool = measurementTool;
 window.sizeConverter = sizeConverter;
+window.richTextEditor = richTextEditor;
+window.focusMode = focusMode;
+window.sessionMonitor = sessionMonitor;
 
 // Start the app
 initApp();
@@ -28022,6 +28025,9 @@ window.kanbanBoard = kanbanBoard;
 window.taskTemplates = taskTemplates;
 window.measurementTool = measurementTool;
 window.sizeConverter = sizeConverter;
+window.richTextEditor = richTextEditor;
+window.focusMode = focusMode;
+window.sessionMonitor = sessionMonitor;
 // Expose utility functions and widgets needed by lazy-loaded chunks
 window.escapeHtml = escapeHtml;
 window.toLocalDate = toLocalDate;
