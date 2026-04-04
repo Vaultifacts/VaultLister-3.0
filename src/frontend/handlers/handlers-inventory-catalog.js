@@ -5043,6 +5043,7 @@ Object.assign(handlers, {
         const name = document.getElementById('edit-auto-name')?.value?.trim();
         const schedule = document.getElementById('edit-auto-schedule')?.value;
         const enabled = document.getElementById('edit-auto-enabled')?.value === 'true';
+        if (!name) { toast.error('Automation name is required'); return; }
         try {
             await api.ensureCSRFToken();
             await api.put('/automations/' + ruleId, { name, schedule, is_active: enabled });

@@ -1831,14 +1831,14 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     ${(() => {
+                        const sales = store.state.sales || [];
+                        if (sales.length === 0) return '<div style="text-align: center; padding: 24px; color: var(--gray-400);"><p>No expense data yet. Start selling to see expense breakdowns.</p></div>';
                         const categories = [
-                            { name: 'Inventory/COGS', amount: 2840, pct: 42, color: 'primary' },
-                            { name: 'Shipping', amount: 1120, pct: 17, color: 'success' },
-                            { name: 'Platform Fees', amount: 890, pct: 13, color: 'warning' },
-                            { name: 'Supplies/Packaging', amount: 620, pct: 9, color: 'info' },
-                            { name: 'Marketing', amount: 450, pct: 7, color: 'danger' },
-                            { name: 'Software/Tools', amount: 340, pct: 5, color: 'secondary' },
-                            { name: 'Other', amount: 480, pct: 7, color: 'gray' }
+                            { name: 'Inventory/COGS', amount: 0, pct: 0, color: 'primary' },
+                            { name: 'Shipping', amount: 0, pct: 0, color: 'success' },
+                            { name: 'Platform Fees', amount: 0, pct: 0, color: 'warning' },
+                            { name: 'Supplies/Packaging', amount: 0, pct: 0, color: 'info' },
+                            { name: 'Other', amount: 0, pct: 0, color: 'gray' }
                         ];
                         return '<div style="display: grid; gap: 12px;">' +
                             categories.map(c =>
@@ -1864,15 +1864,15 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">$${(store.state.bankBalance || 12450).toLocaleString()}</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">$${(store.state.bankBalance || 0).toLocaleString()}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Bank Balance</div>
                         </div>
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: 700; color: var(--success);">$${(store.state.bookBalance || 12320).toLocaleString()}</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--success);">$${(store.state.bookBalance || 0).toLocaleString()}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Book Balance</div>
                         </div>
-                        <div style="text-align: center; padding: 16px; background: ${Math.abs((store.state.bankBalance || 12450) - (store.state.bookBalance || 12320)) > 50 ? 'var(--danger-light, #fef2f2)' : 'var(--success-light, #f0fdf4)'}; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: 700; color: ${Math.abs((store.state.bankBalance || 12450) - (store.state.bookBalance || 12320)) > 50 ? 'var(--danger)' : 'var(--success)'};">$${Math.abs((store.state.bankBalance || 12450) - (store.state.bookBalance || 12320)).toLocaleString()}</div>
+                        <div style="text-align: center; padding: 16px; background: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger-light, #fef2f2)' : 'var(--success-light, #f0fdf4)'}; border-radius: 8px;">
+                            <div style="font-size: 24px; font-weight: 700; color: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger)' : 'var(--success)'};">$${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)).toLocaleString()}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Difference</div>
                         </div>
                     </div>
