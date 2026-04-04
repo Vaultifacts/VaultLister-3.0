@@ -7,12 +7,8 @@ import { logger } from '../shared/logger.js';
 import websocketService from '../services/websocket.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
 import { safeJsonParse } from '../shared/utils.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const pkg = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8'));
+const pkg = { version: process.env.npm_package_version || '1.6.0' };
 
 export async function monitoringRouter(ctx) {
     const { method, path, user } = ctx;
