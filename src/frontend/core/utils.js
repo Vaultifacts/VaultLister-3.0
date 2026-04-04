@@ -3853,7 +3853,7 @@ const imageCarousel = {
         return `
             <div class="image-carousel" id="${id}" data-current="0">
                 <div class="image-carousel-main">
-                    <img src="${images[0]}" alt="Image 1">
+                    <img src="${images[0]}" alt="Item photo">
                     ${showNav ? `
                         <button class="image-carousel-nav prev" aria-label="Previous image" onclick="imageCarousel.prev('${id}')">${components.icon('chevron-left', 20)}</button>
                         <button class="image-carousel-nav next" aria-label="Next image" onclick="imageCarousel.next('${id}')">${components.icon('chevron-right', 20)}</button>

@@ -2453,7 +2453,7 @@ const lightbox = {
                     <button class="lightbox-nav prev" aria-label="Previous image" onclick="lightbox.prev()">${components.icon('chevron-left', 24)}</button>
                     <button class="lightbox-nav next" aria-label="Next image" onclick="lightbox.next()">${components.icon('chevron-right', 24)}</button>
                 ` : ''}
-                <img src="${this.images[this.currentIndex]}" class="lightbox-image" alt="Image">
+                <img src="${this.images[this.currentIndex]}" class="lightbox-image" alt="Item photo ${this.currentIndex + 1} of ${this.images.length}">
                 ${this.images.length > 1 ? `
                     <div class="lightbox-thumbnails">
                         ${this.images.map((img, i) => `

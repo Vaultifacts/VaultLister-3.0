@@ -255,6 +255,7 @@ export async function authRouter(ctx) {
             `, [userId, email.toLowerCase(), passwordHash, username.toLowerCase(), fullName || username]);
 
             const user = await query.get('SELECT id, email, username, full_name, is_active, email_verified, created_at FROM users WHERE id = ?', [userId]);
+            logger.info('[Auth] Register success', { userId, email: email.toLowerCase() });
 
             const token = generateToken(user);
             const refreshToken = generateRefreshToken(user);
@@ -402,6 +403,7 @@ export async function authRouter(ctx) {
 
             // Update last login
             await query.run('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
+            logger.info('[Auth] Login success', { userId: user.id, email: user.email });
 
             delete user.password_hash;
             delete user.mfa_secret;

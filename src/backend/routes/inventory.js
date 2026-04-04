@@ -442,6 +442,7 @@ export async function inventoryRouter(ctx) {
             location || null, binLocation || null, notes || null, blockchainHash, JSON.stringify(sustainabilityScore || {}), JSON.stringify(customFields || {}),
             purchaseDate || null, supplier || null
         ]);
+        logger.info('[Inventory] Item created', { userId: user.id, itemId: id, title: title || '' });
 
         // Log sustainability impact
         if (sustainabilityScore) {

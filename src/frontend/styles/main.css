@@ -1,6 +1,12 @@
 /* VaultLister - Main Styles */
 /* Nano CSS approach - minimal, performant styles */
 
+/* Universal focus-visible fallback (WCAG 2.1 AA) */
+:focus-visible {
+    outline: 2px solid var(--primary-500, #6366f1);
+    outline-offset: 2px;
+}
+
 /* ============================================
    CSS Variables / Design Tokens
    ============================================ */

@@ -459,7 +459,7 @@ const apiRoutes = {
             data: {
                 status: 'healthy',
                 timestamp: new Date().toISOString(),
-                version: '1.0.0',
+                version: _APP_VERSION,
                 database: { status: dbStatus }
             }
         };

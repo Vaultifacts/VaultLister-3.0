@@ -3854,7 +3854,7 @@ const imageCarousel = {
         return `
             <div class="image-carousel" id="${id}" data-current="0">
                 <div class="image-carousel-main">
-                    <img src="${images[0]}" alt="Image 1">
+                    <img src="${images[0]}" alt="Item photo">
                     ${showNav ? `
                         <button class="image-carousel-nav prev" aria-label="Previous image" onclick="imageCarousel.prev('${id}')">${components.icon('chevron-left', 20)}</button>
                         <button class="image-carousel-nav next" aria-label="Next image" onclick="imageCarousel.next('${id}')">${components.icon('chevron-right', 20)}</button>
@@ -11219,7 +11219,7 @@ const lightbox = {
                     <button class="lightbox-nav prev" aria-label="Previous image" onclick="lightbox.prev()">${components.icon('chevron-left', 24)}</button>
                     <button class="lightbox-nav next" aria-label="Next image" onclick="lightbox.next()">${components.icon('chevron-right', 24)}</button>
                 ` : ''}
-                <img src="${this.images[this.currentIndex]}" class="lightbox-image" alt="Image">
+                <img src="${this.images[this.currentIndex]}" class="lightbox-image" alt="Item photo ${this.currentIndex + 1} of ${this.images.length}">
                 ${this.images.length > 1 ? `
                     <div class="lightbox-thumbnails">
                         ${this.images.map((img, i) => `
@@ -15405,7 +15405,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '427dba95';
+    const v = '94dba9b6';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
