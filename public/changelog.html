@@ -359,13 +359,37 @@
 <main class="main">
     <div class="timeline" role="feed" aria-label="Release history">
 
+        <!-- v1.7.0 -->
+        <article class="release release--latest" aria-label="Version 1.7.0">
+            <div class="release-dot" aria-hidden="true"></div>
+            <div class="release-card">
+                <div class="release-header">
+                    <span class="release-version">v1.7.0</span>
+                    <span class="badge-latest">Latest</span>
+                    <span class="release-date">April 2026</span>
+                </div>
+                <div class="release-title">Launch readiness, security hardening &amp; cleanup</div>
+                <ul class="change-list">
+                    <li class="change-item"><span class="badge badge-security">Security</span>Auth lockout re-enabled for production — brute-force protection active</li>
+                    <li class="change-item"><span class="badge badge-security">Security</span>OAUTH_MODE startup assertion — warns if marketplace connections use mock tokens</li>
+                    <li class="change-item"><span class="badge badge-fix">Fix</span>Privacy policy and terms of service corrected for cloud-hosted deployment</li>
+                    <li class="change-item"><span class="badge badge-fix">Fix</span>All placeholder data replaced with proper empty states across financials, analytics, and settings</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>SKU uniqueness constraint — prevents duplicate inventory SKUs</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>8 pages added to sidebar navigation (Plans, Account, Calendar, Reports, Community, Roadmap, Import, Receipts)</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Centralized platform list — consistent 9-platform count across all surfaces</li>
+                    <li class="change-item"><span class="badge badge-fix">Fix</span>Window exposures for richTextEditor, focusMode, sessionMonitor — fixes ReferenceErrors on hash-navigated pages</li>
+                    <li class="change-item"><span class="badge badge-fix">Fix</span>RELEASE.md and ARCHITECTURE.md corrected (PostgreSQL, AES-256-GCM, Railway+Cloudflare)</li>
+                    <li class="change-item"><span class="badge badge-fix">Fix</span>178 stale files archived (legacy SQLite migrations, evidence docs, nginx configs)</li>
+                </ul>
+            </div>
+        </article>
+
         <!-- v1.6.0 -->
-        <article class="release release--latest" aria-label="Version 1.6.0">
+        <article class="release" aria-label="Version 1.6.0">
             <div class="release-dot" aria-hidden="true"></div>
             <div class="release-card">
                 <div class="release-header">
                     <span class="release-version">v1.6.0</span>
-                    <span class="badge-latest">Latest</span>
                     <span class="release-date">March 2026</span>
                 </div>
                 <div class="release-title">Landing page, admin dashboard, bundle splitting &amp; SSL</div>

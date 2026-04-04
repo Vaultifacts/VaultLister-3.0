@@ -198,9 +198,9 @@ jobs:
     name: E2E Tests
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    # To temporarily disable E2E in CI (e.g. during a Playwright infrastructure issue),
-    # change the condition below to: if: false
-    # Re-enable by restoring: if: github.event_name == 'push' || github.event_name == 'pull_request'
+    # E2E disabled since 2026-03 — re-enable when Playwright tests are maintained.
+    # To re-enable: change `if: false` to `if: github.event_name == 'push' || github.event_name == 'pull_request'`
+    # Note: continue-on-error is true, so failures won't block CI even when enabled.
     if: false
     needs: [test-unit]
     continue-on-error: true
