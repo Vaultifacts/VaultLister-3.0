@@ -310,7 +310,7 @@ Object.assign(pages, {
 
             <!-- Shop Cards Grid -->
             <div class="grid grid-cols-3 gap-6">
-                ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(platform => {
+                ${(window.SUPPORTED_PLATFORMS || []).map(p => p.id).map(platform => {
                     const shop = shops.find(s => s.platform === platform);
                     const isConnected = shop?.is_connected || false;
                     const connectionType = shop?.connection_type || 'manual';
@@ -613,7 +613,6 @@ Object.assign(pages, {
             'Other': ['Standard', 'Expedited', 'Economy']
         };
         const packageTypes = ['Box', 'Poly Mailer', 'Envelope', 'Tube', 'Padded Envelope', 'Custom'];
-        const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
 
         return `
             <div class="page-header">
@@ -1638,7 +1637,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Orders that have been fulfilled and delivered</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'completedOrders\', this.value)">' +
+                                        '<select class="form-select form-select-sm" name="completedOrders" onchange="handlers.updateRetentionSetting(\'completedOrders\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.completedOrders === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1650,7 +1649,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Items moved to sold/archived status</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'soldItems\', this.value)">' +
+                                        '<select class="form-select form-select-sm" name="soldItems" onchange="handlers.updateRetentionSetting(\'soldItems\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.soldItems === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1662,7 +1661,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Performance metrics and statistics</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'analyticsData\', this.value)">' +
+                                        '<select class="form-select form-select-sm" name="analyticsData" onchange="handlers.updateRetentionSetting(\'analyticsData\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.analyticsData === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1674,7 +1673,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Read notifications and alerts</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'notifications\', this.value)">' +
+                                        '<select class="form-select form-select-sm" name="notifications" onchange="handlers.updateRetentionSetting(\'notifications\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.notifications === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1686,7 +1685,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Run history and task logs</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'automationLogs\', this.value)">' +
+                                        '<select class="form-select form-select-sm" name="automationLogs" onchange="handlers.updateRetentionSetting(\'automationLogs\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.automationLogs === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -2311,7 +2310,7 @@ Object.assign(pages, {
 
     plansBilling() {
         const user = store.state.user || {};
-        const currentPlan = user.subscription_tier || 'free';
+        const currentPlan = store.getPlanTier();
 
         return `
             <div class="page-header">
@@ -2342,6 +2341,20 @@ Object.assign(pages, {
                                 Manage Subscription
                             </button>
                         `}
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Usage -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">AI Listing Generator</h3>
+                </div>
+                <div class="card-body">
+                    <div class="setting-item">
+                        <div class="setting-label">Monthly Usage</div>
+                        <div class="setting-value">${store.state.aiUsageCount || 0} / 50 used this month</div>
+                        <div class="setting-description">Pro plan includes 50 AI-generated listings per month</div>
                     </div>
                 </div>
             </div>

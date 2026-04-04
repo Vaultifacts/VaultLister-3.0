@@ -1877,7 +1877,7 @@ const handlers = {
     },
 
     syncPlatformPrices: function(basePrice) {
-        const platforms = ['ebay', 'poshmark', 'whatnot', 'depop', 'shopify', 'facebook'];
+        const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
         platforms.forEach(platform => {
             const input = document.getElementById('price-' + platform);
             if (input && !input.dataset.customized) input.value = basePrice;

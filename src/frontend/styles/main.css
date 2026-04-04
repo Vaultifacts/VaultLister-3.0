@@ -68053,3 +68053,16 @@ kbd {
 body.dark-mode .nav-progress-bar {
     background: var(--primary-400, #818cf8);
 }
+
+/* T6.28 — Dashboard hero overflow */
+.dashboard-hero { max-width: 100%; overflow: hidden; }
+.dashboard-hero-content { max-width: 100%; }
+
+/* T9.1 — Targeted overflow fixes for narrow viewports */
+@media (max-width: 768px) {
+    .analytics-hero,
+    .analytics-hero-highlights,
+    .analytics-quick-insights { max-width: 100%; overflow-x: auto; }
+    .orders-hero,
+    .orders-hero-header { max-width: 100%; overflow-x: hidden; }
+}

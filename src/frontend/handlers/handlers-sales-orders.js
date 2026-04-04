@@ -3585,7 +3585,7 @@ Object.assign(handlers, {
                 <div class="mb-4">
                     <h4 class="font-medium mb-3">Quick Sync by Platform</h4>
                     <div class="flex flex-wrap gap-2">
-                        ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(p => `
+                        ${(window.SUPPORTED_PLATFORMS || []).map(p => p.id).map(p => `
                             <button class="btn btn-sm btn-secondary" onclick="handlers.syncPlatformOrders('${p}')">
                                 ${components.platformBadge(p)} Sync
                             </button>
@@ -4652,7 +4652,7 @@ Object.assign(handlers, {
 
             case 'platform-comparison':
                 headers = ['Platform', 'Total Sales', 'Revenue', 'Fees', 'Net Profit', 'Avg Sale'];
-                const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
+                const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
                 data = platforms.map(p => {
                     const platformSales = (store.state.sales || []).filter(s => s.platform === p);
                     const revenue = platformSales.reduce((sum, s) => sum + (s.sale_price || 0), 0);

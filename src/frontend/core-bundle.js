@@ -8068,6 +8068,10 @@ const store = {
         }
     },
 
+    getPlanTier() {
+        return this.state.user?.subscription_tier || 'free';
+    },
+
     hydrate() {
         try {
             // Try sessionStorage first (current tab session with valid tokens)
@@ -8275,9 +8279,11 @@ const api = {
                 return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
             }
 
-            // All retries exhausted for a 5xx — show error toast
+            // All retries exhausted for a 5xx — mark error so callers can show their own message
+            // without double-toasting. Generic toast is intentionally omitted here; the thrown
+            // error carries status >= 500 so any unhandled-error boundary can detect it.
             if (response.status >= 500) {
-                toast.error('Server error. Please try again later.');
+                // Error is thrown below via the !response.ok path — no toast here.
             }
 
             // Store CSRF token from response
@@ -15398,7 +15404,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a06e9589';
+    const v = 'd2249dd6';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16121,11 +16127,12 @@ const components = {
                     `).join('')}
                 </nav>
                 <div class="sidebar-footer">
+                    ${store.getPlanTier() === 'free' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
                     <div class="user-info flex items-center gap-3">
                         <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div>
                             <div class="font-medium text-sm">${user?.username || 'Guest'}</div>
-                            <div class="text-xs text-gray-500">${(user?.subscription_tier || 'Free').charAt(0).toUpperCase() + (user?.subscription_tier || 'free').slice(1)} Plan</div>
+                            <div class="text-xs text-gray-500">${store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1)} Plan</div>
                         </div>
                     </div>
                     <button class="sidebar-logout-btn" onclick="auth.logout()" aria-label="Logout" data-testid="sidebar-logout-btn">
@@ -16529,6 +16536,9 @@ const components = {
 
     // Breadcrumb navigation component
     breadcrumb(currentPage) {
+        function humanizeSlug(slug) {
+            return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
         const pageInfo = {
             'dashboard': { label: 'Dashboard', section: 'Sell' },
             'inventory': { label: 'Inventory', section: 'Sell' },
@@ -16569,7 +16579,7 @@ const components = {
             'shipping-labels': { label: 'Shipping Labels', section: 'Sell' }
         };
 
-        const info = pageInfo[currentPage] || { label: currentPage, section: '' };
+        const info = pageInfo[currentPage] || { label: humanizeSlug(currentPage), section: '' };
 
         return `
             <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -19178,7 +19188,7 @@ const pages = {
                 <div class="card">
                     <div class="card-body text-center">
                         <div class="text-2xl font-bold ${salesTabStats.totalProfit >= 0 ? 'text-success' : 'text-error'}">
-                            ${salesTabStats.totalRevenue > 0 ? ((salesTabStats.totalProfit / salesTabStats.totalRevenue) * 100).toFixed(1) : 0}%
+                            ${salesTabStats.totalRevenue > 0 ? ((salesTabStats.totalProfit / salesTabStats.totalRevenue) * 100).toFixed(1) + '%' : 'N/A'}
                         </div>
                         <div class="text-sm text-gray-500">Profit Margin</div>
                     </div>
@@ -19306,23 +19316,15 @@ const pages = {
         });
         const bestSellers = Object.values(salesByItem).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
 
-        // Generate simulated price trend data for best sellers (based on market fluctuations)
+        // Build price trend data from real price history
         bestSellers.forEach(item => {
-            // Simulate 7-day price trend based on avg sale price
             const avgPrice = item.count > 0 ? item.revenue / item.count : 0;
-            const trend = [];
-            let price = avgPrice * 0.9; // Start 10% lower
-            for (let i = 0; i < 7; i++) {
-                // Add some random fluctuation (-3% to +5%)
-                const change = 1 + (Math.random() * 0.08 - 0.03);
-                price = price * change;
-                trend.push(Math.round(price * 100) / 100);
-            }
-            // Ensure we end near the current price
-            trend[6] = avgPrice;
+            const invItem = (store.state.inventory || []).find(i => (i.title || '') === item.title);
+            const priceHistory = invItem && Array.isArray(invItem.price_history) ? invItem.price_history.map(h => h.price || h).filter(Number.isFinite) : [];
+            const trend = priceHistory.length >= 2 ? priceHistory.slice(-7) : [];
             item.priceTrend = trend;
             item.avgPrice = avgPrice;
-            item.trendDirection = trend[6] > trend[0] ? 'up' : 'down';
+            item.trendDirection = trend.length >= 2 ? (trend[trend.length - 1] > trend[0] ? 'up' : 'down') : 'stable';
         });
 
         // Slowest moving inventory (oldest active items)
@@ -19787,10 +19789,10 @@ const pages = {
         const netProfit = (store.state.sales || []).reduce((sum, s) => sum + (s.net_profit || 0), 0);
         const totalInvestment = totalInventoryValue;
 
-        const inventoryTurnoverRatio = avgInventoryValue > 0 ? (totalRevenue2 / avgInventoryValue).toFixed(2) : 0;
+        const inventoryTurnoverRatio = avgInventoryValue > 0 ? (totalRevenue2 / avgInventoryValue).toFixed(2) : 'N/A';
         const sellThroughRate = ((soldItemsCount / totalListedItems) * 100).toFixed(1);
-        const profitMarginRatio = totalRevenue2 > 0 ? ((netProfit / totalRevenue2) * 100).toFixed(1) : 0;
-        const roiRatio = totalInvestment > 0 ? ((netProfit / totalInvestment) * 100).toFixed(1) : 0;
+        const profitMarginRatio = totalRevenue2 > 0 ? ((netProfit / totalRevenue2) * 100).toFixed(1) : 'N/A';
+        const roiRatio = totalInvestment > 0 ? ((netProfit / totalInvestment) * 100).toFixed(1) : 'N/A';
 
         const ratioAnalysisTabContent = `
             <div class="grid grid-cols-2 gap-6">
@@ -21793,7 +21795,7 @@ const modals = {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <form id="add-item-form" onsubmit="handlers.addItem(event)">
+                <form id="add-item-form" onsubmit="(function(e){var t=e.target.querySelector('[name=title]');var p=e.target.querySelector('[name=listPrice]');if(!t||!t.value.trim()){e.preventDefault();toast.error('Title is required');t&&t.focus();return;}if(!p||!(parseFloat(p.value)>0)){e.preventDefault();toast.error('List Price must be greater than 0');p&&p.focus();return;}handlers.addItem(e);})(event)">
                     <div class="form-group" style="margin-bottom: 24px;">
                         <div class="flex justify-between items-center mb-2">
                             <label class="form-label">Product Images & Video</label>
@@ -21878,7 +21880,8 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label for="add-item-title" class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)">
+                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=c>80?'var(--error)':c>50?'var(--warning-600)':'var(--gray-500)'}})(this)">
+                        <p class="title-char-counter text-xs mt-1" style="color: var(--gray-500);">0/80 chars (eBay/Poshmark limit)</p>
                     </div>
                     <div class="form-group">
                         <div class="flex justify-between items-center mb-2">
@@ -21950,7 +21953,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
-                            <select class="form-select" name="condition">
+                            <select class="form-select" name="condition" required>
                                 <option value="new">New with Tags</option>
                                 <option value="like_new">Like New</option>
                                 <option value="good" selected>Good</option>
@@ -27255,7 +27258,7 @@ const handlers = {
     },
 
     syncPlatformPrices: function(basePrice) {
-        const platforms = ['ebay', 'poshmark', 'whatnot', 'depop', 'shopify', 'facebook'];
+        const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
         platforms.forEach(platform => {
             const input = document.getElementById('price-' + platform);
             if (input && !input.dataset.customized) input.value = basePrice;

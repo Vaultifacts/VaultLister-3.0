@@ -4369,7 +4369,7 @@ Object.assign(pages, {
 
             <!-- Shop Cards Grid -->
             <div class="grid grid-cols-3 gap-6">
-                ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(platform => {
+                ${(window.SUPPORTED_PLATFORMS || []).map(p => p.id).map(platform => {
                     const shop = shops.find(s => s.platform === platform);
                     const isConnected = shop?.is_connected || false;
                     const connectionType = shop?.connection_type || 'manual';
@@ -4671,7 +4671,6 @@ Object.assign(pages, {
             'Other': ['Standard', 'Expedited', 'Economy']
         };
         const packageTypes = ['Box', 'Poly Mailer', 'Envelope', 'Tube', 'Padded Envelope', 'Custom'];
-        const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
 
         return `
             <div class="page-header">
@@ -12453,7 +12452,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
     heatmaps() {
         const days = [7, 14, 30, 90];
-        const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
+        const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
         const heatmapData = store.state.heatmapData || { grid: [], peakTimes: [] };
         const grid = heatmapData.grid || [];
         const peakTimes = heatmapData.peakTimes || [];
@@ -17188,6 +17187,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <p class="font-semibold text-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(item.title || '')}">${escapeHtml(item.title || 'Untitled')}</p>
                             <p class="text-xs text-gray-500 mt-0.5">${escapeHtml(item.category || '')}</p>
                             <button class="btn btn-primary btn-sm mt-2 w-full" style="min-height:44px;"
+                                title="AR Preview"
                                 aria-label="Open AR preview for ${escapeHtml(item.title || 'this item')}"
                                 onclick="handlers.openARPreview('${escapeHtml(item.id)}')">
                                 ${components.icon('eye', 14)} AR Preview

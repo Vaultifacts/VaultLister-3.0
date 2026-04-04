@@ -5,7 +5,7 @@
 Object.assign(pages, {
     heatmaps() {
         const days = [7, 14, 30, 90];
-        const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
+        const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
         const heatmapData = store.state.heatmapData || { grid: [], peakTimes: [] };
         const grid = heatmapData.grid || [];
         const peakTimes = heatmapData.peakTimes || [];
@@ -510,12 +510,10 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     ${(() => {
-                        const alerts = store.state.trendAlerts || [
-                            { category: 'Vintage Denim', type: 'price_up', change: '+18%', message: 'Prices rising in vintage denim category. Consider listing vintage items now.', severity: 'success', time: '2 hours ago' },
-                            { category: 'Designer Bags', type: 'demand_spike', change: '+25%', message: 'Demand spike detected for designer bags on eBay and Poshmark.', severity: 'info', time: '5 hours ago' },
-                            { category: 'Athletic Shoes', type: 'price_drop', change: '-12%', message: 'Market prices declining for athletic shoes. Hold off on new acquisitions.', severity: 'warning', time: '1 day ago' },
-                            { category: 'Band Tees', type: 'saturation', change: '+40% listings', message: 'Market becoming saturated with band tees. Differentiate with rare finds.', severity: 'error', time: '2 days ago' }
-                        ];
+                        const alerts = store.state.trendAlerts || [];
+                        if (alerts.length === 0) {
+                            return '<p style="color: var(--gray-500); font-size: 13px; text-align: center; padding: 24px 0;">No trend alerts at this time.</p>';
+                        }
                         return `
                             <div class="space-y-3">
                                 ${alerts.map(alert => {
@@ -554,11 +552,11 @@ Object.assign(pages, {
                             total: 156, correct: 118, avgError: 8.2, bestCategory: 'Shoes', worstCategory: 'Accessories',
                             monthly: [72, 75, 68, 80, 76, 82, 78, 85]
                         };
-                        const successRate = accuracy.total > 0 ? ((accuracy.correct / accuracy.total) * 100).toFixed(1) : 0;
+                        const successRate = accuracy.total > 0 ? ((accuracy.correct / accuracy.total) * 100).toFixed(1) : 'N/A';
                         return `
                             <div class="grid grid-cols-4 gap-4 mb-4">
                                 <div style="text-align: center; padding: 14px; background: var(--primary-50); border-radius: 10px;">
-                                    <div style="font-size: 24px; font-weight: 700; color: var(--primary);">${successRate}%</div>
+                                    <div style="font-size: 24px; font-weight: 700; color: var(--primary);">${successRate === 'N/A' ? 'N/A' : successRate + '%'}</div>
                                     <div class="text-xs text-gray-500">Accuracy Rate</div>
                                 </div>
                                 <div style="text-align: center; padding: 14px; background: var(--gray-50); border-radius: 10px;">
@@ -744,13 +742,7 @@ Object.assign(pages, {
     suppliers() {
         const suppliers = store.state.suppliers || [];
 
-        // Mock suppliers for demo if none exist
-        let displaySuppliers = suppliers.length > 0 ? suppliers : [
-            { id: '1', name: 'ThriftWholesale', website: 'https://thriftwholesale.com', email: 'contact@thriftwholesale.com', notes: 'Reliable wholesale partner', active: true, item_count: 245, avg_price: 12.50, rating: 5, stock_status: 'In Stock', has_price_drop: true, price_history: [45, 42, 48, 44, 40, 38, 35] },
-            { id: '2', name: 'VintageSupply Co', website: 'https://vintagesupply.co', email: 'info@vintagesupply.co', notes: 'Specializes in vintage items', active: true, item_count: 180, avg_price: 18.75, rating: 4, stock_status: 'In Stock', has_price_drop: false, price_history: [30, 32, 31, 33, 35, 34, 36] },
-            { id: '3', name: 'BulkClothing Direct', website: 'https://bulkclothing.com', email: 'sales@bulkclothing.com', notes: 'Large inventory', active: true, item_count: 520, avg_price: 8.25, rating: 4, stock_status: 'Low Stock', has_price_drop: true, price_history: [20, 22, 19, 18, 17, 15, 14] },
-            { id: '4', name: 'Designer Liquidators', website: 'https://designerliq.com', email: 'contact@designerliq.com', notes: 'Designer brands', active: false, item_count: 75, avg_price: 45.00, rating: 3, stock_status: 'Out of Stock', has_price_drop: false, price_history: [50, 52, 48, 55, 53, 50, 52] }
-        ];
+        let displaySuppliers = suppliers.slice();
 
         // Apply search filter (Feature 1)
         const searchQuery = store.state.supplierSearchQuery || '';
@@ -1032,7 +1024,7 @@ Object.assign(pages, {
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
                         ${displaySuppliers.slice(0, 6).map(s => {
                             const contacts = s.contacts || [
-                                { name: s.name + ' Sales', role: 'Sales Rep', email: (s.email || s.name.toLowerCase().replace(/\s/g, '') + '@example.com'), phone: s.phone || '(555) ' + Math.floor(Math.random() * 900 + 100) + '-' + Math.floor(Math.random() * 9000 + 1000) }
+                                { name: s.name + ' Sales', role: 'Sales Rep', email: (s.email || s.name.toLowerCase().replace(/\s/g, '') + '@example.com'), phone: s.phone || 'No phone on file' }
                             ];
                             return contacts.map(c => '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">' +
                                 '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
@@ -1240,12 +1232,12 @@ Object.assign(pages, {
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Active Competitors</div>
                     <div style="font-size: 36px; font-weight: 700; color: var(--primary-600);">${competitors.length || 0}</div>
-                    <div style="font-size: 11px; color: var(--success); margin-top: 4px;">+3 this week</div>
+                    <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;"></div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Avg Competitor Items</div>
                     <div style="font-size: 36px; font-weight: 700; color: var(--gray-800);">${competitors.length > 0 ? Math.round(competitors.reduce((sum, c) => sum + (c.item_count || 0), 0) / competitors.length) : 0}</div>
-                    <div style="font-size: 11px; color: var(--gray-500); margin-top: 4px;">Your items: 89</div>
+                    <div style="font-size: 11px; color: var(--gray-500); margin-top: 4px;">Your items: ${(store.state.inventoryItems || []).length}</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Market Opportunity</div>
@@ -1576,21 +1568,9 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     <div class="space-y-2">
-                        ${[
-                            { type: 'price_surge', severity: 'high', title: 'Vintage Electronics prices up 15%', description: 'Average selling price increased significantly in the last 7 days', time: '2 hours ago', color: 'success' },
-                            { type: 'demand_spike', severity: 'medium', title: 'Sports Memorabilia demand spike', description: 'Listing-to-sale ratio improved by 23% this week', time: '5 hours ago', color: 'primary' },
-                            { type: 'price_drop', severity: 'high', title: 'Designer Handbag prices dropping', description: 'Market oversupply causing 12% average price decline', time: '1 day ago', color: 'danger' },
-                            { type: 'new_competitor', severity: 'low', title: 'New high-volume seller detected', description: 'A seller listed 50+ items in your top categories', time: '2 days ago', color: 'warning' }
-                        ].map(alert => `
-                            <div style="display: flex; gap: 12px; padding: 12px; background: var(--gray-50); border-left: 3px solid var(--${alert.color}); border-radius: 4px;">
-                                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--${alert.color}); margin-top: 6px; flex-shrink: 0;"></div>
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 600; font-size: 13px;">${alert.title}</div>
-                                    <p style="font-size: 12px; color: var(--gray-500); margin: 2px 0 0;">${alert.description}</p>
-                                </div>
-                                <span style="font-size: 11px; color: var(--gray-400); white-space: nowrap;">${alert.time}</span>
-                            </div>
-                        `).join('')}
+                        <div style="text-align: center; padding: 24px; color: var(--gray-400);">
+                            <p style="font-size: 13px;">No market alerts yet. Alerts will appear as market conditions change.</p>
+                        </div>
                     </div>
                 </div>
             </div>

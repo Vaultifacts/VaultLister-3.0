@@ -1093,7 +1093,7 @@ Object.assign(handlers, {
             'Other': ['Standard', 'Expedited', 'Economy']
         };
         const packageTypes = ['Box', 'Poly Mailer', 'Envelope', 'Tube', 'Padded Envelope', 'Custom'];
-        const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
+        const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
 
         modals.show(`
             <div class="modal-header">
@@ -1291,7 +1291,7 @@ Object.assign(handlers, {
             'Other': ['Standard', 'Expedited', 'Economy']
         };
         const packageTypes = ['Box', 'Poly Mailer', 'Envelope', 'Tube', 'Padded Envelope', 'Custom'];
-        const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
+        const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
         const profilePlatforms = profile.platforms || [];
 
         modals.show(`
@@ -2354,13 +2354,30 @@ Object.assign(handlers, {
     },
 
 
-    deleteAccount: async function() {
-        if (!await modals.confirm('Are you sure you want to delete your account? This action is permanent and cannot be undone.', { title: 'Delete Account', confirmText: 'Continue', danger: true })) {
+    deleteAccount: function() {
+        modals.show('Delete Account', `
+            <div style="padding: 16px;">
+                <div style="margin-bottom: 16px; padding: 12px; background: var(--danger-bg, #fff0f0); border: 1px solid var(--danger, #e53e3e); border-radius: 6px; font-size: 13px; color: var(--danger, #e53e3e);">
+                    <strong>This action is permanent and cannot be undone.</strong><br>
+                    All your listings, inventory, and sales history will be deleted.
+                </div>
+                <p style="margin-bottom: 12px; color: var(--text-secondary); font-size: 14px;">To confirm, type <strong>DELETE</strong> in the box below:</p>
+                <input type="text" id="delete-account-confirm-input" class="form-input" placeholder="Type DELETE to confirm" autocomplete="off" style="margin-bottom: 16px;">
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                    <button class="btn btn-danger" onclick="handlers.confirmDeleteAccount()">Delete My Account</button>
+                </div>
+            </div>
+        `);
+    },
+
+    confirmDeleteAccount: async function() {
+        const input = document.getElementById('delete-account-confirm-input');
+        if (!input || input.value !== 'DELETE') {
+            toast.error('You must type DELETE to confirm account deletion');
             return;
         }
-        if (!await modals.confirm('This will permanently delete all your data including listings, inventory, and sales history.', { title: 'Final Confirmation', confirmText: 'Delete My Account', danger: true })) {
-            return;
-        }
+        modals.close();
         toast.info('Account deletion requested. This feature will be available soon.');
     },
 
@@ -2607,7 +2624,7 @@ Object.assign(handlers, {
 
 
     syncPlatformPrices: function(basePrice) {
-        const platforms = ['ebay', 'poshmark', 'whatnot', 'depop', 'shopify', 'facebook'];
+        const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
         platforms.forEach(platform => {
             const input = document.getElementById(`price-${platform}`);
             if (input && !input.dataset.customized) {
@@ -4013,7 +4030,8 @@ Object.assign(handlers, {
     },
 
 
-    clearCache: function() {
+    clearCache: async function() {
+        if (!await modals.confirm('Clear all cached data? This will not affect your login session.', { title: 'Clear Cache', confirmText: 'Clear Cache' })) return;
         const cacheKeys = Object.keys(localStorage).filter(k =>
             k.startsWith('cache_') || k.startsWith('vl_cache_') || k.startsWith('search_cache_')
         );
@@ -4031,12 +4049,39 @@ Object.assign(handlers, {
     },
 
 
-    regenerateAPIKey: function() {
+    regenerateAPIKey: async function() {
+        if (!await modals.confirm('Are you sure you want to regenerate your API key? The current key will stop working immediately.', { title: 'Regenerate API Key', confirmText: 'Regenerate', danger: true })) return;
         const newKey = 'vl_' + crypto.randomUUID().replace(/-/g, '');
         store.setState({ apiKey: newKey });
         const display = document.querySelector('.api-key-display');
         if (display) display.textContent = newKey;
-        toast.success('API key regenerated');
+        modals.show('New API Key Generated', `
+            <div style="padding: 16px;">
+                <p style="margin-bottom: 12px; color: var(--text-secondary); font-size: 14px;">Your new API key has been generated. Copy it now — it will be masked after you close this dialog.</p>
+                <div style="display: flex; gap: 8px; align-items: center; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 6px; padding: 10px 12px; margin-bottom: 16px;">
+                    <code style="flex: 1; font-size: 13px; word-break: break-all;">${escapeHtml(newKey)}</code>
+                    <button class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('${escapeHtml(newKey)}').then(()=>toast.success('Copied!'))">Copy</button>
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button class="btn btn-primary" onclick="modals.close()">Done</button>
+                </div>
+            </div>
+        `);
+    },
+
+    toggleAPIKeyVisibility: function() {
+        const display = document.querySelector('.api-key-display');
+        if (!display) return;
+        const key = store.state.apiKey;
+        if (!key) return;
+        const masked = 'vl_\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+        if (display.dataset.visible === 'true') {
+            display.textContent = masked;
+            display.dataset.visible = 'false';
+        } else {
+            display.textContent = key;
+            display.dataset.visible = 'true';
+        }
     },
 
 
@@ -4406,11 +4451,7 @@ Object.assign(handlers, {
     // Settings,
 
 
-    regenerateAPIKey() {
-        const key = 'vl_' + Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2, '0')).join('');
-        store.setState({ apiKey: key });
-        toast.success('API key regenerated');
-    },
+    // regenerateAPIKey moved to line ~4052 (with confirmation dialog)
 
 
     async copyAPIKey() {
@@ -5874,6 +5915,31 @@ Object.assign(handlers, {
         } catch (e) {
             console.error('Poshmark monitoring check failed:', e);
             toast.error('Check failed — try again');
+        }
+    },
+
+
+    saveProfileSettings: async function() {
+        const fullName = document.getElementById('settings-full-name');
+        const displayName = document.getElementById('settings-display-name');
+        const timezone = document.getElementById('settings-timezone');
+
+        const data = {};
+        if (fullName) data.full_name = fullName.value.trim();
+        if (displayName) data.display_name = displayName.value.trim();
+        if (timezone) data.timezone = timezone.value;
+
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.put('/auth/profile', data);
+            const user = store.state.user || {};
+            if (data.full_name !== undefined) user.full_name = data.full_name;
+            if (data.display_name !== undefined) user.display_name = data.display_name;
+            store.setState({ user, userTimezone: data.timezone || store.state.userTimezone, settingsChanged: false });
+            if (data.timezone) localStorage.setItem('vaultlister_timezone', data.timezone);
+            toast.success('Profile saved successfully');
+        } catch (err) {
+            toast.error(err.message || 'Failed to save profile');
         }
     }
 });
