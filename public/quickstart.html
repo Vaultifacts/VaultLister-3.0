@@ -557,7 +557,7 @@ cd VaultLister-3.0</code></pre>
                 <li class="step">
                     <h3>Initialize the database</h3>
                     <pre><code>bun run db:init</code></pre>
-                    <p>Creates the SQLite database at <code>data/vaultlister.db</code> in WAL mode with all tables and seed data including the demo account.</p>
+                    <p>Initializes the PostgreSQL database with all tables, migrations, and seed data including the demo account.</p>
                 </li>
             </ol>
         </section>
@@ -584,6 +584,9 @@ cd VaultLister-3.0</code></pre>
             <h2>Demo login</h2>
             <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
                 A demo account is pre-seeded by <code>db:init</code>. Use it to explore the full UI without configuring marketplace credentials.
+            </p>
+            <p style="font-size: 0.8rem; color: #e57373; font-weight: 600; margin-bottom: 0.75rem;">
+                ⚠ Sandbox only — for local development use only. Do not use in production. Credentials are rotated regularly.
             </p>
             <div class="demo-card" role="region" aria-label="Demo account credentials">
                 <p class="demo-label">Demo account</p>
@@ -672,7 +675,7 @@ cd VaultLister-3.0</code></pre>
 │       └── <span class="dir">automations/</span>     <span class="comment"># Playwright bots for marketplace automations</span>
 ├── <span class="dir">public/</span>                   <span class="comment"># Static files served at root</span>
 ├── <span class="dir">scripts/</span>                  <span class="comment"># Dev utilities — session-start, session-end, etc.</span>
-├── <span class="dir">data/</span>                     <span class="comment"># SQLite database and audit logs (git-ignored)</span>
+├── <span class="dir">data/</span>                     <span class="comment"># Database backups and audit logs (git-ignored)</span>
 ├── <span class="dir">chrome-extension/</span>        <span class="comment"># Chromium extension source</span>
 ├── .env.example               <span class="comment"># Copy to .env and fill in values</span>
 └── CLAUDE.md                  <span class="comment"># Project instructions for AI agents</span>

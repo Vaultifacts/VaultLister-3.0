@@ -412,7 +412,7 @@
                     <li class="change-item"><span class="badge badge-security">Security</span>OWASP hardening pass — tightened CSP, removed unused response headers</li>
                     <li class="change-item"><span class="badge badge-security">Security</span>Rate limiting applied to all auth and public-facing endpoints</li>
                     <li class="change-item"><span class="badge badge-new">New</span>Prometheus + Grafana monitoring stack deployed; latency and error-rate dashboards</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>Automated daily SQLite backups to <code>/app/backups</code> with 7-day retention</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Automated daily PostgreSQL backups with 7-day retention</li>
                     <li class="change-item"><span class="badge badge-new">New</span>Backup restore script at <code>/opt/vaultlister-staging/restore.sh</code></li>
                     <li class="change-item"><span class="badge badge-fix">Fix</span>Health check endpoint now returns DB read latency for faster triage</li>
                 </ul>
@@ -433,7 +433,7 @@
                     <li class="change-item"><span class="badge badge-new">New</span>Playwright automation bots: closet sharing, follow-back, and offer rules</li>
                     <li class="change-item"><span class="badge badge-new">New</span>Automation audit log — every bot action recorded to <code>data/automation-audit.log</code></li>
                     <li class="change-item"><span class="badge badge-new">New</span>Platform rate-limit config with per-platform minimum action delays</li>
-                    <li class="change-item"><span class="badge badge-security">Security</span>OAuth tokens encrypted with AES-256-CBC before SQLite storage</li>
+                    <li class="change-item"><span class="badge badge-security">Security</span>OAuth tokens encrypted with AES-256-GCM before database storage</li>
                 </ul>
             </div>
         </article>
@@ -488,12 +488,12 @@
                 </div>
                 <div class="release-title">Initial release</div>
                 <ul class="change-list">
-                    <li class="change-item"><span class="badge badge-new">New</span>Inventory management with FTS5 full-text search across all fields</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>Inventory management with full-text search across all fields</li>
                     <li class="change-item"><span class="badge badge-new">New</span>Sales tracking and analytics dashboard with revenue breakdowns</li>
                     <li class="change-item"><span class="badge badge-new">New</span>Offer management with accept/counter/decline flows</li>
                     <li class="change-item"><span class="badge badge-new">New</span>Image bank with batch upload and per-item photo management</li>
                     <li class="change-item"><span class="badge badge-new">New</span>JWT auth with 15-min access tokens, 7-day refresh, and TOTP MFA</li>
-                    <li class="change-item"><span class="badge badge-new">New</span>SQLite WAL mode — offline-capable with no external database dependency</li>
+                    <li class="change-item"><span class="badge badge-new">New</span>PostgreSQL database with TSVECTOR full-text search and automated backups</li>
                     <li class="change-item"><span class="badge badge-new">New</span>WebSocket real-time updates for listings and offer state changes</li>
                 </ul>
             </div>
@@ -507,7 +507,7 @@
         &copy; 2026 VaultLister &mdash;
         <a href="/">Open App</a> &middot;
         <a href="/landing.html">About</a> &middot;
-        Built with Bun.js + SQLite
+        Built with Bun.js + PostgreSQL
     </p>
 </footer>
 

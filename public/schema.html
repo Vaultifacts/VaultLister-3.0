@@ -317,7 +317,7 @@
     <!-- Main -->
     <main class="main">
         <h1 class="page-title">Database Schema</h1>
-        <p class="page-subtitle">SQLite 3 &middot; WAL mode &middot; FTS5 &middot; Foreign keys enforced &mdash; 38 tables total</p>
+        <p class="page-subtitle">PostgreSQL &middot; TSVECTOR + GIN &middot; Foreign keys enforced</p>
 
         <!-- ======================== CORE TABLES ======================== -->
         <h2 class="category-heading" id="core">Core Tables</h2>
@@ -434,8 +434,8 @@
                 <div class="extra-item"><span class="hl">idx_inventory_user_id</span> ON inventory(user_id)</div>
                 <div class="extra-item"><span class="hl">idx_inventory_status</span> ON inventory(status)</div>
                 <div class="extra-item"><span class="hl">idx_inventory_sku</span> ON inventory(sku)</div>
-                <div class="extras-label" style="margin-top:0.6rem">FTS5 Virtual Table</div>
-                <div class="extra-item"><span class="hl">inventory_fts</span> &mdash; content=inventory; indexes title, description, brand, tags. Kept in sync via INSERT/UPDATE/DELETE triggers.</div>
+                <div class="extras-label" style="margin-top:0.6rem">Full-Text Search</div>
+                <div class="extra-item"><span class="hl">inventory_fts_idx</span> &mdash; TSVECTOR + GIN index on title, description, brand, tags.</div>
             </div>
         </div>
 
@@ -575,7 +575,7 @@
                     <tr><td class="col-name">platform</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-nn">NOT NULL</span></td></tr>
                     <tr><td class="col-name">platform_username</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
                     <tr><td class="col-name">platform_user_id</td><td class="col-type">TEXT</td><td class="col-constraints"></td></tr>
-                    <tr><td class="col-name">credentials</td><td class="col-type">TEXT</td><td class="col-constraints">AES-256-CBC encrypted JSON</td></tr>
+                    <tr><td class="col-name">credentials</td><td class="col-type">TEXT</td><td class="col-constraints">AES-256-GCM encrypted JSON</td></tr>
                     <tr><td class="col-name">is_connected</td><td class="col-type">INTEGER</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 1</span></td></tr>
                     <tr><td class="col-name">last_sync_at</td><td class="col-type">DATETIME</td><td class="col-constraints"></td></tr>
                     <tr><td class="col-name">sync_status</td><td class="col-type">TEXT</td><td class="col-constraints"><span class="tag tag-def">DEFAULT 'idle'</span></td></tr>
@@ -702,14 +702,14 @@
         <div class="table-card">
             <div class="table-card-header">
                 <span class="table-name">inventory_fts</span>
-                <span class="table-desc">FTS5 virtual table backed by inventory</span>
+                <span class="table-desc">Full-text search index backed by inventory</span>
             </div>
-            <table class="cols" aria-label="FTS5 table">
+            <table class="cols" aria-label="Full-text search index">
                 <thead>
                     <tr><th>Detail</th><th>Value</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td class="col-name">Engine</td><td class="col-constraints">FTS5 (SQLite built-in)</td></tr>
+                    <tr><td class="col-name">Engine</td><td class="col-constraints">TSVECTOR + GIN (PostgreSQL built-in)</td></tr>
                     <tr><td class="col-name">Content table</td><td class="col-type">inventory</td></tr>
                     <tr><td class="col-name">Content rowid</td><td class="col-constraints">rowid</td></tr>
                     <tr><td class="col-name">Indexed columns</td><td class="col-constraints">id, title, description, brand, tags</td></tr>

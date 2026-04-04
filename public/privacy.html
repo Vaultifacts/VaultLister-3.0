@@ -230,7 +230,7 @@
     <div class="content">
 
         <div class="callout">
-            VaultLister is a self-hosted, local-first platform. Your data is stored on your own server or device. We do not sell your data, use advertising trackers, or share your information with third parties except as described in this policy.
+            VaultLister is a cloud-hosted platform. Your data is stored securely on managed infrastructure. We do not sell your data, use advertising trackers, or share your information with third parties except as described in this policy.
         </div>
 
         <h2>1. Introduction</h2>
@@ -299,16 +299,16 @@
         <p>We do not use your data to train AI models. Content submitted to AI features is processed in real time and is not stored for model training purposes beyond what Anthropic's own data policies govern (see Section 6).</p>
 
         <h2>4. Data Storage and Security</h2>
-        <p>VaultLister is a self-hosted application. Your data is stored in a SQLite database on your own server or device. We take the following security measures to protect your data:</p>
+        <p>Your data is stored in an encrypted PostgreSQL database on managed cloud infrastructure. We take the following security measures to protect your data:</p>
         <ul>
             <li>Passwords are hashed using bcrypt with a minimum cost factor of 12 — plaintext passwords are never stored</li>
-            <li>Marketplace OAuth tokens are encrypted at rest using AES-256-CBC before being written to the database</li>
+            <li>Marketplace OAuth tokens are encrypted at rest using AES-256-GCM (authenticated encryption) before being written to the database</li>
             <li>All authenticated API requests require a short-lived JWT access token (15-minute expiry) and a secure refresh token (7-day expiry)</li>
             <li>Multi-factor authentication (TOTP) is available and encouraged for all accounts</li>
             <li>All mutating requests (POST, PUT, PATCH, DELETE) require a CSRF token to prevent cross-site request forgery</li>
             <li>Automation actions are logged to a local audit log file for accountability</li>
         </ul>
-        <p>Because VaultLister is self-hosted, the security of the underlying server or device is your responsibility. We recommend keeping your server software up to date and restricting network access appropriately.</p>
+        <p>We maintain the security of VaultLister's cloud infrastructure, including regular software updates, access controls, and network security measures.</p>
 
         <h2>5. Marketplace API Integrations</h2>
         <p>To enable cross-listing and automation features, VaultLister connects to third-party marketplace platforms using OAuth 2.0. When you authorize a marketplace connection:</p>
@@ -357,7 +357,7 @@
         <p>We do not use advertising cookies, third-party tracking cookies, or persistent analytics cookies. The only cookies set are those strictly necessary to operate the Service.</p>
 
         <h2>8. Data Retention and Deletion</h2>
-        <p>Because VaultLister is self-hosted, you have direct control over your data at all times. Within the application:</p>
+        <p>You have control over your data within the application:</p>
         <ul>
             <li>You can delete individual InventoryItems, Listings, Sales, or Images from within the application at any time</li>
             <li>You can delete your account from your account settings; this will remove all associated records from the database</li>
