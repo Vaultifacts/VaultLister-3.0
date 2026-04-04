@@ -52,7 +52,10 @@
       "mcp__plugin_chrome-devtools-mcp_chrome-devtools__wait_for",
       "mcp__plugin_notion_notion__notion-fetch",
       "mcp__plugin_notion_notion__notion-search",
-      "mcp__plugin_notion_notion__notion-create-pages"
+      "mcp__plugin_notion_notion__notion-create-pages",
+      "WebFetch(domain:docs.easypost.com)",
+      "WebFetch(domain:www.easypost.com)",
+      "WebFetch(domain:support.easypost.com)"
     ]
   },
   "hooks": {
