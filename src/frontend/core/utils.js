@@ -6,6 +6,21 @@
 // Lightweight SPA with vanilla JS
 
 // ============================================
+// Supported Platforms (single source of truth)
+// ============================================
+const SUPPORTED_PLATFORMS = [
+    { id: 'poshmark', name: 'Poshmark', icon: '🅿️' },
+    { id: 'ebay', name: 'eBay', icon: 'Ⓔ' },
+    { id: 'mercari', name: 'Mercari', icon: 'Ⓜ️' },
+    { id: 'depop', name: 'Depop', icon: 'Ⓓ' },
+    { id: 'grailed', name: 'Grailed', icon: 'Ⓖ' },
+    { id: 'etsy', name: 'Etsy', icon: 'Ⓔ' },
+    { id: 'shopify', name: 'Shopify', icon: '🛍️' },
+    { id: 'facebook', name: 'Facebook', icon: 'Ⓕ' },
+    { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ' }
+];
+
+// ============================================
 // Global Error Handlers
 // ============================================
 window.onerror = function(message, source, lineno, colno, error) {

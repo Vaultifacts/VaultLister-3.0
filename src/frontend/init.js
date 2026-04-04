@@ -681,6 +681,7 @@ window.sizeConverter = sizeConverter;
 window.richTextEditor = richTextEditor;
 window.focusMode = focusMode;
 window.sessionMonitor = sessionMonitor;
+window.SUPPORTED_PLATFORMS = SUPPORTED_PLATFORMS;
 
 // Start the app
 initApp();

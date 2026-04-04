@@ -7,6 +7,21 @@
 // Lightweight SPA with vanilla JS
 
 // ============================================
+// Supported Platforms (single source of truth)
+// ============================================
+const SUPPORTED_PLATFORMS = [
+    { id: 'poshmark', name: 'Poshmark', icon: '🅿️' },
+    { id: 'ebay', name: 'eBay', icon: 'Ⓔ' },
+    { id: 'mercari', name: 'Mercari', icon: 'Ⓜ️' },
+    { id: 'depop', name: 'Depop', icon: 'Ⓓ' },
+    { id: 'grailed', name: 'Grailed', icon: 'Ⓖ' },
+    { id: 'etsy', name: 'Etsy', icon: 'Ⓔ' },
+    { id: 'shopify', name: 'Shopify', icon: '🛍️' },
+    { id: 'facebook', name: 'Facebook', icon: 'Ⓕ' },
+    { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ' }
+];
+
+// ============================================
 // Global Error Handlers
 // ============================================
 window.onerror = function(message, source, lineno, colno, error) {
@@ -15383,7 +15398,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '8365ed6e';
+    const v = 'cf4821e5';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27964,6 +27979,7 @@ window.sizeConverter = sizeConverter;
 window.richTextEditor = richTextEditor;
 window.focusMode = focusMode;
 window.sessionMonitor = sessionMonitor;
+window.SUPPORTED_PLATFORMS = SUPPORTED_PLATFORMS;
 
 // Start the app
 initApp();
