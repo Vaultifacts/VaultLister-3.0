@@ -55,8 +55,8 @@ vaultlister-3/
 ├── memory/                  # Project memory (MEMORY.md, STATUS.md)
 ├── docs/                    # Developer documentation
 ├── .claude/                 # Claude Code configuration
-├── docker-compose.yml       # Web + Redis + Nginx stack
-├── Dockerfile               # Multi-stage Bun 1.3 image
+├── docker-compose.yml       # Local dev stack (Web + Redis)
+├── Dockerfile               # Multi-stage Bun 1.3 image (CI + local)
 └── .env.example             # Required environment variables
 ```
 
@@ -74,8 +74,8 @@ vaultlister-3/
 
 ### ADR-003: Database — PostgreSQL (migrated from SQLite, March 2026)
 - **Decision:** PostgreSQL with WAL mode and TSVECTOR for full-text search
-- **Rationale:** Local-first architecture, zero infrastructure cost, TSVECTOR for inventory search, WAL mode for concurrent reads
-- **Trade-off:** Single writer at a time; not suitable for multi-server deployments
+- **Rationale:** Managed PostgreSQL on Railway, TSVECTOR for inventory search, scalable for multi-tenant SaaS
+- **Trade-off:** Requires managed database service; not self-hosted
 
 ### ADR-004: Playwright for Marketplace Automations
 - **Decision:** Playwright headless browser bots for Poshmark, Mercari, and other marketplace actions
@@ -121,17 +121,19 @@ Internet
     │
 [Cloudflare / DNS]
     │
-[Nginx] (SSL termination + static file serving)
+[Cloudflare] (SSL termination, WAF, caching)
+    │
+[Railway] (managed PaaS — auto-deploy on push to master)
     │
 [Bun.js server] :3000 (HTTP + WebSocket)
     │
-[PostgreSQL] (WAL mode, data/ volume)
+[PostgreSQL] (Railway managed database)
     │
 [Redis] (optional — sessions + rate limit state in production)
 ```
 
 ## GitHub Repository
 - Remote: https://github.com/Vaultifacts/VaultLister-3.0.git
-- Branch strategy: `main` (protected) + `feature/*`, `fix/*`, `chore/*` branches
+- Branch strategy: `master` (auto-deploy) + `feature/*`, `fix/*`, `chore/*` branches
 - CI/CD: GitHub Actions (SHA-pinned dependencies, blocking test gate)
-- Installer: Docker image via GitHub Container Registry
+- Deploy: Railway auto-deploy on push to master (Docker/Nginx available for local dev)

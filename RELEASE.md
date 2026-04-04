@@ -1,6 +1,6 @@
 # VaultLister 3.0 — Release Notes
 
-> Version: 1.0.0 | Status: Release Candidate | Date: 2026-03-11
+> Version: 1.6.0 | Status: Pre-Launch | Date: 2026-04-03
 
 ---
 
@@ -16,13 +16,13 @@ These features are fully implemented, tested end-to-end, and verified working.
 - CSRF protection on all mutating routes
 - Rate limiting (in-memory with Redis acceleration when available)
 - Content Security Policy headers
-- AES-256-CBC encryption for stored OAuth tokens
-- Session tokens in sessionStorage only (never localStorage)
+- AES-256-GCM authenticated encryption for stored OAuth tokens (CBC legacy decrypt-only)
+- Session tokens in sessionStorage (identity data in localStorage for browser restart)
 - Audit log for all auth events
 
 ### Inventory Management
 - Full CRUD for inventory items (title, description, price, cost, condition, size, brand, category, tags)
-- Full-text search via SQLite FTS5
+- Full-text search via PostgreSQL TSVECTOR + GIN index
 - Subtask/checklist support per item
 - Image bank with multi-image support per item
 - CSV import/export
@@ -93,9 +93,9 @@ These features are fully implemented, tested end-to-end, and verified working.
 
 ### Infrastructure
 - Bun.js 1.3 runtime (zero Node.js dependency)
-- SQLite (WAL mode, FTS5) — local-first, no cloud DB required
+- PostgreSQL (TSVECTOR + GIN full-text search)
 - Redis optional (in-memory fallback when Redis unavailable)
-- Docker + Nginx production deployment
+- Railway + Cloudflare production deployment
 - Self-signed SSL for local testing; bring your own cert for production
 - GitHub Actions CI/CD stubs (deploy workflow in `.github/workflows/deploy.yml`)
 - Daily automated database backups via `backup-scheduler` container
