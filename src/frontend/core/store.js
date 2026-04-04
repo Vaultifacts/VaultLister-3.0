@@ -240,6 +240,10 @@ const store = {
         }
     },
 
+    getPlanTier() {
+        return this.state.user?.subscription_tier || 'free';
+    },
+
     hydrate() {
         try {
             // Try sessionStorage first (current tab session with valid tokens)
@@ -300,3 +304,4 @@ const store = {
         }
     }
 };
+

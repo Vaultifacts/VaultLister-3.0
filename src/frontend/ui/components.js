@@ -291,11 +291,12 @@ const components = {
                     `).join('')}
                 </nav>
                 <div class="sidebar-footer">
+                    ${store.getPlanTier() === 'free' ? `<a href="#plans-billing" class="sidebar-upgrade-cta" style="display:block;padding:8px 12px;margin:8px 12px;background:var(--primary);color:white;border-radius:6px;text-align:center;text-decoration:none;font-size:13px;font-weight:500;">Upgrade to Pro</a>` : ''}
                     <div class="user-info flex items-center gap-3">
                         <div class="user-avatar">${user?.username?.[0]?.toUpperCase() || 'U'}</div>
                         <div>
                             <div class="font-medium text-sm">${user?.username || 'Guest'}</div>
-                            <div class="text-xs text-gray-500">${(user?.subscription_tier || 'Free').charAt(0).toUpperCase() + (user?.subscription_tier || 'free').slice(1)} Plan</div>
+                            <div class="text-xs text-gray-500">${store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1)} Plan</div>
                         </div>
                     </div>
                     <button class="sidebar-logout-btn" onclick="auth.logout()" aria-label="Logout" data-testid="sidebar-logout-btn">
@@ -699,6 +700,9 @@ const components = {
 
     // Breadcrumb navigation component
     breadcrumb(currentPage) {
+        function humanizeSlug(slug) {
+            return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
         const pageInfo = {
             'dashboard': { label: 'Dashboard', section: 'Sell' },
             'inventory': { label: 'Inventory', section: 'Sell' },
@@ -739,7 +743,7 @@ const components = {
             'shipping-labels': { label: 'Shipping Labels', section: 'Sell' }
         };
 
-        const info = pageInfo[currentPage] || { label: currentPage, section: '' };
+        const info = pageInfo[currentPage] || { label: humanizeSlug(currentPage), section: '' };
 
         return `
             <nav class="breadcrumb" aria-label="Breadcrumb">

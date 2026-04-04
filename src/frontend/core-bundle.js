@@ -8134,6 +8134,7 @@ const store = {
 };
 
 
+
 // ──── src/frontend/core/api.js ────
 'use strict';
 // API client, loading state, notification sounds, keyboard shortcuts
@@ -15404,7 +15405,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'd2249dd6';
+    const v = '427dba95';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {

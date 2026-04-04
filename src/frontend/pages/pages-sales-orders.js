@@ -1694,7 +1694,7 @@ Object.assign(pages, {
                                             <span>Self-Employment Tax</span><span class="font-medium">$${Math.round(seTax).toLocaleString()}</span>
                                         </div>
                                         <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;">
-                                            <span>Effective Rate</span><span>${gross > 0 ? (total / gross * 100).toFixed(1) : 0}%</span>
+                                            <span>Effective Rate</span><span>${gross > 0 ? (total / gross * 100).toFixed(1) + '%' : 'N/A'}</span>
                                         </div>
                                     </div>
                                 ` : '<div style="text-align: center; color: var(--gray-400); padding: 40px 0;"><p>Enter your income to calculate estimated taxes</p></div>';
@@ -2287,11 +2287,11 @@ Object.assign(pages, {
                                                     if (invItem) itemCost = parseFloat(invItem.cost_price) || 0;
                                                 }
                                                 const netProfit = salePrice - platformFee - shippingCost - itemCost;
-                                                const margin = salePrice > 0 ? ((netProfit / salePrice) * 100).toFixed(0) : 0;
+                                                const margin = salePrice > 0 ? ((netProfit / salePrice) * 100).toFixed(0) : 'N/A';
                                                 const profitClass = netProfit > 0 ? 'text-green-600' : netProfit < 0 ? 'text-red-600' : '';
                                                 return `<td>
                                                     <div class="font-medium ${profitClass}">$${netProfit.toFixed(2)}</div>
-                                                    <div class="text-xs text-gray-500">${margin}% margin</div>
+                                                    <div class="text-xs text-gray-500">${margin === 'N/A' ? 'N/A margin' : margin + '% margin'}</div>
                                                 </td>`;
                                             })() : ''}
                                             ${visibleColumns.includes('shipping_method') ? `<td>${escapeHtml(order.shipping_provider || 'Standard')}</td>` : ''}

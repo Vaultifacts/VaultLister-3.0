@@ -142,9 +142,11 @@ const api = {
                 return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
             }
 
-            // All retries exhausted for a 5xx — show error toast
+            // All retries exhausted for a 5xx — mark error so callers can show their own message
+            // without double-toasting. Generic toast is intentionally omitted here; the thrown
+            // error carries status >= 500 so any unhandled-error boundary can detect it.
             if (response.status >= 500) {
-                toast.error('Server error. Please try again later.');
+                // Error is thrown below via the !response.ok path — no toast here.
             }
 
             // Store CSRF token from response

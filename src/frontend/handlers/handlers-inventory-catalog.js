@@ -4655,7 +4655,7 @@ Object.assign(handlers, {
     },
 
 
-    createBundleListing: function() {
+    createBundleListing: async function() {
         const inventory = store.state.inventory || [];
         const selectedItems = store.state.bundleItems || [];
         const discount = parseFloat(document.getElementById('bundle-discount')?.value) || 15;
@@ -4664,14 +4664,31 @@ Object.assign(handlers, {
         const bundleValue = items.reduce((sum, i) => sum + (parseFloat(i.list_price) || 0), 0);
         const bundlePrice = bundleValue * (1 - discount / 100);
 
-        // Create bundle listing
         const bundleTitle = items.length <= 3
             ? items.map(i => i.title || i.name).join(' + ')
             : `${items.length}-Piece Bundle: ${items[0].title || items[0].name} & More`;
 
-        toast.success(`Bundle created: ${bundleTitle} at $${bundlePrice.toFixed(2)}`);
-        store.setState({ bundleItems: [] });
-        modals.close();
+        const bundleData = {
+            title: bundleTitle,
+            listPrice: bundlePrice,
+            type: 'bundle',
+            status: 'draft',
+            bundleItemIds: JSON.stringify(selectedItems),
+            source: 'bundle'
+        };
+
+        try {
+            await api.ensureCSRFToken();
+            const result = await api.post('/inventory', bundleData);
+            store.setState({ bundleItems: [], inventory: [...store.state.inventory, result.item] });
+            modals.close();
+            toast.success(`Bundle created: ${bundleTitle} at $${bundlePrice.toFixed(2)}`);
+            if (result.item && result.item.id) {
+                handlers.editItem(result.item.id);
+            }
+        } catch (error) {
+            toast.error(error.message || 'Failed to create bundle');
+        }
     },
 
     // Seasonal Trends Indicator,

@@ -259,7 +259,7 @@ const modals = {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <form id="add-item-form" onsubmit="handlers.addItem(event)">
+                <form id="add-item-form" onsubmit="(function(e){var t=e.target.querySelector('[name=title]');var p=e.target.querySelector('[name=listPrice]');if(!t||!t.value.trim()){e.preventDefault();toast.error('Title is required');t&&t.focus();return;}if(!p||!(parseFloat(p.value)>0)){e.preventDefault();toast.error('List Price must be greater than 0');p&&p.focus();return;}handlers.addItem(e);})(event)">
                     <div class="form-group" style="margin-bottom: 24px;">
                         <div class="flex justify-between items-center mb-2">
                             <label class="form-label">Product Images & Video</label>
@@ -344,7 +344,8 @@ const modals = {
                     </div>
                     <div class="form-group">
                         <label for="add-item-title" class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)">
+                        <input type="text" class="form-input" name="title" id="add-item-title" data-testid="add-item-title" required maxlength="80" placeholder="Item title (required)" oninput="(function(el){var c=el.value.length;var s=el.closest('.form-group').querySelector('.title-char-counter');if(s){s.textContent=c+'/80 chars (eBay/Poshmark limit)';s.style.color=c>80?'var(--error)':c>50?'var(--warning-600)':'var(--gray-500)'}})(this)">
+                        <p class="title-char-counter text-xs mt-1" style="color: var(--gray-500);">0/80 chars (eBay/Poshmark limit)</p>
                     </div>
                     <div class="form-group">
                         <div class="flex justify-between items-center mb-2">
@@ -416,7 +417,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Condition</label>
-                            <select class="form-select" name="condition">
+                            <select class="form-select" name="condition" required>
                                 <option value="new">New with Tags</option>
                                 <option value="like_new">Like New</option>
                                 <option value="good" selected>Good</option>

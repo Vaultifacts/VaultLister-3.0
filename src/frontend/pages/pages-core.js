@@ -1369,7 +1369,7 @@ const pages = {
                 <div class="card">
                     <div class="card-body text-center">
                         <div class="text-2xl font-bold ${salesTabStats.totalProfit >= 0 ? 'text-success' : 'text-error'}">
-                            ${salesTabStats.totalRevenue > 0 ? ((salesTabStats.totalProfit / salesTabStats.totalRevenue) * 100).toFixed(1) : 0}%
+                            ${salesTabStats.totalRevenue > 0 ? ((salesTabStats.totalProfit / salesTabStats.totalRevenue) * 100).toFixed(1) + '%' : 'N/A'}
                         </div>
                         <div class="text-sm text-gray-500">Profit Margin</div>
                     </div>
@@ -1497,23 +1497,15 @@ const pages = {
         });
         const bestSellers = Object.values(salesByItem).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
 
-        // Generate simulated price trend data for best sellers (based on market fluctuations)
+        // Build price trend data from real price history
         bestSellers.forEach(item => {
-            // Simulate 7-day price trend based on avg sale price
             const avgPrice = item.count > 0 ? item.revenue / item.count : 0;
-            const trend = [];
-            let price = avgPrice * 0.9; // Start 10% lower
-            for (let i = 0; i < 7; i++) {
-                // Add some random fluctuation (-3% to +5%)
-                const change = 1 + (Math.random() * 0.08 - 0.03);
-                price = price * change;
-                trend.push(Math.round(price * 100) / 100);
-            }
-            // Ensure we end near the current price
-            trend[6] = avgPrice;
+            const invItem = (store.state.inventory || []).find(i => (i.title || '') === item.title);
+            const priceHistory = invItem && Array.isArray(invItem.price_history) ? invItem.price_history.map(h => h.price || h).filter(Number.isFinite) : [];
+            const trend = priceHistory.length >= 2 ? priceHistory.slice(-7) : [];
             item.priceTrend = trend;
             item.avgPrice = avgPrice;
-            item.trendDirection = trend[6] > trend[0] ? 'up' : 'down';
+            item.trendDirection = trend.length >= 2 ? (trend[trend.length - 1] > trend[0] ? 'up' : 'down') : 'stable';
         });
 
         // Slowest moving inventory (oldest active items)
@@ -1978,10 +1970,10 @@ const pages = {
         const netProfit = (store.state.sales || []).reduce((sum, s) => sum + (s.net_profit || 0), 0);
         const totalInvestment = totalInventoryValue;
 
-        const inventoryTurnoverRatio = avgInventoryValue > 0 ? (totalRevenue2 / avgInventoryValue).toFixed(2) : 0;
+        const inventoryTurnoverRatio = avgInventoryValue > 0 ? (totalRevenue2 / avgInventoryValue).toFixed(2) : 'N/A';
         const sellThroughRate = ((soldItemsCount / totalListedItems) * 100).toFixed(1);
-        const profitMarginRatio = totalRevenue2 > 0 ? ((netProfit / totalRevenue2) * 100).toFixed(1) : 0;
-        const roiRatio = totalInvestment > 0 ? ((netProfit / totalInvestment) * 100).toFixed(1) : 0;
+        const profitMarginRatio = totalRevenue2 > 0 ? ((netProfit / totalRevenue2) * 100).toFixed(1) : 'N/A';
+        const roiRatio = totalInvestment > 0 ? ((netProfit / totalInvestment) * 100).toFixed(1) : 'N/A';
 
         const ratioAnalysisTabContent = `
             <div class="grid grid-cols-2 gap-6">
