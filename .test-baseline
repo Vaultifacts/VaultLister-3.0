@@ -1,8 +1,8 @@
 KNOWN_FAILURES=585
-# Unit/integration baseline (bun:test): 5619 pass / 252 fail (CI Linux, estimated)
-# Local Windows: 2050 pass / 264 fail (named below — baselined 2026-03-20)
-# CI failures are integration tests requiring services not available on CI (Anthropic, SMTP, Notion)
-# E2E baseline (Playwright, full suite): 620 pass / 0 fail
+# Count updated to 585 on 2026-03-27 (was 264 on 2026-03-20)
+# CI runs against PostgreSQL service container with server running
+# Many failures are integration tests requiring external services (Anthropic, SMTP, etc.)
+# E2E: disabled in CI (ci.yml if: false) — was 620 pass / 0 fail when last run
 #
 # ─── Named failure baseline (Q22) ────────────────────────────────────────────
 # Tests listed below are KNOWN pre-existing failures permitted to fail in CI.

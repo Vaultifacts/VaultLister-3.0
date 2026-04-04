@@ -15383,7 +15383,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '3bd1d905';
+    const v = '8365ed6e';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16021,9 +16021,17 @@ const components = {
                 { id: 'analytics', label: 'Analytics', icon: 'analytics' },
                 { id: 'shops', label: 'My Shops', icon: 'shops' },
                 { id: 'planner', label: 'Planner', icon: 'calendar', badge: activeChecklistItems > 0 ? activeChecklistItems : null, badgeType: 'info' },
-                { id: 'image-bank', label: 'Image Bank', icon: 'image' }
+                { id: 'image-bank', label: 'Image Bank', icon: 'image' },
+                { id: 'calendar', label: 'Calendar', icon: 'calendar' },
+                { id: 'reports', label: 'Reports', icon: 'list' },
+                { id: 'inventory-import', label: 'Import', icon: 'inventory' },
+                { id: 'receipt-parser', label: 'Receipts', icon: 'dollar' },
+                { id: 'community', label: 'Community', icon: 'help' },
+                { id: 'roadmap', label: 'Roadmap', icon: 'list' }
             ]},
             { section: '', divider: true, items: [
+                { id: 'plans-billing', label: 'Plans & Billing', icon: 'dollar' },
+                { id: 'account', label: 'Account', icon: 'settings' },
                 { id: 'settings', label: 'Settings', icon: 'settings' },
                 { id: 'help-support', label: 'Help', icon: 'help' },
                 { id: 'changelog', label: 'Changelog', icon: 'list' },
