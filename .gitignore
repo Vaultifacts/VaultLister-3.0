@@ -26,6 +26,8 @@ data/*.png
 data/*.lock
 data/poshmark-profile/
 data/poshmark-cookies.json
+data/walkthrough-screenshots/
+data/qa-report-*.md
 
 # Build output
 dist/
@@ -70,13 +72,14 @@ backups/
 # Coverage
 coverage/
 
+# Legacy SQLite migrations (dead code, kept locally for reference)
+src/backend/db/migrations/legacy-sqlite/
+
 # Bun (binary lockfile — text lockfile bun.lock is tracked for reproducible builds)
 bun.lockb
 
 # Project notes
 VaultLister 3.0.txt
-# Generated snapshot (recreated each run)
-claude-docs/docs/project-control/STATE_SNAPSHOT.md
 
 # Playwright artifacts
 e2e/screenshots/
@@ -99,17 +102,9 @@ screenshots/
 # Test reports (generated)
 TEST_REPORT_*.md
 
-# Notion AI control system — runtime artifacts
+# Runtime artifacts
 generated/
 memory/*.lock
-.notion-sprint-cache.json
-.notion-errors.log
-.notion-drift-acknowledged
-
-# SSL certificates and private keys
-nginx/ssl/*.pem
-nginx/ssl/*.key
-nginx/ssl/*.crt
 
 # Git worktrees
 .worktrees/
