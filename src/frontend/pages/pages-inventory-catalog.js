@@ -729,7 +729,7 @@ Object.assign(pages, {
         // Get listing health score
         const healthScore = activeListings > 0
             ? Math.round(((activeListings - staleListings) / activeListings) * 100)
-            : 100;
+            : null;
 
         return `
             <!-- Breadcrumb Navigation -->
@@ -801,12 +801,12 @@ Object.assign(pages, {
 
                 <div class="listings-health-bar">
                     <div class="listings-health-score">
-                        <div class="health-score-ring ${healthScore >= 80 ? 'good' : healthScore >= 50 ? 'warning' : 'poor'}">
+                        <div class="health-score-ring ${healthScore === null ? 'poor' : healthScore >= 80 ? 'good' : healthScore >= 50 ? 'warning' : 'poor'}">
                             <svg viewBox="0 0 36 36" class="health-ring-svg">
                                 <path class="health-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                                <path class="health-ring-fill" stroke-dasharray="${healthScore}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="health-ring-fill" stroke-dasharray="${healthScore ?? 0}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
                             </svg>
-                            <span class="health-score-value">${healthScore}%</span>
+                            <span class="health-score-value">${healthScore === null ? 'N/A' : healthScore + '%'}</span>
                         </div>
                         <div class="health-score-label">Listing Health</div>
                     </div>
@@ -1411,7 +1411,7 @@ Object.assign(pages, {
         const successfulRuns = apiStats.successfulRuns ?? runHistory.filter(r => r.status === 'success').length;
         const totalRuns = apiStats.totalRuns ?? runHistory.length;
         const failedRuns = apiStats.failedRuns ?? runHistory.filter(r => r.status === 'failed' || r.status === 'failure').length;
-        const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
+        const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : null;
 
         // Calculate time saved (mock calculation based on active automations)
         const timeSavedPerAutomation = { sharing: 45, engagement: 20, offers: 15, bundles: 10, pricing: 25, maintenance: 30 };
@@ -1623,7 +1623,7 @@ Object.assign(pages, {
                             ${components.icon('trending-up', 20)}
                         </div>
                         <div>
-                            <div class="automation-stat-value">${successRate}%</div>
+                            <div class="automation-stat-value">${successRate === null ? 'N/A' : successRate + '%'}</div>
                             <div class="automation-stat-label">Success Rate</div>
                         </div>
                     </div>
@@ -1712,9 +1712,9 @@ Object.assign(pages, {
                                 ${components.icon('trending-up', 24)}
                             </div>
                             <div class="metric-content">
-                                <div class="metric-value">${successRate}%</div>
+                                <div class="metric-value">${successRate === null ? 'N/A' : successRate + '%'}</div>
                                 <div class="metric-label">Success Rate</div>
-                                <div class="metric-comparison ${successRate >= 95 ? 'positive' : 'neutral'}">Target: 95%</div>
+                                <div class="metric-comparison ${successRate !== null && successRate >= 95 ? 'positive' : 'neutral'}">Target: 95%</div>
                             </div>
                         </div>
                         <div class="performance-metric-card">

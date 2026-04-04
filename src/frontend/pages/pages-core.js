@@ -2200,7 +2200,7 @@ const pages = {
         const revenueGoal = {
             name: 'Monthly Revenue Goal',
             current: totalRevenue,
-            target: store.state.revenueGoal || 5000,
+            target: store.state.revenueGoal || 500,
             unit: '$'
         };
 

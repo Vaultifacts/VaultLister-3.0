@@ -447,7 +447,7 @@ Object.assign(handlers, {
             // Reload inventory
             await this.loadInventory();
             if (store.state.currentPage === 'inventory') {
-                renderApp(pages.inventory());
+                renderApp(window.pages.inventory());
             }
         } catch (error) {
             console.error('Error saving draft:', error);
@@ -540,7 +540,7 @@ Object.assign(handlers, {
 
             // Re-render inventory page to show new item
             if (store.state.currentPage === 'inventory') {
-                const pageContent = pages.inventory();
+                const pageContent = window.pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
@@ -617,7 +617,7 @@ Object.assign(handlers, {
 
             // Re-render inventory page using renderApp for proper state handling
             if (store.state.currentPage === 'inventory') {
-                renderApp(pages.inventory());
+                renderApp(window.pages.inventory());
             }
         } catch (error) {
             toast.error(error.message);
@@ -650,7 +650,7 @@ Object.assign(handlers, {
                 // Clear search - reload full inventory
                 await handlers.loadInventory();
                 if (store.state.currentPage === 'inventory') {
-                    const pageContent = pages.inventory();
+                    const pageContent = window.pages.inventory();
                     document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                     // Restore focus to search input after DOM update
                     requestAnimationFrame(() => {
@@ -671,7 +671,7 @@ Object.assign(handlers, {
             store.setState({ inventory: data?.items || [] });
             // Re-render inventory page without triggering router
             if (store.state.currentPage === 'inventory') {
-                const pageContent = pages.inventory();
+                const pageContent = window.pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 // Restore focus to search input after DOM update
                 requestAnimationFrame(() => {
@@ -704,7 +704,7 @@ Object.assign(handlers, {
     setInventoryViewMode: function(mode) {
         store.setState({ inventoryViewMode: mode });
         localStorage.setItem('vl_inventory_view_mode', mode);
-        renderApp(pages.inventory());
+        renderApp(window.pages.inventory());
     },
 
 
@@ -1728,7 +1728,7 @@ Object.assign(handlers, {
 
             // Re-render inventory page if currently viewing it
             if (store.state.currentPage === 'inventory') {
-                const pageContent = pages.inventory();
+                const pageContent = window.pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
@@ -1766,7 +1766,7 @@ Object.assign(handlers, {
             await handlers.loadInventory();
 
             if (store.state.currentPage === 'inventory') {
-                const pageContent = pages.inventory();
+                const pageContent = window.pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
 
@@ -1794,7 +1794,7 @@ Object.assign(handlers, {
             await handlers.loadInventory();
 
             if (store.state.currentPage === 'inventory') {
-                const pageContent = pages.inventory();
+                const pageContent = window.pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
 
@@ -1857,7 +1857,7 @@ Object.assign(handlers, {
             await handlers.loadInventory();
 
             if (store.state.currentPage === 'inventory') {
-                const pageContent = pages.inventory();
+                const pageContent = window.pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
 
@@ -2119,7 +2119,7 @@ Object.assign(handlers, {
 
             // Re-render inventory page
             if (store.state.currentPage === 'inventory') {
-                const pageContent = pages.inventory();
+                const pageContent = window.pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
                 // Keep menu open if it was visible
@@ -2195,7 +2195,7 @@ Object.assign(handlers, {
 
         // Re-render the inventory page
         if (store.state.currentPage === 'inventory') {
-            const pageContent = pages.inventory();
+            const pageContent = window.pages.inventory();
             document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
 
@@ -2273,7 +2273,7 @@ Object.assign(handlers, {
 
             // Re-render inventory page
             if (store.state.currentPage === 'inventory') {
-                const pageContent = pages.inventory();
+                const pageContent = window.pages.inventory();
                 const container = document.querySelector('.page-content');
                 if (container) container.innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
@@ -2541,7 +2541,7 @@ Object.assign(handlers, {
             // Reload inventory
             await handlers.loadInventory();
             if (store.state.currentPage === 'inventory') {
-                renderApp(pages.inventory());
+                renderApp(window.pages.inventory());
             }
         } catch (error) {
             console.error('Error importing CSV:', error);

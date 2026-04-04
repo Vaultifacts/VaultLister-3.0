@@ -2074,14 +2074,15 @@ Object.assign(handlers, {
 
 
     toggleDarkMode: function(enabled) {
-        if (enabled) {
+        const isDark = enabled !== undefined ? enabled : !store.state.darkMode;
+        if (isDark) {
             document.body.classList.add('dark-mode');
         } else {
             document.body.classList.remove('dark-mode');
         }
-        store.setState({ darkMode: enabled });
-        localStorage.setItem('vaultlister_dark_mode', enabled ? 'true' : 'false');
-        toast.info(`Dark mode ${enabled ? 'enabled' : 'disabled'}`);
+        store.setState({ darkMode: isDark });
+        localStorage.setItem('vaultlister_dark_mode', isDark ? 'true' : 'false');
+        toast.info(`Dark mode ${isDark ? 'enabled' : 'disabled'}`);
     },
 
     // Preview dark mode without saving,
@@ -4997,7 +4998,6 @@ Object.assign(handlers, {
             store.setState({ inventoryCategories: data.categories || [] });
             return data.categories || [];
         } catch (e) {
-            toast.error('Failed to load categories');
             return [];
         }
     },
