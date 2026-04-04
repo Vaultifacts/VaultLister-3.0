@@ -4622,10 +4622,7 @@ Object.assign(handlers, {
     savePurchaseOrder: function(e) {
         e.preventDefault();
         const form = e.target;
-        const suppliers = store.state.suppliers || [
-            { id: '1', name: 'ThriftWholesale' }, { id: '2', name: 'VintageSupply Co' },
-            { id: '3', name: 'BulkClothing Direct' }, { id: '4', name: 'Designer Liquidators' }
-        ];
+        const suppliers = store.state.suppliers || [];
         const supplier = suppliers.find(s => s.id === form.supplierId.value);
         const poNum = 'PO-' + Date.now().toString().slice(-6);
         const newPO = {
@@ -4695,10 +4692,7 @@ Object.assign(handlers, {
     },
 
     addSupplierContact: function() {
-        const suppliers = store.state.suppliers || [
-            { id: '1', name: 'ThriftWholesale' }, { id: '2', name: 'VintageSupply Co' },
-            { id: '3', name: 'BulkClothing Direct' }, { id: '4', name: 'Designer Liquidators' }
-        ];
+        const suppliers = store.state.suppliers || [];
         modals.show('Add Supplier Contact', `
             <form onsubmit="handlers.saveSupplierContact(event)" style="padding: 8px;">
                 <div class="form-group">
@@ -4753,10 +4747,7 @@ Object.assign(handlers, {
     },
 
     addCommunicationEntry: function() {
-        const suppliers = store.state.suppliers || [
-            { id: '1', name: 'ThriftWholesale' }, { id: '2', name: 'VintageSupply Co' },
-            { id: '3', name: 'BulkClothing Direct' }, { id: '4', name: 'Designer Liquidators' }
-        ];
+        const suppliers = store.state.suppliers || [];
         modals.show('Log Communication', `
             <form onsubmit="handlers.saveCommunicationEntry(event)" style="padding: 8px;">
                 <div class="form-group">
@@ -4790,10 +4781,7 @@ Object.assign(handlers, {
     saveCommunicationEntry: function(e) {
         e.preventDefault();
         const form = e.target;
-        const suppliers = store.state.suppliers || [
-            { id: '1', name: 'ThriftWholesale' }, { id: '2', name: 'VintageSupply Co' },
-            { id: '3', name: 'BulkClothing Direct' }, { id: '4', name: 'Designer Liquidators' }
-        ];
+        const suppliers = store.state.suppliers || [];
         const supplier = suppliers.find(s => s.id === form.supplierId.value);
         const newEntry = {
             id: 'comm_' + Date.now(),

@@ -2329,7 +2329,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
         const keyPoints = [
             { icon: '✓', title: 'Free to Use', description: 'VaultLister is free for personal use' },
-            { icon: '🔒', title: 'Your Data, Your Control', description: 'Data stored locally on your device' },
+            { icon: '🔒', title: 'Your Data, Your Control', description: 'Data stored securely in encrypted cloud databases' },
             { icon: '📋', title: 'Fair Use Policy', description: 'Use responsibly and ethically' }
         ];
 
@@ -2468,7 +2468,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
         const dataCategories = [
             { icon: '👤', category: 'Account Data', examples: 'Name, email, username', retention: 'Until account deletion' },
-            { icon: '📦', category: 'Inventory Data', examples: 'Listings, photos, prices', retention: 'Stored locally on your device' },
+            { icon: '📦', category: 'Inventory Data', examples: 'Listings, photos, prices', retention: 'Until account deletion' },
             { icon: '📈', category: 'Usage Data', examples: 'Features used, preferences', retention: '90 days' },
             { icon: '🔗', category: 'Integration Data', examples: 'Connected platform tokens', retention: 'Until disconnection' }
         ];
