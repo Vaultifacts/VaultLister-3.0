@@ -5711,9 +5711,9 @@ const salesFunnelVertical = {
             <div class="sales-funnel-vertical">
                 ${stages.map((stage, i) => {
                     const prevValue = i > 0 ? stages[i - 1].value : stage.value;
-                    const conversionRate = prevValue > 0 ? ((stage.value / prevValue) * 100).toFixed(0) : 100;
+                    const conversionRate = prevValue > 0 ? ((stage.value / prevValue) * 100).toFixed(0) + '%' : 'N/A';
                     return `
-                        ${i > 0 ? `<div class="funnel-conversion">${conversionRate}% conversion</div>` : ''}
+                        ${i > 0 ? `<div class="funnel-conversion">${conversionRate} conversion</div>` : ''}
                         <div class="funnel-stage-vertical">
                             <div class="funnel-stage-content">
                                 <span class="funnel-stage-name">${stage.name}</span>

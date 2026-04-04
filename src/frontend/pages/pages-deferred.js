@@ -3844,14 +3844,16 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     ${(() => {
-                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                        const sales = store.state.sales || [];
+                        if (sales.length === 0) return '<div style="text-align: center; padding: 24px; color: var(--gray-400);"><p>No sales data yet. Cash flow projections will appear after your first sale.</p></div>';
                         const currentMonth = new Date().getMonth();
                         const projMonths = Array.from({length: 6}, (_, i) => {
                             const m = (currentMonth + i + 1) % 12;
                             return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m];
                         });
-                        const income = [4200, 4500, 4800, 5100, 5400, 5200];
-                        const expenses = [3100, 3200, 3400, 3300, 3500, 3600];
+                        const avgMonthlyRevenue = sales.reduce((s, sale) => s + (sale.sale_price || 0), 0) / Math.max(1, Math.ceil((Date.now() - new Date(sales[sales.length-1]?.created_at || Date.now()).getTime()) / (30*86400000)));
+                        const income = Array(6).fill(Math.round(avgMonthlyRevenue));
+                        const expenses = Array(6).fill(Math.round(avgMonthlyRevenue * 0.65));
                         const net = income.map((v, i) => v - expenses[i]);
                         const cumulative = net.reduce((acc, v) => { acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + v); return acc; }, []);
                         const maxVal = Math.max(...income, ...expenses);
@@ -4010,11 +4012,9 @@ Object.assign(pages, {
                     </div>
                     <div style="padding: 16px; background: var(--gray-50); border-radius: 8px;">
                         <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">Unmatched Transactions</div>
-                        ${[
-                            { date: '2/5/2026', desc: 'eBay Payout', amount: 245.50, type: 'credit' },
-                            { date: '2/3/2026', desc: 'Shipping Label - USPS', amount: -12.80, type: 'debit' },
-                            { date: '2/1/2026', desc: 'Supply Purchase', amount: -89.99, type: 'debit' }
-                        ].map(t => '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">' +
+                        ${(store.state.unmatchedTransactions || []).length === 0 ?
+                            '<div style="text-align: center; padding: 16px; color: var(--gray-400);"><p style="font-size: 13px;">No unmatched transactions</p></div>' :
+                        (store.state.unmatchedTransactions || []).map(t => '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-200);">' +
                             '<div style="display: flex; gap: 12px; align-items: center;">' +
                                 '<span style="font-size: 12px; color: var(--gray-500); width: 80px;">' + t.date + '</span>' +
                                 '<span style="font-size: 13px;">' + t.desc + '</span>' +
