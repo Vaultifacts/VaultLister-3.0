@@ -13189,13 +13189,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
     suppliers() {
         const suppliers = store.state.suppliers || [];
 
-        // Mock suppliers for demo if none exist
-        let displaySuppliers = suppliers.length > 0 ? suppliers : [
-            { id: '1', name: 'ThriftWholesale', website: 'https://thriftwholesale.com', email: 'contact@thriftwholesale.com', notes: 'Reliable wholesale partner', active: true, item_count: 245, avg_price: 12.50, rating: 5, stock_status: 'In Stock', has_price_drop: true, price_history: [45, 42, 48, 44, 40, 38, 35] },
-            { id: '2', name: 'VintageSupply Co', website: 'https://vintagesupply.co', email: 'info@vintagesupply.co', notes: 'Specializes in vintage items', active: true, item_count: 180, avg_price: 18.75, rating: 4, stock_status: 'In Stock', has_price_drop: false, price_history: [30, 32, 31, 33, 35, 34, 36] },
-            { id: '3', name: 'BulkClothing Direct', website: 'https://bulkclothing.com', email: 'sales@bulkclothing.com', notes: 'Large inventory', active: true, item_count: 520, avg_price: 8.25, rating: 4, stock_status: 'Low Stock', has_price_drop: true, price_history: [20, 22, 19, 18, 17, 15, 14] },
-            { id: '4', name: 'Designer Liquidators', website: 'https://designerliq.com', email: 'contact@designerliq.com', notes: 'Designer brands', active: false, item_count: 75, avg_price: 45.00, rating: 3, stock_status: 'Out of Stock', has_price_drop: false, price_history: [50, 52, 48, 55, 53, 50, 52] }
-        ];
+        let displaySuppliers = suppliers;
 
         // Apply search filter (Feature 1)
         const searchQuery = store.state.supplierSearchQuery || '';
@@ -13477,7 +13471,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
                         ${displaySuppliers.slice(0, 6).map(s => {
                             const contacts = s.contacts || [
-                                { name: s.name + ' Sales', role: 'Sales Rep', email: (s.email || s.name.toLowerCase().replace(/\s/g, '') + '@example.com'), phone: s.phone || '(555) ' + Math.floor(Math.random() * 900 + 100) + '-' + Math.floor(Math.random() * 9000 + 1000) }
+                                { name: s.name + ' Sales', role: 'Sales Rep', email: (s.email || s.name.toLowerCase().replace(/\s/g, '') + '@example.com'), phone: s.phone || 'No phone on file' }
                             ];
                             return contacts.map(c => '<div style="padding: 16px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">' +
                                 '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
