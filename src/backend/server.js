@@ -260,6 +260,11 @@ try {
     _APP_VERSION = pkg.version || _APP_VERSION;
 } catch {}
 
+// SECURITY: Warn if OAUTH_MODE is not 'real' in production — all marketplace connections will use mock tokens
+if (IS_PROD && process.env.OAUTH_MODE !== 'real') {
+    logger.warn('[SECURITY] OAUTH_MODE is not set to "real" in production — all marketplace connections will use mock tokens. Set OAUTH_MODE=real in environment variables.');
+}
+
 const _landingHtmlPath = join(PUBLIC_DIR, 'landing.html');
 const _landingHtml = existsSync(_landingHtmlPath) ? readFileSync(_landingHtmlPath, 'utf-8') : null;
 

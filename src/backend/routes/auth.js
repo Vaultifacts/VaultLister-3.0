@@ -29,8 +29,8 @@ const IS_TEST_RUNTIME = (() => {
 })();
 
 function isAuthLockoutBypassed(ip = '') {
-    // TODO: Re-enable for production release — lockout disabled during development/testing
-    return true;
+    // Lockout disabled in development/testing only
+    return process.env.NODE_ENV !== 'production';
 }
 
 // SECURITY: Account lockout configuration
@@ -307,18 +307,20 @@ export async function authRouter(ctx) {
                 return { status: 400, data: { error: 'Invalid email format' } };
             }
 
-            // SECURITY: Check for account lockout
-            // const lockoutStatus = checkLoginAttempts(email, ip);
-            // if (lockoutStatus.locked) {
-            //     return {
-            //         status: 429,
-            //         data: {
-            //             error: `Too many failed login attempts. Please try again in ${lockoutStatus.minutesLeft} minutes.`,
-            //             locked: true,
-            //             retryAfter: lockoutStatus.minutesLeft * 60
-            //         }
-            //     };
-            // }
+            // SECURITY: Check for account lockout (enforced in production)
+            if (!isAuthLockoutBypassed()) {
+                const lockoutStatus = checkLoginAttempts(email, ip);
+                if (lockoutStatus.locked) {
+                    return {
+                        status: 429,
+                        data: {
+                            error: `Too many failed login attempts. Please try again in ${lockoutStatus.minutesLeft} minutes.`,
+                            locked: true,
+                            retryAfter: lockoutStatus.minutesLeft * 60
+                        }
+                    };
+                }
+            }
 
             // SECURITY: Need password_hash for verification, will clean before return
             const normalizedEmail = email.toLowerCase();
@@ -356,11 +358,13 @@ export async function authRouter(ctx) {
                 logFailedLogin(email, ip, userAgent);
                 // Re-check attempts after logging this failure
                 const response = { error: 'Invalid email or password' };
-                // const updatedLockout = checkLoginAttempts(email, ip);
-                // if (updatedLockout.locked) {
-                //     response.locked = true;
-                //     response.retryAfter = updatedLockout.minutesLeft * 60;
-                // }
+                if (!isAuthLockoutBypassed()) {
+                    const updatedLockout = checkLoginAttempts(email, ip);
+                    if (updatedLockout.locked) {
+                        response.locked = true;
+                        response.retryAfter = updatedLockout.minutesLeft * 60;
+                    }
+                }
                 return { status: 401, data: response };
             }
 
