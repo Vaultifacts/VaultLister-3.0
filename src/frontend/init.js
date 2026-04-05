@@ -252,6 +252,8 @@ async function initApp() {
         await handlers.loadMarketIntel();
         renderApp(window.pages.marketIntel());
     });
+    router.register('sourcing', () => renderApp(window.pages.sourcing()));
+    router.register('tools', () => renderApp(window.pages.tools()));
 
     // Integrations section pages
     router.register('webhooks', async () => {

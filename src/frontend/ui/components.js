@@ -735,6 +735,8 @@ const components = {
             'reports': { label: 'Reports', section: 'Manage' },
             'report-builder': { label: 'Report Builder', section: 'Manage' },
             'heatmaps': { label: 'Heatmaps', section: 'Manage' },
+            'sourcing': { label: 'Sourcing Hub', section: 'Manage' },
+            'tools': { label: 'Tools', section: 'Manage' },
             'community': { label: 'Community', section: '' },
             'admin-metrics': { label: 'Admin Metrics', section: '' },
             'recently-deleted': { label: 'Recently Deleted', section: 'Sell' },

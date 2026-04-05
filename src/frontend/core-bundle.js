@@ -15285,6 +15285,8 @@ const pageChunkMap = {
     'predictions': 'intelligence',
     'suppliers': 'intelligence',
     'market-intel': 'intelligence',
+    'sourcing': 'intelligence',
+    'tools': 'intelligence',
 
     // settings chunk
     'settings': 'settings',
@@ -15408,7 +15410,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a0c97d36';
+    const v = 'e5007bef';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16574,6 +16576,8 @@ const components = {
             'reports': { label: 'Reports', section: 'Manage' },
             'report-builder': { label: 'Report Builder', section: 'Manage' },
             'heatmaps': { label: 'Heatmaps', section: 'Manage' },
+            'sourcing': { label: 'Sourcing Hub', section: 'Manage' },
+            'tools': { label: 'Tools', section: 'Manage' },
             'community': { label: 'Community', section: '' },
             'admin-metrics': { label: 'Admin Metrics', section: '' },
             'recently-deleted': { label: 'Recently Deleted', section: 'Sell' },
@@ -27568,6 +27572,8 @@ async function initApp() {
         await handlers.loadMarketIntel();
         renderApp(window.pages.marketIntel());
     });
+    router.register('sourcing', () => renderApp(window.pages.sourcing()));
+    router.register('tools', () => renderApp(window.pages.tools()));
 
     // Integrations section pages
     router.register('webhooks', async () => {

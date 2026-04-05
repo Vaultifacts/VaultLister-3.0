@@ -54,6 +54,8 @@ const pageChunkMap = {
     'predictions': 'intelligence',
     'suppliers': 'intelligence',
     'market-intel': 'intelligence',
+    'sourcing': 'intelligence',
+    'tools': 'intelligence',
 
     // settings chunk
     'settings': 'settings',

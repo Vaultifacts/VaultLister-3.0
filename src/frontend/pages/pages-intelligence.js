@@ -1784,3 +1784,170 @@ Object.assign(pages, {
     },
 
 });
+
+Object.assign(pages, {
+    sourcing() {
+        const categories = [
+            { icon: '🏪', title: 'Thrift Stores', desc: 'Goodwill, Value Village, and local thrift shops. Best selection mid-week after weekend donations.' },
+            { icon: '🏡', title: 'Estate Sales', desc: 'Full household liquidations — often priced to clear. Check EstateSales.net and Estify for local listings.' },
+            { icon: '📦', title: 'Liquidation', desc: 'Bulk lots from retailers and warehouses. B-Stock, Liquidation.com, and BULQ offer pallets and cases.' },
+            { icon: '🏭', title: 'Wholesale', desc: 'Buy new inventory direct from distributors. Alibaba, Faire, and FashionGo for apparel.' },
+            { icon: '🏘️', title: 'Garage Sales', desc: 'Neighbourhood sales every weekend. Use Garage Sale Finder or Facebook Marketplace to plan your route.' },
+            { icon: '🛒', title: 'Online Arbitrage', desc: 'Buy discounted items online and resell at a profit. Tools like Tactical Arbitrage help find deals fast.' },
+            { icon: '🏷️', title: 'Retail Clearance', desc: 'End-of-season clearance at major retailers. Target, Walmart, and TJ Maxx routinely mark down 70%+.' },
+            { icon: '↩️', title: 'Returns & Overstock', desc: 'Customer returns and excess stock from brands. Direct Liquidation and Optoro specialize in this.' },
+        ];
+
+        const tips = [
+            { title: 'Best days to thrift', body: 'Tuesday–Thursday see the freshest inventory after weekend donation drops. Avoid Saturdays when competition is highest.' },
+            { title: 'Spot profitable items fast', body: 'Check sold prices on eBay and Poshmark before buying. Use your phone camera on barcodes — most reseller apps scan instantly.' },
+            { title: 'The 3x rule', body: 'Aim for at least 3× your cost after fees and shipping. If you pay $10, your target sale price should be $30+.' },
+            { title: 'Build supplier relationships', body: 'Introduce yourself at your best sources. Regular buyers often get early access, bulk discounts, and holds on good items.' },
+        ];
+
+        return `
+            <div class="page-header">
+                <h1 class="page-title">Sourcing Hub</h1>
+                <p class="page-description">Find profitable inventory sources</p>
+            </div>
+
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">Sourcing Categories</h3>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-2 gap-4" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));">
+                        ${categories.map(cat => `
+                            <div class="card" style="margin: 0; border: 1px solid var(--border-color, #e5e7eb);">
+                                <div class="card-body" style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="font-size: 28px;">${cat.icon}</div>
+                                    <div style="font-weight: 600; font-size: 15px;">${cat.title}</div>
+                                    <div style="font-size: 13px; color: var(--gray-500, #6b7280); flex: 1;">${cat.desc}</div>
+                                    <button class="btn btn-secondary btn-sm" style="align-self: flex-start; margin-top: 4px;" onclick="toast.info('External resource links coming soon.')">Explore</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">Sourcing Tips</h3>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-2 gap-4" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                        ${tips.map(tip => `
+                            <div style="padding: 16px; background: var(--gray-50, #f9fafb); border-radius: 8px; border-left: 3px solid var(--primary-color, #6366f1);">
+                                <div style="font-weight: 600; font-size: 14px; margin-bottom: 6px;">${tip.title}</div>
+                                <div style="font-size: 13px; color: var(--gray-600, #4b5563); line-height: 1.5;">${tip.body}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Local Sourcing Alerts</h3>
+                </div>
+                <div class="card-body" style="text-align: center; padding: 32px;">
+                    <div style="font-size: 40px; margin-bottom: 12px;">📍</div>
+                    <div style="font-weight: 600; font-size: 15px; margin-bottom: 8px;">Location-Based Alerts</div>
+                    <p style="color: var(--gray-500, #6b7280); font-size: 14px; max-width: 400px; margin: 0 auto 16px;">
+                        Get notified when estate sales, liquidation events, or thrift store specials appear near you. Coming in a future update.
+                    </p>
+                    <button class="btn btn-secondary" onclick="toast.info('Location alerts will be available in a future update.')">Notify Me When Available</button>
+                </div>
+            </div>
+        `;
+    },
+
+    tools() {
+        const toolCards = [
+            {
+                icon: '📦',
+                title: 'Shipping Calculator',
+                desc: 'Estimate shipping costs across carriers before you list.',
+                action: `if (typeof handlers.showShippingCalculator === 'function') { handlers.showShippingCalculator(); } else { toast.info('Shipping calculator not available.'); }`,
+                label: 'Open Calculator',
+            },
+            {
+                icon: '📷',
+                title: 'Barcode Scanner',
+                desc: 'Scan barcodes to look up items and add them to inventory.',
+                action: `router.navigate('inventory')`,
+                label: 'Go to Inventory',
+            },
+            {
+                icon: '🖼️',
+                title: 'Image Editor',
+                desc: 'Crop, background-remove, and enhance your listing photos.',
+                action: `router.navigate('image-bank')`,
+                label: 'Open Image Bank',
+            },
+            {
+                icon: '💰',
+                title: 'Price Lookup',
+                desc: 'Research sold comps and market prices for any item.',
+                action: `router.navigate('analytics')`,
+                label: 'Go to Analytics',
+            },
+            {
+                icon: '📋',
+                title: 'Listing Templates',
+                desc: 'Create and manage reusable listing templates to list faster.',
+                action: `router.navigate('listings')`,
+                label: 'Go to Listings',
+            },
+            {
+                icon: '💱',
+                title: 'Currency Converter',
+                desc: 'Convert currencies for international sales and purchases.',
+                action: `router.navigate('financials')`,
+                label: 'Go to Financials',
+            },
+            {
+                icon: '🧮',
+                title: 'Fee Calculator',
+                desc: 'Calculate platform fees, taxes, and net profit for any sale.',
+                action: `if (typeof handlers.showFeeCalculator === 'function') { handlers.showFeeCalculator(); } else { toast.info('Fee calculator coming soon.'); }`,
+                label: 'Open Calculator',
+            },
+            {
+                icon: '📐',
+                title: 'Size Charts',
+                desc: 'Reference size charts for clothing, shoes, and accessories.',
+                action: `router.navigate('settings')`,
+                label: 'Go to Settings',
+            },
+        ];
+
+        return `
+            <div class="page-header">
+                <h1 class="page-title">Tools</h1>
+                <p class="page-description">Quick access to all your reseller tools</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">All Tools</h3>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-2 gap-4" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));">
+                        ${toolCards.map(tool => `
+                            <div class="card" style="margin: 0; border: 1px solid var(--border-color, #e5e7eb);">
+                                <div class="card-body" style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="font-size: 28px;">${tool.icon}</div>
+                                    <div style="font-weight: 600; font-size: 15px;">${tool.title}</div>
+                                    <div style="font-size: 13px; color: var(--gray-500, #6b7280); flex: 1;">${tool.desc}</div>
+                                    <button class="btn btn-primary btn-sm" style="align-self: flex-start; margin-top: 4px;" onclick="${tool.action}">${tool.label}</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+});
