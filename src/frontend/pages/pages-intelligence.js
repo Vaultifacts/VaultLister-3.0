@@ -1164,6 +1164,7 @@ Object.assign(pages, {
         });
         const competitors = sortedCompetitors;
         const marketInsights = store.state.marketInsights || [];
+        const rawInsights = marketInsights;
         const marketTrends = store.state.marketTrends || {
             demand: 0, competition: 0, pricing: 0, opportunity: 0, volatility: 0, growth: 0
         };
@@ -1218,16 +1219,23 @@ Object.assign(pages, {
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Market Saturation</div>
-                    <div style="position: relative; width: 80px; height: 80px; margin: 0 auto 8px;">
-                        <svg viewBox="0 0 80 80" style="width: 100%; height: 100%;">
-                            <circle cx="40" cy="40" r="35" fill="none" stroke="var(--gray-200)" stroke-width="6"></circle>
-                            <circle cx="40" cy="40" r="35" fill="none" stroke="var(--warning)" stroke-width="6" stroke-dasharray="${Math.round(220 * (65 / 100))} 220" transform="rotate(-90 40 40)"></circle>
-                        </svg>
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                            <div style="font-size: 20px; font-weight: 700;">65%</div>
-                        </div>
-                    </div>
-                    <div style="font-size: 11px; color: var(--warning);">Moderately Saturated</div>
+                    ${(() => {
+                        const avgSaturation = rawInsights.length > 0
+                            ? Math.round(rawInsights.reduce((s, i) => s + (i.saturation_score || 0), 0) / rawInsights.length)
+                            : null;
+                        const satDisplay = avgSaturation !== null ? avgSaturation + '%' : 'N/A';
+                        const satDash = avgSaturation !== null ? Math.round(220 * (avgSaturation / 100)) + ' 220' : '0 220';
+                        return '<div style="position: relative; width: 80px; height: 80px; margin: 0 auto 8px;">' +
+                            '<svg viewBox="0 0 80 80" style="width: 100%; height: 100%;">' +
+                                '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--gray-200)" stroke-width="6"></circle>' +
+                                '<circle cx="40" cy="40" r="35" fill="none" stroke="var(--warning)" stroke-width="6" stroke-dasharray="' + satDash + '" transform="rotate(-90 40 40)"></circle>' +
+                            '</svg>' +
+                            '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">' +
+                                '<div style="font-size: ' + (avgSaturation !== null ? '20' : '14') + 'px; font-weight: 700;">' + satDisplay + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div style="font-size: 11px; color: var(--warning);">' + (avgSaturation !== null ? 'Moderately Saturated' : 'No data yet') + '</div>';
+                    })()}
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Active Competitors</div>
@@ -1279,14 +1287,15 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div class="demand-index-list">
                         ${(() => {
-                            const demandData = [
-                                { category: 'Vintage Electronics', demand: 94, trend: 'up', competition: 'Low' },
-                                { category: 'Sports Memorabilia', demand: 87, trend: 'up', competition: 'Medium' },
-                                { category: 'Designer Handbags', demand: 82, trend: 'stable', competition: 'High' },
-                                { category: 'Antique Jewelry', demand: 78, trend: 'up', competition: 'Medium' },
-                                { category: 'Rare Coins', demand: 71, trend: 'down', competition: 'Low' }
-                            ];
-                            return demandData.map((item, idx) => {
+                            const demandData = rawInsights.length > 0
+                                ? rawInsights.slice(0, 5).map(i => ({
+                                    category: i.category || 'Unknown',
+                                    demand: Math.round(i.opportunity_score || 0),
+                                    trend: i.demand_trend === 'rising' ? 'up' : i.demand_trend === 'falling' ? 'down' : 'stable',
+                                    competition: i.competition_level === 'high' ? 'High' : i.competition_level === 'low' ? 'Low' : 'Medium'
+                                }))
+                                : [];
+                            return demandData.length > 0 ? demandData.map((item, idx) => {
                                 const demandLevel = item.demand >= 80 ? 'hot' : item.demand >= 60 ? 'warm' : 'cool';
                                 const trendIcon = item.trend === 'up' ? 'trending-up' : item.trend === 'down' ? 'trending-down' : 'minus';
                                 const trendColor = item.trend === 'up' ? 'var(--success)' : item.trend === 'down' ? 'var(--error)' : 'var(--gray-500)';
@@ -1312,7 +1321,7 @@ Object.assign(pages, {
                                     '</div>' +
                                     '<div class="demand-score demand-' + demandLevel + '">' + item.demand + '%</div>' +
                                 '</div>';
-                            }).join('');
+                            }).join('') : '<div class="empty-state" style="padding: 24px; text-align: center; color: var(--gray-500);">No category data yet. Add market insights to see demand trends.</div>';
                         })()}
                     </div>
                 </div>

@@ -1775,13 +1775,22 @@ Object.assign(pages, {
                     <div style="margin-top: 16px;">
                         <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Common Rates (vs USD)</div>
                         <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
-                            ${[
-                                { code: 'EUR', rate: 0.925, symbol: '€' },
-                                { code: 'GBP', rate: 0.795, symbol: '£' },
-                                { code: 'CAD', rate: 1.365, symbol: 'C$' },
-                                { code: 'AUD', rate: 1.535, symbol: 'A$' },
-                                { code: 'JPY', rate: 149.8, symbol: '¥' }
-                            ].map(c => '<div style="text-align: center; padding: 8px; background: var(--gray-50); border-radius: 6px;">' +
+                            ${(store.state.currencyRates
+                                ? [
+                                    { code: 'EUR', rate: store.state.currencyRates.EUR, symbol: '€' },
+                                    { code: 'GBP', rate: store.state.currencyRates.GBP, symbol: '£' },
+                                    { code: 'CAD', rate: store.state.currencyRates.CAD, symbol: 'C$' },
+                                    { code: 'AUD', rate: store.state.currencyRates.AUD, symbol: 'A$' },
+                                    { code: 'JPY', rate: store.state.currencyRates.JPY, symbol: '¥' }
+                                ]
+                                : [
+                                    { code: 'EUR', rate: 0.925, symbol: '€' },
+                                    { code: 'GBP', rate: 0.795, symbol: '£' },
+                                    { code: 'CAD', rate: 1.365, symbol: 'C$' },
+                                    { code: 'AUD', rate: 1.535, symbol: 'A$' },
+                                    { code: 'JPY', rate: 149.8, symbol: '¥' }
+                                ]
+                            ).map(c => '<div style="text-align: center; padding: 8px; background: var(--gray-50); border-radius: 6px;">' +
                                 '<div style="font-size: 12px; font-weight: 600;">' + c.code + '</div>' +
                                 '<div style="font-size: 11px; color: var(--gray-500);">' + c.symbol + c.rate + '</div>' +
                             '</div>').join('')}

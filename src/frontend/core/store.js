@@ -185,7 +185,10 @@ const store = {
         // Push notification state
         pushSubscriptions: [],
         pushSettings: { enabled: true, categories: { sales: true, offers: true, orders: true, sync: false, marketing: false } },
-        pushSubscribed: false
+        pushSubscribed: false,
+
+        // Currency state
+        currencyRates: null
     },
     subscribers: [],
 

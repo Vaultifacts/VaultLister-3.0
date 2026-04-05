@@ -1406,7 +1406,9 @@ const components = {
             depop: '#FF2300',
             grailed: '#000000',
             facebook: '#1877F2',
-            etsy: '#F1641E'
+            etsy: '#F1641E',
+            whatnot: '#FF6600',
+            shopify: '#96BF48'
         };
 
         const letters = {
@@ -1416,7 +1418,9 @@ const components = {
             depop: 'd',
             grailed: 'G',
             facebook: 'f',
-            etsy: 'E'
+            etsy: 'E',
+            whatnot: 'W',
+            shopify: 'S'
         };
 
         const color = colors[platform] || 'var(--gray-600)';
@@ -1432,15 +1436,15 @@ const components = {
     // Platform logo for larger display (shop cards)
     platformLogoLarge(platform) {
         const configs = {
-            poshmark: { bg: '#AC1A2F', letter: 'P', color: 'white', shape: 'circle' },
-            ebay: { bg: '#FFFFFF', letters: [{l:'e',c:'#E53238'},{l:'b',c:'#0064D2'},{l:'a',c:'#F5AF02'},{l:'y',c:'#86B817'}], shape: 'rect' },
-            mercari: { bg: '#FF3B58', letter: 'M', color: 'white', shape: 'circle' },
-            depop: { bg: '#FF2300', letter: 'd', color: 'white', shape: 'circle' },
-            grailed: { bg: '#000000', letter: 'G', color: 'white', shape: 'rect', font: 'Georgia, serif' },
-            facebook: { bg: '#1877F2', svg: `<svg viewBox="0 0 48 48" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#1877F2"/><path d="M26.5 25h4l.5-4h-4.5v-2.5c0-1.1.4-2 2-2h2.5v-4c-.5-.1-2-.3-3.5-.3-3.5 0-6 2.1-6 6v2.8h-4v4h4v10h5v-10z" fill="white"/></svg>` },
-            shopify: { bg: '#96BF48', letter: 'S', color: 'white', shape: 'rect' },
-            etsy: { bg: '#F1641E', letter: 'E', color: 'white', shape: 'circle' },
-            whatnot: { bg: '#FF6600', letter: 'W', color: 'white', shape: 'circle' }
+            poshmark: { bg: '#AC1A2F', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm0-8h-2V7h2v2zm6 8h-2v-4c0-1.1-.9-2-2-2s-2 .9-2 2v4h-2V7h2v3.1c.6-.7 1.5-1.1 2.5-1.1 1.93 0 3.5 1.57 3.5 3.5V17z"/></svg>` },
+            ebay: { bg: '#FFFFFF', border: '1px solid #e5e7eb', svg: `<svg width="36" height="16" viewBox="0 0 60 24"><text x="0" y="19" font-family="Arial,sans-serif" font-weight="bold" font-size="20"><tspan fill="#E53238">e</tspan><tspan fill="#0064D2">b</tspan><tspan fill="#F5AF02">a</tspan><tspan fill="#86B817">y</tspan></text></svg>` },
+            mercari: { bg: '#FF3B58', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/><path d="M12 2L2 7l10 5 10-5-10-5z" fill="white" opacity="0.9"/></svg>` },
+            depop: { bg: '#FF2300', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="9" fill="none" stroke="white" stroke-width="2"/><path d="M10 8h2c1.66 0 3 1.34 3 3s-1.34 3-3 3h-2V8z" fill="white"/></svg>` },
+            grailed: { bg: '#000000', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/><circle cx="19" cy="7" r="2" fill="white"/></svg>` },
+            etsy: { bg: '#F1641E', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 4v16l2-1V5h4c1.1 0 2 .9 2 2v1h2V6c0-1.1-.9-2-2-2H8zm0 7h5v2H8v-2z"/></svg>` },
+            shopify: { bg: '#96BF48', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M15.5 2.1c-.1 0-.2 0-.3.1-.1 0-1.5.4-1.5.4s-1-1-1.1-1.1c-.1-.1-.3-.1-.4-.1L11 22l8.3-1.8S15.6 2.3 15.5 2.1zM11.3 7.8l-.7 2.1s-.8-.4-1.7-.4c-1.3 0-1.4.8-1.4 1 0 1.1 2.9 1.5 2.9 4.1 0 2-1.3 3.3-3 3.3-2.1 0-3.1-1.3-3.1-1.3l.5-1.8s1.1.9 2 .9c.6 0 .8-.5.8-.8 0-1.4-2.4-1.5-2.4-3.9 0-2 1.4-3.9 4.3-3.9.8 0 1.8.3 1.8.3z"/></svg>` },
+            facebook: { bg: '#1877F2', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>` },
+            whatnot: { bg: '#FF6600', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>` }
         };
 
         const cfg = configs[platform];

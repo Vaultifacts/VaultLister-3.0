@@ -2817,20 +2817,20 @@ Object.assign(handlers, {
                         <h4 class="section-title">${components.icon('box', 16)} Package Details</h4>
                         <div class="shipping-calc-grid">
                             <div class="calc-input-group">
-                                <label>Weight (lbs)</label>
-                                <input type="number" id="ship-weight" class="form-control" value="1" min="0.1" step="0.1" onchange="handlers.updateShippingCalc()">
+                                <label>Weight (kg)</label>
+                                <input type="number" id="ship-weight" class="form-control" value="0.5" min="0.1" step="0.1" onchange="handlers.updateShippingCalc()">
                             </div>
                             <div class="calc-input-group">
-                                <label>Length (in)</label>
-                                <input type="number" id="ship-length" class="form-control" value="12" min="1" onchange="handlers.updateShippingCalc()">
+                                <label>Length (cm)</label>
+                                <input type="number" id="ship-length" class="form-control" value="30" min="1" step="1" onchange="handlers.updateShippingCalc()">
                             </div>
                             <div class="calc-input-group">
-                                <label>Width (in)</label>
-                                <input type="number" id="ship-width" class="form-control" value="9" min="1" onchange="handlers.updateShippingCalc()">
+                                <label>Width (cm)</label>
+                                <input type="number" id="ship-width" class="form-control" value="23" min="1" step="1" onchange="handlers.updateShippingCalc()">
                             </div>
                             <div class="calc-input-group">
-                                <label>Height (in)</label>
-                                <input type="number" id="ship-height" class="form-control" value="4" min="1" onchange="handlers.updateShippingCalc()">
+                                <label>Height (cm)</label>
+                                <input type="number" id="ship-height" class="form-control" value="10" min="1" step="1" onchange="handlers.updateShippingCalc()">
                             </div>
                         </div>
                     </div>
@@ -2863,7 +2863,7 @@ Object.assign(handlers, {
                         <div id="shipping-estimates" class="shipping-estimates-grid">
                             <!-- Populated by updateShippingCalc -->
                         </div>
-                        <p class="shipping-disclaimer">* Estimates only. Actual rates may vary based on zone, service level, and promotions.</p>
+                        <p class="shipping-disclaimer">* Estimates only in CAD. Actual rates depend on zone, fuel surcharges, and dimensional pricing. Use Rate Shopping for precise quotes.</p>
                     </div>
 
                     <!-- Dimensional Weight Info -->
@@ -2887,11 +2887,11 @@ Object.assign(handlers, {
 
     applyShippingPreset: function(preset) {
         const presets = {
-            envelope: { weight: 0.3, length: 12, width: 9, height: 0.5 },
-            small: { weight: 1, length: 8, width: 6, height: 4 },
-            medium: { weight: 3, length: 12, width: 9, height: 6 },
-            large: { weight: 5, length: 18, width: 12, height: 8 },
-            poly: { weight: 0.5, length: 14, width: 10, height: 2 }
+            envelope: { weight: 0.15, length: 30, width: 23, height: 1 },
+            small: { weight: 0.5, length: 20, width: 15, height: 10 },
+            medium: { weight: 1.5, length: 30, width: 23, height: 15 },
+            large: { weight: 2.5, length: 46, width: 30, height: 20 },
+            poly: { weight: 0.25, length: 35, width: 25, height: 5 }
         };
 
         const p = presets[preset];
@@ -2916,21 +2916,23 @@ Object.assign(handlers, {
         const width = parseFloat(document.getElementById('ship-width')?.value) || 9;
         const height = parseFloat(document.getElementById('ship-height')?.value) || 4;
 
-        // Calculate dimensional weight (L x W x H / 139 for most carriers)
-        const dimWeight = (length * width * height) / 139;
+        // Calculate dimensional weight (L x W x H cm³ / 5000 = kg, international metric standard)
+        const dimWeight = (length * width * height) / 5000;
         const billableWeight = Math.max(weight, dimWeight);
 
         // Carrier rate estimates (simplified - real world would use API)
         const rates = [
-            { carrier: 'USPS', service: 'First Class', rate: weight <= 1 ? 4.50 : null, days: '2-5' },
-            { carrier: 'USPS', service: 'Priority Mail', rate: 8.50 + (billableWeight * 0.5), days: '1-3' },
-            { carrier: 'USPS', service: 'Ground Advantage', rate: 5.50 + (billableWeight * 0.3), days: '2-5' },
-            { carrier: 'UPS', service: 'Ground', rate: 9.50 + (billableWeight * 0.8), days: '1-5' },
-            { carrier: 'UPS', service: '2nd Day Air', rate: 18.00 + (billableWeight * 1.5), days: '2' },
-            { carrier: 'FedEx', service: 'Ground', rate: 9.00 + (billableWeight * 0.75), days: '1-5' },
-            { carrier: 'FedEx', service: 'Express Saver', rate: 16.00 + (billableWeight * 1.2), days: '3' },
-            { carrier: 'Pirate Ship', service: 'Simple Export', rate: 7.50 + (billableWeight * 0.4), days: '2-5' }
-        ].filter(r => r.rate !== null);
+            { carrier: 'Canada Post', service: 'Regular Parcel', rate: billableWeight <= 0.5 ? 10.50 : 12.00 + (billableWeight * 2.0), days: '5-8' },
+            { carrier: 'Canada Post', service: 'Xpresspost', rate: 18.00 + (billableWeight * 3.5), days: '2-3' },
+            { carrier: 'Canada Post', service: 'Priority', rate: 28.00 + (billableWeight * 5.0), days: '1-2' },
+            { carrier: 'Chitchats', service: 'Standard', rate: 8.00 + (billableWeight * 1.5), days: '5-10' },
+            { carrier: 'Chitchats', service: 'Express', rate: 12.00 + (billableWeight * 2.5), days: '3-5' },
+            { carrier: 'UPS', service: 'Standard', rate: 14.00 + (billableWeight * 3.0), days: '2-5' },
+            { carrier: 'FedEx', service: 'Ground', rate: 13.50 + (billableWeight * 2.8), days: '2-5' },
+            { carrier: 'FedEx', service: 'Express', rate: 22.00 + (billableWeight * 4.5), days: '1-2' },
+            { carrier: 'Purolator', service: 'Ground', rate: 15.00 + (billableWeight * 3.2), days: '1-3' },
+            { carrier: 'Purolator', service: 'Express', rate: 24.00 + (billableWeight * 4.8), days: '1-2' }
+        ];
 
         // Sort by price
         rates.sort((a, b) => a.rate - b.rate);
@@ -2943,7 +2945,7 @@ Object.assign(handlers, {
                     ${i === 0 ? '<span class="best-badge">Best Value</span>' : ''}
                     <div class="rate-carrier">${r.carrier}</div>
                     <div class="rate-service">${r.service}</div>
-                    <div class="rate-price">$${r.rate.toFixed(2)}</div>
+                    <div class="rate-price">C$${r.rate.toFixed(2)}</div>
                     <div class="rate-days">${r.days} days</div>
                 </div>
             `).join(''));
@@ -2955,15 +2957,15 @@ Object.assign(handlers, {
             dimEl.innerHTML = sanitizeHTML(`
                 <div class="dim-weight-row">
                     <span>Actual Weight:</span>
-                    <strong>${weight.toFixed(1)} lbs</strong>
+                    <strong>${weight.toFixed(1)} kg</strong>
                 </div>
                 <div class="dim-weight-row">
                     <span>Dimensional Weight:</span>
-                    <strong>${dimWeight.toFixed(1)} lbs</strong>
+                    <strong>${dimWeight.toFixed(1)} kg</strong>
                 </div>
                 <div class="dim-weight-row billable">
                     <span>Billable Weight:</span>
-                    <strong>${billableWeight.toFixed(1)} lbs</strong>
+                    <strong>${billableWeight.toFixed(1)} kg</strong>
                     ${dimWeight > weight ? '<span class="dim-warning">(DIM weight applies)</span>' : ''}
                 </div>
             `);
@@ -3878,19 +3880,32 @@ Object.assign(handlers, {
     },
 
 
-    convertCurrency: function() {
+    convertCurrency: async function() {
         const amount = parseFloat(document.getElementById('currency-amount')?.value || 100);
         const target = document.getElementById('currency-target')?.value || 'EUR';
-        const rates = { EUR: 0.925, GBP: 0.795, CAD: 1.365, AUD: 1.535, JPY: 149.8 };
-        const symbols = { EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$', JPY: '¥' };
-        const rate = rates[target] || 1;
-        const converted = amount * rate;
-        const el = document.getElementById('currency-result');
-        if (el) {
-            const safeTarget = target.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-            el.innerHTML = sanitizeHTML('<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">') + (symbols[target] || '') + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 USD = ' + rate + ' ' + safeTarget + ' (indicative rate)</div>';
+        const resultEl = document.getElementById('currency-result');
+        if (!resultEl) return;
+
+        // Use cached rates or fetch
+        let rates = store.state.currencyRates;
+        if (!rates) {
+            resultEl.innerHTML = '<span class="text-gray-400">Loading rates...</span>'; // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            try {
+                const res = await api.get('/currency/rates');
+                rates = res.data?.rates || res.rates;
+                if (rates) store.setState({ currencyRates: rates });
+            } catch (e) {
+                rates = { EUR: 0.925, GBP: 0.795, CAD: 1.365, AUD: 1.535, JPY: 149.8 };
+            }
         }
+
+        const rate = rates[target] || 1;
+        const symbols = { EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$', JPY: '¥', USD: '$' };
+        const converted = (amount * rate).toFixed(2);
+        const safeTarget = target.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const safeSymbol = (symbols[target] || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        resultEl.innerHTML = '<span class="text-2xl font-bold">' + safeSymbol + converted + '</span>' + // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            '<div class="text-xs text-gray-500 mt-1">1 USD = ' + rate.toFixed(4) + ' ' + safeTarget + '</div>';
     },
 
 
