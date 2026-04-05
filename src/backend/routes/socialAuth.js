@@ -33,7 +33,7 @@ const USER_SELECT_COLUMNS = 'id, email, username, full_name, display_name, avata
 // OAuth configuration
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/social-auth/google/callback';
+const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || (process.env.NODE_ENV === 'production' ? 'https://vaultlister.com/api/social-auth/google/callback' : 'http://localhost:3000/api/social-auth/google/callback');
 
 const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID;
 const APPLE_TEAM_ID = process.env.APPLE_TEAM_ID;
