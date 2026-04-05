@@ -1454,7 +1454,7 @@ const components = {
             return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);background:#6B7280;color:white;font-size:22px;font-weight:700;font-family:Arial,sans-serif">${(platform || '?')[0].toUpperCase()}</div>`;
         }
         if (cfg.svg) {
-            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;background:white">${cfg.svg}</div>`;
+            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;background:${cfg.bg};${cfg.border ? 'border:' + cfg.border + ';' : ''}">${cfg.svg}</div>`;
         }
         const radius = cfg.shape === 'circle' ? '50%' : '8px';
         const border = cfg.bg === '#FFFFFF' ? 'border:1px solid #e5e7eb;' : '';
