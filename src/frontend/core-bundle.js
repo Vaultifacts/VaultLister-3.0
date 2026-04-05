@@ -15405,7 +15405,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f9bae7b2';
+    const v = '36553f4b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15511,7 +15511,6 @@ const router = {
         'teams': { target: 'settings', tab: 'teams', storeKey: 'settingsTab' },
         'size-charts': { target: 'settings', tab: 'reference-data', storeKey: 'settingsTab' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
-        'about': { target: 'help-support', tab: 'about' },
         'my-shops': { target: 'shops' },
         'billing': { target: 'plans-billing' },
         'upgrade': { target: 'plans-billing' },

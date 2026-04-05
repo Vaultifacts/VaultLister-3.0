@@ -283,7 +283,6 @@ const router = {
         'teams': { target: 'settings', tab: 'teams', storeKey: 'settingsTab' },
         'size-charts': { target: 'settings', tab: 'reference-data', storeKey: 'settingsTab' },
         'recently-deleted': { target: 'inventory', tab: 'trash' },
-        'about': { target: 'help-support', tab: 'about' },
         'my-shops': { target: 'shops' },
         'billing': { target: 'plans-billing' },
         'upgrade': { target: 'plans-billing' },
