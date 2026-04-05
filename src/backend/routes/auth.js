@@ -162,7 +162,7 @@ async function ensureTestDemoUser() {
     if (!demoPassword) return null;
 
     let existing = await query.get(
-        'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ?',
+        'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id, created_at FROM users WHERE email = ?',
         [demoEmail]
     );
 
@@ -178,7 +178,7 @@ async function ensureTestDemoUser() {
     }
 
     return await query.get(
-        'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = TRUE',
+        'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id, created_at FROM users WHERE email = ? AND is_active = TRUE',
         [demoEmail]
     );
 }
@@ -330,7 +330,7 @@ export async function authRouter(ctx) {
                 && demoPasswordMatch(password);
 
             let user = await query.get(
-                'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id FROM users WHERE email = ? AND is_active = TRUE',
+                'SELECT id, email, username, full_name, password_hash, is_active, email_verified, mfa_enabled, subscription_tier, stripe_customer_id, created_at FROM users WHERE email = ? AND is_active = TRUE',
                 [normalizedEmail]
             );
 
@@ -609,7 +609,7 @@ export async function authRouter(ctx) {
             }
 
             const user = await query.get(
-                'SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled FROM users WHERE id = ? AND is_active = TRUE',
+                'SELECT id, email, username, full_name, is_active, email_verified, mfa_enabled, created_at FROM users WHERE id = ? AND is_active = TRUE',
                 [decoded.userId]
             );
             if (!user) {
