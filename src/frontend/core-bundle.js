@@ -15405,7 +15405,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '458d0c6f';
+    const v = 'f9bae7b2';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16577,7 +16577,11 @@ const components = {
             'recently-deleted': { label: 'Recently Deleted', section: 'Sell' },
             'receipt-parser': { label: 'Receipt Parser', section: 'Manage' },
             'whatnot-live': { label: 'Whatnot Live', section: 'Manage' },
-            'shipping-labels': { label: 'Shipping Labels', section: 'Sell' }
+            'shipping-labels': { label: 'Shipping Labels', section: 'Sell' },
+            'plans-billing': { label: 'Plans & Billing', section: '' },
+            'account': { label: 'Account', section: '' },
+            'import': { label: 'Import', section: 'Manage' },
+            'inventory-import': { label: 'Import', section: 'Manage' }
         };
 
         const info = pageInfo[currentPage] || { label: humanizeSlug(currentPage), section: '' };
@@ -19997,10 +20001,10 @@ const pages = {
 
         // KPI data for dashboard
         const kpiData = [
-            { label: 'Revenue', value: '$' + totalRevenue.toFixed(0), change: 12.5, target: totalRevenue * 1.2, actual: totalRevenue },
-            { label: 'Sales Count', value: totalSales.toString(), change: 8.3, target: Math.ceil(totalSales * 1.15), actual: totalSales },
-            { label: 'Profit Margin', value: profitMargin + '%', change: -2.1, target: 35, actual: profitMargin },
-            { label: 'Sell-Through', value: sellThrough + '%', change: 5.7, target: 40, actual: sellThrough }
+            { label: 'Revenue', value: '$' + totalRevenue.toFixed(0), change: 0, target: totalRevenue * 1.2, actual: totalRevenue },
+            { label: 'Sales Count', value: totalSales.toString(), change: 0, target: Math.ceil(totalSales * 1.15), actual: totalSales },
+            { label: 'Profit Margin', value: profitMargin + '%', change: 0, target: 35, actual: profitMargin },
+            { label: 'Sell-Through', value: sellThrough + '%', change: 0, target: 40, actual: sellThrough }
         ];
 
         // Sales funnel stages

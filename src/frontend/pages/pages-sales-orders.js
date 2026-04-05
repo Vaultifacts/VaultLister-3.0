@@ -1449,11 +1449,11 @@ Object.assign(pages, {
         };
 
         // Budget data
-        const budgetData = [
-            { name: 'Marketing', budget: 200, actual: 150 },
-            { name: 'Shipping', budget: 500, actual: 420 },
-            { name: 'Supplies', budget: 300, actual: 280 },
-            { name: 'Fees', budget: 400, actual: 380 }
+        const budgetData = store.state.budgets && store.state.budgets.length > 0 ? store.state.budgets : [
+            { name: 'Marketing', budget: 200, actual: 0 },
+            { name: 'Shipping', budget: 500, actual: 0 },
+            { name: 'Supplies', budget: 300, actual: 0 },
+            { name: 'Fees', budget: 400, actual: 0 }
         ];
 
         // Calculate financial health score

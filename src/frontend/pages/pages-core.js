@@ -2177,10 +2177,10 @@ const pages = {
 
         // KPI data for dashboard
         const kpiData = [
-            { label: 'Revenue', value: '$' + totalRevenue.toFixed(0), change: 12.5, target: totalRevenue * 1.2, actual: totalRevenue },
-            { label: 'Sales Count', value: totalSales.toString(), change: 8.3, target: Math.ceil(totalSales * 1.15), actual: totalSales },
-            { label: 'Profit Margin', value: profitMargin + '%', change: -2.1, target: 35, actual: profitMargin },
-            { label: 'Sell-Through', value: sellThrough + '%', change: 5.7, target: 40, actual: sellThrough }
+            { label: 'Revenue', value: '$' + totalRevenue.toFixed(0), change: 0, target: totalRevenue * 1.2, actual: totalRevenue },
+            { label: 'Sales Count', value: totalSales.toString(), change: 0, target: Math.ceil(totalSales * 1.15), actual: totalSales },
+            { label: 'Profit Margin', value: profitMargin + '%', change: 0, target: 35, actual: profitMargin },
+            { label: 'Sell-Through', value: sellThrough + '%', change: 0, target: 40, actual: sellThrough }
         ];
 
         // Sales funnel stages

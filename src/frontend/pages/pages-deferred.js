@@ -3581,11 +3581,11 @@ Object.assign(pages, {
         };
 
         // Budget data
-        const budgetData = [
-            { name: 'Marketing', budget: 200, actual: 150 },
-            { name: 'Shipping', budget: 500, actual: 420 },
-            { name: 'Supplies', budget: 300, actual: 280 },
-            { name: 'Fees', budget: 400, actual: 380 }
+        const budgetData = store.state.budgets && store.state.budgets.length > 0 ? store.state.budgets : [
+            { name: 'Marketing', budget: 200, actual: 0 },
+            { name: 'Shipping', budget: 500, actual: 0 },
+            { name: 'Supplies', budget: 300, actual: 0 },
+            { name: 'Fees', budget: 400, actual: 0 }
         ];
 
         // Calculate financial health score
@@ -4162,7 +4162,7 @@ Object.assign(pages, {
                                 ${connectedShops.length > 0 ? `
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--success-500)" stroke-width="8"
-                                        stroke-dasharray="${(connectedShops.length / 6) * 339} 339"
+                                        stroke-dasharray="${(connectedShops.length / (window.SUPPORTED_PLATFORMS || []).length) * 339} 339"
                                         stroke-linecap="round" transform="rotate(-90 60 60)"/>
                                 ` : `
                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
@@ -4170,7 +4170,7 @@ Object.assign(pages, {
                             </svg>
                             <div class="connection-count">
                                 <span class="count-value">${connectedShops.length}</span>
-                                <span class="count-label">of 6</span>
+                                <span class="count-label">of ${(window.SUPPORTED_PLATFORMS || []).length}</span>
                             </div>
                         </div>
                         <div class="connection-info">
@@ -4795,7 +4795,7 @@ Object.assign(pages, {
                             <div class="settings-profile-info">
                                 <h3>${escapeHtml(user.full_name || user.username || 'User')}</h3>
                                 <p>@${escapeHtml(user.username || 'username')}</p>
-                                <span class="badge badge-success">Pro Member</span>
+                                <span class="badge ${store.getPlanTier() === 'free' ? 'badge-gray' : 'badge-success'}">${store.getPlanTier() === 'free' ? 'Free Plan' : store.getPlanTier().charAt(0).toUpperCase() + store.getPlanTier().slice(1) + ' Member'}</span>
                             </div>
                             <button class="btn btn-secondary" onclick="router.navigate('account')">
                                 ${components.icon('user', 16)} View Account
@@ -9057,7 +9057,7 @@ Object.assign(pages, {
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Cross-list to all 6 platforms
+                                Cross-list to all ${(window.SUPPORTED_PLATFORMS || []).length} platforms
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>

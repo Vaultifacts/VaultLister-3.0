@@ -740,7 +740,11 @@ const components = {
             'recently-deleted': { label: 'Recently Deleted', section: 'Sell' },
             'receipt-parser': { label: 'Receipt Parser', section: 'Manage' },
             'whatnot-live': { label: 'Whatnot Live', section: 'Manage' },
-            'shipping-labels': { label: 'Shipping Labels', section: 'Sell' }
+            'shipping-labels': { label: 'Shipping Labels', section: 'Sell' },
+            'plans-billing': { label: 'Plans & Billing', section: '' },
+            'account': { label: 'Account', section: '' },
+            'import': { label: 'Import', section: 'Manage' },
+            'inventory-import': { label: 'Import', section: 'Manage' }
         };
 
         const info = pageInfo[currentPage] || { label: humanizeSlug(currentPage), section: '' };

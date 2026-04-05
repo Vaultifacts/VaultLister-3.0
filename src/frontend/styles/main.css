@@ -22475,6 +22475,12 @@ body.dark-mode .intel-filter-btn.active {
 
 .settings-content {
     min-height: 500px;
+    grid-column: 2;
+}
+
+.settings-container > .settings-search-wrapper,
+.settings-container > .settings-changelog-banner {
+    grid-column: 1 / -1;
 }
 
 .settings-section {
