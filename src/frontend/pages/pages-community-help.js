@@ -414,7 +414,7 @@ Object.assign(pages, {
                             <line x1="12" y1="17" x2="12" y2="21"></line>
                         </svg>
                     </div>
-                    <div class="stat-value" data-count="6">6</div>
+                    <div class="stat-value" data-count="${(window.SUPPORTED_PLATFORMS || []).length}">${(window.SUPPORTED_PLATFORMS || []).length}</div>
                     <div class="stat-label">Platforms Supported</div>
                 </div>
                 <div class="about-stat-card">
@@ -433,8 +433,8 @@ Object.assign(pages, {
                             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                         </svg>
                     </div>
-                    <div class="stat-value">Local</div>
-                    <div class="stat-label">Data Storage</div>
+                    <div class="stat-value">Cloud</div>
+                    <div class="stat-label">Encrypted Storage</div>
                 </div>
             </div>
 
@@ -2541,7 +2541,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                         </svg>
-                        <span>Local-First Storage</span>
+                        <span>Encrypted Cloud Storage</span>
                     </div>
                 </div>
 
