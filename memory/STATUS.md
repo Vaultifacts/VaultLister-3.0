@@ -21,7 +21,8 @@
 - **#186** Vault Buddy — chatbot backend fixed; marked "needs re-test"
 
 ### 190-new Google OAuth fixed (2026-04-06)
-- **190-new** — SQL "column reference id is ambiguous" in `findOrCreateUser` JOIN; added `USER_SELECT_ALIASED` with `u.` prefix: `df74d36` ✅ deployed to Railway
+- **190-new** — SQL "column reference id is ambiguous" in `findOrCreateUser` JOIN: `df74d36` ✅
+- **190-new** — Missing `#auth-callback` SPA route + `/api/auth/oauth-session` exchange endpoint: `1d40be6` ✅ deployed 21:37 UTC
 
 ### Code Audit findings fixed (2026-04-06)
 - **CA-CR-1** — `isRateLimitBypassed()` now gates on `IS_TEST_RUNTIME || NODE_ENV==='development'`: `abeccbb` ✅ grep confirmed
