@@ -92,9 +92,9 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-2 | Dashboard / Orders / Offers / Financials / Analytics | All dollar amounts show "$" not "C$" — global currency localization missing for Canadian launch | Session 1 | VERIFIED ✅ — 2c6b7df |
 | H-3 | My Shops | Mercari/Grailed/Etsy/Shopify show active "Connect" buttons — should be "Coming Soon" for post-launch platforms | Session 1 | VERIFIED ✅ — d81cb79 |
 | H-4 | Orders | Shipping Labels button enabled but EasyPost not built — clicking will fail | Session 1 | VERIFIED ✅ — 1f0f44f |
-| H-5 | Settings | "Enable 2FA" button — STATUS.md marks as Fail *(See also: #174 — same issue, discovered independently)* | Session 1 | OPEN |
+| H-5 | Settings | "Enable 2FA" button — STATUS.md marks as Fail *(See also: #174 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — eb9e086 |
 | H-6 | Dashboard | Massive empty space on scroll — scrolling past dashboard widgets shows huge white void with sidebar detached | Session 1 | OPEN |
-| H-7 | Automations | "Est. at $30/hr" rate hardcoded — should be C$ and user-configurable | Session 1 | OPEN |
+| H-7 | Automations | "Est. at $30/hr" rate hardcoded — should be C$ and user-configurable | Session 1 | VERIFIED ✅ — eb9e086 |
 | H-8 | Plans & Billing | Pricing shows USD ($19/$49) not CAD — plans page uses US pricing for Canadian launch *(See also: #175 — same issue, discovered independently)* | Session 1 | OPEN |
 | H-9 | Plans & Billing | "Upgrade to Premium" (top button) vs "Upgrade to Pro" (plan cards) — naming inconsistency *(See also: #176 — same issue, discovered independently)* | Session 1 | OPEN |
 | H-10 | Middleware | Rate limiting disabled in production — `rateLimiter.js:27` has `// TODO: disabled during development/testing` always returns `true` | Session 1 | OPEN |

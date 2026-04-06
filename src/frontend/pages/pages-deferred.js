@@ -9503,7 +9503,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
-                            ${components.platformLogoLarge('whatnot')}
+                            ${components.platformLogoLarge('mercari')}
                             <div>
                                 <div class="font-medium">Mercari</div>
                                 <div class="text-xs text-gray-500">Not connected</div>
@@ -9517,7 +9517,7 @@ Object.assign(pages, {
                             </div>
                         </div>
                         <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
-                            ${components.platformLogoLarge('shopify')}
+                            ${components.platformLogoLarge('grailed')}
                             <div>
                                 <div class="font-medium">Grailed</div>
                                 <div class="text-xs text-gray-500">Not connected</div>
@@ -9527,6 +9527,13 @@ Object.assign(pages, {
                             ${components.platformLogoLarge('facebook')}
                             <div>
                                 <div class="font-medium">Facebook</div>
+                                <div class="text-xs text-gray-500">Not connected</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--gray-50);">
+                            ${components.platformLogoLarge('whatnot')}
+                            <div>
+                                <div class="font-medium">Whatnot</div>
                                 <div class="text-xs text-gray-500">Not connected</div>
                             </div>
                         </div>
