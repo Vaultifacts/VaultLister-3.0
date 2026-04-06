@@ -14,6 +14,10 @@
 
 ## Last Completed Work (2026-04-06)
 
+### HIGH findings fixed
+- **H-2** — Replace all $ with C$ currency display across frontend (65 occurrences, 12 files): `2c6b7df` ✅ verified live
+- **H-3** — Coming Soon disabled button for Mercari/Grailed/Etsy/Shopify in My Shops: `d81cb79` ✅ verified live (screenshot confirms)
+
 ### Post-walkthrough fix plan — 6 batches (optimized-knitting-owl.md)
 - **Batch 1** — Consistency manifest memory_rules count: `2eb4e3c`
 - **Batch 2** — Fix #about route (remove alias redirect): done in `9a8aa06` (prior session)
@@ -22,12 +26,13 @@
 - **Batch 5** — Canadian shipping: Canada Post/Chitchats/FedEx Canada/UPS Canada/Purolator, metric units, CAD: `23a4729`, `1de3f25` ✅ verified Ship Calc in browser
 - **Batch 6** — SVG platform logos: already done in `c9f4cc9` (prior session) ✅ verified My Shops shows colored SVGs
 
-### Master findings document — 4 rounds of corrections
+### Master findings document — 4 rounds of corrections + H-2/H-3
 - `d770327` — 12 errors fixed (round 3)
 - `75cdd7a` — Status column added to all 13 tables
 - `08550b9` — 6 errors fixed (round 2)
 - `135d2ac` — 6 errors fixed (round 1)
 - #149 marked VERIFIED ✅ 23a4729; CR-6 marked VERIFIED ✅ 8247946
+- H-2 marked VERIFIED ✅ 2c6b7df; H-3 marked VERIFIED ✅ d81cb79
 
 ## Key Chrome Testing Setup
 ```javascript
@@ -60,4 +65,4 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 ## Next Tasks
 1. Fix CRITICAL findings from `docs/WALKTHROUGH_MASTER_FINDINGS.md` — start with CA-CR-1 (rate limiter bypass)
 2. EasyPost shipping integration — BLOCKED on API key anti-fraud review
-3. Fix HIGH findings: H-2 (C$ localization), H-3 (Coming Soon for post-launch platforms), H-16/H-24/H-26 (missing Etsy/Shopify/Whatnot in dropdowns)
+3. Fix HIGH findings: H-16/H-24/H-26 (missing Etsy/Shopify/Whatnot in dropdowns), then remaining HIGHs from master doc
