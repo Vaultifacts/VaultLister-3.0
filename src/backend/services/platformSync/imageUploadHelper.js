@@ -17,6 +17,7 @@
 import { existsSync, writeFileSync, unlinkSync, mkdirSync, statSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
+import { randomUUID } from 'crypto';
 import { logger } from '../../shared/logger.js';
 import sharp from 'sharp';
 
@@ -45,7 +46,7 @@ async function compressIfNeeded(filePath, tempFiles) {
     const stat = statSync(filePath);
     if (stat.size <= COMPRESS_MAX_BYTES) return filePath;
     ensureTempDir();
-    const compressedPath = join(TEMP_DIR, `c-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    const compressedPath = join(TEMP_DIR, `c-${randomUUID()}.jpg`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
     await sharp(filePath)
         .resize(COMPRESS_MAX_PX, COMPRESS_MAX_PX, { fit: 'inside', withoutEnlargement: true })
         .jpeg({ quality: COMPRESS_QUALITY })
@@ -135,7 +136,7 @@ async function downloadToTemp(url) {
     const ext = url.split('.').pop().split('?')[0].toLowerCase();
     const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
     const fileExt = allowedExts.includes(ext) ? ext : 'jpg';
-    const filename = `img-${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+    const filename = `img-${randomUUID()}.${fileExt}`;
     const destPath = join(TEMP_DIR, filename);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
 
     const response = await fetch(url, {
