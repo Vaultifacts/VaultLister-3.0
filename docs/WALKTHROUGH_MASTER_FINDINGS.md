@@ -102,18 +102,18 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-12 | Database | No SKU unique constraint in live DB — migration 004 exists but may not be applied | Session 1 | OPEN |
 | H-13 | Automations | "83% Success Rate" stale data — shows test run data from development | Session 1 | OPEN |
 | H-14 | Predictions | "Run AI Model" button requires `ANTHROPIC_API_KEY` — will fail silently | Session 2 | OPEN |
-| H-15 | Shipping Labels | "Create Label" and "Compare Rates" buttons present but EasyPost not built | Session 2 | OPEN |
-| H-16 | Connections | Only 6 of 9 platforms shown — missing Etsy, Shopify, Whatnot | Session 2 | OPEN |
+| H-15 | Shipping Labels | "Create Label" and "Compare Rates" buttons present but EasyPost not built | Session 2 | VERIFIED ✅ — a0a4901 |
+| H-16 | Connections | Only 6 of 9 platforms shown — missing Etsy, Shopify, Whatnot | Session 2 | VERIFIED ✅ — dd50369 |
 | H-17 | Refer a Friend | Referral link `https://vaultlister.com/signup?ref=VAULTDEMO` — referral backend wiring unclear | Session 2 | OPEN |
 | H-18 | Forgot Password | "Send Reset Link" requires `RESEND_API_KEY`/SMTP — will fail silently | Session 2 | OPEN |
 | H-19 | Help / Support | "Getting Started 2/5 (40%)" hardcoded as complete for new users *(See also: CR-7 — same issue, discovered independently)* | Session 2 | OPEN |
 | H-20 | Feedback & Suggestions | "Top Contributor — top 10%" badge shown to user with 0 submissions | Session 3 | OPEN |
 | H-21 | Changelog | All version dates fabricated — v1.6.0 "Jan 26", v1.0.0 "Nov 30" | Session 3 | OPEN |
 | H-22 | Affiliate | Full affiliate page (30% commission, $50 payout) — no backend built | Session 3 | OPEN |
-| H-23 | Shipping Labels | "Create Label" + "Compare Rates" buttons enabled — EasyPost not built | Session 3 | OPEN |
-| H-24 | Connections | Only 6/9 platforms shown — missing Etsy, Shopify, Whatnot | Session 3 | OPEN |
+| H-23 | Shipping Labels | "Create Label" + "Compare Rates" buttons enabled — EasyPost not built | Session 3 | VERIFIED ✅ — a0a4901 |
+| H-24 | Connections | Only 6/9 platforms shown — missing Etsy, Shopify, Whatnot | Session 3 | VERIFIED ✅ — dd50369 |
 | H-25 | Forgot Password | "Send Reset Link" requires SMTP — will fail | Session 3 | OPEN |
-| H-26 | Listings | Platform dropdown only shows 6 of 9 platforms — missing Etsy, Shopify, Whatnot | Session 3 | OPEN |
+| H-26 | Listings | Platform dropdown only shows 6 of 9 platforms — missing Etsy, Shopify, Whatnot | Session 3 | VERIFIED ✅ — eb9e086 |
 | H-27 | Listings | "Add New Listing(s)" primary CTA dropdown button has NO onclick handler | Session 3 | OPEN |
 | H-28 | Responsive | Sidebar doesn't collapse on mobile viewport — no hamburger menu visible | Session 4 | OPEN |
 | #123 | Community | `modals.viewPost()` crashes: "Cannot read properties of undefined (reading 'find')" — community post viewing broken | Session 5 | OPEN |
