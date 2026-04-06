@@ -217,7 +217,7 @@ export async function authRouter(ctx) {
     // POST /api/auth/register
     if (method === 'POST' && path === '/register') {
         try {
-            const { email, password, username, fullName } = body;
+            const { email, password, username, fullName, referralCode } = body;
 
             if (!email || !password || !username) {
                 return { status: 400, data: { error: 'Email, password, and username required' } };
@@ -249,12 +249,25 @@ export async function authRouter(ctx) {
             const userId = uuidv4();
             const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-            await query.run(`
-                INSERT INTO users (id, email, password_hash, username, full_name)
-                VALUES (?, ?, ?, ?, ?)
-            `, [userId, email.toLowerCase(), passwordHash, username.toLowerCase(), fullName || username]);
+            const newReferralCode = 'VAULT' + userId.substring(0, 6).toUpperCase();
 
-            const user = await query.get('SELECT id, email, username, full_name, is_active, email_verified, created_at FROM users WHERE id = ?', [userId]);
+            await query.run(`
+                INSERT INTO users (id, email, password_hash, username, full_name, referral_code)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [userId, email.toLowerCase(), passwordHash, username.toLowerCase(), fullName || username, newReferralCode]);
+
+            // Record referral if a valid referral code was provided
+            if (referralCode) {
+                const referrer = await query.get('SELECT id FROM users WHERE referral_code = ?', [referralCode.toUpperCase()]);
+                if (referrer && referrer.id !== userId) {
+                    await query.run(`
+                        INSERT INTO affiliate_commissions (id, affiliate_user_id, referred_user_id, amount, status)
+                        VALUES (?, ?, ?, 0, 'pending')
+                    `, [uuidv4(), referrer.id, userId]);
+                }
+            }
+
+            const user = await query.get('SELECT id, email, username, full_name, is_active, email_verified, created_at, referral_code FROM users WHERE id = ?', [userId]);
             logger.info('[Auth] Register success', { userId, email: email.toLowerCase() });
 
             const token = generateToken(user);

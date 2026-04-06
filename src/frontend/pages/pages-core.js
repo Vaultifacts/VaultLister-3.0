@@ -3125,7 +3125,7 @@ const pages = {
     login() {
         return `
             <a href="#main-content" class="skip-nav" tabindex="0">Skip to main content</a>
-            <div id="main-content" class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+            <div id="main-content" class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%; overflow-x: hidden;">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">

@@ -209,7 +209,8 @@ const auth = {
         inputs.forEach(i => i.disabled = true);
 
         try {
-            const data = await api.post('/auth/register', { email, username, password });
+            const refParam = new URLSearchParams(window.location.search).get('ref') || new URLSearchParams(window.location.hash.split('?')[1] || '').get('ref');
+            const data = await api.post('/auth/register', { email, username, password, ...(refParam ? { referralCode: refParam } : {}) });
             store.setState({
                 user: data.user,
                 token: data.token,

@@ -1475,6 +1475,11 @@ select:focus-visible {
     min-height: 100vh;
 }
 
+/* Hide mobile header on desktop — shown via media query below */
+.mobile-header {
+    display: none;
+}
+
 .sidebar {
     position: fixed;
     left: 0;
@@ -1505,6 +1510,10 @@ select:focus-visible {
 
     .sidebar.open {
         transform: translateX(0);
+    }
+
+    .mobile-header {
+        display: flex;
     }
 }
 

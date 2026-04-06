@@ -8989,11 +8989,11 @@ Object.assign(pages, {
                                 <span class="badge badge-lg badge-success">${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</span>
                                 <span class="text-gray-500">Active</span>
                             </div>
-                            <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlan === 'free' ? 'Free plan with limited features' : 'Premium plan with all features unlocked'}.</p>
+                            <p class="text-sm text-gray-600 mt-2">You're currently on the ${currentPlan === 'free' ? 'Free plan with limited features' : 'Pro plan with all features unlocked'}.</p>
                         </div>
                         ${currentPlan === 'free' ? `
                             <button class="btn btn-primary" onclick="handlers.showPlanComparison()">
-                                Upgrade to Premium
+                                Upgrade to Pro
                             </button>
                         ` : `
                             <button class="btn btn-secondary" onclick="handlers.showProrationCalculator()">

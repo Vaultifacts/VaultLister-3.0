@@ -15410,7 +15410,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f1c55f9a';
+    const v = '4ad897ac';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -20959,7 +20959,7 @@ const pages = {
     login() {
         return `
             <a href="#main-content" class="skip-nav" tabindex="0">Skip to main content</a>
-            <div id="main-content" class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+            <div id="main-content" class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%; overflow-x: hidden;">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
@@ -21460,7 +21460,8 @@ const auth = {
         inputs.forEach(i => i.disabled = true);
 
         try {
-            const data = await api.post('/auth/register', { email, username, password });
+            const refParam = new URLSearchParams(window.location.search).get('ref') || new URLSearchParams(window.location.hash.split('?')[1] || '').get('ref');
+            const data = await api.post('/auth/register', { email, username, password, ...(refParam ? { referralCode: refParam } : {}) });
             store.setState({
                 user: data.user,
                 token: data.token,
