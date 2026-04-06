@@ -174,23 +174,20 @@ Important:
             const responseText = response.content[0].text;
             let analysisData;
 
-            try {
-                // Try to parse the entire response as JSON
-                analysisData = JSON.parse(responseText);
-            } catch (e) {
+            // Try to parse the entire response as JSON
+            analysisData = safeJsonParse(responseText, null);
+            if (!analysisData) {
                 // If that fails, try to extract JSON from markdown code blocks
                 const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
-                if (jsonMatch) {
-                    analysisData = JSON.parse(jsonMatch[1]);
-                } else {
-                    // Last resort: try to find JSON object in the text
-                    const objectMatch = responseText.match(/\{[\s\S]*\}/);
-                    if (objectMatch) {
-                        analysisData = JSON.parse(objectMatch[0]);
-                    } else {
-                        throw new Error('Could not extract JSON from AI response');
-                    }
-                }
+                if (jsonMatch) analysisData = safeJsonParse(jsonMatch[1], null);
+            }
+            if (!analysisData) {
+                // Last resort: try to find JSON object in the text
+                const objectMatch = responseText.match(/\{[\s\S]*\}/);
+                if (objectMatch) analysisData = safeJsonParse(objectMatch[0], null);
+            }
+            if (!analysisData) {
+                throw new Error('Could not extract JSON from AI response');
             }
 
             return {
@@ -305,8 +302,8 @@ Important:
 
                     const m = response.content[0].text.trim().match(/\{[\s\S]*\}/);
                     if (m) {
-                        const r = JSON.parse(m[0]);
-                        if (r.title && r.description && Array.isArray(r.tags)) {
+                        const r = safeJsonParse(m[0], null);
+                        if (r && r.title && r.description && Array.isArray(r.tags)) {
                             const priceRange = getPriceRange(context);
                             const resolvedPrice = r.suggestedPrice || priceRange.suggested;
                             return {
@@ -464,7 +461,7 @@ Important:
                     );
                     const m = response.content[0].text.trim().match(/\[[\s\S]*\]/);
                     if (m) {
-                        const parsed = JSON.parse(m[0]);
+                        const parsed = safeJsonParse(m[0], null);
                         if (Array.isArray(parsed) && parsed.length) {
                             return { status: 200, data: { tags: parsed.slice(0, 20), source: 'claude-haiku' } };
                         }
@@ -826,11 +823,10 @@ Return ONLY valid JSON with this structure:
 
             const responseText = response.content[0].text;
             let translatedData;
-            try {
-                translatedData = JSON.parse(responseText);
-            } catch (e) {
+            translatedData = safeJsonParse(responseText, null);
+            if (!translatedData) {
                 const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                translatedData = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+                translatedData = jsonMatch ? safeJsonParse(jsonMatch[0], {}) : {};
             }
 
             return {
@@ -1151,11 +1147,10 @@ Be specific about what could be improved for better sales conversion.`;
 
                 const responseText = response.content[0].text;
                 let aiAnalysis;
-                try {
-                    aiAnalysis = JSON.parse(responseText);
-                } catch (e) {
+                aiAnalysis = safeJsonParse(responseText, null);
+                if (!aiAnalysis) {
                     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                    aiAnalysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+                    aiAnalysis = jsonMatch ? safeJsonParse(jsonMatch[0], null) : null;
                 }
 
                 if (aiAnalysis) {
