@@ -109,7 +109,7 @@ What can I help you with today?`;
     }
 
     // GET /api/chatbot/conversations/:id - Get single conversation with messages
-    if (method === 'GET' && path.match(/^\/conversations\/[a-f0-9-]+$/)) {
+    if (method === 'GET' && path.match(/^\/conversations\/[\w-]+$/)) {
         const conversationId = path.split('/')[2];
 
         try {
@@ -311,7 +311,7 @@ What can I help you with today?`;
     }
 
     // DELETE /api/chatbot/conversations/:id - Delete conversation
-    if (method === 'DELETE' && path.match(/^\/conversations\/[a-f0-9-]+$/)) {
+    if (method === 'DELETE' && path.match(/^\/conversations\/[\w-]+$/)) {
         const conversationId = path.split('/')[2];
 
         try {
