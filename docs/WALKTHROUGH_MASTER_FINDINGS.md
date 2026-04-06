@@ -24,11 +24,11 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 | Severity | Walkthrough Findings | Code Audit Findings | Post-Session Finds | Grand Total |
 |----------|---------------------|--------------------|--------------------|-------------|
 | CRITICAL | 21 open + 1 fixed (CR-6) | 5 | 0 | **27** |
-| HIGH | 45 | 10 | 2 (both FIXED) | **57** |
-| MEDIUM | 64 | 9 | 1 (FIXED) | **74** |
+| HIGH | 44 | 10 | 2 (both FIXED) | **56** |
+| MEDIUM | 64 | 8 | 1 (FIXED) | **73** |
 | LOW | 45 | 2 | 1 (FIXED) | **48** |
 | COSMETIC | 10 | 0 | 0 | **10** |
-| **TOTAL** | **185** | **26** | **4** | **215** |
+| **TOTAL** | **185** | **25** | **4** | **214** |
 
 > Note: Some code audit findings overlap with walkthrough findings (e.g., rate limiter disabled appears in both). Where findings are duplicates, both are preserved since they were discovered independently and provide complementary detail (code location vs. user-visible impact).
 
@@ -36,9 +36,9 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 211 |
+| OPEN | 210 |
 | FIXED (with commit) | 4 |
-| **TOTAL** | **215** |
+| **TOTAL** | **214** |
 
 ---
 
@@ -57,7 +57,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 |
 | CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 |
 | CR-5 | eBay Integration | No eBay bot in `worker/bots/` — cross-listing to eBay via bot is impossible | Session 1 |
-| CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything | Session 1 |
+| CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything *(See also: H-19 — same issue, discovered independently)* | Session 1 |
 | CR-8 | Help / Knowledge Base | Help page shows "1,240 views", "980 views" — no real KB exists | Session 1 |
 | CR-9 | Analytics | Sales Funnel "Views 50" is hardcoded fake data | Session 1 |
 | CR-10 | My Shops | All 9 "Connect" buttons — none have working OAuth flows | Session 1 |
@@ -92,11 +92,11 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-2 | Dashboard / Orders / Offers / Financials / Analytics | All dollar amounts show "$" not "C$" — global currency localization missing for Canadian launch | Session 1 |
 | H-3 | My Shops | Mercari/Grailed/Etsy/Shopify show active "Connect" buttons — should be "Coming Soon" for post-launch platforms | Session 1 |
 | H-4 | Orders | Shipping Labels button enabled but EasyPost not built — clicking will fail | Session 1 |
-| H-5 | Settings | "Enable 2FA" button — STATUS.md marks as Fail | Session 1 |
+| H-5 | Settings | "Enable 2FA" button — STATUS.md marks as Fail *(See also: #174 — same issue, discovered independently)* | Session 1 |
 | H-6 | Dashboard | Massive empty space on scroll — scrolling past dashboard widgets shows huge white void with sidebar detached | Session 1 |
 | H-7 | Automations | "Est. at $30/hr" rate hardcoded — should be C$ and user-configurable | Session 1 |
-| H-8 | Plans & Billing | Pricing shows USD ($19/$49) not CAD — plans page uses US pricing for Canadian launch | Session 1 |
-| H-9 | Plans & Billing | "Upgrade to Premium" (top button) vs "Upgrade to Pro" (plan cards) — naming inconsistency | Session 1 |
+| H-8 | Plans & Billing | Pricing shows USD ($19/$49) not CAD — plans page uses US pricing for Canadian launch *(See also: #175 — same issue, discovered independently)* | Session 1 |
+| H-9 | Plans & Billing | "Upgrade to Premium" (top button) vs "Upgrade to Pro" (plan cards) — naming inconsistency *(See also: #176 — same issue, discovered independently)* | Session 1 |
 | H-10 | Middleware | Rate limiting disabled in production — `rateLimiter.js:27` has `// TODO: disabled during development/testing` always returns `true` | Session 1 |
 | H-11 | Login / Auth Pages | Login page gradient seam — blue gradient stops at ~75% width, white strip on right edge | Session 1 |
 | H-12 | Database | No SKU unique constraint in live DB — migration 004 exists but may not be applied | Session 1 |
@@ -106,7 +106,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-16 | Connections | Only 6 of 9 platforms shown — missing Etsy, Shopify, Whatnot | Session 2 |
 | H-17 | Refer a Friend | Referral link `https://vaultlister.com/signup?ref=VAULTDEMO` — referral backend wiring unclear | Session 2 |
 | H-18 | Forgot Password | "Send Reset Link" requires `RESEND_API_KEY`/SMTP — will fail silently | Session 2 |
-| H-19 | Help / Support | "Getting Started 2/5 (40%)" hardcoded as complete for new users | Session 2 |
+| H-19 | Help / Support | "Getting Started 2/5 (40%)" hardcoded as complete for new users *(See also: CR-7 — same issue, discovered independently)* | Session 2 |
 | H-20 | Feedback & Suggestions | "Top Contributor — top 10%" badge shown to user with 0 submissions | Session 3 |
 | H-21 | Changelog | All version dates fabricated — v1.6.0 "Jan 26", v1.0.0 "Nov 30" | Session 3 |
 | H-22 | Affiliate | Full affiliate page (30% commission, $50 payout) — no backend built | Session 3 |
@@ -128,7 +128,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #152 | Dashboard | Log Sale crashes: "Failed to log sale: Cannot read properties of undefined (reading 'get')" — same `db.get()` crash as #150 | Session 7 |
 | #153 | Orders | Orders Sync crashes: fires success toast then immediate failure: "Cannot read properties of undefined (reading 'get')" | Session 7 |
 | #154 | Automations | Export button fires 4+ simultaneous "Export failed" error toasts — no CSV/JSON produced | Session 7 |
-| #158 | Reports | Create Report buttons silently do nothing — no modal, no toast, no navigation | Session 8 |
+| #158 | Reports | Create Report buttons silently do nothing — no modal, no toast, no navigation *(See also: #173 — same issue, discovered independently)* | Session 8 |
 | #170 | My Shops | All Connect modals pre-fill username with hardcoded "demo@vaultlister.com" — users must manually clear field | Session 11 |
 | #172 | Calendar | Calendar "Today" and "Week" buttons crash: `ReferenceError: date is not defined` — same stale bundle as #171 | Session 11 |
 | #182 | File Upload (DnD) | `sanitizeHTML()` / DOMPurify strips all drag-and-drop event handlers — `ondragover`, `ondragleave`, `ondrop`, `ondragenter`, `ondragstart`, `ondragend` missing from ADD_ATTR allowlist. Drop zones on Add Item modal, Inventory Import, and Image Bank all broken | Session 14 |
@@ -205,9 +205,9 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #166 | Automations | "Performance" toolbar button calls `handlers.showAutomationPerformance()` — no modal opens, no output | Session 10 |
 | #167 | Financials | Financials page uses "$" not "C$" for all monetary values | Session 10 |
 | #169 | My Shops | 4 non-launch platforms (Mercari, Grailed, Etsy, Shopify) shown with active "Connect" buttons — no "Coming Soon" indicator | Session 11 |
-| #173 | Reports | Reports "Create Report" button — no response when clicked | Session 11 |
-| #174 | Settings | Settings "Enable 2FA" button — no response when clicked | Session 11 |
-| #175 | Plans & Billing | Shows USD pricing ($19, $49) for Canadian launch. Pro plan claims "Cross-list to all 9 platforms" — only 5 at launch | Session 11 |
+| #173 | Reports | Reports "Create Report" button — no response when clicked *(See also: #158 — same issue, discovered independently)* | Session 11 |
+| #174 | Settings | Settings "Enable 2FA" button — no response when clicked *(See also: H-5 — same issue, discovered independently)* | Session 11 |
+| #175 | Plans & Billing | Shows USD pricing ($19, $49) for Canadian launch. Pro plan claims "Cross-list to all 9 platforms" — only 5 at launch *(See also: H-8 — same issue, discovered independently)* | Session 11 |
 | #177 | Plans & Billing | "Upgrade to Pro" / "Upgrade to Business" buttons produce no UI response — no toast, no modal, no Stripe redirect | Session 11 |
 | #178 | Offline Page | `offline.html` server-redirects to `/` — Service Worker offline fallback broken | Session 13 |
 | #180 | Router | Unknown routes while authenticated silently fall back to dashboard — expected 404 page | Session 13 |
@@ -270,7 +270,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #139 | Submit Feedback | Inactive feedback type buttons retain white/light backgrounds in dark mode | Session 5 (Session 4 dark mode) |
 | #156 | Analytics | Weekly Report shows same start/end date — "Week of Apr 5 - Apr 5, 2026" | Session 8 |
 | #162 | Orders | Orders page "More" button has no onclick handler — dropdown completely inaccessible | Session 10 |
-| #176 | Plans & Billing | "Upgrade to Premium" button (Current Plan section) vs "Pro" plan cards — naming inconsistency | Session 11 |
+| #176 | Plans & Billing | "Upgrade to Premium" button (Current Plan section) vs "Pro" plan cards — naming inconsistency *(See also: H-9 — same issue, discovered independently)* | Session 11 |
 | #179 | Sidebar | Sidebar collapse state not persisted — collapsing does not survive page reload | Session 13 |
 | #184 | Error Handling | 429 Too Many Requests shows generic error toast with no retry guidance | Session 14 |
 
@@ -348,7 +348,7 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 | CA-M-6 | `src/frontend/handlers/handlers-deferred.js:21168` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` |
 | CA-M-7 | `src/frontend/pages/pages-intelligence.js:1826,1914` | "Coming soon" toast messages in production pages | `toast.info('...coming soon.')` |
 | CA-M-8 | `src/shared/ai/listing-generator.js:167,180,185,189` | `Math.random()` in template selection (4 instances) — non-deterministic listing generation | `templates.intro[Math.floor(Math.random() * length)]` |
-| CA-M-10 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics `Math.random()` fallback (duplicate reference with expanded detail) — `healthScore`, `orderAccuracy`, `onTimeDelivery`, `qualityRating` all generate fake "good" values (90-95% range) if DB fields missing | `const healthScore = supplier.health_score \|\| Math.floor(Math.random() * 30) + 70` |
+| CA-M-9 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics `Math.random()` fallback (duplicate reference with expanded detail) — `healthScore`, `orderAccuracy`, `onTimeDelivery`, `qualityRating` all generate fake "good" values (90-95% range) if DB fields missing | `const healthScore = supplier.health_score \|\| Math.floor(Math.random() * 30) + 70` |
 
 ---
 
