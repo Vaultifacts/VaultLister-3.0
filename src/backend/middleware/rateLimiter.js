@@ -24,8 +24,7 @@ const IS_TEST_RUNTIME = (() => {
 })();
 
 function isRateLimitBypassed() {
-    // TODO: Re-enable for production release — rate limiting disabled during development/testing
-    return true;
+    return IS_TEST_RUNTIME || process.env.NODE_ENV === 'development';
 }
 
 // Loopback IPs should never receive a permanent IP ban — they are always local
