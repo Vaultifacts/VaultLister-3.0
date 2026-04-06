@@ -312,8 +312,8 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 | ID | File:Line | Issue | Code Reference | Status |
 |----|-----------|-------|----------------|--------|
 | CA-CR-1 | `src/backend/middleware/rateLimiter.js:27-28` | Rate limiting DISABLED for production — `isRateLimitBypassed()` always returns `true`. Zero brute-force, API abuse, or DoS protection. **Fix:** Change `return true` to `return false` or use env gate. | `function isRateLimitBypassed() { return true; }` | VERIFIED ✅ — abeccbb |
-| CA-CR-2 | `src/backend/services/platformSync/imageUploadHelper.js:48,138` | `Math.random()` in production image filenames — temp files are predictable, attackers can guess and access other users' temp images. **Fix:** Use `crypto.getRandomValues()`. | `'c-${Date.now()}-${Math.random().toString(36)}'` | OPEN |
-| CA-CR-3 | `src/backend/routes/ai.js:73,75` | Mercari/Grailed in active AI templates — these are post-launch platforms. Code executes if triggered. **Fix:** Remove or wrap with feature flag. | `mercari: 'Stylish Fashion Item', grailed: 'Designer Streetwear'` | OPEN |
+| CA-CR-2 | `src/backend/services/platformSync/imageUploadHelper.js:48,138` | `Math.random()` in production image filenames — temp files are predictable, attackers can guess and access other users' temp images. **Fix:** Use `crypto.getRandomValues()`. | `'c-${Date.now()}-${Math.random().toString(36)}'` | VERIFIED ✅ — 34aa7ce |
+| CA-CR-3 | `src/backend/routes/ai.js:73,75` | Mercari/Grailed in active AI templates — these are post-launch platforms. Code executes if triggered. **Fix:** Remove or wrap with feature flag. | `mercari: 'Stylish Fashion Item', grailed: 'Designer Streetwear'` | VERIFIED ✅ — 8a1d58e |
 | CA-CR-4 | `src/backend/db/seeds/demoData.js:383-471` | `Math.random()` in demo order/tracking numbers (7 instances) — non-deterministic demo data. | `order_number: 'PSH-' + Math.random().toString(36).substr(2,8)` | OPEN |
 | CA-CR-5 | `app.js:29521` | "Cross-list to all 6 platforms" — legacy file, stale copy (not served but misleading) | `Cross-list to all 6 platforms` | OPEN |
 
@@ -331,8 +331,8 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 | CA-H-6 | `src/backend/routes/currency.js:3` | `currencyRouter()` — no error boundary | `export async function currencyRouter(ctx) {` | OPEN |
 | CA-H-7 | `src/backend/routes/emailOAuth.js:32` | `emailOAuthRouter()` — no try/catch. **OAuth-critical** — auth flows can crash silently | `export async function emailOAuthRouter(ctx) {` | OPEN |
 | CA-H-8 | `src/backend/routes/extension.js:14` | `extensionRouter()` — no error handler | `export async function extensionRouter(ctx) {` | OPEN |
-| CA-H-9 | `src/backend/routes/ai.js:173,178,183,298,457,820,823,1145,1148` | 9 bare `JSON.parse()` calls in AI route — malformed JSON crashes handler, returns 500 instead of 400 | `analysisData = JSON.parse(responseText);` | OPEN |
-| CA-H-10 | `src/backend/routes/automations.js:62,68,255,261,355,361,456,462` | 8 bare `JSON.parse()` calls on rule objects — unprotected. **Fix:** Use `safeJsonParse(str, {})`. | `rule.conditions = JSON.parse(rule.conditions or '{}');` | OPEN |
+| CA-H-9 | `src/backend/routes/ai.js:173,178,183,298,457,820,823,1145,1148` | 9 bare `JSON.parse()` calls in AI route — malformed JSON crashes handler, returns 500 instead of 400 | `analysisData = JSON.parse(responseText);` | VERIFIED ✅ — ebba2af |
+| CA-H-10 | `src/backend/routes/automations.js:62,68,255,261,355,361,456,462` | 8 bare `JSON.parse()` calls on rule objects — unprotected. **Fix:** Use `safeJsonParse(str, {})`. | `rule.conditions = JSON.parse(rule.conditions or '{}');` | VERIFIED ✅ — f6876da |
 
 ---
 

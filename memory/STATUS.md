@@ -69,6 +69,6 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 5. No eBay bot in worker/bots/ — can't cross-list to eBay (CR-X)
 
 ## Next Tasks
-1. Fix CRITICAL findings from `docs/WALKTHROUGH_MASTER_FINDINGS.md` — CA-CR-2 (`Math.random()` image filenames), CA-CR-3 (Mercari/Grailed in AI templates)
+1. Fix remaining CA-H findings: CA-H-1 through CA-H-8 (missing top-level try/catch in route handlers)
 2. EasyPost shipping integration — BLOCKED on API key anti-fraud review
-3. Fix HIGH findings: CA-H-9 (bare JSON.parse in ai.js), CA-H-10 (bare JSON.parse in automations.js)
+3. Fix CA-M findings from master doc (LAUNCH_PLATFORMS constant, Math.random fallbacks, stale comments)
