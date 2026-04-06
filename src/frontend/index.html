@@ -37,8 +37,9 @@
     <!-- Preload critical CSS and JS so they start fetching ASAP -->
     <link rel="preload" href="/styles/main.css?v=64c1d47d" as="style">
     <link rel="preload" href="/core-bundle.js?v=64c1d47d" as="script">
-    <link rel="preload" href="/fonts/inter.css" as="style">
-
+    <!-- Fonts: preload+onload makes inter.css non-render-blocking (FOUT acceptable) -->
+    <link rel="preload" href="/fonts/inter.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/fonts/inter.css"></noscript>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.webmanifest">
@@ -46,9 +47,6 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
     <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-
-    <!-- Fonts (self-hosted — see public/fonts/ for download instructions) -->
-    <link rel="stylesheet" href="/fonts/inter.css">
 
     <!-- Styles -->
     <link rel="stylesheet" href="/styles/main.css?v=64c1d47d">
@@ -61,7 +59,8 @@
     <script type="module" src="/services/websocketClient.js?v=64c1d47d" defer></script>
 
     <!-- DOMPurify — must load before core bundle for sanitizeHTML() -->
-    <script src="/dompurify.min.js"></script>
+    <!-- defer is safe: defer scripts execute in document order, so DOMPurify runs before core-bundle.js -->
+    <script src="/dompurify.min.js" defer></script>
 
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
     <script src="/core-bundle.js?v=64c1d47d" defer></script>
