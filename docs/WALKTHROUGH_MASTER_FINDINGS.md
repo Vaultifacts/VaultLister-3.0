@@ -96,15 +96,15 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-6 | Dashboard | Massive empty space on scroll — scrolling past dashboard widgets shows huge white void with sidebar detached | Session 1 | OPEN |
 | H-7 | Automations | "Est. at $30/hr" rate hardcoded — should be C$ and user-configurable | Session 1 | VERIFIED ✅ — eb9e086 |
 | H-8 | Plans & Billing | Pricing shows USD ($19/$49) not CAD — plans page uses US pricing for Canadian launch *(See also: #175 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ f2390bf |
-| H-9 | Plans & Billing | "Upgrade to Premium" (top button) vs "Upgrade to Pro" (plan cards) — naming inconsistency *(See also: #176 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ (this session) |
-| H-10 | Middleware | Rate limiting disabled in production — `rateLimiter.js:27` has `// TODO: disabled during development/testing` always returns `true` | Session 1 | OPEN |
-| H-11 | Login / Auth Pages | Login page gradient seam — blue gradient stops at ~75% width, white strip on right edge | Session 1 | VERIFIED ✅ (this session) |
+| H-9 | Plans & Billing | "Upgrade to Premium" (top button) vs "Upgrade to Pro" (plan cards) — naming inconsistency *(See also: #176 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — bc2c9f4 |
+| H-10 | Middleware | Rate limiting disabled in production — `rateLimiter.js:27` has `// TODO: disabled during development/testing` always returns `true` | Session 1 | VERIFIED ✅ — abeccbb (same fix as CA-CR-1) |
+| H-11 | Login / Auth Pages | Login page gradient seam — blue gradient stops at ~75% width, white strip on right edge | Session 1 | VERIFIED ✅ — bc2c9f4 |
 | H-12 | Database | No SKU unique constraint in live DB — migration 004 exists but may not be applied | Session 1 | VERIFIED ✅ migration system reads pg/ dir dynamically — 004_add_sku_unique.sql applied on startup |
 | H-13 | Automations | "83% Success Rate" stale data — shows test run data from development | Session 1 | DB CLEANUP — code correctly computes from data; clear `automation_runs` table in prod before launch |
 | H-14 | Predictions | "Run AI Model" button requires `ANTHROPIC_API_KEY` — will fail silently | Session 2 | OPEN |
 | H-15 | Shipping Labels | "Create Label" and "Compare Rates" buttons present but EasyPost not built | Session 2 | VERIFIED ✅ — a0a4901 |
 | H-16 | Connections | Only 6 of 9 platforms shown — missing Etsy, Shopify, Whatnot | Session 2 | VERIFIED ✅ — dd50369 |
-| H-17 | Refer a Friend | Referral link `https://vaultlister.com/signup?ref=VAULTDEMO` — referral backend wiring unclear | Session 2 | VERIFIED ✅ (this session) — migration 005 adds referral_code column; signup now records affiliate_commissions |
+| H-17 | Refer a Friend | Referral link `https://vaultlister.com/signup?ref=VAULTDEMO` — referral backend wiring unclear | Session 2 | VERIFIED ✅ — bc2c9f4 — migration 005 adds referral_code column; signup now records affiliate_commissions |
 | H-18 | Forgot Password | "Send Reset Link" requires `RESEND_API_KEY`/SMTP — will fail silently | Session 2 | DEPLOY CONFIG — email.js gracefully falls back to console log if RESEND_API_KEY unset; set key before launch |
 | H-19 | Help / Support | "Getting Started 2/5 (40%)" hardcoded as complete for new users *(See also: CR-7 — same issue, discovered independently)* | Session 2 | OPEN |
 | H-20 | Feedback & Suggestions | "Top Contributor — top 10%" badge shown to user with 0 submissions | Session 3 | OPEN |
@@ -115,16 +115,16 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-25 | Forgot Password | "Send Reset Link" requires SMTP — will fail | Session 3 | DEPLOY CONFIG — same as H-18; set RESEND_API_KEY before launch |
 | H-26 | Listings | Platform dropdown only shows 6 of 9 platforms — missing Etsy, Shopify, Whatnot | Session 3 | VERIFIED ✅ — eb9e086 |
 | H-27 | Listings | "Add New Listing(s)" primary CTA dropdown button has NO onclick handler | Session 3 | VERIFIED ✅ f2390bf |
-| H-28 | Responsive | Sidebar doesn't collapse on mobile viewport — no hamburger menu visible | Session 4 | VERIFIED ✅ (this session) — added display:none default + show at ≤1024px breakpoint |
+| H-28 | Responsive | Sidebar doesn't collapse on mobile viewport — no hamburger menu visible | Session 4 | VERIFIED ✅ — bc2c9f4 — added display:none default + show at ≤1024px breakpoint |
 | #123 | Community | `modals.viewPost()` crashes: "Cannot read properties of undefined (reading 'find')" — community post viewing broken | Session 5 | VERIFIED ✅ — 192b485 |
 | #125 | Support Tickets | `modals.viewTicket()` crashes: "Cannot read properties of undefined (reading 'length')" — support ticket viewing broken | Session 5 | VERIFIED ✅ — 192b485 |
 | #126 | Cross-list Modal | Cross-list modal shows Etsy/Mercari/Grailed as active — for Canada launch only eBay, Poshmark, Facebook, Depop, Whatnot should be active | Session 5 | OPEN |
-| #131 | Confirm Dialogs | `modals.confirm()` — danger button invisible in light mode. `btn-danger` has transparent background (`--red-600`/`--error` CSS variable not resolving). Affects all delete confirmations | Session 5 | VERIFIED ✅ (this session) — replaced undefined --red-600/--red-700 with --error-600/--error-700 |
-| #136 | Privacy Policy (in-app) | In-app Privacy Policy contains "Your inventory, listings, and sales data never leave your device unless you explicitly share them" and "Data is not uploaded to any cloud servers without your consent" — factually false for a Railway-hosted cloud SaaS where ALL data is uploaded to cloud servers by design. Legal/trust risk: users may argue they were misled about data storage | Session 5 (Session 4 dark mode) | VERIFIED ✅ (this session) — replaced with accurate cloud storage statements |
-| #141 | Inventory | Add Item success triggers "undefined" content in main area — router navigates post-submit but target page function returns undefined. Page crashes after every successful item add | Session 6 | VERIFIED ✅ (this session) — changed pages.inventory() to window.pages.inventory() (Bun chunk shim fix) |
+| #131 | Confirm Dialogs | `modals.confirm()` — danger button invisible in light mode. `btn-danger` has transparent background (`--red-600`/`--error` CSS variable not resolving). Affects all delete confirmations | Session 5 | VERIFIED ✅ — aca307f — replaced undefined --red-600/--red-700 with --error-600/--error-700 |
+| #136 | Privacy Policy (in-app) | In-app Privacy Policy contains "Your inventory, listings, and sales data never leave your device unless you explicitly share them" and "Data is not uploaded to any cloud servers without your consent" — factually false for a Railway-hosted cloud SaaS where ALL data is uploaded to cloud servers by design. Legal/trust risk: users may argue they were misled about data storage | Session 5 (Session 4 dark mode) | VERIFIED ✅ — aca307f — replaced with accurate cloud storage statements |
+| #141 | Inventory | Add Item success triggers "undefined" content in main area — router navigates post-submit but target page function returns undefined. Page crashes after every successful item add | Session 6 | VERIFIED ✅ — aca307f — changed pages.inventory() to window.pages.inventory() (Bun chunk shim fix) |
 | #143 | Add Transaction | Modal HTML bleeds into page body — raw HTML attribute text renders visibly below modal: `onclick="event.stopPropagation()" role="document"> Add Transaction` | Session 6 | VERIFIED ✅ — 192b485 |
 | #144 | Submit Feedback | Form simultaneously fires success AND error toasts on valid submission — conflicting UX | Session 6 | VERIFIED ✅ — 192b485 |
-| #148 | Inventory | Inventory search bar fires error toast on any input — even with valid 200 API response | Session 6 | VERIFIED ✅ (this session) — re-render wrapped in separate try-catch so render errors don't show "Search failed" toast |
+| #148 | Inventory | Inventory search bar fires error toast on any input — even with valid 200 API response | Session 6 | VERIFIED ✅ — aca307f — re-render wrapped in separate try-catch so render errors don't show "Search failed" toast |
 | #152 | Dashboard | Log Sale crashes: "Failed to log sale: Cannot read properties of undefined (reading 'get')" — same `db.get()` crash as #150 | Session 7 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
 | #153 | Orders | Orders Sync crashes: fires success toast then immediate failure: "Cannot read properties of undefined (reading 'get')" | Session 7 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
 | #154 | Automations | Export button fires 4+ simultaneous "Export failed" error toasts — no CSV/JSON produced | Session 7 | OPEN |
@@ -270,7 +270,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #139 | Submit Feedback | Inactive feedback type buttons retain white/light backgrounds in dark mode | Session 5 (Session 4 dark mode) | OPEN |
 | #156 | Analytics | Weekly Report shows same start/end date — "Week of Apr 5 - Apr 5, 2026" | Session 8 | OPEN |
 | #162 | Orders | Orders page "More" button has no onclick handler — dropdown completely inaccessible | Session 10 | OPEN |
-| #176 | Plans & Billing | "Upgrade to Premium" button (Current Plan section) vs "Pro" plan cards — naming inconsistency *(See also: H-9 — same issue, discovered independently)* | Session 11 | OPEN |
+| #176 | Plans & Billing | "Upgrade to Premium" button (Current Plan section) vs "Pro" plan cards — naming inconsistency *(See also: H-9 — same issue, discovered independently)* | Session 11 | VERIFIED ✅ — bc2c9f4 (same fix as H-9) |
 | #179 | Sidebar | Sidebar collapse state not persisted — collapsing does not survive page reload | Session 13 | OPEN |
 | #184 | Error Handling | 429 Too Many Requests shows generic error toast with no retry guidance | Session 14 | OPEN |
 
