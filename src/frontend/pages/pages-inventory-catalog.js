@@ -913,6 +913,7 @@ Object.assign(pages, {
                                 <option value="depop" ${platformFilter === 'depop' ? 'selected' : ''}>Ⓓ Depop</option>
                                 <option value="grailed" ${platformFilter === 'grailed' ? 'selected' : ''}>Ⓖ Grailed</option>
                                 <option value="facebook" ${platformFilter === 'facebook' ? 'selected' : ''}>Ⓕ Facebook</option>
+                                <option value="whatnot" ${platformFilter === 'whatnot' ? 'selected' : ''}>⬡ Whatnot</option>
                             </select>
                         </div>
                         <div style="margin-left: auto;">
@@ -1694,7 +1695,7 @@ Object.assign(pages, {
                             <div class="metric-content">
                                 <div class="metric-value">${Math.round(timeSavedToday * 7 / 60)}h ${timeSavedToday * 7 % 60}m</div>
                                 <div class="metric-label">Time Saved This Week</div>
-                                <div class="metric-comparison neutral">Est. at $30/hr</div>
+                                <div class="metric-comparison neutral">Est. at C$30/hr</div>
                             </div>
                         </div>
                         <div class="performance-metric-card">
@@ -1724,7 +1725,7 @@ Object.assign(pages, {
                             <div class="metric-content">
                                 <div class="metric-value">$${Math.round(timeSavedToday * 7 * 0.5)}</div>
                                 <div class="metric-label">Est. Value Created</div>
-                                <div class="metric-comparison positive">Based on $30/hr rate</div>
+                                <div class="metric-comparison positive">Based on C$30/hr rate</div>
                             </div>
                         </div>
                     </div>
