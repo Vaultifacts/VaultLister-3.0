@@ -2046,7 +2046,7 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showReturnAnalytics()" title="Return Analytics">
                             ${components.icon('rotate-ccw', 16)} Returns
                         </button>
-                        <button class="btn btn-primary" onclick="router.navigate('shipping-labels')">
+                        <button class="btn btn-primary" disabled style="opacity:0.5;cursor:not-allowed;" title="EasyPost integration coming soon">
                             ${components.icon('tag', 16)} Shipping Labels
                         </button>
                         <button class="btn btn-secondary" onclick="handlers.syncAllPlatformOrders()">
