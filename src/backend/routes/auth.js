@@ -9,6 +9,7 @@ import emailService from '../services/email.js';
 import { applyRateLimit } from '../middleware/rateLimiter.js';
 import websocketService from '../services/websocket.js';
 import { logger } from '../shared/logger.js';
+import redis from '../services/redis.js';
 
 // Snapshot test-runner signals at module load so auth behavior stays stable
 // even when individual tests mutate NODE_ENV.
@@ -732,27 +733,24 @@ export async function authRouter(ctx) {
         return { status: 200, data: { user } };
     }
 
-    // GET /api/auth/oauth-session - Exchange social OAuth HttpOnly cookie for SPA session tokens
+    // GET /api/auth/oauth-session - Exchange OAuth one-time token for SPA session tokens
     if (method === 'GET' && path === '/oauth-session') {
-        if (!user) {
-            return { status: 401, data: { error: 'No OAuth session found. Please sign in again.' } };
+        const ott = ctx.query?.ott;
+        if (!ott) {
+            return { status: 400, data: { error: 'Missing one-time token' } };
         }
-        const newToken = generateToken(user);
-        const newRefreshToken = generateRefreshToken(user);
-        await enforceSessionLimit(user.id);
-        await query.run(`
-            INSERT INTO sessions (id, user_id, refresh_token, expires_at)
-            VALUES (?, ?, ?, NOW() + INTERVAL '30 days')
-        `, [uuidv4(), user.id, newRefreshToken]);
+        const ottData = await redis.getJson('oauth:ott:' + ott);
+        if (!ottData) {
+            return { status: 401, data: { error: 'Invalid or expired sign-in link. Please try again.' } };
+        }
+        await redis.del('oauth:ott:' + ott);
+        const freshUser = await query.get('SELECT id, email, username, full_name, avatar_url, subscription_tier, is_active, email_verified, created_at, updated_at, last_login_at FROM users WHERE id = ?', [ottData.userId]);
+        if (!freshUser) {
+            return { status: 401, data: { error: 'User not found' } };
+        }
         return {
             status: 200,
-            data: { token: newToken, refreshToken: newRefreshToken, user },
-            headers: {
-                'Set-Cookie': [
-                    `vl_access=; Path=/; Max-Age=0; ${COOKIE_BASE}`,
-                    `vl_refresh=; Path=/api/auth/refresh; Max-Age=0; ${COOKIE_BASE}`
-                ]
-            }
+            data: { token: ottData.token, refreshToken: ottData.refreshToken, user: freshUser }
         };
     }
 

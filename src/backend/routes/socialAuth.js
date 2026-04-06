@@ -225,15 +225,12 @@ export async function socialAuthRouter(ctx) {
                 VALUES (?, ?, ?, NOW() + INTERVAL '30 days')
             `, [uuidv4(), user.id, refreshToken]);
 
-            // Redirect with token in secure HttpOnly cookie (not URL)
+            const ott = crypto.randomBytes(32).toString('hex');
+            await redis.setJson('oauth:ott:' + ott, { token, refreshToken, userId: user.id }, 60);
             return {
                 status: 302,
                 headers: {
-                    'Location': '/?app=1#auth-callback',
-                    'Set-Cookie': [
-                        `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
-                        `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`
-                    ]
+                    'Location': `/?app=1#auth-callback?ott=${ott}`
                 },
                 data: {}
             };
@@ -368,15 +365,12 @@ export async function socialAuthRouter(ctx) {
                 VALUES (?, ?, ?, NOW() + INTERVAL '30 days')
             `, [uuidv4(), user.id, refreshToken]);
 
-            // Redirect with token in secure HttpOnly cookie (not URL)
+            const ott = crypto.randomBytes(32).toString('hex');
+            await redis.setJson('oauth:ott:' + ott, { token, refreshToken, userId: user.id }, 60);
             return {
                 status: 302,
                 headers: {
-                    'Location': '/?app=1#auth-callback',
-                    'Set-Cookie': [
-                        `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
-                        `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`
-                    ]
+                    'Location': `/?app=1#auth-callback?ott=${ott}`
                 },
                 data: {}
             };
