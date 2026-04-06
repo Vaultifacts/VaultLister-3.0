@@ -3,7 +3,7 @@
   "validate_bash_patterns": "global",
   "protected_files": "global",
   "agent_files": 17,
-  "memory_rules": 50,
+  "memory_rules": 54,
   "_comment": "Update this file whenever any of the counted sources change.",
   "_sources": {
     "deny_patterns": ".claude/settings.json — grep -c '\"Bash(' (lines in deny array)",
