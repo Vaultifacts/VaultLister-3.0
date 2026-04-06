@@ -28,8 +28,8 @@ async function getApplePublicKey(kid) {
     return crypto.createPublicKey({ key, format: 'jwk' });
 }
 
-const USER_SELECT_COLUMNS = 'id, email, username, full_name, display_name, avatar_url, subscription_tier, is_active, email_verified, created_at, updated_at, last_login_at';
-const USER_SELECT_ALIASED = 'u.id, u.email, u.username, u.full_name, u.display_name, u.avatar_url, u.subscription_tier, u.is_active, u.email_verified, u.created_at, u.updated_at, u.last_login_at';
+const USER_SELECT_COLUMNS = 'id, email, username, full_name, avatar_url, subscription_tier, is_active, email_verified, created_at, updated_at, last_login_at';
+const USER_SELECT_ALIASED = 'u.id, u.email, u.username, u.full_name, u.avatar_url, u.subscription_tier, u.is_active, u.email_verified, u.created_at, u.updated_at, u.last_login_at';
 
 // OAuth configuration
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
