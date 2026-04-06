@@ -4390,6 +4390,7 @@ Object.assign(pages, {
                     // Health score for connected shops
                     const healthScore = isConnected ? Math.floor(Math.random() * 30) + 70 : null;
                     const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
+                    const isPostLaunch = ['mercari', 'grailed', 'etsy', 'shopify'].includes(platform);
 
                     return `
                         <div class="card shop-card ${isConnected ? 'connected' : ''}">
@@ -4449,15 +4450,19 @@ Object.assign(pages, {
                                 `;
                                 })() : ''}
                                 <div class="flex gap-2">
-                                    <button class="btn ${isConnected ? 'btn-success' : 'btn-secondary'} flex-1"
-                                            onclick="handlers.${isConnected ? 'disconnect' : 'connect'}Shop('${platform}')">
-                                        ${isConnected ? components.icon('check', 16) + ' Connected' : 'Connect'}
-                                    </button>
-                                    ${isConnected ? `
-                                        <button class="btn btn-icon btn-secondary" onclick="handlers.showShopSettings('${platform}')" title="Settings">
-                                            ${components.icon('settings', 16)}
+                                    ${isPostLaunch && !isConnected ? `
+                                        <button class="btn btn-secondary flex-1" disabled style="opacity:0.5;cursor:not-allowed;">Coming Soon</button>
+                                    ` : `
+                                        <button class="btn ${isConnected ? 'btn-success' : 'btn-secondary'} flex-1"
+                                                onclick="handlers.${isConnected ? 'disconnect' : 'connect'}Shop('${platform}')">
+                                            ${isConnected ? components.icon('check', 16) + ' Connected' : 'Connect'}
                                         </button>
-                                    ` : ''}
+                                        ${isConnected ? `
+                                            <button class="btn btn-icon btn-secondary" onclick="handlers.showShopSettings('${platform}')" title="Settings">
+                                                ${components.icon('settings', 16)}
+                                            </button>
+                                        ` : ''}
+                                    `}
                                 </div>
                             </div>
                         </div>
