@@ -733,24 +733,32 @@ export async function authRouter(ctx) {
         return { status: 200, data: { user } };
     }
 
-    // GET /api/auth/oauth-session - Exchange OAuth one-time token for SPA session tokens
+    // GET /api/auth/oauth-session?ott=<session-id> - Exchange OAuth session UUID for SPA tokens
+    // The session UUID is used as a one-time token stored in PostgreSQL (no Redis dependency).
+    // 5-minute window prevents stale exchange; session persists for 30 days after exchange.
     if (method === 'GET' && path === '/oauth-session') {
         const ott = ctx.query?.ott;
         if (!ott) {
             return { status: 400, data: { error: 'Missing one-time token' } };
         }
-        const ottData = await redis.getJson('oauth:ott:' + ott);
-        if (!ottData) {
+        const session = await query.get(
+            `SELECT id, user_id, refresh_token FROM sessions WHERE id = ? AND is_valid = 1 AND created_at > NOW() - INTERVAL '5 minutes'`,
+            [ott]
+        );
+        if (!session) {
             return { status: 401, data: { error: 'Invalid or expired sign-in link. Please try again.' } };
         }
-        await redis.del('oauth:ott:' + ott);
-        const freshUser = await query.get('SELECT id, email, username, full_name, avatar_url, subscription_tier, is_active, email_verified, created_at, updated_at, last_login_at FROM users WHERE id = ?', [ottData.userId]);
+        const freshUser = await query.get(
+            'SELECT id, email, username, full_name, avatar_url, subscription_tier, is_active, email_verified, created_at, updated_at, last_login_at FROM users WHERE id = ?',
+            [session.user_id]
+        );
         if (!freshUser) {
             return { status: 401, data: { error: 'User not found' } };
         }
+        const token = generateToken(freshUser);
         return {
             status: 200,
-            data: { token: ottData.token, refreshToken: ottData.refreshToken, user: freshUser }
+            data: { token, refreshToken: session.refresh_token, user: freshUser }
         };
     }
 

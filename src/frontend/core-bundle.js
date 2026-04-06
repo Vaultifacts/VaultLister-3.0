@@ -15410,7 +15410,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '41433f67';
+    const v = 'e9b04d2b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -21485,7 +21485,6 @@ const auth = {
 
     async handleOAuthCallback() {
         try {
-            // Read OTT from URL hash: /?app=1#auth-callback?ott=<hex>
             const hashParts = window.location.hash.slice(1).split('?');
             const params = new URLSearchParams(hashParts[1] || '');
             const ott = params.get('ott');
@@ -21494,7 +21493,7 @@ const auth = {
                 toast.error('Sign-in failed. Please try again.');
                 return;
             }
-            // Use raw fetch to bypass api.request's 401→token-refresh interceptor
+            // Raw fetch bypasses api.request's 401→token-refresh interceptor
             const res = await fetch('/api/auth/oauth-session?ott=' + ott);
             if (!res.ok) throw new Error('OTT exchange failed: ' + res.status);
             const data = await res.json();

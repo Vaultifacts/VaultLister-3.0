@@ -219,18 +219,17 @@ export async function socialAuthRouter(ctx) {
             const token = generateToken(user);
             const refreshToken = generateRefreshToken(user);
 
-            // Store session
+            // Store session — session ID doubles as the one-time exchange token
+            const sessionId = uuidv4();
             await query.run(`
                 INSERT INTO sessions (id, user_id, refresh_token, expires_at)
                 VALUES (?, ?, ?, NOW() + INTERVAL '30 days')
-            `, [uuidv4(), user.id, refreshToken]);
+            `, [sessionId, user.id, refreshToken]);
 
-            const ott = crypto.randomBytes(32).toString('hex');
-            await redis.setJson('oauth:ott:' + ott, { token, refreshToken, userId: user.id }, 60);
             return {
                 status: 302,
                 headers: {
-                    'Location': `/?app=1#auth-callback?ott=${ott}`
+                    'Location': `/?app=1#auth-callback?ott=${sessionId}`
                 },
                 data: {}
             };
@@ -359,18 +358,17 @@ export async function socialAuthRouter(ctx) {
             const token = generateToken(user);
             const refreshToken = generateRefreshToken(user);
 
-            // Store session
+            // Store session — session ID doubles as the one-time exchange token
+            const sessionId = uuidv4();
             await query.run(`
                 INSERT INTO sessions (id, user_id, refresh_token, expires_at)
                 VALUES (?, ?, ?, NOW() + INTERVAL '30 days')
-            `, [uuidv4(), user.id, refreshToken]);
+            `, [sessionId, user.id, refreshToken]);
 
-            const ott = crypto.randomBytes(32).toString('hex');
-            await redis.setJson('oauth:ott:' + ott, { token, refreshToken, userId: user.id }, 60);
             return {
                 status: 302,
                 headers: {
-                    'Location': `/?app=1#auth-callback?ott=${ott}`
+                    'Location': `/?app=1#auth-callback?ott=${sessionId}`
                 },
                 data: {}
             };
