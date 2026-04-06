@@ -148,7 +148,7 @@ export async function socialAuthRouter(ctx) {
         if (error) {
             return {
                 status: 302,
-                headers: { 'Location': '/#login?error=oauth_denied' },
+                headers: { 'Location': '/?app=1#login?error=oauth_denied' },
                 data: {}
             };
         }
@@ -156,7 +156,7 @@ export async function socialAuthRouter(ctx) {
         if (!(await verifyStateToken(state))) {
             return {
                 status: 302,
-                headers: { 'Location': '/#login?error=invalid_state' },
+                headers: { 'Location': '/?app=1#login?error=invalid_state' },
                 data: {}
             };
         }
@@ -201,7 +201,7 @@ export async function socialAuthRouter(ctx) {
                 } catch (_) { /* best-effort logging */ }
                 return {
                     status: 302,
-                    headers: { 'Location': '/#login?error=email_required' },
+                    headers: { 'Location': '/?app=1#login?error=email_required' },
                     data: {}
                 };
             }
@@ -229,7 +229,7 @@ export async function socialAuthRouter(ctx) {
             return {
                 status: 302,
                 headers: {
-                    'Location': '/#auth-callback',
+                    'Location': '/?app=1#auth-callback',
                     'Set-Cookie': [
                         `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
                         `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`
@@ -241,7 +241,7 @@ export async function socialAuthRouter(ctx) {
             logger.error('[SocialAuth] Google OAuth error', null, { detail: error?.message || 'Unknown error', redirectUri: GOOGLE_REDIRECT_URI });
             return {
                 status: 302,
-                headers: { 'Location': '/#login?error=oauth_failed' },
+                headers: { 'Location': '/?app=1#login?error=oauth_failed' },
                 data: {}
             };
         }
@@ -283,7 +283,7 @@ export async function socialAuthRouter(ctx) {
         if (error) {
             return {
                 status: 302,
-                headers: { 'Location': '/#login?error=oauth_denied' },
+                headers: { 'Location': '/?app=1#login?error=oauth_denied' },
                 data: {}
             };
         }
@@ -291,7 +291,7 @@ export async function socialAuthRouter(ctx) {
         if (!(await verifyStateToken(state))) {
             return {
                 status: 302,
-                headers: { 'Location': '/#login?error=invalid_state' },
+                headers: { 'Location': '/?app=1#login?error=invalid_state' },
                 data: {}
             };
         }
@@ -299,11 +299,11 @@ export async function socialAuthRouter(ctx) {
         try {
             // Verify the id_token (JWT) signature using Apple's public keys
             if (!id_token || typeof id_token !== 'string') {
-                return { status: 302, headers: { 'Location': '/#login?error=missing_token' }, data: {} };
+                return { status: 302, headers: { 'Location': '/?app=1#login?error=missing_token' }, data: {} };
             }
             const tokenParts = id_token.split('.');
             if (tokenParts.length !== 3 || !tokenParts[0]) {
-                return { status: 302, headers: { 'Location': '/#login?error=invalid_token' }, data: {} };
+                return { status: 302, headers: { 'Location': '/?app=1#login?error=invalid_token' }, data: {} };
             }
 
             // Decode header to get kid, then verify signature with Apple's public key
@@ -344,7 +344,7 @@ export async function socialAuthRouter(ctx) {
                 } catch (_) { /* best-effort logging */ }
                 return {
                     status: 302,
-                    headers: { 'Location': '/#login?error=email_required' },
+                    headers: { 'Location': '/?app=1#login?error=email_required' },
                     data: {}
                 };
             }
@@ -372,7 +372,7 @@ export async function socialAuthRouter(ctx) {
             return {
                 status: 302,
                 headers: {
-                    'Location': '/#auth-callback',
+                    'Location': '/?app=1#auth-callback',
                     'Set-Cookie': [
                         `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
                         `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`
@@ -384,7 +384,7 @@ export async function socialAuthRouter(ctx) {
             logger.error('[SocialAuth] Apple OAuth error', null, { detail: error?.message || 'Unknown error' });
             return {
                 status: 302,
-                headers: { 'Location': '/#login?error=oauth_failed' },
+                headers: { 'Location': '/?app=1#login?error=oauth_failed' },
                 data: {}
             };
         }
