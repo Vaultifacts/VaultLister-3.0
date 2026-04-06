@@ -145,15 +145,23 @@ Object.assign(pages, {
             { period: 'In 1 Month', change: 12, category: 'Designer' }
         ];
 
-        // Demand data by category
-        const demandData = {
-            'Tops': [0.4, 0.6, 0.8, 0.5],
-            'Bottoms': [0.5, 0.7, 0.6, 0.4],
-            'Dresses': [0.3, 0.5, 0.9, 0.6],
-            'Shoes': [0.8, 0.6, 0.7, 0.5],
-            'Bags': [0.6, 0.8, 0.7, 0.4],
-            'Accessories': [0.4, 0.5, 0.6, 0.3]
-        };
+        // Demand data by category — derived from live market insights
+        const rawInsightsForHeatmap = store.state.marketInsights || [];
+        const demandData = rawInsightsForHeatmap.length > 0
+            ? rawInsightsForHeatmap.reduce((acc, i) => {
+                const cat = i.category || '';
+                if (cat) {
+                    const base = Math.min(1, (i.opportunity_score || 0) / 100);
+                    acc[cat] = [
+                        Math.min(1, base * 0.8),
+                        Math.min(1, base * 1.0),
+                        Math.min(1, base * 1.2),
+                        Math.min(1, base * 0.9)
+                    ];
+                }
+                return acc;
+            }, {})
+            : {};
 
         // Filter state
         const predictionFilter = store.state.predictionFilter || 'all';
