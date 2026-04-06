@@ -3244,45 +3244,51 @@ Object.assign(handlers, {
     // Transactions handlers,
 
     showAddTransaction: function() {
-        modals.show('Add Transaction', `
-            <form onsubmit="handlers.saveTransaction(event)">
-                <div class="form-group">
-                    <label class="form-label">Type</label>
-                    <select class="form-select" name="type" required>
-                        <option value="sale">Sale</option>
-                        <option value="expense">Expense</option>
-                        <option value="refund">Refund</option>
-                        <option value="fee">Platform Fee</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Amount</label>
-                    <input type="number" class="form-input" name="amount" step="0.01" min="0.01" max="99999.99" required oninput="handlers.validateTxAmount(this)">
-                    <div id="tx-amount-error" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;"></div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <input type="text" class="form-input" name="description">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Date</label>
-                    <input type="date" class="form-input" name="date" value="${toLocalDate(new Date())}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Category</label>
-                    <select class="form-select" name="category">
-                        <option value="shipping">Shipping</option>
-                        <option value="supplies">Supplies</option>
-                        <option value="marketing">Marketing</option>
-                        <option value="fees">Fees</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Transaction</button>
-                </div>
-            </form>
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Add Transaction</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="handlers.saveTransaction(event)">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="type" required>
+                            <option value="sale">Sale</option>
+                            <option value="expense">Expense</option>
+                            <option value="refund">Refund</option>
+                            <option value="fee">Platform Fee</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        <input type="number" class="form-input" name="amount" step="0.01" min="0.01" max="99999.99" required oninput="handlers.validateTxAmount(this)">
+                        <div id="tx-amount-error" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-input" name="description">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-input" name="date" value="${toLocalDate(new Date())}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category">
+                            <option value="shipping">Shipping</option>
+                            <option value="supplies">Supplies</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="fees">Fees</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Transaction</button>
+                    </div>
+                </form>
+            </div>
         `);
     },
 
@@ -18209,7 +18215,7 @@ Object.assign(handlers, {
             store.setState({ userFeedback });
 
             // Re-render page
-            renderApp(pages.submitFeedback());
+            renderApp(window.pages.submitFeedback());
         } catch (error) {
             console.error('Error submitting feedback:', error);
             toast.error('Failed to submit feedback. Please try again.');

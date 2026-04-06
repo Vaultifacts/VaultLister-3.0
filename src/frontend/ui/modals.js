@@ -1937,7 +1937,7 @@ const modals = {
 
     // View post modal
     viewPost(data) {
-        const { post, replies, reactions, user_reaction } = data;
+        const { post, replies = [], reactions = [], user_reaction = null } = data;
 
         // Calculate reaction counts
         const upvotes = reactions.find(r => r.reaction_type === 'upvote')?.count || 0;
@@ -2141,7 +2141,7 @@ const modals = {
     },
 
     // View support ticket with replies
-    viewTicket(ticket, replies) {
+    viewTicket(ticket, replies = []) {
         const statusColors = {
             open: 'primary',
             in_progress: 'warning',

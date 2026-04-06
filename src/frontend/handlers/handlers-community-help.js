@@ -772,7 +772,7 @@ Object.assign(handlers, {
             store.setState({ userFeedback });
 
             // Re-render page
-            renderApp(pages.submitFeedback());
+            renderApp(window.pages.submitFeedback());
         } catch (error) {
             console.error('Error submitting feedback:', error);
             toast.error('Failed to submit feedback. Please try again.');
