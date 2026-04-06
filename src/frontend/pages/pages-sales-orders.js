@@ -2391,10 +2391,10 @@ Object.assign(pages, {
                             <button class="btn btn-secondary btn-sm" onclick="handlers.printSelectedLabels()" id="print-labels-btn" style="display:none;">
                                 ${components.icon('tag', 14)} Print Selected
                             </button>
-                            <button class="btn btn-secondary btn-sm" onclick="handlers.showRateShoppingModal()">
+                            <button class="btn btn-secondary btn-sm" disabled style="opacity:0.5;cursor:not-allowed;" title="EasyPost integration coming soon">
                                 Compare Rates
                             </button>
-                            <button class="btn btn-primary btn-sm" onclick="handlers.showCreateLabelModal()">
+                            <button class="btn btn-primary btn-sm" disabled style="opacity:0.5;cursor:not-allowed;" title="EasyPost integration coming soon">
                                 ${components.icon('plus', 14)} Create Label
                             </button>
                         </div>
