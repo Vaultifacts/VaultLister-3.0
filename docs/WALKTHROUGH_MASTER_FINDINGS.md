@@ -91,7 +91,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-1 | App-wide | 100+ `Math.random()` fallbacks in app.js — fake health scores, prices, percentages throughout if data is missing | Session 1 | OPEN |
 | H-2 | Dashboard / Orders / Offers / Financials / Analytics | All dollar amounts show "$" not "C$" — global currency localization missing for Canadian launch | Session 1 | VERIFIED ✅ — 2c6b7df |
 | H-3 | My Shops | Mercari/Grailed/Etsy/Shopify show active "Connect" buttons — should be "Coming Soon" for post-launch platforms | Session 1 | VERIFIED ✅ — d81cb79 |
-| H-4 | Orders | Shipping Labels button enabled but EasyPost not built — clicking will fail | Session 1 | OPEN |
+| H-4 | Orders | Shipping Labels button enabled but EasyPost not built — clicking will fail | Session 1 | VERIFIED ✅ — 1f0f44f |
 | H-5 | Settings | "Enable 2FA" button — STATUS.md marks as Fail *(See also: #174 — same issue, discovered independently)* | Session 1 | OPEN |
 | H-6 | Dashboard | Massive empty space on scroll — scrolling past dashboard widgets shows huge white void with sidebar detached | Session 1 | OPEN |
 | H-7 | Automations | "Est. at $30/hr" rate hardcoded — should be C$ and user-configurable | Session 1 | OPEN |
