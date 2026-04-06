@@ -178,7 +178,7 @@ export async function socialAuthRouter(ctx) {
             const tokens = await tokenResponse.json();
 
             if (!tokens.access_token) {
-                throw new Error('Failed to get access token');
+                throw new Error(`Google token exchange failed: ${tokens.error || 'no access_token'} — ${tokens.error_description || '(no description)'}`);
             }
 
             // Get user info
@@ -237,7 +237,7 @@ export async function socialAuthRouter(ctx) {
                 data: {}
             };
         } catch (error) {
-            logger.error('[SocialAuth] Google OAuth error', null, { detail: error?.message || 'Unknown error' });
+            logger.error('[SocialAuth] Google OAuth error', null, { detail: error?.message || 'Unknown error', redirectUri: GOOGLE_REDIRECT_URI });
             return {
                 status: 302,
                 headers: { 'Location': '/#login?error=oauth_failed' },
