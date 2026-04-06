@@ -14,6 +14,12 @@
 
 ## Last Completed Work (2026-04-06)
 
+### Walkthrough crash fixes — #123/#125/#143/#144/#186
+- **chatbot.js `.reverse()` bug fixed** — `(await query.all(...)).reverse()` prevents TypeError crashing Vault Buddy send message: `5f331cc`
+- **#123/#125/#143/#144** marked VERIFIED ✅ 192b485 (viewPost reactions, viewTicket replies, Add Transaction modal, submitFeedback dual toast)
+- **#150/#151/#152/#153/#160/#161** systemic undefined.get() — mock tests pass; likely resolved by Bun chunk shim fix (aca307f); marked "needs re-test"
+- **#186** Vault Buddy — chatbot backend fixed; marked "needs re-test"
+
 ### HIGH findings fixed
 - **H-2** — Replace all $ with C$ currency display across frontend (65 occurrences, 12 files): `2c6b7df` ✅ verified live
 - **H-3** — Coming Soon disabled button for Mercari/Grailed/Etsy/Shopify in My Shops: `d81cb79` ✅ verified live (screenshot confirms)
@@ -59,10 +65,10 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 1. `checkLoginAttempts()` always returns unlocked — brute force unprotected (CA-CR-X)
 2. `OAUTH_MODE` defaults to 'mock' — all platform integrations fake (CR-2)
 3. Predictions page — 100% fabricated fake data (CR-7)
-4. `isRateLimitBypassed()` always returns true — zero rate limiting (CA-CR-1)
+4. ~~`isRateLimitBypassed()` always returns true — zero rate limiting (CA-CR-1)~~ FIXED abeccbb ✅
 5. No eBay bot in worker/bots/ — can't cross-list to eBay (CR-X)
 
 ## Next Tasks
-1. Fix CRITICAL findings from `docs/WALKTHROUGH_MASTER_FINDINGS.md` — start with CA-CR-1 (rate limiter bypass)
+1. Fix CRITICAL findings from `docs/WALKTHROUGH_MASTER_FINDINGS.md` — CA-CR-2 (`Math.random()` image filenames), CA-CR-3 (Mercari/Grailed in AI templates)
 2. EasyPost shipping integration — BLOCKED on API key anti-fraud review
-3. Fix HIGH findings: H-16/H-24/H-26 (missing Etsy/Shopify/Whatnot in dropdowns), then remaining HIGHs from master doc
+3. Fix HIGH findings: CA-H-9 (bare JSON.parse in ai.js), CA-H-10 (bare JSON.parse in automations.js)
