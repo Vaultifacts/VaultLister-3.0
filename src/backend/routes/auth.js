@@ -103,7 +103,28 @@ function maskEmail(email) {
 
 // SECURITY: Check and update login attempts
 async function checkLoginAttempts(email, ip) {
-    return { locked: false, attempts: 0 };
+    try {
+        const windowStart = new Date(Date.now() - LOCKOUT_DURATION_MINUTES * 60 * 1000);
+        const masked = maskEmail(email.toLowerCase());
+        const attempts = await query.all(`
+            SELECT created_at FROM security_logs
+            WHERE (details ILIKE ? ESCAPE '\\' OR ip_or_user = ?)
+            AND event_type = 'login_failed'
+            AND created_at > ?
+            ORDER BY created_at ASC
+        `, [`%${escapeLike(masked)}%`, ip, windowStart.toISOString()]);
+
+        if (attempts.length >= MAX_LOGIN_ATTEMPTS) {
+            const oldestAttempt = new Date(attempts[0].created_at);
+            const lockoutExpires = new Date(oldestAttempt.getTime() + LOCKOUT_DURATION_MINUTES * 60 * 1000);
+            const minutesLeft = Math.ceil((lockoutExpires - Date.now()) / 60000);
+            return { locked: true, attempts: attempts.length, minutesLeft: Math.max(1, minutesLeft) };
+        }
+        return { locked: false, attempts: attempts.length };
+    } catch (e) {
+        logger.error('[auth] Failed to check login attempts', null, { detail: e.message });
+        return { locked: false, attempts: 0 }; // Fail open to avoid lockout on DB error
+    }
 }
 
 // SECURITY: Log failed login attempt — stores masked email, never raw PII.
