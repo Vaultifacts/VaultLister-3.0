@@ -234,7 +234,16 @@ const auth = {
 
     async handleOAuthCallback() {
         try {
-            const data = await api.get('/auth/oauth-session');
+            // Read OTT from URL hash: /?app=1#auth-callback?ott=<hex>
+            const hashParts = window.location.hash.slice(1).split('?');
+            const params = new URLSearchParams(hashParts[1] || '');
+            const ott = params.get('ott');
+            if (!ott) {
+                router.navigate('login');
+                toast.error('Sign-in failed. Please try again.');
+                return;
+            }
+            const data = await api.get('/auth/oauth-session?ott=' + ott);
             store.setState({
                 user: data.user,
                 token: data.token,
@@ -243,12 +252,12 @@ const auth = {
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
             router.navigate(dest);
-            toast.success('Welcome back!');
+            toast.success('Welcome!');
         } catch (error) {
             router.navigate('login');
             toast.error('Sign-in failed. Please try again.');
         }
-    }
+    },
 };
 
 // ============================================
