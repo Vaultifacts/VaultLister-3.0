@@ -361,7 +361,7 @@ const router = {
         // Also redirect when the access token is present but expired — the API client
         // will attempt a silent refresh on the next request, but we redirect early here
         // so the user is not briefly shown a protected page before the 401 fires.
-        const publicRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
+        const publicRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404', 'auth-callback'];
         if (!publicRoutes.includes(path)) {
             const token = store.state.token;
             if (!auth.isAuthenticated() || this._isTokenExpired(token)) {

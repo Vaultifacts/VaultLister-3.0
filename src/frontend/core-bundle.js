@@ -15410,7 +15410,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '0ad83c6e';
+    const v = '37e7a955';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15592,7 +15592,7 @@ const router = {
         // Also redirect when the access token is present but expired — the API client
         // will attempt a silent refresh on the next request, but we redirect early here
         // so the user is not briefly shown a protected page before the 401 fires.
-        const publicRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404'];
+        const publicRoutes = ['login', 'register', 'forgot-password', 'reset-password', 'email-verification', 'verify-email', 'about', 'terms', 'privacy', 'terms-of-service', 'privacy-policy', '404', 'auth-callback'];
         if (!publicRoutes.includes(path)) {
             const token = store.state.token;
             if (!auth.isAuthenticated() || this._isTokenExpired(token)) {
@@ -21480,6 +21480,24 @@ const auth = {
                 submitBtn.innerHTML = sanitizeHTML('Create Account');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
             inputs.forEach(i => i.disabled = false);
+        }
+    },
+
+    async handleOAuthCallback() {
+        try {
+            const data = await api.get('/auth/oauth-session');
+            store.setState({
+                user: data.user,
+                token: data.token,
+                refreshToken: data.refreshToken
+            });
+            const dest = store.state._intendedRoute || 'dashboard';
+            store.setState({ _intendedRoute: null });
+            router.navigate(dest);
+            toast.success('Welcome back!');
+        } catch (error) {
+            router.navigate('login');
+            toast.error('Sign-in failed. Please try again.');
         }
     }
 };
@@ -27421,6 +27439,10 @@ async function initApp() {
 
     // Register routes
     router.register('login', () => render(window.pages.login()));
+    router.register('auth-callback', async () => {
+        renderApp('<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div class="loading-spinner"></div><p style="margin-left:1rem;color:#6b7280">Completing sign-in...</p></div>');
+        await auth.handleOAuthCallback();
+    });
     router.register('register', () => render(window.pages.register()));
     router.register('forgot-password', () => render(window.pages.forgotPassword()));
     router.register('reset-password', () => render(window.pages.resetPassword({ mode: 'form' })));

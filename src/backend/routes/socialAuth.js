@@ -229,7 +229,7 @@ export async function socialAuthRouter(ctx) {
             return {
                 status: 302,
                 headers: {
-                    'Location': '/#/auth/callback',
+                    'Location': '/#auth-callback',
                     'Set-Cookie': [
                         `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
                         `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`
@@ -372,7 +372,7 @@ export async function socialAuthRouter(ctx) {
             return {
                 status: 302,
                 headers: {
-                    'Location': '/#/auth/callback',
+                    'Location': '/#auth-callback',
                     'Set-Cookie': [
                         `vl_access=${token}; Path=/; Max-Age=900; ${COOKIE_BASE}`,
                         `vl_refresh=${refreshToken}; Path=/api/auth/refresh; Max-Age=604800; ${COOKIE_BASE}`

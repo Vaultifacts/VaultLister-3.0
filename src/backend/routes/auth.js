@@ -732,6 +732,30 @@ export async function authRouter(ctx) {
         return { status: 200, data: { user } };
     }
 
+    // GET /api/auth/oauth-session - Exchange social OAuth HttpOnly cookie for SPA session tokens
+    if (method === 'GET' && path === '/oauth-session') {
+        if (!user) {
+            return { status: 401, data: { error: 'No OAuth session found. Please sign in again.' } };
+        }
+        const newToken = generateToken(user);
+        const newRefreshToken = generateRefreshToken(user);
+        await enforceSessionLimit(user.id);
+        await query.run(`
+            INSERT INTO sessions (id, user_id, refresh_token, expires_at)
+            VALUES (?, ?, ?, NOW() + INTERVAL '30 days')
+        `, [uuidv4(), user.id, newRefreshToken]);
+        return {
+            status: 200,
+            data: { token: newToken, refreshToken: newRefreshToken, user },
+            headers: {
+                'Set-Cookie': [
+                    `vl_access=; Path=/; Max-Age=0; ${COOKIE_BASE}`,
+                    `vl_refresh=; Path=/api/auth/refresh; Max-Age=0; ${COOKIE_BASE}`
+                ]
+            }
+        };
+    }
+
     // GET /api/auth/session-status - Return session inactivity and MFA expiry metadata
     if (method === 'GET' && path === '/session-status') {
         if (!user) return { status: 401, data: { error: 'Not authenticated' } };

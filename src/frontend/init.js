@@ -101,6 +101,10 @@ async function initApp() {
 
     // Register routes
     router.register('login', () => render(window.pages.login()));
+    router.register('auth-callback', async () => {
+        renderApp('<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div class="loading-spinner"></div><p style="margin-left:1rem;color:#6b7280">Completing sign-in...</p></div>');
+        await auth.handleOAuthCallback();
+    });
     router.register('register', () => render(window.pages.register()));
     router.register('forgot-password', () => render(window.pages.forgotPassword()));
     router.register('reset-password', () => render(window.pages.resetPassword({ mode: 'form' })));

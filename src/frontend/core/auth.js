@@ -230,6 +230,24 @@ const auth = {
             }
             inputs.forEach(i => i.disabled = false);
         }
+    },
+
+    async handleOAuthCallback() {
+        try {
+            const data = await api.get('/auth/oauth-session');
+            store.setState({
+                user: data.user,
+                token: data.token,
+                refreshToken: data.refreshToken
+            });
+            const dest = store.state._intendedRoute || 'dashboard';
+            store.setState({ _intendedRoute: null });
+            router.navigate(dest);
+            toast.success('Welcome back!');
+        } catch (error) {
+            router.navigate('login');
+            toast.error('Sign-in failed. Please try again.');
+        }
     }
 };
 
