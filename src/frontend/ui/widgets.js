@@ -3140,7 +3140,7 @@ const mobileUI = {
     renderFAB(action = "modals.addItem()") {
         if (!this.isMobile()) return '';
         return `
-            <button class="fab" onclick="${action}">
+            <button class="fab" onclick="${action}" aria-label="Add item">
                 ${components.icon('plus', 24)}
             </button>
         `;

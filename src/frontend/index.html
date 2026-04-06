@@ -35,8 +35,8 @@
     <link rel="dns-prefetch" href="https://vaultlister.com">
 
     <!-- Preload critical CSS and JS so they start fetching ASAP -->
-    <link rel="preload" href="/styles/main.css?v=e9b04d2b" as="style">
-    <link rel="preload" href="/core-bundle.js?v=e9b04d2b" as="script">
+    <link rel="preload" href="/styles/main.css?v=64c1d47d" as="style">
+    <link rel="preload" href="/core-bundle.js?v=64c1d47d" as="script">
     <link rel="preload" href="/fonts/inter.css" as="style">
 
 
@@ -51,23 +51,20 @@
     <link rel="stylesheet" href="/fonts/inter.css">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/styles/main.css?v=e9b04d2b">
+    <link rel="stylesheet" href="/styles/main.css?v=64c1d47d">
 
     <!-- Component Scripts -->
-    <script src="/components/photoEditor.js?v=e9b04d2b" defer></script>
-    <script src="/components/chatWidget.js?v=e9b04d2b" defer></script>
+    <script src="/components/photoEditor.js?v=64c1d47d" defer></script>
+    <script src="/components/chatWidget.js?v=64c1d47d" defer></script>
 
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
-    <script type="module" src="/services/websocketClient.js?v=e9b04d2b" defer></script>
-
-    <!-- Shared modules (loaded before core bundle for global availability) -->
-    <script src="/shared/automations/presets.js?v=e9b04d2b" defer></script>
+    <script type="module" src="/services/websocketClient.js?v=64c1d47d" defer></script>
 
     <!-- DOMPurify — must load before core bundle for sanitizeHTML() -->
     <script src="/dompurify.min.js"></script>
 
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
-    <script src="/core-bundle.js?v=e9b04d2b" defer></script>
+    <script src="/core-bundle.js?v=64c1d47d" defer></script>
     <!-- Phase 2: Route-group chunks loaded on demand by router.js -->
 </head>
 <body>

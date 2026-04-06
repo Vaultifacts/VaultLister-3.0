@@ -65736,7 +65736,7 @@ body.dark-mode .form-input.field-valid {
     align-items: center;
     gap: 12px;
     margin: 16px 0;
-    color: var(--gray-400);
+    color: var(--gray-500);
     font-size: 13px;
 }
 
