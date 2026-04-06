@@ -510,7 +510,7 @@ Object.assign(pages, {
                             ${components.icon('folder', 16)} New Folder
                         </button>
                         <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button aria-haspopup="menu" class="btn btn-primary">
+                            <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
@@ -551,7 +551,7 @@ Object.assign(pages, {
                             ${components.icon('folder', 16)} New Folder
                         </button>
                         <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button aria-haspopup="menu" class="btn btn-primary">
+                            <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
@@ -778,7 +778,7 @@ Object.assign(pages, {
                             ${components.icon('percent', 16)} Fees
                         </button>
                         <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button aria-haspopup="menu" class="btn btn-primary">
+                            <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
@@ -9053,7 +9053,7 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body text-center">
                         <h3 class="text-xl font-bold mb-2">Pro</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">$19</div>
+                        <div class="text-4xl font-bold text-primary mb-1">C$19</div>
                         <div class="text-sm text-gray-500 mb-4">per month</div>
                         <ul class="text-left space-y-2 mb-6">
                             <li class="flex items-center gap-2 text-sm">
@@ -9095,7 +9095,7 @@ Object.assign(pages, {
                 <div class="card ${currentPlan === 'business' ? 'ring-2 ring-primary' : ''}">
                     <div class="card-body text-center">
                         <h3 class="text-xl font-bold mb-2">Business</h3>
-                        <div class="text-4xl font-bold text-primary mb-1">$49</div>
+                        <div class="text-4xl font-bold text-primary mb-1">C$49</div>
                         <div class="text-sm text-gray-500 mb-4">per month</div>
                         <ul class="text-left space-y-2 mb-6">
                             <li class="flex items-center gap-2 text-sm">

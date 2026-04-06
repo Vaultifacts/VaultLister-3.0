@@ -511,7 +511,7 @@ Object.assign(pages, {
                             ${components.icon('folder', 16)} New Folder
                         </button>
                         <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button aria-haspopup="menu" class="btn btn-primary">
+                            <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
@@ -552,7 +552,7 @@ Object.assign(pages, {
                             ${components.icon('folder', 16)} New Folder
                         </button>
                         <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button aria-haspopup="menu" class="btn btn-primary">
+                            <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
@@ -779,7 +779,7 @@ Object.assign(pages, {
                             ${components.icon('percent', 16)} Fees
                         </button>
                         <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button aria-haspopup="menu" class="btn btn-primary">
+                            <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
