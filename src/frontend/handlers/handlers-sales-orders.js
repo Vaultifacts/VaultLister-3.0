@@ -2839,8 +2839,8 @@ Object.assign(handlers, {
                     <div class="shipping-calc-section">
                         <h4 class="section-title">${components.icon('zap', 16)} Quick Presets</h4>
                         <div class="shipping-presets">
-                            <button class="preset-btn" onclick="handlers.applyShippingPreset('envelope')">
-                                ${components.icon('mail', 14)} Envelope
+                            <button class="preset-btn" onclick="handlers.applyShippingPreset('letter')">
+                                ${components.icon('mail', 14)} Letter
                             </button>
                             <button class="preset-btn" onclick="handlers.applyShippingPreset('small')">
                                 ${components.icon('box', 14)} Small Box
@@ -2851,8 +2851,8 @@ Object.assign(handlers, {
                             <button class="preset-btn" onclick="handlers.applyShippingPreset('large')">
                                 ${components.icon('archive', 14)} Large Box
                             </button>
-                            <button class="preset-btn" onclick="handlers.applyShippingPreset('poly')">
-                                ${components.icon('shopping-bag', 14)} Poly Mailer
+                            <button class="preset-btn" onclick="handlers.applyShippingPreset('extralarge')">
+                                ${components.icon('shopping-bag', 14)} Extra Large
                             </button>
                         </div>
                     </div>
@@ -2887,11 +2887,11 @@ Object.assign(handlers, {
 
     applyShippingPreset: function(preset) {
         const presets = {
-            envelope: { weight: 0.15, length: 30, width: 23, height: 1 },
+            letter: { weight: 0.1, length: 30, width: 24, height: 1 },
             small: { weight: 0.5, length: 20, width: 15, height: 10 },
-            medium: { weight: 1.5, length: 30, width: 23, height: 15 },
-            large: { weight: 2.5, length: 46, width: 30, height: 20 },
-            poly: { weight: 0.25, length: 35, width: 25, height: 5 }
+            medium: { weight: 1.0, length: 30, width: 25, height: 15 },
+            large: { weight: 2.0, length: 45, width: 35, height: 25 },
+            extralarge: { weight: 5.0, length: 60, width: 45, height: 30 }
         };
 
         const p = presets[preset];
@@ -2921,17 +2921,24 @@ Object.assign(handlers, {
         const billableWeight = Math.max(weight, dimWeight);
 
         // Carrier rate estimates (simplified - real world would use API)
+        // Rates shown in CAD. Estimates only — actual rates vary by carrier.
         const rates = [
             { carrier: 'Canada Post', service: 'Regular Parcel', rate: billableWeight <= 0.5 ? 10.50 : 12.00 + (billableWeight * 2.0), days: '5-8' },
+            { carrier: 'Canada Post', service: 'Expedited Parcel', rate: 14.00 + (billableWeight * 2.5), days: '3-6' },
             { carrier: 'Canada Post', service: 'Xpresspost', rate: 18.00 + (billableWeight * 3.5), days: '2-3' },
             { carrier: 'Canada Post', service: 'Priority', rate: 28.00 + (billableWeight * 5.0), days: '1-2' },
+            { carrier: 'FedEx Canada', service: 'Ground', rate: 13.50 + (billableWeight * 2.8), days: '2-5' },
+            { carrier: 'FedEx Canada', service: 'Express Saver', rate: 19.00 + (billableWeight * 3.8), days: '3' },
+            { carrier: 'FedEx Canada', service: '2Day', rate: 24.00 + (billableWeight * 4.5), days: '2' },
+            { carrier: 'FedEx Canada', service: 'Standard Overnight', rate: 38.00 + (billableWeight * 6.0), days: '1' },
             { carrier: 'Chitchats', service: 'Standard', rate: 8.00 + (billableWeight * 1.5), days: '5-10' },
             { carrier: 'Chitchats', service: 'Express', rate: 12.00 + (billableWeight * 2.5), days: '3-5' },
-            { carrier: 'UPS', service: 'Standard', rate: 14.00 + (billableWeight * 3.0), days: '2-5' },
-            { carrier: 'FedEx', service: 'Ground', rate: 13.50 + (billableWeight * 2.8), days: '2-5' },
-            { carrier: 'FedEx', service: 'Express', rate: 22.00 + (billableWeight * 4.5), days: '1-2' },
+            { carrier: 'UPS Canada', service: 'Standard', rate: 14.00 + (billableWeight * 3.0), days: '2-5' },
+            { carrier: 'UPS Canada', service: 'Expedited', rate: 18.00 + (billableWeight * 3.5), days: '2-3' },
+            { carrier: 'UPS Canada', service: 'Express', rate: 30.00 + (billableWeight * 5.5), days: '1-2' },
             { carrier: 'Purolator', service: 'Ground', rate: 15.00 + (billableWeight * 3.2), days: '1-3' },
-            { carrier: 'Purolator', service: 'Express', rate: 24.00 + (billableWeight * 4.8), days: '1-2' }
+            { carrier: 'Purolator', service: 'Express', rate: 24.00 + (billableWeight * 4.8), days: '1-2' },
+            { carrier: 'Purolator', service: 'Express 9AM', rate: 34.00 + (billableWeight * 6.5), days: '1' }
         ];
 
         // Sort by price
