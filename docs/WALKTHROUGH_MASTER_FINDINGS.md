@@ -14,7 +14,7 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 | 187-new | HIGH | Auth / Social Login | Google OAuth "Continue with Google" was a dead stub — `handlers.socialLogin()` showed a toast warning instead of calling the backend. Backend was fully implemented. | `cf7345e` | VERIFIED ✅ — cf7345e |
 | 188-new | MEDIUM | Auth / Social Auth | Social auth initiation blocked by auth middleware — `GET /api/social-auth/:provider` returned 401 for unauthenticated users due to missing public endpoint exemption. | `2226ae3` | VERIFIED ✅ — 2226ae3 |
 | 189-new | LOW | Build / Cloudflare CDN | Cloudflare CDN caching stale bundle after deploy — `index.html` version hash (`87960710→d844d3ce`) wasn't committed alongside `core-bundle.js`, so Cloudflare kept serving old bundle. | `457a85a` | VERIFIED ✅ — 457a85a |
-| 190-new | CRITICAL | Auth / Google OAuth | Google OAuth callback fails on live site — after Google account selection and "Continue", user is redirected to `https://vaultlister.com/#login?error=oauth_failed`. Token exchange in `/api/social-auth/google/callback` throws and catches to `oauth_failed`. Likely cause: redirect URI mismatch between Google Cloud Console and Railway `GOOGLE_REDIRECT_URI` env var, or `GOOGLE_CLIENT_SECRET` not set in Railway. User reported 2026-04-06. | N/A | OPEN |
+| 190-new | CRITICAL | Auth / Google OAuth | Google OAuth callback fails on live site — after Google account selection and "Continue", user is redirected to `https://vaultlister.com/#login?error=oauth_failed`. Root cause: PostgreSQL "column reference id is ambiguous" in `findOrCreateUser` JOIN query — both `users` and `oauth_accounts` have `id`; fixed by using `USER_SELECT_ALIASED` with `u.` prefix. User reported 2026-04-06. | `df74d36` | VERIFIED ✅ — df74d36 |
 
 ---
 
@@ -399,7 +399,7 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 ## TOP PRIORITY LAUNCH BLOCKERS
 
 1. ~~**Fix `checkLoginAttempts()`** (CR-1)~~ — **DONE** `5b650f8` ✅
-0. **Fix Google OAuth callback** (190-new) — `#login?error=oauth_failed` after Google account selection. Check `GOOGLE_CLIENT_SECRET` + redirect URI in Railway env vs Google Cloud Console. **CRITICAL — blocks all Google sign-in.**
+0. ~~**Fix Google OAuth callback** (190-new)~~ — **DONE** `df74d36` ✅ SQL ambiguous column ref in JOIN fixed
 2. ~~**Fix `isRateLimitBypassed()`** (CA-CR-1)~~ — **DONE** `abeccbb` ✅
 3. **Set `OAUTH_MODE=real` in Railway** (CR-2) — without this, all 5 launch platforms use fake tokens.
 4. **Fix `undefined.get()` crash** (affects #150, #151, #152, #153, #160, #161, #186-walkthrough) — single root cause killing Import CSV, SKU Rules, Log Sale, Orders Sync, Upgrade flows, and Vault Buddy. Highest user-facing impact.

@@ -5,7 +5,7 @@
 - **Launch Readiness Walkthrough COMPLETE** — 214 findings, 100% coverage (14 sessions)
 - **Master findings doc COMPLETE + VERIFIED** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` (214 findings, Status column added)
 - **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site
-- **Google OAuth FIXED + DEPLOYED** — redirects to Google correctly on live site ✅
+- **Google OAuth FIXED + DEPLOYED** — redirects to Google correctly; SQL ambiguous column bug fixed `df74d36` ✅
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
@@ -19,6 +19,9 @@
 - **#123/#125/#143/#144** marked VERIFIED ✅ 192b485 (viewPost reactions, viewTicket replies, Add Transaction modal, submitFeedback dual toast)
 - **#150/#151/#152/#153/#160/#161** systemic undefined.get() — mock tests pass; likely resolved by Bun chunk shim fix (aca307f); marked "needs re-test"
 - **#186** Vault Buddy — chatbot backend fixed; marked "needs re-test"
+
+### 190-new Google OAuth fixed (2026-04-06)
+- **190-new** — SQL "column reference id is ambiguous" in `findOrCreateUser` JOIN; added `USER_SELECT_ALIASED` with `u.` prefix: `df74d36` ✅ deployed to Railway
 
 ### Code Audit findings fixed (2026-04-06)
 - **CA-CR-1** — `isRateLimitBypassed()` now gates on `IS_TEST_RUNTIME || NODE_ENV==='development'`: `abeccbb` ✅ grep confirmed
