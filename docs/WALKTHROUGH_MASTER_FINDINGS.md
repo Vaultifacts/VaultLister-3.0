@@ -398,21 +398,21 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 ## TOP PRIORITY LAUNCH BLOCKERS
 
 1. **Fix `checkLoginAttempts()`** (CR-1) — implement real brute force protection. Security critical.
-2. **Fix `isRateLimitBypassed()`** (CA-CR-1) — change `return true` to `return false`. Security critical.
+2. ~~**Fix `isRateLimitBypassed()`** (CA-CR-1)~~ — **DONE** `abeccbb` ✅
 3. **Set `OAUTH_MODE=real` in Railway** (CR-2) — without this, all 5 launch platforms use fake tokens.
 4. **Fix `undefined.get()` crash** (affects #150, #151, #152, #153, #160, #161, #186-walkthrough) — single root cause killing Import CSV, SKU Rules, Log Sale, Orders Sync, Upgrade flows, and Vault Buddy. Highest user-facing impact.
 5. **Fix Calendar `date is not defined`** (#171) — bundle variable name mismatch makes Calendar entirely inaccessible.
 6. **Configure Stripe** (CR-3) — set `STRIPE_PRICE_ID_*` for CAD pricing; fix "Premium" vs "Pro" naming.
 7. **Remove ALL hardcoded fake data** (CR-6, CR-7, CR-8, CR-9, CR-11, CR-12, CR-13, CA-CR-4) — Predictions, Help Getting Started, Changelog, Market Intel, Sales Funnel.
-8. **Replace `Math.random()` in image filenames** (CA-CR-2) — security: predictable filenames expose other users' temp files.
+8. ~~**Replace `Math.random()` in image filenames** (CA-CR-2)~~ — **DONE** `34aa7ce` ✅
 9. **Build eBay bot** (CR-5) — currently missing from `worker/bots/`.
-10. **Feature-gate Mercari/Grailed** (CA-CR-3, CA-M-1) — active case statements + AI templates for post-launch platforms.
-11. **Global `$` → `C$` currency localization** (H-2) — every page with dollar amounts.
-12. **Mark post-launch platforms "Coming Soon"** (H-3, #169) — My Shops, Connections, Plans, Landing.
-13. **Fix `btn-danger` invisible in light mode** (#131) — delete confirmations broken for all users.
+10. ~~**Feature-gate Mercari/Grailed** (CA-CR-3, CA-M-1)~~ — **DONE** `8a1d58e` ✅ (AI routes blocked; CA-M-1 worker case statements still open)
+11. ~~**Global `$` → `C$` currency localization** (H-2)~~ — **DONE** `2c6b7df` ✅
+12. ~~**Mark post-launch platforms "Coming Soon"** (H-3, #169)~~ — **DONE** `d81cb79` ✅
+13. ~~**Fix `btn-danger` invisible in light mode** (#131)~~ — **DONE** `aca307f` ✅
 14. **Fix DOMPurify drag-and-drop stripping** (#182) — file upload broken on Add Item, Inventory Import, Image Bank.
-15. **Add missing `safeJsonParse()` guards** (CA-H-9, CA-H-10) — 17 bare `JSON.parse()` calls crash route handlers.
-16. **Add try/catch to 8 routes** (CA-H-1 through CA-H-8) — unhandled errors crash handlers.
+15. ~~**Add missing `safeJsonParse()` guards** (CA-H-9, CA-H-10)~~ — **DONE** `ebba2af` / `f6876da` ✅
+16. ~~**Add try/catch to 8 routes** (CA-H-1 through CA-H-8)~~ — **DONE** `588ad7f` ✅
 17. **Fix social auth middleware** (#188 — FIXED `2226ae3`).
 18. **Disable/hide Affiliate Program** (CR-14) — no backend built.
 19. **Fix Plans page** (#175, #177) — show CAD pricing, fix broken Upgrade flow.

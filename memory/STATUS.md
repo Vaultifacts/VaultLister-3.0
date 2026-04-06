@@ -20,6 +20,15 @@
 - **#150/#151/#152/#153/#160/#161** systemic undefined.get() — mock tests pass; likely resolved by Bun chunk shim fix (aca307f); marked "needs re-test"
 - **#186** Vault Buddy — chatbot backend fixed; marked "needs re-test"
 
+### Code Audit findings fixed (2026-04-06)
+- **CA-CR-1** — `isRateLimitBypassed()` now gates on `IS_TEST_RUNTIME || NODE_ENV==='development'`: `abeccbb` ✅ grep confirmed
+- **CA-CR-2** — `crypto.randomUUID()` replaces `Math.random()` in both temp filename locations: `34aa7ce` ✅ grep confirmed
+- **CA-CR-3** — `LAUNCH_PLATFORMS` set blocks mercari/grailed in 2 AI routes; removed from fallback template: `8a1d58e` ✅ grep confirmed
+- **CA-L-2** — TODO comment resolved with CA-CR-1 fix: `abeccbb` ✅
+- **CA-H-1–8** — Top-level try/catch + logger.error added to all 8 route handlers: `588ad7f` ✅ grep confirmed all 8 have "Unhandled route error"
+- **CA-H-9** — 9 bare JSON.parse → safeJsonParse in ai.js: `ebba2af` ✅ grep -c = 0
+- **CA-H-10** — 10 bare JSON.parse → safeJsonParse in automations.js: `f6876da` ✅ grep -c = 0
+
 ### HIGH findings fixed
 - **H-2** — Replace all $ with C$ currency display across frontend (65 occurrences, 12 files): `2c6b7df` ✅ verified live
 - **H-3** — Coming Soon disabled button for Mercari/Grailed/Etsy/Shopify in My Shops: `d81cb79` ✅ verified live (screenshot confirms)
