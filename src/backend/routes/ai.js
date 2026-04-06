@@ -19,6 +19,9 @@ import { safeJsonParse } from '../shared/utils.js';
 // Rate limiter for expensive AI API calls (per-user, 10 requests per minute)
 const aiRateLimiter = new RateLimiter();
 
+// Canada launch platforms only — post-launch platforms (mercari, grailed, etsy, shopify) are not supported
+const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot']);
+
 // Configurable AI thresholds — override via environment variables
 const AI_CONFIG = {
     fallbackConfidence: parseFloat(process.env.AI_FALLBACK_CONFIDENCE) || 0.65,
@@ -53,6 +56,10 @@ export async function aiRouter(ctx) {
 
         const { imageBase64, imageMimeType, platform = 'poshmark' } = body;
 
+        if (platform && !LAUNCH_PLATFORMS.has(platform)) {
+            return { status: 400, data: { error: `Platform '${platform}' is not supported at launch` } };
+        }
+
         if (!imageBase64) {
             return { status: 400, data: { error: 'Image data required (base64)' } };
         }
@@ -70,10 +77,9 @@ export async function aiRouter(ctx) {
             const platformTitles = {
                 poshmark: 'Vintage Designer Item - Excellent Condition',
                 ebay: 'Authentic Pre-Owned Fashion Item - Fast Shipping',
-                mercari: 'Stylish Fashion Item - Great Deal',
                 depop: 'Y2K Vintage Fashion Find - Unique Style',
-                grailed: 'Designer Streetwear Piece - Gently Used',
-                facebook: 'Fashion Item For Sale - Local Pickup Available'
+                facebook: 'Fashion Item For Sale - Local Pickup Available',
+                whatnot: 'Collectible Item - Live Auction'
             };
             return { status: 200, data: {
                 analysis: {
@@ -219,6 +225,10 @@ Important:
         }
 
         let { imageUrl, imageBase64, category, brand, condition, keywords, inventoryId, platform = 'poshmark', notes: extraNotes } = body;
+
+        if (platform && !LAUNCH_PLATFORMS.has(platform)) {
+            return { status: 400, data: { error: `Platform '${platform}' is not supported at launch` } };
+        }
 
         // HIGH 16: Normalize keywords — accept comma-separated string or array
         if (typeof keywords === 'string') keywords = keywords.split(',').map(k => k.trim()).filter(Boolean);
