@@ -59,13 +59,13 @@ export async function automationsRouter(ctx) {
 
         rules.forEach(rule => {
             try {
-                rule.conditions = JSON.parse(rule.conditions || '{}');
+                rule.conditions = safeJsonParse(rule.conditions, {});
             } catch (error) {
                 logger.warn('[Automations] failed to parse automation conditions', { detail: error?.message || 'Unknown error' });
                 rule.conditions = [];
             }
             try {
-                rule.actions = JSON.parse(rule.actions || '{}');
+                rule.actions = safeJsonParse(rule.actions, {});
             } catch (error) {
                 logger.warn('[Automations] failed to parse automation actions', { detail: error?.message || 'Unknown error' });
                 rule.actions = {};
@@ -252,13 +252,13 @@ export async function automationsRouter(ctx) {
         }
 
         try {
-            rule.conditions = JSON.parse(rule.conditions || '{}');
+            rule.conditions = safeJsonParse(rule.conditions, {});
         } catch (error) {
             logger.warn('[Automations] failed to parse automation conditions', { detail: error?.message || 'Unknown error' });
             rule.conditions = [];
         }
         try {
-            rule.actions = JSON.parse(rule.actions || '{}');
+            rule.actions = safeJsonParse(rule.actions, {});
         } catch (error) {
             logger.warn('[Automations] failed to parse automation actions', { detail: error?.message || 'Unknown error' });
             rule.actions = {};
@@ -352,13 +352,13 @@ export async function automationsRouter(ctx) {
 
         const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         try {
-            rule.conditions = JSON.parse(rule.conditions || '{}');
+            rule.conditions = safeJsonParse(rule.conditions, {});
         } catch (e) {
             logger.error('[Automations] error parsing rule conditions', user?.id, { detail: e?.message || 'Unknown error' });
             rule.conditions = {};
         }
         try {
-            rule.actions = JSON.parse(rule.actions || '{}');
+            rule.actions = safeJsonParse(rule.actions, {});
         } catch (e) {
             logger.error('[Automations] error parsing rule actions', user?.id, { detail: e?.message || 'Unknown error' });
             rule.actions = {};
@@ -453,13 +453,13 @@ export async function automationsRouter(ctx) {
 
         const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         try {
-            rule.conditions = JSON.parse(rule.conditions);
+            rule.conditions = safeJsonParse(rule.conditions, {});
         } catch (error) {
             logger.warn('[Automations] failed to parse automation conditions', { detail: error?.message || 'Unknown error' });
             rule.conditions = [];
         }
         try {
-            rule.actions = JSON.parse(rule.actions);
+            rule.actions = safeJsonParse(rule.actions, {});
         } catch (error) {
             logger.warn('[Automations] failed to parse automation actions', { detail: error?.message || 'Unknown error' });
             rule.actions = {};
@@ -974,13 +974,13 @@ export async function automationsRouter(ctx) {
 
         const rule = await query.get('SELECT * FROM automation_rules WHERE id = ? AND user_id = ?', [id, user.id]);
         try {
-            rule.conditions = JSON.parse(rule.conditions || '{}');
+            rule.conditions = safeJsonParse(rule.conditions, {});
         } catch (e) {
             logger.error('[Automations] error parsing rule conditions from preset', user?.id, { detail: e?.message || 'Unknown error' });
             rule.conditions = {};
         }
         try {
-            rule.actions = JSON.parse(rule.actions || '{}');
+            rule.actions = safeJsonParse(rule.actions, {});
         } catch (e) {
             logger.error('[Automations] error parsing rule actions from preset', user?.id, { detail: e?.message || 'Unknown error' });
             rule.actions = {};
