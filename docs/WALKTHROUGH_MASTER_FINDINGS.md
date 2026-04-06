@@ -52,7 +52,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| CR-1 | Auth | `checkLoginAttempts()` in auth.js:105-107 always returns `{locked: false}` — brute force protection completely bypassed | Session 1 | OPEN |
+| CR-1 | Auth | `checkLoginAttempts()` in auth.js:105-107 always returns `{locked: false}` — brute force protection completely bypassed | Session 1 | VERIFIED ✅ — 5b650f8 |
 | CR-2 | Platform Integrations | `OAUTH_MODE` defaults to `'mock'` — if not set in Railway `.env`, all platform integrations use fake tokens. 32 files reference this var | Session 1 | OPEN |
 | CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 | OPEN |
 | CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | OPEN |
@@ -397,7 +397,7 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 
 ## TOP PRIORITY LAUNCH BLOCKERS
 
-1. **Fix `checkLoginAttempts()`** (CR-1) — implement real brute force protection. Security critical.
+1. ~~**Fix `checkLoginAttempts()`** (CR-1)~~ — **DONE** `5b650f8` ✅
 2. ~~**Fix `isRateLimitBypassed()`** (CA-CR-1)~~ — **DONE** `abeccbb` ✅
 3. **Set `OAUTH_MODE=real` in Railway** (CR-2) — without this, all 5 launch platforms use fake tokens.
 4. **Fix `undefined.get()` crash** (affects #150, #151, #152, #153, #160, #161, #186-walkthrough) — single root cause killing Import CSV, SKU Rules, Log Sale, Orders Sync, Upgrade flows, and Vault Buddy. Highest user-facing impact.
