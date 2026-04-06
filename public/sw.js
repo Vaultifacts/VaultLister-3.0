@@ -23,21 +23,21 @@ const API_TTL_MAP = {
 // Critical pre-cache (app shell + most-used chunk — installed synchronously)
 const PRECACHE_URLS = [
     '/',
-    '/core-bundle.js?v=f66a5447',
-    '/styles/main.css?v=f66a5447',
+    '/core-bundle.js?v=41433f67',
+    '/styles/main.css?v=41433f67',
     '/manifest.webmanifest',
     '/offline.html',
     '/assets/favicon.svg',
-    '/chunk-inventory.js?v=f66a5447',
+    '/chunk-inventory.js?v=41433f67',
 ];
 
 // Secondary chunks — fetched in the background during activate
 const BACKGROUND_CACHE_URLS = [
-    '/chunk-sales.js?v=f66a5447',
-    '/chunk-tools.js?v=f66a5447',
-    '/chunk-intelligence.js?v=f66a5447',
-    '/chunk-settings.js?v=f66a5447',
-    '/chunk-community.js?v=f66a5447',
+    '/chunk-sales.js?v=41433f67',
+    '/chunk-tools.js?v=41433f67',
+    '/chunk-intelligence.js?v=41433f67',
+    '/chunk-settings.js?v=41433f67',
+    '/chunk-community.js?v=41433f67',
 ];
 
 // â”€â”€â”€ Install: pre-cache app shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -314,8 +314,8 @@ self.addEventListener('push', (event) => {
     let data = {
         title: 'VaultLister',
         body: 'You have a new notification',
-        icon: '/assets/icon-192.svg',
-        badge: '/assets/favicon.svg',
+        icon: '/assets/icon-192.png',
+        badge: '/assets/badge-96.png',
         tag: 'vaultlister-notification',
         data: {}
     };

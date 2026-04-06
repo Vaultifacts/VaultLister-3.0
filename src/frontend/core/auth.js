@@ -243,7 +243,10 @@ const auth = {
                 toast.error('Sign-in failed. Please try again.');
                 return;
             }
-            const data = await api.get('/auth/oauth-session?ott=' + ott);
+            // Use raw fetch to bypass api.request's 401→token-refresh interceptor
+            const res = await fetch('/api/auth/oauth-session?ott=' + ott);
+            if (!res.ok) throw new Error('OTT exchange failed: ' + res.status);
+            const data = await res.json();
             store.setState({
                 user: data.user,
                 token: data.token,
