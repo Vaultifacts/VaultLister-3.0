@@ -29,6 +29,7 @@ async function getApplePublicKey(kid) {
 }
 
 const USER_SELECT_COLUMNS = 'id, email, username, full_name, display_name, avatar_url, subscription_tier, is_active, email_verified, created_at, updated_at, last_login_at';
+const USER_SELECT_ALIASED = 'u.id, u.email, u.username, u.full_name, u.display_name, u.avatar_url, u.subscription_tier, u.is_active, u.email_verified, u.created_at, u.updated_at, u.last_login_at';
 
 // OAuth configuration
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -64,7 +65,7 @@ async function findOrCreateUser(provider, profile) {
 
     // Check if user exists with this OAuth provider
     let user = await query.get(`
-        SELECT ${USER_SELECT_COLUMNS} FROM users u
+        SELECT ${USER_SELECT_ALIASED} FROM users u
         JOIN oauth_accounts oa ON u.id = oa.user_id
         WHERE oa.provider = ? AND oa.provider_user_id = ?
     `, [provider, providerId]);
