@@ -10,10 +10,10 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | # | Severity | Component | Description | Commit |
 |---|----------|-----------|-------------|--------|
-| 186 | HIGH | Vault Buddy / API Routes | Vault Buddy chat GET 404 after POST 201 — route regex `[a-f0-9-]+` didn't match `conv_TIMESTAMP_HEXSUFFIX` ID format. Both GET and DELETE routes were broken. Fixed by changing regex to `[\w-]+`. | `5a7c6c0` |
-| 187 | HIGH | Auth / Social Login | Google OAuth "Continue with Google" was a dead stub — `handlers.socialLogin()` showed a toast warning instead of calling the backend. Backend was fully implemented. | `cf7345e` |
-| 188 | MEDIUM | Auth / Social Auth | Social auth initiation blocked by auth middleware — `GET /api/social-auth/:provider` returned 401 for unauthenticated users due to missing public endpoint exemption. | `2226ae3` |
-| 189 | LOW | Build / Cloudflare CDN | Cloudflare CDN caching stale bundle after deploy — `index.html` version hash (`87960710→d844d3ce`) wasn't committed alongside `core-bundle.js`, so Cloudflare kept serving old bundle. | `457a85a` |
+| 186-new | HIGH | Vault Buddy / API Routes | Vault Buddy chat GET 404 after POST 201 — route regex `[a-f0-9-]+` didn't match `conv_TIMESTAMP_HEXSUFFIX` ID format. Both GET and DELETE routes were broken. Fixed by changing regex to `[\w-]+`. Note: distinct from walkthrough #186 (Vault Buddy `undefined.get` crash — still open). | `5a7c6c0` |
+| 187-new | HIGH | Auth / Social Login | Google OAuth "Continue with Google" was a dead stub — `handlers.socialLogin()` showed a toast warning instead of calling the backend. Backend was fully implemented. | `cf7345e` |
+| 188-new | MEDIUM | Auth / Social Auth | Social auth initiation blocked by auth middleware — `GET /api/social-auth/:provider` returned 401 for unauthenticated users due to missing public endpoint exemption. | `2226ae3` |
+| 189-new | LOW | Build / Cloudflare CDN | Cloudflare CDN caching stale bundle after deploy — `index.html` version hash (`87960710→d844d3ce`) wasn't committed alongside `core-bundle.js`, so Cloudflare kept serving old bundle. | `457a85a` |
 
 ---
 
@@ -24,11 +24,11 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 | Severity | Walkthrough Findings | Code Audit Findings | Post-Session Finds | Grand Total |
 |----------|---------------------|--------------------|--------------------|-------------|
 | CRITICAL | 21 open + 1 fixed (CR-6) | 5 | 0 | **27** |
-| HIGH | 45 | 8 | 2 (both FIXED) | **55** |
-| MEDIUM | 65 | 10 | 1 (FIXED) | **76** |
+| HIGH | 45 | 10 | 2 (both FIXED) | **57** |
+| MEDIUM | 64 | 9 | 1 (FIXED) | **74** |
 | LOW | 45 | 2 | 1 (FIXED) | **48** |
 | COSMETIC | 10 | 0 | 0 | **10** |
-| **TOTAL** | **185** | **25** | **4** | **214** |
+| **TOTAL** | **185** | **26** | **4** | **215** |
 
 > Note: Some code audit findings overlap with walkthrough findings (e.g., rate limiter disabled appears in both). Where findings are duplicates, both are preserved since they were discovered independently and provide complementary detail (code location vs. user-visible impact).
 
@@ -36,9 +36,9 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 210 |
+| OPEN | 211 |
 | FIXED (with commit) | 4 |
-| **TOTAL** | **214** |
+| **TOTAL** | **215** |
 
 ---
 
@@ -348,7 +348,6 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 | CA-M-6 | `src/frontend/handlers/handlers-deferred.js:21168` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` |
 | CA-M-7 | `src/frontend/pages/pages-intelligence.js:1826,1914` | "Coming soon" toast messages in production pages | `toast.info('...coming soon.')` |
 | CA-M-8 | `src/shared/ai/listing-generator.js:167,180,185,189` | `Math.random()` in template selection (4 instances) — non-deterministic listing generation | `templates.intro[Math.floor(Math.random() * length)]` |
-| CA-M-9 | `src/backend/db/seeds/demoData.js:383,388,410,415,422,446,471` | 7 `Math.random()` calls in demo seeds for order/tracking numbers — non-reproducible demo data | `order_number: 'PSH-' + Math.random().toString(36).substr(2, 8).toUpperCase()` |
 | CA-M-10 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics `Math.random()` fallback (duplicate reference with expanded detail) — `healthScore`, `orderAccuracy`, `onTimeDelivery`, `qualityRating` all generate fake "good" values (90-95% range) if DB fields missing | `const healthScore = supplier.health_score \|\| Math.floor(Math.random() * 30) + 70` |
 
 ---
@@ -364,17 +363,17 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 
 ## PLATFORM READINESS MATRIX
 
-| Platform | OAuth | Bot | Sync | Launch Status |
-|----------|-------|-----|------|---------------|
-| **eBay** | Exists (mock) | No bot (MISSING — must be built) | eBay sync exists | **BLOCKED** — no eBay bot in `worker/bots/` (see CR-5) |
-| **Poshmark** | Exists (mock) | ✅ poshmark-bot.js | Poshmark sync | **NEEDS** real OAuth |
-| **Facebook** | Exists (mock) | ✅ facebook-bot.js | FB sync | **NEEDS** real OAuth |
-| **Depop** | Exists (mock) | ✅ depop-bot.js | Depop sync | **NEEDS** real OAuth |
-| **Whatnot** | Exists (mock) | ✅ whatnot-bot.js | Whatnot sync | **NEEDS** real OAuth |
-| Mercari | Exists (mock) | ✅ mercari-bot.js | Mercari sync | Coming Soon — code must be feature-gated |
-| Grailed | Exists (mock) | ✅ grailed-bot.js | Grailed sync | Coming Soon — code must be feature-gated |
-| Etsy | Deferred | None | Exists | Coming Soon |
-| Shopify | Incomplete | None | Exists | Coming Soon |
+| Platform | OAuth | Bot | Sync | Publish | Launch Status |
+|----------|-------|-----|------|---------|---------------|
+| **eBay** | Exists (mock) | No bot (MISSING — must be built) | eBay sync exists | No bot | **BLOCKED** — no eBay bot in `worker/bots/` (see CR-5) |
+| **Poshmark** | Exists (mock) | ✅ poshmark-bot.js | Poshmark sync | Via bot | **NEEDS** real OAuth |
+| **Facebook** | Exists (mock) | ✅ facebook-bot.js | FB sync | Via bot | **NEEDS** real OAuth |
+| **Depop** | Exists (mock) | ✅ depop-bot.js | Depop sync | Via bot | **NEEDS** real OAuth |
+| **Whatnot** | Exists (mock) | ✅ whatnot-bot.js | Whatnot sync | Via bot | **NEEDS** real OAuth |
+| Mercari | Exists (mock) | ✅ mercari-bot.js | Mercari sync | Via bot | Coming Soon — code must be feature-gated |
+| Grailed | Exists (mock) | ✅ grailed-bot.js | Grailed sync | Via bot | Coming Soon — code must be feature-gated |
+| Etsy | Deferred | ❌ | Exists | ❌ | Coming Soon |
+| Shopify | Incomplete | ❌ | Exists | ❌ | Coming Soon |
 
 ---
 
@@ -436,4 +435,4 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 
 ---
 
-*Document generated: 2026-04-05. Source: LAUNCH_READINESS_2026-04-05.md (185 findings, 14 sessions), LAUNCH_AUDIT_FINDINGS_2026-04-05.md (25 findings, code scan), post-walkthrough session fixes (#186–#189).*
+*Document generated: 2026-04-05. Source: LAUNCH_READINESS_2026-04-05.md (185 findings, 14 sessions), LAUNCH_AUDIT_FINDINGS_2026-04-05.md (25 findings, code scan), post-walkthrough session fixes (#186-new–#189-new).*
