@@ -80,7 +80,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 
 | ID | Page / Component | Notes | Session Fixed | Status |
 |----|-----------------|-------|---------------|--------|
-| CR-6 | Market Intel | Hardcoded fake demand data removed — shows empty state / N/A | Fixed during session 4 dark mode pass | FIXED — unknown |
+| CR-6 | Market Intel | Hardcoded fake demand data removed — shows empty state / N/A | Fixed during session 4 dark mode pass | VERIFIED ✅ — 8247946 |
 
 ---
 
@@ -197,7 +197,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #145 | Community | Create Post modal: empty submit shows no validation — required Title/Content fields with no `<form>` wrapper | Session 6 | OPEN |
 | #146 | Calendar | Add Event modal: empty submit shows no validation — required Event Title field with no `<form>` wrapper | Session 6 | OPEN |
 | #147 | Global Search | Search bar in top nav non-functional — typing produces no results, no dropdown, pressing Enter has no effect | Session 6 | OPEN |
-| #149 | Shipping Calculator | Shows USPS carriers with imperial units (lbs/inches) — app targets Canadian sellers, should show Canada Post/Chitchats/Purolator with kg/cm and CAD | Session 6 | OPEN |
+| #149 | Shipping Calculator | Shows USPS carriers with imperial units (lbs/inches) — app targets Canadian sellers, should show Canada Post/Chitchats/Purolator with kg/cm and CAD | Session 6 | VERIFIED ✅ — 23a4729 |
 | #155 | Listings / Fee Calculator | Platform Fee Calculator shows wrong platforms — includes Mercari/Etsy (not at launch), missing Whatnot (IS at launch) | Session 7 | OPEN |
 | #159 | Vault Buddy | Vault Buddy auto-opens on every page render — `renderApp()` triggers panel open automatically on every page load; fires "Failed to load conversations" error toast each time | Session 8 | OPEN |
 | #164 | Listings / Fee Calculator | Platform Fee Calculator uses "$" not "C$", includes Etsy fees (not a launch platform) | Session 10 | OPEN |
