@@ -23,6 +23,7 @@ function validateCronSchedule(schedule) {
 
 
 export async function automationsRouter(ctx) {
+    try {
     const { method, path, body, query: queryParams, user } = ctx;
 
     // Check automation permission
@@ -1534,4 +1535,8 @@ export async function automationsRouter(ctx) {
     }
 
     return { status: 404, data: { error: 'Route not found' } };
+    } catch (error) {
+        logger.error('[Automations] Unhandled route error', { path: ctx.path, method: ctx.method, error: error.message });
+        return { status: 500, data: { error: 'Internal server error' } };
+    }
 }

@@ -20,6 +20,7 @@ function escapeHtml(str) {
  * Community router
  */
 export async function communityRouter(ctx) {
+    try {
     const { method, path, body, query: queryParams, user } = ctx;
 // TECH-DEBT: Migrate error responses to AppError classes (errorHandler.js)
 
@@ -551,4 +552,8 @@ export async function communityRouter(ctx) {
         status: 404,
         data: { error: 'Not found' }
     };
+    } catch (error) {
+        logger.error('[Community] Unhandled route error', { path: ctx.path, method: ctx.method, error: error.message });
+        return { status: 500, data: { error: 'Internal server error' } };
+    }
 }

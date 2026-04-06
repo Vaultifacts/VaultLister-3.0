@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../shared/logger.js';
 
 export async function checklistsRouter(ctx) {
+    try {
     const { method, path, body, user } = ctx;
 
     // Predefined checklist templates
@@ -332,4 +333,8 @@ export async function checklistsRouter(ctx) {
     }
 
     return { status: 404, data: { error: 'Route not found' } };
+    } catch (error) {
+        logger.error('[Checklists] Unhandled route error', { path: ctx.path, method: ctx.method, error: error.message });
+        return { status: 500, data: { error: 'Internal server error' } };
+    }
 }

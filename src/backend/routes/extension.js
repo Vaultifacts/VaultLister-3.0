@@ -12,6 +12,7 @@ import { safeJsonParse } from '../shared/utils.js';
  * Extension router
  */
 export async function extensionRouter(ctx) {
+    try {
     const { method, path, body, query: queryParams, user } = ctx;
 
     // Rate limit all extension endpoints (EXT-26)
@@ -761,4 +762,8 @@ export async function extensionRouter(ctx) {
         status: 404,
         data: { error: 'Not found' }
     };
+    } catch (error) {
+        logger.error('[Extension] Unhandled route error', { path: ctx.path, method: ctx.method, error: error.message });
+        return { status: 500, data: { error: 'Internal server error' } };
+    }
 }

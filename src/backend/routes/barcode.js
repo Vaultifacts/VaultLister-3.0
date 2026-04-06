@@ -5,6 +5,7 @@ import { logger } from '../shared/logger.js';
 import redis from '../services/redis.js';
 
 export async function barcodeRouter(ctx) {
+    try {
     const { method, path, body, query: queryParams, user } = ctx;
 
     // GET /api/barcode/lookup/:code - Look up barcode
@@ -166,6 +167,10 @@ export async function barcodeRouter(ctx) {
         status: 404,
         data: { error: 'Not found' }
     };
+    } catch (error) {
+        logger.error('[Barcode] Unhandled route error', { path: ctx.path, method: ctx.method, error: error.message });
+        return { status: 500, data: { error: 'Internal server error' } };
+    }
 }
 
 // External barcode lookup using Open Food Facts or similar free API

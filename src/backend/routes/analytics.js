@@ -26,6 +26,7 @@ export async function invalidateAnalyticsCache(_userId) {
 }
 
 export async function analyticsRouter(ctx) {
+    try {
     const { method, path, query: queryParams, user } = ctx;
 
     // Feature flag gate (REM-17)
@@ -1064,4 +1065,8 @@ export async function analyticsRouter(ctx) {
     }
 
     return { status: 404, data: { error: 'Route not found' } };
+    } catch (error) {
+        logger.error('[Analytics] Unhandled route error', { path: ctx.path, method: ctx.method, error: error.message });
+        return { status: 500, data: { error: 'Internal server error' } };
+    }
 }

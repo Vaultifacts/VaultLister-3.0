@@ -30,6 +30,7 @@ const OUTLOOK_SCOPES = [
 ];
 
 export async function emailOAuthRouter(ctx) {
+    try {
     const { method, path, body, user, query: queryParams } = ctx;
 
     // Helper to require authentication
@@ -654,4 +655,8 @@ export async function emailOAuthRouter(ctx) {
     }
 
     return { status: 404, data: { error: 'Route not found' } };
+    } catch (error) {
+        logger.error('[EmailOAuth] Unhandled route error', { path: ctx.path, method: ctx.method, error: error.message });
+        return { status: 500, data: { error: 'Internal server error' } };
+    }
 }
