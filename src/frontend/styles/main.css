@@ -10512,13 +10512,13 @@ body.dark-mode .confirm-dialog-message {
 
 /* Danger Button */
 .btn-danger {
-    background: var(--red-600);
+    background: var(--error-600, #dc2626);
     color: white;
     border: none;
 }
 
 .btn-danger:hover {
-    background: var(--red-700);
+    background: var(--error-700, #b91c1c);
 }
 
 /* Enhanced Toast Notifications */

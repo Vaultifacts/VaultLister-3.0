@@ -285,9 +285,9 @@ Object.assign(pages, {
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">2. How We Store Your Data</h2>
                         <p style="margin-bottom: 1rem;">Your data is stored in PostgreSQL. This means:</p>
                         <ul style="margin-bottom: 1rem; padding-left: 1.5rem;">
-                            <li>Your inventory, listings, and sales data never leave your device unless you explicitly share them</li>
+                            <li>Your inventory, listings, and sales data are stored securely on our cloud servers and never shared with third parties without your consent</li>
                             <li>You have full control over your data at all times</li>
-                            <li>Data is not uploaded to any cloud servers without your consent</li>
+                            <li>Data is encrypted in transit and at rest on Railway-hosted infrastructure</li>
                         </ul>
 
                         <h2 style="font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 1rem;">3. How We Use Your Information</h2>

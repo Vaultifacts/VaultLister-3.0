@@ -560,7 +560,7 @@ Object.assign(handlers, {
 
             // Re-render inventory page to show new item
             if (store.state.currentPage === 'inventory') {
-                const pageContent = pages.inventory();
+                const pageContent = window.pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
@@ -666,17 +666,21 @@ Object.assign(handlers, {
             if (!term || term.length === 0) {
                 // Clear search - reload full inventory
                 await handlers.loadInventory();
-                if (store.state.currentPage === 'inventory') {
-                    const pageContent = pages.inventory();
-                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                    // Restore focus to search input after DOM update
-                    requestAnimationFrame(() => {
-                        const searchInput = document.getElementById('inventory-search');
-                        if (searchInput) {
-                            searchInput.focus();
-                            searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
-                        }
-                    });
+                try {
+                    if (store.state.currentPage === 'inventory') {
+                        const pageContent = window.pages.inventory();
+                        document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        // Restore focus to search input after DOM update
+                        requestAnimationFrame(() => {
+                            const searchInput = document.getElementById('inventory-search');
+                            if (searchInput) {
+                                searchInput.focus();
+                                searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+                            }
+                        });
+                    }
+                } catch (renderErr) {
+                    console.error('Search render failed:', renderErr);
                 }
                 return;
             }
@@ -687,18 +691,22 @@ Object.assign(handlers, {
             const data = await api.get(`/inventory?search=${encodeURIComponent(term)}&limit=200`);
             store.setState({ inventory: data?.items || [] });
             // Re-render inventory page without triggering router
-            if (store.state.currentPage === 'inventory') {
-                const pageContent = pages.inventory();
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                // Restore focus to search input after DOM update
-                requestAnimationFrame(() => {
-                    const searchInput = document.getElementById('inventory-search');
-                    if (searchInput) {
-                        searchInput.value = term;
-                        searchInput.focus();
-                        searchInput.setSelectionRange(term.length, term.length);
-                    }
-                });
+            try {
+                if (store.state.currentPage === 'inventory') {
+                    const pageContent = window.pages.inventory();
+                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    // Restore focus to search input after DOM update
+                    requestAnimationFrame(() => {
+                        const searchInput = document.getElementById('inventory-search');
+                        if (searchInput) {
+                            searchInput.value = term;
+                            searchInput.focus();
+                            searchInput.setSelectionRange(term.length, term.length);
+                        }
+                    });
+                }
+            } catch (renderErr) {
+                console.error('Search render failed:', renderErr);
             }
         } catch (error) {
             console.error('Search failed:', error);
