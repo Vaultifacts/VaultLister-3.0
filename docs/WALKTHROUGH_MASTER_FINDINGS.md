@@ -23,9 +23,9 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Severity | Walkthrough Findings | Code Audit Findings | Post-Session Finds | Grand Total |
 |----------|---------------------|--------------------|--------------------|-------------|
-| CRITICAL | 22 | 5 | 0 | **27** |
-| HIGH | 44 | 8 | 2 (both FIXED) | **54** |
-| MEDIUM | 64 | 10 | 1 (FIXED) | **75** |
+| CRITICAL | 21 open + 1 fixed (CR-6) | 5 | 0 | **27** |
+| HIGH | 45 | 8 | 2 (both FIXED) | **55** |
+| MEDIUM | 65 | 10 | 1 (FIXED) | **76** |
 | LOW | 45 | 2 | 1 (FIXED) | **48** |
 | COSMETIC | 10 | 0 | 0 | **10** |
 | **TOTAL** | **185** | **25** | **4** | **214** |
@@ -57,7 +57,6 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 |
 | CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 |
 | CR-5 | eBay Integration | No eBay bot in `worker/bots/` — cross-listing to eBay via bot is impossible | Session 1 |
-| CR-6 | Market Intel | "Vintage Denim HOT 92", "Designer Bags HOT 87", "vintage levis 2.4k +15%" are all hardcoded fake data (**Fixed in later session per dark mode pass — shown as N/A**) | Session 1 |
 | CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything | Session 1 |
 | CR-8 | Help / Knowledge Base | Help page shows "1,240 views", "980 views" — no real KB exists | Session 1 |
 | CR-9 | Analytics | Sales Funnel "Views 50" is hardcoded fake data | Session 1 |
@@ -74,6 +73,14 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #160 | Plans & Billing | "Upgrade to Pro" crashes immediately: "Cannot read properties of undefined (reading 'get')" — same crash pattern as #150/#151. Core monetization flow broken | Session 8 |
 | #161 | Plans & Billing | "Upgrade to Business" crashes with same error — core monetization flow broken | Session 8 |
 | #171 | Calendar | Calendar page fails to render: `ReferenceError: date is not defined` at `pages-deferred.js:7537` — stale bundle variable name. Entire Calendar feature unavailable | Session 11 |
+
+---
+
+### CRITICAL — FIXED
+
+| ID | Page / Component | Notes | Session Fixed |
+|----|-----------------|-------|---------------|
+| CR-6 | Market Intel | Hardcoded fake demand data removed — shows empty state / N/A | Fixed during session 4 dark mode pass |
 
 ---
 
@@ -113,6 +120,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #125 | Support Tickets | `modals.viewTicket()` crashes: "Cannot read properties of undefined (reading 'length')" — support ticket viewing broken | Session 5 |
 | #126 | Cross-list Modal | Cross-list modal shows Etsy/Mercari/Grailed as active — for Canada launch only eBay, Poshmark, Facebook, Depop, Whatnot should be active | Session 5 |
 | #131 | Confirm Dialogs | `modals.confirm()` — danger button invisible in light mode. `btn-danger` has transparent background (`--red-600`/`--error` CSS variable not resolving). Affects all delete confirmations | Session 5 |
+| #136 | Privacy Policy (in-app) | In-app Privacy Policy contains "Your inventory, listings, and sales data never leave your device unless you explicitly share them" and "Data is not uploaded to any cloud servers without your consent" — factually false for a Railway-hosted cloud SaaS where ALL data is uploaded to cloud servers by design. Legal/trust risk: users may argue they were misled about data storage | Session 5 (Session 4 dark mode) |
 | #141 | Inventory | Add Item success triggers "undefined" content in main area — router navigates post-submit but target page function returns undefined. Page crashes after every successful item add | Session 6 |
 | #143 | Add Transaction | Modal HTML bleeds into page body — raw HTML attribute text renders visibly below modal: `onclick="event.stopPropagation()" role="document"> Add Transaction` | Session 6 |
 | #144 | Submit Feedback | Form simultaneously fires success AND error toasts on valid submission — conflicting UX | Session 6 |
@@ -182,6 +190,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-39 | Privacy (in-app) | Claims "GDPR Compliant" — Canada uses PIPEDA. Legal risk (duplicate of M-36) | Session 4 |
 | #122 | Templates | `modals.editTemplate()` silent failure — returns without error but no modal opens outside Templates page context | Session 5 |
 | #124 | Help Articles | `modals.viewArticle()` fails to open — modal immediately closes or renders in wrong DOM target | Session 5 |
+| #133 | Support Tickets (reportBug) | Ticket card displays "undefined" text in a metadata field (likely priority or assignee) — null-guard missing in ticket card rendering function. Any support ticket shown to users will display "undefined" — looks broken and unprofessional | Session 5 (Session 4 dark mode) |
 | #129 | Whatnot | `modals.viewWhatnotEvent()` — 3 data bugs: "Invalid Date" start time, "undefined" status badge, blank event title in modal header | Session 5 |
 | #142 | Add Transaction | Empty submit shows no validation error — `required` fields but no `<form>` element; state-controlled form bypasses HTML5 validation | Session 6 |
 | #143b | Add Transaction | No success feedback on submit — modal closes silently, no toast, no confirmation, no page update | Session 6 |
@@ -339,7 +348,7 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 | CA-M-6 | `src/frontend/handlers/handlers-deferred.js:21168` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` |
 | CA-M-7 | `src/frontend/pages/pages-intelligence.js:1826,1914` | "Coming soon" toast messages in production pages | `toast.info('...coming soon.')` |
 | CA-M-8 | `src/shared/ai/listing-generator.js:167,180,185,189` | `Math.random()` in template selection (4 instances) — non-deterministic listing generation | `templates.intro[Math.floor(Math.random() * length)]` |
-| CA-M-9 | `src/backend/db/demoData.js:383,388,410,415,422,446,471` | 7 `Math.random()` calls in demo seeds for order/tracking numbers — non-reproducible demo data | `order_number: 'PSH-' + Math.random().toString(36).substr(2, 8).toUpperCase()` |
+| CA-M-9 | `src/backend/db/seeds/demoData.js:383,388,410,415,422,446,471` | 7 `Math.random()` calls in demo seeds for order/tracking numbers — non-reproducible demo data | `order_number: 'PSH-' + Math.random().toString(36).substr(2, 8).toUpperCase()` |
 | CA-M-10 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics `Math.random()` fallback (duplicate reference with expanded detail) — `healthScore`, `orderAccuracy`, `onTimeDelivery`, `qualityRating` all generate fake "good" values (90-95% range) if DB fields missing | `const healthScore = supplier.health_score \|\| Math.floor(Math.random() * 30) + 70` |
 
 ---
@@ -357,7 +366,7 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 
 | Platform | OAuth | Bot | Sync | Launch Status |
 |----------|-------|-----|------|---------------|
-| **eBay** | Exists (mock) | No bot (API-based, implemented) | eBay sync exists | **NEEDS** real OAuth credentials |
+| **eBay** | Exists (mock) | No bot (MISSING — must be built) | eBay sync exists | **BLOCKED** — no eBay bot in `worker/bots/` (see CR-5) |
 | **Poshmark** | Exists (mock) | ✅ poshmark-bot.js | Poshmark sync | **NEEDS** real OAuth |
 | **Facebook** | Exists (mock) | ✅ facebook-bot.js | FB sync | **NEEDS** real OAuth |
 | **Depop** | Exists (mock) | ✅ depop-bot.js | Depop sync | **NEEDS** real OAuth |
