@@ -15410,7 +15410,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '87960710';
+    const v = 'd844d3ce';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -25494,8 +25494,7 @@ const handlers = {
     },
 
     socialLogin(provider) {
-        const name = provider.charAt(0).toUpperCase() + provider.slice(1);
-        toast.warning(`${name} sign-in requires OAuth credentials — set ${provider.toUpperCase()}_CLIENT_ID and ${provider.toUpperCase()}_CLIENT_SECRET in .env to enable.`);
+        window.location.href = `/api/social-auth/${provider}`;
     },
 
     handleDragOver: function(event) {
