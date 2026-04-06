@@ -323,14 +323,14 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 
 | ID | File:Line | Issue | Code Reference | Status |
 |----|-----------|-------|----------------|--------|
-| CA-H-1 | `src/backend/routes/analytics.js:28` | `analyticsRouter()` — no top-level try/catch. Unhandled errors crash route handler. | `export async function analyticsRouter(ctx) {` | OPEN |
-| CA-H-2 | `src/backend/routes/automations.js:25` | `automationsRouter()` — no try/catch | `export async function automationsRouter(ctx) {` | OPEN |
-| CA-H-3 | `src/backend/routes/barcode.js:7` | `barcodeRouter()` — no error boundary | `export async function barcodeRouter(ctx) {` | OPEN |
-| CA-H-4 | `src/backend/routes/checklists.js:6` | `checklistsRouter()` — no try/catch | `export async function checklistsRouter(ctx) {` | OPEN |
-| CA-H-5 | `src/backend/routes/community.js:22` | `communityRouter()` — no error handler | `export async function communityRouter(ctx) {` | OPEN |
-| CA-H-6 | `src/backend/routes/currency.js:3` | `currencyRouter()` — no error boundary | `export async function currencyRouter(ctx) {` | OPEN |
-| CA-H-7 | `src/backend/routes/emailOAuth.js:32` | `emailOAuthRouter()` — no try/catch. **OAuth-critical** — auth flows can crash silently | `export async function emailOAuthRouter(ctx) {` | OPEN |
-| CA-H-8 | `src/backend/routes/extension.js:14` | `extensionRouter()` — no error handler | `export async function extensionRouter(ctx) {` | OPEN |
+| CA-H-1 | `src/backend/routes/analytics.js:28` | `analyticsRouter()` — no top-level try/catch. Unhandled errors crash route handler. | `export async function analyticsRouter(ctx) {` | VERIFIED ✅ — 588ad7f |
+| CA-H-2 | `src/backend/routes/automations.js:25` | `automationsRouter()` — no try/catch | `export async function automationsRouter(ctx) {` | VERIFIED ✅ — 588ad7f |
+| CA-H-3 | `src/backend/routes/barcode.js:7` | `barcodeRouter()` — no error boundary | `export async function barcodeRouter(ctx) {` | VERIFIED ✅ — 588ad7f |
+| CA-H-4 | `src/backend/routes/checklists.js:6` | `checklistsRouter()` — no try/catch | `export async function checklistsRouter(ctx) {` | VERIFIED ✅ — 588ad7f |
+| CA-H-5 | `src/backend/routes/community.js:22` | `communityRouter()` — no error handler | `export async function communityRouter(ctx) {` | VERIFIED ✅ — 588ad7f |
+| CA-H-6 | `src/backend/routes/currency.js:3` | `currencyRouter()` — no error boundary | `export async function currencyRouter(ctx) {` | VERIFIED ✅ — 588ad7f |
+| CA-H-7 | `src/backend/routes/emailOAuth.js:32` | `emailOAuthRouter()` — no try/catch. **OAuth-critical** — auth flows can crash silently | `export async function emailOAuthRouter(ctx) {` | VERIFIED ✅ — 588ad7f |
+| CA-H-8 | `src/backend/routes/extension.js:14` | `extensionRouter()` — no error handler | `export async function extensionRouter(ctx) {` | VERIFIED ✅ — 588ad7f |
 | CA-H-9 | `src/backend/routes/ai.js:173,178,183,298,457,820,823,1145,1148` | 9 bare `JSON.parse()` calls in AI route — malformed JSON crashes handler, returns 500 instead of 400 | `analysisData = JSON.parse(responseText);` | VERIFIED ✅ — ebba2af |
 | CA-H-10 | `src/backend/routes/automations.js:62,68,255,261,355,361,456,462` | 8 bare `JSON.parse()` calls on rule objects — unprotected. **Fix:** Use `safeJsonParse(str, {})`. | `rule.conditions = JSON.parse(rule.conditions or '{}');` | VERIFIED ✅ — f6876da |
 
