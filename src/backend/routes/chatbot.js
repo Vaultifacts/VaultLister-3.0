@@ -198,13 +198,13 @@ What can I help you with today?`;
             );
 
             // Get conversation history (last 10 messages for context)
-            const historyMessages = await query.all(
+            const historyMessages = (await query.all(
                 `SELECT role, content FROM chat_messages
                  WHERE conversation_id = ?
                  ORDER BY created_at DESC
                  LIMIT 10`,
                 [conversation_id]
-            ).reverse();
+            )).reverse();
 
             // Get response from Grok (or mock)
             const grokResponse = await getGrokResponse(
