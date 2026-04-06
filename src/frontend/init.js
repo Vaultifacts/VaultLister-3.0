@@ -58,7 +58,7 @@ async function initApp() {
             wsSubscribe.onOfferReceived((data) => {
                 const offer = data.offer || data;
                 const title = offer.listing_title || 'your listing';
-                const amt = offer.offer_amount != null ? '$' + Number(offer.offer_amount).toFixed(2) : '';
+                const amt = offer.offer_amount != null ? 'C$' + Number(offer.offer_amount).toFixed(2) : '';
                 notificationCenter.add({ title: 'New offer received', message: `${amt} offer on ${title}`, type: 'offer', icon: 'offers' });
                 if (typeof toast !== 'undefined') toast.info(`New offer received: ${amt} on ${title}`);
             });

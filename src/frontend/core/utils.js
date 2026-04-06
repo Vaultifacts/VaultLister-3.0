@@ -1840,7 +1840,7 @@ const otpInput = {
 // Currency Input Formatter
 const currencyInput = {
     create(id, options = {}) {
-        const { symbol = '$', suffix = '', value = '', placeholder = '0.00' } = options;
+        const { symbol = 'C$', suffix = '', value = '', placeholder = '0.00' } = options;
 
         return `
             <div class="currency-input-wrapper ${suffix ? 'has-suffix' : ''}">
@@ -5646,7 +5646,7 @@ const goalWidget = {
             title = 'Monthly Goal',
             current = 0,
             target = 100,
-            unit = '$',
+            unit = 'C$',
             daysRemaining = 0
         } = data;
 

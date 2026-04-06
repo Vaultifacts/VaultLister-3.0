@@ -3008,7 +3008,7 @@ Object.assign(handlers, {
                 amountInput.addEventListener('input', () => {
                     const drop = parseFloat(amountInput.value) || 0;
                     const newPrice = Math.max(0, currentPrice - drop);
-                    document.querySelector('#new-price-preview .new-price').textContent = '$' + newPrice.toFixed(2);
+                    document.querySelector('#new-price-preview .new-price').textContent = 'C$' + newPrice.toFixed(2);
                     percentInput.value = ((drop / currentPrice) * 100).toFixed(0);
                 });
                 percentInput.addEventListener('input', () => {
@@ -3016,7 +3016,7 @@ Object.assign(handlers, {
                     const drop = (currentPrice * percent) / 100;
                     amountInput.value = drop.toFixed(2);
                     const newPrice = Math.max(0, currentPrice - drop);
-                    document.querySelector('#new-price-preview .new-price').textContent = '$' + newPrice.toFixed(2);
+                    document.querySelector('#new-price-preview .new-price').textContent = 'C$' + newPrice.toFixed(2);
                 });
             }
         }, 100);
@@ -3036,7 +3036,7 @@ Object.assign(handlers, {
         const newPricePreview = document.querySelector('#new-price-preview .new-price');
         if (dropAmountEl) dropAmountEl.value = dropAmount.toFixed(2);
         if (dropPercentEl) dropPercentEl.value = percent;
-        if (newPricePreview) newPricePreview.textContent = '$' + newPrice.toFixed(2);
+        if (newPricePreview) newPricePreview.textContent = 'C$' + newPrice.toFixed(2);
 
         // Highlight selected preset
         document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('selected'));
@@ -3359,7 +3359,7 @@ Object.assign(handlers, {
         // Update result cards
         const netProfitEl = document.getElementById('result-net-profit');
         if (netProfitEl) {
-            netProfitEl.textContent = (netProfit >= 0 ? '$' : '-$') + Math.abs(netProfit).toFixed(2);
+            netProfitEl.textContent = (netProfit >= 0 ? 'C$' : '-C$') + Math.abs(netProfit).toFixed(2);
             netProfitEl.className = 'profit-result-value ' + (netProfit >= 0 ? 'positive' : 'negative');
         }
 
@@ -3376,15 +3376,15 @@ Object.assign(handlers, {
         }
 
         const feeEl = document.getElementById('result-platform-fee');
-        if (feeEl) feeEl.textContent = '$' + platformFee.toFixed(2);
+        if (feeEl) feeEl.textContent = 'C$' + platformFee.toFixed(2);
 
         // Update breakdown
         const breakdownEls = {
-            'breakdown-selling': '$' + sellingPrice.toFixed(2),
-            'breakdown-platform': '-$' + platformFee.toFixed(2),
-            'breakdown-purchase': '-$' + purchaseCost.toFixed(2),
-            'breakdown-shipping': '-$' + shippingCost.toFixed(2),
-            'breakdown-other': '-$' + otherCosts.toFixed(2)
+            'breakdown-selling': 'C$' + sellingPrice.toFixed(2),
+            'breakdown-platform': '-C$' + platformFee.toFixed(2),
+            'breakdown-purchase': '-C$' + purchaseCost.toFixed(2),
+            'breakdown-shipping': '-C$' + shippingCost.toFixed(2),
+            'breakdown-other': '-C$' + otherCosts.toFixed(2)
         };
         for (const [id, text] of Object.entries(breakdownEls)) {
             const el = document.getElementById(id);
@@ -3393,7 +3393,7 @@ Object.assign(handlers, {
 
         const totalEl = document.getElementById('breakdown-total');
         if (totalEl) {
-            totalEl.textContent = (netProfit >= 0 ? '$' : '-$') + Math.abs(netProfit).toFixed(2);
+            totalEl.textContent = (netProfit >= 0 ? 'C$' : '-C$') + Math.abs(netProfit).toFixed(2);
             totalEl.className = netProfit >= 0 ? 'positive' : 'negative';
         }
 
@@ -4650,7 +4650,7 @@ Object.assign(handlers, {
         const bundlePrice = bundleValue * (1 - discount / 100);
         const priceEl = document.getElementById('bundle-final-price');
         if (priceEl) {
-            priceEl.textContent = '$' + bundlePrice.toFixed(2);
+            priceEl.textContent = 'C$' + bundlePrice.toFixed(2);
         }
     },
 

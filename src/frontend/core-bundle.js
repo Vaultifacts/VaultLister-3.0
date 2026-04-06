@@ -1841,7 +1841,7 @@ const otpInput = {
 // Currency Input Formatter
 const currencyInput = {
     create(id, options = {}) {
-        const { symbol = '$', suffix = '', value = '', placeholder = '0.00' } = options;
+        const { symbol = 'C$', suffix = '', value = '', placeholder = '0.00' } = options;
 
         return `
             <div class="currency-input-wrapper ${suffix ? 'has-suffix' : ''}">
@@ -5647,7 +5647,7 @@ const goalWidget = {
             title = 'Monthly Goal',
             current = 0,
             target = 100,
-            unit = '$',
+            unit = 'C$',
             daysRemaining = 0
         } = data;
 
@@ -15410,7 +15410,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'e462694a';
+    const v = 'bdaf9a94';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -18292,7 +18292,7 @@ const pages = {
                             ${components.statCard('Total Inventory', stats.inventory, 'inventory', inventoryChange, 'primary', generateSparklineData('inventory'), 'inventory')}
                             ${components.statCard('Active Listings', stats.listings, 'list', listingsChange, 'primary', generateSparklineData('listings'), 'listings')}
                             ${components.statCard('Total Sales', stats.sales, 'sales', salesChange, 'green', generateSparklineData('sales'), 'sales')}
-                            ${components.statCard('Revenue', '$' + stats.revenue.toLocaleString(), 'analytics', revenueChange, 'green', generateSparklineData('revenue'), 'revenue')}
+                            ${components.statCard('Revenue', 'C$' + stats.revenue.toLocaleString(), 'analytics', revenueChange, 'green', generateSparklineData('revenue'), 'revenue')}
                         </div>
                     </div>
                 </div>
@@ -19188,9 +19188,9 @@ const pages = {
             <!-- Sales Summary Cards -->
             <div class="stats-grid mb-6">
                 ${components.statCard('Total Sales', salesTabStats.totalSales, 'sales', 0)}
-                ${components.statCard('Total Revenue', '$' + salesTabStats.totalRevenue.toFixed(2), 'analytics', 0)}
-                ${components.statCard('Total Profit', '$' + salesTabStats.totalProfit.toFixed(2), 'activity', 0)}
-                ${components.statCard('Avg Sale Price', '$' + salesTabStats.avgSalePrice.toFixed(2), 'inventory', 0)}
+                ${components.statCard('Total Revenue', 'C$' + salesTabStats.totalRevenue.toFixed(2), 'analytics', 0)}
+                ${components.statCard('Total Profit', 'C$' + salesTabStats.totalProfit.toFixed(2), 'activity', 0)}
+                ${components.statCard('Avg Sale Price', 'C$' + salesTabStats.avgSalePrice.toFixed(2), 'inventory', 0)}
             </div>
 
             <div class="grid grid-cols-3 gap-4 mb-6">
@@ -20011,7 +20011,7 @@ const pages = {
 
         // KPI data for dashboard
         const kpiData = [
-            { label: 'Revenue', value: '$' + totalRevenue.toFixed(0), change: 0, target: totalRevenue * 1.2, actual: totalRevenue },
+            { label: 'Revenue', value: 'C$' + totalRevenue.toFixed(0), change: 0, target: totalRevenue * 1.2, actual: totalRevenue },
             { label: 'Sales Count', value: totalSales.toString(), change: 0, target: Math.ceil(totalSales * 1.15), actual: totalSales },
             { label: 'Profit Margin', value: profitMargin + '%', change: 0, target: 35, actual: profitMargin },
             { label: 'Sell-Through', value: sellThrough + '%', change: 0, target: 40, actual: sellThrough }
@@ -20035,7 +20035,7 @@ const pages = {
             name: 'Monthly Revenue Goal',
             current: totalRevenue,
             target: store.state.revenueGoal || 500,
-            unit: '$'
+            unit: 'C$'
         };
 
         // Calculate performance trends
@@ -20133,7 +20133,7 @@ const pages = {
                     }
                 };
                 const formatVal = (val, fmt) => {
-                    if (fmt === 'currency') return '$' + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    if (fmt === 'currency') return 'C$' + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
                     if (fmt === 'percentage') return val.toFixed(1) + '%';
                     return Math.round(val).toLocaleString();
                 };
@@ -20190,7 +20190,7 @@ const pages = {
                         <div class="highlight-content">
                             <div class="highlight-label">Top Platform</div>
                             <div class="highlight-value">${platformData.length > 0 ? platformData[0].label : 'N/A'}</div>
-                            <div class="highlight-detail">${platformData.length > 0 ? '$' + platformData[0].value.toFixed(2) + ' revenue' : ''}</div>
+                            <div class="highlight-detail">${platformData.length > 0 ? 'C$' + platformData[0].value.toFixed(2) + ' revenue' : ''}</div>
                         </div>
                     </div>
                     <div class="highlight-card">
@@ -20576,7 +20576,7 @@ const pages = {
             </div>
 
             <div class="stats-grid mb-6">
-                ${components.statCard('Total Revenue', '$' + totalRevenue.toFixed(2), 'analytics', 15)}
+                ${components.statCard('Total Revenue', 'C$' + totalRevenue.toFixed(2), 'analytics', 15)}
                 ${components.statCard('Profit Margin', profitMargin + '%', 'sales', 5)}
                 ${components.statCard('Sell-Through', sellThrough + '%', 'inventory', 12)}
                 ${components.statCard('Total Sales', totalSales, 'activity', 0)}
@@ -25705,7 +25705,7 @@ const handlers = {
         const yLines = Array.from({length: ySteps + 1}, (_, i) => {
             const val = min + (range / ySteps) * i;
             const y = padY + chartH - (i / ySteps) * chartH;
-            return { y, label: dataType === 'revenue' ? '$' + Math.round(val) : Math.round(val) };
+            return { y, label: dataType === 'revenue' ? 'C$' + Math.round(val) : Math.round(val) };
         });
         const xLabels = [0, Math.floor(days / 4), Math.floor(days / 2), Math.floor(days * 3 / 4), days - 1];
         const title = dataType.charAt(0).toUpperCase() + dataType.slice(1);
@@ -25729,7 +25729,7 @@ const handlers = {
                             <polyline fill="none" stroke="var(--primary-500)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${polyline}"/>
                             ${points.filter((_, i) => i % 3 === 0 || i === points.length - 1).map(p => `
                                 <circle cx="${p.x}" cy="${p.y}" r="3" fill="var(--primary-500)"/>
-                                <text x="${p.x}" y="${p.y - 8}" text-anchor="middle" fill="var(--gray-600)" font-size="9">${dataType === 'revenue' ? '$' + Math.round(p.val) : p.val}</text>
+                                <text x="${p.x}" y="${p.y - 8}" text-anchor="middle" fill="var(--gray-600)" font-size="9">${dataType === 'revenue' ? 'C$' + Math.round(p.val) : p.val}</text>
                             `).join('')}
                         </svg>
                     </div>
@@ -26047,8 +26047,8 @@ const handlers = {
         const elements = document.querySelectorAll('[data-countup]');
         elements.forEach(el => {
             const raw = el.getAttribute('data-countup');
-            const isCurrency = raw.startsWith('$');
-            const target = parseFloat(raw.replace(/[$,]/g, ''));
+            const isCurrency = raw.startsWith('C$');
+            const target = parseFloat(raw.replace(/[C$,]/g, ''));
             if (isNaN(target) || target === 0) return;
             const duration = 800;
             const startTime = performance.now();
@@ -26058,10 +26058,10 @@ const handlers = {
                 // Ease-out cubic
                 const eased = 1 - Math.pow(1 - progress, 3);
                 const current = Math.round(target * eased);
-                el.textContent = isCurrency ? '$' + current.toLocaleString() : current.toLocaleString();
+                el.textContent = isCurrency ? 'C$' + current.toLocaleString() : current.toLocaleString();
                 if (progress < 1) requestAnimationFrame(animate);
             };
-            el.textContent = isCurrency ? '$0' : '0';
+            el.textContent = isCurrency ? 'C$0' : '0';
             requestAnimationFrame(animate);
         });
     },
@@ -27377,7 +27377,7 @@ async function initApp() {
             wsSubscribe.onOfferReceived((data) => {
                 const offer = data.offer || data;
                 const title = offer.listing_title || 'your listing';
-                const amt = offer.offer_amount != null ? '$' + Number(offer.offer_amount).toFixed(2) : '';
+                const amt = offer.offer_amount != null ? 'C$' + Number(offer.offer_amount).toFixed(2) : '';
                 notificationCenter.add({ title: 'New offer received', message: `${amt} offer on ${title}`, type: 'offer', icon: 'offers' });
                 if (typeof toast !== 'undefined') toast.info(`New offer received: ${amt} on ${title}`);
             });

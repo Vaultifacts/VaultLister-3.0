@@ -611,7 +611,7 @@ Object.assign(pages, {
                         <div onclick="handlers.viewCalendarDay(${dayCounter})"
                              class="calendar-day ${today ? 'calendar-day-today' : ''}"
                              style="${heatStyle}"
-                             title="${dayRevenue > 0 ? '$' + dayRevenue.toFixed(2) + ' revenue' : ''}">
+                             title="${dayRevenue > 0 ? 'C$' + dayRevenue.toFixed(2) + ' revenue' : ''}">
                             <div class="calendar-day-number ${today ? 'today' : ''}">
                                 ${dayCounter}
                             </div>

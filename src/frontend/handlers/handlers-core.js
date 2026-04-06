@@ -309,7 +309,7 @@ const handlers = {
         const yLines = Array.from({length: ySteps + 1}, (_, i) => {
             const val = min + (range / ySteps) * i;
             const y = padY + chartH - (i / ySteps) * chartH;
-            return { y, label: dataType === 'revenue' ? '$' + Math.round(val) : Math.round(val) };
+            return { y, label: dataType === 'revenue' ? 'C$' + Math.round(val) : Math.round(val) };
         });
         const xLabels = [0, Math.floor(days / 4), Math.floor(days / 2), Math.floor(days * 3 / 4), days - 1];
         const title = dataType.charAt(0).toUpperCase() + dataType.slice(1);
@@ -333,7 +333,7 @@ const handlers = {
                             <polyline fill="none" stroke="var(--primary-500)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${polyline}"/>
                             ${points.filter((_, i) => i % 3 === 0 || i === points.length - 1).map(p => `
                                 <circle cx="${p.x}" cy="${p.y}" r="3" fill="var(--primary-500)"/>
-                                <text x="${p.x}" y="${p.y - 8}" text-anchor="middle" fill="var(--gray-600)" font-size="9">${dataType === 'revenue' ? '$' + Math.round(p.val) : p.val}</text>
+                                <text x="${p.x}" y="${p.y - 8}" text-anchor="middle" fill="var(--gray-600)" font-size="9">${dataType === 'revenue' ? 'C$' + Math.round(p.val) : p.val}</text>
                             `).join('')}
                         </svg>
                     </div>
@@ -651,8 +651,8 @@ const handlers = {
         const elements = document.querySelectorAll('[data-countup]');
         elements.forEach(el => {
             const raw = el.getAttribute('data-countup');
-            const isCurrency = raw.startsWith('$');
-            const target = parseFloat(raw.replace(/[$,]/g, ''));
+            const isCurrency = raw.startsWith('C$');
+            const target = parseFloat(raw.replace(/[C$,]/g, ''));
             if (isNaN(target) || target === 0) return;
             const duration = 800;
             const startTime = performance.now();
@@ -662,10 +662,10 @@ const handlers = {
                 // Ease-out cubic
                 const eased = 1 - Math.pow(1 - progress, 3);
                 const current = Math.round(target * eased);
-                el.textContent = isCurrency ? '$' + current.toLocaleString() : current.toLocaleString();
+                el.textContent = isCurrency ? 'C$' + current.toLocaleString() : current.toLocaleString();
                 if (progress < 1) requestAnimationFrame(animate);
             };
-            el.textContent = isCurrency ? '$0' : '0';
+            el.textContent = isCurrency ? 'C$0' : '0';
             requestAnimationFrame(animate);
         });
     },

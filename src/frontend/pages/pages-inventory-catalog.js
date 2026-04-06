@@ -2454,7 +2454,7 @@ Object.assign(pages, {
                                                 <td>$${(item.original_price || 0).toFixed(2)}</td>
                                                 <td>$${(item.new_price || 0).toFixed(2)}</td>
                                                 <td class="${item.new_price < item.original_price ? 'text-error' : 'text-success'}">
-                                                    ${item.new_price !== item.original_price ? (item.new_price < item.original_price ? '-' : '+') + '$' + Math.abs(item.new_price - item.original_price).toFixed(2) : '-'}
+                                                    ${item.new_price !== item.original_price ? (item.new_price < item.original_price ? '-' : '+') + 'C$' + Math.abs(item.new_price - item.original_price).toFixed(2) : '-'}
                                                 </td>
                                                 <td><span class="badge badge-${item.status === 'completed' ? 'success' : item.status === 'failed' ? 'error' : 'warning'}">${item.status}</span></td>
                                                 <td>

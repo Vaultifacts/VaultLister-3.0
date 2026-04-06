@@ -5595,7 +5595,7 @@ Object.assign(handlers, {
                     '<td>' + (s.days_old || 0) + 'd</td>' +
                     '<td>$' + (s.list_price || s.current_price || 0).toFixed(2) + '</td>' +
                     '<td style="font-weight:600;">$' + (s.suggested_price || 0).toFixed(2) + '</td>' +
-                    '<td style="color:' + changeColor + ';font-weight:600;">' + changePrefix + '$' + (s.price_change || 0).toFixed(2) + '</td>' +
+                    '<td style="color:' + changeColor + ';font-weight:600;">' + changePrefix + 'C$' + (s.price_change || 0).toFixed(2) + '</td>' +
                     '<td class="text-xs text-gray-500">' + escapeHtml(s.reason || '') + '</td>' +
                     '<td><button class="btn btn-xs btn-ghost" onclick="handlers.applySinglePriceSuggestion(\'' + s.id + '\', ' + (s.suggested_price || 0) + ', ' + (s.list_price || s.current_price || 0) + ')">' + components.icon('check', 12) + '</button></td></tr>';
             }).join('') +

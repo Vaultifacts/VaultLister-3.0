@@ -2639,8 +2639,8 @@ Object.assign(pages, {
 
             <div class="stats-grid mb-6">
                 ${components.statCard('Total Sales', sales.length, 'sales')}
-                ${components.statCard('Revenue', '$' + sales.reduce((s, x) => s + (x.sale_price || 0), 0).toFixed(2), 'analytics')}
-                ${components.statCard('Gross Profit', '$' + sales.reduce((s, x) => s + (x.net_profit || 0), 0).toFixed(2), 'activity')}
+                ${components.statCard('Revenue', 'C$' + sales.reduce((s, x) => s + (x.sale_price || 0), 0).toFixed(2), 'analytics')}
+                ${components.statCard('Gross Profit', 'C$' + sales.reduce((s, x) => s + (x.net_profit || 0), 0).toFixed(2), 'activity')}
                 ${components.statCard('Pending Shipments', sales.filter(s => s.status === 'pending').length, 'inventory')}
             </div>
 
@@ -2778,8 +2778,8 @@ Object.assign(pages, {
             purchases: `
                 <div class="stats-grid mb-6">
                     ${components.statCard('Total Purchases', purchaseStats.total, 'activity', 0)}
-                    ${components.statCard('Total Spend', '$' + purchaseStats.totalSpend.toFixed(2), 'dollar', 0)}
-                    ${components.statCard('Avg Purchase', '$' + purchaseStats.avgAmount.toFixed(2), 'analytics', 0)}
+                    ${components.statCard('Total Spend', 'C$' + purchaseStats.totalSpend.toFixed(2), 'dollar', 0)}
+                    ${components.statCard('Avg Purchase', 'C$' + purchaseStats.avgAmount.toFixed(2), 'analytics', 0)}
                 </div>
 
                 <div class="card">
@@ -3868,7 +3868,7 @@ Object.assign(pages, {
                             '<td class="font-medium">' + m + '</td>' +
                             '<td style="color: var(--success);">$' + income[i].toLocaleString() + '</td>' +
                             '<td style="color: var(--danger);">$' + expenses[i].toLocaleString() + '</td>' +
-                            '<td class="font-medium" style="color: ' + (net[i] >= 0 ? 'var(--success)' : 'var(--danger)') + ';">' + (net[i] >= 0 ? '+' : '') + '$' + net[i].toLocaleString() + '</td>' +
+                            '<td class="font-medium" style="color: ' + (net[i] >= 0 ? 'var(--success)' : 'var(--danger)') + ';">' + (net[i] >= 0 ? '+' : '') + 'C$' + net[i].toLocaleString() + '</td>' +
                             '<td class="font-medium">$' + cumulative[i].toLocaleString() + '</td>' +
                             '<td style="width: 120px;"><div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;"><div style="height: 100%; width: ' + Math.round(income[i] / maxVal * 100) + '%; background: var(--success); border-radius: 4px;"></div></div></td>' +
                         '</tr>').join('') +
@@ -4020,7 +4020,7 @@ Object.assign(pages, {
                                 '<span style="font-size: 13px;">' + t.desc + '</span>' +
                             '</div>' +
                             '<div style="display: flex; gap: 8px; align-items: center;">' +
-                                '<span style="font-weight: 600; color: ' + (t.amount >= 0 ? 'var(--success)' : 'var(--danger)') + ';">' + (t.amount >= 0 ? '+' : '') + '$' + Math.abs(t.amount).toFixed(2) + '</span>' +
+                                '<span style="font-weight: 600; color: ' + (t.amount >= 0 ? 'var(--success)' : 'var(--danger)') + ';">' + (t.amount >= 0 ? '+' : '') + 'C$' + Math.abs(t.amount).toFixed(2) + '</span>' +
                                 '<button class="btn btn-sm btn-ghost" onclick="handlers.matchTransaction()" title="Match">' + components.icon('check', 14) + '</button>' +
                             '</div>' +
                         '</div>').join('')}
@@ -7340,7 +7340,7 @@ Object.assign(pages, {
                         <div onclick="handlers.viewCalendarDay(${dayCounter})"
                              class="calendar-day ${today ? 'calendar-day-today' : ''}"
                              style="${heatStyle}"
-                             title="${dayRevenue > 0 ? '$' + dayRevenue.toFixed(2) + ' revenue' : ''}">
+                             title="${dayRevenue > 0 ? 'C$' + dayRevenue.toFixed(2) + ' revenue' : ''}">
                             <div class="calendar-day-number ${today ? 'today' : ''}">
                                 ${dayCounter}
                             </div>
@@ -15318,7 +15318,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                 <td>$${(item.original_price || 0).toFixed(2)}</td>
                                                 <td>$${(item.new_price || 0).toFixed(2)}</td>
                                                 <td class="${item.new_price < item.original_price ? 'text-error' : 'text-success'}">
-                                                    ${item.new_price !== item.original_price ? (item.new_price < item.original_price ? '-' : '+') + '$' + Math.abs(item.new_price - item.original_price).toFixed(2) : '-'}
+                                                    ${item.new_price !== item.original_price ? (item.new_price < item.original_price ? '-' : '+') + 'C$' + Math.abs(item.new_price - item.original_price).toFixed(2) : '-'}
                                                 </td>
                                                 <td><span class="badge badge-${item.status === 'completed' ? 'success' : item.status === 'failed' ? 'error' : 'warning'}">${item.status}</span></td>
                                                 <td>
@@ -15445,7 +15445,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                 <td><span class="badge">${(label.carrier || '').toUpperCase()}</span></td>
                                                 <td>${escapeHtml(label.service_type || 'N/A')}</td>
                                                 <td>${label.tracking_number ? `<code class="text-xs">${escapeHtml(label.tracking_number)}</code>` : '-'}</td>
-                                                <td>${label.total_cost ? '$' + label.total_cost.toFixed(2) : '-'}</td>
+                                                <td>${label.total_cost ? 'C$' + label.total_cost.toFixed(2) : '-'}</td>
                                                 <td><span class="badge badge-${label.status === 'shipped' || label.status === 'delivered' ? 'success' : label.status === 'voided' ? 'error' : 'warning'}">${label.status}</span></td>
                                                 <td>
                                                     <button class="btn btn-ghost btn-sm" onclick="handlers.viewLabel('${label.id}')" title="View">
@@ -16177,16 +16177,16 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             ${activeTab === 'purchases' ? `
                 <div class="stats-grid mb-6">
                     ${components.statCard('Total Purchases', purchaseStats.total.toString(), 'download', 0)}
-                    ${components.statCard('Total Spent', '$' + purchaseStats.totalAmount.toFixed(2), 'analytics', 0)}
-                    ${components.statCard('Avg Purchase', '$' + purchaseStats.avgAmount.toFixed(2), 'activity', 0)}
+                    ${components.statCard('Total Spent', 'C$' + purchaseStats.totalAmount.toFixed(2), 'analytics', 0)}
+                    ${components.statCard('Avg Purchase', 'C$' + purchaseStats.avgAmount.toFixed(2), 'activity', 0)}
                     ${components.statCard('Unique Vendors', purchaseStats.vendors.toString(), 'sales', 0)}
                 </div>
             ` : `
                 <div class="stats-grid mb-6">
                     ${components.statCard('Total Sales', salesStats.total.toString(), 'upload', 0)}
-                    ${components.statCard('Total Revenue', '$' + salesStats.totalRevenue.toFixed(2), 'analytics', 0)}
-                    ${components.statCard('Platform Fees', '$' + salesStats.totalFees.toFixed(2), 'analytics', 0)}
-                    ${components.statCard('Net Profit', '$' + salesStats.totalProfit.toFixed(2), 'activity', 0)}
+                    ${components.statCard('Total Revenue', 'C$' + salesStats.totalRevenue.toFixed(2), 'analytics', 0)}
+                    ${components.statCard('Platform Fees', 'C$' + salesStats.totalFees.toFixed(2), 'analytics', 0)}
+                    ${components.statCard('Net Profit', 'C$' + salesStats.totalProfit.toFixed(2), 'activity', 0)}
                 </div>
             `}
 

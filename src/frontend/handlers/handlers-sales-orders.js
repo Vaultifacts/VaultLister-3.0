@@ -3532,8 +3532,8 @@ Object.assign(handlers, {
             const netPayout = price - totalFee;
             const card = document.querySelector(`.fee-platform-card[data-platform="${p.name.toLowerCase()}"]`);
             if (card) {
-                card.querySelector('.platform-net').textContent = '$' + netPayout.toFixed(2);
-                card.querySelector('.platform-fee').textContent = '-$' + totalFee.toFixed(2) + ' fees';
+                card.querySelector('.platform-net').textContent = 'C$' + netPayout.toFixed(2);
+                card.querySelector('.platform-fee').textContent = '-C$' + totalFee.toFixed(2) + ' fees';
             }
         });
     },
