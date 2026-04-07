@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-06 MST
+**Updated:** 2026-04-07 MST
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — 214 findings, 100% coverage (14 sessions)
@@ -12,7 +12,17 @@
 ## In Progress
 - Nothing in progress
 
-## Completed This Session (2026-04-06)
+## In Progress
+- Nothing in progress
+
+## Completed This Session (2026-04-07)
+
+### Live testing + findings doc update — e24ba85 + 49f84ea
+- **#150/#151/#152/#153/#160/#161/#186**: Tested live — all undefined.get() crashes VERIFIED fixed by aca307f Bun shim fix ✅
+- Master findings doc: all 20 previously-FIXED/Needs-re-test entries promoted to VERIFIED ✅
+- Zero remaining "FIXED" or "Needs re-test" entries in WALKTHROUGH_MASTER_FINDINGS.md
+
+## Completed Previous Session (2026-04-06)
 
 ### Tasks 2–4 batch fixes — e097efa + b3c5358
 - **CA-M-1**: Feature-gate mercari/grailed in taskWorker.js (TASK_WORKER_LAUNCH_PLATFORMS) ✅
@@ -122,6 +132,7 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 5. ~~Predictions fake data (CR-11/CR-12)~~ FIXED 07338ae ✅
 
 ## Next Tasks
-1. Re-test "needs re-test" items live: #150/#151/#152/#153/#160/#161/#186 — verify undefined.get() crashes resolved
-2. EasyPost shipping integration — BLOCKED on API key anti-fraud review
-3. Continue with remaining OPEN findings from WALKTHROUGH_MASTER_FINDINGS.md
+1. EasyPost shipping integration — BLOCKED on API key anti-fraud review
+2. Continue with remaining OPEN findings from WALKTHROUGH_MASTER_FINDINGS.md (many MEDIUM/LOW items still open)
+3. CR-15 Landing page layout fix (white space gap between hero + feature cards)
+4. CR-9 Analytics Sales Funnel fake data ("Views 50")

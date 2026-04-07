@@ -60,7 +60,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CR-5 | eBay Integration | No eBay bot in `worker/bots/` — cross-listing to eBay via bot is impossible | Session 1 | OPEN |
 | CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything *(See also: H-19 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — 07338ae |
 | CR-8 | Help / Knowledge Base | Help page shows "1,240 views", "980 views" — no real KB exists | Session 1 | VERIFIED ✅ — 07338ae |
-| CR-9 | Analytics | Sales Funnel "Views 50" is hardcoded fake data | Session 1 | OPEN |
+| CR-9 | Analytics | Sales Funnel "Views 50" is hardcoded fake data | Session 1 | VERIFIED ✅ — 01384e8 — reads real analyticsData.stats |
 | CR-10 | My Shops | All 9 "Connect" buttons — none have working OAuth flows | Session 1 | OPEN |
 | CR-11 | Predictions | Entire page is hardcoded fake data — "Vintage Levi's 501 $45→$62", "Nike Air Max 90 $120→$145", "77% Model Confidence", fake AI confidence scores 87%/82%/75% | Session 2 | VERIFIED ✅ — 07338ae |
 | CR-12 | Predictions | "6 items analyzed" shown when user has 0 items — fabricated count | Session 2 | VERIFIED ✅ — 07338ae |
@@ -108,7 +108,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-17 | Refer a Friend | Referral link `https://vaultlister.com/signup?ref=VAULTDEMO` — referral backend wiring unclear | Session 2 | VERIFIED ✅ — bc2c9f4 — migration 005 adds referral_code column; signup now records affiliate_commissions |
 | H-18 | Forgot Password | "Send Reset Link" requires `RESEND_API_KEY`/SMTP — will fail silently | Session 2 | DEPLOY CONFIG — email.js gracefully falls back to console log if RESEND_API_KEY unset; set key before launch |
 | H-19 | Help / Support | "Getting Started 2/5 (40%)" hardcoded as complete for new users *(See also: CR-7 — same issue, discovered independently)* | Session 2 | VERIFIED ✅ — 07338ae |
-| H-20 | Feedback & Suggestions | "Top Contributor — top 10%" badge shown to user with 0 submissions | Session 3 | OPEN |
+| H-20 | Feedback & Suggestions | "Top Contributor — top 10%" badge shown to user with 0 submissions | Session 3 | VERIFIED ✅ — 01384e8 — badge hidden when feedbackSubmitted is 0 |
 | H-21 | Changelog | All version dates fabricated — v1.6.0 "Jan 26", v1.0.0 "Nov 30" | Session 3 | VERIFIED ✅ — 07338ae |
 | H-22 | Affiliate | Full affiliate page (30% commission, $50 payout) — no backend built | Session 3 | OPEN |
 | H-23 | Shipping Labels | "Create Label" + "Compare Rates" buttons enabled — EasyPost not built | Session 3 | VERIFIED ✅ — a0a4901 |
@@ -159,9 +159,9 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-7 | Analytics / Dashboard | Green "0.0%" up arrows on empty data — KPI cards show green arrow with no prior data to compare | Session 1 | OPEN |
 | M-8 | Settings | Timezone defaults to Eastern, not user's timezone — should auto-detect or default to MST for Calgary launch | Session 1 | VERIFIED ✅ — e097efa |
 | M-9 | Orders | "More" button truncated to "Mo..." at right edge | Session 1 | OPEN |
-| M-10 | Market Intel | "Your items: 89" hardcoded — should reflect actual inventory count | Session 1 | OPEN |
+| M-10 | Market Intel | "Your items: 89" hardcoded — should reflect actual inventory count | Session 1 | VERIFIED ✅ — 01384e8 — reads store.state.inventoryItems.length |
 | M-11 | Dashboard | "$2,000 goal" hardcoded Monthly Goal — should be user-set or hidden until set | Session 1 | OPEN |
-| M-12 | Help | Keyboard shortcut shows ⌘K (Mac) on Windows | Session 1 | OPEN |
+| M-12 | Help | Keyboard shortcut shows ⌘K (Mac) on Windows | Session 1 | VERIFIED ✅ — 01384e8 — shows Ctrl+K on Windows/Linux, ⌘K on Mac |
 | M-13 | Image Bank | "5.00 GB free" — unclear if this is actual R2 limit or hardcoded | Session 1 | OPEN |
 | M-14 | Plans | "Cross-list to 3 platforms" on Free plan confusing — only 5 available at launch; Pro says "all 9" but 4 are Coming Soon | Session 1 | OPEN |
 | M-15 | Register / Login | Sidebar visible on register/login page — should be hidden for unauthenticated views | Session 2 | CONFIRMED N/A — login/register use render() not renderApp(); sidebar not rendered |
