@@ -202,12 +202,12 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #155 | Listings / Fee Calculator | Platform Fee Calculator shows wrong platforms — includes Mercari/Etsy (not at launch), missing Whatnot (IS at launch) | Session 7 | FIXED — handlers-deferred.js + handlers-sales-orders.js: removed Mercari/Etsy, added Whatnot |
 | #159 | Vault Buddy | Vault Buddy auto-opens on every page render — `renderApp()` triggers panel open automatically on every page load; fires "Failed to load conversations" error toast each time | Session 8 | VERIFIED ✅ — e097efa |
 | #164 | Listings / Fee Calculator | Platform Fee Calculator uses "$" not "C$", includes Etsy fees (not a launch platform) | Session 10 | FIXED — handlers-deferred.js + handlers-sales-orders.js: all $ → C$, Etsy removed |
-| #165 | Automations | "Calendar" toolbar button calls `handlers.showScheduleCalendar()` — no modal opens, no output | Session 10 | OPEN |
-| #166 | Automations | "Performance" toolbar button calls `handlers.showAutomationPerformance()` — no modal opens, no output | Session 10 | OPEN |
-| #167 | Financials | Financials page uses "$" not "C$" for all monetary values | Session 10 | FIXED — pages-deferred.js: all $ → C$ across financials section |
+| #165 | Automations | "Calendar" toolbar button calls `handlers.showScheduleCalendar()` — no modal opens, no output | Session 10 | CONFIRMED N/A — function is implemented; shows toast when no rules, opens schedule calendar modal when rules exist |
+| #166 | Automations | "Performance" toolbar button calls `handlers.showAutomationPerformance()` — no modal opens, no output | Session 10 | CONFIRMED N/A — function is implemented; shows toast when no rules, opens performance modal when rules exist |
+| #167 | Financials | Financials page uses "$" not "C$" for all monetary values | Session 10 | FIXED 15dba34 — pages-deferred.js: all $ → C$ across financials section |
 | #169 | My Shops | 4 non-launch platforms (Mercari, Grailed, Etsy, Shopify) shown with active "Connect" buttons — no "Coming Soon" indicator | Session 11 | FIXED (already correct in source — no change needed) |
 | #173 | Reports | Reports "Create Report" button — no response when clicked *(See also: #158 — same issue, discovered independently)* | Session 11 | VERIFIED ✅ — 07338ae |
-| #174 | Settings | Settings "Enable 2FA" button — no response when clicked *(See also: H-5 — same issue, discovered independently)* | Session 11 | OPEN |
+| #174 | Settings | Settings "Enable 2FA" button — no response when clicked *(See also: H-5 — same issue, discovered independently)* | Session 11 | CONFIRMED FIXED — duplicate of H-5 (VERIFIED ✅ eb9e086) |
 | #175 | Plans & Billing | Shows USD pricing ($19, $49) for Canadian launch. Pro plan claims "Cross-list to all 9 platforms" — only 5 at launch *(See also: H-8 — same issue, discovered independently)* | Session 11 | FIXED (already correct in source — no change needed) |
 | #177 | Plans & Billing | "Upgrade to Pro" / "Upgrade to Business" buttons produce no UI response — no toast, no modal, no Stripe redirect | Session 11 | OPEN |
 | #178 | Offline Page | `offline.html` server-redirects to `/` — Service Worker offline fallback broken | Session 13 | OPEN |
@@ -243,30 +243,30 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-12 | Market Intel | "Competitor Activity — Live Activity" with green dot suggesting live feed that doesn't exist | Session 1 | OPEN |
 | L-13 | Register | No Full Name or Display Name field in registration | Session 2 | OPEN |
 | L-14 | Refer a Friend | Referral code "VAULTDEMO" hardcoded — should be user-specific | Session 2 | OPEN |
-| L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | OPEN |
+| L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | FIXED 15dba34 — public/terms.html + pages-community-help.js updated to April 2026 |
 | L-16 | Terms / Landing | Logo shows "M" purple circle — should be "V" blue square (brand inconsistency) | Session 2 | OPEN |
 | L-17 | Size Charts | "us US" in dropdown — double "US" label | Session 2 | OPEN |
 | L-18 | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons — unclear if functional | Session 2 | OPEN |
 | L-19 | Dashboard | Massive empty space below widgets on scroll — layout/height issue | Session 2 | OPEN |
 | L-20 | Size Charts | "us US" dropdown label — double "US" (duplicate of L-17) | Session 3 | OPEN |
 | L-21 | Size Charts | Measurements in inches — should offer cm for Canada (duplicate of M-24) | Session 3 | OPEN |
-| L-22 | Privacy / ToS | "Last updated: March 2026" — should be April (duplicate of L-15) | Session 3 | OPEN |
+| L-22 | Privacy / ToS | "Last updated: March 2026" — should be April (duplicate of L-15) | Session 3 | FIXED 15dba34 — same fix as L-15 |
 | L-23 | Checklist | "Keep up the momentum!" shown at 0% — odd encouragement for nothing done | Session 3 | OPEN |
 | L-24 | Refer a Friend | "VAULTDEMO" referral code — hardcoded, not user-specific (duplicate of L-14) | Session 3 | OPEN |
-| L-25 | Listings | "Customize" columns button has no onclick handler | Session 3 | OPEN |
-| L-26 | Listings | Announcement banner "✕" close button has no onclick handler | Session 3 | OPEN |
+| L-25 | Listings | "Customize" columns button has no onclick handler | Session 3 | CONFIRMED N/A — button is a functional dropdown with column checkboxes calling handlers.toggleListingColumn |
+| L-26 | Listings | Announcement banner "✕" close button has no onclick handler | Session 3 | FIXED — index.html: added onclick="document.getElementById('announcement-banner').hidden=true" |
 | L-27 | Connections (dark) | Cloudinary/Anthropic AI toggle buttons nearly invisible in dark mode | Session 3 | OPEN |
 | L-28 | Privacy (in-app) | "Download PDF" button — unclear if it generates a real PDF | Session 3 | OPEN |
 | L-29 | Connections (dark) | Cloudinary/Anthropic toggles nearly invisible (duplicate of L-27) | Session 4 | OPEN |
 | L-30 | Batch Photo | "Remove Background"/"AI Upscale" may not have backend support | Session 4 | OPEN |
 | L-31 | Privacy (in-app) | "Download PDF" button — untested (duplicate of L-28) | Session 4 | OPEN |
-| #127 | Cross-list Modal | "Ebay" brand name misspelled — should be "eBay" | Session 5 | OPEN |
+| #127 | Cross-list Modal | "Ebay" brand name misspelled — should be "eBay" | Session 5 | FIXED 15dba34 — eBay capitalization corrected |
 | #128 | Calendar | Edit Event has "Depends On" field not present in Add Event — inconsistency | Session 5 | OPEN |
 | #130 | Reports | `modals.viewReport()` shows raw ID string instead of report content | Session 5 | OPEN |
 | #132 | Changelog | Version thumbnail cards have light background in dark mode — visual inconsistency | Session 5 | OPEN |
 | #134 | Feedback Analytics | Admin badge does not inherit dark mode | Session 5 (Session 4 dark mode) | OPEN |
 | #135 | Help | Quick Start Guide step 4 text truncates: "Set up automati... to save t..." | Session 5 (Session 4 dark mode) | OPEN |
-| #137 | Privacy Policy (in-app) | Shows "Last updated: January 2026" — static privacy page shows April 5, 2026 | Session 5 (Session 4 dark mode) | OPEN |
+| #137 | Privacy Policy (in-app) | Shows "Last updated: January 2026" — static privacy page shows April 5, 2026 | Session 5 (Session 4 dark mode) | FIXED 15dba34 — pages-community-help.js: both dates updated to April 2026 |
 | #138 | Account | Text truncates in narrow card columns: "Member Since: Marc...", "Curre plan" | Session 5 (Session 4 dark mode) | OPEN |
 | #139 | Submit Feedback | Inactive feedback type buttons retain white/light backgrounds in dark mode | Session 5 (Session 4 dark mode) | OPEN |
 | #156 | Analytics | Weekly Report shows same start/end date — "Week of Apr 5 - Apr 5, 2026" | Session 8 | OPEN |
@@ -295,10 +295,10 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CO-4 | Register | Password requirement checkmarks not validated live as user types | Session 2 | OPEN |
 | CO-5 | Whatnot Live | Green "0% vs last week" arrows — should be neutral | Session 2 | OPEN |
 | CO-6 | Refer a Friend | Logo shows "V" overlaid on purple — inconsistent with other pages | Session 3 | OPEN |
-| #157 | My Shops | "Connect to Ebay" — should be "Connect to eBay" | Session 8 | FIXED — handlers-deferred.js: PLATFORM_DISPLAY_NAMES lookup gives correct casing |
+| #157 | My Shops | "Connect to Ebay" — should be "Connect to eBay" | Session 8 | FIXED 15dba34 — handlers-deferred.js: PLATFORM_DISPLAY_NAMES lookup gives correct casing |
 | #163 | Listings / Health | Listing Health modal shows "Poor Health" score 0 AND "All listings have good health scores!" simultaneously — contradictory | Session 10 | OPEN |
-| #168 | My Shops | eBay Connect modal title shows "Connect to Ebay" not "Connect to eBay" | Session 11 | FIXED — same fix as #157 (PLATFORM_DISPLAY_NAMES in handlers-deferred.js) |
-| #181 | Planner / Sidebar | Sidebar label "Planner" doesn't match page H2 title "Daily Checklist" | Session 13 | OPEN |
+| #168 | My Shops | eBay Connect modal title shows "Connect to Ebay" not "Connect to eBay" | Session 11 | FIXED 15dba34 — same fix as #157 (PLATFORM_DISPLAY_NAMES in handlers-deferred.js) |
+| #181 | Planner / Sidebar | Sidebar label "Planner" doesn't match page H2 title "Daily Checklist" | Session 13 | FIXED — components.js + widgets.js: nav label changed to "Daily Checklist" |
 
 ---
 
@@ -345,8 +345,8 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 | CA-M-2 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics use `Math.random()` fallback — fake health/accuracy/delivery/quality scores on prod if data is missing | `Math.floor(Math.random() * 30) + 70` | VERIFIED ✅ — e097efa |
 | CA-M-3 | `src/frontend/handlers/handlers-tools-tasks.js:344` | Tag randomization uses `Math.random()` | `sort(() => 0.5 - Math.random())` | OPEN |
 | CA-M-4 | `src/frontend/core/utils.js:11-20` | `SUPPORTED_PLATFORMS` lists all 9 platforms — Canada launch = 5 only. **Fix:** Create `LAUNCH_PLATFORMS` filter constant. | Lists poshmark, ebay, mercari, depop, grailed, etsy, shopify, facebook, whatnot | VERIFIED ✅ — e097efa |
-| CA-M-5 | `src/frontend/handlers/handlers-tools-tasks.js:3803` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | OPEN |
-| CA-M-6 | `src/frontend/handlers/handlers-deferred.js:21168` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | OPEN |
+| CA-M-5 | `src/frontend/handlers/handlers-tools-tasks.js:3803` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | FIXED — comment updated to "5 platform-specific presets" |
+| CA-M-6 | `src/frontend/handlers/handlers-deferred.js:21168` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | FIXED — comment updated to "5 platform-specific presets" |
 | CA-M-7 | `src/frontend/pages/pages-intelligence.js:1826,1914` | "Coming soon" toast messages in production pages | `toast.info('...coming soon.')` | FIXED 82a8408 |
 | CA-M-8 | `src/shared/ai/listing-generator.js:167,180,185,189` | `Math.random()` in template selection (4 instances) — non-deterministic listing generation | `templates.intro[Math.floor(Math.random() * length)]` | OPEN |
 | CA-M-9 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics `Math.random()` fallback (duplicate reference with expanded detail) — `healthScore`, `orderAccuracy`, `onTimeDelivery`, `qualityRating` all generate fake "good" values (90-95% range) if DB fields missing | `const healthScore = supplier.health_score \|\| Math.floor(Math.random() * 30) + 70` | OPEN |

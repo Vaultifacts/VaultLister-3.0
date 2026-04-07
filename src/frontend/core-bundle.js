@@ -8867,7 +8867,7 @@ const globalSearch = {
             { id: 'financials', label: 'Financials', section: 'Manage', icon: 'dollar' },
             { id: 'analytics', label: 'Analytics', section: 'Manage', icon: 'analytics' },
             { id: 'shops', label: 'My Shops', section: 'Manage', icon: 'store' },
-            { id: 'planner', label: 'Planner', section: 'Manage', icon: 'calendar' },
+            { id: 'planner', label: 'Daily Checklist', section: 'Manage', icon: 'calendar' },
             { id: 'image-bank', label: 'Image Bank', section: 'Manage', icon: 'image' },
             { id: 'settings', label: 'Settings', section: 'Settings', icon: 'settings' },
             { id: 'help-support', label: 'Help', section: 'Help', icon: 'help' },
@@ -15413,7 +15413,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '389a6fb2';
+    const v = 'a67ed0ea';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16053,7 +16053,7 @@ const components = {
                 { id: 'financials', label: 'Financials', icon: 'dollar' },
                 { id: 'analytics', label: 'Analytics', icon: 'analytics' },
                 { id: 'shops', label: 'My Shops', icon: 'shops' },
-                { id: 'planner', label: 'Planner', icon: 'calendar', badge: activeChecklistItems > 0 ? activeChecklistItems : null, badgeType: 'info' },
+                { id: 'planner', label: 'Daily Checklist', icon: 'calendar', badge: activeChecklistItems > 0 ? activeChecklistItems : null, badgeType: 'info' },
                 { id: 'image-bank', label: 'Image Bank', icon: 'image' },
                 { id: 'calendar', label: 'Calendar', icon: 'calendar' },
                 { id: 'reports', label: 'Reports', icon: 'list' },
@@ -16557,7 +16557,7 @@ const components = {
             'offers': { label: 'Offers', section: 'Sell' },
             'automations': { label: 'Automations', section: 'Manage' },
             'checklist': { label: 'Checklist', section: 'Manage' },
-            'planner': { label: 'Planner', section: 'Manage' },
+            'planner': { label: 'Daily Checklist', section: 'Manage' },
             'image-bank': { label: 'Image Bank', section: 'Manage' },
             'calendar': { label: 'Calendar', section: 'Manage' },
             'size-charts': { label: 'Size Charts', section: 'Manage' },

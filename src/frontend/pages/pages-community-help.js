@@ -193,7 +193,7 @@ Object.assign(pages, {
         return `
             <div class="page-header">
                 <h1 class="page-title">Terms of Service</h1>
-                <p class="page-description">Last updated: January 2026</p>
+                <p class="page-description">Last updated: April 2026</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
                     <button class="btn btn-sm btn-secondary" onclick="handlers.showTermsOfService()">
                         ${components.icon('eye', 14)} View in Modal
@@ -256,7 +256,7 @@ Object.assign(pages, {
         return `
             <div class="page-header">
                 <h1 class="page-title">Privacy Policy</h1>
-                <p class="page-description">Last updated: January 2026</p>
+                <p class="page-description">Last updated: April 2026</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
                     <button class="btn btn-sm btn-secondary" onclick="handlers.showPrivacyDataExport()">
                         ${components.icon('download', 14)} Download My Data

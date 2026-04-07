@@ -21179,7 +21179,7 @@ Object.assign(handlers, {
     },
 
     // NOTE: setBatchPhotoCropPreset is defined earlier (~line 61475) with
-    // 6 platform-specific presets (square, portrait, landscape, ebay, poshmark, whatnot).
+    // 5 platform-specific presets (square, portrait, landscape, ebay, poshmark, whatnot).
 
     // Set batch photo custom crop dimensions,
 

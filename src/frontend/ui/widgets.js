@@ -94,7 +94,7 @@ const globalSearch = {
             { id: 'financials', label: 'Financials', section: 'Manage', icon: 'dollar' },
             { id: 'analytics', label: 'Analytics', section: 'Manage', icon: 'analytics' },
             { id: 'shops', label: 'My Shops', section: 'Manage', icon: 'store' },
-            { id: 'planner', label: 'Planner', section: 'Manage', icon: 'calendar' },
+            { id: 'planner', label: 'Daily Checklist', section: 'Manage', icon: 'calendar' },
             { id: 'image-bank', label: 'Image Bank', section: 'Manage', icon: 'image' },
             { id: 'settings', label: 'Settings', section: 'Settings', icon: 'settings' },
             { id: 'help-support', label: 'Help', section: 'Help', icon: 'help' },
