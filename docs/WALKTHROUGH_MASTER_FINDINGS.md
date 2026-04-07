@@ -153,7 +153,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-1 | Dashboard | "100% Listing Health" shown at 0 listings — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — healthScore null → shows N/A |
 | M-2 | Analytics | Market Trends Radar labels truncated — "intage" (Vintage), "Electron" (Electronics) | Session 1 | OPEN |
 | M-3 | Dashboard / Analytics | "0% Avg Offer" when 0 offers exist — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — avgOfferPercent null → shows N/A |
-| M-4 | Analytics | Financial score "30" with no data — should be 0 or N/A | Session 1 | OPEN |
+| M-4 | Analytics | Financial score "30" with no data — should be 0 or N/A | Session 1 | FIXED — pages-sales-orders.js push(10) fallbacks → push(0); profitMargin >= 0 → > 0 |
 | M-5 | Analytics | "Consider optimizing costs" advice shown with no data — irrelevant for empty-state users | Session 1 | VERIFIED ✅ — efe7ab1 — advice gated on hasData |
 | M-6 | Analytics | "Profit margin below target (15%)" warning shown with no sales data | Session 1 | VERIFIED ✅ — efe7ab1 — margin warning gated on sales data |
 | M-7 | Analytics / Dashboard | Green "0.0%" up arrows on empty data — KPI cards show green arrow with no prior data to compare | Session 1 | VERIFIED ✅ — 82a8408 — calcChange returns null (not 0/100) when no prior data; statCard hides indicator on null |

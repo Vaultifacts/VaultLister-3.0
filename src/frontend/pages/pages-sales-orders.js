@@ -1460,17 +1460,17 @@ Object.assign(pages, {
         const healthFactors = [];
         if (profitMargin >= 20) healthFactors.push(25);
         else if (profitMargin >= 10) healthFactors.push(15);
-        else if (profitMargin >= 0) healthFactors.push(10);
+        else if (profitMargin > 0) healthFactors.push(10);
         else healthFactors.push(0);
 
         if (netProfit > 0) healthFactors.push(25);
         else healthFactors.push(0);
 
         if (accounts.length > 0) healthFactors.push(25);
-        else healthFactors.push(10);
+        else healthFactors.push(0);
 
         if (purchases.length > 0 || (store.state.sales || []).length > 0) healthFactors.push(25);
-        else healthFactors.push(10);
+        else healthFactors.push(0);
 
         const financialHealthScore = healthFactors.reduce((a, b) => a + b, 0);
 
