@@ -427,13 +427,9 @@ Object.assign(handlers, {
     previewRetentionCleanup: function() {
         const settings = store.state.dataRetention || {};
 
-        // Calculate mock data that would be cleaned up
-        const now = Date.now();
         const getDataCounts = (category, days) => {
             if (days === 'forever') return 0;
-            const daysNum = parseInt(days);
-            // Mock calculation
-            return Math.floor(Math.random() * 50) + (daysNum < 90 ? 20 : 5);
+            return null; // count requires server-side query
         };
 
         const previewData = [

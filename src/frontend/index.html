@@ -35,8 +35,8 @@
     <link rel="dns-prefetch" href="https://vaultlister.com">
 
     <!-- Preload critical CSS and JS so they start fetching ASAP -->
-    <link rel="preload" href="/styles/main.css?v=fe46a395" as="style">
-    <link rel="preload" href="/core-bundle.js?v=fe46a395" as="script">
+    <link rel="preload" href="/styles/main.css?v=38be9407" as="style">
+    <link rel="preload" href="/core-bundle.js?v=38be9407" as="script">
     <!-- Fonts: preload+onload makes inter.css non-render-blocking (FOUT acceptable) -->
     <link rel="preload" href="/fonts/inter.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/fonts/inter.css"></noscript>
@@ -49,21 +49,21 @@
     <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/styles/main.css?v=fe46a395">
+    <link rel="stylesheet" href="/styles/main.css?v=38be9407">
 
     <!-- Component Scripts -->
-    <script src="/components/photoEditor.js?v=fe46a395" defer></script>
-    <script src="/components/chatWidget.js?v=fe46a395" defer></script>
+    <script src="/components/photoEditor.js?v=38be9407" defer></script>
+    <script src="/components/chatWidget.js?v=38be9407" defer></script>
 
     <!-- WebSocket Client (must load before app.js for window.VaultListerSocket) -->
-    <script type="module" src="/services/websocketClient.js?v=fe46a395" defer></script>
+    <script type="module" src="/services/websocketClient.js?v=38be9407" defer></script>
 
     <!-- DOMPurify — must load before core bundle for sanitizeHTML() -->
     <!-- defer is safe: defer scripts execute in document order, so DOMPurify runs before core-bundle.js -->
     <script src="/dompurify.min.js" defer></script>
 
     <!-- Phase 1: Core bundle (all critical-path scripts concatenated) -->
-    <script src="/core-bundle.js?v=fe46a395" defer></script>
+    <script src="/core-bundle.js?v=38be9407" defer></script>
     <!-- Phase 2: Route-group chunks loaded on demand by router.js -->
 </head>
 <body>

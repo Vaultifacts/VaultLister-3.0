@@ -1329,37 +1329,33 @@ Object.assign(handlers, {
             return;
         }
 
-        toast.info('Analyzing market data...');
         const resultEl = document.getElementById('price-suggestion-result');
-        if (resultEl) resultEl.innerHTML = sanitizeHTML('<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 8px; color: var(--gray-500);">Analyzing comparable sales...</p></div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        if (resultEl) resultEl.innerHTML = sanitizeHTML('<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 8px; color: var(--gray-500);">Fetching price data...</p></div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
-        setTimeout(() => {
-            const basePrice = Math.floor(Math.random() * 80) + 20;
-            const conditionMultiplier = condition === 'mint' ? 1.4 : condition === 'good' ? 1.0 : condition === 'fair' ? 0.75 : 0.5;
-            const suggested = Math.round(basePrice * conditionMultiplier);
-            const low = Math.round(suggested * 0.85);
-            const high = Math.round(suggested * 1.2);
-            const avgDays = Math.floor(Math.random() * 14) + 3;
-
+        try {
+            const data = await api.post('/ai/suggest-price', { title: itemName, condition, category });
+            const { low, suggested, high } = data.priceRange || {}; const comparableSales = data.comparables?.length ?? null;
             if (resultEl) {
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 resultEl.innerHTML = sanitizeHTML(`
                     <div style="padding: 16px; background: var(--primary-50); border-radius: 8px; border: 1px solid var(--primary-200);">
                         <div style="text-align: center; margin-bottom: 16px;">
                             <div style="font-size: 12px; color: var(--gray-600);">Suggested Price Range</div>
-                            <div style="font-size: 32px; font-weight: 700; color: var(--primary-600);">$${low} - $${high}</div>
-                            <div style="font-size: 14px; color: var(--success); font-weight: 600;">Best Price: $${suggested}</div>
+                            <div style="font-size: 32px; font-weight: 700; color: var(--primary-600);">C$${low} – C$${high}</div>
+                            <div style="font-size: 14px; color: var(--success); font-weight: 600;">Best Price: C$${suggested}</div>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; text-align: center;">
-                            <div><div style="font-size: 18px; font-weight: 700;">${Math.floor(Math.random() * 50) + 10}</div><div style="font-size: 11px; color: var(--gray-500);">Comparable Sales</div></div>
-                            <div><div style="font-size: 18px; font-weight: 700;">${avgDays}d</div><div style="font-size: 11px; color: var(--gray-500);">Avg Sell Time</div></div>
-                            <div><div style="font-size: 18px; font-weight: 700;">85%</div><div style="font-size: 11px; color: var(--gray-500);">Confidence</div></div>
+                            <div><div style="font-size: 18px; font-weight: 700;">${comparableSales ?? '—'}</div><div style="font-size: 11px; color: var(--gray-500);">Comparable Sales</div></div>
+                            <div><div style="font-size: 18px; font-weight: 700;">${avgDaysToSell != null ? avgDaysToSell + 'd' : '—'}</div><div style="font-size: 11px; color: var(--gray-500);">Avg Sell Time</div></div>
+                            <div><div style="font-size: 18px; font-weight: 700;">${data.confidence ?? '—'}${data.confidence != null ? '%' : ''}</div><div style="font-size: 11px; color: var(--gray-500);">Confidence</div></div>
                         </div>
                     </div>
                 `);
             }
             toast.success('Price suggestion ready');
-        }, 1500);
+        } catch {
+            if (resultEl) resultEl.innerHTML = sanitizeHTML('<p style="text-align:center;padding:20px;color:var(--gray-500);">Price intelligence requires connected marketplace data. Connect your accounts to enable AI pricing.</p>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        }
     },
 
 
