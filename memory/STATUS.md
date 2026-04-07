@@ -12,6 +12,23 @@
 ## In Progress
 - Nothing in progress
 
+## Completed This Session (2026-04-06)
+
+### Tasks 2–4 batch fixes — e097efa + b3c5358
+- **CA-M-1**: Feature-gate mercari/grailed in taskWorker.js (TASK_WORKER_LAUNCH_PLATFORMS) ✅
+- **CA-M-2**: Replace Math.random() supplier metric fallbacks with || 0 in widgets.js ✅
+- **CA-M-4**: Add LAUNCH_PLATFORMS const to utils.js + window.LAUNCH_PLATFORMS exposure ✅
+- **H-1**: Price suggestion calls /ai/suggest-price (real API); saved search results=0; cleanup toast no fake numbers; storage preview returns null ✅
+- **H-6**: #app gets min-height:100vh + flex-col to prevent white void on scroll ✅
+- **#126**: Cross-list modal disables mercari/grailed/etsy/shopify with Coming Soon badge ✅
+- **#133**: ticket.priority || 'Normal' null-guard in community-help + deferred pages ✅
+- **#147**: Global search input triggers openGlobalSearch() on focus (command palette) ✅
+- **#154**: exportAutomationHistory guarded with _exporting flag (prevents 4+ toasts) ✅
+- **#159**: router.navigate() resets vaultBuddyOpen: false before route handler ✅
+- **M-8**: Timezone selector auto-detects via Intl.DateTimeFormat; added America/Edmonton + Vancouver ✅
+- **M-15**: Confirmed already correct — login/register use render() not renderApp() ✅
+- **M-38**: Confirmed mobileUI.renderBottomNav() already in renderApp; CSS gates to ≤768px ✅
+
 ## Last Completed Work (2026-04-06)
 
 ### WALKTHROUGH_MASTER_FINDINGS batch fix — commit 07338ae
@@ -37,6 +54,15 @@
 - **190-new** — `display_name` column does not exist in schema: `421e4f0` ✅
 - **190-new** — Missing `#auth-callback` SPA route + `/api/auth/oauth-session` exchange endpoint: `1d40be6` ✅ deployed 21:37 UTC
 - **190-new** — All OAuth redirect URLs used `/#` (Cloudflare marketing page) instead of `/?app=1#` (SPA): `4dafcf8` ✅ VERIFIED in Chrome: error callback lands on `/?app=1#login` (SPA), not marketing page
+- **190-new** — dist/app.js (tree-shaken build) served over core-bundle.js via static fallback: `2f0c09f` ✅
+- **190-new** — CDN preload hint loaded `/app.js` instead of `/core-bundle.js`: `9bb8064` ✅
+- **190-new** — `initApp()` overwrote `#auth-callback` hash with `#login` (skipAutoLogin missing auth-callback): `dc18c82` ✅
+- **190-new** — `handleRoute()` called async handler without `await` — OAuth ran detached: `6835054` ✅
+- **190-new** — auth-callback handler called `renderApp()` which has auth guard redirecting to `#login`: `24291e2` ✅
+- **190-new** — OTT read from hash at wrong time (hash already changed); pass as parameter: `2ca381d` ✅
+- **190-new** — Duplicate handler invocation (no isAuthenticated guard): `7710bc8` ✅
+- **190-new** — `router.navigate()` not awaited in `handleOAuthCallback`: `59ceac1`, `44a4202` ✅
+- **VERIFIED LIVE** — full OAuth flow: Google consent → `#auth-callback` → `#dashboard`, `isAuth:true`, user=vaultlister@gmail.com
 
 ### Code Audit findings fixed (2026-04-06)
 - **CA-CR-1** — `isRateLimitBypassed()` now gates on `IS_TEST_RUNTIME || NODE_ENV==='development'`: `abeccbb` ✅ grep confirmed
@@ -97,7 +123,5 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 
 ## Next Tasks
 1. Re-test "needs re-test" items live: #150/#151/#152/#153/#160/#161/#186 — verify undefined.get() crashes resolved
-2. Fix CA-M findings: CA-M-1 (Mercari/Grailed task worker), CA-M-2 (Math.random supplier metrics), CA-M-4 (SUPPORTED_PLATFORMS vs launch platforms)
-3. Fix HIGH open items: H-6 (dashboard empty space scroll), H-1 (Math.random fallbacks in source modules), #126 (cross-list modal platform list), #154 (export 4+ toasts), #159 (Vault Buddy auto-opens)
-4. Fix MEDIUM open items: M-15 (sidebar on login page), M-8 (timezone default), M-38 (mobile bottom nav), #133 (ticket card undefined), #147 (global search non-functional)
-5. EasyPost shipping integration — BLOCKED on API key anti-fraud review
+2. EasyPost shipping integration — BLOCKED on API key anti-fraud review
+3. Continue with remaining OPEN findings from WALKTHROUGH_MASTER_FINDINGS.md
