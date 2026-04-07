@@ -960,7 +960,7 @@ Object.assign(handlers, {
                     <div class="counter-offer-diff">
                         <div class="diff-side original">
                             <div class="diff-label">Buyer's Offer</div>
-                            <div class="diff-amount">$${offerAmount.toFixed(2)}</div>
+                            <div class="diff-amount">C$${offerAmount.toFixed(2)}</div>
                             <div class="diff-percent">${listingPrice > 0 ? Math.round((offerAmount / listingPrice) * 100) : 0}% of listed</div>
                         </div>
                         <div class="diff-arrow">
@@ -968,18 +968,18 @@ Object.assign(handlers, {
                         </div>
                         <div class="diff-side counter">
                             <div class="diff-label">Your Counter</div>
-                            <div class="diff-amount">$${counterAmount.toFixed(2)}</div>
+                            <div class="diff-amount">C$${counterAmount.toFixed(2)}</div>
                             <div class="diff-percent">${listingPrice > 0 ? Math.round((counterAmount / listingPrice) * 100) : 0}% of listed</div>
                         </div>
                     </div>
                     <div class="diff-summary" style="text-align: center; margin-top: 12px; padding: 8px; background: var(--gray-50); border-radius: 8px;">
                         <span style="font-size: 13px; color: var(--gray-600);">
-                            Difference: <strong style="color: var(--success);">+$${diffAmount.toFixed(2)}</strong>
+                            Difference: <strong style="color: var(--success);">+C$${diffAmount.toFixed(2)}</strong>
                             <span style="color: var(--gray-500);">(+${diffPercent}%)</span>
                         </span>
                     </div>
                     <div style="margin-top: 12px; font-size: 13px; color: var(--gray-500);">
-                        Listed price: $${listingPrice.toFixed(2)} | Buyer: ${escapeHtml(offer.buyer_name || offer.buyer_username || 'Anonymous')}
+                        Listed price: C$${listingPrice.toFixed(2)} | Buyer: ${escapeHtml(offer.buyer_name || offer.buyer_username || 'Anonymous')}
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1018,7 +1018,7 @@ Object.assign(handlers, {
                 o.id === offerId ? { ...o, status: 'countered', counter_amount: counterAmount } : o
             );
             store.setState({ offers });
-            toast.success(`Counter offer of $${counterAmount.toFixed(2)} sent!`);
+            toast.success(`Counter offer of C$${counterAmount.toFixed(2)} sent!`);
             const pageEl = document.querySelector('.page-content');
             if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
@@ -1317,7 +1317,7 @@ Object.assign(handlers, {
                 success: Math.floor(listingCount * 0.5),
                 warnings: 3,
                 errors: 0,
-                impact: `${Math.floor(listingCount * 0.6)} offers would be sent, potential revenue of $${(Math.floor(listingCount * 0.5) * 18).toFixed(0)}`,
+                impact: `${Math.floor(listingCount * 0.6)} offers would be sent, potential revenue of C$${(Math.floor(listingCount * 0.5) * 18).toFixed(0)}`,
                 actions: [
                     { status: 'success', text: `Send offers on ${Math.floor(listingCount * 0.4)} items with active likers` },
                     { status: 'success', text: `${Math.floor(listingCount * 0.1)} counter-offers queued` },
@@ -1356,7 +1356,7 @@ Object.assign(handlers, {
                 success: Math.floor(listingCount * 0.18),
                 warnings: 1,
                 errors: 0,
-                impact: `${Math.floor(listingCount * 0.2)} bundle offers to create, avg bundle value $${(Math.floor(listingCount * 0.2) * 35).toFixed(0)}`,
+                impact: `${Math.floor(listingCount * 0.2)} bundle offers to create, avg bundle value C$${(Math.floor(listingCount * 0.2) * 35).toFixed(0)}`,
                 actions: [
                     { status: 'success', text: `Create ${Math.floor(listingCount * 0.12)} bundles for multi-likers` },
                     { status: 'success', text: `Send ${Math.floor(listingCount * 0.06)} bundle discount reminders` },
@@ -3328,7 +3328,7 @@ Object.assign(handlers, {
                         ${components.icon('alert-triangle', 16)} Possible Duplicate Detected
                     </div>
                     <div style="font-size: 13px; color: var(--warning-600, #946800);">
-                        A transaction with the same amount ($${amount.toFixed(2)}) on the same date (${date}) already exists.
+                        A transaction with the same amount (C$${amount.toFixed(2)}) on the same date (${date}) already exists.
                     </div>
                 </div>
             `;
@@ -3458,7 +3458,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <p style="margin-bottom: 12px; color: var(--gray-600);">Split this $${amount.toFixed(2)} transaction into multiple parts. Amounts must total the original.</p>
+                <p style="margin-bottom: 12px; color: var(--gray-600);">Split this C$${amount.toFixed(2)} transaction into multiple parts. Amounts must total the original.</p>
                 <div id="split-parts">
                     <div class="split-row flex gap-2 mb-2">
                         <input type="text" class="form-input" placeholder="Description" style="flex:2;" data-split-desc>
@@ -3511,7 +3511,7 @@ Object.assign(handlers, {
 
         const total = splits.reduce((s, p) => s + p.amount, 0);
         if (Math.abs(total - originalAmount) > 0.01) {
-            toast.error(`Split total ($${total.toFixed(2)}) must equal original ($${originalAmount.toFixed(2)})`);
+            toast.error(`Split total (C$${total.toFixed(2)}) must equal original (C$${originalAmount.toFixed(2)})`);
             return;
         }
 
@@ -3604,7 +3604,7 @@ Object.assign(handlers, {
                                     ${templates.map(t => `
                                         <tr>
                                             <td class="font-medium">${escapeHtml(t.description)}</td>
-                                            <td>$${(t.amount || 0).toFixed(2)}</td>
+                                            <td>C$${(t.amount || 0).toFixed(2)}</td>
                                             <td><span class="badge badge-gray">${t.category || 'Expense'}</span></td>
                                             <td>${t.frequency || 'monthly'}</td>
                                             <td>${t.last_executed ? new Date(t.last_executed).toLocaleDateString() : 'Never'}</td>
@@ -4129,11 +4129,11 @@ Object.assign(handlers, {
                 <div class="grid grid-cols-3 gap-3 mb-4">
                     <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                         <div class="text-xs text-gray-500">Current</div>
-                        <div class="text-xl font-bold">$${(displayPred.current_price || 0).toFixed(0)}</div>
+                        <div class="text-xl font-bold">C$${(displayPred.current_price || 0).toFixed(0)}</div>
                     </div>
                     <div style="text-align: center; padding: 12px; background: var(--primary-50); border-radius: 8px;">
                         <div class="text-xs text-gray-500">Predicted</div>
-                        <div class="text-xl font-bold" style="color: var(--primary);">$${(displayPred.predicted_price || 0).toFixed(0)}</div>
+                        <div class="text-xl font-bold" style="color: var(--primary);">C$${(displayPred.predicted_price || 0).toFixed(0)}</div>
                     </div>
                     <div style="text-align: center; padding: 12px; background: ${isUp ? 'var(--success-50)' : 'var(--error-50)'}; border-radius: 8px;">
                         <div class="text-xs text-gray-500">Change</div>
@@ -4143,9 +4143,9 @@ Object.assign(handlers, {
                 <div class="mb-4">
                     <div class="text-sm font-semibold mb-2">Price Range Scenarios</div>
                     <div style="display: flex; gap: 8px; align-items: center;">
-                        <span class="text-xs" style="color: var(--error);">$${pessimistic}</span>
+                        <span class="text-xs" style="color: var(--error);">C$${pessimistic}</span>
                         <div style="flex: 1; height: 8px; background: linear-gradient(90deg, var(--error), var(--primary), var(--success)); border-radius: 4px;"></div>
-                        <span class="text-xs" style="color: var(--success);">$${optimistic}</span>
+                        <span class="text-xs" style="color: var(--success);">C$${optimistic}</span>
                     </div>
                 </div>
                 <div style="padding: 12px; background: var(--primary-50); border-radius: 8px;">
@@ -4298,7 +4298,7 @@ Object.assign(handlers, {
                             <div style="font-size: 12px; color: var(--gray-600);">Total Orders</div>
                         </div>
                         <div style="padding: 16px; background: var(--gray-50); border-radius: 8px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700; color: var(--success);">$${(supplier.total_value || 0).toLocaleString()}</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--success);">C$${(supplier.total_value || 0).toLocaleString()}</div>
                             <div style="font-size: 12px; color: var(--gray-600);">Total Value</div>
                         </div>
                     </div>
@@ -4681,7 +4681,7 @@ Object.assign(handlers, {
                     </div>
                     <div style="padding: 12px; background: var(--gray-50); border-radius: 8px;">
                         <div style="font-size: 12px; color: var(--gray-500);">Total</div>
-                        <div style="font-weight: 600; color: var(--primary-600);">$${(po.total || 0).toFixed(2)}</div>
+                        <div style="font-weight: 600; color: var(--primary-600);">C$${(po.total || 0).toFixed(2)}</div>
                     </div>
                 </div>
                 ${po.notes ? '<div style="padding: 12px; background: var(--gray-50); border-radius: 8px; margin-bottom: 16px;"><div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">Notes</div><p style="font-size: 13px; margin: 0;">' + escapeHtml(po.notes) + '</p></div>' : ''}
@@ -4933,7 +4933,7 @@ Object.assign(handlers, {
                         <div style="font-size: 12px; color: var(--gray-600);">Items</div>
                     </div>
                     <div style="padding: 16px; background: var(--gray-50); border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: 700;">$${(competitor.avg_price || 0).toFixed(0)}</div>
+                        <div style="font-size: 24px; font-weight: 700;">C$${(competitor.avg_price || 0).toFixed(0)}</div>
                         <div style="font-size: 12px; color: var(--gray-600);">Avg Price</div>
                     </div>
                     <div style="padding: 16px; background: var(--gray-50); border-radius: 8px; text-align: center;">
@@ -4971,7 +4971,7 @@ Object.assign(handlers, {
                         <tr style="border-bottom: 1px solid var(--gray-100);">
                             <td style="padding: 12px;">Avg Price</td>
                             <td style="padding: 12px; text-align: center; font-weight: 600;">$45.50</td>
-                            <td style="padding: 12px; text-align: center;">$${(competitor.avg_price || 0).toFixed(2)}</td>
+                            <td style="padding: 12px; text-align: center;">C$${(competitor.avg_price || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td style="padding: 12px;">Activity</td>
@@ -6483,9 +6483,9 @@ Object.assign(handlers, {
             const platforms = {};
             recentSales.forEach(s => { const p = s.platform || 'Unknown'; platforms[p] = (platforms[p] || 0) + parseFloat(s.sale_price || s.price || 0); });
             content = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                <div style="background: var(--gray-50); padding: 12px; border-radius: 8px;"><div style="font-size: 12px; color: var(--gray-500);">30-Day Revenue</div><div style="font-size: 20px; font-weight: 700; color: var(--success);">$${total.toFixed(2)}</div></div>
-                <div style="background: var(--gray-50); padding: 12px; border-radius: 8px;"><div style="font-size: 12px; color: var(--gray-500);">Avg Per Sale</div><div style="font-size: 20px; font-weight: 700;">$${avg.toFixed(2)}</div></div>
-            </div><h4 style="margin-bottom: 8px;">Revenue by Platform</h4>${Object.entries(platforms).map(([p, v]) => `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-100);"><span>${escapeHtml(p)}</span><span style="font-weight: 600;">$${v.toFixed(2)}</span></div>`).join('')}`;
+                <div style="background: var(--gray-50); padding: 12px; border-radius: 8px;"><div style="font-size: 12px; color: var(--gray-500);">30-Day Revenue</div><div style="font-size: 20px; font-weight: 700; color: var(--success);">C$${total.toFixed(2)}</div></div>
+                <div style="background: var(--gray-50); padding: 12px; border-radius: 8px;"><div style="font-size: 12px; color: var(--gray-500);">Avg Per Sale</div><div style="font-size: 20px; font-weight: 700;">C$${avg.toFixed(2)}</div></div>
+            </div><h4 style="margin-bottom: 8px;">Revenue by Platform</h4>${Object.entries(platforms).map(([p, v]) => `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-100);"><span>${escapeHtml(p)}</span><span style="font-weight: 600;">C$${v.toFixed(2)}</span></div>`).join('')}`;
         } else if (metric === 'sales') {
             const thisWeek = recentSales.filter(s => new Date(s.created_at || s.date) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)).length;
             content = `<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
@@ -6498,8 +6498,8 @@ Object.assign(handlers, {
             const totalCost = recentSales.reduce((s, r) => s + parseFloat(r.cost || r.purchase_price || 0), 0);
             const margin = totalRev > 0 ? ((totalRev - totalCost) / totalRev * 100) : 0;
             content = `<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-                <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; text-align: center;"><div style="font-size: 12px; color: var(--gray-500);">Revenue</div><div style="font-size: 20px; font-weight: 700; color: var(--success);">$${totalRev.toFixed(2)}</div></div>
-                <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; text-align: center;"><div style="font-size: 12px; color: var(--gray-500);">COGS</div><div style="font-size: 20px; font-weight: 700; color: var(--danger);">$${totalCost.toFixed(2)}</div></div>
+                <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; text-align: center;"><div style="font-size: 12px; color: var(--gray-500);">Revenue</div><div style="font-size: 20px; font-weight: 700; color: var(--success);">C$${totalRev.toFixed(2)}</div></div>
+                <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; text-align: center;"><div style="font-size: 12px; color: var(--gray-500);">COGS</div><div style="font-size: 20px; font-weight: 700; color: var(--danger);">C$${totalCost.toFixed(2)}</div></div>
                 <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; text-align: center;"><div style="font-size: 12px; color: var(--gray-500);">Margin</div><div style="font-size: 20px; font-weight: 700;">${margin.toFixed(1)}%</div></div>
             </div>`;
         } else {
@@ -6509,7 +6509,7 @@ Object.assign(handlers, {
             content = `<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
                 <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; text-align: center;"><div style="font-size: 12px; color: var(--gray-500);">Total Items</div><div style="font-size: 20px; font-weight: 700;">${totalItems}</div></div>
                 <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; text-align: center;"><div style="font-size: 12px; color: var(--gray-500);">Listed</div><div style="font-size: 20px; font-weight: 700;">${listed}</div></div>
-                <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; text-align: center;"><div style="font-size: 12px; color: var(--gray-500);">Total Value</div><div style="font-size: 20px; font-weight: 700;">$${totalValue.toFixed(2)}</div></div>
+                <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; text-align: center;"><div style="font-size: 12px; color: var(--gray-500);">Total Value</div><div style="font-size: 20px; font-weight: 700;">C$${totalValue.toFixed(2)}</div></div>
             </div>`;
         }
         modals.show(`
@@ -7146,7 +7146,7 @@ Object.assign(handlers, {
 
             const message = type === 'percentage'
                 ? `${ids.length} item(s) price adjusted by ${value > 0 ? '+' : ''}${value}%`
-                : `${ids.length} item(s) price adjusted by $${value > 0 ? '+' : ''}${value.toFixed(2)}`;
+                : `${ids.length} item(s) price adjusted by C$${value > 0 ? '+' : ''}${value.toFixed(2)}`;
             toast.success(message);
 
             store.setState({ selectedItems: [] });
@@ -7818,7 +7818,7 @@ Object.assign(handlers, {
                     </div>
                     <div>
                         <h3 class="font-semibold mb-2">Price</h3>
-                        <p class="text-xl font-bold">$${listing.price}</p>
+                        <p class="text-xl font-bold">C$${listing.price}</p>
                     </div>
                     <div>
                         <h3 class="font-semibold mb-2">Status</h3>
@@ -8057,7 +8057,7 @@ Object.assign(handlers, {
                         <img src="${listing.images?.[0] || 'https://placehold.co/60x60?text=Item'}" alt="${escapeHtml(listing.title)}">
                         <div>
                             <div class="font-medium">${escapeHtml(listing.title)}</div>
-                            <div class="text-sm text-gray-500">Current price: <strong>$${currentPrice.toFixed(2)}</strong></div>
+                            <div class="text-sm text-gray-500">Current price: <strong>C$${currentPrice.toFixed(2)}</strong></div>
                         </div>
                     </div>
                 </div>
@@ -8067,19 +8067,19 @@ Object.assign(handlers, {
                     <div class="price-drop-presets">
                         <button class="preset-btn" onclick="handlers.setPriceDropPreset('${listingId}', 5)">
                             <span class="preset-percent">5%</span>
-                            <span class="preset-price">$${(currentPrice * 0.95).toFixed(2)}</span>
+                            <span class="preset-price">C$${(currentPrice * 0.95).toFixed(2)}</span>
                         </button>
                         <button class="preset-btn" onclick="handlers.setPriceDropPreset('${listingId}', 10)">
                             <span class="preset-percent">10%</span>
-                            <span class="preset-price">$${(currentPrice * 0.90).toFixed(2)}</span>
+                            <span class="preset-price">C$${(currentPrice * 0.90).toFixed(2)}</span>
                         </button>
                         <button class="preset-btn" onclick="handlers.setPriceDropPreset('${listingId}', 15)">
                             <span class="preset-percent">15%</span>
-                            <span class="preset-price">$${(currentPrice * 0.85).toFixed(2)}</span>
+                            <span class="preset-price">C$${(currentPrice * 0.85).toFixed(2)}</span>
                         </button>
                         <button class="preset-btn" onclick="handlers.setPriceDropPreset('${listingId}', 20)">
                             <span class="preset-percent">20%</span>
-                            <span class="preset-price">$${(currentPrice * 0.80).toFixed(2)}</span>
+                            <span class="preset-price">C$${(currentPrice * 0.80).toFixed(2)}</span>
                         </button>
                     </div>
 
@@ -8101,9 +8101,9 @@ Object.assign(handlers, {
                     <div class="form-group">
                         <label class="form-label">New Price After Drop</label>
                         <div class="new-price-preview" id="new-price-preview">
-                            <span class="old-price">$${currentPrice.toFixed(2)}</span>
+                            <span class="old-price">C$${currentPrice.toFixed(2)}</span>
                             <span class="arrow">${components.icon('arrow-right', 16)}</span>
-                            <span class="new-price">$${(currentPrice * 0.90).toFixed(2)}</span>
+                            <span class="new-price">C$${(currentPrice * 0.90).toFixed(2)}</span>
                         </div>
                     </div>
 
@@ -8273,7 +8273,7 @@ Object.assign(handlers, {
                     l.id === listingId ? { ...l, price: newPrice } : l
                 );
                 store.setState({ listings });
-                toast.success(`Price dropped to $${newPrice.toFixed(2)}!`);
+                toast.success(`Price dropped to C$${newPrice.toFixed(2)}!`);
             } else {
                 toast.success(`Price drop scheduled for ${scheduledDate.toLocaleDateString()}`);
             }
@@ -8298,8 +8298,8 @@ Object.assign(handlers, {
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 container.innerHTML = sanitizeHTML(`
                     <div class="space-y-1">
-                        <div class="flex justify-between"><span class="text-gray-500">Avg Sale Price:</span><span class="font-medium">$${data.avg_price}</span></div>
-                        <div class="flex justify-between"><span class="text-gray-500">Range:</span><span class="font-medium">$${data.min_price} - $${data.max_price}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Avg Sale Price:</span><span class="font-medium">C$${data.avg_price}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Range:</span><span class="font-medium">C$${data.min_price} - C$${data.max_price}</span></div>
                         <div class="flex justify-between"><span class="text-gray-500">Your Position:</span><span class="font-medium">${data.price_position}% of avg</span></div>
                         <div class="flex justify-between"><span class="text-gray-500">Status:</span><span class="badge badge-${recColor} badge-sm">${data.recommendation}</span></div>
                         <div class="text-xs text-gray-400">Based on ${data.similar_sales} similar sales</div>
@@ -8711,7 +8711,7 @@ Object.assign(handlers, {
                                     <div class="flex justify-between items-center py-1 text-sm">
                                         <span>${escapeHtml(o.buyer_username || 'N/A')}</span>
                                         <span>${escapeHtml(o.item_title || 'N/A')}</span>
-                                        <span class="font-medium">$${parseFloat(o.sale_price || 0).toFixed(2)}</span>
+                                        <span class="font-medium">C$${parseFloat(o.sale_price || 0).toFixed(2)}</span>
                                     </div>
                                 `).join('')}
                             </div>
@@ -8801,7 +8801,7 @@ Object.assign(handlers, {
             order.buyer_username || '',
             order.item_title || '',
             order.status || '',
-            `$${order.sale_price || 0}`,
+            `C$${order.sale_price || 0}`,
             order.tracking_number || '',
             order.shipping_provider || '',
             order.expected_delivery ? new Date(order.expected_delivery).toLocaleDateString() : ''
@@ -8948,7 +8948,7 @@ Object.assign(handlers, {
                     <div class="buyer-avatar">${(order.buyer_username || 'B')[0].toUpperCase()}</div>
                     <div class="buyer-details">
                         <div class="buyer-name">${escapeHtml(order.buyer_username || 'Buyer')}</div>
-                        <div class="buyer-order">${escapeHtml(order.item_title || 'Order')} - $${(order.sale_price || 0).toFixed(2)}</div>
+                        <div class="buyer-order">${escapeHtml(order.item_title || 'Order')} - C$${(order.sale_price || 0).toFixed(2)}</div>
                     </div>
                 </div>
 
@@ -9112,11 +9112,11 @@ Object.assign(handlers, {
                 <div class="expense-summary-grid mb-4">
                     <div class="expense-summary-card total">
                         <div class="expense-summary-label">Total Expenses</div>
-                        <div class="expense-summary-value">$${totalExpenses.toFixed(2)}</div>
+                        <div class="expense-summary-value">C$${totalExpenses.toFixed(2)}</div>
                     </div>
                     <div class="expense-summary-card monthly">
                         <div class="expense-summary-label">This Month</div>
-                        <div class="expense-summary-value">$${monthlyTotal.toFixed(2)}</div>
+                        <div class="expense-summary-value">C$${monthlyTotal.toFixed(2)}</div>
                     </div>
                     <div class="expense-summary-card count">
                         <div class="expense-summary-label">Transactions</div>
@@ -9142,7 +9142,7 @@ Object.assign(handlers, {
                                     <div class="expense-category-bar-wrapper">
                                         <div class="expense-category-bar" style="width: ${percent}%; background: ${c.color}"></div>
                                     </div>
-                                    <span class="expense-category-amount">$${amount.toFixed(2)}</span>
+                                    <span class="expense-category-amount">C$${amount.toFixed(2)}</span>
                                 </div>
                             `;
                         }).join('')}
@@ -9199,7 +9199,7 @@ Object.assign(handlers, {
                                             <div class="expense-item-desc">${escapeHtml(e.description)}</div>
                                             <div class="expense-item-date">${new Date(e.date).toLocaleDateString()}</div>
                                         </div>
-                                        <div class="expense-item-amount">-$${e.amount.toFixed(2)}</div>
+                                        <div class="expense-item-amount">-C$${e.amount.toFixed(2)}</div>
                                         <button class="btn btn-icon btn-sm btn-ghost" onclick="handlers.deleteExpense('${e.id}')" title="Delete">
                                             ${components.icon('trash-2', 14)}
                                         </button>
@@ -9245,7 +9245,7 @@ Object.assign(handlers, {
         });
         store.setState({ businessExpenses: expenses });
 
-        toast.success(`Expense of $${amount.toFixed(2)} added`);
+        toast.success(`Expense of C$${amount.toFixed(2)} added`);
         this.showExpenseTracker(); // Refresh modal
     },
 
@@ -9438,7 +9438,7 @@ Object.assign(handlers, {
                                 <div class="top-sale-title">${escapeHtml(topSale.item_title || 'Item')}</div>
                                 <div class="top-sale-platform">${topSale.platform || 'Unknown'}</div>
                             </div>
-                            <div class="top-sale-price">$${parseFloat(topSale.sale_price).toFixed(2)}</div>
+                            <div class="top-sale-price">C$${parseFloat(topSale.sale_price).toFixed(2)}</div>
                         </div>
                     </div>
                 ` : ''}
@@ -9568,31 +9568,31 @@ Object.assign(handlers, {
                     <div class="space-y-2">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600">Sale Price</span>
-                            <span class="font-medium text-green-600">+$${salePrice.toFixed(2)}</span>
+                            <span class="font-medium text-green-600">+C$${salePrice.toFixed(2)}</span>
                         </div>
                         ${itemCost > 0 ? `
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Item Cost (COGS)</span>
-                                <span class="font-medium text-red-600">-$${itemCost.toFixed(2)}</span>
+                                <span class="font-medium text-red-600">-C$${itemCost.toFixed(2)}</span>
                             </div>
                         ` : ''}
                         ${platformFee > 0 ? `
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Platform Fee</span>
-                                <span class="font-medium text-red-600">-$${platformFee.toFixed(2)}</span>
+                                <span class="font-medium text-red-600">-C$${platformFee.toFixed(2)}</span>
                             </div>
                         ` : ''}
                         ${shippingCost > 0 ? `
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Shipping Cost</span>
-                                <span class="font-medium text-red-600">-$${shippingCost.toFixed(2)}</span>
+                                <span class="font-medium text-red-600">-C$${shippingCost.toFixed(2)}</span>
                             </div>
                         ` : ''}
                         <div class="border-t border-gray-200 pt-2 mt-2">
                             <div class="flex justify-between">
                                 <span class="font-semibold">Net Profit</span>
                                 <span class="font-bold text-lg ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}">
-                                    ${netProfit >= 0 ? '+' : ''}$${netProfit.toFixed(2)}
+                                    ${netProfit >= 0 ? '+' : ''}C$${netProfit.toFixed(2)}
                                 </span>
                             </div>
                             <div class="flex justify-between text-sm mt-1">
@@ -9620,7 +9620,7 @@ Object.assign(handlers, {
                             ${order.refund_amount ? `
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">Refund Amount</span>
-                                    <span class="font-medium text-red-600">$${parseFloat(order.refund_amount).toFixed(2)}</span>
+                                    <span class="font-medium text-red-600">C$${parseFloat(order.refund_amount).toFixed(2)}</span>
                                 </div>
                             ` : ''}
                             ${order.return_tracking ? `
@@ -9966,7 +9966,7 @@ Object.assign(handlers, {
                                 ${order.sku ? '<div class="item-sku">SKU: ' + escapeHtml(order.sku) + '</div>' : ''}
                             </td>
                             <td>1</td>
-                            <td style="text-align: right;">$${(parseFloat(order.sale_price) || 0).toFixed(2)}</td>
+                            <td style="text-align: right;">C$${(parseFloat(order.sale_price) || 0).toFixed(2)}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -9974,12 +9974,12 @@ Object.assign(handlers, {
                 <div class="totals">
                     <div class="totals-row">
                         <span>Subtotal</span>
-                        <span>$${(parseFloat(order.sale_price) || 0).toFixed(2)}</span>
+                        <span>C$${(parseFloat(order.sale_price) || 0).toFixed(2)}</span>
                     </div>
                     ${order.shipping_cost ? '<div class="totals-row"><span>Shipping</span><span>$' + parseFloat(order.shipping_cost).toFixed(2) + '</span></div>' : ''}
                     <div class="totals-row total">
                         <span>Total</span>
-                        <span>$${((parseFloat(order.sale_price) || 0) + (parseFloat(order.shipping_cost) || 0)).toFixed(2)}</span>
+                        <span>C$${((parseFloat(order.sale_price) || 0) + (parseFloat(order.shipping_cost) || 0)).toFixed(2)}</span>
                     </div>
                 </div>
 
@@ -10158,7 +10158,7 @@ Object.assign(handlers, {
                     ${i === 0 ? '<span class="best-badge">Best Value</span>' : ''}
                     <div class="rate-carrier">${r.carrier}</div>
                     <div class="rate-service">${r.service}</div>
-                    <div class="rate-price">$${r.rate.toFixed(2)}</div>
+                    <div class="rate-price">C$${r.rate.toFixed(2)}</div>
                     <div class="rate-days">${r.days} days</div>
                 </div>
             `).join(''));
@@ -10257,7 +10257,7 @@ Object.assign(handlers, {
                                     <div class="age-bar fresh" style="width: ${totalItems ? (stats.fresh.count / totalItems * 100) : 0}%"></div>
                                 </div>
                                 <div class="age-count">${stats.fresh.count}</div>
-                                <div class="age-value">$${stats.fresh.value.toFixed(0)}</div>
+                                <div class="age-value">C$${stats.fresh.value.toFixed(0)}</div>
                             </div>
                             <div class="age-bar-row">
                                 <div class="age-label recent">
@@ -10267,7 +10267,7 @@ Object.assign(handlers, {
                                     <div class="age-bar recent" style="width: ${totalItems ? (stats.recent.count / totalItems * 100) : 0}%"></div>
                                 </div>
                                 <div class="age-count">${stats.recent.count}</div>
-                                <div class="age-value">$${stats.recent.value.toFixed(0)}</div>
+                                <div class="age-value">C$${stats.recent.value.toFixed(0)}</div>
                             </div>
                             <div class="age-bar-row">
                                 <div class="age-label aging">
@@ -10277,7 +10277,7 @@ Object.assign(handlers, {
                                     <div class="age-bar aging" style="width: ${totalItems ? (stats.aging.count / totalItems * 100) : 0}%"></div>
                                 </div>
                                 <div class="age-count">${stats.aging.count}</div>
-                                <div class="age-value">$${stats.aging.value.toFixed(0)}</div>
+                                <div class="age-value">C$${stats.aging.value.toFixed(0)}</div>
                             </div>
                             <div class="age-bar-row">
                                 <div class="age-label stale">
@@ -10287,7 +10287,7 @@ Object.assign(handlers, {
                                     <div class="age-bar stale" style="width: ${totalItems ? (stats.stale.count / totalItems * 100) : 0}%"></div>
                                 </div>
                                 <div class="age-count">${stats.stale.count}</div>
-                                <div class="age-value">$${stats.stale.value.toFixed(0)}</div>
+                                <div class="age-value">C$${stats.stale.value.toFixed(0)}</div>
                             </div>
                             <div class="age-bar-row">
                                 <div class="age-label deadstock">
@@ -10297,7 +10297,7 @@ Object.assign(handlers, {
                                     <div class="age-bar deadstock" style="width: ${totalItems ? (stats.deadstock.count / totalItems * 100) : 0}%"></div>
                                 </div>
                                 <div class="age-count">${stats.deadstock.count}</div>
-                                <div class="age-value">$${stats.deadstock.value.toFixed(0)}</div>
+                                <div class="age-value">C$${stats.deadstock.value.toFixed(0)}</div>
                             </div>
                         </div>
                     </div>
@@ -10311,7 +10311,7 @@ Object.assign(handlers, {
                                     <div class="oldest-item-title">${escapeHtml(oldestItem.title || oldestItem.name || 'Unknown')}</div>
                                     <div class="oldest-item-meta">
                                         ${oldestItem.sku ? `SKU: ${oldestItem.sku} • ` : ''}
-                                        Listed $${parseFloat(oldestItem.list_price || 0).toFixed(2)}
+                                        Listed C$${parseFloat(oldestItem.list_price || 0).toFixed(2)}
                                     </div>
                                 </div>
                                 <div class="oldest-item-age">
@@ -10329,7 +10329,7 @@ Object.assign(handlers, {
                             ${stats.stale.count > 0 ? `
                                 <div class="recommendation-item warning">
                                     ${components.icon('alert-triangle', 14)}
-                                    <span>Consider price drops on ${stats.stale.count} stale items ($${stats.stale.value.toFixed(0)} value)</span>
+                                    <span>Consider price drops on ${stats.stale.count} stale items (C$${stats.stale.value.toFixed(0)} value)</span>
                                 </div>
                             ` : ''}
                             ${stats.deadstock.count > 0 ? `
@@ -10561,13 +10561,13 @@ Object.assign(handlers, {
                 <div class="price-drop-container">
                     <div class="price-drop-item-info">
                         <h4>${escapeHtml(item.title || item.name)}</h4>
-                        <p>Current Price: <strong>$${currentPrice.toFixed(2)}</strong></p>
+                        <p>Current Price: <strong>C$${currentPrice.toFixed(2)}</strong></p>
                     </div>
                     <div class="price-drop-options">
                         ${suggestedDrops.map(d => `
                             <button class="price-drop-btn" onclick="handlers.applyPriceDrop('${itemId}', ${d.newPrice})">
                                 <span class="drop-pct">-${d.pct}%</span>
-                                <span class="drop-price">$${d.newPrice}</span>
+                                <span class="drop-price">C$${d.newPrice}</span>
                             </button>
                         `).join('')}
                     </div>
@@ -10590,7 +10590,7 @@ Object.assign(handlers, {
         if (index >= 0) {
             inventory[index].list_price = parseFloat(newPrice);
             store.setState({ inventory });
-            toast.success(`Price updated to $${parseFloat(newPrice).toFixed(2)}`);
+            toast.success(`Price updated to C$${parseFloat(newPrice).toFixed(2)}`);
             modals.close();
         }
     },
@@ -10735,9 +10735,9 @@ Object.assign(handlers, {
             previewEl.innerHTML = sanitizeHTML(previewItems.map(p => `
                 <div class="preview-row">
                     <span class="preview-title">${escapeHtml(p.title)}</span>
-                    <span class="preview-old">$${p.oldPrice.toFixed(2)}</span>
+                    <span class="preview-old">C$${p.oldPrice.toFixed(2)}</span>
                     <span class="preview-arrow">→</span>
-                    <span class="preview-new ${p.newPrice < p.oldPrice ? 'decrease' : p.newPrice > p.oldPrice ? 'increase' : ''}">$${p.newPrice.toFixed(2)}</span>
+                    <span class="preview-new ${p.newPrice < p.oldPrice ? 'decrease' : p.newPrice > p.oldPrice ? 'increase' : ''}">C$${p.newPrice.toFixed(2)}</span>
                 </div>
             `).join('') + (items.length > 5 ? `<div class="preview-more">...and ${items.length - 5} more items</div>` : ''));
         }
@@ -11115,9 +11115,9 @@ Object.assign(handlers, {
                                 <div class="target-pct">${getPct(progress.daily, targets.daily)}%</div>
                             </div>
                             <div class="target-values">
-                                <span class="current">$${progress.daily.toFixed(0)}</span>
+                                <span class="current">C$${progress.daily.toFixed(0)}</span>
                                 <span class="divider">/</span>
-                                <span class="goal">$${targets.daily}</span>
+                                <span class="goal">C$${targets.daily}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.daily}"
                                 onchange="handlers.updateProfitTarget('daily', this.value)" placeholder="Set target">
@@ -11140,9 +11140,9 @@ Object.assign(handlers, {
                                 <div class="target-pct">${getPct(progress.weekly, targets.weekly)}%</div>
                             </div>
                             <div class="target-values">
-                                <span class="current">$${progress.weekly.toFixed(0)}</span>
+                                <span class="current">C$${progress.weekly.toFixed(0)}</span>
                                 <span class="divider">/</span>
-                                <span class="goal">$${targets.weekly}</span>
+                                <span class="goal">C$${targets.weekly}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.weekly}"
                                 onchange="handlers.updateProfitTarget('weekly', this.value)" placeholder="Set target">
@@ -11165,9 +11165,9 @@ Object.assign(handlers, {
                                 <div class="target-pct">${getPct(progress.monthly, targets.monthly)}%</div>
                             </div>
                             <div class="target-values">
-                                <span class="current">$${progress.monthly.toFixed(0)}</span>
+                                <span class="current">C$${progress.monthly.toFixed(0)}</span>
                                 <span class="divider">/</span>
-                                <span class="goal">$${targets.monthly}</span>
+                                <span class="goal">C$${targets.monthly}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.monthly}"
                                 onchange="handlers.updateProfitTarget('monthly', this.value)" placeholder="Set target">
@@ -11178,7 +11178,7 @@ Object.assign(handlers, {
                     <div class="target-stats">
                         <div class="target-stat">
                             <span class="stat-label">Avg Daily Profit</span>
-                            <span class="stat-value">$${(progress.monthly / now.getDate()).toFixed(0)}</span>
+                            <span class="stat-value">C$${(progress.monthly / now.getDate()).toFixed(0)}</span>
                         </div>
                         <div class="target-stat">
                             <span class="stat-label">Days Left in Month</span>
@@ -11186,7 +11186,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="target-stat">
                             <span class="stat-label">Needed Daily Rate</span>
-                            <span class="stat-value">$${Math.max(0, ((targets.monthly - progress.monthly) / Math.max(1, new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate()))).toFixed(0)}</span>
+                            <span class="stat-value">C$${Math.max(0, ((targets.monthly - progress.monthly) / Math.max(1, new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate()))).toFixed(0)}</span>
                         </div>
                     </div>
 
@@ -11317,7 +11317,7 @@ Object.assign(handlers, {
                     <div class="report-metrics-grid">
                         <div class="report-metric-card">
                             <div class="metric-header">Revenue</div>
-                            <div class="metric-value">$${metrics.thisWeek.revenue.toFixed(0)}</div>
+                            <div class="metric-value">C$${metrics.thisWeek.revenue.toFixed(0)}</div>
                             <div class="metric-change ${revenueChange >= 0 ? 'positive' : 'negative'}">
                                 ${components.icon(revenueChange >= 0 ? 'trending-up' : 'trending-down', 14)}
                                 ${Math.abs(revenueChange).toFixed(1)}% vs last week
@@ -11333,7 +11333,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="report-metric-card">
                             <div class="metric-header">Avg Order</div>
-                            <div class="metric-value">$${metrics.thisWeek.avgOrderValue.toFixed(0)}</div>
+                            <div class="metric-value">C$${metrics.thisWeek.avgOrderValue.toFixed(0)}</div>
                             <div class="metric-sub">per sale</div>
                         </div>
                     </div>
@@ -11346,7 +11346,7 @@ Object.assign(handlers, {
                                 <div class="chart-day">
                                     <div class="chart-bar-container">
                                         <div class="chart-bar" style="height: ${(d.revenue / maxDailyRevenue * 100)}%">
-                                            <span class="chart-tooltip">$${d.revenue.toFixed(0)}</span>
+                                            <span class="chart-tooltip">C$${d.revenue.toFixed(0)}</span>
                                         </div>
                                     </div>
                                     <div class="chart-label">${d.day}</div>
@@ -11366,7 +11366,7 @@ Object.assign(handlers, {
                                         <span class="seller-rank">${i + 1}</span>
                                         <span class="seller-title">${escapeHtml(item.title)}</span>
                                         <span class="seller-count">${item.count} sold</span>
-                                        <span class="seller-revenue">$${item.revenue.toFixed(0)}</span>
+                                        <span class="seller-revenue">C$${item.revenue.toFixed(0)}</span>
                                     </div>
                                 `).join('')}
                             </div>
@@ -11419,11 +11419,11 @@ Object.assign(handlers, {
             '-------',
             `Total Sales: ${weeklySales.length}`,
             `Total Orders: ${totalOrders}`,
-            `Revenue: $${totalRevenue.toFixed(2)}`,
+            `Revenue: C$${totalRevenue.toFixed(2)}`,
             '',
             'SALES DETAIL',
             '------------',
-            ...weeklySales.map(s => `  ${s.title || 'Item'} - $${parseFloat(s.sale_price || s.price || 0).toFixed(2)} (${new Date(s.created_at || s.date).toLocaleDateString()})`)
+            ...weeklySales.map(s => `  ${s.title || 'Item'} - C$${parseFloat(s.sale_price || s.price || 0).toFixed(2)} (${new Date(s.created_at || s.date).toLocaleDateString()})`)
         ];
 
         const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
@@ -11506,7 +11506,7 @@ Object.assign(handlers, {
                                 <div class="restock-item ${item.currentStock === 0 ? 'out-of-stock' : item.currentStock <= 2 ? 'low-stock' : ''}">
                                     <span class="restock-title">${escapeHtml(item.title)}</span>
                                     <span class="restock-sold">${item.count}</span>
-                                    <span class="restock-price">$${item.avgPrice.toFixed(2)}</span>
+                                    <span class="restock-price">C$${item.avgPrice.toFixed(2)}</span>
                                     <span class="restock-stock ${item.currentStock === 0 ? 'danger' : item.currentStock <= 2 ? 'warning' : 'ok'}">
                                         ${item.currentStock}
                                     </span>
@@ -11528,7 +11528,7 @@ Object.assign(handlers, {
                             </div>
                             <div class="summary-stat">
                                 <span class="stat-label">Total Revenue</span>
-                                <span class="stat-value">$${restockSuggestions.reduce((s, i) => s + i.revenue, 0).toFixed(0)}</span>
+                                <span class="stat-value">C$${restockSuggestions.reduce((s, i) => s + i.revenue, 0).toFixed(0)}</span>
                             </div>
                         </div>
                     ` : `
@@ -11619,7 +11619,7 @@ Object.assign(handlers, {
                             <div class="insight-label">Repeat Buyers</div>
                         </div>
                         <div class="insight-stat">
-                            <div class="insight-value">$${avgOrderValue.toFixed(0)}</div>
+                            <div class="insight-value">C$${avgOrderValue.toFixed(0)}</div>
                             <div class="insight-label">Avg Order Value</div>
                         </div>
                         <div class="insight-stat">
@@ -11640,7 +11640,7 @@ Object.assign(handlers, {
                                         <span class="customer-meta">${c.orders} orders • ${Array.from(c.platforms).join(', ')}</span>
                                     </div>
                                     <div class="customer-stats">
-                                        <span class="customer-spent">$${c.totalSpent.toFixed(0)}</span>
+                                        <span class="customer-spent">C$${c.totalSpent.toFixed(0)}</span>
                                         ${c.orders >= 2 ? `<span class="repeat-badge">${components.icon('repeat', 10)} Repeat</span>` : ''}
                                     </div>
                                 </div>
@@ -11695,7 +11695,7 @@ Object.assign(handlers, {
                                 return `
                                     <div class="bundle-item">
                                         <span class="bundle-item-title">${escapeHtml(item.title || item.name)}</span>
-                                        <span class="bundle-item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
+                                        <span class="bundle-item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                                         <button class="btn btn-xs btn-ghost" onclick="handlers.removeFromBundle('${id}')">
                                             ${components.icon('x', 12)}
                                         </button>
@@ -11714,7 +11714,7 @@ Object.assign(handlers, {
                             ${inventory.filter(i => !selectedItems.includes(String(i.id))).slice(0, 10).map(item => `
                                 <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
                                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
-                                    <span class="item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
+                                    <span class="item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                                     <span class="add-icon">${components.icon('plus', 14)}</span>
                                 </div>
                             `).join('')}
@@ -11726,7 +11726,7 @@ Object.assign(handlers, {
                         <div class="bundle-pricing">
                             <div class="pricing-row">
                                 <span>Individual Total</span>
-                                <span class="original-price">$${bundleValue.toFixed(2)}</span>
+                                <span class="original-price">C$${bundleValue.toFixed(2)}</span>
                             </div>
                             <div class="pricing-row">
                                 <span>Bundle Discount</span>
@@ -11736,10 +11736,10 @@ Object.assign(handlers, {
                             </div>
                             <div class="pricing-row total">
                                 <span>Bundle Price</span>
-                                <span class="bundle-price" id="bundle-final-price">$${bundlePrice.toFixed(2)}</span>
+                                <span class="bundle-price" id="bundle-final-price">C$${bundlePrice.toFixed(2)}</span>
                             </div>
                             <div class="pricing-savings">
-                                Customers save $${(bundleValue - bundlePrice).toFixed(2)}!
+                                Customers save C$${(bundleValue - bundlePrice).toFixed(2)}!
                             </div>
                         </div>
                     ` : `
@@ -11795,7 +11795,7 @@ Object.assign(handlers, {
             container.innerHTML = sanitizeHTML(filtered.map(item => `
                 <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
-                    <span class="item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
+                    <span class="item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                     <span class="add-icon">${components.icon('plus', 14)}</span>
                 </div>
             `).join('') || '<div class="empty-state">No items found</div>');
@@ -11833,7 +11833,7 @@ Object.assign(handlers, {
             ? items.map(i => i.title || i.name).join(' + ')
             : `${items.length}-Piece Bundle: ${items[0].title || items[0].name} & More`;
 
-        toast.success(`Bundle created: ${bundleTitle} at $${bundlePrice.toFixed(2)}`);
+        toast.success(`Bundle created: ${bundleTitle} at C$${bundlePrice.toFixed(2)}`);
         store.setState({ bundleItems: [] });
         modals.close();
     },
@@ -11897,7 +11897,7 @@ Object.assign(handlers, {
                                 <div class="seasonal-bar-group">
                                     <div class="seasonal-bar-container">
                                         <div class="seasonal-bar" style="height: ${(m.revenue / maxRevenue * 100)}%">
-                                            <span class="seasonal-tooltip">$${m.revenue.toFixed(0)}</span>
+                                            <span class="seasonal-tooltip">C$${m.revenue.toFixed(0)}</span>
                                         </div>
                                     </div>
                                     <div class="seasonal-label">${m.month}</div>
@@ -11913,7 +11913,7 @@ Object.assign(handlers, {
                             <div class="highlight-info">
                                 <div class="highlight-label">Best Month</div>
                                 <div class="highlight-value">${bestMonth.month} ${bestMonth.year}</div>
-                                <div class="highlight-amount">$${bestMonth.revenue.toFixed(0)}</div>
+                                <div class="highlight-amount">C$${bestMonth.revenue.toFixed(0)}</div>
                             </div>
                         </div>
                         <div class="highlight-card worst">
@@ -11921,7 +11921,7 @@ Object.assign(handlers, {
                             <div class="highlight-info">
                                 <div class="highlight-label">Slowest Month</div>
                                 <div class="highlight-value">${worstMonth.month} ${worstMonth.year}</div>
-                                <div class="highlight-amount">$${worstMonth.revenue.toFixed(0)}</div>
+                                <div class="highlight-amount">C$${worstMonth.revenue.toFixed(0)}</div>
                             </div>
                         </div>
                     </div>
@@ -11933,7 +11933,7 @@ Object.assign(handlers, {
                             ${quarterRevenue.map(q => `
                                 <div class="quarter-card">
                                     <div class="quarter-name">${q.quarter}</div>
-                                    <div class="quarter-revenue">$${q.revenue.toFixed(0)}</div>
+                                    <div class="quarter-revenue">C$${q.revenue.toFixed(0)}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -12029,7 +12029,7 @@ Object.assign(handlers, {
                                     Qty: ${item.quantity || 1}
                                 </div>
                             </div>
-                            <div class="lookup-item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</div>
+                            <div class="lookup-item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</div>
                             <div class="lookup-item-status badge badge-${item.status === 'active' ? 'success' : 'secondary'}">${item.status || 'active'}</div>
                         </div>
                     `).join('')}
@@ -12046,7 +12046,7 @@ Object.assign(handlers, {
                                     ${item.platform ? components.platformBadge(item.platform) : ''}
                                 </div>
                             </div>
-                            <div class="lookup-item-price">$${(parseFloat(item.price) || 0).toFixed(2)}</div>
+                            <div class="lookup-item-price">C$${(parseFloat(item.price) || 0).toFixed(2)}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -12111,7 +12111,7 @@ Object.assign(handlers, {
                             <div class="return-stat-label">Total Returns</div>
                         </div>
                         <div class="return-stat">
-                            <div class="return-stat-value">$${returnValue.toFixed(0)}</div>
+                            <div class="return-stat-value">C$${returnValue.toFixed(0)}</div>
                             <div class="return-stat-label">Lost Revenue</div>
                         </div>
                     </div>
@@ -14306,16 +14306,16 @@ Object.assign(handlers, {
                                     <td>${escapeHtml(item.description)}</td>
                                     <td>${escapeHtml(item.inventory_title || 'N/A')}</td>
                                     <td>${item.quantity}</td>
-                                    <td>$${(item.unit_cost || 0).toFixed(2)}</td>
-                                    <td>$${(item.total_cost || 0).toFixed(2)}</td>
+                                    <td>C$${(item.unit_cost || 0).toFixed(2)}</td>
+                                    <td>C$${(item.total_cost || 0).toFixed(2)}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
                     </table>
                     <div class="mt-4 text-right">
-                        <div>Shipping: $${(purchase.shipping_cost || 0).toFixed(2)}</div>
-                        <div>Tax: $${(purchase.tax_amount || 0).toFixed(2)}</div>
-                        <div class="text-lg font-bold">Total: $${(purchase.total_amount || 0).toFixed(2)}</div>
+                        <div>Shipping: C$${(purchase.shipping_cost || 0).toFixed(2)}</div>
+                        <div>Tax: C$${(purchase.tax_amount || 0).toFixed(2)}</div>
+                        <div class="text-lg font-bold">Total: C$${(purchase.total_amount || 0).toFixed(2)}</div>
                     </div>
                     ${purchase.notes ? `<div class="mt-4"><strong>Notes:</strong> ${escapeHtml(purchase.notes)}</div>` : ''}
                 </div>
@@ -14575,7 +14575,7 @@ Object.assign(handlers, {
                 <div class="modal-body">
                     <div class="mb-4">
                         <span class="badge badge-info">${account.account_type}</span>
-                        <span class="ml-4 text-lg font-bold">Balance: $${Math.abs(data.balance || 0).toFixed(2)}</span>
+                        <span class="ml-4 text-lg font-bold">Balance: C$${Math.abs(data.balance || 0).toFixed(2)}</span>
                     </div>
                     ${transactions.length === 0 ? `
                         <p class="text-gray-500 text-center py-4">No transactions for this account</p>
@@ -14595,7 +14595,7 @@ Object.assign(handlers, {
                                         <td>${new Date(t.transaction_date).toLocaleDateString()}</td>
                                         <td>${escapeHtml(t.description)}</td>
                                         <td>${t.reference_type || 'manual'}</td>
-                                        <td class="${t.amount >= 0 ? 'text-success' : 'text-error'}">$${Math.abs(t.amount || 0).toFixed(2)}</td>
+                                        <td class="${t.amount >= 0 ? 'text-success' : 'text-error'}">C$${Math.abs(t.amount || 0).toFixed(2)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -21702,7 +21702,7 @@ Object.assign(handlers, {
             <div class="modal-body">
                 <div class="mb-4">
                     <div class="text-sm text-gray-600 mb-2">Transaction: ${escapeHtml(transaction?.listing_title || transaction?.inventory_title || 'Unknown')}</div>
-                    <div class="text-xs text-gray-400">$${(transaction?.sale_price || 0).toFixed(2)} on ${new Date(transaction?.created_at).toLocaleDateString()}</div>
+                    <div class="text-xs text-gray-400">C$${(transaction?.sale_price || 0).toFixed(2)} on ${new Date(transaction?.created_at).toLocaleDateString()}</div>
                 </div>
 
                 <div class="form-group">
@@ -22405,7 +22405,7 @@ Object.assign(handlers, {
     previewRelistPrice: async function(listingId) {
         try {
             const data = await api.post('/relisting/preview-price', { listing_id: listingId });
-            toast.info(`Current: $${data.current_price} → New: $${data.new_price} (${data.reason})`);
+            toast.info(`Current: C$${data.current_price} → New: C$${data.new_price} (${data.reason})`);
         } catch (e) {
             toast.error('Failed to preview price');
         }
@@ -22599,7 +22599,7 @@ Object.assign(handlers, {
                                 <tr>
                                     <td><span class="badge">${r.carrier.toUpperCase()}</span></td>
                                     <td>${escapeHtml(r.service)}</td>
-                                    <td class="font-medium">$${r.rate.toFixed(2)}</td>
+                                    <td class="font-medium">C$${r.rate.toFixed(2)}</td>
                                     <td>${r.delivery_days}d</td>
                                 </tr>
                             `).join('')}
@@ -23498,7 +23498,7 @@ Object.assign(handlers, {
                                     <p>${escapeHtml(label.recipient.city || '')}, ${escapeHtml(label.recipient.state || '')} ${escapeHtml(label.recipient.zip || '')}</p>
                                 </div>
                                 ${label.shipping.tracking ? `<div class="barcode">${label.shipping.tracking}</div>` : ''}
-                                <p style="text-align: center; font-size: 10px; color: #999;">Weight: ${label.shipping.weight || 0} oz | Cost: $${(label.shipping.cost || 0).toFixed(2)}</p>
+                                <p style="text-align: center; font-size: 10px; color: #999;">Weight: ${label.shipping.weight || 0} oz | Cost: C$${(label.shipping.cost || 0).toFixed(2)}</p>
                             </div>
                         `).join('')}
                     </body>
@@ -24005,7 +24005,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="flex-1">
                             <div class="font-medium">${escapeHtml(item.title)}</div>
-                            <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • $${(item.list_price || 0).toFixed(2)}</div>
+                            <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • C$${(item.list_price || 0).toFixed(2)}</div>
                         </div>
                         <button class="btn btn-sm btn-primary">Add</button>
                     </div>
@@ -24478,7 +24478,7 @@ Object.assign(handlers, {
                                     ${accepted > 0 ? '<span class="badge badge-success">' + accepted + ' accepted</span>' : ''}
                                     ${declined > 0 ? '<span class="badge badge-error">' + declined + ' declined</span>' : ''}
                                     ${pending > 0 ? '<span class="badge badge-warning">' + pending + ' pending</span>' : ''}
-                                    <span class="text-sm text-gray-500">Avg: $${avgOffer.toFixed(0)} (${avgPct}%)</span>
+                                    <span class="text-sm text-gray-500">Avg: C$${avgOffer.toFixed(0)} (${avgPct}%)</span>
                                     ${components.icon('chevron-down', 16)}
                                 </div>
                             </div>
@@ -24851,7 +24851,7 @@ Object.assign(handlers, {
                         <div class="usage-stat-icon" style="background: #ecfdf5; color: #059669;">
                             ${components.icon('dollar-sign', 20)}
                         </div>
-                        <div class="usage-stat-value">$${totalRevenue.toLocaleString()}</div>
+                        <div class="usage-stat-value">C$${totalRevenue.toLocaleString()}</div>
                         <div class="usage-stat-label">Total Revenue</div>
                     </div>
                 </div>
@@ -25055,7 +25055,7 @@ Object.assign(handlers, {
                 <div class="card" style="padding: 16px;">
                     <h4>Scenario Results</h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
-                        <div><strong>Projected Revenue:</strong> $${(r.projected_revenue || 0).toFixed(2)}</div>
+                        <div><strong>Projected Revenue:</strong> C$${(r.projected_revenue || 0).toFixed(2)}</div>
                         <div><strong>Revenue Change:</strong> ${r.revenue_change_pct || 0}%</div>
                         <div><strong>Projected Volume:</strong> ${r.projected_volume || 0} units</div>
                         <div><strong>Impact:</strong> <span class="badge">${r.impact_level || 'moderate'}</span></div>
@@ -25339,7 +25339,7 @@ Object.assign(handlers, {
                             <div style="font-size: 12px; color: var(--text-secondary);">Current Tier</div>
                         </div>
                         <div style="padding: 12px; background: var(--success-50); border-radius: 6px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--success); margin-bottom: 4px;">$${(earnings.total || 0).toFixed(2)}</div>
+                            <div style="font-size: 24px; font-weight: bold; color: var(--success); margin-bottom: 4px;">C$${(earnings.total || 0).toFixed(2)}</div>
                             <div style="font-size: 12px; color: var(--text-secondary);">Total Earnings</div>
                         </div>
                         <div style="padding: 12px; background: var(--warning-50); border-radius: 6px; text-align: center;">
@@ -25517,7 +25517,7 @@ Object.assign(handlers, {
                                 ${(data.commissions || []).map(c => `
                                     <tr style="border-bottom: 1px solid var(--gray-100);">
                                         <td style="padding: 8px;">${escapeHtml(c.referral_name || 'Unknown')}</td>
-                                        <td style="padding: 8px; text-align: right;">$${(c.amount || 0).toFixed(2)}</td>
+                                        <td style="padding: 8px; text-align: right;">C$${(c.amount || 0).toFixed(2)}</td>
                                         <td style="padding: 8px; text-align: center;">
                                             <span class="badge ${c.status === 'paid' ? 'badge-success' : c.status === 'pending' ? 'badge-warning' : 'badge-secondary'}">
                                                 ${escapeHtml(c.status || 'pending')}
@@ -25555,7 +25555,7 @@ Object.assign(handlers, {
                                 </div>
                                 <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
                                     <p>Minimum referrals: <strong>${t.min_referrals || 0}</strong></p>
-                                    <p>Min monthly revenue: <strong>$${t.min_revenue || 0}</strong></p>
+                                    <p>Min monthly revenue: <strong>C$${t.min_revenue || 0}</strong></p>
                                 </div>
                             </div>
                         `).join('')}
@@ -25928,25 +25928,25 @@ Object.assign(handlers, {
                         <div class="grid grid-cols-2 gap-4">
                             <div class="p-4 bg-gray-50 rounded">
                                 <div class="text-sm text-gray-600">Revenue</div>
-                                <div class="text-2xl font-bold">$${(data.revenue || 0).toFixed(2)}</div>
+                                <div class="text-2xl font-bold">C$${(data.revenue || 0).toFixed(2)}</div>
                             </div>
                             <div class="p-4 bg-gray-50 rounded">
                                 <div class="text-sm text-gray-600">COGS</div>
-                                <div class="text-2xl font-bold">$${(data.cogs || 0).toFixed(2)}</div>
+                                <div class="text-2xl font-bold">C$${(data.cogs || 0).toFixed(2)}</div>
                             </div>
                             <div class="p-4 bg-gray-50 rounded">
                                 <div class="text-sm text-gray-600">Gross Profit</div>
-                                <div class="text-2xl font-bold text-success">$${((data.revenue || 0) - (data.cogs || 0)).toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-success">C$${((data.revenue || 0) - (data.cogs || 0)).toFixed(2)}</div>
                             </div>
                             <div class="p-4 bg-gray-50 rounded">
                                 <div class="text-sm text-gray-600">Fees</div>
-                                <div class="text-2xl font-bold">$${(data.fees || 0).toFixed(2)}</div>
+                                <div class="text-2xl font-bold">C$${(data.fees || 0).toFixed(2)}</div>
                             </div>
                         </div>
                         <div class="border-t pt-4">
                             <div class="text-sm text-gray-600 mb-2">Net Profit</div>
                             <div class="text-3xl font-bold ${((data.revenue || 0) - (data.cogs || 0) - (data.fees || 0)) >= 0 ? 'text-success' : 'text-error'}">
-                                $${(((data.revenue || 0) - (data.cogs || 0) - (data.fees || 0)).toFixed(2))}
+                                C$${(((data.revenue || 0) - (data.cogs || 0) - (data.fees || 0)).toFixed(2))}
                             </div>
                         </div>
                         ${data.breakdown ? `
@@ -25956,7 +25956,7 @@ Object.assign(handlers, {
                                     ${Object.entries(data.breakdown).map(([key, value]) => `
                                         <div class="flex justify-between">
                                             <span>${escapeHtml(String(key))}</span>
-                                            <span class="font-mono">$${Number(value).toFixed(2)}</span>
+                                            <span class="font-mono">C$${Number(value).toFixed(2)}</span>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -26147,7 +26147,7 @@ Object.assign(handlers, {
                         <div style="color:var(--gray-600);font-size:13px;">Total Sales</div>
                     </div>
                     <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
-                        <div style="font-size:28px;font-weight:700;">$${Number(s.totalRevenue ?? s.revenue ?? 0).toFixed(2)}</div>
+                        <div style="font-size:28px;font-weight:700;">C$${Number(s.totalRevenue ?? s.revenue ?? 0).toFixed(2)}</div>
                         <div style="color:var(--gray-600);font-size:13px;">Total Revenue</div>
                     </div>
                 </div>
@@ -27470,11 +27470,11 @@ Object.assign(handlers, {
                     </div>
                     <div class="grid grid-cols-2 gap-3 mb-4">
                         <div class="card"><div class="card-body text-center">
-                            <div class="text-lg font-bold">$${(stats.totalCost || 0).toFixed(0)}</div>
+                            <div class="text-lg font-bold">C$${(stats.totalCost || 0).toFixed(0)}</div>
                             <div class="text-xs text-gray-500">Total Cost</div>
                         </div></div>
                         <div class="card"><div class="card-body text-center">
-                            <div class="text-lg font-bold" style="color:${(stats.totalProfit || 0) >= 0 ? 'var(--success)' : 'var(--error)'};">$${(stats.totalProfit || 0).toFixed(0)}</div>
+                            <div class="text-lg font-bold" style="color:${(stats.totalProfit || 0) >= 0 ? 'var(--success)' : 'var(--error)'};">C$${(stats.totalProfit || 0).toFixed(0)}</div>
                             <div class="text-xs text-gray-500">Total Profit</div>
                         </div></div>
                     </div>

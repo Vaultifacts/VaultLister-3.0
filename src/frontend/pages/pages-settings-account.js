@@ -161,7 +161,7 @@ Object.assign(pages, {
                                     ${components.icon('dollar', 20)}
                                 </div>
                                 <div class="shop-stat-content">
-                                    <div class="shop-stat-value">$${totalRevenue.toLocaleString()}</div>
+                                    <div class="shop-stat-value">C$${totalRevenue.toLocaleString()}</div>
                                     <div class="shop-stat-label">Revenue</div>
                                 </div>
                             </div>
@@ -242,15 +242,15 @@ Object.assign(pages, {
                     <div class="card-body">
                         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
                             <div style="text-align: center; padding: 16px; background: var(--success-50); border-radius: 12px;">
-                                <div style="font-size: 24px; font-weight: 700; color: var(--success);">$${totalPlatformRevenue.toFixed(2)}</div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--success);">C$${totalPlatformRevenue.toFixed(2)}</div>
                                 <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">Gross Revenue</div>
                             </div>
                             <div style="text-align: center; padding: 16px; background: var(--error-50); border-radius: 12px;">
-                                <div style="font-size: 24px; font-weight: 700; color: var(--error);">-$${totalPlatformFees.toFixed(2)}</div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--error);">-C$${totalPlatformFees.toFixed(2)}</div>
                                 <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">Total Fees</div>
                             </div>
                             <div style="text-align: center; padding: 16px; background: var(--primary-50); border-radius: 12px;">
-                                <div style="font-size: 24px; font-weight: 700; color: var(--primary);">$${totalNetRevenue.toFixed(2)}</div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--primary);">C$${totalNetRevenue.toFixed(2)}</div>
                                 <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">Net Revenue</div>
                             </div>
                             <div style="text-align: center; padding: 16px; background: var(--gray-100); border-radius: 12px;">
@@ -272,7 +272,7 @@ Object.assign(pages, {
                                             <div style="flex: 1; height: 20px; background: var(--gray-100); border-radius: 4px; overflow: hidden; position: relative;">
                                                 <div style="width: ${barWidth}%; height: 100%; background: linear-gradient(90deg, var(--error) 0%, var(--error-400) 100%); border-radius: 4px;"></div>
                                             </div>
-                                            <div style="width: 80px; font-size: 12px; font-weight: 600; color: var(--error); text-align: right;">$${fees.totalFees.toFixed(2)}</div>
+                                            <div style="width: 80px; font-size: 12px; font-weight: 600; color: var(--error); text-align: right;">C$${fees.totalFees.toFixed(2)}</div>
                                             <div style="width: 50px; font-size: 11px; color: var(--gray-500); text-align: right;">${(fees.feeRate * 100).toFixed(0)}%</div>
                                         </div>
                                     `;
@@ -362,7 +362,7 @@ Object.assign(pages, {
                                             <div style="font-size: 10px; color: var(--gray-500);">Sales</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--success-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : Math.floor(Math.random() * 500) + 100}</div>
+                                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">C$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : Math.floor(Math.random() * 500) + 100}</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Revenue</div>
                                         </div>
                                     </div>
@@ -374,11 +374,11 @@ Object.assign(pages, {
                                         </div>
                                         <div style="display: flex; justify-content: space-between; align-items: baseline;">
                                             <div>
-                                                <span style="font-size: 18px; font-weight: 700; color: var(--error);">-$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : (Math.random() * 50 + 10).toFixed(2)}</span>
+                                                <span style="font-size: 18px; font-weight: 700; color: var(--error);">-C$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : (Math.random() * 50 + 10).toFixed(2)}</span>
                                             </div>
                                             <div style="text-align: right;">
                                                 <div style="font-size: 10px; color: var(--gray-500);">Net:</div>
-                                                <div style="font-size: 13px; font-weight: 600; color: var(--success);">$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : (Math.random() * 400 + 80).toFixed(2)}</div>
+                                                <div style="font-size: 13px; font-weight: 600; color: var(--success);">C$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : (Math.random() * 400 + 80).toFixed(2)}</div>
                                             </div>
                                         </div>
                                         <div style="margin-top: 6px; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">
@@ -501,13 +501,13 @@ Object.assign(pages, {
                                                 </div>
                                             </td>
                                             <td>${m.salesCount}</td>
-                                            <td class="text-success font-medium">$${m.totalRevenue.toFixed(2)}</td>
-                                            <td>$${m.avgSalePrice.toFixed(2)}</td>
+                                            <td class="text-success font-medium">C$${m.totalRevenue.toFixed(2)}</td>
+                                            <td>C$${m.avgSalePrice.toFixed(2)}</td>
                                             <td>${m.conversionRate}%</td>
                                             <td>${m.salesVelocity}</td>
                                             <td>${m.avgDaysToSell}d</td>
                                             <td>${m.returnRate}%</td>
-                                            <td class="font-medium">$${m.netRevenue.toFixed(2)}</td>
+                                            <td class="font-medium">C$${m.netRevenue.toFixed(2)}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -677,12 +677,12 @@ Object.assign(pages, {
 
                                 <div class="text-sm mb-2">
                                     ${profile.handling_time_days === 1 ? '1 day handling' : `${profile.handling_time_days || 1} days handling`}
-                                    ${profile.domestic_cost ? ` • $${parseFloat(profile.domestic_cost).toFixed(2)}` : ' • Free'}
+                                    ${profile.domestic_cost ? ` • C$${parseFloat(profile.domestic_cost).toFixed(2)}` : ' • Free'}
                                 </div>
 
                                 ${profile.free_shipping_threshold ? `
                                     <div class="text-xs text-success mb-2">
-                                        Free shipping on orders over $${parseFloat(profile.free_shipping_threshold).toFixed(2)}
+                                        Free shipping on orders over C$${parseFloat(profile.free_shipping_threshold).toFixed(2)}
                                     </div>
                                 ` : ''}
 
@@ -1790,7 +1790,7 @@ Object.assign(pages, {
                                 <label class="form-label">Current Plan</label>
                                 <div style="padding: 12px; background: var(--gray-50); border-radius: 4px; border-left: 4px solid var(--primary-600);">
                                     <div style="font-weight: 600; margin-bottom: 4px;">${store.state.user?.subscription_tier ? store.state.user.subscription_tier.charAt(0).toUpperCase() + store.state.user.subscription_tier.slice(1) : 'Free'} Plan</div>
-                                    <div style="font-size: 14px; color: #666;">$${store.state.user?.subscription_tier === 'pro' ? '24.99' : store.state.user?.subscription_tier === 'business' ? '49.99' : store.state.user?.subscription_tier === 'starter' ? '9.99' : '0.00'}/month</div>
+                                    <div style="font-size: 14px; color: #666;">C$${store.state.user?.subscription_tier === 'pro' ? '24.99' : store.state.user?.subscription_tier === 'business' ? '49.99' : store.state.user?.subscription_tier === 'starter' ? '9.99' : '0.00'}/month</div>
                                 </div>
                             </div>
                         </div>

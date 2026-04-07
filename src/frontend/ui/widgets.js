@@ -119,7 +119,7 @@ const globalSearch = {
             .map(item => ({
                 id: item.id,
                 label: item.title || 'Untitled Listing',
-                subtitle: `${item.platform || 'Unknown'} · $${item.price || 0}`,
+                subtitle: `${item.platform || 'Unknown'} · C$${item.price || 0}`,
                 type: 'listing'
             }));
 
@@ -141,7 +141,7 @@ const globalSearch = {
             .map(item => ({
                 id: item.id,
                 label: item.item_title || 'Untitled Offer',
-                subtitle: `$${item.amount || 0} from ${item.buyer_username || 'Unknown'}`,
+                subtitle: `C$${item.amount || 0} from ${item.buyer_username || 'Unknown'}`,
                 type: 'offer'
             }));
 
@@ -1825,7 +1825,7 @@ const commandPalette = {
                 this.commands.push({
                     id: `item-${item.id}`,
                     title: item.title,
-                    description: `SKU: ${item.sku || 'N/A'} • $${item.list_price}`,
+                    description: `SKU: ${item.sku || 'N/A'} • C$${item.list_price}`,
                     icon: 'inventory',
                     action: () => handlers.editItem?.(item.id),
                     category: 'Inventory'
@@ -2552,7 +2552,7 @@ const kanban = {
                 <div class="kanban-card-title">${escapeHtml(item.title)}</div>
                 <div class="kanban-card-meta">
                     <span>${item.platform || ''}</span>
-                    <span>$${item.price || 0}</span>
+                    <span>C$${item.price || 0}</span>
                 </div>
             </div>
         `;
@@ -3073,13 +3073,13 @@ const goalTracker = {
                         <div class="goal-widget-fill" style="width: ${progress.percent}%"></div>
                     </div>
                     <div class="goal-widget-stats">
-                        <span>$${current.toLocaleString()} of $${progress.target.toLocaleString()}</span>
+                        <span>C$${current.toLocaleString()} of C$${progress.target.toLocaleString()}</span>
                         <span>${Math.round(progress.percent)}%</span>
                     </div>
                 </div>
                 ${progress.remaining > 0 ? `
                     <div class="goal-widget-projected">
-                        $${progress.remaining.toLocaleString()} to go
+                        C$${progress.remaining.toLocaleString()} to go
                     </div>
                 ` : `
                     <div class="goal-widget-projected">🎉 Goal achieved!</div>
@@ -3287,7 +3287,7 @@ const cashFlowTicker = {
                 <div class="ticker-content">
                     ${transactions.map(t => `
                         <span class="ticker-item ${t.type}">
-                            <span class="ticker-amount">${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)}</span>
+                            <span class="ticker-amount">${t.type === 'income' ? '+' : '-'}C$${t.amount.toFixed(2)}</span>
                             <span class="ticker-desc">${escapeHtml(t.description)}</span>
                         </span>
                     `).join('')}
@@ -3548,9 +3548,9 @@ const counterSlider = {
                            oninput="${onChangeHandler}(this.value)">
                 </div>
                 <div class="counter-slider-labels">
-                    <span class="min-label">$${minPrice.toFixed(2)}</span>
-                    <span class="current-label">$${currentValue.toFixed(2)}</span>
-                    <span class="max-label">$${originalPrice.toFixed(2)}</span>
+                    <span class="min-label">C$${minPrice.toFixed(2)}</span>
+                    <span class="current-label">C$${currentValue.toFixed(2)}</span>
+                    <span class="max-label">C$${originalPrice.toFixed(2)}</span>
                 </div>
             </div>
         `;
@@ -3570,23 +3570,23 @@ const profitCalculator = {
             <div class="profit-calculator">
                 <div class="calc-row">
                     <span>Sale Price</span>
-                    <span>$${offerAmount.toFixed(2)}</span>
+                    <span>C$${offerAmount.toFixed(2)}</span>
                 </div>
                 <div class="calc-row">
                     <span>Cost</span>
-                    <span>-$${cost.toFixed(2)}</span>
+                    <span>-C$${cost.toFixed(2)}</span>
                 </div>
                 <div class="calc-row">
                     <span>Est. Fees (13%)</span>
-                    <span>-$${fees.toFixed(2)}</span>
+                    <span>-C$${fees.toFixed(2)}</span>
                 </div>
                 <div class="calc-row">
                     <span>Shipping</span>
-                    <span>-$${shipping.toFixed(2)}</span>
+                    <span>-C$${shipping.toFixed(2)}</span>
                 </div>
                 <div class="calc-row total ${profit >= 0 ? 'positive' : 'negative'}">
                     <span>Net Profit</span>
-                    <span>$${profit.toFixed(2)} (${margin.toFixed(0)}%)</span>
+                    <span>C$${profit.toFixed(2)} (${margin.toFixed(0)}%)</span>
                 </div>
             </div>
         `;
@@ -5385,7 +5385,7 @@ const platformComparison = {
                         </div>
                         <div class="platform-comparison-bar">
                             <div class="platform-comparison-fill ${item.platform}" style="width: ${((item.value || 0) / max) * 100}%">
-                                $${(item.value || 0).toLocaleString()}
+                                C$${(item.value || 0).toLocaleString()}
                             </div>
                         </div>
                     </div>
@@ -5426,7 +5426,7 @@ const transactionTimeline = {
                         ` : ''}
                     </div>
                     <div class="transaction-timeline-amount ${isIncome ? 'income' : 'expense'}">
-                        ${isIncome ? '+' : '-'}$${Math.abs(transaction.amount).toFixed(2)}
+                        ${isIncome ? '+' : '-'}C$${Math.abs(transaction.amount).toFixed(2)}
                     </div>
                 </div>
             </div>
@@ -5470,7 +5470,7 @@ const expensePieChart = {
                 ${categories.map((cat, i) => `
                     <div class="expense-pie-legend-item">
                         <div class="expense-pie-legend-dot" style="background: ${this.colors[i % this.colors.length]}"></div>
-                        <span>${escapeHtml(cat.name || 'Unknown')} ($${(cat.amount || 0).toFixed(0)})</span>
+                        <span>${escapeHtml(cat.name || 'Unknown')} (C$${(cat.amount || 0).toFixed(0)})</span>
                     </div>
                 `).join('')}
             </div>
@@ -5526,7 +5526,7 @@ const runningBalance = {
         return `
             <div class="running-balance">
                 <div class="running-balance-label">Running Balance</div>
-                <div class="running-balance-amount">$${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                <div class="running-balance-amount">C$${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
             </div>
         `;
     }
@@ -5610,7 +5610,7 @@ const waterfallChart = {
                     return `
                         <div class="waterfall-bar-container">
                             <div class="waterfall-value ${isPositive ? 'text-success' : 'text-error'}">
-                                ${isPositive ? '+' : '-'}$${Math.abs(item.value).toFixed(0)}
+                                ${isPositive ? '+' : '-'}C$${Math.abs(item.value).toFixed(0)}
                             </div>
                             <div class="waterfall-bar ${isTotal ? 'total' : isPositive ? 'positive' : 'negative'}"
                                  style="height: ${height}px;">
@@ -5770,9 +5770,9 @@ const goalTrackerWidget = {
                 <div class="goal-progress-ring">
                     ${components.progressRing(progress, 80, 8, progress >= 100 ? 'green' : 'primary')}
                     <div class="goal-details">
-                        <div class="goal-current">$${goal.current.toLocaleString()}</div>
-                        <div class="goal-target">of $${goal.target.toLocaleString()} goal</div>
-                        <div class="goal-remaining">${remaining > 0 ? `$${remaining.toLocaleString()} to go` : 'Goal reached!'}</div>
+                        <div class="goal-current">C$${goal.current.toLocaleString()}</div>
+                        <div class="goal-target">of C$${goal.target.toLocaleString()} goal</div>
+                        <div class="goal-remaining">${remaining > 0 ? `C$${remaining.toLocaleString()} to go` : 'Goal reached!'}</div>
                     </div>
                 </div>
             </div>
@@ -5851,7 +5851,7 @@ const periodComparison = {
                     ${rows.map(r => `
                         <div class="period-comparison-row">
                             <span>${r.label}</span>
-                            <span class="font-medium">$${r.current.toLocaleString()}</span>
+                            <span class="font-medium">C$${r.current.toLocaleString()}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -5861,7 +5861,7 @@ const periodComparison = {
                     </div>
                     ${rows.map(r => `
                         <div class="period-comparison-row">
-                            <span>$${r.previous.toLocaleString()}</span>
+                            <span>C$${r.previous.toLocaleString()}</span>
                             <span class="period-comparison-variance ${r.variance >= 0 ? 'positive' : 'negative'}">
                                 ${r.variance >= 0 ? '+' : ''}${r.variance.toFixed(1)}%
                             </span>
@@ -5883,7 +5883,7 @@ const budgetProgress = {
                 <div class="budget-progress">
                     <div class="budget-progress-header">
                         <span>${escapeHtml(b.category)}</span>
-                        <span>$${b.actual.toLocaleString()} / $${b.budget.toLocaleString()}</span>
+                        <span>C$${b.actual.toLocaleString()} / C$${b.budget.toLocaleString()}</span>
                     </div>
                     <div class="budget-progress-bar">
                         <div class="budget-progress-fill ${status}" style="width: ${Math.min(100, percent)}%"></div>
@@ -5962,7 +5962,7 @@ const recommendationCards = {
                             ${grouped[key].slice(0, 3).map(item => `
                                 <div class="recommendation-item">
                                     <span class="truncate">${escapeHtml(item.item_title || 'Item')}</span>
-                                    <span class="font-medium">$${(item.predicted_price || 0).toFixed(0)}</span>
+                                    <span class="font-medium">C$${(item.predicted_price || 0).toFixed(0)}</span>
                                 </div>
                             `).join('')}
                             ${grouped[key].length > 3 ? `<div class="recommendation-more">+${grouped[key].length - 3} more</div>` : ''}
@@ -6170,7 +6170,7 @@ const supplierCardEnhanced = {
                             <span class="metric-label">Items</span>
                         </div>
                         <div class="supplier-metric">
-                            <span class="metric-value">$${(supplier.avg_price || 0).toFixed(0)}</span>
+                            <span class="metric-value">C$${(supplier.avg_price || 0).toFixed(0)}</span>
                             <span class="metric-label">Avg Price</span>
                         </div>
                         <div class="supplier-metric">

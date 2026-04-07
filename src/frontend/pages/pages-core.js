@@ -1238,7 +1238,7 @@ const pages = {
                         return `<div class="poshmark-sparkline" role="img" aria-label="Closet value trend" style="display:flex;align-items:flex-end;gap:3px;height:32px;margin-top:8px;">
                             ${history.slice(-12).map(h => {
                                 const pct = Math.max(4, Math.round(((h.value || 0) / max) * 100));
-                                return `<div style="flex:1;background:var(--primary-400);border-radius:2px 2px 0 0;height:${pct}%;min-height:4px;" title="$${(h.value||0).toLocaleString()} on ${escapeHtml(h.date||'')}"></div>`;
+                                return `<div style="flex:1;background:var(--primary-400);border-radius:2px 2px 0 0;height:${pct}%;min-height:4px;" title="C$${(h.value||0).toLocaleString()} on ${escapeHtml(h.date||'')}"></div>`;
                             }).join('')}
                         </div>`;
                     })() : '';
@@ -1272,7 +1272,7 @@ const pages = {
                                         <div class="text-xs text-gray-500">Recent Sales</div>
                                     </div>
                                     <div class="stat-item" style="text-align:center;grid-column:span 2;">
-                                        <div class="text-2xl font-bold">$${pm.closet_value != null ? Number(pm.closet_value).toLocaleString() : '—'}</div>
+                                        <div class="text-2xl font-bold">C$${pm.closet_value != null ? Number(pm.closet_value).toLocaleString() : '—'}</div>
                                         <div class="text-xs text-gray-500">Closet Value</div>
                                         ${sparkline}
                                     </div>
@@ -1369,7 +1369,7 @@ const pages = {
             <div class="grid grid-cols-3 gap-4 mb-6">
                 <div class="card">
                     <div class="card-body text-center">
-                        <div class="text-2xl font-bold text-primary">$${salesTabStats.totalFees.toFixed(2)}</div>
+                        <div class="text-2xl font-bold text-primary">C$${salesTabStats.totalFees.toFixed(2)}</div>
                         <div class="text-sm text-gray-500">Platform Fees Paid</div>
                     </div>
                 </div>
@@ -1383,7 +1383,7 @@ const pages = {
                 </div>
                 <div class="card">
                     <div class="card-body text-center">
-                        <div class="text-2xl font-bold text-primary">$${salesTabStats.avgProfit.toFixed(2)}</div>
+                        <div class="text-2xl font-bold text-primary">C$${salesTabStats.avgProfit.toFixed(2)}</div>
                         <div class="text-sm text-gray-500">Avg Profit per Sale</div>
                     </div>
                 </div>
@@ -1426,12 +1426,12 @@ const pages = {
                                         <td>${new Date(s.created_at).toLocaleDateString()}</td>
                                         <td class="font-medium">${escapeHtml(s.listing_title || s.inventory_title || 'N/A')}</td>
                                         <td><span class="badge badge-info">${s.platform}</span></td>
-                                        <td class="text-success">$${(s.sale_price || 0).toFixed(2)}</td>
-                                        <td class="text-gray-600">$${(s.item_cost || 0).toFixed(2)}</td>
-                                        <td class="text-gray-600">$${(s.customer_shipping_cost || 0).toFixed(2)}</td>
-                                        <td class="text-gray-600">$${(s.seller_shipping_cost || s.shipping_cost || 0).toFixed(2)}</td>
-                                        <td class="text-gray-600">$${(s.platform_fee || 0).toFixed(2)}</td>
-                                        <td class="font-medium ${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">$${(s.net_profit || 0).toFixed(2)}</td>
+                                        <td class="text-success">C$${(s.sale_price || 0).toFixed(2)}</td>
+                                        <td class="text-gray-600">C$${(s.item_cost || 0).toFixed(2)}</td>
+                                        <td class="text-gray-600">C$${(s.customer_shipping_cost || 0).toFixed(2)}</td>
+                                        <td class="text-gray-600">C$${(s.seller_shipping_cost || s.shipping_cost || 0).toFixed(2)}</td>
+                                        <td class="text-gray-600">C$${(s.platform_fee || 0).toFixed(2)}</td>
+                                        <td class="font-medium ${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(s.net_profit || 0).toFixed(2)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -1456,7 +1456,7 @@ const pages = {
                                         <span class="font-medium">${p.label}</span>
                                         <span class="text-sm text-gray-500">| ${p.count} ${p.count === 1 ? 'sale' : 'sales'}</span>
                                     </div>
-                                    <span class="font-bold text-success">Total: $${(p.value || 0).toFixed(2)}</span>
+                                    <span class="font-bold text-success">Total: C$${(p.value || 0).toFixed(2)}</span>
                                 </div>
                             `).join('')}
                         </div>
@@ -1559,14 +1559,14 @@ const pages = {
                                             <span class="font-bold text-primary">#${i + 1}</span>
                                             <div>
                                                 <div class="font-medium">${escapeHtml(item.title.substring(0, 25))}${item.title.length > 25 ? '...' : ''}</div>
-                                                <div class="text-xs text-gray-500">${item.count} sold @ $${item.avgPrice.toFixed(2)} avg</div>
+                                                <div class="text-xs text-gray-500">${item.count} sold @ C$${item.avgPrice.toFixed(2)} avg</div>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-3">
                                             <div class="price-trend-sparkline" title="7-day market price trend">
                                                 ${sparkline.create(item.priceTrend, 60, 24, { showArea: true, trend: item.trendDirection === 'up' ? 'trend-up' : 'trend-down' })}
                                             </div>
-                                            <span class="font-bold text-success" style="min-width: 70px; text-align: right;">$${item.revenue.toFixed(2)}</span>
+                                            <span class="font-bold text-success" style="min-width: 70px; text-align: right;">C$${item.revenue.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -1594,7 +1594,7 @@ const pages = {
                                                 <div class="font-medium">${escapeHtml((item.title || 'Untitled').substring(0, 30))}${(item.title || '').length > 30 ? '...' : ''}</div>
                                                 <div class="text-xs text-gray-500">Listed ${daysListed} days ago</div>
                                             </div>
-                                            <span class="font-medium">$${(item.listing_price || item.cost_price || 0).toFixed(2)}</span>
+                                            <span class="font-medium">C$${(item.listing_price || item.cost_price || 0).toFixed(2)}</span>
                                         </div>
                                     `;
                                 }).join('')}
@@ -1618,7 +1618,7 @@ const pages = {
                                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                                     <div class="text-2xl font-bold text-primary">${cat.sales}</div>
                                     <div class="text-sm font-medium">${escapeHtml(cat.category)}</div>
-                                    <div class="text-xs text-gray-500">$${cat.revenue.toFixed(2)}</div>
+                                    <div class="text-xs text-gray-500">C$${cat.revenue.toFixed(2)}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -1847,8 +1847,8 @@ const pages = {
                                             return `<tr>
                                                 <td>${escapeHtml(i.title || 'Untitled')}</td>
                                                 <td>${escapeHtml(i.source || 'Manual')}</td>
-                                                <td>$${(i.cost_price || 0).toFixed(2)}</td>
-                                                <td>$${(i.list_price || 0).toFixed(2)}</td>
+                                                <td>C$${(i.cost_price || 0).toFixed(2)}</td>
+                                                <td>C$${(i.list_price || 0).toFixed(2)}</td>
                                                 <td><span class="${marginClass} font-semibold">${margin}%</span></td>
                                             </tr>`;
                                         }).join('')}
@@ -1896,8 +1896,8 @@ const pages = {
                                             <tr>
                                                 <td>${escapeHtml(i.title || 'Untitled')}</td>
                                                 <td>${i.daysListed}</td>
-                                                <td>$${(i.cost_price || 0).toFixed(2)}</td>
-                                                <td>$${(i.list_price || 0).toFixed(2)}</td>
+                                                <td>C$${(i.cost_price || 0).toFixed(2)}</td>
+                                                <td>C$${(i.list_price || 0).toFixed(2)}</td>
                                                 <td>${escapeHtml(i.category || 'Uncategorized')}</td>
                                             </tr>
                                         `).join('')}
@@ -2079,30 +2079,30 @@ const pages = {
                         <div class="grid grid-cols-3 gap-4">
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <div class="text-sm text-gray-500 mb-1">Revenue</div>
-                                <div class="text-2xl font-bold text-success">$${totalRevenue2.toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-success">C$${totalRevenue2.toFixed(2)}</div>
                             </div>
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <div class="text-sm text-gray-500 mb-1">COGS</div>
-                                <div class="text-2xl font-bold text-error">-$${totalCOGS.toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-error">-C$${totalCOGS.toFixed(2)}</div>
                             </div>
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <div class="text-sm text-gray-500 mb-1">Gross Profit</div>
-                                <div class="text-2xl font-bold text-primary">$${grossProfit.toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-primary">C$${grossProfit.toFixed(2)}</div>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mt-4">
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <div class="text-sm text-gray-500 mb-1">Platform Fees</div>
-                                <div class="text-2xl font-bold text-error">-$${platformFees.toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-error">-C$${platformFees.toFixed(2)}</div>
                             </div>
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <div class="text-sm text-gray-500 mb-1">Shipping Costs</div>
-                                <div class="text-2xl font-bold text-error">-$${shippingCosts.toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-error">-C$${shippingCosts.toFixed(2)}</div>
                             </div>
                         </div>
                         <div class="p-4 bg-blue-50 rounded-lg mt-4 border border-blue-200">
                             <div class="text-sm text-gray-600 mb-1">Net Profit</div>
-                            <div class="text-3xl font-bold ${netProfit2 >= 0 ? 'text-success' : 'text-error'}">$${netProfit2.toFixed(2)}</div>
+                            <div class="text-3xl font-bold ${netProfit2 >= 0 ? 'text-success' : 'text-error'}">C$${netProfit2.toFixed(2)}</div>
                         </div>
                     </div>
                 </div>
@@ -2167,8 +2167,8 @@ const pages = {
                                             <tr>
                                                 <td class="font-medium">${escapeHtml(p.title.substring(0, 40))}${p.title.length > 40 ? '...' : ''}</td>
                                                 <td>${p.unitsSold}</td>
-                                                <td>$${p.revenue.toFixed(2)}</td>
-                                                <td>$${p.avgPrice}</td>
+                                                <td>C$${p.revenue.toFixed(2)}</td>
+                                                <td>C$${p.avgPrice}</td>
                                                 <td><span class="badge badge-gray">${p.platform.charAt(0).toUpperCase() + p.platform.slice(1)}</span></td>
                                                 <td><span class="badge ${rating === 'good' ? 'badge-success' : rating === 'average' ? 'badge-warning' : 'badge-error'}">${rating.charAt(0).toUpperCase() + rating.slice(1)}</span></td>
                                             </tr>
@@ -2334,7 +2334,7 @@ const pages = {
 
                     <div class="snapshot-metrics">
                         <div class="snapshot-metric primary">
-                            <div class="metric-value-large">$${totalRevenue.toLocaleString()}</div>
+                            <div class="metric-value-large">C$${totalRevenue.toLocaleString()}</div>
                             <div class="metric-label">Total Revenue</div>
                             <div class="metric-change ${revenueGrowth >= 0 ? 'positive' : 'negative'}">
                                 ${revenueGrowth >= 0 ? '+' : ''}${revenueGrowth.toFixed(1)}% vs prev
@@ -2345,7 +2345,7 @@ const pages = {
                             <div class="metric-label">Total Sales</div>
                         </div>
                         <div class="snapshot-metric">
-                            <div class="metric-value-medium">$${avgOrderValue.toFixed(2)}</div>
+                            <div class="metric-value-medium">C$${avgOrderValue.toFixed(2)}</div>
                             <div class="metric-label">Avg Order Value</div>
                         </div>
                         <div class="snapshot-metric">
@@ -2382,7 +2382,7 @@ const pages = {
                         </div>
                         <div class="highlight-content">
                             <div class="highlight-label">Total Profit</div>
-                            <div class="highlight-value ${totalProfit >= 0 ? 'positive' : 'negative'}">${totalProfit >= 0 ? '' : '-'}$${Math.abs(totalProfit).toFixed(2)}</div>
+                            <div class="highlight-value ${totalProfit >= 0 ? 'positive' : 'negative'}">${totalProfit >= 0 ? '' : '-'}C$${Math.abs(totalProfit).toFixed(2)}</div>
                             <div class="highlight-detail">After all fees & costs</div>
                         </div>
                     </div>
@@ -2392,7 +2392,7 @@ const pages = {
                     ${bestSellers.length > 0 ? `
                         <div class="quick-insight">
                             ${components.icon('star', 14)}
-                            <span>Best seller: <strong>${bestSellers[0].title.substring(0, 25)}${bestSellers[0].title.length > 25 ? '...' : ''}</strong> ($${bestSellers[0].revenue.toFixed(2)})</span>
+                            <span>Best seller: <strong>${bestSellers[0].title.substring(0, 25)}${bestSellers[0].title.length > 25 ? '...' : ''}</strong> (C$${bestSellers[0].revenue.toFixed(2)})</span>
                         </div>
                     ` : ''}
                     ${slowMovers.length > 0 ? `
@@ -2510,7 +2510,7 @@ const pages = {
                             <div class="live-metric-icon" style="background: var(--success-100); color: var(--success-600);">
                                 ${components.icon('dollar-sign', 24)}
                             </div>
-                            <div class="live-metric-value text-success">$${todayRevenue.toFixed(2)}</div>
+                            <div class="live-metric-value text-success">C$${todayRevenue.toFixed(2)}</div>
                             <div class="live-metric-label">Today's Revenue</div>
                             <div class="live-metric-sub">${todaySales.length} sale(s) today</div>
                         </div>
@@ -2552,7 +2552,7 @@ const pages = {
                                             <div class="font-medium text-sm">${escapeHtml(s.item_title || 'Unknown')}</div>
                                             <div class="text-xs text-gray-500">${s.platform || 'N/A'} &bull; ${s.created_at ? new Date(s.created_at).toLocaleString() : 'N/A'}</div>
                                         </div>
-                                        <div class="font-semibold text-success">$${(parseFloat(s.sale_price) || 0).toFixed(2)}</div>
+                                        <div class="font-semibold text-success">C$${(parseFloat(s.sale_price) || 0).toFixed(2)}</div>
                                     </div>
                                 `).join('') : '<div class="text-center text-gray-400 py-4">No recent sales</div>'}
                             </div>
@@ -2696,7 +2696,7 @@ const pages = {
                         <div class="forecast-summary mb-4">
                             <div class="grid grid-cols-3 gap-4 text-center">
                                 <div class="p-3 bg-primary-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-primary">$${(totalRevenue * 1.15).toFixed(0)}</div>
+                                    <div class="text-2xl font-bold text-primary">C$${(totalRevenue * 1.15).toFixed(0)}</div>
                                     <div class="text-xs text-gray-500">Predicted Revenue</div>
                                 </div>
                                 <div class="p-3 bg-success-50 rounded-lg">
@@ -2793,7 +2793,7 @@ const pages = {
                         </div>
                         <div class="compare-stat">
                             <span class="compare-stat-label">Avg Order Value Change</span>
-                            <span class="compare-stat-value ${Math.random() > 0.3 ? 'positive' : 'negative'}">${Math.random() > 0.3 ? '+' : '-'}$${(Math.random() * 10 + 1).toFixed(2)}</span>
+                            <span class="compare-stat-value ${Math.random() > 0.3 ? 'positive' : 'negative'}">${Math.random() > 0.3 ? '+' : '-'}C$${(Math.random() * 10 + 1).toFixed(2)}</span>
                         </div>
                         <div class="compare-stat">
                             <span class="compare-stat-label">Profit Margin Change</span>
@@ -2995,7 +2995,7 @@ const pages = {
                                             <div class="progress-bar" style="background: var(--gray-200); height: 8px; border-radius: 4px; overflow: hidden;">
                                                 <div style="width: ${(item.count / maxCount * 100).toFixed(1)}%; height: 100%; background: var(--primary-500);"></div>
                                             </div>
-                                            <div class="text-xs text-gray-500 mt-1">Total: $${item.revenue.toFixed(2)}</div>
+                                            <div class="text-xs text-gray-500 mt-1">Total: C$${item.revenue.toFixed(2)}</div>
                                         </div>
                                     </div>
                                 `).join('');
@@ -3072,9 +3072,9 @@ const pages = {
                                                         <div class="text-xs text-gray-500">${item.inventoryId}</div>
                                                     </td>
                                                     <td class="font-medium">${item.salesCount}</td>
-                                                    <td class="font-medium text-success">$${item.totalRevenue.toFixed(2)}</td>
-                                                    <td class="font-medium text-primary">$${item.totalProfit.toFixed(2)}</td>
-                                                    <td class="text-gray-600">$${avgSalePrice.toFixed(2)}</td>
+                                                    <td class="font-medium text-success">C$${item.totalRevenue.toFixed(2)}</td>
+                                                    <td class="font-medium text-primary">C$${item.totalProfit.toFixed(2)}</td>
+                                                    <td class="text-gray-600">C$${avgSalePrice.toFixed(2)}</td>
                                                 </tr>
                                             `;
                                         }).join('')}

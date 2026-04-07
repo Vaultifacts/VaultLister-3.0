@@ -1550,7 +1550,7 @@ const components = {
                 ${[0, 0.5, 1].map((ratio, i) => `
                     <text x="${padding - 10}" y="${height - padding - ratio * chartHeight + 4}"
                           text-anchor="end" font-size="11" fill="var(--gray-600)">
-                        $${Math.round(maxValue * ratio)}
+                        C$${Math.round(maxValue * ratio)}
                     </text>
                 `).join('')}
 
@@ -1610,7 +1610,7 @@ const components = {
                 ${[0, 0.5, 1].map((ratio) => `
                     <text x="${padding - 10}" y="${height - padding - ratio * chartHeight + 4}"
                           text-anchor="end" font-size="11" fill="var(--gray-600)">
-                        $${Math.round(maxValue * ratio)}
+                        C$${Math.round(maxValue * ratio)}
                     </text>
                 `).join('')}
             </svg>
@@ -1695,7 +1695,7 @@ const components = {
                     <path d="${seg.path}" fill="${seg.color}" class="chart-slice"
                           data-label="${seg.label}" data-value="${seg.value}" data-percentage="${seg.percentage}%"
                           style="transition: transform 0.2s ease; transform-origin: ${centerX}px ${centerY}px;">
-                        <title>${seg.label}: $${seg.value.toFixed(2)} (${seg.percentage}%)</title>
+                        <title>${seg.label}: C$${seg.value.toFixed(2)} (${seg.percentage}%)</title>
                     </path>
                 `).join('')}
 
@@ -1721,7 +1721,7 @@ const components = {
                                 <g transform="translate(${x}, ${y})">
                                     <rect width="12" height="12" rx="2" fill="${seg.color}"/>
                                     <text x="18" y="10" font-size="11" fill="var(--gray-700)">
-                                        ${seg.label}: $${seg.value.toFixed(2)}
+                                        ${seg.label}: C$${seg.value.toFixed(2)}
                                     </text>
                                 </g>
                             `;

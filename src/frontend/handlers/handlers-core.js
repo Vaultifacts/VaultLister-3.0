@@ -291,7 +291,7 @@ const handlers = {
         store.setState({ monthlySalesGoal: goal });
         localStorage.setItem('vaultlister_monthly_goal', goal);
         modals.close();
-        toast.success(`Monthly goal set to $${goal.toLocaleString()}`);
+        toast.success(`Monthly goal set to C$${goal.toLocaleString()}`);
         router.navigate('dashboard');
     },
 
@@ -1650,7 +1650,7 @@ const handlers = {
                             <div class="velocity-stat-label">Sales (30d)</div>
                         </div>
                         <div class="velocity-stat">
-                            <div class="velocity-stat-value">$${totalRevenue30d.toFixed(0)}</div>
+                            <div class="velocity-stat-value">C$${totalRevenue30d.toFixed(0)}</div>
                             <div class="velocity-stat-label">Revenue (30d)</div>
                         </div>
                         <div class="velocity-stat">
@@ -1670,7 +1670,7 @@ const handlers = {
                                     <div class="velocity-rank">#${i + 1}</div>
                                     <div class="velocity-info">
                                         <div class="velocity-title">${escapeHtml(item.title)}</div>
-                                        <div class="velocity-meta">${item.count} sales • $${item.revenue.toFixed(0)} revenue</div>
+                                        <div class="velocity-meta">${item.count} sales • C$${item.revenue.toFixed(0)} revenue</div>
                                     </div>
                                     <div class="velocity-speed">
                                         <div class="velocity-bar" style="width: ${topSellers[0]?.count > 0 ? (item.count / topSellers[0].count * 100) : 0}%"></div>
@@ -1689,7 +1689,7 @@ const handlers = {
                                 ${slowMovers.map(item => `
                                     <div class="slow-mover-item">
                                         <div class="slow-mover-title">${escapeHtml(item.title || item.name || 'Unknown')}</div>
-                                        <div class="slow-mover-price">$${parseFloat(item.list_price || 0).toFixed(2)}</div>
+                                        <div class="slow-mover-price">C$${parseFloat(item.list_price || 0).toFixed(2)}</div>
                                         <button class="btn btn-xs btn-secondary" onclick="handlers.showPriceDropSuggestion('${item.id}')">
                                             Suggest Price Drop
                                         </button>

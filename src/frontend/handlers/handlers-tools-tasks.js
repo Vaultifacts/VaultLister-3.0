@@ -4411,7 +4411,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="flex-1">
                             <div class="font-medium">${escapeHtml(item.title)}</div>
-                            <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • $${(item.list_price || 0).toFixed(2)}</div>
+                            <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • C$${(item.list_price || 0).toFixed(2)}</div>
                         </div>
                         <button class="btn btn-sm btn-primary">Add</button>
                     </div>

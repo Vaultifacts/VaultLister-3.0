@@ -353,13 +353,13 @@ Object.assign(pages, {
                                     return `
                                         <tr>
                                             <td class="font-medium">${escapeHtml((pred.item_title || 'Item').substring(0, 25))}</td>
-                                            <td>$${(pred.current_price || 0).toFixed(0)}</td>
-                                            <td style="color: var(--error);">$${pessimistic}</td>
-                                            <td style="color: var(--primary); font-weight: 600;">$${expected.toFixed(0)}</td>
-                                            <td style="color: var(--success);">$${optimistic}</td>
+                                            <td>C$${(pred.current_price || 0).toFixed(0)}</td>
+                                            <td style="color: var(--error);">C$${pessimistic}</td>
+                                            <td style="color: var(--primary); font-weight: 600;">C$${expected.toFixed(0)}</td>
+                                            <td style="color: var(--success);">C$${optimistic}</td>
                                             <td style="width: 140px;">
                                                 <div style="position: relative; height: 12px; background: linear-gradient(90deg, var(--error-100), var(--primary-100), var(--success-100)); border-radius: 6px;">
-                                                    <div style="position: absolute; top: -2px; left: ${Math.min(95, Math.max(5, currentPos))}%; width: 4px; height: 16px; background: var(--gray-800); border-radius: 2px;" title="Current: $${pred.current_price}"></div>
+                                                    <div style="position: absolute; top: -2px; left: ${Math.min(95, Math.max(5, currentPos))}%; width: 4px; height: 16px; background: var(--gray-800); border-radius: 2px;" title="Current: C$${pred.current_price}"></div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -449,7 +449,7 @@ Object.assign(pages, {
                             <div class="grid grid-cols-4 gap-3">
                                 <div style="text-align: center;">
                                     <div class="text-xs text-gray-500">Est. Revenue</div>
-                                    <div class="text-lg font-bold" style="color: var(--success);">$${store.state.whatIfResults.revenue ?? 0}</div>
+                                    <div class="text-lg font-bold" style="color: var(--success);">C$${store.state.whatIfResults.revenue ?? 0}</div>
                                 </div>
                                 <div style="text-align: center;">
                                     <div class="text-xs text-gray-500">Est. Sales</div>
@@ -854,7 +854,7 @@ Object.assign(pages, {
                                                 </div>
                                             </td>
                                             <td class="font-medium">${s.item_count || 0}</td>
-                                            <td class="font-medium">$${(s.avg_price || 0).toFixed(2)}</td>
+                                            <td class="font-medium">C$${(s.avg_price || 0).toFixed(2)}</td>
                                             <td>
                                                 <span class="badge badge-${s.stock_status === 'In Stock' ? 'success' : s.stock_status === 'Low Stock' ? 'warning' : 'error'}">
                                                     ${s.stock_status || 'Unknown'}
@@ -1413,7 +1413,7 @@ Object.assign(pages, {
                                                     </div>
                                                 </td>
                                                 <td style="padding: 12px; text-align: right; font-weight: 600;">${competitor.item_count || 0}</td>
-                                                <td style="padding: 12px; text-align: right;">$${(competitor.avg_price || 0).toFixed(2)}</td>
+                                                <td style="padding: 12px; text-align: right;">C$${(competitor.avg_price || 0).toFixed(2)}</td>
                                                 <td style="padding: 12px; text-align: center;"><span class="badge badge-${threatColor}">${threatLevel}</span></td>
                                                 <td style="padding: 12px; text-align: right;"><span class="badge badge-primary">Active</span></td>
                                                 <td style="padding: 12px; text-align: center;">
@@ -1521,7 +1521,7 @@ Object.assign(pages, {
                                             </svg>
                                         </div>
                                         <div style="text-align: right; min-width: 80px;">
-                                            <div style="font-weight: 700; font-size: 16px;">$${(priceHistory[priceHistory.length - 1] || 0).toFixed(0)}</div>
+                                            <div style="font-weight: 700; font-size: 16px;">C$${(priceHistory[priceHistory.length - 1] || 0).toFixed(0)}</div>
                                             <div style="font-size: 12px; color: ${trend === 'up' ? 'var(--success)' : 'var(--danger)'};">
                                                 ${trend === 'up' ? '+' : ''}${pctChange}%
                                             </div>

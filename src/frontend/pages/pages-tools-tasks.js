@@ -729,7 +729,7 @@ Object.assign(pages, {
                             <div class="calendar-stat-label">Lives</div>
                         </div>
                         <div class="calendar-stat">
-                            <div class="calendar-stat-value">$${monthRevenue.toLocaleString()}</div>
+                            <div class="calendar-stat-value">C$${monthRevenue.toLocaleString()}</div>
                             <div class="calendar-stat-label">Revenue</div>
                         </div>
                     </div>
@@ -2178,7 +2178,7 @@ Object.assign(pages, {
                                             </div>
                                             <div class="receipt-card-meta">
                                                 ${itemCount > 0 ? `<span>${itemCount} item${itemCount > 1 ? 's' : ''}</span>` : ''}
-                                                <span>$${total.toFixed(2)}</span>
+                                                <span>C$${total.toFixed(2)}</span>
                                                 ${typeBadge(receipt.receipt_type || parsed.receiptType)}
                                             </div>
                                             <div class="receipt-card-confidence">
@@ -2231,7 +2231,7 @@ Object.assign(pages, {
                                         <div class="receipt-card-info" style="flex: 1;">
                                             <div class="receipt-card-header">
                                                 <h4>${escapeHtml(vendorName)}</h4>
-                                                <span class="text-sm text-gray-500">$${total.toFixed(2)}</span>
+                                                <span class="text-sm text-gray-500">C$${total.toFixed(2)}</span>
                                             </div>
                                             <div class="receipt-card-meta">
                                                 ${typeBadge(receipt.receipt_type || parsed.receiptType)}
@@ -2349,7 +2349,7 @@ Object.assign(pages, {
                                                 <td>${formatDate(event.start_time)}</td>
                                                 <td>${event.estimated_duration || 60} min</td>
                                                 <td>${event.items?.length || 0}</td>
-                                                <td>$${(event.total_sales || 0).toFixed(2)}</td>
+                                                <td>C$${(event.total_sales || 0).toFixed(2)}</td>
                                                 <td><span class="badge badge-${event.status === 'completed' ? 'success' : 'gray'}">${event.status}</span></td>
                                             </tr>
                                         `).join('')}

@@ -8897,7 +8897,7 @@ const globalSearch = {
             .map(item => ({
                 id: item.id,
                 label: item.title || 'Untitled Listing',
-                subtitle: `${item.platform || 'Unknown'} · $${item.price || 0}`,
+                subtitle: `${item.platform || 'Unknown'} · C$${item.price || 0}`,
                 type: 'listing'
             }));
 
@@ -8919,7 +8919,7 @@ const globalSearch = {
             .map(item => ({
                 id: item.id,
                 label: item.item_title || 'Untitled Offer',
-                subtitle: `$${item.amount || 0} from ${item.buyer_username || 'Unknown'}`,
+                subtitle: `C$${item.amount || 0} from ${item.buyer_username || 'Unknown'}`,
                 type: 'offer'
             }));
 
@@ -10603,7 +10603,7 @@ const commandPalette = {
                 this.commands.push({
                     id: `item-${item.id}`,
                     title: item.title,
-                    description: `SKU: ${item.sku || 'N/A'} • $${item.list_price}`,
+                    description: `SKU: ${item.sku || 'N/A'} • C$${item.list_price}`,
                     icon: 'inventory',
                     action: () => handlers.editItem?.(item.id),
                     category: 'Inventory'
@@ -11330,7 +11330,7 @@ const kanban = {
                 <div class="kanban-card-title">${escapeHtml(item.title)}</div>
                 <div class="kanban-card-meta">
                     <span>${item.platform || ''}</span>
-                    <span>$${item.price || 0}</span>
+                    <span>C$${item.price || 0}</span>
                 </div>
             </div>
         `;
@@ -11851,13 +11851,13 @@ const goalTracker = {
                         <div class="goal-widget-fill" style="width: ${progress.percent}%"></div>
                     </div>
                     <div class="goal-widget-stats">
-                        <span>$${current.toLocaleString()} of $${progress.target.toLocaleString()}</span>
+                        <span>C$${current.toLocaleString()} of C$${progress.target.toLocaleString()}</span>
                         <span>${Math.round(progress.percent)}%</span>
                     </div>
                 </div>
                 ${progress.remaining > 0 ? `
                     <div class="goal-widget-projected">
-                        $${progress.remaining.toLocaleString()} to go
+                        C$${progress.remaining.toLocaleString()} to go
                     </div>
                 ` : `
                     <div class="goal-widget-projected">🎉 Goal achieved!</div>
@@ -12065,7 +12065,7 @@ const cashFlowTicker = {
                 <div class="ticker-content">
                     ${transactions.map(t => `
                         <span class="ticker-item ${t.type}">
-                            <span class="ticker-amount">${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)}</span>
+                            <span class="ticker-amount">${t.type === 'income' ? '+' : '-'}C$${t.amount.toFixed(2)}</span>
                             <span class="ticker-desc">${escapeHtml(t.description)}</span>
                         </span>
                     `).join('')}
@@ -12326,9 +12326,9 @@ const counterSlider = {
                            oninput="${onChangeHandler}(this.value)">
                 </div>
                 <div class="counter-slider-labels">
-                    <span class="min-label">$${minPrice.toFixed(2)}</span>
-                    <span class="current-label">$${currentValue.toFixed(2)}</span>
-                    <span class="max-label">$${originalPrice.toFixed(2)}</span>
+                    <span class="min-label">C$${minPrice.toFixed(2)}</span>
+                    <span class="current-label">C$${currentValue.toFixed(2)}</span>
+                    <span class="max-label">C$${originalPrice.toFixed(2)}</span>
                 </div>
             </div>
         `;
@@ -12348,23 +12348,23 @@ const profitCalculator = {
             <div class="profit-calculator">
                 <div class="calc-row">
                     <span>Sale Price</span>
-                    <span>$${offerAmount.toFixed(2)}</span>
+                    <span>C$${offerAmount.toFixed(2)}</span>
                 </div>
                 <div class="calc-row">
                     <span>Cost</span>
-                    <span>-$${cost.toFixed(2)}</span>
+                    <span>-C$${cost.toFixed(2)}</span>
                 </div>
                 <div class="calc-row">
                     <span>Est. Fees (13%)</span>
-                    <span>-$${fees.toFixed(2)}</span>
+                    <span>-C$${fees.toFixed(2)}</span>
                 </div>
                 <div class="calc-row">
                     <span>Shipping</span>
-                    <span>-$${shipping.toFixed(2)}</span>
+                    <span>-C$${shipping.toFixed(2)}</span>
                 </div>
                 <div class="calc-row total ${profit >= 0 ? 'positive' : 'negative'}">
                     <span>Net Profit</span>
-                    <span>$${profit.toFixed(2)} (${margin.toFixed(0)}%)</span>
+                    <span>C$${profit.toFixed(2)} (${margin.toFixed(0)}%)</span>
                 </div>
             </div>
         `;
@@ -14163,7 +14163,7 @@ const platformComparison = {
                         </div>
                         <div class="platform-comparison-bar">
                             <div class="platform-comparison-fill ${item.platform}" style="width: ${((item.value || 0) / max) * 100}%">
-                                $${(item.value || 0).toLocaleString()}
+                                C$${(item.value || 0).toLocaleString()}
                             </div>
                         </div>
                     </div>
@@ -14204,7 +14204,7 @@ const transactionTimeline = {
                         ` : ''}
                     </div>
                     <div class="transaction-timeline-amount ${isIncome ? 'income' : 'expense'}">
-                        ${isIncome ? '+' : '-'}$${Math.abs(transaction.amount).toFixed(2)}
+                        ${isIncome ? '+' : '-'}C$${Math.abs(transaction.amount).toFixed(2)}
                     </div>
                 </div>
             </div>
@@ -14248,7 +14248,7 @@ const expensePieChart = {
                 ${categories.map((cat, i) => `
                     <div class="expense-pie-legend-item">
                         <div class="expense-pie-legend-dot" style="background: ${this.colors[i % this.colors.length]}"></div>
-                        <span>${escapeHtml(cat.name || 'Unknown')} ($${(cat.amount || 0).toFixed(0)})</span>
+                        <span>${escapeHtml(cat.name || 'Unknown')} (C$${(cat.amount || 0).toFixed(0)})</span>
                     </div>
                 `).join('')}
             </div>
@@ -14304,7 +14304,7 @@ const runningBalance = {
         return `
             <div class="running-balance">
                 <div class="running-balance-label">Running Balance</div>
-                <div class="running-balance-amount">$${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                <div class="running-balance-amount">C$${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
             </div>
         `;
     }
@@ -14388,7 +14388,7 @@ const waterfallChart = {
                     return `
                         <div class="waterfall-bar-container">
                             <div class="waterfall-value ${isPositive ? 'text-success' : 'text-error'}">
-                                ${isPositive ? '+' : '-'}$${Math.abs(item.value).toFixed(0)}
+                                ${isPositive ? '+' : '-'}C$${Math.abs(item.value).toFixed(0)}
                             </div>
                             <div class="waterfall-bar ${isTotal ? 'total' : isPositive ? 'positive' : 'negative'}"
                                  style="height: ${height}px;">
@@ -14548,9 +14548,9 @@ const goalTrackerWidget = {
                 <div class="goal-progress-ring">
                     ${components.progressRing(progress, 80, 8, progress >= 100 ? 'green' : 'primary')}
                     <div class="goal-details">
-                        <div class="goal-current">$${goal.current.toLocaleString()}</div>
-                        <div class="goal-target">of $${goal.target.toLocaleString()} goal</div>
-                        <div class="goal-remaining">${remaining > 0 ? `$${remaining.toLocaleString()} to go` : 'Goal reached!'}</div>
+                        <div class="goal-current">C$${goal.current.toLocaleString()}</div>
+                        <div class="goal-target">of C$${goal.target.toLocaleString()} goal</div>
+                        <div class="goal-remaining">${remaining > 0 ? `C$${remaining.toLocaleString()} to go` : 'Goal reached!'}</div>
                     </div>
                 </div>
             </div>
@@ -14629,7 +14629,7 @@ const periodComparison = {
                     ${rows.map(r => `
                         <div class="period-comparison-row">
                             <span>${r.label}</span>
-                            <span class="font-medium">$${r.current.toLocaleString()}</span>
+                            <span class="font-medium">C$${r.current.toLocaleString()}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -14639,7 +14639,7 @@ const periodComparison = {
                     </div>
                     ${rows.map(r => `
                         <div class="period-comparison-row">
-                            <span>$${r.previous.toLocaleString()}</span>
+                            <span>C$${r.previous.toLocaleString()}</span>
                             <span class="period-comparison-variance ${r.variance >= 0 ? 'positive' : 'negative'}">
                                 ${r.variance >= 0 ? '+' : ''}${r.variance.toFixed(1)}%
                             </span>
@@ -14661,7 +14661,7 @@ const budgetProgress = {
                 <div class="budget-progress">
                     <div class="budget-progress-header">
                         <span>${escapeHtml(b.category)}</span>
-                        <span>$${b.actual.toLocaleString()} / $${b.budget.toLocaleString()}</span>
+                        <span>C$${b.actual.toLocaleString()} / C$${b.budget.toLocaleString()}</span>
                     </div>
                     <div class="budget-progress-bar">
                         <div class="budget-progress-fill ${status}" style="width: ${Math.min(100, percent)}%"></div>
@@ -14740,7 +14740,7 @@ const recommendationCards = {
                             ${grouped[key].slice(0, 3).map(item => `
                                 <div class="recommendation-item">
                                     <span class="truncate">${escapeHtml(item.item_title || 'Item')}</span>
-                                    <span class="font-medium">$${(item.predicted_price || 0).toFixed(0)}</span>
+                                    <span class="font-medium">C$${(item.predicted_price || 0).toFixed(0)}</span>
                                 </div>
                             `).join('')}
                             ${grouped[key].length > 3 ? `<div class="recommendation-more">+${grouped[key].length - 3} more</div>` : ''}
@@ -14948,7 +14948,7 @@ const supplierCardEnhanced = {
                             <span class="metric-label">Items</span>
                         </div>
                         <div class="supplier-metric">
-                            <span class="metric-value">$${(supplier.avg_price || 0).toFixed(0)}</span>
+                            <span class="metric-value">C$${(supplier.avg_price || 0).toFixed(0)}</span>
                             <span class="metric-label">Avg Price</span>
                         </div>
                         <div class="supplier-metric">
@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '79ea17cb';
+    const v = 'f49e10e2';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17400,7 +17400,7 @@ const components = {
                 ${[0, 0.5, 1].map((ratio, i) => `
                     <text x="${padding - 10}" y="${height - padding - ratio * chartHeight + 4}"
                           text-anchor="end" font-size="11" fill="var(--gray-600)">
-                        $${Math.round(maxValue * ratio)}
+                        C$${Math.round(maxValue * ratio)}
                     </text>
                 `).join('')}
 
@@ -17460,7 +17460,7 @@ const components = {
                 ${[0, 0.5, 1].map((ratio) => `
                     <text x="${padding - 10}" y="${height - padding - ratio * chartHeight + 4}"
                           text-anchor="end" font-size="11" fill="var(--gray-600)">
-                        $${Math.round(maxValue * ratio)}
+                        C$${Math.round(maxValue * ratio)}
                     </text>
                 `).join('')}
             </svg>
@@ -17545,7 +17545,7 @@ const components = {
                     <path d="${seg.path}" fill="${seg.color}" class="chart-slice"
                           data-label="${seg.label}" data-value="${seg.value}" data-percentage="${seg.percentage}%"
                           style="transition: transform 0.2s ease; transform-origin: ${centerX}px ${centerY}px;">
-                        <title>${seg.label}: $${seg.value.toFixed(2)} (${seg.percentage}%)</title>
+                        <title>${seg.label}: C$${seg.value.toFixed(2)} (${seg.percentage}%)</title>
                     </path>
                 `).join('')}
 
@@ -17571,7 +17571,7 @@ const components = {
                                 <g transform="translate(${x}, ${y})">
                                     <rect width="12" height="12" rx="2" fill="${seg.color}"/>
                                     <text x="18" y="10" font-size="11" fill="var(--gray-700)">
-                                        ${seg.label}: $${seg.value.toFixed(2)}
+                                        ${seg.label}: C$${seg.value.toFixed(2)}
                                     </text>
                                 </g>
                             `;
@@ -19082,7 +19082,7 @@ const pages = {
                         return `<div class="poshmark-sparkline" role="img" aria-label="Closet value trend" style="display:flex;align-items:flex-end;gap:3px;height:32px;margin-top:8px;">
                             ${history.slice(-12).map(h => {
                                 const pct = Math.max(4, Math.round(((h.value || 0) / max) * 100));
-                                return `<div style="flex:1;background:var(--primary-400);border-radius:2px 2px 0 0;height:${pct}%;min-height:4px;" title="$${(h.value||0).toLocaleString()} on ${escapeHtml(h.date||'')}"></div>`;
+                                return `<div style="flex:1;background:var(--primary-400);border-radius:2px 2px 0 0;height:${pct}%;min-height:4px;" title="C$${(h.value||0).toLocaleString()} on ${escapeHtml(h.date||'')}"></div>`;
                             }).join('')}
                         </div>`;
                     })() : '';
@@ -19116,7 +19116,7 @@ const pages = {
                                         <div class="text-xs text-gray-500">Recent Sales</div>
                                     </div>
                                     <div class="stat-item" style="text-align:center;grid-column:span 2;">
-                                        <div class="text-2xl font-bold">$${pm.closet_value != null ? Number(pm.closet_value).toLocaleString() : '—'}</div>
+                                        <div class="text-2xl font-bold">C$${pm.closet_value != null ? Number(pm.closet_value).toLocaleString() : '—'}</div>
                                         <div class="text-xs text-gray-500">Closet Value</div>
                                         ${sparkline}
                                     </div>
@@ -19213,7 +19213,7 @@ const pages = {
             <div class="grid grid-cols-3 gap-4 mb-6">
                 <div class="card">
                     <div class="card-body text-center">
-                        <div class="text-2xl font-bold text-primary">$${salesTabStats.totalFees.toFixed(2)}</div>
+                        <div class="text-2xl font-bold text-primary">C$${salesTabStats.totalFees.toFixed(2)}</div>
                         <div class="text-sm text-gray-500">Platform Fees Paid</div>
                     </div>
                 </div>
@@ -19227,7 +19227,7 @@ const pages = {
                 </div>
                 <div class="card">
                     <div class="card-body text-center">
-                        <div class="text-2xl font-bold text-primary">$${salesTabStats.avgProfit.toFixed(2)}</div>
+                        <div class="text-2xl font-bold text-primary">C$${salesTabStats.avgProfit.toFixed(2)}</div>
                         <div class="text-sm text-gray-500">Avg Profit per Sale</div>
                     </div>
                 </div>
@@ -19270,12 +19270,12 @@ const pages = {
                                         <td>${new Date(s.created_at).toLocaleDateString()}</td>
                                         <td class="font-medium">${escapeHtml(s.listing_title || s.inventory_title || 'N/A')}</td>
                                         <td><span class="badge badge-info">${s.platform}</span></td>
-                                        <td class="text-success">$${(s.sale_price || 0).toFixed(2)}</td>
-                                        <td class="text-gray-600">$${(s.item_cost || 0).toFixed(2)}</td>
-                                        <td class="text-gray-600">$${(s.customer_shipping_cost || 0).toFixed(2)}</td>
-                                        <td class="text-gray-600">$${(s.seller_shipping_cost || s.shipping_cost || 0).toFixed(2)}</td>
-                                        <td class="text-gray-600">$${(s.platform_fee || 0).toFixed(2)}</td>
-                                        <td class="font-medium ${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">$${(s.net_profit || 0).toFixed(2)}</td>
+                                        <td class="text-success">C$${(s.sale_price || 0).toFixed(2)}</td>
+                                        <td class="text-gray-600">C$${(s.item_cost || 0).toFixed(2)}</td>
+                                        <td class="text-gray-600">C$${(s.customer_shipping_cost || 0).toFixed(2)}</td>
+                                        <td class="text-gray-600">C$${(s.seller_shipping_cost || s.shipping_cost || 0).toFixed(2)}</td>
+                                        <td class="text-gray-600">C$${(s.platform_fee || 0).toFixed(2)}</td>
+                                        <td class="font-medium ${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(s.net_profit || 0).toFixed(2)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -19300,7 +19300,7 @@ const pages = {
                                         <span class="font-medium">${p.label}</span>
                                         <span class="text-sm text-gray-500">| ${p.count} ${p.count === 1 ? 'sale' : 'sales'}</span>
                                     </div>
-                                    <span class="font-bold text-success">Total: $${(p.value || 0).toFixed(2)}</span>
+                                    <span class="font-bold text-success">Total: C$${(p.value || 0).toFixed(2)}</span>
                                 </div>
                             `).join('')}
                         </div>
@@ -19403,14 +19403,14 @@ const pages = {
                                             <span class="font-bold text-primary">#${i + 1}</span>
                                             <div>
                                                 <div class="font-medium">${escapeHtml(item.title.substring(0, 25))}${item.title.length > 25 ? '...' : ''}</div>
-                                                <div class="text-xs text-gray-500">${item.count} sold @ $${item.avgPrice.toFixed(2)} avg</div>
+                                                <div class="text-xs text-gray-500">${item.count} sold @ C$${item.avgPrice.toFixed(2)} avg</div>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-3">
                                             <div class="price-trend-sparkline" title="7-day market price trend">
                                                 ${sparkline.create(item.priceTrend, 60, 24, { showArea: true, trend: item.trendDirection === 'up' ? 'trend-up' : 'trend-down' })}
                                             </div>
-                                            <span class="font-bold text-success" style="min-width: 70px; text-align: right;">$${item.revenue.toFixed(2)}</span>
+                                            <span class="font-bold text-success" style="min-width: 70px; text-align: right;">C$${item.revenue.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -19438,7 +19438,7 @@ const pages = {
                                                 <div class="font-medium">${escapeHtml((item.title || 'Untitled').substring(0, 30))}${(item.title || '').length > 30 ? '...' : ''}</div>
                                                 <div class="text-xs text-gray-500">Listed ${daysListed} days ago</div>
                                             </div>
-                                            <span class="font-medium">$${(item.listing_price || item.cost_price || 0).toFixed(2)}</span>
+                                            <span class="font-medium">C$${(item.listing_price || item.cost_price || 0).toFixed(2)}</span>
                                         </div>
                                     `;
                                 }).join('')}
@@ -19462,7 +19462,7 @@ const pages = {
                                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                                     <div class="text-2xl font-bold text-primary">${cat.sales}</div>
                                     <div class="text-sm font-medium">${escapeHtml(cat.category)}</div>
-                                    <div class="text-xs text-gray-500">$${cat.revenue.toFixed(2)}</div>
+                                    <div class="text-xs text-gray-500">C$${cat.revenue.toFixed(2)}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -19691,8 +19691,8 @@ const pages = {
                                             return `<tr>
                                                 <td>${escapeHtml(i.title || 'Untitled')}</td>
                                                 <td>${escapeHtml(i.source || 'Manual')}</td>
-                                                <td>$${(i.cost_price || 0).toFixed(2)}</td>
-                                                <td>$${(i.list_price || 0).toFixed(2)}</td>
+                                                <td>C$${(i.cost_price || 0).toFixed(2)}</td>
+                                                <td>C$${(i.list_price || 0).toFixed(2)}</td>
                                                 <td><span class="${marginClass} font-semibold">${margin}%</span></td>
                                             </tr>`;
                                         }).join('')}
@@ -19740,8 +19740,8 @@ const pages = {
                                             <tr>
                                                 <td>${escapeHtml(i.title || 'Untitled')}</td>
                                                 <td>${i.daysListed}</td>
-                                                <td>$${(i.cost_price || 0).toFixed(2)}</td>
-                                                <td>$${(i.list_price || 0).toFixed(2)}</td>
+                                                <td>C$${(i.cost_price || 0).toFixed(2)}</td>
+                                                <td>C$${(i.list_price || 0).toFixed(2)}</td>
                                                 <td>${escapeHtml(i.category || 'Uncategorized')}</td>
                                             </tr>
                                         `).join('')}
@@ -19923,30 +19923,30 @@ const pages = {
                         <div class="grid grid-cols-3 gap-4">
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <div class="text-sm text-gray-500 mb-1">Revenue</div>
-                                <div class="text-2xl font-bold text-success">$${totalRevenue2.toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-success">C$${totalRevenue2.toFixed(2)}</div>
                             </div>
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <div class="text-sm text-gray-500 mb-1">COGS</div>
-                                <div class="text-2xl font-bold text-error">-$${totalCOGS.toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-error">-C$${totalCOGS.toFixed(2)}</div>
                             </div>
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <div class="text-sm text-gray-500 mb-1">Gross Profit</div>
-                                <div class="text-2xl font-bold text-primary">$${grossProfit.toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-primary">C$${grossProfit.toFixed(2)}</div>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mt-4">
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <div class="text-sm text-gray-500 mb-1">Platform Fees</div>
-                                <div class="text-2xl font-bold text-error">-$${platformFees.toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-error">-C$${platformFees.toFixed(2)}</div>
                             </div>
                             <div class="p-4 bg-gray-50 rounded-lg">
                                 <div class="text-sm text-gray-500 mb-1">Shipping Costs</div>
-                                <div class="text-2xl font-bold text-error">-$${shippingCosts.toFixed(2)}</div>
+                                <div class="text-2xl font-bold text-error">-C$${shippingCosts.toFixed(2)}</div>
                             </div>
                         </div>
                         <div class="p-4 bg-blue-50 rounded-lg mt-4 border border-blue-200">
                             <div class="text-sm text-gray-600 mb-1">Net Profit</div>
-                            <div class="text-3xl font-bold ${netProfit2 >= 0 ? 'text-success' : 'text-error'}">$${netProfit2.toFixed(2)}</div>
+                            <div class="text-3xl font-bold ${netProfit2 >= 0 ? 'text-success' : 'text-error'}">C$${netProfit2.toFixed(2)}</div>
                         </div>
                     </div>
                 </div>
@@ -20011,8 +20011,8 @@ const pages = {
                                             <tr>
                                                 <td class="font-medium">${escapeHtml(p.title.substring(0, 40))}${p.title.length > 40 ? '...' : ''}</td>
                                                 <td>${p.unitsSold}</td>
-                                                <td>$${p.revenue.toFixed(2)}</td>
-                                                <td>$${p.avgPrice}</td>
+                                                <td>C$${p.revenue.toFixed(2)}</td>
+                                                <td>C$${p.avgPrice}</td>
                                                 <td><span class="badge badge-gray">${p.platform.charAt(0).toUpperCase() + p.platform.slice(1)}</span></td>
                                                 <td><span class="badge ${rating === 'good' ? 'badge-success' : rating === 'average' ? 'badge-warning' : 'badge-error'}">${rating.charAt(0).toUpperCase() + rating.slice(1)}</span></td>
                                             </tr>
@@ -20178,7 +20178,7 @@ const pages = {
 
                     <div class="snapshot-metrics">
                         <div class="snapshot-metric primary">
-                            <div class="metric-value-large">$${totalRevenue.toLocaleString()}</div>
+                            <div class="metric-value-large">C$${totalRevenue.toLocaleString()}</div>
                             <div class="metric-label">Total Revenue</div>
                             <div class="metric-change ${revenueGrowth >= 0 ? 'positive' : 'negative'}">
                                 ${revenueGrowth >= 0 ? '+' : ''}${revenueGrowth.toFixed(1)}% vs prev
@@ -20189,7 +20189,7 @@ const pages = {
                             <div class="metric-label">Total Sales</div>
                         </div>
                         <div class="snapshot-metric">
-                            <div class="metric-value-medium">$${avgOrderValue.toFixed(2)}</div>
+                            <div class="metric-value-medium">C$${avgOrderValue.toFixed(2)}</div>
                             <div class="metric-label">Avg Order Value</div>
                         </div>
                         <div class="snapshot-metric">
@@ -20226,7 +20226,7 @@ const pages = {
                         </div>
                         <div class="highlight-content">
                             <div class="highlight-label">Total Profit</div>
-                            <div class="highlight-value ${totalProfit >= 0 ? 'positive' : 'negative'}">${totalProfit >= 0 ? '' : '-'}$${Math.abs(totalProfit).toFixed(2)}</div>
+                            <div class="highlight-value ${totalProfit >= 0 ? 'positive' : 'negative'}">${totalProfit >= 0 ? '' : '-'}C$${Math.abs(totalProfit).toFixed(2)}</div>
                             <div class="highlight-detail">After all fees & costs</div>
                         </div>
                     </div>
@@ -20236,7 +20236,7 @@ const pages = {
                     ${bestSellers.length > 0 ? `
                         <div class="quick-insight">
                             ${components.icon('star', 14)}
-                            <span>Best seller: <strong>${bestSellers[0].title.substring(0, 25)}${bestSellers[0].title.length > 25 ? '...' : ''}</strong> ($${bestSellers[0].revenue.toFixed(2)})</span>
+                            <span>Best seller: <strong>${bestSellers[0].title.substring(0, 25)}${bestSellers[0].title.length > 25 ? '...' : ''}</strong> (C$${bestSellers[0].revenue.toFixed(2)})</span>
                         </div>
                     ` : ''}
                     ${slowMovers.length > 0 ? `
@@ -20354,7 +20354,7 @@ const pages = {
                             <div class="live-metric-icon" style="background: var(--success-100); color: var(--success-600);">
                                 ${components.icon('dollar-sign', 24)}
                             </div>
-                            <div class="live-metric-value text-success">$${todayRevenue.toFixed(2)}</div>
+                            <div class="live-metric-value text-success">C$${todayRevenue.toFixed(2)}</div>
                             <div class="live-metric-label">Today's Revenue</div>
                             <div class="live-metric-sub">${todaySales.length} sale(s) today</div>
                         </div>
@@ -20396,7 +20396,7 @@ const pages = {
                                             <div class="font-medium text-sm">${escapeHtml(s.item_title || 'Unknown')}</div>
                                             <div class="text-xs text-gray-500">${s.platform || 'N/A'} &bull; ${s.created_at ? new Date(s.created_at).toLocaleString() : 'N/A'}</div>
                                         </div>
-                                        <div class="font-semibold text-success">$${(parseFloat(s.sale_price) || 0).toFixed(2)}</div>
+                                        <div class="font-semibold text-success">C$${(parseFloat(s.sale_price) || 0).toFixed(2)}</div>
                                     </div>
                                 `).join('') : '<div class="text-center text-gray-400 py-4">No recent sales</div>'}
                             </div>
@@ -20540,7 +20540,7 @@ const pages = {
                         <div class="forecast-summary mb-4">
                             <div class="grid grid-cols-3 gap-4 text-center">
                                 <div class="p-3 bg-primary-50 rounded-lg">
-                                    <div class="text-2xl font-bold text-primary">$${(totalRevenue * 1.15).toFixed(0)}</div>
+                                    <div class="text-2xl font-bold text-primary">C$${(totalRevenue * 1.15).toFixed(0)}</div>
                                     <div class="text-xs text-gray-500">Predicted Revenue</div>
                                 </div>
                                 <div class="p-3 bg-success-50 rounded-lg">
@@ -20637,7 +20637,7 @@ const pages = {
                         </div>
                         <div class="compare-stat">
                             <span class="compare-stat-label">Avg Order Value Change</span>
-                            <span class="compare-stat-value ${Math.random() > 0.3 ? 'positive' : 'negative'}">${Math.random() > 0.3 ? '+' : '-'}$${(Math.random() * 10 + 1).toFixed(2)}</span>
+                            <span class="compare-stat-value ${Math.random() > 0.3 ? 'positive' : 'negative'}">${Math.random() > 0.3 ? '+' : '-'}C$${(Math.random() * 10 + 1).toFixed(2)}</span>
                         </div>
                         <div class="compare-stat">
                             <span class="compare-stat-label">Profit Margin Change</span>
@@ -20839,7 +20839,7 @@ const pages = {
                                             <div class="progress-bar" style="background: var(--gray-200); height: 8px; border-radius: 4px; overflow: hidden;">
                                                 <div style="width: ${(item.count / maxCount * 100).toFixed(1)}%; height: 100%; background: var(--primary-500);"></div>
                                             </div>
-                                            <div class="text-xs text-gray-500 mt-1">Total: $${item.revenue.toFixed(2)}</div>
+                                            <div class="text-xs text-gray-500 mt-1">Total: C$${item.revenue.toFixed(2)}</div>
                                         </div>
                                     </div>
                                 `).join('');
@@ -20916,9 +20916,9 @@ const pages = {
                                                         <div class="text-xs text-gray-500">${item.inventoryId}</div>
                                                     </td>
                                                     <td class="font-medium">${item.salesCount}</td>
-                                                    <td class="font-medium text-success">$${item.totalRevenue.toFixed(2)}</td>
-                                                    <td class="font-medium text-primary">$${item.totalProfit.toFixed(2)}</td>
-                                                    <td class="text-gray-600">$${avgSalePrice.toFixed(2)}</td>
+                                                    <td class="font-medium text-success">C$${item.totalRevenue.toFixed(2)}</td>
+                                                    <td class="font-medium text-primary">C$${item.totalProfit.toFixed(2)}</td>
+                                                    <td class="text-gray-600">C$${avgSalePrice.toFixed(2)}</td>
                                                 </tr>
                                             `;
                                         }).join('')}
@@ -22315,8 +22315,8 @@ const modals = {
                             <p class="text-sm text-gray-600">${escapeHtml(item.brand || '')} ${item.size ? '• Size: ' + escapeHtml(item.size) : ''}</p>
                             <p class="text-sm text-gray-500">SKU: ${escapeHtml(item.sku || 'N/A')}</p>
                             <div class="flex gap-4 mt-2">
-                                <span class="text-sm"><strong>List Price:</strong> $${(item.list_price || 0).toFixed(2)}</span>
-                                <span class="text-sm"><strong>Cost:</strong> $${(item.cost_price || 0).toFixed(2)}</span>
+                                <span class="text-sm"><strong>List Price:</strong> C$${(item.list_price || 0).toFixed(2)}</span>
+                                <span class="text-sm"><strong>Cost:</strong> C$${(item.cost_price || 0).toFixed(2)}</span>
                                 <span class="text-sm"><strong>Qty:</strong> ${item.quantity || 1}</span>
                             </div>
                         </div>
@@ -22325,15 +22325,15 @@ const modals = {
                     <!-- Summary Stats -->
                     <div class="grid grid-cols-3 gap-4 mb-6">
                         <div class="stat-card" style="padding: 16px; background: var(--gray-50); border-radius: var(--radius-md); text-align: center;">
-                            <div class="text-2xl font-bold text-gray-700">$${totalPurchaseCost.toFixed(2)}</div>
+                            <div class="text-2xl font-bold text-gray-700">C$${totalPurchaseCost.toFixed(2)}</div>
                             <div class="text-xs text-gray-500">Total Cost</div>
                         </div>
                         <div class="stat-card" style="padding: 16px; background: var(--gray-50); border-radius: var(--radius-md); text-align: center;">
-                            <div class="text-2xl font-bold text-success">$${totalSalesRevenue.toFixed(2)}</div>
+                            <div class="text-2xl font-bold text-success">C$${totalSalesRevenue.toFixed(2)}</div>
                             <div class="text-xs text-gray-500">Total Revenue</div>
                         </div>
                         <div class="stat-card" style="padding: 16px; background: var(--gray-50); border-radius: var(--radius-md); text-align: center;">
-                            <div class="text-2xl font-bold ${totalProfit >= 0 ? 'text-success' : 'text-error'}">$${totalProfit.toFixed(2)}</div>
+                            <div class="text-2xl font-bold ${totalProfit >= 0 ? 'text-success' : 'text-error'}">C$${totalProfit.toFixed(2)}</div>
                             <div class="text-xs text-gray-500">Net Profit</div>
                         </div>
                     </div>
@@ -22373,8 +22373,8 @@ const modals = {
                                                 <td>${new Date(p.purchase_date || p.created_at).toLocaleDateString()}</td>
                                                 <td>${escapeHtml(p.vendor_name || 'Unknown')}</td>
                                                 <td>${p.quantity || 1}</td>
-                                                <td>$${(p.unit_cost || 0).toFixed(2)}</td>
-                                                <td>$${(p.total_cost || p.unit_cost || 0).toFixed(2)}</td>
+                                                <td>C$${(p.unit_cost || 0).toFixed(2)}</td>
+                                                <td>C$${(p.total_cost || p.unit_cost || 0).toFixed(2)}</td>
                                             </tr>
                                         `).join('')}
                                     </tbody>
@@ -22406,8 +22406,8 @@ const modals = {
                                                 <td>${new Date(s.sale_date || s.created_at).toLocaleDateString()}</td>
                                                 <td>${components.platformBadge(s.platform || 'other')}</td>
                                                 <td>${escapeHtml(s.buyer_username || 'N/A')}</td>
-                                                <td>$${(s.sale_price || 0).toFixed(2)}</td>
-                                                <td class="${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">$${(s.net_profit || 0).toFixed(2)}</td>
+                                                <td>C$${(s.sale_price || 0).toFixed(2)}</td>
+                                                <td class="${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(s.net_profit || 0).toFixed(2)}</td>
                                             </tr>
                                         `).join('')}
                                     </tbody>
@@ -22438,9 +22438,9 @@ const modals = {
                                         return `
                                             <tr>
                                                 <td>${new Date(p.changed_at || p.created_at).toLocaleDateString()}</td>
-                                                <td>$${(p.old_price || 0).toFixed(2)}</td>
-                                                <td>$${(p.new_price || 0).toFixed(2)}</td>
-                                                <td class="${change >= 0 ? 'text-success' : 'text-error'}">${change >= 0 ? '+' : ''}$${change.toFixed(2)}</td>
+                                                <td>C$${(p.old_price || 0).toFixed(2)}</td>
+                                                <td>C$${(p.new_price || 0).toFixed(2)}</td>
+                                                <td class="${change >= 0 ? 'text-success' : 'text-error'}">${change >= 0 ? '+' : ''}C$${change.toFixed(2)}</td>
                                             </tr>
                                         `;
                                     }).join('')}
@@ -23587,11 +23587,11 @@ const modals = {
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <div class="text-sm text-gray-500">Sale Price</div>
-                                        <div class="text-lg font-bold text-success">$${post.sale_details.sale_price.toFixed(2)}</div>
+                                        <div class="text-lg font-bold text-success">C$${post.sale_details.sale_price.toFixed(2)}</div>
                                     </div>
                                     <div>
                                         <div class="text-sm text-gray-500">Profit</div>
-                                        <div class="text-lg font-bold text-primary">$${post.sale_details.profit.toFixed(2)}</div>
+                                        <div class="text-lg font-bold text-primary">C$${post.sale_details.profit.toFixed(2)}</div>
                                     </div>
                                     ${post.sale_details.platform ? `
                                         <div>
@@ -25002,7 +25002,7 @@ const modals = {
                                         <span class="text-gray-400 text-sm">${idx + 1}</span>
                                         <div>
                                             <div class="font-medium">${escapeHtml(item.inventory_title || 'Item')}</div>
-                                            <div class="text-xs text-gray-500">Start: $${item.starting_price || 0}${item.buy_now_price ? ` • BIN: $${item.buy_now_price}` : ''}</div>
+                                            <div class="text-xs text-gray-500">Start: C$${item.starting_price || 0}${item.buy_now_price ? ` • BIN: C$${item.buy_now_price}` : ''}</div>
                                         </div>
                                     </div>
                                     <button class="btn btn-icon btn-sm btn-error" onclick="handlers.removeItemFromWhatnotEvent('${event.id}', '${item.id}')" aria-label="Remove item">
@@ -25040,7 +25040,7 @@ const modals = {
                                 ${item.images?.[0] ? `<img src="${item.images[0]}" class="w-10 h-10 rounded object-cover" alt="${escapeHtml(item.title || 'Product image')}">` : '<div class="w-10 h-10 rounded bg-gray-200" role="img" aria-label="No image"></div>'}
                                 <div>
                                     <div class="font-medium">${escapeHtml(item.title)}</div>
-                                    <div class="text-xs text-gray-500">$${item.list_price || 0}</div>
+                                    <div class="text-xs text-gray-500">C$${item.list_price || 0}</div>
                                 </div>
                             </div>
                             ${components.icon('plus', 16)}
@@ -25075,7 +25075,7 @@ const modals = {
                             </div>
                             <div class="flex-1">
                                 <div class="font-medium">${escapeHtml(item.title)}</div>
-                                <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • $${(item.list_price || 0).toFixed(2)}</div>
+                                <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • C$${(item.list_price || 0).toFixed(2)}</div>
                             </div>
                             <button class="btn btn-sm btn-primary">Add</button>
                         </div>
@@ -25699,7 +25699,7 @@ const handlers = {
         store.setState({ monthlySalesGoal: goal });
         localStorage.setItem('vaultlister_monthly_goal', goal);
         modals.close();
-        toast.success(`Monthly goal set to $${goal.toLocaleString()}`);
+        toast.success(`Monthly goal set to C$${goal.toLocaleString()}`);
         router.navigate('dashboard');
     },
 
@@ -27058,7 +27058,7 @@ const handlers = {
                             <div class="velocity-stat-label">Sales (30d)</div>
                         </div>
                         <div class="velocity-stat">
-                            <div class="velocity-stat-value">$${totalRevenue30d.toFixed(0)}</div>
+                            <div class="velocity-stat-value">C$${totalRevenue30d.toFixed(0)}</div>
                             <div class="velocity-stat-label">Revenue (30d)</div>
                         </div>
                         <div class="velocity-stat">
@@ -27078,7 +27078,7 @@ const handlers = {
                                     <div class="velocity-rank">#${i + 1}</div>
                                     <div class="velocity-info">
                                         <div class="velocity-title">${escapeHtml(item.title)}</div>
-                                        <div class="velocity-meta">${item.count} sales • $${item.revenue.toFixed(0)} revenue</div>
+                                        <div class="velocity-meta">${item.count} sales • C$${item.revenue.toFixed(0)} revenue</div>
                                     </div>
                                     <div class="velocity-speed">
                                         <div class="velocity-bar" style="width: ${topSellers[0]?.count > 0 ? (item.count / topSellers[0].count * 100) : 0}%"></div>
@@ -27097,7 +27097,7 @@ const handlers = {
                                 ${slowMovers.map(item => `
                                     <div class="slow-mover-item">
                                         <div class="slow-mover-title">${escapeHtml(item.title || item.name || 'Unknown')}</div>
-                                        <div class="slow-mover-price">$${parseFloat(item.list_price || 0).toFixed(2)}</div>
+                                        <div class="slow-mover-price">C$${parseFloat(item.list_price || 0).toFixed(2)}</div>
                                         <button class="btn btn-xs btn-secondary" onclick="handlers.showPriceDropSuggestion('${item.id}')">
                                             Suggest Price Drop
                                         </button>

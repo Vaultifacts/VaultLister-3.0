@@ -3840,7 +3840,7 @@ Object.assign(handlers, {
                         <div class="usage-stat-icon" style="background: #ecfdf5; color: #059669;">
                             ${components.icon('dollar-sign', 20)}
                         </div>
-                        <div class="usage-stat-value">$${totalRevenue.toLocaleString()}</div>
+                        <div class="usage-stat-value">C$${totalRevenue.toLocaleString()}</div>
                         <div class="usage-stat-label">Total Revenue</div>
                     </div>
                 </div>
@@ -4181,7 +4181,7 @@ Object.assign(handlers, {
                             <div style="font-size: 12px; color: var(--text-secondary);">Current Tier</div>
                         </div>
                         <div style="padding: 12px; background: var(--success-50); border-radius: 6px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--success); margin-bottom: 4px;">$${(earnings.total || 0).toFixed(2)}</div>
+                            <div style="font-size: 24px; font-weight: bold; color: var(--success); margin-bottom: 4px;">C$${(earnings.total || 0).toFixed(2)}</div>
                             <div style="font-size: 12px; color: var(--text-secondary);">Total Earnings</div>
                         </div>
                         <div style="padding: 12px; background: var(--warning-50); border-radius: 6px; text-align: center;">
@@ -4339,7 +4339,7 @@ Object.assign(handlers, {
                                 ${(data.commissions || []).map(c => `
                                     <tr style="border-bottom: 1px solid var(--gray-100);">
                                         <td style="padding: 8px;">${escapeHtml(c.referral_name || 'Unknown')}</td>
-                                        <td style="padding: 8px; text-align: right;">$${(c.amount || 0).toFixed(2)}</td>
+                                        <td style="padding: 8px; text-align: right;">C$${(c.amount || 0).toFixed(2)}</td>
                                         <td style="padding: 8px; text-align: center;">
                                             <span class="badge ${c.status === 'paid' ? 'badge-success' : c.status === 'pending' ? 'badge-warning' : 'badge-secondary'}">
                                                 ${escapeHtml(c.status || 'pending')}
@@ -4378,7 +4378,7 @@ Object.assign(handlers, {
                                 </div>
                                 <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
                                     <p>Minimum referrals: <strong>${t.min_referrals || 0}</strong></p>
-                                    <p>Min monthly revenue: <strong>$${t.min_revenue || 0}</strong></p>
+                                    <p>Min monthly revenue: <strong>C$${t.min_revenue || 0}</strong></p>
                                 </div>
                             </div>
                         `).join('')}
@@ -4503,7 +4503,7 @@ Object.assign(handlers, {
                         <div style="color:var(--gray-600);font-size:13px;">Total Sales</div>
                     </div>
                     <div style="background:var(--gray-50);border-radius:8px;padding:16px;text-align:center;">
-                        <div style="font-size:28px;font-weight:700;">$${Number(s.totalRevenue ?? s.revenue ?? 0).toFixed(2)}</div>
+                        <div style="font-size:28px;font-weight:700;">C$${Number(s.totalRevenue ?? s.revenue ?? 0).toFixed(2)}</div>
                         <div style="color:var(--gray-600);font-size:13px;">Total Revenue</div>
                     </div>
                 </div>
@@ -5736,11 +5736,11 @@ Object.assign(handlers, {
                     </div>
                     <div class="grid grid-cols-2 gap-3 mb-4">
                         <div class="card"><div class="card-body text-center">
-                            <div class="text-lg font-bold">$${(stats.totalCost || 0).toFixed(0)}</div>
+                            <div class="text-lg font-bold">C$${(stats.totalCost || 0).toFixed(0)}</div>
                             <div class="text-xs text-gray-500">Total Cost</div>
                         </div></div>
                         <div class="card"><div class="card-body text-center">
-                            <div class="text-lg font-bold" style="color:${(stats.totalProfit || 0) >= 0 ? 'var(--success)' : 'var(--error)'};">$${(stats.totalProfit || 0).toFixed(0)}</div>
+                            <div class="text-lg font-bold" style="color:${(stats.totalProfit || 0) >= 0 ? 'var(--success)' : 'var(--error)'};">C$${(stats.totalProfit || 0).toFixed(0)}</div>
                             <div class="text-xs text-gray-500">Total Profit</div>
                         </div></div>
                     </div>

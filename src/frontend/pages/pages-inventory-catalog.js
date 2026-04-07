@@ -329,7 +329,7 @@ Object.assign(pages, {
                                         </td>
                                         <td class="text-sm">${escapeHtml(item.sku || '-')}</td>
                                         <td>
-                                            <div class="font-medium">$${parseFloat(item.list_price || 0).toFixed(2)}</div>
+                                            <div class="font-medium">C$${parseFloat(item.list_price || 0).toFixed(2)}</div>
                                             ${item.cost_price ? (() => {
                                                 const listP = parseFloat(item.list_price || 0);
                                                 const costP = parseFloat(item.cost_price || 0);
@@ -337,9 +337,9 @@ Object.assign(pages, {
                                                 const marginPct = listP > 0 ? (profit / listP * 100) : 0;
                                                 const marginColor = marginPct > 50 ? 'var(--success)' : marginPct > 20 ? 'var(--warning-600)' : 'var(--error)';
                                                 return `
-                                                <div class="text-xs text-gray-500">Cost: $${costP.toFixed(2)}</div>
+                                                <div class="text-xs text-gray-500">Cost: C$${costP.toFixed(2)}</div>
                                                 <div class="text-xs" style="color: ${marginColor}; font-weight: 600;">
-                                                    Profit: $${profit.toFixed(2)} (${marginPct.toFixed(0)}%)
+                                                    Profit: C$${profit.toFixed(2)} (${marginPct.toFixed(0)}%)
                                                 </div>`;
                                             })() : ''}
                                         </td>
@@ -626,7 +626,7 @@ Object.assign(pages, {
                                                     <div class="text-xs text-gray-500">${escapeHtml(listing.sku || '')}</div>
                                                 </td>
                                                 <td>${components.platformBadge(listing.platform)}</td>
-                                                <td class="font-medium">$${(listing.price || 0).toFixed(2)}</td>
+                                                <td class="font-medium">C$${(listing.price || 0).toFixed(2)}</td>
                                                 <td class="text-sm text-gray-500">${listing.archived_at ? new Date(listing.archived_at).toLocaleDateString() : '-'}</td>
                                                 <td>
                                                     <div class="flex gap-2">
@@ -1063,7 +1063,7 @@ Object.assign(pages, {
                                         ${visibleColumns.includes('platform') ? `<td>${components.platformBadge(listing.platform)}</td>` : ''}
                                         ${visibleColumns.includes('price') ? `
                                             <td>
-                                                <div class="font-medium">$${listing.price}</div>
+                                                <div class="font-medium">C$${listing.price}</div>
                                                 ${(() => {
                                                     const priceHistory = listing.price_history ? (typeof listing.price_history === 'string' ? JSON.parse(listing.price_history) : listing.price_history) : [listing.price * 1.1, listing.price * 1.05, listing.price];
                                                     if (priceHistory.length >= 2) {
@@ -1138,7 +1138,7 @@ Object.assign(pages, {
                                                             ${relatedListings.map(rl => `
                                                                 <div class="flex items-center justify-between p-2 bg-white rounded border" style="border-color: var(--gray-200)">
                                                                     ${components.platformBadge(rl.platform)}
-                                                                    <span class="font-medium">$${rl.price}</span>
+                                                                    <span class="font-medium">C$${rl.price}</span>
                                                                     <span class="badge badge-${rl.status === 'active' ? 'success' : 'gray'} text-xs">${rl.status}</span>
                                                                 </div>
                                                             `).join('')}
@@ -1723,7 +1723,7 @@ Object.assign(pages, {
                                 ${components.icon('dollar', 24)}
                             </div>
                             <div class="metric-content">
-                                <div class="metric-value">$${Math.round(timeSavedToday * 7 * 0.5)}</div>
+                                <div class="metric-value">C$${Math.round(timeSavedToday * 7 * 0.5)}</div>
                                 <div class="metric-label">Est. Value Created</div>
                                 <div class="metric-comparison positive">Based on C$30/hr rate</div>
                             </div>
@@ -2399,7 +2399,7 @@ Object.assign(pages, {
                                                 <td><input type="checkbox" class="stale-checkbox" value="${listing.id}"></td>
                                                 <td>${escapeHtml(listing.title || '')}</td>
                                                 <td>${listing.platform || 'N/A'}</td>
-                                                <td>$${(listing.list_price || 0).toFixed(2)}</td>
+                                                <td>C$${(listing.list_price || 0).toFixed(2)}</td>
                                                 <td><span class="badge badge-warning">${listing.days_stale}d</span></td>
                                                 <td>${listing.total_views || 0}</td>
                                                 <td>
@@ -2452,8 +2452,8 @@ Object.assign(pages, {
                                         ${relistQueue.map(item => `
                                             <tr>
                                                 <td>${escapeHtml(item.title || '')}</td>
-                                                <td>$${(item.original_price || 0).toFixed(2)}</td>
-                                                <td>$${(item.new_price || 0).toFixed(2)}</td>
+                                                <td>C$${(item.original_price || 0).toFixed(2)}</td>
+                                                <td>C$${(item.new_price || 0).toFixed(2)}</td>
                                                 <td class="${item.new_price < item.original_price ? 'text-error' : 'text-success'}">
                                                     ${item.new_price !== item.original_price ? (item.new_price < item.original_price ? '-' : '+') + 'C$' + Math.abs(item.new_price - item.original_price).toFixed(2) : '-'}
                                                 </td>
@@ -2505,7 +2505,7 @@ Object.assign(pages, {
                     <div class="card-body">
                         <div class="stat-value text-success">+${performance.avg_view_increase || 0} views</div>
                         <div class="text-gray-500 text-sm mt-2">
-                            Avg price change: ${performance.avg_price_change >= 0 ? '+' : ''}$${(performance.avg_price_change || 0).toFixed(2)}
+                            Avg price change: ${performance.avg_price_change >= 0 ? '+' : ''}C$${(performance.avg_price_change || 0).toFixed(2)}
                         </div>
                     </div>
                 </div>

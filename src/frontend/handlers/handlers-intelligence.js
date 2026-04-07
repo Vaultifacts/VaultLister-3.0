@@ -99,11 +99,11 @@ Object.assign(handlers, {
                 <div class="grid grid-cols-3 gap-3 mb-4">
                     <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 8px;">
                         <div class="text-xs text-gray-500">Current</div>
-                        <div class="text-xl font-bold">$${(displayPred.current_price || 0).toFixed(0)}</div>
+                        <div class="text-xl font-bold">C$${(displayPred.current_price || 0).toFixed(0)}</div>
                     </div>
                     <div style="text-align: center; padding: 12px; background: var(--primary-50); border-radius: 8px;">
                         <div class="text-xs text-gray-500">Predicted</div>
-                        <div class="text-xl font-bold" style="color: var(--primary);">$${(displayPred.predicted_price || 0).toFixed(0)}</div>
+                        <div class="text-xl font-bold" style="color: var(--primary);">C$${(displayPred.predicted_price || 0).toFixed(0)}</div>
                     </div>
                     <div style="text-align: center; padding: 12px; background: ${isUp ? 'var(--success-50)' : 'var(--error-50)'}; border-radius: 8px;">
                         <div class="text-xs text-gray-500">Change</div>
@@ -113,9 +113,9 @@ Object.assign(handlers, {
                 <div class="mb-4">
                     <div class="text-sm font-semibold mb-2">Price Range Scenarios</div>
                     <div style="display: flex; gap: 8px; align-items: center;">
-                        <span class="text-xs" style="color: var(--error);">$${pessimistic}</span>
+                        <span class="text-xs" style="color: var(--error);">C$${pessimistic}</span>
                         <div style="flex: 1; height: 8px; background: linear-gradient(90deg, var(--error), var(--primary), var(--success)); border-radius: 4px;"></div>
-                        <span class="text-xs" style="color: var(--success);">$${optimistic}</span>
+                        <span class="text-xs" style="color: var(--success);">C$${optimistic}</span>
                     </div>
                 </div>
                 <div style="padding: 12px; background: var(--primary-50); border-radius: 8px;">
@@ -274,7 +274,7 @@ Object.assign(handlers, {
                             <div style="font-size: 12px; color: var(--gray-600);">Total Orders</div>
                         </div>
                         <div style="padding: 16px; background: var(--gray-50); border-radius: 8px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700; color: var(--success);">$${(supplier.total_value || 0).toLocaleString()}</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--success);">C$${(supplier.total_value || 0).toLocaleString()}</div>
                             <div style="font-size: 12px; color: var(--gray-600);">Total Value</div>
                         </div>
                     </div>
@@ -674,7 +674,7 @@ Object.assign(handlers, {
                     </div>
                     <div style="padding: 12px; background: var(--gray-50); border-radius: 8px;">
                         <div style="font-size: 12px; color: var(--gray-500);">Total</div>
-                        <div style="font-weight: 600; color: var(--primary-600);">$${(po.total || 0).toFixed(2)}</div>
+                        <div style="font-weight: 600; color: var(--primary-600);">C$${(po.total || 0).toFixed(2)}</div>
                     </div>
                 </div>
                 ${po.notes ? '<div style="padding: 12px; background: var(--gray-50); border-radius: 8px; margin-bottom: 16px;"><div style="font-size: 12px; color: var(--gray-500); margin-bottom: 4px;">Notes</div><p style="font-size: 13px; margin: 0;">' + escapeHtml(po.notes) + '</p></div>' : ''}
@@ -936,7 +936,7 @@ Object.assign(handlers, {
                         <div style="font-size: 12px; color: var(--gray-600);">Items</div>
                     </div>
                     <div style="padding: 16px; background: var(--gray-50); border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: 700;">$${(competitor.avg_price || 0).toFixed(0)}</div>
+                        <div style="font-size: 24px; font-weight: 700;">C$${(competitor.avg_price || 0).toFixed(0)}</div>
                         <div style="font-size: 12px; color: var(--gray-600);">Avg Price</div>
                     </div>
                     <div style="padding: 16px; background: var(--gray-50); border-radius: 8px; text-align: center;">
@@ -975,7 +975,7 @@ Object.assign(handlers, {
                         <tr style="border-bottom: 1px solid var(--gray-100);">
                             <td style="padding: 12px;">Avg Price</td>
                             <td style="padding: 12px; text-align: center; font-weight: 600;">$45.50</td>
-                            <td style="padding: 12px; text-align: center;">$${(competitor.avg_price || 0).toFixed(2)}</td>
+                            <td style="padding: 12px; text-align: center;">C$${(competitor.avg_price || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td style="padding: 12px;">Activity</td>
@@ -1576,7 +1576,7 @@ Object.assign(handlers, {
                 <div class="card" style="padding: 16px;">
                     <h4>Scenario Results</h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
-                        <div><strong>Projected Revenue:</strong> $${(r.projected_revenue || 0).toFixed(2)}</div>
+                        <div><strong>Projected Revenue:</strong> C$${(r.projected_revenue || 0).toFixed(2)}</div>
                         <div><strong>Revenue Change:</strong> ${r.revenue_change_pct || 0}%</div>
                         <div><strong>Projected Volume:</strong> ${r.projected_volume || 0} units</div>
                         <div><strong>Impact:</strong> <span class="badge">${r.impact_level || 'moderate'}</span></div>

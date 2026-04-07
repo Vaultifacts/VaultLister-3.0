@@ -4228,7 +4228,7 @@ Object.assign(pages, {
                                     ${components.icon('dollar', 20)}
                                 </div>
                                 <div class="shop-stat-content">
-                                    <div class="shop-stat-value">$${totalRevenue.toLocaleString()}</div>
+                                    <div class="shop-stat-value">C$${totalRevenue.toLocaleString()}</div>
                                     <div class="shop-stat-label">Revenue</div>
                                 </div>
                             </div>
@@ -4309,15 +4309,15 @@ Object.assign(pages, {
                     <div class="card-body">
                         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
                             <div style="text-align: center; padding: 16px; background: var(--success-50); border-radius: 12px;">
-                                <div style="font-size: 24px; font-weight: 700; color: var(--success);">$${totalPlatformRevenue.toFixed(2)}</div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--success);">C$${totalPlatformRevenue.toFixed(2)}</div>
                                 <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">Gross Revenue</div>
                             </div>
                             <div style="text-align: center; padding: 16px; background: var(--error-50); border-radius: 12px;">
-                                <div style="font-size: 24px; font-weight: 700; color: var(--error);">-$${totalPlatformFees.toFixed(2)}</div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--error);">-C$${totalPlatformFees.toFixed(2)}</div>
                                 <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">Total Fees</div>
                             </div>
                             <div style="text-align: center; padding: 16px; background: var(--primary-50); border-radius: 12px;">
-                                <div style="font-size: 24px; font-weight: 700; color: var(--primary);">$${totalNetRevenue.toFixed(2)}</div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--primary);">C$${totalNetRevenue.toFixed(2)}</div>
                                 <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">Net Revenue</div>
                             </div>
                             <div style="text-align: center; padding: 16px; background: var(--gray-100); border-radius: 12px;">
@@ -4339,7 +4339,7 @@ Object.assign(pages, {
                                             <div style="flex: 1; height: 20px; background: var(--gray-100); border-radius: 4px; overflow: hidden; position: relative;">
                                                 <div style="width: ${barWidth}%; height: 100%; background: linear-gradient(90deg, var(--error) 0%, var(--error-400) 100%); border-radius: 4px;"></div>
                                             </div>
-                                            <div style="width: 80px; font-size: 12px; font-weight: 600; color: var(--error); text-align: right;">$${fees.totalFees.toFixed(2)}</div>
+                                            <div style="width: 80px; font-size: 12px; font-weight: 600; color: var(--error); text-align: right;">C$${fees.totalFees.toFixed(2)}</div>
                                             <div style="width: 50px; font-size: 11px; color: var(--gray-500); text-align: right;">${(fees.feeRate * 100).toFixed(0)}%</div>
                                         </div>
                                     `;
@@ -4569,13 +4569,13 @@ Object.assign(pages, {
                                                 </div>
                                             </td>
                                             <td>${m.salesCount}</td>
-                                            <td class="text-success font-medium">$${m.totalRevenue.toFixed(2)}</td>
-                                            <td>$${m.avgSalePrice.toFixed(2)}</td>
+                                            <td class="text-success font-medium">C$${m.totalRevenue.toFixed(2)}</td>
+                                            <td>C$${m.avgSalePrice.toFixed(2)}</td>
                                             <td>${m.conversionRate}%</td>
                                             <td>${m.salesVelocity}</td>
                                             <td>${m.avgDaysToSell}d</td>
                                             <td>${m.returnRate}%</td>
-                                            <td class="font-medium">$${m.netRevenue.toFixed(2)}</td>
+                                            <td class="font-medium">C$${m.netRevenue.toFixed(2)}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -4744,12 +4744,12 @@ Object.assign(pages, {
 
                                 <div class="text-sm mb-2">
                                     ${profile.handling_time_days === 1 ? '1 day handling' : `${profile.handling_time_days || 1} days handling`}
-                                    ${profile.domestic_cost ? ` • $${parseFloat(profile.domestic_cost).toFixed(2)}` : ' • Free'}
+                                    ${profile.domestic_cost ? ` • C$${parseFloat(profile.domestic_cost).toFixed(2)}` : ' • Free'}
                                 </div>
 
                                 ${profile.free_shipping_threshold ? `
                                     <div class="text-xs text-success mb-2">
-                                        Free shipping on orders over $${parseFloat(profile.free_shipping_threshold).toFixed(2)}
+                                        Free shipping on orders over C$${parseFloat(profile.free_shipping_threshold).toFixed(2)}
                                     </div>
                                 ` : ''}
 
@@ -5852,7 +5852,7 @@ Object.assign(pages, {
                                 <label class="form-label">Current Plan</label>
                                 <div style="padding: 12px; background: var(--gray-50); border-radius: 4px; border-left: 4px solid var(--primary-600);">
                                     <div style="font-weight: 600; margin-bottom: 4px;">${store.state.user?.subscription_tier ? store.state.user.subscription_tier.charAt(0).toUpperCase() + store.state.user.subscription_tier.slice(1) : 'Free'} Plan</div>
-                                    <div style="font-size: 14px; color: #666;">$${store.state.user?.subscription_tier === 'pro' ? '24.99' : store.state.user?.subscription_tier === 'business' ? '49.99' : store.state.user?.subscription_tier === 'starter' ? '9.99' : '0.00'}/month</div>
+                                    <div style="font-size: 14px; color: #666;">C$${store.state.user?.subscription_tier === 'pro' ? '24.99' : store.state.user?.subscription_tier === 'business' ? '49.99' : store.state.user?.subscription_tier === 'starter' ? '9.99' : '0.00'}/month</div>
                                 </div>
                             </div>
                         </div>
@@ -6546,7 +6546,7 @@ Object.assign(pages, {
                 <!-- Quick Stats Row -->
                 <div class="orders-quick-stats">
                     <div class="orders-quick-stat">
-                        <span class="orders-quick-stat-value">$${totalOrderValue.toLocaleString()}</span>
+                        <span class="orders-quick-stat-value">C$${totalOrderValue.toLocaleString()}</span>
                         <span class="orders-quick-stat-label">Total Value</span>
                     </div>
                     <div class="orders-quick-stat">
@@ -6677,7 +6677,7 @@ Object.assign(pages, {
                                                 ${orderUrgency === 'urgent' ? '<span class="badge badge-error badge-sm" style="margin-left: 4px;">Overdue</span>' : orderUrgency === 'warning' ? '<span class="badge badge-warning badge-sm" style="margin-left: 4px;">Ship Soon</span>' : ''}
                                             </td>` : ''}
                                             ${visibleColumns.includes('item') ? `<td>${escapeHtml(order.item_title || 'N/A')}</td>` : ''}
-                                            ${visibleColumns.includes('sale_price') ? `<td class="font-medium">$${parseFloat(order.sale_price || 0).toFixed(2)}</td>` : ''}
+                                            ${visibleColumns.includes('sale_price') ? `<td class="font-medium">C$${parseFloat(order.sale_price || 0).toFixed(2)}</td>` : ''}
                                             ${visibleColumns.includes('profit') ? (() => {
                                                 const salePrice = parseFloat(order.sale_price) || 0;
                                                 const platformFee = parseFloat(order.platform_fee) || 0;
@@ -6691,7 +6691,7 @@ Object.assign(pages, {
                                                 const margin = salePrice > 0 ? ((netProfit / salePrice) * 100).toFixed(0) : 0;
                                                 const profitClass = netProfit > 0 ? 'text-green-600' : netProfit < 0 ? 'text-red-600' : '';
                                                 return `<td>
-                                                    <div class="font-medium ${profitClass}">$${netProfit.toFixed(2)}</div>
+                                                    <div class="font-medium ${profitClass}">C$${netProfit.toFixed(2)}</div>
                                                     <div class="text-xs text-gray-500">${margin}% margin</div>
                                                 </td>`;
                                             })() : ''}
@@ -7476,7 +7476,7 @@ Object.assign(pages, {
                             <div class="calendar-stat-label">Lives</div>
                         </div>
                         <div class="calendar-stat">
-                            <div class="calendar-stat-value">$${monthRevenue.toLocaleString()}</div>
+                            <div class="calendar-stat-value">C$${monthRevenue.toLocaleString()}</div>
                             <div class="calendar-stat-label">Revenue</div>
                         </div>
                     </div>
@@ -12377,7 +12377,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                             </div>
                                             <div class="receipt-card-meta">
                                                 ${itemCount > 0 ? `<span>${itemCount} item${itemCount > 1 ? 's' : ''}</span>` : ''}
-                                                <span>$${total.toFixed(2)}</span>
+                                                <span>C$${total.toFixed(2)}</span>
                                                 ${typeBadge(receipt.receipt_type || parsed.receiptType)}
                                             </div>
                                             <div class="receipt-card-confidence">
@@ -12430,7 +12430,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                         <div class="receipt-card-info" style="flex: 1;">
                                             <div class="receipt-card-header">
                                                 <h4>${escapeHtml(vendorName)}</h4>
-                                                <span class="text-sm text-gray-500">$${total.toFixed(2)}</span>
+                                                <span class="text-sm text-gray-500">C$${total.toFixed(2)}</span>
                                             </div>
                                             <div class="receipt-card-meta">
                                                 ${typeBadge(receipt.receipt_type || parsed.receiptType)}
@@ -12803,13 +12803,13 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                     return `
                                         <tr>
                                             <td class="font-medium">${escapeHtml((pred.item_title || 'Item').substring(0, 25))}</td>
-                                            <td>$${(pred.current_price || 0).toFixed(0)}</td>
-                                            <td style="color: var(--error);">$${pessimistic}</td>
-                                            <td style="color: var(--primary); font-weight: 600;">$${expected.toFixed(0)}</td>
-                                            <td style="color: var(--success);">$${optimistic}</td>
+                                            <td>C$${(pred.current_price || 0).toFixed(0)}</td>
+                                            <td style="color: var(--error);">C$${pessimistic}</td>
+                                            <td style="color: var(--primary); font-weight: 600;">C$${expected.toFixed(0)}</td>
+                                            <td style="color: var(--success);">C$${optimistic}</td>
                                             <td style="width: 140px;">
                                                 <div style="position: relative; height: 12px; background: linear-gradient(90deg, var(--error-100), var(--primary-100), var(--success-100)); border-radius: 6px;">
-                                                    <div style="position: absolute; top: -2px; left: ${Math.min(95, Math.max(5, currentPos))}%; width: 4px; height: 16px; background: var(--gray-800); border-radius: 2px;" title="Current: $${pred.current_price}"></div>
+                                                    <div style="position: absolute; top: -2px; left: ${Math.min(95, Math.max(5, currentPos))}%; width: 4px; height: 16px; background: var(--gray-800); border-radius: 2px;" title="Current: C$${pred.current_price}"></div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -12899,7 +12899,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <div class="grid grid-cols-4 gap-3">
                                 <div style="text-align: center;">
                                     <div class="text-xs text-gray-500">Est. Revenue</div>
-                                    <div class="text-lg font-bold" style="color: var(--success);">$${store.state.whatIfResults.revenue ?? 0}</div>
+                                    <div class="text-lg font-bold" style="color: var(--success);">C$${store.state.whatIfResults.revenue ?? 0}</div>
                                 </div>
                                 <div style="text-align: center;">
                                     <div class="text-xs text-gray-500">Est. Sales</div>
@@ -13305,7 +13305,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                 </div>
                                             </td>
                                             <td class="font-medium">${s.item_count || 0}</td>
-                                            <td class="font-medium">$${(s.avg_price || 0).toFixed(2)}</td>
+                                            <td class="font-medium">C$${(s.avg_price || 0).toFixed(2)}</td>
                                             <td>
                                                 <span class="badge badge-${s.stock_status === 'In Stock' ? 'success' : s.stock_status === 'Low Stock' ? 'warning' : 'error'}">
                                                     ${s.stock_status || 'Unknown'}
@@ -13360,7 +13360,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                             <td class="font-medium">${escapeHtml(po.number || 'PO-' + po.id)}</td>
                                             <td>${escapeHtml(po.supplierName || 'Unknown')}</td>
                                             <td>${po.itemCount || 0}</td>
-                                            <td class="font-medium">$${(po.total || 0).toFixed(2)}</td>
+                                            <td class="font-medium">C$${(po.total || 0).toFixed(2)}</td>
                                             <td><span class="badge badge-${po.status === 'delivered' ? 'success' : po.status === 'shipped' ? 'primary' : po.status === 'cancelled' ? 'danger' : 'warning'}">${po.status || 'pending'}</span></td>
                                             <td class="text-sm text-gray-500">${po.created_at ? new Date(po.created_at).toLocaleDateString() : '-'}</td>
                                             <td><button class="btn btn-sm btn-ghost" onclick="handlers.viewPurchaseOrder('${po.id}')" aria-label="View purchase order">${components.icon('eye', 14)}</button></td>
@@ -13862,7 +13862,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                     </div>
                                                 </td>
                                                 <td style="padding: 12px; text-align: right; font-weight: 600;">${competitor.item_count || 0}</td>
-                                                <td style="padding: 12px; text-align: right;">$${(competitor.avg_price || 0).toFixed(2)}</td>
+                                                <td style="padding: 12px; text-align: right;">C$${(competitor.avg_price || 0).toFixed(2)}</td>
                                                 <td style="padding: 12px; text-align: center;"><span class="badge badge-${threatColor}">${threatLevel}</span></td>
                                                 <td style="padding: 12px; text-align: right;"><span class="badge badge-primary">Active</span></td>
                                                 <td style="padding: 12px; text-align: center;">
@@ -13970,7 +13970,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                             </svg>
                                         </div>
                                         <div style="text-align: right; min-width: 80px;">
-                                            <div style="font-weight: 700; font-size: 16px;">$${(priceHistory[priceHistory.length - 1] || 0).toFixed(0)}</div>
+                                            <div style="font-weight: 700; font-size: 16px;">C$${(priceHistory[priceHistory.length - 1] || 0).toFixed(0)}</div>
                                             <div style="font-size: 12px; color: ${trend === 'up' ? 'var(--success)' : 'var(--danger)'};">
                                                 ${trend === 'up' ? '+' : ''}${pctChange}%
                                             </div>
@@ -15230,7 +15230,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                 <td><input type="checkbox" class="stale-checkbox" value="${listing.id}"></td>
                                                 <td>${escapeHtml(listing.title || '')}</td>
                                                 <td>${listing.platform || 'N/A'}</td>
-                                                <td>$${(listing.list_price || 0).toFixed(2)}</td>
+                                                <td>C$${(listing.list_price || 0).toFixed(2)}</td>
                                                 <td><span class="badge badge-warning">${listing.days_stale}d</span></td>
                                                 <td>${listing.total_views || 0}</td>
                                                 <td>
@@ -15283,8 +15283,8 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                         ${relistQueue.map(item => `
                                             <tr>
                                                 <td>${escapeHtml(item.title || '')}</td>
-                                                <td>$${(item.original_price || 0).toFixed(2)}</td>
-                                                <td>$${(item.new_price || 0).toFixed(2)}</td>
+                                                <td>C$${(item.original_price || 0).toFixed(2)}</td>
+                                                <td>C$${(item.new_price || 0).toFixed(2)}</td>
                                                 <td class="${item.new_price < item.original_price ? 'text-error' : 'text-success'}">
                                                     ${item.new_price !== item.original_price ? (item.new_price < item.original_price ? '-' : '+') + 'C$' + Math.abs(item.new_price - item.original_price).toFixed(2) : '-'}
                                                 </td>
@@ -15336,7 +15336,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     <div class="card-body">
                         <div class="stat-value text-success">+${performance.avg_view_increase || 0} views</div>
                         <div class="text-gray-500 text-sm mt-2">
-                            Avg price change: ${performance.avg_price_change >= 0 ? '+' : ''}$${(performance.avg_price_change || 0).toFixed(2)}
+                            Avg price change: ${performance.avg_price_change >= 0 ? '+' : ''}C$${(performance.avg_price_change || 0).toFixed(2)}
                         </div>
                     </div>
                 </div>
@@ -15516,7 +15516,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                 <td>${batch.total_labels}</td>
                                                 <td>${batch.completed_labels}</td>
                                                 <td>${batch.failed_labels}</td>
-                                                <td>$${(batch.total_postage || 0).toFixed(2)}</td>
+                                                <td>C$${(batch.total_postage || 0).toFixed(2)}</td>
                                                 <td><span class="badge badge-${batch.status === 'completed' ? 'success' : batch.status === 'failed' ? 'error' : 'warning'}">${batch.status}</span></td>
                                                 <td>
                                                     ${batch.status === 'pending' ? `
@@ -16033,7 +16033,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         </div>
                         <div class="flow-content">
                             <div class="flow-label">Income</div>
-                            <div class="flow-value">$${salesStats.totalRevenue.toFixed(2)}</div>
+                            <div class="flow-value">C$${salesStats.totalRevenue.toFixed(2)}</div>
                             <div class="flow-detail">${salesStats.total} sales</div>
                         </div>
                     </div>
@@ -16048,7 +16048,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         <div class="balance-ring">
                             <div class="balance-amount">
                                 <span class="balance-sign">${netFlow >= 0 ? '+' : '-'}</span>
-                                <span class="balance-value">$${Math.abs(netFlow).toFixed(2)}</span>
+                                <span class="balance-value">C$${Math.abs(netFlow).toFixed(2)}</span>
                             </div>
                             <div class="balance-label">Net Cash Flow</div>
                         </div>
@@ -16066,7 +16066,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         </div>
                         <div class="flow-content">
                             <div class="flow-label">Expenses</div>
-                            <div class="flow-value">$${purchaseStats.totalAmount.toFixed(2)}</div>
+                            <div class="flow-value">C$${purchaseStats.totalAmount.toFixed(2)}</div>
                             <div class="flow-detail">${purchaseStats.total} purchases</div>
                         </div>
                     </div>
@@ -16085,21 +16085,21 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <span class="tx-metric-label">Platform Fees</span>
                             ${components.icon('dollar', 14)}
                         </div>
-                        <div class="tx-metric-value">$${salesStats.totalFees.toFixed(2)}</div>
+                        <div class="tx-metric-value">C$${salesStats.totalFees.toFixed(2)}</div>
                     </div>
                     <div class="tx-metric">
                         <div class="tx-metric-header">
                             <span class="tx-metric-label">Net Profit</span>
                             ${salesStats.totalProfit >= 0 ? components.icon('check-circle', 14) : components.icon('alert-circle', 14)}
                         </div>
-                        <div class="tx-metric-value ${salesStats.totalProfit >= 0 ? 'good' : 'bad'}">$${salesStats.totalProfit.toFixed(2)}</div>
+                        <div class="tx-metric-value ${salesStats.totalProfit >= 0 ? 'good' : 'bad'}">C$${salesStats.totalProfit.toFixed(2)}</div>
                     </div>
                     <div class="tx-metric">
                         <div class="tx-metric-header">
                             <span class="tx-metric-label">Avg Sale</span>
                             ${components.icon('activity', 14)}
                         </div>
-                        <div class="tx-metric-value">$${salesStats.avgSale.toFixed(2)}</div>
+                        <div class="tx-metric-value">C$${salesStats.avgSale.toFixed(2)}</div>
                     </div>
                 </div>
             </div>
@@ -16338,8 +16338,8 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                 <td class="font-medium">${escapeHtml(purchase.vendor || purchase.vendor_name || 'N/A')}</td>
                                                 <td>${escapeHtml(purchase.description || purchase.item || 'N/A')}</td>
                                                 <td><span class="badge badge-gray">${purchase.category || 'Other'}</span></td>
-                                                <td class="font-medium text-error">-$${(purchase.amount || purchase.total_amount || 0).toFixed(2)}</td>
-                                                <td class="font-medium ${purchase.runningBalance >= 0 ? 'text-success' : 'text-error'}">$${purchase.runningBalance.toFixed(2)}</td>
+                                                <td class="font-medium text-error">-C$${(purchase.amount || purchase.total_amount || 0).toFixed(2)}</td>
+                                                <td class="font-medium ${purchase.runningBalance >= 0 ? 'text-success' : 'text-error'}">C$${purchase.runningBalance.toFixed(2)}</td>
                                                 <td><span class="badge badge-${(purchase.status || 'completed') === 'completed' ? 'success' : 'warning'}">${purchase.status || 'completed'}</span></td>
                                                 <td>
                                                     <div class="flex gap-1">
@@ -16451,9 +16451,9 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                 <td>${new Date(sale.created_at).toLocaleDateString()}</td>
                                                 <td>${escapeHtml(sale.listing_title || sale.inventory_title || 'N/A')}</td>
                                                 <td>${components.platformBadge(sale.platform)}</td>
-                                                <td class="font-medium text-success">+$${(sale.sale_price || 0).toFixed(2)}</td>
-                                                <td class="text-error">-$${(sale.platform_fee || 0).toFixed(2)}</td>
-                                                <td class="font-medium text-success">$${(sale.net_profit || 0).toFixed(2)}</td>
+                                                <td class="font-medium text-success">+C$${(sale.sale_price || 0).toFixed(2)}</td>
+                                                <td class="text-error">-C$${(sale.platform_fee || 0).toFixed(2)}</td>
+                                                <td class="font-medium text-success">C$${(sale.net_profit || 0).toFixed(2)}</td>
                                                 <td>
                                                     <div class="transaction-tags" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
                                                         ${saleTags.map(tag => `
@@ -16464,7 +16464,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                         <button class="add-tag-btn" onclick="handlers.showAddTagModal('${sale.id}')" style="width: 18px; height: 18px; border-radius: 50%; border: 1px dashed var(--gray-300); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 12px;" title="Add tag">+</button>
                                                     </div>
                                                 </td>
-                                                <td class="font-medium ${sale.runningBalance >= 0 ? 'text-success' : 'text-error'}">$${sale.runningBalance.toFixed(2)}</td>
+                                                <td class="font-medium ${sale.runningBalance >= 0 ? 'text-success' : 'text-error'}">C$${sale.runningBalance.toFixed(2)}</td>
                                                 <td>
                                                     <div class="flex gap-1">
                                                         <button class="btn btn-sm btn-ghost" onclick="handlers.showSplitTransactionModal('${sale.id}')" title="Split">
@@ -16593,7 +16593,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                                 <td>${formatDate(event.start_time)}</td>
                                                 <td>${event.estimated_duration || 60} min</td>
                                                 <td>${event.items?.length || 0}</td>
-                                                <td>$${(event.total_sales || 0).toFixed(2)}</td>
+                                                <td>C$${(event.total_sales || 0).toFixed(2)}</td>
                                                 <td><span class="badge badge-${event.status === 'completed' ? 'success' : 'gray'}">${event.status}</span></td>
                                             </tr>
                                         `).join('')}

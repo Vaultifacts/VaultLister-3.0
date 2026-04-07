@@ -830,7 +830,7 @@ Object.assign(handlers, {
                 success: Math.floor(listingCount * 0.5),
                 warnings: 3,
                 errors: 0,
-                impact: `${Math.floor(listingCount * 0.6)} offers would be sent, potential revenue of $${(Math.floor(listingCount * 0.5) * 18).toFixed(0)}`,
+                impact: `${Math.floor(listingCount * 0.6)} offers would be sent, potential revenue of C$${(Math.floor(listingCount * 0.5) * 18).toFixed(0)}`,
                 actions: [
                     { status: 'success', text: `Send offers on ${Math.floor(listingCount * 0.4)} items with active likers` },
                     { status: 'success', text: `${Math.floor(listingCount * 0.1)} counter-offers queued` },
@@ -869,7 +869,7 @@ Object.assign(handlers, {
                 success: Math.floor(listingCount * 0.18),
                 warnings: 1,
                 errors: 0,
-                impact: `${Math.floor(listingCount * 0.2)} bundle offers to create, avg bundle value $${(Math.floor(listingCount * 0.2) * 35).toFixed(0)}`,
+                impact: `${Math.floor(listingCount * 0.2)} bundle offers to create, avg bundle value C$${(Math.floor(listingCount * 0.2) * 35).toFixed(0)}`,
                 actions: [
                     { status: 'success', text: `Create ${Math.floor(listingCount * 0.12)} bundles for multi-likers` },
                     { status: 'success', text: `Send ${Math.floor(listingCount * 0.06)} bundle discount reminders` },
@@ -1965,7 +1965,7 @@ Object.assign(handlers, {
 
             const message = type === 'percentage'
                 ? `${ids.length} item(s) price adjusted by ${value > 0 ? '+' : ''}${value}%`
-                : `${ids.length} item(s) price adjusted by $${value > 0 ? '+' : ''}${value.toFixed(2)}`;
+                : `${ids.length} item(s) price adjusted by C$${value > 0 ? '+' : ''}${value.toFixed(2)}`;
             toast.success(message);
 
             store.setState({ selectedItems: [] });
@@ -2659,7 +2659,7 @@ Object.assign(handlers, {
                     </div>
                     <div>
                         <h3 class="font-semibold mb-2">Price</h3>
-                        <p class="text-xl font-bold">$${listing.price}</p>
+                        <p class="text-xl font-bold">C$${listing.price}</p>
                     </div>
                     <div>
                         <h3 class="font-semibold mb-2">Status</h3>
@@ -2904,7 +2904,7 @@ Object.assign(handlers, {
                         <img src="${listing.images?.[0] || 'https://placehold.co/60x60?text=Item'}" alt="${escapeHtml(listing.title)}">
                         <div>
                             <div class="font-medium">${escapeHtml(listing.title)}</div>
-                            <div class="text-sm text-gray-500">Current price: <strong>$${currentPrice.toFixed(2)}</strong></div>
+                            <div class="text-sm text-gray-500">Current price: <strong>C$${currentPrice.toFixed(2)}</strong></div>
                         </div>
                     </div>
                 </div>
@@ -2914,19 +2914,19 @@ Object.assign(handlers, {
                     <div class="price-drop-presets">
                         <button class="preset-btn" onclick="handlers.setPriceDropPreset('${listingId}', 5)">
                             <span class="preset-percent">5%</span>
-                            <span class="preset-price">$${(currentPrice * 0.95).toFixed(2)}</span>
+                            <span class="preset-price">C$${(currentPrice * 0.95).toFixed(2)}</span>
                         </button>
                         <button class="preset-btn" onclick="handlers.setPriceDropPreset('${listingId}', 10)">
                             <span class="preset-percent">10%</span>
-                            <span class="preset-price">$${(currentPrice * 0.90).toFixed(2)}</span>
+                            <span class="preset-price">C$${(currentPrice * 0.90).toFixed(2)}</span>
                         </button>
                         <button class="preset-btn" onclick="handlers.setPriceDropPreset('${listingId}', 15)">
                             <span class="preset-percent">15%</span>
-                            <span class="preset-price">$${(currentPrice * 0.85).toFixed(2)}</span>
+                            <span class="preset-price">C$${(currentPrice * 0.85).toFixed(2)}</span>
                         </button>
                         <button class="preset-btn" onclick="handlers.setPriceDropPreset('${listingId}', 20)">
                             <span class="preset-percent">20%</span>
-                            <span class="preset-price">$${(currentPrice * 0.80).toFixed(2)}</span>
+                            <span class="preset-price">C$${(currentPrice * 0.80).toFixed(2)}</span>
                         </button>
                     </div>
 
@@ -2948,9 +2948,9 @@ Object.assign(handlers, {
                     <div class="form-group">
                         <label class="form-label">New Price After Drop</label>
                         <div class="new-price-preview" id="new-price-preview">
-                            <span class="old-price">$${currentPrice.toFixed(2)}</span>
+                            <span class="old-price">C$${currentPrice.toFixed(2)}</span>
                             <span class="arrow">${components.icon('arrow-right', 16)}</span>
-                            <span class="new-price">$${(currentPrice * 0.90).toFixed(2)}</span>
+                            <span class="new-price">C$${(currentPrice * 0.90).toFixed(2)}</span>
                         </div>
                     </div>
 
@@ -3122,7 +3122,7 @@ Object.assign(handlers, {
                     l.id === listingId ? { ...l, price: newPrice } : l
                 );
                 store.setState({ listings });
-                toast.success(`Price dropped to $${newPrice.toFixed(2)}!`);
+                toast.success(`Price dropped to C$${newPrice.toFixed(2)}!`);
             } else {
                 toast.success(`Price drop scheduled for ${scheduledDate.toLocaleDateString()}`);
             }
@@ -3148,8 +3148,8 @@ Object.assign(handlers, {
                 // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 container.innerHTML = sanitizeHTML(`
                     <div class="space-y-1">
-                        <div class="flex justify-between"><span class="text-gray-500">Avg Sale Price:</span><span class="font-medium">$${data.avg_price}</span></div>
-                        <div class="flex justify-between"><span class="text-gray-500">Range:</span><span class="font-medium">$${data.min_price} - $${data.max_price}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Avg Sale Price:</span><span class="font-medium">C$${data.avg_price}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Range:</span><span class="font-medium">C$${data.min_price} - C$${data.max_price}</span></div>
                         <div class="flex justify-between"><span class="text-gray-500">Your Position:</span><span class="font-medium">${data.price_position}% of avg</span></div>
                         <div class="flex justify-between"><span class="text-gray-500">Status:</span><span class="badge badge-${recColor} badge-sm">${data.recommendation}</span></div>
                         <div class="text-xs text-gray-400">Based on ${data.similar_sales} similar sales</div>
@@ -3533,7 +3533,7 @@ Object.assign(handlers, {
                                     <div class="age-bar fresh" style="width: ${totalItems ? (stats.fresh.count / totalItems * 100) : 0}%"></div>
                                 </div>
                                 <div class="age-count">${stats.fresh.count}</div>
-                                <div class="age-value">$${stats.fresh.value.toFixed(0)}</div>
+                                <div class="age-value">C$${stats.fresh.value.toFixed(0)}</div>
                             </div>
                             <div class="age-bar-row">
                                 <div class="age-label recent">
@@ -3543,7 +3543,7 @@ Object.assign(handlers, {
                                     <div class="age-bar recent" style="width: ${totalItems ? (stats.recent.count / totalItems * 100) : 0}%"></div>
                                 </div>
                                 <div class="age-count">${stats.recent.count}</div>
-                                <div class="age-value">$${stats.recent.value.toFixed(0)}</div>
+                                <div class="age-value">C$${stats.recent.value.toFixed(0)}</div>
                             </div>
                             <div class="age-bar-row">
                                 <div class="age-label aging">
@@ -3553,7 +3553,7 @@ Object.assign(handlers, {
                                     <div class="age-bar aging" style="width: ${totalItems ? (stats.aging.count / totalItems * 100) : 0}%"></div>
                                 </div>
                                 <div class="age-count">${stats.aging.count}</div>
-                                <div class="age-value">$${stats.aging.value.toFixed(0)}</div>
+                                <div class="age-value">C$${stats.aging.value.toFixed(0)}</div>
                             </div>
                             <div class="age-bar-row">
                                 <div class="age-label stale">
@@ -3563,7 +3563,7 @@ Object.assign(handlers, {
                                     <div class="age-bar stale" style="width: ${totalItems ? (stats.stale.count / totalItems * 100) : 0}%"></div>
                                 </div>
                                 <div class="age-count">${stats.stale.count}</div>
-                                <div class="age-value">$${stats.stale.value.toFixed(0)}</div>
+                                <div class="age-value">C$${stats.stale.value.toFixed(0)}</div>
                             </div>
                             <div class="age-bar-row">
                                 <div class="age-label deadstock">
@@ -3573,7 +3573,7 @@ Object.assign(handlers, {
                                     <div class="age-bar deadstock" style="width: ${totalItems ? (stats.deadstock.count / totalItems * 100) : 0}%"></div>
                                 </div>
                                 <div class="age-count">${stats.deadstock.count}</div>
-                                <div class="age-value">$${stats.deadstock.value.toFixed(0)}</div>
+                                <div class="age-value">C$${stats.deadstock.value.toFixed(0)}</div>
                             </div>
                         </div>
                     </div>
@@ -3587,7 +3587,7 @@ Object.assign(handlers, {
                                     <div class="oldest-item-title">${escapeHtml(oldestItem.title || oldestItem.name || 'Unknown')}</div>
                                     <div class="oldest-item-meta">
                                         ${oldestItem.sku ? `SKU: ${oldestItem.sku} • ` : ''}
-                                        Listed $${parseFloat(oldestItem.list_price || 0).toFixed(2)}
+                                        Listed C$${parseFloat(oldestItem.list_price || 0).toFixed(2)}
                                     </div>
                                 </div>
                                 <div class="oldest-item-age">
@@ -3605,7 +3605,7 @@ Object.assign(handlers, {
                             ${stats.stale.count > 0 ? `
                                 <div class="recommendation-item warning">
                                     ${components.icon('alert-triangle', 14)}
-                                    <span>Consider price drops on ${stats.stale.count} stale items ($${stats.stale.value.toFixed(0)} value)</span>
+                                    <span>Consider price drops on ${stats.stale.count} stale items (C$${stats.stale.value.toFixed(0)} value)</span>
                                 </div>
                             ` : ''}
                             ${stats.deadstock.count > 0 ? `
@@ -3699,13 +3699,13 @@ Object.assign(handlers, {
                 <div class="price-drop-container">
                     <div class="price-drop-item-info">
                         <h4>${escapeHtml(item.title || item.name)}</h4>
-                        <p>Current Price: <strong>$${currentPrice.toFixed(2)}</strong></p>
+                        <p>Current Price: <strong>C$${currentPrice.toFixed(2)}</strong></p>
                     </div>
                     <div class="price-drop-options">
                         ${suggestedDrops.map(d => `
                             <button class="price-drop-btn" onclick="handlers.applyPriceDrop('${itemId}', ${d.newPrice})">
                                 <span class="drop-pct">-${d.pct}%</span>
-                                <span class="drop-price">$${d.newPrice}</span>
+                                <span class="drop-price">C$${d.newPrice}</span>
                             </button>
                         `).join('')}
                     </div>
@@ -3729,7 +3729,7 @@ Object.assign(handlers, {
         if (index >= 0) {
             inventory[index].list_price = parseFloat(newPrice);
             store.setState({ inventory });
-            toast.success(`Price updated to $${parseFloat(newPrice).toFixed(2)}`);
+            toast.success(`Price updated to C$${parseFloat(newPrice).toFixed(2)}`);
             modals.close();
         }
     },
@@ -3877,9 +3877,9 @@ Object.assign(handlers, {
             previewEl.innerHTML = sanitizeHTML(previewItems.map(p => `
                 <div class="preview-row">
                     <span class="preview-title">${escapeHtml(p.title)}</span>
-                    <span class="preview-old">$${p.oldPrice.toFixed(2)}</span>
+                    <span class="preview-old">C$${p.oldPrice.toFixed(2)}</span>
                     <span class="preview-arrow">→</span>
-                    <span class="preview-new ${p.newPrice < p.oldPrice ? 'decrease' : p.newPrice > p.oldPrice ? 'increase' : ''}">$${p.newPrice.toFixed(2)}</span>
+                    <span class="preview-new ${p.newPrice < p.oldPrice ? 'decrease' : p.newPrice > p.oldPrice ? 'increase' : ''}">C$${p.newPrice.toFixed(2)}</span>
                 </div>
             `).join('') + (items.length > 5 ? `<div class="preview-more">...and ${items.length - 5} more items</div>` : ''));
         }
@@ -4262,9 +4262,9 @@ Object.assign(handlers, {
                                 <div class="target-pct">${getPct(progress.daily, targets.daily)}%</div>
                             </div>
                             <div class="target-values">
-                                <span class="current">$${progress.daily.toFixed(0)}</span>
+                                <span class="current">C$${progress.daily.toFixed(0)}</span>
                                 <span class="divider">/</span>
-                                <span class="goal">$${targets.daily}</span>
+                                <span class="goal">C$${targets.daily}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.daily}"
                                 onchange="handlers.updateProfitTarget('daily', this.value)" placeholder="Set target">
@@ -4287,9 +4287,9 @@ Object.assign(handlers, {
                                 <div class="target-pct">${getPct(progress.weekly, targets.weekly)}%</div>
                             </div>
                             <div class="target-values">
-                                <span class="current">$${progress.weekly.toFixed(0)}</span>
+                                <span class="current">C$${progress.weekly.toFixed(0)}</span>
                                 <span class="divider">/</span>
-                                <span class="goal">$${targets.weekly}</span>
+                                <span class="goal">C$${targets.weekly}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.weekly}"
                                 onchange="handlers.updateProfitTarget('weekly', this.value)" placeholder="Set target">
@@ -4312,9 +4312,9 @@ Object.assign(handlers, {
                                 <div class="target-pct">${getPct(progress.monthly, targets.monthly)}%</div>
                             </div>
                             <div class="target-values">
-                                <span class="current">$${progress.monthly.toFixed(0)}</span>
+                                <span class="current">C$${progress.monthly.toFixed(0)}</span>
                                 <span class="divider">/</span>
-                                <span class="goal">$${targets.monthly}</span>
+                                <span class="goal">C$${targets.monthly}</span>
                             </div>
                             <input type="number" class="target-input" value="${targets.monthly}"
                                 onchange="handlers.updateProfitTarget('monthly', this.value)" placeholder="Set target">
@@ -4325,7 +4325,7 @@ Object.assign(handlers, {
                     <div class="target-stats">
                         <div class="target-stat">
                             <span class="stat-label">Avg Daily Profit</span>
-                            <span class="stat-value">$${(progress.monthly / now.getDate()).toFixed(0)}</span>
+                            <span class="stat-value">C$${(progress.monthly / now.getDate()).toFixed(0)}</span>
                         </div>
                         <div class="target-stat">
                             <span class="stat-label">Days Left in Month</span>
@@ -4333,7 +4333,7 @@ Object.assign(handlers, {
                         </div>
                         <div class="target-stat">
                             <span class="stat-label">Needed Daily Rate</span>
-                            <span class="stat-value">$${Math.max(0, ((targets.monthly - progress.monthly) / Math.max(1, new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate()))).toFixed(0)}</span>
+                            <span class="stat-value">C$${Math.max(0, ((targets.monthly - progress.monthly) / Math.max(1, new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate()))).toFixed(0)}</span>
                         </div>
                     </div>
 
@@ -4443,7 +4443,7 @@ Object.assign(handlers, {
                                 <div class="restock-item ${item.currentStock === 0 ? 'out-of-stock' : item.currentStock <= 2 ? 'low-stock' : ''}">
                                     <span class="restock-title">${escapeHtml(item.title)}</span>
                                     <span class="restock-sold">${item.count}</span>
-                                    <span class="restock-price">$${item.avgPrice.toFixed(2)}</span>
+                                    <span class="restock-price">C$${item.avgPrice.toFixed(2)}</span>
                                     <span class="restock-stock ${item.currentStock === 0 ? 'danger' : item.currentStock <= 2 ? 'warning' : 'ok'}">
                                         ${item.currentStock}
                                     </span>
@@ -4465,7 +4465,7 @@ Object.assign(handlers, {
                             </div>
                             <div class="summary-stat">
                                 <span class="stat-label">Total Revenue</span>
-                                <span class="stat-value">$${restockSuggestions.reduce((s, i) => s + i.revenue, 0).toFixed(0)}</span>
+                                <span class="stat-value">C$${restockSuggestions.reduce((s, i) => s + i.revenue, 0).toFixed(0)}</span>
                             </div>
                         </div>
                     ` : `
@@ -4528,7 +4528,7 @@ Object.assign(handlers, {
                                 return `
                                     <div class="bundle-item">
                                         <span class="bundle-item-title">${escapeHtml(item.title || item.name)}</span>
-                                        <span class="bundle-item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
+                                        <span class="bundle-item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                                         <button class="btn btn-xs btn-ghost" onclick="handlers.removeFromBundle('${id}')">
                                             ${components.icon('x', 12)}
                                         </button>
@@ -4547,7 +4547,7 @@ Object.assign(handlers, {
                             ${inventory.filter(i => !selectedItems.includes(String(i.id))).slice(0, 10).map(item => `
                                 <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
                                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
-                                    <span class="item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
+                                    <span class="item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                                     <span class="add-icon">${components.icon('plus', 14)}</span>
                                 </div>
                             `).join('')}
@@ -4559,7 +4559,7 @@ Object.assign(handlers, {
                         <div class="bundle-pricing">
                             <div class="pricing-row">
                                 <span>Individual Total</span>
-                                <span class="original-price">$${bundleValue.toFixed(2)}</span>
+                                <span class="original-price">C$${bundleValue.toFixed(2)}</span>
                             </div>
                             <div class="pricing-row">
                                 <span>Bundle Discount</span>
@@ -4569,10 +4569,10 @@ Object.assign(handlers, {
                             </div>
                             <div class="pricing-row total">
                                 <span>Bundle Price</span>
-                                <span class="bundle-price" id="bundle-final-price">$${bundlePrice.toFixed(2)}</span>
+                                <span class="bundle-price" id="bundle-final-price">C$${bundlePrice.toFixed(2)}</span>
                             </div>
                             <div class="pricing-savings">
-                                Customers save $${(bundleValue - bundlePrice).toFixed(2)}!
+                                Customers save C$${(bundleValue - bundlePrice).toFixed(2)}!
                             </div>
                         </div>
                     ` : `
@@ -4632,7 +4632,7 @@ Object.assign(handlers, {
             container.innerHTML = sanitizeHTML(filtered.map(item => `
                 <div class="bundle-available-item" onclick="handlers.addToBundle('${item.id}')">
                     <span class="item-title">${escapeHtml(item.title || item.name)}</span>
-                    <span class="item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
+                    <span class="item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</span>
                     <span class="add-icon">${components.icon('plus', 14)}</span>
                 </div>
             `).join('') || '<div class="empty-state">No items found</div>');
@@ -4685,7 +4685,7 @@ Object.assign(handlers, {
             const result = await api.post('/inventory', bundleData);
             store.setState({ bundleItems: [], inventory: [...store.state.inventory, result.item] });
             modals.close();
-            toast.success(`Bundle created: ${bundleTitle} at $${bundlePrice.toFixed(2)}`);
+            toast.success(`Bundle created: ${bundleTitle} at C$${bundlePrice.toFixed(2)}`);
             if (result.item && result.item.id) {
                 handlers.editItem(result.item.id);
             }
@@ -4754,7 +4754,7 @@ Object.assign(handlers, {
                                 <div class="seasonal-bar-group">
                                     <div class="seasonal-bar-container">
                                         <div class="seasonal-bar" style="height: ${(m.revenue / maxRevenue * 100)}%">
-                                            <span class="seasonal-tooltip">$${m.revenue.toFixed(0)}</span>
+                                            <span class="seasonal-tooltip">C$${m.revenue.toFixed(0)}</span>
                                         </div>
                                     </div>
                                     <div class="seasonal-label">${m.month}</div>
@@ -4770,7 +4770,7 @@ Object.assign(handlers, {
                             <div class="highlight-info">
                                 <div class="highlight-label">Best Month</div>
                                 <div class="highlight-value">${bestMonth.month} ${bestMonth.year}</div>
-                                <div class="highlight-amount">$${bestMonth.revenue.toFixed(0)}</div>
+                                <div class="highlight-amount">C$${bestMonth.revenue.toFixed(0)}</div>
                             </div>
                         </div>
                         <div class="highlight-card worst">
@@ -4778,7 +4778,7 @@ Object.assign(handlers, {
                             <div class="highlight-info">
                                 <div class="highlight-label">Slowest Month</div>
                                 <div class="highlight-value">${worstMonth.month} ${worstMonth.year}</div>
-                                <div class="highlight-amount">$${worstMonth.revenue.toFixed(0)}</div>
+                                <div class="highlight-amount">C$${worstMonth.revenue.toFixed(0)}</div>
                             </div>
                         </div>
                     </div>
@@ -4790,7 +4790,7 @@ Object.assign(handlers, {
                             ${quarterRevenue.map(q => `
                                 <div class="quarter-card">
                                     <div class="quarter-name">${q.quarter}</div>
-                                    <div class="quarter-revenue">$${q.revenue.toFixed(0)}</div>
+                                    <div class="quarter-revenue">C$${q.revenue.toFixed(0)}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -4888,7 +4888,7 @@ Object.assign(handlers, {
                                     Qty: ${item.quantity || 1}
                                 </div>
                             </div>
-                            <div class="lookup-item-price">$${(parseFloat(item.list_price) || 0).toFixed(2)}</div>
+                            <div class="lookup-item-price">C$${(parseFloat(item.list_price) || 0).toFixed(2)}</div>
                             <div class="lookup-item-status badge badge-${item.status === 'active' ? 'success' : 'secondary'}">${item.status || 'active'}</div>
                         </div>
                     `).join('')}
@@ -4905,7 +4905,7 @@ Object.assign(handlers, {
                                     ${item.platform ? components.platformBadge(item.platform) : ''}
                                 </div>
                             </div>
-                            <div class="lookup-item-price">$${(parseFloat(item.price) || 0).toFixed(2)}</div>
+                            <div class="lookup-item-price">C$${(parseFloat(item.price) || 0).toFixed(2)}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -7158,7 +7158,7 @@ Object.assign(handlers, {
     previewRelistPrice: async function(listingId) {
         try {
             const data = await api.post('/relisting/preview-price', { listing_id: listingId });
-            toast.info(`Current: $${data.current_price} → New: $${data.new_price} (${data.reason})`);
+            toast.info(`Current: C$${data.current_price} → New: C$${data.new_price} (${data.reason})`);
         } catch (e) {
             toast.error('Failed to preview price');
         }
@@ -8066,7 +8066,7 @@ Object.assign(handlers, {
                                     ${accepted > 0 ? '<span class="badge badge-success">' + accepted + ' accepted</span>' : ''}
                                     ${declined > 0 ? '<span class="badge badge-error">' + declined + ' declined</span>' : ''}
                                     ${pending > 0 ? '<span class="badge badge-warning">' + pending + ' pending</span>' : ''}
-                                    <span class="text-sm text-gray-500">Avg: $${avgOffer.toFixed(0)} (${avgPct}%)</span>
+                                    <span class="text-sm text-gray-500">Avg: C$${avgOffer.toFixed(0)} (${avgPct}%)</span>
                                     ${components.icon('chevron-down', 16)}
                                 </div>
                             </div>

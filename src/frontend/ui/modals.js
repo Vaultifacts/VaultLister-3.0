@@ -691,8 +691,8 @@ const modals = {
                             <p class="text-sm text-gray-600">${escapeHtml(item.brand || '')} ${item.size ? '• Size: ' + escapeHtml(item.size) : ''}</p>
                             <p class="text-sm text-gray-500">SKU: ${escapeHtml(item.sku || 'N/A')}</p>
                             <div class="flex gap-4 mt-2">
-                                <span class="text-sm"><strong>List Price:</strong> $${(item.list_price || 0).toFixed(2)}</span>
-                                <span class="text-sm"><strong>Cost:</strong> $${(item.cost_price || 0).toFixed(2)}</span>
+                                <span class="text-sm"><strong>List Price:</strong> C$${(item.list_price || 0).toFixed(2)}</span>
+                                <span class="text-sm"><strong>Cost:</strong> C$${(item.cost_price || 0).toFixed(2)}</span>
                                 <span class="text-sm"><strong>Qty:</strong> ${item.quantity || 1}</span>
                             </div>
                         </div>
@@ -701,15 +701,15 @@ const modals = {
                     <!-- Summary Stats -->
                     <div class="grid grid-cols-3 gap-4 mb-6">
                         <div class="stat-card" style="padding: 16px; background: var(--gray-50); border-radius: var(--radius-md); text-align: center;">
-                            <div class="text-2xl font-bold text-gray-700">$${totalPurchaseCost.toFixed(2)}</div>
+                            <div class="text-2xl font-bold text-gray-700">C$${totalPurchaseCost.toFixed(2)}</div>
                             <div class="text-xs text-gray-500">Total Cost</div>
                         </div>
                         <div class="stat-card" style="padding: 16px; background: var(--gray-50); border-radius: var(--radius-md); text-align: center;">
-                            <div class="text-2xl font-bold text-success">$${totalSalesRevenue.toFixed(2)}</div>
+                            <div class="text-2xl font-bold text-success">C$${totalSalesRevenue.toFixed(2)}</div>
                             <div class="text-xs text-gray-500">Total Revenue</div>
                         </div>
                         <div class="stat-card" style="padding: 16px; background: var(--gray-50); border-radius: var(--radius-md); text-align: center;">
-                            <div class="text-2xl font-bold ${totalProfit >= 0 ? 'text-success' : 'text-error'}">$${totalProfit.toFixed(2)}</div>
+                            <div class="text-2xl font-bold ${totalProfit >= 0 ? 'text-success' : 'text-error'}">C$${totalProfit.toFixed(2)}</div>
                             <div class="text-xs text-gray-500">Net Profit</div>
                         </div>
                     </div>
@@ -749,8 +749,8 @@ const modals = {
                                                 <td>${new Date(p.purchase_date || p.created_at).toLocaleDateString()}</td>
                                                 <td>${escapeHtml(p.vendor_name || 'Unknown')}</td>
                                                 <td>${p.quantity || 1}</td>
-                                                <td>$${(p.unit_cost || 0).toFixed(2)}</td>
-                                                <td>$${(p.total_cost || p.unit_cost || 0).toFixed(2)}</td>
+                                                <td>C$${(p.unit_cost || 0).toFixed(2)}</td>
+                                                <td>C$${(p.total_cost || p.unit_cost || 0).toFixed(2)}</td>
                                             </tr>
                                         `).join('')}
                                     </tbody>
@@ -782,8 +782,8 @@ const modals = {
                                                 <td>${new Date(s.sale_date || s.created_at).toLocaleDateString()}</td>
                                                 <td>${components.platformBadge(s.platform || 'other')}</td>
                                                 <td>${escapeHtml(s.buyer_username || 'N/A')}</td>
-                                                <td>$${(s.sale_price || 0).toFixed(2)}</td>
-                                                <td class="${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">$${(s.net_profit || 0).toFixed(2)}</td>
+                                                <td>C$${(s.sale_price || 0).toFixed(2)}</td>
+                                                <td class="${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(s.net_profit || 0).toFixed(2)}</td>
                                             </tr>
                                         `).join('')}
                                     </tbody>
@@ -814,9 +814,9 @@ const modals = {
                                         return `
                                             <tr>
                                                 <td>${new Date(p.changed_at || p.created_at).toLocaleDateString()}</td>
-                                                <td>$${(p.old_price || 0).toFixed(2)}</td>
-                                                <td>$${(p.new_price || 0).toFixed(2)}</td>
-                                                <td class="${change >= 0 ? 'text-success' : 'text-error'}">${change >= 0 ? '+' : ''}$${change.toFixed(2)}</td>
+                                                <td>C$${(p.old_price || 0).toFixed(2)}</td>
+                                                <td>C$${(p.new_price || 0).toFixed(2)}</td>
+                                                <td class="${change >= 0 ? 'text-success' : 'text-error'}">${change >= 0 ? '+' : ''}C$${change.toFixed(2)}</td>
                                             </tr>
                                         `;
                                     }).join('')}
@@ -1963,11 +1963,11 @@ const modals = {
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <div class="text-sm text-gray-500">Sale Price</div>
-                                        <div class="text-lg font-bold text-success">$${post.sale_details.sale_price.toFixed(2)}</div>
+                                        <div class="text-lg font-bold text-success">C$${post.sale_details.sale_price.toFixed(2)}</div>
                                     </div>
                                     <div>
                                         <div class="text-sm text-gray-500">Profit</div>
-                                        <div class="text-lg font-bold text-primary">$${post.sale_details.profit.toFixed(2)}</div>
+                                        <div class="text-lg font-bold text-primary">C$${post.sale_details.profit.toFixed(2)}</div>
                                     </div>
                                     ${post.sale_details.platform ? `
                                         <div>
@@ -3378,7 +3378,7 @@ const modals = {
                                         <span class="text-gray-400 text-sm">${idx + 1}</span>
                                         <div>
                                             <div class="font-medium">${escapeHtml(item.inventory_title || 'Item')}</div>
-                                            <div class="text-xs text-gray-500">Start: $${item.starting_price || 0}${item.buy_now_price ? ` • BIN: $${item.buy_now_price}` : ''}</div>
+                                            <div class="text-xs text-gray-500">Start: C$${item.starting_price || 0}${item.buy_now_price ? ` • BIN: C$${item.buy_now_price}` : ''}</div>
                                         </div>
                                     </div>
                                     <button class="btn btn-icon btn-sm btn-error" onclick="handlers.removeItemFromWhatnotEvent('${event.id}', '${item.id}')" aria-label="Remove item">
@@ -3416,7 +3416,7 @@ const modals = {
                                 ${item.images?.[0] ? `<img src="${item.images[0]}" class="w-10 h-10 rounded object-cover" alt="${escapeHtml(item.title || 'Product image')}">` : '<div class="w-10 h-10 rounded bg-gray-200" role="img" aria-label="No image"></div>'}
                                 <div>
                                     <div class="font-medium">${escapeHtml(item.title)}</div>
-                                    <div class="text-xs text-gray-500">$${item.list_price || 0}</div>
+                                    <div class="text-xs text-gray-500">C$${item.list_price || 0}</div>
                                 </div>
                             </div>
                             ${components.icon('plus', 16)}
@@ -3451,7 +3451,7 @@ const modals = {
                             </div>
                             <div class="flex-1">
                                 <div class="font-medium">${escapeHtml(item.title)}</div>
-                                <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • $${(item.list_price || 0).toFixed(2)}</div>
+                                <div class="text-sm text-gray-500">${item.sku || 'No SKU'} • C$${(item.list_price || 0).toFixed(2)}</div>
                             </div>
                             <button class="btn btn-sm btn-primary">Add</button>
                         </div>
