@@ -7171,6 +7171,10 @@ Object.assign(pages, {
         `;
     },
 
+    planner() {
+        return pages.checklist();
+    },
+
     // Calendar page,
 
     calendar() {
@@ -7539,7 +7543,7 @@ Object.assign(pages, {
                                                     });
                                                     return `
                                                         <div class="calendar-week-cell ${day.isToday ? 'today' : ''}"
-                                                             onclick="handlers.addCalendarEvent('${day.toLocalDate(date)}')">
+                                                             onclick="handlers.addCalendarEvent('${toLocalDate(day.date)}')">
                                                             ${hourEvents.map(e => {
                                                                 const colors = getEventColor(e);
                                                                 return `
@@ -9846,7 +9850,7 @@ Object.assign(pages, {
                         <div class="hero-logo-glow"></div>
                     </div>
                     <h1 class="about-hero-title">VaultLister</h1>
-                    <div class="about-version-badge">v1.6.0</div>
+                    <div class="about-version-badge">v0.9.0 RC</div>
                     <p class="about-hero-tagline">Zero-cost, offline-capable multi-channel reselling platform</p>
                     <div class="about-hero-badges">
                         <span class="hero-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Free Forever</span>
@@ -10007,12 +10011,12 @@ Object.assign(pages, {
                 <p class="about-section-subtitle">Key milestones in VaultLister's growth</p>
                 <div class="about-timeline">
                     ${[
-                        { date: 'Dec 2025', title: 'VaultLister Launched', description: 'v1.0 released with inventory management and 6-platform cross-listing.' },
-                        { date: 'Dec 2025', title: 'AI Tools Added', description: 'Introduced AI listing generation, receipt parser, and smart pricing.' },
-                        { date: 'Jan 2026', title: 'Community & Support', description: 'Added Help Center, tutorials, support tickets, and community features.' },
-                        { date: 'Jan 2026', title: 'Advanced Analytics', description: 'Launched analytics dashboard, predictions, and financial tracking.' },
-                        { date: 'Jan 2026', title: '100+ Features Milestone', description: 'Reached 171+ features including calendar, automations, and image bank.' },
-                        { date: 'Feb 2026', title: 'Growing Together', description: 'Continuing to add features based on community feedback and votes.' }
+                        { date: 'Mar 2026', title: 'Alpha Launch', description: 'v0.1.0 released with inventory management and 6-platform cross-listing.' },
+                        { date: 'Mar 2026', title: 'AI Tools Added', description: 'Introduced AI listing generation, receipt parser, and smart pricing.' },
+                        { date: 'Apr 2026', title: 'Community & Support', description: 'Added Help Center, tutorials, support tickets, and community features.' },
+                        { date: 'Apr 2026', title: 'Advanced Analytics', description: 'Launched analytics dashboard, predictions, and financial tracking.' },
+                        { date: 'Apr 2026', title: '170+ Features Milestone', description: 'Reached 171+ features including calendar, automations, and image bank.' },
+                        { date: 'Apr 2026', title: 'Release Candidate', description: 'v0.9.0 RC — continuing to add features based on community feedback and votes.' }
                     ].map((milestone, idx) => `
                         <div class="timeline-milestone ${idx === 5 ? 'current' : ''}">
                             <div class="milestone-dot"></div>
@@ -11413,75 +11417,48 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
     changelog() {
         const versions = store.state.changelogVersions || [
             {
-                version: 'v1.6.0',
-                date: '2026-01-27',
+                version: 'v0.9.0',
+                date: '2026-04-01',
                 changes: [
-                    { type: 'feature', title: 'Sidebar Icon-Only Mode', description: 'Collapsed sidebar now shows icons for quick navigation with hover tooltips', areas: ['Navigation', 'UI'], screenshots: { before: '/assets/screenshots/sidebar-before.png', after: '/assets/screenshots/sidebar-after.png' } },
+                    { type: 'feature', title: 'Sidebar Icon-Only Mode', description: 'Collapsed sidebar now shows icons for quick navigation with hover tooltips', areas: ['Navigation', 'UI'] },
                     { type: 'feature', title: 'Pie Chart Component', description: 'New pie chart visualization option for analytics', areas: ['Analytics'] },
                     { type: 'feature', title: 'Chart Type Toggle', description: 'Switch between bar and pie charts for platform revenue and sales data', areas: ['Analytics', 'Dashboard'] },
                     { type: 'feature', title: 'About Us Page', description: 'Company information and VaultLister stats page', areas: ['Company'] },
-                    { type: 'improvement', title: 'Analytics Sales Tab', description: 'Added summary stat cards with key metrics', areas: ['Analytics'] },
-                    { type: 'improvement', title: 'Support Articles', description: 'Added FAQ and knowledge base seed content', areas: ['Help & Support'] }
-                ]
-            },
-            {
-                version: 'v1.5.0',
-                date: '2026-01-26',
-                changes: [
                     { type: 'feature', title: 'Gmail Integration', description: 'Automatic receipt detection and import from Gmail inbox', areas: ['Integrations', 'Settings'] },
                     { type: 'feature', title: 'Batch Photo Processing', description: 'Apply AI edits to multiple images at once with presets', areas: ['Image Bank'] },
-                    { type: 'feature', title: 'Token Refresh Scheduler', description: 'Automatic OAuth token renewal for connected platforms', areas: ['Integrations'] },
                     { type: 'feature', title: 'Receipt Parser AI', description: 'Upload receipts and let AI extract vendor, items, and totals', areas: ['Transactions'] },
+                    { type: 'feature', title: 'Calendar View', description: 'Track listings, orders, and events in a visual calendar', areas: ['Calendar'] },
+                    { type: 'feature', title: 'Product Roadmap', description: 'See upcoming features and vote for your favorites', areas: ['Roadmap'] },
+                    { type: 'feature', title: 'Enhanced Notifications', description: 'Bell dropdown with search and filters', areas: ['Navigation', 'UI'] },
+                    { type: 'feature', title: 'Help & Support System', description: 'Tutorials, FAQs, and knowledge base articles', areas: ['Help & Support'] },
+                    { type: 'feature', title: 'Support Tickets', description: 'Submit and track bug reports and feature requests', areas: ['Help & Support'] },
+                    { type: 'feature', title: 'Chrome Extension', description: 'Import listings directly from marketplace pages', areas: ['My Listings', 'Integrations'] },
+                    { type: 'feature', title: 'Image Bank', description: 'Organize photos in folders with drag-and-drop support', areas: ['Image Bank'] },
+                    { type: 'feature', title: 'Community Features', description: 'Tips library and seller discussions', areas: ['Community'] },
+                    { type: 'improvement', title: 'Analytics Sales Tab', description: 'Added summary stat cards with key metrics', areas: ['Analytics'] },
                     { type: 'improvement', title: 'Full OAuth Integration', description: 'Enhanced platform sync with real-time status tracking', areas: ['My Shops', 'Integrations'] },
+                    { type: 'improvement', title: 'Navigation Reorganization', description: 'Added Tools and Company sections for better organization', areas: ['Navigation'] },
+                    { type: 'improvement', title: 'Sidebar Collapse', description: 'Fixed text visibility when sidebar is collapsed', areas: ['Navigation', 'UI'] },
                     { type: 'security', title: 'Token Encryption', description: 'AES-256-GCM encryption for stored OAuth tokens', areas: ['Security', 'Settings'] }
                 ]
             },
             {
-                version: 'v1.4.0',
-                date: '2026-01-24',
-                changes: [
-                    { type: 'feature', title: 'Calendar View', description: 'Track listings, orders, and events in a visual calendar', areas: ['Calendar'] },
-                    { type: 'feature', title: 'Product Roadmap', description: 'See upcoming features and vote for your favorites', areas: ['Roadmap'] },
-                    { type: 'feature', title: 'Enhanced Notifications', description: 'Bell dropdown with search and filters', areas: ['Navigation', 'UI'] },
-                    { type: 'improvement', title: 'Navigation Reorganization', description: 'Added Tools and Company sections for better organization', areas: ['Navigation'] },
-                    { type: 'improvement', title: 'Sidebar Collapse', description: 'Fixed text visibility when sidebar is collapsed', areas: ['Navigation', 'UI'] }
-                ]
-            },
-            {
-                version: 'v1.3.0',
-                date: '2026-01-15',
-                changes: [
-                    { type: 'feature', title: 'Help & Support System', description: 'Tutorials, FAQs, and knowledge base articles', areas: ['Help & Support'] },
-                    { type: 'feature', title: 'Support Tickets', description: 'Submit and track bug reports and feature requests', areas: ['Help & Support'] },
-                    { type: 'improvement', title: 'Search Functionality', description: 'Full-text search across all help content', areas: ['Help & Support'] },
-                    { type: 'fix', title: 'Vote Tracking', description: 'Fixed duplicate vote prevention on FAQs and articles', areas: ['Help & Support'] }
-                ]
-            },
-            {
-                version: 'v1.2.0',
-                date: '2026-01-08',
-                changes: [
-                    { type: 'feature', title: 'Chrome Extension', description: 'Import listings directly from marketplace pages', areas: ['My Listings', 'Integrations'] },
-                    { type: 'feature', title: 'Image Bank', description: 'Organize photos in folders with drag-and-drop support', areas: ['Image Bank'] },
-                    { type: 'feature', title: 'Community Features', description: 'Tips library and seller discussions', areas: ['Community'] },
-                    { type: 'improvement', title: 'Photo Editor', description: 'Basic editing tools for listing images', areas: ['Image Bank'] }
-                ]
-            },
-            {
-                version: 'v1.1.0',
-                date: '2025-12-20',
+                version: 'v0.5.0',
+                date: '2026-03-15',
                 changes: [
                     { type: 'feature', title: 'Listing Templates', description: 'Save and reuse item details for faster listing', areas: ['My Listings'] },
                     { type: 'feature', title: 'Low Stock Alerts', description: 'Get notified when inventory runs low', areas: ['Inventory', 'Notifications'] },
+                    { type: 'feature', title: 'AI Listing Generation', description: 'Generate listing titles and descriptions using Claude AI', areas: ['My Listings', 'AI'] },
+                    { type: 'feature', title: 'Price Predictions', description: 'AI-powered pricing suggestions and demand forecasts', areas: ['Intelligence'] },
                     { type: 'improvement', title: 'OAuth Integration', description: 'Connect marketplace accounts securely', areas: ['Settings', 'Integrations'] },
                     { type: 'fix', title: 'Cross-listing', description: 'Fixed image upload issues on certain platforms', areas: ['My Listings'] }
                 ]
             },
             {
-                version: 'v1.0.0',
-                date: '2025-12-01',
+                version: 'v0.1.0',
+                date: '2026-03-02',
                 changes: [
-                    { type: 'feature', title: 'Initial Release', description: 'Inventory management and cross-listing tools', areas: ['Inventory', 'My Listings'] },
+                    { type: 'feature', title: 'Initial Alpha', description: 'Inventory management and cross-listing tools', areas: ['Inventory', 'My Listings'] },
                     { type: 'feature', title: 'Multi-Platform Support', description: 'Poshmark, eBay, Mercari, Depop, Grailed, Facebook', areas: ['My Shops'] },
                     { type: 'feature', title: 'Analytics Dashboard', description: 'Track sales, revenue, and performance metrics', areas: ['Analytics', 'Dashboard'] },
                     { type: 'feature', title: 'Automation Rules', description: 'Automate pricing, sharing, and listing updates', areas: ['Automations'] }
@@ -12580,28 +12557,16 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         const predictions = store.state.predictions || [];
         const demandForecasts = store.state.demandForecasts || [];
 
-        // Mock predictions if none exist for demo
-        const displayPredictions = predictions.length > 0 ? predictions : [
-            { item_title: 'Vintage Levi\'s 501', current_price: 45, predicted_price: 62, confidence: 87, demand_score: 'High', recommendation: 'Buy' },
-            { item_title: 'Nike Air Max 90', current_price: 120, predicted_price: 145, confidence: 82, demand_score: 'High', recommendation: 'Buy' },
-            { item_title: 'Coach Leather Bag', current_price: 85, predicted_price: 78, confidence: 75, demand_score: 'Medium', recommendation: 'Hold' },
-            { item_title: 'Vintage Band Tee', current_price: 35, predicted_price: 28, confidence: 68, demand_score: 'Low', recommendation: 'Reduce' },
-            { item_title: 'Designer Sunglasses', current_price: 150, predicted_price: 175, confidence: 79, demand_score: 'High', recommendation: 'Buy' },
-            { item_title: 'Retro Denim Jacket', current_price: 65, predicted_price: 65, confidence: 71, demand_score: 'Medium', recommendation: 'Hold' }
-        ];
+        const displayPredictions = predictions;
 
         // Calculate overall confidence
         const avgConfidence = displayPredictions.length > 0
             ? Math.round(displayPredictions.reduce((sum, p) => sum + (p.confidence || 0), 0) / displayPredictions.length)
             : 0;
 
-        // Mock forecasts for timeline
-        const mockForecasts = [
-            { period: 'This Week', change: 5, category: 'All Categories' },
-            { period: 'Next Week', change: 8, category: 'Vintage' },
-            { period: 'In 2 Weeks', change: -2, category: 'Sneakers' },
-            { period: 'In 1 Month', change: 12, category: 'Designer' }
-        ];
+        const mockForecasts = demandForecasts.length > 0
+            ? demandForecasts.slice(0, 4).map(f => ({ period: f.period || 'Upcoming', change: f.forecast_score ? Math.round(f.forecast_score * 100) : 0, category: f.category || '' }))
+            : [];
 
         // Demand data by category — derived from live market insights
         const rawInsightsForHeatmap = store.state.marketInsights || [];
@@ -12623,6 +12588,79 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
 
         // Filter state
         const predictionFilter = store.state.predictionFilter || 'all';
+
+        const inventoryItems = store.state.inventoryItems || [];
+        const predictionsEmptyState = displayPredictions.length === 0
+            ? '<div class="empty-state" style="padding: 32px; text-align: center; color: var(--gray-500);"><p style="margin-bottom: 8px;">No predictions yet.</p><p style="margin-bottom: 8px;">Add items to your inventory and run the AI model to get price predictions.</p>' +
+              (inventoryItems.length === 0 ? '<p style="font-size: 13px;">Start by adding items to your inventory.</p>' : '<p style="font-size: 13px;">Click &#8220;Run AI Model&#8221; above to generate predictions for your inventory.</p>') +
+              '</div>'
+            : null;
+
+        const predictionsCardBody = predictionsEmptyState !== null ? predictionsEmptyState : (
+            '<div class="grid grid-cols-3 gap-4">' +
+            displayPredictions.slice(0, 6).map(pred => {
+                const priceChange = pred.predicted_price - pred.current_price;
+                const priceChangePercent = ((priceChange / pred.current_price) * 100).toFixed(1);
+                const isPositive = priceChange >= 0;
+                const recColor = pred.recommendation === 'Buy' ? 'var(--success)' : pred.recommendation === 'Reduce' ? 'var(--error)' : 'var(--warning)';
+                const confidence = pred.confidence || Math.floor(Math.random() * 30) + 60;
+                const confidenceColor = confidence >= 80 ? 'var(--success)' : confidence >= 60 ? 'var(--warning)' : 'var(--error)';
+                const factors = [];
+                if (pred.market_data_count > 50) factors.push({ name: 'Market Data', score: 95, desc: 'High volume of sales data' });
+                else if (pred.market_data_count > 20) factors.push({ name: 'Market Data', score: 75, desc: 'Moderate sales data' });
+                else factors.push({ name: 'Market Data', score: 45, desc: 'Limited sales data available' });
+                if (pred.price_volatility < 0.1) factors.push({ name: 'Price Stability', score: 90, desc: 'Low price volatility' });
+                else if (pred.price_volatility < 0.3) factors.push({ name: 'Price Stability', score: 65, desc: 'Moderate price changes' });
+                else factors.push({ name: 'Price Stability', score: 35, desc: 'High price volatility' });
+                if (pred.demand_score === 'High' || pred.demand_score > 70) factors.push({ name: 'Demand Signal', score: 85, desc: 'Strong buyer interest' });
+                else if (pred.demand_score === 'Medium' || pred.demand_score > 40) factors.push({ name: 'Demand Signal', score: 60, desc: 'Moderate demand' });
+                else factors.push({ name: 'Demand Signal', score: 40, desc: 'Limited demand indicators' });
+                factors.push({ name: 'Seasonality', score: Math.floor(Math.random() * 30) + 55, desc: 'Historical seasonal patterns' });
+                const factorsHtml = factors.map(f =>
+                    '<div style="display: flex; align-items: center; gap: 6px;">' +
+                    '<div style="width: 70px; font-size: 9px; color: var(--gray-600);">' + f.name + '</div>' +
+                    '<div style="flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">' +
+                    '<div style="width: ' + f.score + '%; height: 100%; background: ' + (f.score >= 70 ? 'var(--success)' : f.score >= 50 ? 'var(--warning)' : 'var(--error)') + '; border-radius: 2px;"></div>' +
+                    '</div>' +
+                    '<div style="width: 28px; font-size: 9px; font-weight: 600; text-align: right;">' + f.score + '%</div>' +
+                    '</div>'
+                ).join('');
+                const topFactor = factors.find(f => f.score === Math.max(...factors.map(x => x.score)));
+                return '<div class="prediction-card" style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; border-left: 4px solid ' + recColor + ';">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">' +
+                    '<div class="font-medium" style="flex: 1;">' + escapeHtml(pred.item_title || 'Item') + '</div>' +
+                    '<span class="badge badge-sm" style="background: ' + recColor + '20; color: ' + recColor + ';">' + (pred.recommendation || 'Hold') + '</span>' +
+                    '</div>' +
+                    '<div style="display: flex; gap: 16px; margin-bottom: 12px;">' +
+                    '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Current</div><div style="font-size: 20px; font-weight: 700;">$' + (pred.current_price || 0).toFixed(0) + '</div></div>' +
+                    '<div style="display: flex; align-items: center; color: var(--gray-300);">\u2192</div>' +
+                    '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Predicted</div><div style="font-size: 20px; font-weight: 700; color: var(--primary);">$' + (pred.predicted_price || 0).toFixed(0) + '</div></div>' +
+                    '</div>' +
+                    '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">' +
+                    '<span style="color: ' + (isPositive ? 'var(--success)' : 'var(--error)') + '; font-weight: 600; font-size: 14px;">' + (isPositive ? '+' : '') + priceChangePercent + '%</span>' +
+                    priceTrendSparkline.render([40, 42, 38, 45, 43, pred.predicted_price]) +
+                    '</div>' +
+                    '<div class="prediction-confidence" style="background: var(--gray-50); border-radius: 8px; padding: 10px; margin-top: 8px;">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
+                    '<span style="font-size: 11px; font-weight: 600; color: var(--gray-600);">AI Confidence</span>' +
+                    '<div style="display: flex; align-items: center; gap: 6px;">' +
+                    '<div style="width: 60px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">' +
+                    '<div style="width: ' + confidence + '%; height: 100%; background: ' + confidenceColor + '; border-radius: 3px;"></div>' +
+                    '</div>' +
+                    '<span style="font-size: 13px; font-weight: 700; color: ' + confidenceColor + ';">' + confidence + '%</span>' +
+                    '</div></div>' +
+                    '<details style="margin-top: 6px;">' +
+                    '<summary style="font-size: 10px; color: var(--primary); cursor: pointer; user-select: none;">View confidence factors</summary>' +
+                    '<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">' + factorsHtml +
+                    '<div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--gray-200);">' + (topFactor ? topFactor.desc : 'Based on historical data analysis') + '</div>' +
+                    '</div></details></div>' +
+                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-200);">' +
+                    '<div style="font-size: 11px;"><span style="color: var(--gray-500);">Demand:</span> <strong>' + (pred.demand_score || 'Medium') + '</strong></div>' +
+                    '<button class="btn btn-xs btn-ghost" onclick="handlers.showPredictionDetails(\'' + (pred.id || 'pred') + '\')" style="font-size: 10px;">Details \u2192</button>' +
+                    '</div></div>';
+            }).join('') +
+            '</div>'
+        );
 
         return `
             <div class="page-header">
@@ -12673,104 +12711,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     <span class="text-sm text-gray-500">${displayPredictions.length} items analyzed</span>
                 </div>
                 <div class="card-body">
-                    <div class="grid grid-cols-3 gap-4">
-                        ${displayPredictions.slice(0, 6).map(pred => {
-                            const priceChange = pred.predicted_price - pred.current_price;
-                            const priceChangePercent = ((priceChange / pred.current_price) * 100).toFixed(1);
-                            const isPositive = priceChange >= 0;
-                            const recColor = pred.recommendation === 'Buy' ? 'var(--success)' : pred.recommendation === 'Reduce' ? 'var(--error)' : 'var(--warning)';
-                            const confidence = pred.confidence || Math.floor(Math.random() * 30) + 60;
-                            const confidenceColor = confidence >= 80 ? 'var(--success)' : confidence >= 60 ? 'var(--warning)' : 'var(--error)';
-
-                            // Generate confidence factors based on available data
-                            const factors = [];
-                            if (pred.market_data_count > 50) factors.push({ name: 'Market Data', score: 95, desc: 'High volume of sales data' });
-                            else if (pred.market_data_count > 20) factors.push({ name: 'Market Data', score: 75, desc: 'Moderate sales data' });
-                            else factors.push({ name: 'Market Data', score: 45, desc: 'Limited sales data available' });
-
-                            if (pred.price_volatility < 0.1) factors.push({ name: 'Price Stability', score: 90, desc: 'Low price volatility' });
-                            else if (pred.price_volatility < 0.3) factors.push({ name: 'Price Stability', score: 65, desc: 'Moderate price changes' });
-                            else factors.push({ name: 'Price Stability', score: 35, desc: 'High price volatility' });
-
-                            if (pred.demand_score === 'High' || pred.demand_score > 70) factors.push({ name: 'Demand Signal', score: 85, desc: 'Strong buyer interest' });
-                            else if (pred.demand_score === 'Medium' || pred.demand_score > 40) factors.push({ name: 'Demand Signal', score: 60, desc: 'Moderate demand' });
-                            else factors.push({ name: 'Demand Signal', score: 40, desc: 'Limited demand indicators' });
-
-                            factors.push({ name: 'Seasonality', score: Math.floor(Math.random() * 30) + 55, desc: 'Historical seasonal patterns' });
-
-                            const avgFactorScore = Math.round(factors.reduce((sum, f) => sum + f.score, 0) / factors.length);
-
-                            return `
-                                <div class="prediction-card" style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; border-left: 4px solid ${recColor};">
-                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-                                        <div class="font-medium" style="flex: 1;">${escapeHtml(pred.item_title || 'Item')}</div>
-                                        <span class="badge badge-sm" style="background: ${recColor}20; color: ${recColor};">${pred.recommendation || 'Hold'}</span>
-                                    </div>
-                                    <div style="display: flex; gap: 16px; margin-bottom: 12px;">
-                                        <div>
-                                            <div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Current</div>
-                                            <div style="font-size: 20px; font-weight: 700;">$${(pred.current_price || 0).toFixed(0)}</div>
-                                        </div>
-                                        <div style="display: flex; align-items: center; color: var(--gray-300);">→</div>
-                                        <div>
-                                            <div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Predicted</div>
-                                            <div style="font-size: 20px; font-weight: 700; color: var(--primary);">$${(pred.predicted_price || 0).toFixed(0)}</div>
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                                        <span style="color: ${isPositive ? 'var(--success)' : 'var(--error)'}; font-weight: 600; font-size: 14px;">
-                                            ${isPositive ? '+' : ''}${priceChangePercent}%
-                                        </span>
-                                        ${priceTrendSparkline.render([40, 42, 38, 45, 43, pred.predicted_price])}
-                                    </div>
-
-                                    <!-- Enhanced Confidence Section with Factor Breakdown -->
-                                    <div class="prediction-confidence" style="background: var(--gray-50); border-radius: 8px; padding: 10px; margin-top: 8px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                            <span style="font-size: 11px; font-weight: 600; color: var(--gray-600);">AI Confidence</span>
-                                            <div style="display: flex; align-items: center; gap: 6px;">
-                                                <div style="width: 60px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">
-                                                    <div style="width: ${confidence}%; height: 100%; background: ${confidenceColor}; border-radius: 3px;"></div>
-                                                </div>
-                                                <span style="font-size: 13px; font-weight: 700; color: ${confidenceColor};">${confidence}%</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Collapsible Factor Breakdown -->
-                                        <details style="margin-top: 6px;">
-                                            <summary style="font-size: 10px; color: var(--primary); cursor: pointer; user-select: none;">
-                                                View confidence factors
-                                            </summary>
-                                            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
-                                                ${factors.map(f => `
-                                                    <div style="display: flex; align-items: center; gap: 6px;">
-                                                        <div style="width: 70px; font-size: 9px; color: var(--gray-600);">${f.name}</div>
-                                                        <div style="flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">
-                                                            <div style="width: ${f.score}%; height: 100%; background: ${f.score >= 70 ? 'var(--success)' : f.score >= 50 ? 'var(--warning)' : 'var(--error)'}; border-radius: 2px;"></div>
-                                                        </div>
-                                                        <div style="width: 28px; font-size: 9px; font-weight: 600; text-align: right;">${f.score}%</div>
-                                                    </div>
-                                                `).join('')}
-                                                <div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--gray-200);">
-                                                    ${factors.find(f => f.score === Math.max(...factors.map(x => x.score)))?.desc || 'Based on historical data analysis'}
-                                                </div>
-                                            </div>
-                                        </details>
-                                    </div>
-
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-200);">
-                                        <div style="font-size: 11px;">
-                                            <span style="color: var(--gray-500);">Demand:</span>
-                                            <strong>${pred.demand_score || 'Medium'}</strong>
-                                        </div>
-                                        <button class="btn btn-xs btn-ghost" onclick="handlers.showPredictionDetails('${pred.id || 'pred'}')" style="font-size: 10px;">
-                                            Details →
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
+                    ${predictionsCardBody}
                 </div>
             </div>
 
@@ -14495,17 +14436,17 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
     helpSupport() {
         const supportStats = store.state.supportStats || { articlesRead: 0, ticketsOpen: 0, avgResponseTime: '0h' };
         const popularArticles = store.state.popularArticles || [
-            { id: 1, title: 'Getting Started with Cross-Listing', views: 1240, category: 'Basics' },
-            { id: 2, title: 'How to Connect Your eBay Account', views: 980, category: 'Integrations' },
-            { id: 3, title: 'Understanding Analytics Dashboard', views: 856, category: 'Analytics' },
-            { id: 4, title: 'Setting Up Automations', views: 742, category: 'Automations' }
+            { id: 1, title: 'Getting Started with Cross-Listing', category: 'Basics' },
+            { id: 2, title: 'How to Connect Your eBay Account', category: 'Integrations' },
+            { id: 3, title: 'Understanding Analytics Dashboard', category: 'Analytics' },
+            { id: 4, title: 'Setting Up Automations', category: 'Automations' }
         ];
         const gettingStartedSteps = [
-            { id: 1, title: 'Connect your first marketplace', completed: true },
-            { id: 2, title: 'Import your inventory', completed: true },
-            { id: 3, title: 'Create your first cross-listing', completed: false },
-            { id: 4, title: 'Set up an automation', completed: false },
-            { id: 5, title: 'Explore the analytics dashboard', completed: false }
+            { id: 1, title: 'Create your account', completed: true },
+            { id: 2, title: 'Add your first item', completed: (store.state.inventoryItems || []).length > 0 },
+            { id: 3, title: 'Create your first listing', completed: (store.state.listings || []).length > 0 },
+            { id: 4, title: 'Set up an automation', completed: (store.state.automations || []).length > 0 },
+            { id: 5, title: 'Record your first sale', completed: (store.state.sales || []).length > 0 }
         ];
         const completedSteps = gettingStartedSteps.filter(s => s.completed).length;
 
@@ -14678,13 +14619,13 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                             <button class="popular-article-card" onclick="handlers.viewArticle(${article.id})">
                                 <div class="article-category">${article.category}</div>
                                 <h4 class="article-title">${escapeHtml(article.title)}</h4>
-                                <div class="article-meta">
+                                ${article.views != null ? `<div class="article-meta">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
                                     ${article.views.toLocaleString()} views
-                                </div>
+                                </div>` : ''}
                             </button>
                         `).join('')}
                     </div>

@@ -469,7 +469,7 @@ Object.assign(handlers, {
             // Reload inventory
             await this.loadInventory();
             if (store.state.currentPage === 'inventory') {
-                renderApp(pages.inventory());
+                renderApp(window.pages.inventory());
             }
         } catch (error) {
             console.error('Error saving draft:', error);
@@ -636,7 +636,7 @@ Object.assign(handlers, {
 
             // Re-render inventory page using renderApp for proper state handling
             if (store.state.currentPage === 'inventory') {
-                renderApp(pages.inventory());
+                renderApp(window.pages.inventory());
             }
         } catch (error) {
             toast.error(error.message);
@@ -727,19 +727,19 @@ Object.assign(handlers, {
     setInventoryViewMode: function(mode) {
         store.setState({ inventoryViewMode: mode });
         localStorage.setItem('vl_inventory_view_mode', mode);
-        renderApp(pages.inventory());
+        renderApp(window.pages.inventory());
     },
 
     setListingsViewMode: function(mode) {
         store.setState({ listingsViewMode: mode });
         localStorage.setItem('vl_listings_view_mode', mode);
-        renderApp(pages.listings());
+        renderApp(window.pages.listings());
     },
 
     setOrdersViewMode: function(mode) {
         store.setState({ ordersViewMode: mode });
         localStorage.setItem('vl_orders_view_mode', mode);
-        renderApp(pages.orders());
+        renderApp(window.pages.orders());
     },
 
     // Offer handlers,
@@ -771,7 +771,7 @@ Object.assign(handlers, {
             toast.success('Offer accepted!');
             // Update in-place to avoid full app re-render (preserves scroll position)
             const pageEl = document.querySelector('.page-content');
-            if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
             console.error('Failed to accept offer:', error);
             const errorMsg = error.message || 'Unknown error';
@@ -896,7 +896,7 @@ Object.assign(handlers, {
             store.setState({ offers });
             toast.info('Offer declined');
             const pageEl = document.querySelector('.page-content');
-            if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
             console.error('Failed to decline offer:', error);
             const errorMsg = error.message || 'Unknown error';
@@ -1020,7 +1020,7 @@ Object.assign(handlers, {
             store.setState({ offers });
             toast.success(`Counter offer of $${counterAmount.toFixed(2)} sent!`);
             const pageEl = document.querySelector('.page-content');
-            if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
             console.error('Failed to send counter offer:', error);
             const errorMsg = error.message || 'Unknown error';
@@ -1073,7 +1073,7 @@ Object.assign(handlers, {
             store.setState({ offersStatusFilter: value, selectedOffers: [] });
         }
         const pageEl = document.querySelector('.page-content');
-        if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     },
 
     // Toggle selection of a single offer,
@@ -1087,7 +1087,7 @@ Object.assign(handlers, {
             store.setState({ selectedOffers: selectedOffers.filter(id => id !== offerId) });
         }
         const pageEl = document.querySelector('.page-content');
-        if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     },
 
     // Select or deselect all pending offers,
@@ -1101,7 +1101,7 @@ Object.assign(handlers, {
             store.setState({ selectedOffers: [] });
         }
         const pageEl = document.querySelector('.page-content');
-        if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     },
 
     // Bulk accept all selected offers,
@@ -1115,7 +1115,7 @@ Object.assign(handlers, {
         if (!await modals.confirm(`Accept ${selectedOffers.length} offer${selectedOffers.length > 1 ? 's' : ''}?`)) return;
 
         store.setState({ offersProcessing: true });
-        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
         let successCount = 0;
         let failCount = 0;
@@ -1143,7 +1143,7 @@ Object.assign(handlers, {
             } else {
                 toast.warning(`Accepted ${successCount}, failed ${failCount}`);
             }
-            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
             console.error('Failed to bulk accept offers:', error);
             toast.error('Failed to process offers: ' + (error.message || 'Unknown error'));
@@ -1163,7 +1163,7 @@ Object.assign(handlers, {
         if (!await modals.confirm(`Decline ${selectedOffers.length} offer${selectedOffers.length > 1 ? 's' : ''}?`, { danger: true })) return;
 
         store.setState({ offersProcessing: true });
-        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
         let successCount = 0;
         let failCount = 0;
@@ -1191,7 +1191,7 @@ Object.assign(handlers, {
             } else {
                 toast.warning(`Declined ${successCount}, failed ${failCount}`);
             }
-            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
             console.error('Failed to bulk decline offers:', error);
             toast.error('Failed to process offers: ' + (error.message || 'Unknown error'));
@@ -1372,7 +1372,7 @@ Object.assign(handlers, {
     toggleAllAutomations: function(enabled) {
         store.setState({ automationsPaused: !enabled });
         toast.info(enabled ? 'All automations enabled' : 'All automations paused');
-        renderApp(pages.automations());
+        renderApp(window.pages.automations());
     },
 
     toggleAutomationPanel: function(panel) {
@@ -1381,7 +1381,7 @@ Object.assign(handlers, {
         } else if (panel === 'scheduledRuns') {
             store.setState({ scheduledRunsCollapsed: !store.state.scheduledRunsCollapsed });
         }
-        renderApp(pages.automations());
+        renderApp(window.pages.automations());
     },
 
     showAutomationWizard: function() {
@@ -1869,14 +1869,14 @@ Object.assign(handlers, {
 
     setChecklistView: function(view) {
         store.setState({ checklistView: view });
-        renderApp(pages.checklist());
+        renderApp(window.pages.checklist());
     },
 
     updateTaskStatus: function(taskId, status) {
         const tasks = store.state.checklistTasks || [];
         const updatedTasks = tasks.map(t => t.id === taskId ? { ...t, status } : t);
         store.setState({ checklistTasks: updatedTasks });
-        renderApp(pages.checklist());
+        renderApp(window.pages.checklist());
     },
 
     addChecklistTask: function(title, options = {}) {
@@ -1891,7 +1891,7 @@ Object.assign(handlers, {
             ...options
         };
         store.setState({ checklistTasks: [...tasks, newTask] });
-        if (store.state.currentPage === 'checklist') renderApp(pages.checklist());
+        if (store.state.currentPage === 'checklist') renderApp(window.pages.checklist());
     },
 
     toggleTaskComplete: function(taskId) {
@@ -1903,7 +1903,7 @@ Object.assign(handlers, {
             return t;
         });
         store.setState({ checklistTasks: updatedTasks });
-        renderApp(pages.checklist());
+        renderApp(window.pages.checklist());
     },
 
     showTaskTemplates: function() {
@@ -2080,18 +2080,18 @@ Object.assign(handlers, {
 
     setImageBankView: function(view) {
         store.setState({ imageBankView: view });
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     },
 
     selectAllImages: function() {
         const images = store.state.imageBankImages || [];
         store.setState({ selectedImages: images.map(i => i.id) });
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     },
 
     clearImageSelection: function() {
         store.setState({ selectedImages: [] });
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     },
 
     bulkMoveImages: async function(folderId) {
@@ -2102,7 +2102,7 @@ Object.assign(handlers, {
         const updated = images.map(img => selected.includes(img.id) ? { ...img, folder_id: folderId } : img);
         store.setState({ imageBankImages: updated, selectedImages: [] });
         toast.success(`Moved ${selected.length} images`);
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     },
 
     bulkDeleteImages: async function() {
@@ -2115,7 +2115,7 @@ Object.assign(handlers, {
         const updated = images.filter(img => !selected.includes(img.id));
         store.setState({ imageBankImages: updated, selectedImages: [] });
         toast.success(`Deleted ${selected.length} images`);
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     },
 
     showAITagging: function(imageId) {
@@ -2201,7 +2201,7 @@ Object.assign(handlers, {
         });
 
         store.setState({ imageBankImages: updated });
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
         toast.success(`Tagged ${imagesToTag.length} image(s) successfully!`);
     },
 
@@ -2209,12 +2209,12 @@ Object.assign(handlers, {
 
     setCalendarView: function(view) {
         store.setState({ calendarView: view });
-        renderApp(pages.calendar());
+        renderApp(window.pages.calendar());
     },
 
     selectCalendarDate: function(date) {
         store.setState({ selectedCalendarDate: date });
-        renderApp(pages.calendar());
+        renderApp(window.pages.calendar());
     },
 
     addCalendarEvent: function(date) {
@@ -2339,14 +2339,14 @@ Object.assign(handlers, {
 
         modals.close();
         toast.success('Whatnot Live show scheduled!');
-        renderApp(pages.calendar());
+        renderApp(window.pages.calendar());
     },
 
     // Size Charts handlers,
 
     setSizeChartTab: function(tab) {
         store.setState({ sizeChartTab: tab });
-        renderApp(pages.sizeCharts());
+        renderApp(window.pages.sizeCharts());
     },
 
     copySizeInfo: function(text) {
@@ -2875,14 +2875,14 @@ Object.assign(handlers, {
         ];
         fields.push({ name: '', unit: 'in' });
         store.setState({ customMeasurementFields: fields });
-        renderApp(pages.sizeCharts());
+        renderApp(window.pages.sizeCharts());
     },
 
     removeCustomMeasurementField: function(index) {
         const fields = store.state.customMeasurementFields || [];
         fields.splice(index, 1);
         store.setState({ customMeasurementFields: fields });
-        renderApp(pages.sizeCharts());
+        renderApp(window.pages.sizeCharts());
     },
 
     saveCustomMeasurementFields: function() {
@@ -2919,14 +2919,14 @@ Object.assign(handlers, {
         }
 
         store.setState({ lastShopSync: new Date().toISOString() });
-        renderApp(pages.shops());
+        renderApp(window.pages.shops());
     },
 
     refreshShopHealth: function(platform) {
         toast.info(`Refreshing ${platform} health metrics...`);
         setTimeout(() => {
             toast.success(`${platform} health updated`);
-            renderApp(pages.shops());
+            renderApp(window.pages.shops());
         }, 1000);
     },
 
@@ -3015,7 +3015,7 @@ Object.assign(handlers, {
         store.setState({ shopBranding: allBranding });
         toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} branding saved!`);
         modals.close();
-        renderApp(pages.shops());
+        renderApp(window.pages.shops());
     },
 
     // Multi-Shop Sync Settings handler,
@@ -3107,7 +3107,7 @@ Object.assign(handlers, {
         store.setState({ shopSyncConfig: syncConfig });
         toast.success('Sync settings saved!');
         modals.close();
-        renderApp(pages.shops());
+        renderApp(window.pages.shops());
     },
 
     // View Sync Conflicts,
@@ -3341,18 +3341,18 @@ Object.assign(handlers, {
         store.setState({ _txDuplicateConfirmed: false });
         toast.success('Transaction added');
         modals.close();
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
     setTransactionView: function(view) {
         store.setState({ transactionView: view });
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
     setTxQuickDate: function(period) {
         store.setState({ txDateFilter: period });
         handlers.saveTxFilters();
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
     validateTxAmount: function(input) {
@@ -3515,7 +3515,7 @@ Object.assign(handlers, {
             await api.post(`/financials/transactions/${txId}/split`, { splits });
             toast.success('Transaction split successfully');
             modals.close();
-            renderApp(pages.transactions());
+            renderApp(window.pages.transactions());
         } catch (err) {
             toast.error('Split failed: ' + (err.message || 'Unknown error'));
         }
@@ -3528,7 +3528,7 @@ Object.assign(handlers, {
             toast.info('Auto-categorizing transactions...');
             const data = await api.post('/financials/auto-categorize');
             toast.success(data.message || 'Done');
-            renderApp(pages.transactions());
+            renderApp(window.pages.transactions());
         } catch (err) {
             toast.error('Auto-categorize failed: ' + (err.message || 'Unknown error'));
         }
@@ -3539,7 +3539,7 @@ Object.assign(handlers, {
         const idx = selected.indexOf(id);
         if (idx >= 0) selected.splice(idx, 1); else selected.push(id);
         store.setState({ selectedPurchases: [...selected] });
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
     toggleAllPurchases: function(checked) {
@@ -3549,7 +3549,7 @@ Object.assign(handlers, {
         } else {
             store.setState({ selectedPurchases: [] });
         }
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
     bulkCategorizePurchases: async function(category) {
@@ -3567,7 +3567,7 @@ Object.assign(handlers, {
         store.setState({ selectedPurchases: [] });
         await handlers.loadPurchases();
         toast.success(`Updated ${updated} of ${selected.length} purchases to "${category}"`);
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
     // Recurring Transaction Templates,
@@ -3925,7 +3925,7 @@ Object.assign(handlers, {
 
     setFinancialsTab: function(tab) {
         store.setState({ financialsTab: tab });
-        renderApp(pages.financials());
+        renderApp(window.pages.financials());
     },
 
     showBudgetSettings: function() {
@@ -3960,21 +3960,21 @@ Object.assign(handlers, {
         store.setState({ monthlyBudget: parseFloat(budget) || 500 });
         toast.success('Budget settings saved');
         modals.close();
-        renderApp(pages.financials());
+        renderApp(window.pages.financials());
     },
 
     // Analytics handlers,
 
     setAnalyticsPeriod: function(period) {
         store.setState({ analyticsPeriod: period });
-        renderApp(pages.analytics());
+        renderApp(window.pages.analytics());
     },
 
     refreshAnalytics: function() {
         toast.info('Refreshing analytics data...');
         setTimeout(() => {
             toast.success('Analytics updated');
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }, 1000);
     },
 
@@ -4017,7 +4017,7 @@ Object.assign(handlers, {
         });
         toast.success('Goals updated');
         modals.close();
-        renderApp(pages.analytics());
+        renderApp(window.pages.analytics());
     },
 
     toggleBusinessFAB: function() {
@@ -4038,7 +4038,7 @@ Object.assign(handlers, {
         document.querySelectorAll('.prediction-filter-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.filter === filter);
         });
-        renderApp(pages.predictions());
+        renderApp(window.pages.predictions());
     },
 
     runPredictionModel: function() {
@@ -4051,7 +4051,7 @@ Object.assign(handlers, {
                 })) || []
             });
             toast.success('Predictions updated with latest data');
-            renderApp(pages.predictions());
+            renderApp(window.pages.predictions());
         }, 2000);
     },
 
@@ -4059,7 +4059,7 @@ Object.assign(handlers, {
         toast.info('Refreshing predictions...');
         setTimeout(() => {
             toast.success('Predictions refreshed');
-            renderApp(pages.predictions());
+            renderApp(window.pages.predictions());
         }, 1000);
     },
 
@@ -4178,7 +4178,7 @@ Object.assign(handlers, {
         toast.info('Refreshing supplier data...');
         setTimeout(() => {
             toast.success('Supplier data refreshed');
-            renderApp(pages.suppliers());
+            renderApp(window.pages.suppliers());
         }, 1500);
     },
 
@@ -4250,7 +4250,7 @@ Object.assign(handlers, {
         store.setState({ suppliers });
         toast.success('Supplier added successfully');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     viewSupplierDetails: function(id) {
@@ -4360,7 +4360,7 @@ Object.assign(handlers, {
         store.setState({ suppliers });
         toast.success('Rating saved');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     editSupplier: function(id) {
@@ -4410,7 +4410,7 @@ Object.assign(handlers, {
         store.setState({ suppliers });
         toast.success('Supplier updated');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     // Feature 1: Search suppliers,
@@ -4440,7 +4440,7 @@ Object.assign(handlers, {
         store.setState({ suppliers });
         toast.success('Supplier deleted');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     // Feature 4: Supplier form validation,
@@ -4569,7 +4569,7 @@ Object.assign(handlers, {
         store.setState({ suppliers: updated, _csvSuppliers: null });
         toast.success(`${csvSuppliers.length} suppliers imported successfully`);
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     viewPriceDrops: function() {
@@ -4654,7 +4654,7 @@ Object.assign(handlers, {
         store.setState({ purchaseOrders });
         toast.success('Purchase order ' + poNum + ' created');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     viewPurchaseOrder: function(id) {
@@ -4702,7 +4702,7 @@ Object.assign(handlers, {
         store.setState({ purchaseOrders });
         toast.success('PO status updated to ' + status);
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     addSupplierContact: function() {
@@ -4757,7 +4757,7 @@ Object.assign(handlers, {
         store.setState({ supplierContacts });
         toast.success('Contact added');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     addCommunicationEntry: function() {
@@ -4809,7 +4809,7 @@ Object.assign(handlers, {
         store.setState({ supplierComms });
         toast.success('Communication logged');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     // Market Intel handlers,
@@ -4820,7 +4820,7 @@ Object.assign(handlers, {
             await handlers.loadMarketIntel();
             toast.success('Market data refreshed');
             if (store.state.currentPage === 'market-intel') {
-                renderApp(pages.marketIntel());
+                renderApp(window.pages.marketIntel());
             }
         } catch (err) {
             toast.error('Failed to refresh data');
@@ -4905,7 +4905,7 @@ Object.assign(handlers, {
         store.setState({ competitors });
         toast.success('Now tracking ' + newCompetitor.name);
         modals.close();
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
     viewCompetitor: function(id) {
@@ -4987,7 +4987,7 @@ Object.assign(handlers, {
         store.setState({ competitors });
         toast.success('Competitor removed');
         modals.close();
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
     configCompetitorAlerts: function(competitorId) {
@@ -5234,14 +5234,14 @@ Object.assign(handlers, {
         store.setState({ priceWatchlist });
         toast.success('Now watching "' + newWatch.title + '"');
         modals.close();
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
     removePriceWatch: function(id) {
         const priceWatchlist = (store.state.priceWatchlist || []).filter(w => w.id !== id);
         store.setState({ priceWatchlist });
         toast.success('Item removed from watchlist');
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
     configureMarketAlerts: function() {
@@ -5406,14 +5406,14 @@ Object.assign(handlers, {
         store.setState({ savedSearches });
         toast.success('Saved search "' + newSearch.name + '" created');
         modals.close();
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
     removeSavedSearch: function(id) {
         const savedSearches = (store.state.savedSearches || []).filter(s => s.id !== id);
         store.setState({ savedSearches });
         toast.success('Saved search removed');
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
     runSavedSearch: function(id) {
@@ -5427,7 +5427,7 @@ Object.assign(handlers, {
             );
             store.setState({ savedSearches });
             toast.success('Found ' + (savedSearches.find(s => s.id === id)?.results || 0) + ' results for "' + search.name + '"');
-            renderApp(pages.marketIntel());
+            renderApp(window.pages.marketIntel());
         }, 1200);
     },
 
@@ -5440,7 +5440,7 @@ Object.assign(handlers, {
     setSettingsTab: function(tab) {
         store.setState({ settingsTab: tab, settingsChanged: false });
         window.history.replaceState({}, '', `#settings/${tab}`);
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
     // Settings search handler,
@@ -5838,7 +5838,7 @@ Object.assign(handlers, {
         }
 
         toast.success('Appearance settings reset to defaults');
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
     showAllShortcuts: function() {
@@ -5908,7 +5908,7 @@ Object.assign(handlers, {
         toast.info('Connecting to ' + platform + '...');
         setTimeout(() => {
             toast.success(platform.charAt(0).toUpperCase() + platform.slice(1) + ' connected successfully!');
-            renderApp(pages.settings());
+            renderApp(window.pages.settings());
         }, 1500);
     },
 
@@ -6112,9 +6112,9 @@ Object.assign(handlers, {
             // Re-render current page
             const currentRoute = store.state.currentRoute;
             if (currentRoute === 'feedback-suggestions') {
-                renderApp(pages.feedbackSuggestions());
+                renderApp(window.pages.feedbackSuggestions());
             } else if (currentRoute === 'feedback-analytics') {
-                renderApp(pages.feedbackAnalytics());
+                renderApp(window.pages.feedbackAnalytics());
             }
         } catch (error) {
             console.error('Error voting:', error);
@@ -6312,12 +6312,12 @@ Object.assign(handlers, {
 
     filterRoadmapCategory: function(category) {
         store.setState({ roadmapCategoryFilter: category });
-        renderApp(pages.roadmap());
+        renderApp(window.pages.roadmap());
     },
 
     searchRoadmap: function(query) {
         store.setState({ roadmapSearch: query });
-        renderApp(pages.roadmap());
+        renderApp(window.pages.roadmap());
     },
 
     subscribeToRoadmap: function() {
@@ -6362,7 +6362,7 @@ Object.assign(handlers, {
 
     searchChangelog: function(query) {
         store.setState({ changelogSearch: query });
-        renderApp(pages.changelog());
+        renderApp(window.pages.changelog());
         const input = document.querySelector('[aria-label="Search changelog"]');
         if (input) {
             input.focus();
@@ -6372,7 +6372,7 @@ Object.assign(handlers, {
 
     filterChangelogType: function(type) {
         store.setState({ changelogTypeFilter: type });
-        renderApp(pages.changelog());
+        renderApp(window.pages.changelog());
     },
 
     scrollToVersion: function(version) {
@@ -6402,7 +6402,7 @@ Object.assign(handlers, {
     filterChangelogVersion: function(version) {
         const current = store.state.changelogVersionFilter || 'all';
         store.setState({ changelogVersionFilter: current === version ? 'all' : version });
-        renderApp(pages.changelog());
+        renderApp(window.pages.changelog());
     },
 
     voteChangelogItem: function(changeKey, voteType) {
@@ -6419,7 +6419,7 @@ Object.assign(handlers, {
         votes[changeKey] = current;
         store.setState({ changelogVotes: votes });
         localStorage.setItem('vaultlister_changelog_votes', JSON.stringify(votes));
-        renderApp(pages.changelog());
+        renderApp(window.pages.changelog());
     },
 
     openChangelogRSS: function() {
@@ -7712,7 +7712,7 @@ Object.assign(handlers, {
             // Reload inventory
             await handlers.loadInventory();
             if (store.state.currentPage === 'inventory') {
-                renderApp(pages.inventory());
+                renderApp(window.pages.inventory());
             }
         } catch (error) {
             console.error('Error importing CSV:', error);
@@ -7755,7 +7755,7 @@ Object.assign(handlers, {
             await this.loadListings();
         }
 
-        renderApp(pages.listings());
+        renderApp(window.pages.listings());
     },
 
     filterListings: function(filterType, value) {
@@ -7982,7 +7982,7 @@ Object.assign(handlers, {
 
             // Re-render listings page using renderApp for proper state handling
             if (store.state.currentPage === 'listings') {
-                renderApp(pages.listings());
+                renderApp(window.pages.listings());
             }
         } catch (error) {
             toast.error('Failed to archive listing: ' + error.message);
@@ -8004,7 +8004,7 @@ Object.assign(handlers, {
 
             // Re-render listings page using renderApp for proper state handling
             if (store.state.currentPage === 'listings') {
-                renderApp(pages.listings());
+                renderApp(window.pages.listings());
             }
         } catch (error) {
             toast.error('Failed to restore listing: ' + error.message);
@@ -8282,7 +8282,7 @@ Object.assign(handlers, {
                 toast.success(`Price drop scheduled for ${scheduledDate.toLocaleDateString()}`);
             }
 
-            renderApp(pages.listings());
+            renderApp(window.pages.listings());
         } catch (error) {
             console.error('Error saving price drop schedule:', error);
             toast.error('Failed to save price drop schedule');
@@ -9059,7 +9059,7 @@ Object.assign(handlers, {
 
         // Refresh orders page if on it
         if (store.state.currentPage === 'orders') {
-            renderApp(pages.orders());
+            renderApp(window.pages.orders());
         }
     },
 
@@ -9072,7 +9072,7 @@ Object.assign(handlers, {
         toast.info('Reminder removed');
 
         if (store.state.currentPage === 'orders') {
-            renderApp(pages.orders());
+            renderApp(window.pages.orders());
         }
     },
 
@@ -9738,7 +9738,7 @@ Object.assign(handlers, {
             store.setState({ orders });
             modals.close();
             toast.success('Return initiated successfully');
-            renderApp(pages.orders());
+            renderApp(window.pages.orders());
         } catch (error) {
             toast.error('Failed to initiate return: ' + error.message);
         }
@@ -9807,7 +9807,7 @@ Object.assign(handlers, {
             store.setState({ orders });
             toast.success('Priority updated to ' + priority);
             modals.close();
-            renderApp(pages.orders());
+            renderApp(window.pages.orders());
         } catch (err) {
             toast.error('Failed to update priority: ' + err.message);
         }
@@ -9866,7 +9866,7 @@ Object.assign(handlers, {
             toast.success('Order split into ' + count + ' shipments');
             modals.close();
             await handlers.loadOrders();
-            renderApp(pages.orders());
+            renderApp(window.pages.orders());
         } catch (err) {
             toast.error('Failed to split shipment: ' + err.message);
         }
@@ -12402,7 +12402,7 @@ Object.assign(handlers, {
             // Reload orders
             await handlers.loadOrders();
             if (store.state.currentPage === 'orders') {
-                renderApp(pages.orders());
+                renderApp(window.pages.orders());
             }
         } catch (error) {
             toast.error('Failed to import CSV: ' + error.message);
@@ -12430,7 +12430,7 @@ Object.assign(handlers, {
 
             await handlers.loadOrders();
             if (store.state.currentPage === 'orders') {
-                renderApp(pages.orders());
+                renderApp(window.pages.orders());
             }
         } catch (error) {
             toast.error('Failed to sync orders: ' + error.message);
@@ -12446,7 +12446,7 @@ Object.assign(handlers, {
             toast.success(result.message || 'Orders synced from ' + platform);
             await handlers.loadOrders();
             if (store.state.currentPage === 'orders') {
-                renderApp(pages.orders());
+                renderApp(window.pages.orders());
             }
         } catch (error) {
             toast.error('Failed to sync ' + platform + ' orders: ' + error.message);
@@ -12586,7 +12586,7 @@ Object.assign(handlers, {
         }
 
         if (store.state.currentPage === 'checklist') {
-            renderApp(pages.checklist());
+            renderApp(window.pages.checklist());
         }
     },
 
@@ -12636,7 +12636,7 @@ Object.assign(handlers, {
                 await handlers.loadChecklistItems();
 
                 if (store.state.currentPage === 'checklist') {
-                    renderApp(pages.checklist());
+                    renderApp(window.pages.checklist());
                 }
             }
         } catch (err) {
@@ -13063,7 +13063,7 @@ Object.assign(handlers, {
             if (complete) celebrations.confetti(80);
 
             if (store.state.currentPage === 'checklist') {
-                renderApp(pages.checklist());
+                renderApp(window.pages.checklist());
                 setTimeout(() => handlers.checkChecklistCelebration(), 100);
             }
         } catch (error) {
@@ -13981,14 +13981,14 @@ Object.assign(handlers, {
     switchFinancialsTab: function(tab) {
         store.setState({ financialsTab: tab });
         if (store.state.currentPage === 'financials') {
-            renderApp(pages.financials());
+            renderApp(window.pages.financials());
         }
     },
 
     switchFinancialStatementsSubTab: function(subTab) {
         store.setState({ financialStatementsSubTab: subTab });
         if (store.state.currentPage === 'financials') {
-            renderApp(pages.financials());
+            renderApp(window.pages.financials());
         }
     },
 
@@ -14091,7 +14091,7 @@ Object.assign(handlers, {
         store.setState({ financialGoals });
         toast.success('Financial goal "' + newGoal.name + '" created');
         modals.close();
-        renderApp(pages.financials());
+        renderApp(window.pages.financials());
     },
 
     startReconciliation: function() {
@@ -14119,7 +14119,7 @@ Object.assign(handlers, {
         store.setState({ bankBalance });
         toast.success('Bank balance updated to $' + bankBalance.toLocaleString());
         modals.close();
-        renderApp(pages.financials());
+        renderApp(window.pages.financials());
     },
 
     matchTransaction: function() {
@@ -14270,7 +14270,7 @@ Object.assign(handlers, {
             modals.close();
             await this.loadPurchases();
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to add purchase: ' + error.message);
@@ -14344,7 +14344,7 @@ Object.assign(handlers, {
             toast.success('Purchase deleted');
             await this.loadPurchases();
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to delete purchase: ' + error.message);
@@ -14546,7 +14546,7 @@ Object.assign(handlers, {
             modals.close();
             await this.loadAccounts();
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to add account: ' + error.message);
@@ -14560,7 +14560,7 @@ Object.assign(handlers, {
             toast.success(result.message || 'Default accounts created');
             await this.loadAccounts();
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to create default accounts: ' + error.message);
@@ -14687,7 +14687,7 @@ Object.assign(handlers, {
             });
 
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to generate statements: ' + error.message);
@@ -14706,7 +14706,7 @@ Object.assign(handlers, {
             const data = await api.get(`/financials/profit-loss?${params.toString()}`);
             store.setState({ profitLossReport: data.profitLoss });
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to generate P&L: ' + error.message);
@@ -14719,7 +14719,7 @@ Object.assign(handlers, {
         store.setState({ salesDateStart: start, salesDateEnd: end });
         // Re-render to filter (filtering done in the page render)
         if (store.state.currentPage === 'financials') {
-            renderApp(pages.financials());
+            renderApp(window.pages.financials());
         }
     },
 
@@ -14916,7 +14916,7 @@ Object.assign(handlers, {
 
         // Re-render page using renderApp for proper state handling
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
             // Force sync dropdown value after full re-render
             requestAnimationFrame(() => {
                 const dd = document.getElementById('analytics-period');
@@ -14928,7 +14928,7 @@ Object.assign(handlers, {
     toggleAnalyticsCompare: function() {
         store.setState({ analyticsCompareMode: !store.state.analyticsCompareMode });
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }
     },
 
@@ -14954,7 +14954,7 @@ Object.assign(handlers, {
 
         // Re-render using renderApp for proper state handling
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }
     },
 
@@ -14969,7 +14969,7 @@ Object.assign(handlers, {
             });
         }
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }
     },
 
@@ -14984,14 +14984,14 @@ Object.assign(handlers, {
             });
         }
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }
     },
 
     switchTutorialCategory: function(category) {
         store.setState({ tutorialCategory: category });
         if (store.state.currentPage === 'tutorials') {
-            renderApp(pages.tutorials());
+            renderApp(window.pages.tutorials());
         }
     },
 
@@ -15085,7 +15085,7 @@ Object.assign(handlers, {
 
         toast.success('Analytics settings saved');
         modals.close();
-        renderApp(pages.analytics());
+        renderApp(window.pages.analytics());
     },
 
     // Switch chart display type (line, bar, pie),
@@ -15094,7 +15094,7 @@ Object.assign(handlers, {
         const chartDisplayModes = { ...store.state.chartDisplayModes, [chartId]: type };
         store.setState({ chartDisplayModes });
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }
     },
 
@@ -15168,7 +15168,7 @@ Object.assign(handlers, {
             store.setState({ sales: data.sales || [] });
 
             if (store.state.currentPage === 'analytics') {
-                renderApp(pages.analytics());
+                renderApp(window.pages.analytics());
             }
         } catch (error) {
             toast.error('Failed to filter sales: ' + error.message);
@@ -15396,14 +15396,14 @@ Object.assign(handlers, {
         else if (!checked) { const idx = selected.indexOf(ruleId); if (idx > -1) selected.splice(idx, 1); }
         store.setState({ selectedAutomationIds: selected });
         if (store.state.currentPage === 'automations') {
-            document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
     clearAutomationSelection: function() {
         store.setState({ selectedAutomationIds: [] });
         if (store.state.currentPage === 'automations') {
-            document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -15420,7 +15420,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (e) {
             showToast('Bulk action failed: ' + (e.message || e), 'error');
@@ -15471,7 +15471,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (e) {
             showToast('Failed to apply schedule: ' + (e.message || e), 'error');
@@ -15550,7 +15550,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (e) {
             showToast('Failed to save schedule: ' + (e.message || e), 'error');
@@ -16554,7 +16554,7 @@ Object.assign(handlers, {
         const updatedLog = activityLog.filter(a => a.id !== sessionId && a.timestamp !== sessionId);
         store.setState({ accountActivityLog: updatedLog });
         toast.success('Session revoked successfully');
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
     revokeAllSessions: async function() {
@@ -16572,7 +16572,7 @@ Object.assign(handlers, {
         const currentSession = activityLog.find(a => a.current);
         store.setState({ accountActivityLog: currentSession ? [currentSession] : [] });
         toast.success('All other sessions have been signed out');
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
     loadMoreActivity: function() {
@@ -16712,7 +16712,7 @@ Object.assign(handlers, {
         }
 
         handlers.markSettingsChanged();
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
     // Feature 3: Account Usage Statistics Dashboard,
@@ -16814,7 +16814,7 @@ Object.assign(handlers, {
 
         store.setState({ platformConnections: statuses });
         toast.success('Integration status refreshed');
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
     // Feature 5: Settings Changelog (What Changed Since Last Visit),
@@ -17020,8 +17020,8 @@ Object.assign(handlers, {
 
         // Re-render current page with new shop context
         const currentPage = store.state.currentPage || 'dashboard';
-        if (pages[currentPage]) {
-            renderApp(pages[currentPage]());
+        if (window.pages[currentPage]) {
+            renderApp(window.pages[currentPage]());
         }
     },
 
@@ -17041,7 +17041,7 @@ Object.assign(handlers, {
 
         // Re-render shops page
         if (store.state.currentPage === 'shops') {
-            renderApp(pages.shops());
+            renderApp(window.pages.shops());
         }
     },
 
@@ -17062,14 +17062,14 @@ Object.assign(handlers, {
 
     searchNotifications: function(query) {
         store.setState({ notificationSearchQuery: query });
-        renderApp(pages.notifications());
+        renderApp(window.pages.notifications());
     },
 
     // Filter notifications,
 
     filterNotifications: function(filter) {
         store.setState({ notificationFilter: filter });
-        renderApp(pages.notifications());
+        renderApp(window.pages.notifications());
     },
 
     // Toggle notification read status,
@@ -17083,7 +17083,7 @@ Object.assign(handlers, {
         });
         store.setState({ notifications });
         handlers.updateTabBadge();
-        renderApp(pages.notifications());
+        renderApp(window.pages.notifications());
     },
 
     // Toggle notification important status,
@@ -17096,7 +17096,7 @@ Object.assign(handlers, {
             return n;
         });
         store.setState({ notifications });
-        renderApp(pages.notifications());
+        renderApp(window.pages.notifications());
     },
 
     // Mark all notifications as read (page level),
@@ -17131,7 +17131,7 @@ Object.assign(handlers, {
         notificationCenter.markAllAsRead();
         handlers.updateTabBadge();
         toast.success('All notifications marked as read');
-        renderApp(pages.notifications());
+        renderApp(window.pages.notifications());
     },
 
     // Update browser tab badge with unread count,
@@ -17158,7 +17158,7 @@ Object.assign(handlers, {
             const notifications = store.state.notifications.filter(n => n.id !== notificationId);
             store.setState({ notifications });
             handlers.updateTabBadge();
-            renderApp(pages.notifications());
+            renderApp(window.pages.notifications());
         }
     },
 
@@ -17184,7 +17184,7 @@ Object.assign(handlers, {
 
                 // Re-render dashboard if we're on it
                 if (store.state.currentPage === 'dashboard') {
-                    renderApp(pages.dashboard());
+                    renderApp(window.pages.dashboard());
                 }
             }
         } catch (error) {
@@ -17225,7 +17225,7 @@ Object.assign(handlers, {
 
                 // Re-render dashboard if we're on it
                 if (store.state.currentPage === 'dashboard') {
-                    renderApp(pages.dashboard());
+                    renderApp(window.pages.dashboard());
                 }
             }
         } catch (error) {
@@ -17251,8 +17251,8 @@ Object.assign(handlers, {
                 toast.success(data.message || 'Listing delisted successfully');
 
                 // Re-render current page
-                if (store.state.currentPage && pages[store.state.currentPage]) {
-                    renderApp(pages[store.state.currentPage]());
+                if (store.state.currentPage && window.pages[store.state.currentPage]) {
+                    renderApp(window.pages[store.state.currentPage]());
                 }
             }
         } catch (error) {
@@ -17278,8 +17278,8 @@ Object.assign(handlers, {
                 toast.success(data.message || 'Listing relisted successfully');
 
                 // Re-render current page
-                if (store.state.currentPage && pages[store.state.currentPage]) {
-                    renderApp(pages[store.state.currentPage]());
+                if (store.state.currentPage && window.pages[store.state.currentPage]) {
+                    renderApp(window.pages[store.state.currentPage]());
                 }
             }
         } catch (error) {
@@ -17501,7 +17501,7 @@ Object.assign(handlers, {
 
         // Re-render to update the modal
         if (store.state.currentPage) {
-            renderApp(pages[store.state.currentPage]());
+            renderApp(window.pages[store.state.currentPage]());
         }
     },
 
@@ -17516,7 +17516,7 @@ Object.assign(handlers, {
         }
 
         if (store.state.currentPage) {
-            renderApp(pages[store.state.currentPage]());
+            renderApp(window.pages[store.state.currentPage]());
         }
     },
 
@@ -17568,7 +17568,7 @@ Object.assign(handlers, {
             });
 
             if (store.state.currentPage) {
-                renderApp(pages[store.state.currentPage]());
+                renderApp(window.pages[store.state.currentPage]());
 
                 // Scroll to bottom of messages
                 setTimeout(() => {
@@ -17595,7 +17595,7 @@ Object.assign(handlers, {
             toast.success('Chat deleted');
             await this.loadVaultBuddyConversations();
             if (store.state.currentPage) {
-                renderApp(pages[store.state.currentPage]());
+                renderApp(window.pages[store.state.currentPage]());
             }
         } catch (error) {
             console.error('Failed to delete chat:', error);
@@ -17616,7 +17616,7 @@ Object.assign(handlers, {
         this.loadVaultBuddyConversations();
 
         if (store.state.currentPage) {
-            renderApp(pages[store.state.currentPage]());
+            renderApp(window.pages[store.state.currentPage]());
         }
     },
 
@@ -17651,7 +17651,7 @@ Object.assign(handlers, {
 
         // Re-render to show user message and loading
         if (store.state.currentPage) {
-            renderApp(pages[store.state.currentPage]());
+            renderApp(window.pages[store.state.currentPage]());
             setTimeout(() => {
                 const messagesEl = document.getElementById('vault-buddy-messages');
                 if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -17683,7 +17683,7 @@ Object.assign(handlers, {
 
         // Re-render to show response
         if (store.state.currentPage) {
-            renderApp(pages[store.state.currentPage]());
+            renderApp(window.pages[store.state.currentPage]());
             setTimeout(() => {
                 const messagesEl = document.getElementById('vault-buddy-messages');
                 if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -17707,7 +17707,7 @@ Object.assign(handlers, {
                 // Just reload the list
                 await this.loadVaultBuddyConversations();
                 if (store.state.currentPage) {
-                    renderApp(pages[store.state.currentPage]());
+                    renderApp(window.pages[store.state.currentPage]());
                 }
             }
 
@@ -17732,7 +17732,7 @@ Object.assign(handlers, {
             selectedCalendarDate: toLocalDate(today)
         });
         this.loadCalendarEvents(today.getFullYear(), today.getMonth());
-        renderApp(pages.calendar());
+        renderApp(window.pages.calendar());
     },
 
     navigateCalendarMonth: function(direction) {
@@ -17755,7 +17755,7 @@ Object.assign(handlers, {
         // Load events for new month
         this.loadCalendarEvents(newYear, newMonth);
 
-        renderApp(pages.calendar());
+        renderApp(window.pages.calendar());
     },
 
     // Navigate calendar based on current view (month/week/day),
@@ -17776,7 +17776,7 @@ Object.assign(handlers, {
                 calendarMonth: newDate.getMonth(),
                 calendarYear: newDate.getFullYear()
             });
-            renderApp(pages.calendar());
+            renderApp(window.pages.calendar());
         } else if (calendarView === 'day') {
             // Navigate by day
             const newDate = new Date(selectedDate);
@@ -17786,7 +17786,7 @@ Object.assign(handlers, {
                 calendarMonth: newDate.getMonth(),
                 calendarYear: newDate.getFullYear()
             });
-            renderApp(pages.calendar());
+            renderApp(window.pages.calendar());
         }
     },
 
@@ -17900,7 +17900,7 @@ Object.assign(handlers, {
             autoSave.clear('calendar-event');
             toast.success('Event added successfully');
             modals.close();
-            renderApp(pages.calendar());
+            renderApp(window.pages.calendar());
         } catch (error) {
             console.error('Error saving event:', error);
             toast.error('Failed to save event: ' + error.message);
@@ -17936,7 +17936,7 @@ Object.assign(handlers, {
 
             toast.success('Event updated successfully');
             modals.close();
-            renderApp(pages.calendar());
+            renderApp(window.pages.calendar());
         } catch (error) {
             console.error('Error updating event:', error);
             toast.error('Failed to update event: ' + error.message);
@@ -17951,7 +17951,7 @@ Object.assign(handlers, {
                 await api.delete(`/calendar/events/${eventId}`);
                 const events = store.state.calendarEvents.filter(e => e.id !== eventId);
                 store.setState({ calendarEvents: events });
-                renderApp(pages.calendar());
+                renderApp(window.pages.calendar());
                 modals.close();
                 toast.success('Event deleted');
             } catch (error) {
@@ -18076,7 +18076,7 @@ Object.assign(handlers, {
 
     filterRoadmap: function(filter) {
         store.setState({ roadmapFilter: filter });
-        renderApp(pages.roadmap());
+        renderApp(window.pages.roadmap());
     },
 
     // Load roadmap features from API,
@@ -18141,7 +18141,7 @@ Object.assign(handlers, {
             });
 
             store.setState({ roadmapFeatures: features });
-            renderApp(pages.roadmap());
+            renderApp(window.pages.roadmap());
 
             // Animate the vote button
             setTimeout(() => {
@@ -19073,7 +19073,7 @@ Object.assign(handlers, {
 
             // Re-render to show uploaded images
             if (store.state.currentPage === 'image-bank') {
-                renderApp(pages.imageBank());
+                renderApp(window.pages.imageBank());
             }
         } catch (error) {
             console.error('Upload error:', error);
@@ -19093,7 +19093,7 @@ Object.assign(handlers, {
             toast.success('Folder created: ' + (result.folder ? result.folder.name : name.trim()));
             await handlers.loadImageBank();
             if (store.state.currentPage === 'image-bank') {
-                renderApp(pages.imageBank());
+                renderApp(window.pages.imageBank());
             }
         } catch (error) {
             toast.error('Failed to create folder: ' + error.message);
@@ -19115,7 +19115,7 @@ Object.assign(handlers, {
             }
             await handlers.loadImageBank();
             if (store.state.currentPage === 'image-bank') {
-                renderApp(pages.imageBank());
+                renderApp(window.pages.imageBank());
             }
         } catch (error) {
             toast.error('Failed to delete folder: ' + error.message);
@@ -19130,7 +19130,7 @@ Object.assign(handlers, {
             selectedImages: [] // Clear selection when changing folders
         });
         if (store.state.currentPage === 'image-bank') {
-            renderApp(pages.imageBank());
+            renderApp(window.pages.imageBank());
         }
     },
 
@@ -19148,7 +19148,7 @@ Object.assign(handlers, {
 
         store.setState({ selectedImages: [...selected] });
         if (store.state.currentPage === 'image-bank') {
-            renderApp(pages.imageBank());
+            renderApp(window.pages.imageBank());
         }
     },
 
@@ -19375,7 +19375,7 @@ Object.assign(handlers, {
 
             // Re-render page to reflect deletion
             if (store.state.currentPage === 'image-bank') {
-                renderApp(pages.imageBank());
+                renderApp(window.pages.imageBank());
             }
         } catch (error) {
             toast.error('Failed to delete image: ' + error.message);
@@ -19388,7 +19388,7 @@ Object.assign(handlers, {
         store.setState({ imageBankViewMode: mode });
         // Re-render the image bank page to apply the new view mode
         if (store.state.currentPage === 'image-bank') {
-            renderApp(pages.imageBank());
+            renderApp(window.pages.imageBank());
         }
     },
 
@@ -19682,8 +19682,8 @@ Object.assign(handlers, {
         const pageName = store.state.currentPage;
         // Convert hyphenated route names to camelCase for pages object
         const pageKey = pageName ? pageName.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) : null;
-        if (pageKey && pages[pageKey]) {
-            renderApp(pages[pageKey]());
+        if (pageKey && window.pages[pageKey]) {
+            renderApp(window.pages[pageKey]());
         }
     },
 
@@ -19701,8 +19701,8 @@ Object.assign(handlers, {
         const pageName = store.state.currentPage;
         // Convert hyphenated route names to camelCase for pages object
         const pageKey = pageName ? pageName.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) : null;
-        if (pageKey && pages[pageKey]) {
-            renderApp(pages[pageKey]());
+        if (pageKey && window.pages[pageKey]) {
+            renderApp(window.pages[pageKey]());
         }
     },
 
@@ -19808,8 +19808,8 @@ Object.assign(handlers, {
         if (!cloudinaryConfigured || !photoEditorImage.cloudinary_public_id) {
             store.setState({ photoEditorPreviewUrl: photoEditorImage.file_path });
             // Re-render to update preview
-            if (store.state.currentPage && pages[store.state.currentPage]) {
-                renderApp(pages[store.state.currentPage]());
+            if (store.state.currentPage && window.pages[store.state.currentPage]) {
+                renderApp(window.pages[store.state.currentPage]());
             }
             return;
         }
@@ -19840,8 +19840,8 @@ Object.assign(handlers, {
 
         store.setState({ photoEditorPreviewUrl: previewUrl });
         // Re-render to update preview
-        if (store.state.currentPage && pages[store.state.currentPage]) {
-            renderApp(pages[store.state.currentPage]());
+        if (store.state.currentPage && window.pages[store.state.currentPage]) {
+            renderApp(window.pages[store.state.currentPage]());
         }
     },
 
@@ -19857,8 +19857,8 @@ Object.assign(handlers, {
 
         store.setState({ photoEditorLoading: true });
         // Re-render to show loading state
-        if (store.state.currentPage && pages[store.state.currentPage]) {
-            renderApp(pages[store.state.currentPage]());
+        if (store.state.currentPage && window.pages[store.state.currentPage]) {
+            renderApp(window.pages[store.state.currentPage]());
         }
 
         try {
@@ -19893,8 +19893,8 @@ Object.assign(handlers, {
         } finally {
             store.setState({ photoEditorLoading: false });
             // Re-render to hide loading state
-            if (store.state.currentPage && pages[store.state.currentPage]) {
-                renderApp(pages[store.state.currentPage]());
+            if (store.state.currentPage && window.pages[store.state.currentPage]) {
+                renderApp(window.pages[store.state.currentPage]());
             }
         }
     },
@@ -21424,7 +21424,7 @@ Object.assign(handlers, {
     setTransactionsTab: function(tab) {
         store.setState({ transactionsTab: tab });
         localStorage.setItem('vaultlister_tx_tab', tab);
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
     saveTxFilters: function() {
@@ -21451,7 +21451,7 @@ Object.assign(handlers, {
         handlers._txSearchTimer = setTimeout(() => {
             const focusedId = document.activeElement?.dataset?.txFilter;
             const cursorPos = document.activeElement?.selectionStart;
-            renderApp(pages.transactions());
+            renderApp(window.pages.transactions());
             // Restore focus to the input after re-render
             if (focusedId) {
                 const el = document.querySelector(`[data-tx-filter="${focusedId}"]`);
@@ -21579,7 +21579,7 @@ Object.assign(handlers, {
         await handlers.loadPurchases();
         toast.success(`Imported ${imported} expense transactions (${skipped} skipped)`);
         modals.close();
-        if (store.state.currentPage === 'transactions') renderApp(pages.transactions());
+        if (store.state.currentPage === 'transactions') renderApp(window.pages.transactions());
     },
 
     showAddPurchaseModal: function() {
@@ -21767,7 +21767,7 @@ Object.assign(handlers, {
         }
 
         modals.close();
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
     submitAddPurchase: async function(event) {
@@ -21797,7 +21797,7 @@ Object.assign(handlers, {
             // Reload purchases
             await handlers.loadPurchases();
             if (store.state.currentPage === 'transactions') {
-                renderApp(pages.transactions());
+                renderApp(window.pages.transactions());
             }
         } catch (error) {
             toast.error('Failed to add purchase: ' + error.message);
@@ -22230,7 +22230,7 @@ Object.assign(handlers, {
             } catch (e) {
                 store.setState({ teamActivity: [] });
             }
-            renderApp(pages.teams());
+            renderApp(window.pages.teams());
         } catch (error) {
             toast.error('Failed to load team: ' + error.message);
         }
@@ -22238,7 +22238,7 @@ Object.assign(handlers, {
 
     deselectTeam: function() {
         store.setState({ activeTeam: null, teamMembers: [], teamInvitations: [], teamActivity: [] });
-        renderApp(pages.teams());
+        renderApp(window.pages.teams());
     },
 
     deleteTeam: async function(teamId) {
@@ -22249,7 +22249,7 @@ Object.assign(handlers, {
             toast.success('Team deleted successfully');
             store.setState({ activeTeam: null, teamMembers: [], teamInvitations: [], teamActivity: [] });
             await handlers.loadTeamsPage();
-            renderApp(pages.teams());
+            renderApp(window.pages.teams());
         } catch (error) {
             toast.error('Failed to delete team: ' + error.message);
         }
@@ -22274,7 +22274,7 @@ Object.assign(handlers, {
         try {
             const data = await api.get(`/relisting/stale?days=${days || 30}`);
             store.setState({ staleListings: data.listings || [] });
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to load stale listings');
         }
@@ -22349,7 +22349,7 @@ Object.assign(handlers, {
             document.getElementById('relisting-rule-modal')?.remove();
             toast.success('Relisting rule created');
             await handlers.loadRelistingData();
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to create rule: ' + e.message);
         }
@@ -22366,7 +22366,7 @@ Object.assign(handlers, {
             await api.delete(`/relisting/rules/${ruleId}`);
             toast.success('Rule deleted');
             await handlers.loadRelistingData();
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to delete rule');
         }
@@ -22379,7 +22379,7 @@ Object.assign(handlers, {
             toast.success(data.message);
             await handlers.loadRelistingData();
             store.setState({ relistingTab: 'queue' });
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to queue for relisting');
         }
@@ -22410,7 +22410,7 @@ Object.assign(handlers, {
             const data = await api.post('/relisting/process', { process_all: true });
             toast.success(data.message);
             await handlers.loadRelistingData();
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to process queue');
         }
@@ -22422,7 +22422,7 @@ Object.assign(handlers, {
             await api.delete(`/relisting/queue/${queueId}`);
             toast.success('Removed from queue');
             await handlers.loadRelistingData();
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to remove from queue');
         }
@@ -22536,7 +22536,7 @@ Object.assign(handlers, {
             document.getElementById('create-label-modal')?.remove();
             toast.success('Shipping label created');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to create label: ' + e.message);
         }
@@ -22616,7 +22616,7 @@ Object.assign(handlers, {
             await api.delete(`/shipping-labels-mgmt/${labelId}`);
             toast.success('Label deleted');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to delete label');
         }
@@ -22662,7 +22662,7 @@ Object.assign(handlers, {
             toast.success('Batch created');
             await handlers.loadShippingLabelsData();
             store.setState({ shippingLabelsTab: 'batches' });
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to create batch');
         }
@@ -22674,7 +22674,7 @@ Object.assign(handlers, {
             const data = await api.post(`/shipping-labels-mgmt/batches/${batchId}/process`, {});
             toast.success(data.message);
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to process batch');
         }
@@ -22733,7 +22733,7 @@ Object.assign(handlers, {
             document.getElementById('add-address-modal')?.remove();
             toast.success('Address saved');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to save address: ' + e.message);
         }
@@ -22745,7 +22745,7 @@ Object.assign(handlers, {
             await api.patch(`/shipping-labels-mgmt/addresses/${addrId}`, { is_default: true });
             toast.success('Default address updated');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to update address');
         }
@@ -22758,7 +22758,7 @@ Object.assign(handlers, {
             await api.delete(`/shipping-labels-mgmt/addresses/${addrId}`);
             toast.success('Address deleted');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to delete address');
         }
@@ -22807,7 +22807,7 @@ Object.assign(handlers, {
                         preview: result.preview
                     }
                 });
-                renderApp(pages.inventoryImport());
+                renderApp(window.pages.inventoryImport());
                 toast.success(`Parsed ${result.preview?.total_rows || 0} rows`);
             } catch (err) {
                 toast.error('Failed to parse file: ' + err.message);
@@ -22836,7 +22836,7 @@ Object.assign(handlers, {
                     preview: result.preview
                 }
             });
-            renderApp(pages.inventoryImport());
+            renderApp(window.pages.inventoryImport());
             toast.success(`Parsed ${result.preview?.total_rows || 0} rows`);
         } catch (err) {
             toast.error('Failed to parse data: ' + err.message);
@@ -22878,7 +22878,7 @@ Object.assign(handlers, {
             api.post(`/inventory-import/jobs/${jobId}/cancel`, {}).catch(err => console.error('Failed to cancel import:', err));
         }
         store.setState({ currentImportJob: null });
-        renderApp(pages.inventoryImport());
+        renderApp(window.pages.inventoryImport());
     },
 
     startColResize: function(e, colIndex) {
@@ -23163,7 +23163,7 @@ Object.assign(handlers, {
                     (result.failed > 0 ? `, ${result.failed} failed` : ''));
                 store.setState({ currentImportJob: null, importTab: 'jobs' });
                 await handlers.loadImportData();
-                renderApp(pages.inventoryImport());
+                renderApp(window.pages.inventoryImport());
             }
         } catch (e) {
             toast.error('Import failed: ' + e.message);
@@ -23202,7 +23202,7 @@ Object.assign(handlers, {
             await api.delete(`/inventory-import/jobs/${jobId}`);
             toast.success('Job deleted');
             await handlers.loadImportData();
-            renderApp(pages.inventoryImport());
+            renderApp(window.pages.inventoryImport());
         } catch (e) {
             toast.error('Failed to delete job');
         }
@@ -23215,7 +23215,7 @@ Object.assign(handlers, {
             await api.delete(`/inventory-import/mappings/${mappingId}`);
             toast.success('Mapping deleted');
             await handlers.loadImportData();
-            renderApp(pages.inventoryImport());
+            renderApp(window.pages.inventoryImport());
         } catch (e) {
             toast.error('Failed to delete mapping');
         }
@@ -23271,7 +23271,7 @@ Object.assign(handlers, {
             }
             modals.close();
             await handlers.loadWhatnotData();
-            renderApp(pages.whatnotLive());
+            renderApp(window.pages.whatnotLive());
         } catch (e) {
             toast.error('Failed to save event: ' + e.message);
         }
@@ -23284,7 +23284,7 @@ Object.assign(handlers, {
             await api.delete(`/whatnot/events/${eventId}`);
             toast.success('Event deleted');
             await handlers.loadWhatnotData();
-            renderApp(pages.whatnotLive());
+            renderApp(window.pages.whatnotLive());
         } catch (e) {
             toast.error('Failed to delete event');
         }
@@ -23320,14 +23320,14 @@ Object.assign(handlers, {
         store.setState({
             editingReport: { name: '', description: '', widgets: [], date_range: '30d' }
         });
-        renderApp(pages.reports());
+        renderApp(window.pages.reports());
     },
 
     editReport: async function(reportId) {
         const report = (store.state.customReports || []).find(r => r.id === reportId);
         if (report) {
             store.setState({ editingReport: { ...report } });
-            renderApp(pages.reports());
+            renderApp(window.pages.reports());
         }
     },
 
@@ -23346,7 +23346,7 @@ Object.assign(handlers, {
         if (!report) return;
         const widgets = [...(report.widgets || []), { type, label, size, id: 'w-' + Date.now() }];
         store.setState({ editingReport: { ...report, widgets } });
-        renderApp(pages.reports());
+        renderApp(window.pages.reports());
     },
 
     removeReportWidget: function(index) {
@@ -23355,7 +23355,7 @@ Object.assign(handlers, {
         const widgets = [...(report.widgets || [])];
         widgets.splice(index, 1);
         store.setState({ editingReport: { ...report, widgets } });
-        renderApp(pages.reports());
+        renderApp(window.pages.reports());
     },
 
     saveReport: async function() {
@@ -23389,7 +23389,7 @@ Object.assign(handlers, {
             }
             store.setState({ editingReport: null });
             await handlers.loadReportsData();
-            renderApp(pages.reports());
+            renderApp(window.pages.reports());
         } catch (e) {
             toast.error('Failed to save report: ' + e.message);
         }
@@ -23402,7 +23402,7 @@ Object.assign(handlers, {
             await api.delete(`/reports/${reportId}`);
             toast.success('Report deleted');
             await handlers.loadReportsData();
-            renderApp(pages.reports());
+            renderApp(window.pages.reports());
         } catch (e) {
             toast.error('Failed to delete report');
         }
@@ -23425,7 +23425,7 @@ Object.assign(handlers, {
             });
             toast.success(result.message || 'Labels marked as printed');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to mark labels as printed');
         }
@@ -23736,7 +23736,7 @@ Object.assign(handlers, {
             // Reload image bank to show updated usage counts
             await handlers.loadImageBankImages();
             await handlers.loadImageStorageStats();
-            renderApp(pages.imageBank());
+            renderApp(window.pages.imageBank());
         } catch (error) {
             console.error('Error scanning image usage:', error);
             toast.error('Failed to scan image usage');
@@ -24727,7 +24727,7 @@ Object.assign(handlers, {
             store.setState({ customMetrics: metrics });
             showToast('Custom KPI created: ' + name, 'success');
             modals.close();
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         } catch (err) {
             showToast('Failed to create metric: ' + (err.message || 'Unknown error'), 'error');
         }
@@ -24739,7 +24739,7 @@ Object.assign(handlers, {
             const metrics = (store.state.customMetrics || []).filter(m => m.id !== metricId);
             store.setState({ customMetrics: metrics });
             showToast('Custom KPI removed', 'success');
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         } catch (err) {
             showToast('Failed to remove metric: ' + (err.message || 'Unknown error'), 'error');
         }
@@ -25655,7 +25655,7 @@ Object.assign(handlers, {
             selected = selected.filter(sid => sid !== id);
         }
         store.setState({ selectedDeletedIds: selected });
-        renderApp(pages.recentlyDeleted());
+        renderApp(window.pages.recentlyDeleted());
     },
 
     toggleSelectAllDeleted(checked) {
@@ -25665,7 +25665,7 @@ Object.assign(handlers, {
         } else {
             store.setState({ selectedDeletedIds: [] });
         }
-        renderApp(pages.recentlyDeleted());
+        renderApp(window.pages.recentlyDeleted());
     },
 
     // ============================================
@@ -25756,7 +25756,7 @@ Object.assign(handlers, {
             toast.success('Report created successfully');
             modals.close();
             await this.loadReports();
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
         } catch (err) {
             toast.error('Failed to create report');
             console.error(err);
@@ -25769,7 +25769,7 @@ Object.assign(handlers, {
             toast.success('Report created from template');
             modals.close();
             await this.loadReports();
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
         } catch (err) {
             toast.error('Failed to create report from template');
         }
@@ -25779,7 +25779,7 @@ Object.assign(handlers, {
         try {
             const data = await api.post(`/reports/${id}/run`, {});
             store.setState({ reportResults: data.results || { columns: [], rows: [] } });
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
             toast.success('Report executed successfully');
         } catch (err) {
             toast.error('Failed to run report');
@@ -25794,7 +25794,7 @@ Object.assign(handlers, {
             await api.delete(`/reports/${id}`);
             toast.success('Report deleted');
             await this.loadReports();
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
         } catch (err) {
             toast.error('Failed to delete report');
             console.error(err);
@@ -25846,7 +25846,7 @@ Object.assign(handlers, {
             toast.success('Report updated');
             modals.close();
             await this.loadReports();
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
         } catch (err) {
             toast.error('Failed to update report');
             console.error(err);
@@ -25998,7 +25998,7 @@ Object.assign(handlers, {
         try {
             const data = await api.post('/reports/query', { query });
             store.setState({ reportResults: data.results || { columns: [], rows: [] } });
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
             modals.close();
             toast.success('Query executed successfully');
         } catch (err) {
@@ -26395,7 +26395,7 @@ Object.assign(handlers, {
             modals.close();
             toast.success('Custom automation created');
             await handlers.loadAutomations();
-            renderApp(pages.automations());
+            renderApp(window.pages.automations());
         } catch (err) { toast.error('Failed to create automation: ' + (err.message || 'Unknown error')); }
     },
 
@@ -26422,7 +26422,7 @@ Object.assign(handlers, {
     refreshPlatformHealth: async function() {
         toast.info('Refreshing platform health...');
         await handlers.loadPlatformHealth();
-        renderApp(pages.platformHealth());
+        renderApp(window.pages.platformHealth());
     },
 
     loadInventoryAnalytics: async function() {
@@ -26966,7 +26966,7 @@ Object.assign(handlers, {
     // Category filter for inventory catalog
     filterByCategory: function(category) {
         store.setState({ categoryFilter: category || '' });
-        renderApp(pages.inventory());
+        renderApp(window.pages.inventory());
     },
 
     // Bulk category assignment
@@ -27151,7 +27151,7 @@ Object.assign(handlers, {
 
     filterByRuleTag: function(tag) {
         store.setState({ automationTagFilter: tag || '' });
-        renderApp(pages.automations());
+        renderApp(window.pages.automations());
     },
 
     // --- Task #127: Supplier Management ---
@@ -27365,7 +27365,7 @@ Object.assign(handlers, {
             modals.close();
             const rulesRes = await api.get('/automations');
             store.setState({ automations: (rulesRes.data || rulesRes).rules || rulesRes.data || rulesRes || [] });
-            renderApp(pages.automations());
+            renderApp(window.pages.automations());
         } catch (e) {
             toast.error('Import failed: ' + (e.message || 'Unknown error'));
         }

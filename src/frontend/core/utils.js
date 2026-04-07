@@ -58,7 +58,8 @@ function sanitizeHTML(html) {
         SANITIZE_DOM: false,
         ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
                    'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
-                   'onscroll', 'ondblclick', 'oncopy', 'onpaste']
+                   'onscroll', 'ondblclick', 'oncopy', 'onpaste',
+                   'ondragover', 'ondragleave', 'ondrop', 'ondragenter', 'ondragstart', 'ondragend']
     });
 }
 

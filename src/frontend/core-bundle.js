@@ -59,7 +59,8 @@ function sanitizeHTML(html) {
         SANITIZE_DOM: false,
         ADD_ATTR: ['onclick', 'onchange', 'oninput', 'onsubmit', 'onkeyup', 'onkeydown',
                    'onkeypress', 'onmouseenter', 'onmouseleave', 'onfocus', 'onblur',
-                   'onscroll', 'ondblclick', 'oncopy', 'onpaste']
+                   'onscroll', 'ondblclick', 'oncopy', 'onpaste',
+                   'ondragover', 'ondragleave', 'ondrop', 'ondragenter', 'ondragstart', 'ondragend']
     });
 }
 
@@ -15410,7 +15411,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '64c1d47d';
+    const v = '94cc24d2';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {

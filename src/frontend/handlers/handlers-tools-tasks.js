@@ -5,7 +5,7 @@
 Object.assign(handlers, {
     setChecklistView: function(view) {
         store.setState({ checklistView: view });
-        renderApp(pages.checklist());
+        renderApp(window.pages.checklist());
     },
 
 
@@ -13,7 +13,7 @@ Object.assign(handlers, {
         const tasks = store.state.checklistTasks || [];
         const updatedTasks = tasks.map(t => t.id === taskId ? { ...t, status } : t);
         store.setState({ checklistTasks: updatedTasks });
-        renderApp(pages.checklist());
+        renderApp(window.pages.checklist());
     },
 
 
@@ -29,7 +29,7 @@ Object.assign(handlers, {
             ...options
         };
         store.setState({ checklistTasks: [...tasks, newTask] });
-        if (store.state.currentPage === 'checklist') renderApp(pages.checklist());
+        if (store.state.currentPage === 'checklist') renderApp(window.pages.checklist());
     },
 
 
@@ -42,7 +42,7 @@ Object.assign(handlers, {
             return t;
         });
         store.setState({ checklistTasks: updatedTasks });
-        renderApp(pages.checklist());
+        renderApp(window.pages.checklist());
     },
 
 
@@ -222,20 +222,20 @@ Object.assign(handlers, {
 
     setImageBankView: function(view) {
         store.setState({ imageBankView: view });
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     },
 
 
     selectAllImages: function() {
         const images = store.state.imageBankImages || [];
         store.setState({ selectedImages: images.map(i => i.id) });
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     },
 
 
     clearImageSelection: function() {
         store.setState({ selectedImages: [] });
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     },
 
 
@@ -247,7 +247,7 @@ Object.assign(handlers, {
         const updated = images.map(img => selected.includes(img.id) ? { ...img, folder_id: folderId } : img);
         store.setState({ imageBankImages: updated, selectedImages: [] });
         toast.success(`Moved ${selected.length} images`);
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     },
 
 
@@ -261,7 +261,7 @@ Object.assign(handlers, {
         const updated = images.filter(img => !selected.includes(img.id));
         store.setState({ imageBankImages: updated, selectedImages: [] });
         toast.success(`Deleted ${selected.length} images`);
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
     },
 
 
@@ -350,7 +350,7 @@ Object.assign(handlers, {
         });
 
         store.setState({ imageBankImages: updated });
-        renderApp(pages.imageBank());
+        renderApp(window.pages.imageBank());
         toast.success(`Tagged ${imagesToTag.length} image(s) successfully!`);
     },
 
@@ -359,13 +359,13 @@ Object.assign(handlers, {
 
     setCalendarView: function(view) {
         store.setState({ calendarView: view });
-        renderApp(pages.calendar());
+        renderApp(window.pages.calendar());
     },
 
 
     selectCalendarDate: function(date) {
         store.setState({ selectedCalendarDate: date });
-        renderApp(pages.calendar());
+        renderApp(window.pages.calendar());
     },
 
 
@@ -493,7 +493,7 @@ Object.assign(handlers, {
 
         modals.close();
         toast.success('Whatnot Live show scheduled!');
-        renderApp(pages.calendar());
+        renderApp(window.pages.calendar());
     },
 
     // Size Charts handlers,
@@ -501,7 +501,7 @@ Object.assign(handlers, {
 
     setSizeChartTab: function(tab) {
         store.setState({ sizeChartTab: tab });
-        renderApp(pages.sizeCharts());
+        renderApp(window.pages.sizeCharts());
     },
 
 
@@ -1047,7 +1047,7 @@ Object.assign(handlers, {
         ];
         fields.push({ name: '', unit: 'in' });
         store.setState({ customMeasurementFields: fields });
-        renderApp(pages.sizeCharts());
+        renderApp(window.pages.sizeCharts());
     },
 
 
@@ -1055,7 +1055,7 @@ Object.assign(handlers, {
         const fields = store.state.customMeasurementFields || [];
         fields.splice(index, 1);
         store.setState({ customMeasurementFields: fields });
-        renderApp(pages.sizeCharts());
+        renderApp(window.pages.sizeCharts());
     },
 
 
@@ -1231,7 +1231,7 @@ Object.assign(handlers, {
         }
 
         if (store.state.currentPage === 'checklist') {
-            renderApp(pages.checklist());
+            renderApp(window.pages.checklist());
         }
     },
 
@@ -1283,7 +1283,7 @@ Object.assign(handlers, {
                 await handlers.loadChecklistItems();
 
                 if (store.state.currentPage === 'checklist') {
-                    renderApp(pages.checklist());
+                    renderApp(window.pages.checklist());
                 }
             }
         } catch (err) {
@@ -1604,7 +1604,7 @@ Object.assign(handlers, {
             if (complete) celebrations.confetti(80);
 
             if (store.state.currentPage === 'checklist') {
-                renderApp(pages.checklist());
+                renderApp(window.pages.checklist());
                 setTimeout(() => handlers.checkChecklistCelebration(), 100);
             }
         } catch (error) {
@@ -2121,7 +2121,7 @@ Object.assign(handlers, {
             selectedCalendarDate: toLocalDate(today)
         });
         this.loadCalendarEvents(today.getFullYear(), today.getMonth());
-        renderApp(pages.calendar());
+        renderApp(window.pages.calendar());
     },
 
 
@@ -2145,7 +2145,7 @@ Object.assign(handlers, {
         // Load events for new month
         this.loadCalendarEvents(newYear, newMonth);
 
-        renderApp(pages.calendar());
+        renderApp(window.pages.calendar());
     },
 
     // Navigate calendar based on current view (month/week/day),
@@ -2167,7 +2167,7 @@ Object.assign(handlers, {
                 calendarMonth: newDate.getMonth(),
                 calendarYear: newDate.getFullYear()
             });
-            renderApp(pages.calendar());
+            renderApp(window.pages.calendar());
         } else if (calendarView === 'day') {
             // Navigate by day
             const newDate = new Date(selectedDate);
@@ -2177,7 +2177,7 @@ Object.assign(handlers, {
                 calendarMonth: newDate.getMonth(),
                 calendarYear: newDate.getFullYear()
             });
-            renderApp(pages.calendar());
+            renderApp(window.pages.calendar());
         }
     },
 
@@ -2294,7 +2294,7 @@ Object.assign(handlers, {
             autoSave.clear('calendar-event');
             toast.success('Event added successfully');
             modals.close();
-            renderApp(pages.calendar());
+            renderApp(window.pages.calendar());
         } catch (error) {
             console.error('Error saving event:', error);
             toast.error('Failed to save event: ' + error.message);
@@ -2331,7 +2331,7 @@ Object.assign(handlers, {
 
             toast.success('Event updated successfully');
             modals.close();
-            renderApp(pages.calendar());
+            renderApp(window.pages.calendar());
         } catch (error) {
             console.error('Error updating event:', error);
             toast.error('Failed to update event: ' + error.message);
@@ -2347,7 +2347,7 @@ Object.assign(handlers, {
                 await api.delete(`/calendar/events/${eventId}`);
                 const events = store.state.calendarEvents.filter(e => e.id !== eventId);
                 store.setState({ calendarEvents: events });
-                renderApp(pages.calendar());
+                renderApp(window.pages.calendar());
                 modals.close();
                 toast.success('Event deleted');
             } catch (error) {
@@ -2528,7 +2528,7 @@ Object.assign(handlers, {
 
             // Re-render to show uploaded images
             if (store.state.currentPage === 'image-bank') {
-                renderApp(pages.imageBank());
+                renderApp(window.pages.imageBank());
             }
         } catch (error) {
             console.error('Upload error:', error);
@@ -2549,7 +2549,7 @@ Object.assign(handlers, {
             toast.success('Folder created: ' + (result.folder ? result.folder.name : name.trim()));
             await handlers.loadImageBank();
             if (store.state.currentPage === 'image-bank') {
-                renderApp(pages.imageBank());
+                renderApp(window.pages.imageBank());
             }
         } catch (error) {
             toast.error('Failed to create folder: ' + error.message);
@@ -2572,7 +2572,7 @@ Object.assign(handlers, {
             }
             await handlers.loadImageBank();
             if (store.state.currentPage === 'image-bank') {
-                renderApp(pages.imageBank());
+                renderApp(window.pages.imageBank());
             }
         } catch (error) {
             toast.error('Failed to delete folder: ' + error.message);
@@ -2594,7 +2594,7 @@ Object.assign(handlers, {
 
         store.setState({ selectedImages: [...selected] });
         if (store.state.currentPage === 'image-bank') {
-            renderApp(pages.imageBank());
+            renderApp(window.pages.imageBank());
         }
     },
 
@@ -2828,7 +2828,7 @@ Object.assign(handlers, {
 
             // Re-render page to reflect deletion
             if (store.state.currentPage === 'image-bank') {
-                renderApp(pages.imageBank());
+                renderApp(window.pages.imageBank());
             }
         } catch (error) {
             toast.error('Failed to delete image: ' + error.message);
@@ -3063,8 +3063,8 @@ Object.assign(handlers, {
         const pageName = store.state.currentPage;
         // Convert hyphenated route names to camelCase for pages object
         const pageKey = pageName ? pageName.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) : null;
-        if (pageKey && pages[pageKey]) {
-            renderApp(pages[pageKey]());
+        if (pageKey && window.pages[pageKey]) {
+            renderApp(window.pages[pageKey]());
         }
     },
 
@@ -3083,8 +3083,8 @@ Object.assign(handlers, {
         const pageName = store.state.currentPage;
         // Convert hyphenated route names to camelCase for pages object
         const pageKey = pageName ? pageName.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) : null;
-        if (pageKey && pages[pageKey]) {
-            renderApp(pages[pageKey]());
+        if (pageKey && window.pages[pageKey]) {
+            renderApp(window.pages[pageKey]());
         }
     },
 
@@ -3198,8 +3198,8 @@ Object.assign(handlers, {
         if (!cloudinaryConfigured || !photoEditorImage.cloudinary_public_id) {
             store.setState({ photoEditorPreviewUrl: photoEditorImage.file_path });
             // Re-render to update preview
-            if (store.state.currentPage && pages[store.state.currentPage]) {
-                renderApp(pages[store.state.currentPage]());
+            if (store.state.currentPage && window.pages[store.state.currentPage]) {
+                renderApp(window.pages[store.state.currentPage]());
             }
             return;
         }
@@ -3230,8 +3230,8 @@ Object.assign(handlers, {
 
         store.setState({ photoEditorPreviewUrl: previewUrl });
         // Re-render to update preview
-        if (store.state.currentPage && pages[store.state.currentPage]) {
-            renderApp(pages[store.state.currentPage]());
+        if (store.state.currentPage && window.pages[store.state.currentPage]) {
+            renderApp(window.pages[store.state.currentPage]());
         }
     },
 
@@ -3248,8 +3248,8 @@ Object.assign(handlers, {
 
         store.setState({ photoEditorLoading: true });
         // Re-render to show loading state
-        if (store.state.currentPage && pages[store.state.currentPage]) {
-            renderApp(pages[store.state.currentPage]());
+        if (store.state.currentPage && window.pages[store.state.currentPage]) {
+            renderApp(window.pages[store.state.currentPage]());
         }
 
         try {
@@ -3284,8 +3284,8 @@ Object.assign(handlers, {
         } finally {
             store.setState({ photoEditorLoading: false });
             // Re-render to hide loading state
-            if (store.state.currentPage && pages[store.state.currentPage]) {
-                renderApp(pages[store.state.currentPage]());
+            if (store.state.currentPage && window.pages[store.state.currentPage]) {
+                renderApp(window.pages[store.state.currentPage]());
             }
         }
     },
@@ -4277,7 +4277,7 @@ Object.assign(handlers, {
             }
             modals.close();
             await handlers.loadWhatnotData();
-            renderApp(pages.whatnotLive());
+            renderApp(window.pages.whatnotLive());
         } catch (e) {
             toast.error('Failed to save event: ' + e.message);
         }
@@ -4291,7 +4291,7 @@ Object.assign(handlers, {
             await api.delete(`/whatnot/events/${eventId}`);
             toast.success('Event deleted');
             await handlers.loadWhatnotData();
-            renderApp(pages.whatnotLive());
+            renderApp(window.pages.whatnotLive());
         } catch (e) {
             toast.error('Failed to delete event');
         }
@@ -4688,7 +4688,7 @@ Object.assign(handlers, {
             store.setState({ customMetrics: metrics });
             showToast('Custom KPI created: ' + name, 'success');
             modals.close();
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         } catch (err) {
             showToast('Failed to create metric: ' + (err.message || 'Unknown error'), 'error');
         }
@@ -4701,7 +4701,7 @@ Object.assign(handlers, {
             const metrics = (store.state.customMetrics || []).filter(m => m.id !== metricId);
             store.setState({ customMetrics: metrics });
             showToast('Custom KPI removed', 'success');
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         } catch (err) {
             showToast('Failed to remove metric: ' + (err.message || 'Unknown error'), 'error');
         }

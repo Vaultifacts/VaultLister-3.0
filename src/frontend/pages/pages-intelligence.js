@@ -122,28 +122,16 @@ Object.assign(pages, {
         const predictions = store.state.predictions || [];
         const demandForecasts = store.state.demandForecasts || [];
 
-        // Mock predictions if none exist for demo
-        const displayPredictions = predictions.length > 0 ? predictions : [
-            { item_title: 'Vintage Levi\'s 501', current_price: 45, predicted_price: 62, confidence: 87, demand_score: 'High', recommendation: 'Buy' },
-            { item_title: 'Nike Air Max 90', current_price: 120, predicted_price: 145, confidence: 82, demand_score: 'High', recommendation: 'Buy' },
-            { item_title: 'Coach Leather Bag', current_price: 85, predicted_price: 78, confidence: 75, demand_score: 'Medium', recommendation: 'Hold' },
-            { item_title: 'Vintage Band Tee', current_price: 35, predicted_price: 28, confidence: 68, demand_score: 'Low', recommendation: 'Reduce' },
-            { item_title: 'Designer Sunglasses', current_price: 150, predicted_price: 175, confidence: 79, demand_score: 'High', recommendation: 'Buy' },
-            { item_title: 'Retro Denim Jacket', current_price: 65, predicted_price: 65, confidence: 71, demand_score: 'Medium', recommendation: 'Hold' }
-        ];
+        const displayPredictions = predictions;
 
         // Calculate overall confidence
         const avgConfidence = displayPredictions.length > 0
             ? Math.round(displayPredictions.reduce((sum, p) => sum + (p.confidence || 0), 0) / displayPredictions.length)
             : 0;
 
-        // Mock forecasts for timeline
-        const mockForecasts = [
-            { period: 'This Week', change: 5, category: 'All Categories' },
-            { period: 'Next Week', change: 8, category: 'Vintage' },
-            { period: 'In 2 Weeks', change: -2, category: 'Sneakers' },
-            { period: 'In 1 Month', change: 12, category: 'Designer' }
-        ];
+        const mockForecasts = demandForecasts.length > 0
+            ? demandForecasts.slice(0, 4).map(f => ({ period: f.period || 'Upcoming', change: f.forecast_score ? Math.round(f.forecast_score * 100) : 0, category: f.category || '' }))
+            : [];
 
         // Demand data by category — derived from live market insights
         const rawInsightsForHeatmap = store.state.marketInsights || [];
@@ -165,6 +153,79 @@ Object.assign(pages, {
 
         // Filter state
         const predictionFilter = store.state.predictionFilter || 'all';
+
+        const inventoryItems = store.state.inventoryItems || [];
+        const predictionsEmptyState = displayPredictions.length === 0
+            ? '<div class="empty-state" style="padding: 32px; text-align: center; color: var(--gray-500);"><p style="margin-bottom: 8px;">No predictions yet.</p><p style="margin-bottom: 8px;">Add items to your inventory and run the AI model to get price predictions.</p>' +
+              (inventoryItems.length === 0 ? '<p style="font-size: 13px;">Start by adding items to your inventory.</p>' : '<p style="font-size: 13px;">Click &#8220;Run AI Model&#8221; above to generate predictions for your inventory.</p>') +
+              '</div>'
+            : null;
+
+        const predictionsCardBody = predictionsEmptyState !== null ? predictionsEmptyState : (
+            '<div class="grid grid-cols-3 gap-4">' +
+            displayPredictions.slice(0, 6).map(pred => {
+                const priceChange = pred.predicted_price - pred.current_price;
+                const priceChangePercent = ((priceChange / pred.current_price) * 100).toFixed(1);
+                const isPositive = priceChange >= 0;
+                const recColor = pred.recommendation === 'Buy' ? 'var(--success)' : pred.recommendation === 'Reduce' ? 'var(--error)' : 'var(--warning)';
+                const confidence = pred.confidence || Math.floor(Math.random() * 30) + 60;
+                const confidenceColor = confidence >= 80 ? 'var(--success)' : confidence >= 60 ? 'var(--warning)' : 'var(--error)';
+                const factors = [];
+                if (pred.market_data_count > 50) factors.push({ name: 'Market Data', score: 95, desc: 'High volume of sales data' });
+                else if (pred.market_data_count > 20) factors.push({ name: 'Market Data', score: 75, desc: 'Moderate sales data' });
+                else factors.push({ name: 'Market Data', score: 45, desc: 'Limited sales data available' });
+                if (pred.price_volatility < 0.1) factors.push({ name: 'Price Stability', score: 90, desc: 'Low price volatility' });
+                else if (pred.price_volatility < 0.3) factors.push({ name: 'Price Stability', score: 65, desc: 'Moderate price changes' });
+                else factors.push({ name: 'Price Stability', score: 35, desc: 'High price volatility' });
+                if (pred.demand_score === 'High' || pred.demand_score > 70) factors.push({ name: 'Demand Signal', score: 85, desc: 'Strong buyer interest' });
+                else if (pred.demand_score === 'Medium' || pred.demand_score > 40) factors.push({ name: 'Demand Signal', score: 60, desc: 'Moderate demand' });
+                else factors.push({ name: 'Demand Signal', score: 40, desc: 'Limited demand indicators' });
+                factors.push({ name: 'Seasonality', score: Math.floor(Math.random() * 30) + 55, desc: 'Historical seasonal patterns' });
+                const factorsHtml = factors.map(f =>
+                    '<div style="display: flex; align-items: center; gap: 6px;">' +
+                    '<div style="width: 70px; font-size: 9px; color: var(--gray-600);">' + f.name + '</div>' +
+                    '<div style="flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">' +
+                    '<div style="width: ' + f.score + '%; height: 100%; background: ' + (f.score >= 70 ? 'var(--success)' : f.score >= 50 ? 'var(--warning)' : 'var(--error)') + '; border-radius: 2px;"></div>' +
+                    '</div>' +
+                    '<div style="width: 28px; font-size: 9px; font-weight: 600; text-align: right;">' + f.score + '%</div>' +
+                    '</div>'
+                ).join('');
+                const topFactor = factors.find(f => f.score === Math.max(...factors.map(x => x.score)));
+                return '<div class="prediction-card" style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; border-left: 4px solid ' + recColor + ';">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">' +
+                    '<div class="font-medium" style="flex: 1;">' + escapeHtml(pred.item_title || 'Item') + '</div>' +
+                    '<span class="badge badge-sm" style="background: ' + recColor + '20; color: ' + recColor + ';">' + (pred.recommendation || 'Hold') + '</span>' +
+                    '</div>' +
+                    '<div style="display: flex; gap: 16px; margin-bottom: 12px;">' +
+                    '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Current</div><div style="font-size: 20px; font-weight: 700;">$' + (pred.current_price || 0).toFixed(0) + '</div></div>' +
+                    '<div style="display: flex; align-items: center; color: var(--gray-300);">\u2192</div>' +
+                    '<div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Predicted</div><div style="font-size: 20px; font-weight: 700; color: var(--primary);">$' + (pred.predicted_price || 0).toFixed(0) + '</div></div>' +
+                    '</div>' +
+                    '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">' +
+                    '<span style="color: ' + (isPositive ? 'var(--success)' : 'var(--error)') + '; font-weight: 600; font-size: 14px;">' + (isPositive ? '+' : '') + priceChangePercent + '%</span>' +
+                    priceTrendSparkline.render([40, 42, 38, 45, 43, pred.predicted_price]) +
+                    '</div>' +
+                    '<div class="prediction-confidence" style="background: var(--gray-50); border-radius: 8px; padding: 10px; margin-top: 8px;">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">' +
+                    '<span style="font-size: 11px; font-weight: 600; color: var(--gray-600);">AI Confidence</span>' +
+                    '<div style="display: flex; align-items: center; gap: 6px;">' +
+                    '<div style="width: 60px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">' +
+                    '<div style="width: ' + confidence + '%; height: 100%; background: ' + confidenceColor + '; border-radius: 3px;"></div>' +
+                    '</div>' +
+                    '<span style="font-size: 13px; font-weight: 700; color: ' + confidenceColor + ';">' + confidence + '%</span>' +
+                    '</div></div>' +
+                    '<details style="margin-top: 6px;">' +
+                    '<summary style="font-size: 10px; color: var(--primary); cursor: pointer; user-select: none;">View confidence factors</summary>' +
+                    '<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">' + factorsHtml +
+                    '<div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--gray-200);">' + (topFactor ? topFactor.desc : 'Based on historical data analysis') + '</div>' +
+                    '</div></details></div>' +
+                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-200);">' +
+                    '<div style="font-size: 11px;"><span style="color: var(--gray-500);">Demand:</span> <strong>' + (pred.demand_score || 'Medium') + '</strong></div>' +
+                    '<button class="btn btn-xs btn-ghost" onclick="handlers.showPredictionDetails(\'' + (pred.id || 'pred') + '\')" style="font-size: 10px;">Details \u2192</button>' +
+                    '</div></div>';
+            }).join('') +
+            '</div>'
+        );
 
         return `
             <div class="page-header">
@@ -215,104 +276,7 @@ Object.assign(pages, {
                     <span class="text-sm text-gray-500">${displayPredictions.length} items analyzed</span>
                 </div>
                 <div class="card-body">
-                    <div class="grid grid-cols-3 gap-4">
-                        ${displayPredictions.slice(0, 6).map(pred => {
-                            const priceChange = pred.predicted_price - pred.current_price;
-                            const priceChangePercent = ((priceChange / pred.current_price) * 100).toFixed(1);
-                            const isPositive = priceChange >= 0;
-                            const recColor = pred.recommendation === 'Buy' ? 'var(--success)' : pred.recommendation === 'Reduce' ? 'var(--error)' : 'var(--warning)';
-                            const confidence = pred.confidence || Math.floor(Math.random() * 30) + 60;
-                            const confidenceColor = confidence >= 80 ? 'var(--success)' : confidence >= 60 ? 'var(--warning)' : 'var(--error)';
-
-                            // Generate confidence factors based on available data
-                            const factors = [];
-                            if (pred.market_data_count > 50) factors.push({ name: 'Market Data', score: 95, desc: 'High volume of sales data' });
-                            else if (pred.market_data_count > 20) factors.push({ name: 'Market Data', score: 75, desc: 'Moderate sales data' });
-                            else factors.push({ name: 'Market Data', score: 45, desc: 'Limited sales data available' });
-
-                            if (pred.price_volatility < 0.1) factors.push({ name: 'Price Stability', score: 90, desc: 'Low price volatility' });
-                            else if (pred.price_volatility < 0.3) factors.push({ name: 'Price Stability', score: 65, desc: 'Moderate price changes' });
-                            else factors.push({ name: 'Price Stability', score: 35, desc: 'High price volatility' });
-
-                            if (pred.demand_score === 'High' || pred.demand_score > 70) factors.push({ name: 'Demand Signal', score: 85, desc: 'Strong buyer interest' });
-                            else if (pred.demand_score === 'Medium' || pred.demand_score > 40) factors.push({ name: 'Demand Signal', score: 60, desc: 'Moderate demand' });
-                            else factors.push({ name: 'Demand Signal', score: 40, desc: 'Limited demand indicators' });
-
-                            factors.push({ name: 'Seasonality', score: Math.floor(Math.random() * 30) + 55, desc: 'Historical seasonal patterns' });
-
-                            const avgFactorScore = Math.round(factors.reduce((sum, f) => sum + f.score, 0) / factors.length);
-
-                            return `
-                                <div class="prediction-card" style="padding: 16px; border: 1px solid var(--gray-200); border-radius: 12px; border-left: 4px solid ${recColor};">
-                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-                                        <div class="font-medium" style="flex: 1;">${escapeHtml(pred.item_title || 'Item')}</div>
-                                        <span class="badge badge-sm" style="background: ${recColor}20; color: ${recColor};">${pred.recommendation || 'Hold'}</span>
-                                    </div>
-                                    <div style="display: flex; gap: 16px; margin-bottom: 12px;">
-                                        <div>
-                                            <div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Current</div>
-                                            <div style="font-size: 20px; font-weight: 700;">$${(pred.current_price || 0).toFixed(0)}</div>
-                                        </div>
-                                        <div style="display: flex; align-items: center; color: var(--gray-300);">→</div>
-                                        <div>
-                                            <div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Predicted</div>
-                                            <div style="font-size: 20px; font-weight: 700; color: var(--primary);">$${(pred.predicted_price || 0).toFixed(0)}</div>
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                                        <span style="color: ${isPositive ? 'var(--success)' : 'var(--error)'}; font-weight: 600; font-size: 14px;">
-                                            ${isPositive ? '+' : ''}${priceChangePercent}%
-                                        </span>
-                                        ${priceTrendSparkline.render([40, 42, 38, 45, 43, pred.predicted_price])}
-                                    </div>
-
-                                    <!-- Enhanced Confidence Section with Factor Breakdown -->
-                                    <div class="prediction-confidence" style="background: var(--gray-50); border-radius: 8px; padding: 10px; margin-top: 8px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                            <span style="font-size: 11px; font-weight: 600; color: var(--gray-600);">AI Confidence</span>
-                                            <div style="display: flex; align-items: center; gap: 6px;">
-                                                <div style="width: 60px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">
-                                                    <div style="width: ${confidence}%; height: 100%; background: ${confidenceColor}; border-radius: 3px;"></div>
-                                                </div>
-                                                <span style="font-size: 13px; font-weight: 700; color: ${confidenceColor};">${confidence}%</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Collapsible Factor Breakdown -->
-                                        <details style="margin-top: 6px;">
-                                            <summary style="font-size: 10px; color: var(--primary); cursor: pointer; user-select: none;">
-                                                View confidence factors
-                                            </summary>
-                                            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
-                                                ${factors.map(f => `
-                                                    <div style="display: flex; align-items: center; gap: 6px;">
-                                                        <div style="width: 70px; font-size: 9px; color: var(--gray-600);">${f.name}</div>
-                                                        <div style="flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">
-                                                            <div style="width: ${f.score}%; height: 100%; background: ${f.score >= 70 ? 'var(--success)' : f.score >= 50 ? 'var(--warning)' : 'var(--error)'}; border-radius: 2px;"></div>
-                                                        </div>
-                                                        <div style="width: 28px; font-size: 9px; font-weight: 600; text-align: right;">${f.score}%</div>
-                                                    </div>
-                                                `).join('')}
-                                                <div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--gray-200);">
-                                                    ${factors.find(f => f.score === Math.max(...factors.map(x => x.score)))?.desc || 'Based on historical data analysis'}
-                                                </div>
-                                            </div>
-                                        </details>
-                                    </div>
-
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-200);">
-                                        <div style="font-size: 11px;">
-                                            <span style="color: var(--gray-500);">Demand:</span>
-                                            <strong>${pred.demand_score || 'Medium'}</strong>
-                                        </div>
-                                        <button class="btn btn-xs btn-ghost" onclick="handlers.showPredictionDetails('${pred.id || 'pred'}')" style="font-size: 10px;">
-                                            Details →
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
+                    ${predictionsCardBody}
                 </div>
             </div>
 

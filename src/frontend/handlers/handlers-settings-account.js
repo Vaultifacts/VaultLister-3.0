@@ -14,7 +14,7 @@ Object.assign(handlers, {
         }
 
         store.setState({ lastShopSync: new Date().toISOString() });
-        renderApp(pages.shops());
+        renderApp(window.pages.shops());
     },
 
 
@@ -22,7 +22,7 @@ Object.assign(handlers, {
         toast.info(`Refreshing ${platform} health metrics...`);
         setTimeout(() => {
             toast.success(`${platform} health updated`);
-            renderApp(pages.shops());
+            renderApp(window.pages.shops());
         }, 1000);
     },
 
@@ -114,7 +114,7 @@ Object.assign(handlers, {
         store.setState({ shopBranding: allBranding });
         toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} branding saved!`);
         modals.close();
-        renderApp(pages.shops());
+        renderApp(window.pages.shops());
     },
 
     // Multi-Shop Sync Settings handler,
@@ -208,7 +208,7 @@ Object.assign(handlers, {
         store.setState({ shopSyncConfig: syncConfig });
         toast.success('Sync settings saved!');
         modals.close();
-        renderApp(pages.shops());
+        renderApp(window.pages.shops());
     },
 
     // View Sync Conflicts,
@@ -350,7 +350,7 @@ Object.assign(handlers, {
     setSettingsTab: function(tab) {
         store.setState({ settingsTab: tab, settingsChanged: false });
         window.history.replaceState({}, '', `#settings/${tab}`);
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
     // Settings search handler,
@@ -761,7 +761,7 @@ Object.assign(handlers, {
         }
 
         toast.success('Appearance settings reset to defaults');
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
 
@@ -834,7 +834,7 @@ Object.assign(handlers, {
         toast.info('Connecting to ' + platform + '...');
         setTimeout(() => {
             toast.success(platform.charAt(0).toUpperCase() + platform.slice(1) + ' connected successfully!');
-            renderApp(pages.settings());
+            renderApp(window.pages.settings());
         }, 1500);
     },
 
@@ -1538,7 +1538,7 @@ Object.assign(handlers, {
         else if (!checked) { const idx = selected.indexOf(ruleId); if (idx > -1) selected.splice(idx, 1); }
         store.setState({ selectedAutomationIds: selected });
         if (store.state.currentPage === 'automations') {
-            document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -1546,7 +1546,7 @@ Object.assign(handlers, {
     clearAutomationSelection: function() {
         store.setState({ selectedAutomationIds: [] });
         if (store.state.currentPage === 'automations') {
-            document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
     },
 
@@ -1564,7 +1564,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (e) {
             showToast('Bulk action failed: ' + (e.message || e), 'error');
@@ -1617,7 +1617,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (e) {
             showToast('Failed to apply schedule: ' + (e.message || e), 'error');
@@ -1699,7 +1699,7 @@ Object.assign(handlers, {
             const rulesRes = await api.get('/automations');
             if (rulesRes.rules) store.setState({ automationRules: rulesRes.rules });
             if (store.state.currentPage === 'automations') {
-                document.querySelector('.page-content').innerHTML = sanitizeHTML(pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (e) {
             showToast('Failed to save schedule: ' + (e.message || e), 'error');
@@ -2233,7 +2233,7 @@ Object.assign(handlers, {
         const updatedLog = activityLog.filter(a => a.id !== sessionId && a.timestamp !== sessionId);
         store.setState({ accountActivityLog: updatedLog });
         toast.success('Session revoked successfully');
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
 
@@ -2252,7 +2252,7 @@ Object.assign(handlers, {
         const currentSession = activityLog.find(a => a.current);
         store.setState({ accountActivityLog: currentSession ? [currentSession] : [] });
         toast.success('All other sessions have been signed out');
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
 
@@ -2414,7 +2414,7 @@ Object.assign(handlers, {
         }
 
         handlers.markSettingsChanged();
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
     // Feature 3: Account Usage Statistics Dashboard,
@@ -2518,7 +2518,7 @@ Object.assign(handlers, {
 
         store.setState({ platformConnections: statuses });
         toast.success('Integration status refreshed');
-        renderApp(pages.settings());
+        renderApp(window.pages.settings());
     },
 
     // Feature 5: Settings Changelog (What Changed Since Last Visit),
@@ -2736,8 +2736,8 @@ Object.assign(handlers, {
 
         // Re-render current page with new shop context
         const currentPage = store.state.currentPage || 'dashboard';
-        if (pages[currentPage]) {
-            renderApp(pages[currentPage]());
+        if (window.pages[currentPage]) {
+            renderApp(window.pages[currentPage]());
         }
     },
 
@@ -2758,7 +2758,7 @@ Object.assign(handlers, {
 
         // Re-render shops page
         if (store.state.currentPage === 'shops') {
-            renderApp(pages.shops());
+            renderApp(window.pages.shops());
         }
     },
 
@@ -2781,7 +2781,7 @@ Object.assign(handlers, {
 
     searchNotifications: function(query) {
         store.setState({ notificationSearchQuery: query });
-        renderApp(pages.notifications());
+        renderApp(window.pages.notifications());
     },
 
     // Filter notifications,
@@ -2789,7 +2789,7 @@ Object.assign(handlers, {
 
     filterNotifications: function(filter) {
         store.setState({ notificationFilter: filter });
-        renderApp(pages.notifications());
+        renderApp(window.pages.notifications());
     },
 
     // Toggle notification read status,
@@ -2804,7 +2804,7 @@ Object.assign(handlers, {
         });
         store.setState({ notifications });
         handlers.updateTabBadge();
-        renderApp(pages.notifications());
+        renderApp(window.pages.notifications());
     },
 
     // Toggle notification important status,
@@ -2818,7 +2818,7 @@ Object.assign(handlers, {
             return n;
         });
         store.setState({ notifications });
-        renderApp(pages.notifications());
+        renderApp(window.pages.notifications());
     },
 
     // Mark all notifications as read (page level),
@@ -2855,7 +2855,7 @@ Object.assign(handlers, {
         notificationCenter.markAllAsRead();
         handlers.updateTabBadge();
         toast.success('All notifications marked as read');
-        renderApp(pages.notifications());
+        renderApp(window.pages.notifications());
     },
 
     // Update browser tab badge with unread count,
@@ -2884,7 +2884,7 @@ Object.assign(handlers, {
             const notifications = store.state.notifications.filter(n => n.id !== notificationId);
             store.setState({ notifications });
             handlers.updateTabBadge();
-            renderApp(pages.notifications());
+            renderApp(window.pages.notifications());
         }
     },
 
@@ -3544,7 +3544,7 @@ Object.assign(handlers, {
             } catch (e) {
                 store.setState({ teamActivity: [] });
             }
-            renderApp(pages.teams());
+            renderApp(window.pages.teams());
         } catch (error) {
             toast.error('Failed to load team: ' + error.message);
         }
@@ -3553,7 +3553,7 @@ Object.assign(handlers, {
 
     deselectTeam: function() {
         store.setState({ activeTeam: null, teamMembers: [], teamInvitations: [], teamActivity: [] });
-        renderApp(pages.teams());
+        renderApp(window.pages.teams());
     },
 
 
@@ -3565,7 +3565,7 @@ Object.assign(handlers, {
             toast.success('Team deleted successfully');
             store.setState({ activeTeam: null, teamMembers: [], teamInvitations: [], teamActivity: [] });
             await handlers.loadTeamsPage();
-            renderApp(pages.teams());
+            renderApp(window.pages.teams());
         } catch (error) {
             toast.error('Failed to delete team: ' + error.message);
         }
@@ -4626,7 +4626,7 @@ Object.assign(handlers, {
             modals.close();
             toast.success('Custom automation created');
             await handlers.loadAutomations();
-            renderApp(pages.automations());
+            renderApp(window.pages.automations());
         } catch (err) { toast.error('Failed to create automation: ' + (err.message || 'Unknown error')); }
     },
 
@@ -4656,7 +4656,7 @@ Object.assign(handlers, {
     refreshPlatformHealth: async function() {
         toast.info('Refreshing platform health...');
         await handlers.loadPlatformHealth();
-        renderApp(pages.platformHealth());
+        renderApp(window.pages.platformHealth());
     },
 
 
@@ -5237,7 +5237,7 @@ Object.assign(handlers, {
 
     filterByCategory: function(category) {
         store.setState({ categoryFilter: category || '' });
-        renderApp(pages.inventory());
+        renderApp(window.pages.inventory());
     },
 
     // Bulk category assignment
@@ -5429,7 +5429,7 @@ Object.assign(handlers, {
 
     filterByRuleTag: function(tag) {
         store.setState({ automationTagFilter: tag || '' });
-        renderApp(pages.automations());
+        renderApp(window.pages.automations());
     },
 
     // --- Task #127: Supplier Management ---
@@ -5639,7 +5639,7 @@ Object.assign(handlers, {
             modals.close();
             const rulesRes = await api.get('/automations');
             store.setState({ automations: (rulesRes.data || rulesRes).rules || rulesRes.data || rulesRes || [] });
-            renderApp(pages.automations());
+            renderApp(window.pages.automations());
         } catch (e) {
             toast.error('Import failed: ' + (e.message || 'Unknown error'));
         }

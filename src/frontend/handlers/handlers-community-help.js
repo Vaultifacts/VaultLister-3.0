@@ -128,9 +128,9 @@ Object.assign(handlers, {
             // Re-render current page
             const currentRoute = store.state.currentRoute;
             if (currentRoute === 'feedback-suggestions') {
-                renderApp(pages.feedbackSuggestions());
+                renderApp(window.pages.feedbackSuggestions());
             } else if (currentRoute === 'feedback-analytics') {
-                renderApp(pages.feedbackAnalytics());
+                renderApp(window.pages.feedbackAnalytics());
             }
         } catch (error) {
             console.error('Error voting:', error);
@@ -240,13 +240,13 @@ Object.assign(handlers, {
 
     filterRoadmapCategory: function(category) {
         store.setState({ roadmapCategoryFilter: category });
-        renderApp(pages.roadmap());
+        renderApp(window.pages.roadmap());
     },
 
 
     searchRoadmap: function(query) {
         store.setState({ roadmapSearch: query });
-        renderApp(pages.roadmap());
+        renderApp(window.pages.roadmap());
     },
 
 
@@ -294,7 +294,7 @@ Object.assign(handlers, {
 
     searchChangelog: function(query) {
         store.setState({ changelogSearch: query });
-        renderApp(pages.changelog());
+        renderApp(window.pages.changelog());
         const input = document.querySelector('[aria-label="Search changelog"]');
         if (input) {
             input.focus();
@@ -305,7 +305,7 @@ Object.assign(handlers, {
 
     filterChangelogType: function(type) {
         store.setState({ changelogTypeFilter: type });
-        renderApp(pages.changelog());
+        renderApp(window.pages.changelog());
     },
 
 
@@ -338,7 +338,7 @@ Object.assign(handlers, {
     filterChangelogVersion: function(version) {
         const current = store.state.changelogVersionFilter || 'all';
         store.setState({ changelogVersionFilter: current === version ? 'all' : version });
-        renderApp(pages.changelog());
+        renderApp(window.pages.changelog());
     },
 
 
@@ -356,7 +356,7 @@ Object.assign(handlers, {
         votes[changeKey] = current;
         store.setState({ changelogVotes: votes });
         localStorage.setItem('vaultlister_changelog_votes', JSON.stringify(votes));
-        renderApp(pages.changelog());
+        renderApp(window.pages.changelog());
     },
 
 
@@ -416,7 +416,7 @@ Object.assign(handlers, {
     switchTutorialCategory: function(category) {
         store.setState({ tutorialCategory: category });
         if (store.state.currentPage === 'tutorials') {
-            renderApp(pages.tutorials());
+            renderApp(window.pages.tutorials());
         }
     },
 
@@ -434,7 +434,7 @@ Object.assign(handlers, {
 
         // Re-render to update the modal
         if (store.state.currentPage) {
-            renderApp(pages[store.state.currentPage]());
+            renderApp(window.pages[store.state.currentPage]());
         }
     },
 
@@ -450,7 +450,7 @@ Object.assign(handlers, {
         }
 
         if (store.state.currentPage) {
-            renderApp(pages[store.state.currentPage]());
+            renderApp(window.pages[store.state.currentPage]());
         }
     },
 
@@ -505,7 +505,7 @@ Object.assign(handlers, {
             });
 
             if (store.state.currentPage) {
-                renderApp(pages[store.state.currentPage]());
+                renderApp(window.pages[store.state.currentPage]());
 
                 // Scroll to bottom of messages
                 setTimeout(() => {
@@ -533,7 +533,7 @@ Object.assign(handlers, {
             toast.success('Chat deleted');
             await this.loadVaultBuddyConversations();
             if (store.state.currentPage) {
-                renderApp(pages[store.state.currentPage]());
+                renderApp(window.pages[store.state.currentPage]());
             }
         } catch (error) {
             console.error('Failed to delete chat:', error);
@@ -555,7 +555,7 @@ Object.assign(handlers, {
         this.loadVaultBuddyConversations();
 
         if (store.state.currentPage) {
-            renderApp(pages[store.state.currentPage]());
+            renderApp(window.pages[store.state.currentPage]());
         }
     },
 
@@ -591,7 +591,7 @@ Object.assign(handlers, {
 
         // Re-render to show user message and loading
         if (store.state.currentPage) {
-            renderApp(pages[store.state.currentPage]());
+            renderApp(window.pages[store.state.currentPage]());
             setTimeout(() => {
                 const messagesEl = document.getElementById('vault-buddy-messages');
                 if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -623,7 +623,7 @@ Object.assign(handlers, {
 
         // Re-render to show response
         if (store.state.currentPage) {
-            renderApp(pages[store.state.currentPage]());
+            renderApp(window.pages[store.state.currentPage]());
             setTimeout(() => {
                 const messagesEl = document.getElementById('vault-buddy-messages');
                 if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -648,7 +648,7 @@ Object.assign(handlers, {
                 // Just reload the list
                 await this.loadVaultBuddyConversations();
                 if (store.state.currentPage) {
-                    renderApp(pages[store.state.currentPage]());
+                    renderApp(window.pages[store.state.currentPage]());
                 }
             }
 
@@ -668,7 +668,7 @@ Object.assign(handlers, {
 
     filterRoadmap: function(filter) {
         store.setState({ roadmapFilter: filter });
-        renderApp(pages.roadmap());
+        renderApp(window.pages.roadmap());
     },
 
     // Load roadmap features from API,
@@ -1068,7 +1068,7 @@ Object.assign(handlers, {
                         preview: result.preview
                     }
                 });
-                renderApp(pages.inventoryImport());
+                renderApp(window.pages.inventoryImport());
                 toast.success(`Parsed ${result.preview?.total_rows || 0} rows`);
             } catch (err) {
                 toast.error('Failed to parse file: ' + err.message);
