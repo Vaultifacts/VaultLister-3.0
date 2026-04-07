@@ -37,10 +37,10 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 17 |
+| OPEN | 14 |
 | FIXED (code changed, not yet visually confirmed on live site) | 1 |
 | VERIFIED ✅ (visually confirmed or source-confirmed) | ~151 |
-| CONFIRMED N/A (not a bug / duplicate / already correct) | ~29 |
+| CONFIRMED N/A (not a bug / duplicate / already correct) | ~32 |
 | **TOTAL** | **215+** |
 
 ### Status Definitions
@@ -197,7 +197,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-32 | Transactions | "$0 / $999" filter in USD not CAD (duplicate of M-17) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-17 |
 | M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | OPEN |
 | M-34 | Vault Buddy | Chat bubble click does nothing — no chat window opens | Session 3 | VERIFIED ✅ — 00e1551 — handlers-core.js: core stub for toggleVaultBuddy lazy-loads community chunk on click |
-| M-35 | Batch Photo | "Remove Background" and "AI Upscale" require AI backend — unclear error handling | Session 3 | OPEN |
+| M-35 | Batch Photo | "Remove Background" and "AI Upscale" require AI backend — unclear error handling | Session 3 | CONFIRMED N/A — handlers-deferred.js:20641: try/catch wraps API call with toast.error('Failed to start batch job: '+error.message). Cloudinary transforms (e_background_removal, e_upscale) used. Errors surface to user. |
 | M-36 | Privacy (in-app) | "GDPR Compliant" claim — Canada uses PIPEDA, not GDPR. Legal risk | Session 3 | VERIFIED ✅ — 8f2457c — PIPEDA Compliant |
 | M-37 | Calendar (dark) | "Month" view button invisible — white text on white bg in active state in dark mode | Session 4 | VERIFIED ✅ — 82a8408 — duplicate of M-25 |
 | M-38 | Responsive | 34 mobile breakpoints in CSS but mobile bottom nav absent | Session 4 | CONFIRMED N/A — mobileUI.renderBottomNav() already called in renderApp(); CSS gates to ≤768px |
@@ -259,7 +259,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | VERIFIED ✅ — 15dba34 — public/terms.html + pages-community-help.js updated to April 2026 |
 | L-16 | Terms / Landing | Logo shows "M" purple circle — should be "V" blue square (brand inconsistency) | Session 2 | CONFIRMED N/A — source already renders 'V' with var(--primary-600) + border-radius (rounded square), not 'M' purple circle |
 | L-17 | Size Charts | "us US" in dropdown — double "US" label | Session 2 | VERIFIED ✅ — DOM inspection confirms options show "🇺🇸 United States" (flag renders as "us" in JPEG screenshots — confirmed working 2026-04-07) |
-| L-18 | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons — unclear if functional | Session 2 | OPEN |
+| L-18 | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons — unclear if functional | Session 2 | CONFIRMED N/A — handlers-deferred.js:20977: connectGmail() has real OAuth popup flow (/email/oauth/authorize → popup → postMessage callback). Functional pending credentials. |
 | L-19 | Dashboard | Massive empty space below widgets on scroll — layout/height issue | Session 2 | VERIFIED ✅ — mc_scrollTop=0 + mw_scrollTop=0 at max scroll confirms no inner scroll container; last widget visible at y=773-904 in viewport; overflow-x:clip deployed (c1ddf18/e816e2d 2026-04-07) |
 | L-20 | Size Charts | "us US" dropdown label — double "US" (duplicate of L-17) | Session 3 | VERIFIED ✅ — same fix as L-17, confirmed 2026-04-07 |
 | L-21 | Size Charts | Measurements in inches — should offer cm for Canada (duplicate of M-24) | Session 3 | CONFIRMED N/A — duplicate of M-24 |
@@ -271,7 +271,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-27 | Connections (dark) | Cloudinary/Anthropic AI toggle buttons nearly invisible in dark mode | Session 3 | VERIFIED ✅ — .rounded-lg.border shows bg rgb(17,24,39) + border rgb(55,65,81) in dark mode, confirmed live (2026-04-07) |
 | L-28 | Privacy (in-app) | "Download PDF" button — unclear if it generates a real PDF | Session 3 | CONFIRMED N/A — handlers-core.js:1515: shows toast then calls window.print(), which opens browser print dialog (save as PDF). Functional. |
 | L-29 | Connections (dark) | Cloudinary/Anthropic toggles nearly invisible (duplicate of L-27) | Session 4 | VERIFIED ✅ — same fix as L-27, confirmed live (2026-04-07) |
-| L-30 | Batch Photo | "Remove Background"/"AI Upscale" may not have backend support | Session 4 | OPEN |
+| L-30 | Batch Photo | "Remove Background"/"AI Upscale" may not have backend support | Session 4 | CONFIRMED N/A — duplicate of M-35; same error handling confirmed |
 | L-31 | Privacy (in-app) | "Download PDF" button — untested (duplicate of L-28) | Session 4 | CONFIRMED N/A — duplicate of L-28; same window.print() implementation confirmed |
 | #127 | Cross-list Modal | "Ebay" brand name misspelled — should be "eBay" | Session 5 | VERIFIED ✅ — 15dba34 — eBay capitalization corrected |
 | #128 | Calendar | Edit Event has "Depends On" field not present in Add Event — inconsistency | Session 5 | VERIFIED ✅ — editCalendarEvent modal has no "Depends On" field, hasDependsOn:false confirmed live (2026-04-07) |
