@@ -38,8 +38,8 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 | Status | Count |
 |--------|-------|
 | OPEN | 12 |
-| FIXED (code changed, not yet visually confirmed on live site) | 2 |
-| VERIFIED ✅ (visually confirmed or source-confirmed) | ~151 |
+| FIXED (code changed, not yet visually confirmed on live site) | 1 |
+| VERIFIED ✅ (visually confirmed or source-confirmed) | ~152 |
 | CONFIRMED N/A (not a bug / duplicate / already correct) | ~33 |
 | **TOTAL** | **215+** |
 
@@ -183,7 +183,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-18 | Transactions | "All Categorie" dropdown text truncated — missing 's' | Session 2 | CONFIRMED N/A — already reads "All Categories" in source |
 | M-19 | Roadmap | "No features found" — should have planned features pre-populated | Session 2 | OPEN |
 | M-20 | Affiliate | "$50 Minimum Payout" in USD not CAD | Session 2 | VERIFIED ✅ — screenshot confirms "C$50 Minimum Payout" in commission structure card (2026-04-07) |
-| M-21 | Connections | Chrome Extension "Install Extension" button — destination link unclear | Session 2 | FIXED — added showInstallExtensionModal() to handlers-deferred.js; shows "coming soon" modal with description (bundle b86e134c) |
+| M-21 | Connections | Chrome Extension "Install Extension" button — destination link unclear | Session 2 | VERIFIED ✅ — modal confirmed live: "VaultLister Chrome Extension ... coming soon to the Chrome Web Store" (2026-04-07) |
 | M-22 | Landing | "Push listings to all 9 marketplaces" — should say 5 at launch | Session 2 | VERIFIED ✅ — 82a8408 — all copy, pills, stats, pricing updated to 5 launch platforms |
 | M-23 | Auth Pages | All auth pages (Landing/Login/Register) show gradient seam — white strip at ~75% width | Session 2 | VERIFIED ✅ — login page screenshot confirms gradient fills full width, no seam (2026-04-07) |
 | M-24 | Size Charts | Measurements in inches (in) — should offer metric (cm) for Canada | Session 2 | CONFIRMED N/A — duplicate of shipping fix already applied in #149/23a4729; metric units confirmed in handlers-sales-orders.js |
