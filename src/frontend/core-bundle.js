@@ -14453,12 +14453,12 @@ const kpiDashboard = {
     },
 
     renderCard(kpi) {
-        const trendUp = kpi.change >= 0;
+        const trendUp = kpi.change > 0;
         return `
             <div class="kpi-card">
                 <div class="kpi-card-header">
                     <div class="kpi-card-icon ${kpi.type}">${components.icon(kpi.icon, 20)}</div>
-                    ${kpi.change !== undefined ? `
+                    ${kpi.change !== undefined && kpi.change !== null && kpi.change !== 0 ? `
                         <div class="kpi-card-trend ${trendUp ? 'up' : 'down'}">
                             ${components.icon(trendUp ? 'arrow-up' : 'arrow-down', 12)}
                             ${Math.abs(kpi.change).toFixed(1)}%
@@ -15413,7 +15413,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '26ded704';
+    const v = 'de533621';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17919,13 +17919,13 @@ const pages = {
 
         // Monthly sales goal (configurable)
         const savedGoal = localStorage.getItem('vaultlister_monthly_goal');
-        const monthlyGoal = savedGoal ? parseInt(savedGoal) : (store.state.monthlySalesGoal || 2000);
+        const monthlyGoal = savedGoal ? parseInt(savedGoal) : (store.state.monthlySalesGoal || null);
         const thisMonthRevenue = (store.state.sales || []).filter(s => {
             const saleDate = new Date(s.sold_at);
             const now = new Date();
             return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
         }).reduce((sum, s) => sum + (s.sale_price || 0), 0);
-        const goalPercent = Math.min(100, (thisMonthRevenue / monthlyGoal) * 100);
+        const goalPercent = monthlyGoal ? Math.min(100, (thisMonthRevenue / monthlyGoal) * 100) : 0;
 
         // Generate activity feed with more comprehensive user actions
         const activities = [
@@ -18340,8 +18340,7 @@ const pages = {
                         ${components.progressRing(goalPercent, 80, 8, goalPercent >= 100 ? 'green' : 'primary', 'goal')}
                         <div>
                             <div class="text-2xl font-bold">$${thisMonthRevenue.toLocaleString()}</div>
-                            <div class="text-sm text-gray-500">of $${monthlyGoal.toLocaleString()} goal</div>
-                            <div class="text-xs text-gray-400 mt-1">${Math.round(goalPercent)}% complete</div>
+                            ${monthlyGoal ? `<div class="text-sm text-gray-500">of $${monthlyGoal.toLocaleString()} goal</div><div class="text-xs text-gray-400 mt-1">${Math.round(goalPercent)}% complete</div>` : '<div class="text-sm text-gray-400">No goal set — <span style="text-decoration:underline;cursor:pointer" onclick="event.stopPropagation();handlers.setMonthlyGoal()">Set a goal</span></div>'}
                         </div>
                     </div>
                 </div>
@@ -27901,6 +27900,10 @@ function renderApp(pageContent) {
         router.navigate('login');
         return;
     }
+
+    // Show WS status dot only when authenticated
+    const _wsDot = document.getElementById('ws-status-dot'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+    if (_wsDot) _wsDot.classList.add('ws-status-dot--visible');
 
     try {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method

@@ -5680,12 +5680,12 @@ const kpiDashboard = {
     },
 
     renderCard(kpi) {
-        const trendUp = kpi.change >= 0;
+        const trendUp = kpi.change > 0;
         return `
             <div class="kpi-card">
                 <div class="kpi-card-header">
                     <div class="kpi-card-icon ${kpi.type}">${components.icon(kpi.icon, 20)}</div>
-                    ${kpi.change !== undefined ? `
+                    ${kpi.change !== undefined && kpi.change !== null && kpi.change !== 0 ? `
                         <div class="kpi-card-trend ${trendUp ? 'up' : 'down'}">
                             ${components.icon(trendUp ? 'arrow-up' : 'arrow-down', 12)}
                             ${Math.abs(kpi.change).toFixed(1)}%

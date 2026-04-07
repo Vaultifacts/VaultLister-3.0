@@ -81,13 +81,13 @@ const pages = {
 
         // Monthly sales goal (configurable)
         const savedGoal = localStorage.getItem('vaultlister_monthly_goal');
-        const monthlyGoal = savedGoal ? parseInt(savedGoal) : (store.state.monthlySalesGoal || 2000);
+        const monthlyGoal = savedGoal ? parseInt(savedGoal) : (store.state.monthlySalesGoal || null);
         const thisMonthRevenue = (store.state.sales || []).filter(s => {
             const saleDate = new Date(s.sold_at);
             const now = new Date();
             return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
         }).reduce((sum, s) => sum + (s.sale_price || 0), 0);
-        const goalPercent = Math.min(100, (thisMonthRevenue / monthlyGoal) * 100);
+        const goalPercent = monthlyGoal ? Math.min(100, (thisMonthRevenue / monthlyGoal) * 100) : 0;
 
         // Generate activity feed with more comprehensive user actions
         const activities = [
@@ -502,8 +502,7 @@ const pages = {
                         ${components.progressRing(goalPercent, 80, 8, goalPercent >= 100 ? 'green' : 'primary', 'goal')}
                         <div>
                             <div class="text-2xl font-bold">$${thisMonthRevenue.toLocaleString()}</div>
-                            <div class="text-sm text-gray-500">of $${monthlyGoal.toLocaleString()} goal</div>
-                            <div class="text-xs text-gray-400 mt-1">${Math.round(goalPercent)}% complete</div>
+                            ${monthlyGoal ? `<div class="text-sm text-gray-500">of $${monthlyGoal.toLocaleString()} goal</div><div class="text-xs text-gray-400 mt-1">${Math.round(goalPercent)}% complete</div>` : '<div class="text-sm text-gray-400">No goal set — <span style="text-decoration:underline;cursor:pointer" onclick="event.stopPropagation();handlers.setMonthlyGoal()">Set a goal</span></div>'}
                         </div>
                     </div>
                 </div>

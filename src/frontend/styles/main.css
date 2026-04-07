@@ -50344,6 +50344,11 @@ body.dark-mode .transfer-list-actions button:hover:not(:disabled) {
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     cursor: default;
     /* Keep above sidebar but below modals */
+    display: none; /* Hidden until authenticated — shown via JS in renderApp() */
+}
+
+.ws-status-dot--visible {
+    display: block;
 }
 
 .ws-status-dot--connected {

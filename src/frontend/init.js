@@ -554,6 +554,10 @@ function renderApp(pageContent) {
         return;
     }
 
+    // Show WS status dot only when authenticated
+    const _wsDot = document.getElementById('ws-status-dot'); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+    if (_wsDot) _wsDot.classList.add('ws-status-dot--visible');
+
     try {
         // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         document.getElementById('app').innerHTML =sanitizeHTML( sanitizeHTML(`
