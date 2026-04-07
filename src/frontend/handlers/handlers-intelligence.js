@@ -1319,7 +1319,7 @@ Object.assign(handlers, {
     },
 
 
-    runPriceSuggestion: function() {
+    runPriceSuggestion: async function() {
         const itemName = document.getElementById('price-suggest-title')?.value || '';
         const condition = document.getElementById('price-suggest-condition')?.value || 'good';
         const category = document.getElementById('price-suggest-category')?.value || 'general';
