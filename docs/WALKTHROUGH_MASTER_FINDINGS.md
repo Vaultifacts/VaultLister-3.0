@@ -39,7 +39,7 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 |--------|-------|
 | OPEN | 11 |
 | FIXED (code changed, not yet visually confirmed on live site) | 0 |
-| VERIFIED ✅ (visually confirmed or source-confirmed) | ~153 |
+| VERIFIED ✅ (visually confirmed or source-confirmed) | ~166 |
 | CONFIRMED N/A (not a bug / duplicate / already correct) | ~33 |
 | **TOTAL** | **215+** |
 
@@ -372,6 +372,46 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 |----|-----------|-------|--------|
 | CA-L-1 | `src/backend/db/database.js:328` | TODO comment: "Phase 3: implement tsvector full-text search" — incomplete feature | VERIFIED ✅ — grep confirms no matching TODO in database.js (confirmed in source 2026-04-07) |
 | CA-L-2 | `src/backend/middleware/rateLimiter.js:27` | TODO comment: "Re-enable for production release" — advisory only (root issue is CA-CR-1) | VERIFIED ✅ — abeccbb |
+
+---
+
+## PART 3 — UNDOCUMENTED FIXES (Found in git history, not previously in this doc)
+
+Fixes applied to the codebase that were never formally logged as findings. Discovered by cross-referencing the full git commit history against this document. All have VERIFIED ✅ status (source-confirmed via commit diff).
+
+---
+
+### CRITICAL / HIGH — Undocumented
+
+| ID | Component | Description | Commit | Status |
+|----|-----------|-------------|--------|--------|
+| U-1 | App-wide / Deferred Chunk | `chunk-deferred.js` only loaded on ar-preview navigation — 172 handler functions unavailable on initial page load, causing `handlers.xxx is not a function` errors throughout the app whenever any modal or inline onclick ran before the deferred chunk loaded. Fixed by preloading `chunk-deferred.js` after first render on every startup. | `e9f163e` | VERIFIED ✅ — e9f163e — loadChunk('deferred') confirmed in core-bundle.js after first render |
+| U-2 | Dashboard / Handlers | `exportDashboard` method missing closing `}` — syntax error caused `syncPlatformPrices`, `togglePlatformPricing`, `markPriceCustomized`, `updateSizeOptions`, `validateCustomSize` to be parsed as local labels inside `exportDashboard`, making them unreachable from `window.handlers`. | `1ddd980` | VERIFIED ✅ — 1ddd980 — grep confirms togglePlatformPricing at object level |
+| U-3 | Modals / Handlers Core | `togglePlatformPricing`, `syncPlatformPrices`, `markPriceCustomized`, `updateSizeOptions`, `validateCustomSize` only existed in deferred chunks but are called from inline `oninput`/`onchange` handlers in `modals.js` (core bundle). Add Item modal crashed with `handlers.syncPlatformPrices is not a function` when deferred chunk hadn't loaded yet. Fixed by moving these 5 handlers to `handlers-core.js`. | `7466692` | VERIFIED ✅ — 7466692 — functions confirmed in core-bundle.js (18 references) |
+| U-4 | Settings / Utils | `sanitizeHTML()` not exposed on `window` — deferred `chunk-settings.js` threw `ReferenceError: sanitizeHTML is not defined` on settings save. Fixed by adding `window.sanitizeHTML = sanitizeHTML` export at end of `utils.js`. | `c6cdaac` | VERIFIED ✅ — c6cdaac — window.sanitizeHTML confirmed in core-bundle.js |
+| U-5 | Add Item / Widgets | `autoSave` not exposed on `window` — deferred chunks threw `ReferenceError: autoSave is not defined` on Add Item form submit. `autoSave` was `const`-scoped in `widgets.js`, invisible to deferred chunks. Fixed by adding `window.autoSave = autoSave` export. | `2d8d871` | VERIFIED ✅ — 2d8d871 — window.autoSave confirmed in core-bundle.js |
+
+---
+
+### HIGH / MEDIUM — Undocumented (Dashboard walkthrough batch)
+
+| ID | Component | Description | Commit | Status |
+|----|-----------|-------------|--------|--------|
+| U-6 | Dashboard | 9 visual issues discovered in manual walkthrough: (1) `refreshDashboard`/`setDashboardPeriod` navigated/toasted even when user had left the dashboard mid-refresh — added page guard; (2) widget container switched from flex to 6-col CSS grid; (3) collapsed widgets span 2 cols with compact header; (4) missing bar-chart-2 icon button on each stat card header; (5) export dropdown `.show` CSS failed to override base opacity/visibility; (6) `.dashboard-widget .card-body` missing `min-width:0; overflow-x:auto`; (7) dashboard-customize-section `flex-end` → `flex-start`; (8) Quick Notes icon `edit-3` (nonexistent in feather) → `file-text`; (9) Dashboard moved to unnamed top section in sidebar navItems. | `41f8e91` | VERIFIED ✅ — 41f8e91 — bundle rebuilt (v60815404); syntax clean |
+
+---
+
+### MEDIUM — Undocumented
+
+| ID | Component | Description | Commit | Status |
+|----|-----------|-------------|--------|--------|
+| U-7 | Analytics / Orders | Horizontal overflow at ≤768px on `.analytics-hero` and `.orders-hero` — content spilled outside viewport on mobile. Fixed by adding `overflow-x: hidden` and `max-width: 100%` rules in `main.css` at ≤768px breakpoint. | `6cb6a02` | VERIFIED ✅ — 6cb6a02 — main.css overflow-x fixes confirmed |
+| U-8 | Dashboard | `.dashboard-hero` and `.dashboard-hero-content` lacked `max-width` and `overflow: hidden` — hero section overflowed on narrow mobile viewports (≤768px). Fixed in `main.css`. | `6cb6a02` | VERIFIED ✅ — 6cb6a02 — main.css dashboard-hero overflow:hidden confirmed |
+| U-9 | Settings / Account | 5 `<select>` elements in the Data Retention section of `pages-settings-account.js` were missing `name=` attributes — form values could not be read by form serialization or submitted correctly. | `6cb6a02` | VERIFIED ✅ — 6cb6a02 — name= attrs added to all 5 data retention selects |
+| U-10 | App-wide / Platforms | 7 files each had local hardcoded platform arrays (`['poshmark','ebay',...]`) instead of using the shared `SUPPORTED_PLATFORMS` constant from `utils.js` — platform lists could silently diverge. Fixed in `handlers-settings-account.js`, `handlers-core.js`, `handlers-sales-orders.js` (×2), `pages-settings-account.js`, `pages-intelligence.js`, `pages-deferred.js` (×2). | `6cb6a02` | VERIFIED ✅ — 6cb6a02 — SUPPORTED_PLATFORMS now used across all 7 files |
+| U-11 | Analytics / Dashboard / Modals | 5 systemic QA issues: (A) analytics page chunk not in chunk map — analytics page handlers unavailable; 3 cross-chunk handlers moved to core; (B) `refreshDashboard` and `exportDashboard` moved to core bundle so they are available before deferred load; (C) `setMonthlyGoal` and `showColumnPicker` refactored to use `modals.show()` instead of direct DOM manipulation. | `77305b7` | VERIFIED ✅ — 77305b7 — build succeeded (v03c031c6); no double-definitions in chunks |
+| U-12 | Responsive / Sidebar | Mobile sidebar layout broken — `menu-button` had `display:none` locked at desktop, `.mobile-open` state not applied, `mobile-header` missing from DOM. Fixed by removing desktop lock, fixing `.mobile-open` CSS, adding `mobile-header` element. | `77305b7` | VERIFIED ✅ — 77305b7 — mobile sidebar shows correctly after fix |
+| U-13 | Accessibility / Modals | Two buttons missing `aria-haspopup` attribute (ARIA compliance); modal container missing `inert` attribute on background content during modal open (focus trap incomplete). Fixed in `77305b7`. | `77305b7` | VERIFIED ✅ — 77305b7 — aria-haspopup added; inert set during modal open |
 
 ---
 
