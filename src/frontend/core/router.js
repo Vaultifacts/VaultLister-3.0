@@ -583,7 +583,7 @@ const router = {
         }
         // Re-render after data loads
         const handler = Object.prototype.hasOwnProperty.call(this.routes, path) ? this.routes[path] : null; // nosemgrep: javascript.lang.security.detect-unvalidated-dynamic-method-call
-        if (typeof handler === 'function') handler(); // lgtm[js/unvalidated-dynamic-method-call] -- guarded by hasOwnProperty + typeof check
+        if (typeof handler === 'function') await handler(); // lgtm[js/unvalidated-dynamic-method-call] -- guarded by hasOwnProperty + typeof check
     },
 
     init() {
