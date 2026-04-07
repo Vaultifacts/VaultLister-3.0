@@ -909,7 +909,7 @@ Object.assign(pages, {
                                             <td class="font-medium">${escapeHtml(po.number || 'PO-' + po.id)}</td>
                                             <td>${escapeHtml(po.supplierName || 'Unknown')}</td>
                                             <td>${po.itemCount || 0}</td>
-                                            <td class="font-medium">$${(po.total || 0).toFixed(2)}</td>
+                                            <td class="font-medium">C$${(po.total || 0).toFixed(2)}</td>
                                             <td><span class="badge badge-${po.status === 'delivered' ? 'success' : po.status === 'shipped' ? 'primary' : po.status === 'cancelled' ? 'danger' : 'warning'}">${po.status || 'pending'}</span></td>
                                             <td class="text-sm text-gray-500">${po.created_at ? new Date(po.created_at).toLocaleDateString() : '-'}</td>
                                             <td><button class="btn btn-sm btn-ghost" onclick="handlers.viewPurchaseOrder('${po.id}')" aria-label="View purchase order">${components.icon('eye', 14)}</button></td>

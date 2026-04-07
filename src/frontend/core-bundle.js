@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f98b3341';
+    const v = '79ea17cb';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17938,14 +17938,14 @@ const pages = {
             ...(store.state.sales || []).slice(-6).map(s => ({
                 icon: 'sales',
                 title: 'Sale completed',
-                description: `${s.title} sold for $${s.sale_price}`,
+                description: `${s.title} sold for C$${s.sale_price}`,
                 timestamp: s.sold_at,
                 type: 'sale'
             })),
             ...(store.state.offers || []).filter(o => o.status === 'pending').slice(-4).map(o => ({
                 icon: 'offers',
                 title: 'New offer received',
-                description: `$${o.amount} offer on ${o.listing_id}`,
+                description: `C$${o.amount} offer on ${o.listing_id}`,
                 timestamp: o.created_at,
                 type: 'offer'
             })),

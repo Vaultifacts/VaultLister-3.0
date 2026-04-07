@@ -329,7 +329,7 @@ Object.assign(pages, {
                                         </td>
                                         <td class="text-sm">${escapeHtml(item.sku || '-')}</td>
                                         <td>
-                                            <div class="font-medium">$${parseFloat(item.list_price || 0).toFixed(2)}</div>
+                                            <div class="font-medium">C$${parseFloat(item.list_price || 0).toFixed(2)}</div>
                                             ${item.cost_price ? (() => {
                                                 const listP = parseFloat(item.list_price || 0);
                                                 const costP = parseFloat(item.cost_price || 0);
@@ -337,9 +337,9 @@ Object.assign(pages, {
                                                 const marginPct = listP > 0 ? (profit / listP * 100) : 0;
                                                 const marginColor = marginPct > 50 ? 'var(--success)' : marginPct > 20 ? 'var(--warning-600)' : 'var(--error)';
                                                 return `
-                                                <div class="text-xs text-gray-500">Cost: $${costP.toFixed(2)}</div>
+                                                <div class="text-xs text-gray-500">Cost: C$${costP.toFixed(2)}</div>
                                                 <div class="text-xs" style="color: ${marginColor}; font-weight: 600;">
-                                                    Profit: $${profit.toFixed(2)} (${marginPct.toFixed(0)}%)
+                                                    Profit: C$${profit.toFixed(2)} (${marginPct.toFixed(0)}%)
                                                 </div>`;
                                             })() : ''}
                                         </td>
@@ -625,7 +625,7 @@ Object.assign(pages, {
                                                     <div class="text-xs text-gray-500">${escapeHtml(listing.sku || '')}</div>
                                                 </td>
                                                 <td>${components.platformBadge(listing.platform)}</td>
-                                                <td class="font-medium">$${(listing.price || 0).toFixed(2)}</td>
+                                                <td class="font-medium">C$${(listing.price || 0).toFixed(2)}</td>
                                                 <td class="text-sm text-gray-500">${listing.archived_at ? new Date(listing.archived_at).toLocaleDateString() : '-'}</td>
                                                 <td>
                                                     <div class="flex gap-2">
@@ -1062,7 +1062,7 @@ Object.assign(pages, {
                                         ${visibleColumns.includes('platform') ? `<td>${components.platformBadge(listing.platform)}</td>` : ''}
                                         ${visibleColumns.includes('price') ? `
                                             <td>
-                                                <div class="font-medium">$${listing.price}</div>
+                                                <div class="font-medium">C$${listing.price}</div>
                                                 ${(() => {
                                                     const priceHistory = listing.price_history ? (typeof listing.price_history === 'string' ? JSON.parse(listing.price_history) : listing.price_history) : [listing.price * 1.1, listing.price * 1.05, listing.price];
                                                     if (priceHistory.length >= 2) {
@@ -1137,7 +1137,7 @@ Object.assign(pages, {
                                                             ${relatedListings.map(rl => `
                                                                 <div class="flex items-center justify-between p-2 bg-white rounded border" style="border-color: var(--gray-200)">
                                                                     ${components.platformBadge(rl.platform)}
-                                                                    <span class="font-medium">$${rl.price}</span>
+                                                                    <span class="font-medium">C$${rl.price}</span>
                                                                     <span class="badge badge-${rl.status === 'active' ? 'success' : 'gray'} text-xs">${rl.status}</span>
                                                                 </div>
                                                             `).join('')}
@@ -1720,7 +1720,7 @@ Object.assign(pages, {
                                 ${components.icon('dollar', 24)}
                             </div>
                             <div class="metric-content">
-                                <div class="metric-value">$${Math.round(timeSavedToday * 7 * 0.5)}</div>
+                                <div class="metric-value">C$${Math.round(timeSavedToday * 7 * 0.5)}</div>
                                 <div class="metric-label">Est. Value Created</div>
                                 <div class="metric-comparison positive">Based on C$30/hr rate</div>
                             </div>
@@ -2273,7 +2273,7 @@ Object.assign(pages, {
                             </svg>
                         </div>
                         <div class="insight-content">
-                            <span class="insight-value">$${acceptedValue.toLocaleString()}</span>
+                            <span class="insight-value">C$${acceptedValue.toLocaleString()}</span>
                             <span class="insight-label">Revenue from Offers</span>
                         </div>
                         <div class="insight-trend">
@@ -2364,7 +2364,7 @@ Object.assign(pages, {
                     ${components.icon('star', 24)}
                 </div>
                 <div style="flex: 1;">
-                    <div style="font-weight: 700; font-size: 15px; color: var(--gray-800);">Best Offer: $${(pendingOffers.find(o => o.id === bestOfferId)?.amount || 0).toFixed(2)}</div>
+                    <div style="font-weight: 700; font-size: 15px; color: var(--gray-800);">Best Offer: C$${(pendingOffers.find(o => o.id === bestOfferId)?.amount || 0).toFixed(2)}</div>
                     <div style="font-size: 13px; color: var(--gray-600);">
                         ${escapeHtml(pendingOffers.find(o => o.id === bestOfferId)?.buyer_name || 'Anonymous')} •
                         ${Math.round(bestOfferPercent)}% of listed price •
@@ -2501,7 +2501,7 @@ Object.assign(pages, {
                                             <tr>
                                                 <td>${escapeHtml(listing?.title || 'Unknown')}</td>
                                                 <td>${escapeHtml(offer.buyer_name || 'Anonymous')}</td>
-                                                <td>$${offer.amount.toFixed(2)}</td>
+                                                <td>C$${offer.amount.toFixed(2)}</td>
                                                 <td><span class="badge badge-${offer.status === 'accepted' ? 'success' : offer.status === 'countered' ? 'primary' : 'error'}">${offer.status}</span></td>
                                                 <td class="text-sm text-gray-500">${new Date(offer.created_at).toLocaleDateString()}</td>
                                             </tr>
