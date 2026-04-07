@@ -66,7 +66,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CR-12 | Predictions | "6 items analyzed" shown when user has 0 items — fabricated count | Session 2 | VERIFIED ✅ — 07338ae |
 | CR-13 | Changelog | All version dates are wrong — v1.6.0 "Jan 26", v1.0.0 "Nov 30" — product didn't exist then. Fabricated changelog | Session 2 | VERIFIED ✅ — 07338ae |
 | CR-14 | Affiliate | "Apply Now" with 30% commission, $50 payout — no affiliate backend built | Session 2 | OPEN |
-| CR-15 | Landing Page | Massive white space gap between hero section and feature cards — layout broken | Session 2 | OPEN |
+| CR-15 | Landing Page | Massive white space gap between hero section and feature cards — layout broken | Session 2 | FIXED 82a8408 |
 | CR-16 | Predictions | (Confirmed duplicate of CR-11/CR-12 from Pass 3) — 100% hardcoded fake data: 6 fake items with fake prices, fake AI confidence 77%/87%/82%/75%, fake trend charts | Session 3 | VERIFIED ✅ — 07338ae |
 | CR-17 | Planner | `pages.planner()` function doesn't exist — sidebar nav item is dead. Route registered but no page function defined in any source module | Session 3 | VERIFIED ✅ — 07338ae |
 | #150 | Inventory Import | Import CSV — Parse Data crashes: "Failed to parse data: Cannot read properties of undefined (reading 'get')" — handler calls `.get()` on uninitialized state Map. Core onboarding feature completely broken | Session 6 | VERIFIED ✅ — aca307f — no undefined.get crash; loadImportData/validateImport run cleanly |
@@ -130,7 +130,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #153 | Orders | Orders Sync crashes: fires success toast then immediate failure: "Cannot read properties of undefined (reading 'get')" | Session 7 | VERIFIED ✅ — aca307f — syncAllPlatformOrders shows 'Syncing orders...' toast, no crash |
 | #154 | Automations | Export button fires 4+ simultaneous "Export failed" error toasts — no CSV/JSON produced | Session 7 | VERIFIED ✅ — e097efa |
 | #158 | Reports | Create Report buttons silently do nothing — no modal, no toast, no navigation *(See also: #173 — same issue, discovered independently)* | Session 8 | VERIFIED ✅ — 07338ae |
-| #170 | My Shops | All Connect modals pre-fill username with hardcoded "demo@vaultlister.com" — users must manually clear field | Session 11 | OPEN |
+| #170 | My Shops | All Connect modals pre-fill username with hardcoded "demo@vaultlister.com" — users must manually clear field | Session 11 | CONFIRMED N/A — not found in source; likely already removed |
 | #172 | Calendar | Calendar "Today" and "Week" buttons crash: `ReferenceError: date is not defined` — same stale bundle as #171 | Session 11 | VERIFIED ✅ — 07338ae |
 | #182 | File Upload (DnD) | `sanitizeHTML()` / DOMPurify strips all drag-and-drop event handlers — `ondragover`, `ondragleave`, `ondrop`, `ondragenter`, `ondragstart`, `ondragend` missing from ADD_ATTR allowlist. Drop zones on Add Item modal, Inventory Import, and Image Bank all broken | Session 14 | VERIFIED ✅ — 07338ae |
 | #186 | Vault Buddy | Vault Buddy chat completely non-functional — all operations crash with `undefined.get` error (same root cause as #150). No conversations can be loaded, no new chats can be started | Session 14 | VERIFIED ✅ — aca307f + 5f331cc — toggleVaultBuddy opens panel; sendVaultBuddyMessage runs without crash |
@@ -156,39 +156,39 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-4 | Analytics | Financial score "30" with no data — should be 0 or N/A | Session 1 | OPEN |
 | M-5 | Analytics | "Consider optimizing costs" advice shown with no data — irrelevant for empty-state users | Session 1 | VERIFIED ✅ — efe7ab1 — advice gated on hasData |
 | M-6 | Analytics | "Profit margin below target (15%)" warning shown with no sales data | Session 1 | VERIFIED ✅ — efe7ab1 — margin warning gated on sales data |
-| M-7 | Analytics / Dashboard | Green "0.0%" up arrows on empty data — KPI cards show green arrow with no prior data to compare | Session 1 | OPEN |
+| M-7 | Analytics / Dashboard | Green "0.0%" up arrows on empty data — KPI cards show green arrow with no prior data to compare | Session 1 | VERIFIED ✅ — 82a8408 — calcChange returns null (not 0/100) when no prior data; statCard hides indicator on null |
 | M-8 | Settings | Timezone defaults to Eastern, not user's timezone — should auto-detect or default to MST for Calgary launch | Session 1 | VERIFIED ✅ — e097efa |
-| M-9 | Orders | "More" button truncated to "Mo..." at right edge | Session 1 | OPEN |
+| M-9 | Orders | "More" button truncated to "Mo..." at right edge | Session 1 | FIXED 82a8408 |
 | M-10 | Market Intel | "Your items: 89" hardcoded — should reflect actual inventory count | Session 1 | VERIFIED ✅ — 01384e8 — reads store.state.inventoryItems.length |
-| M-11 | Dashboard | "$2,000 goal" hardcoded Monthly Goal — should be user-set or hidden until set | Session 1 | OPEN |
+| M-11 | Dashboard | "$2,000 goal" hardcoded Monthly Goal — should be user-set or hidden until set | Session 1 | VERIFIED ✅ — 82a8408 — null default, empty state prompt, C$ currency prefix |
 | M-12 | Help | Keyboard shortcut shows ⌘K (Mac) on Windows | Session 1 | VERIFIED ✅ — 01384e8 — shows Ctrl+K on Windows/Linux, ⌘K on Mac |
 | M-13 | Image Bank | "5.00 GB free" — unclear if this is actual R2 limit or hardcoded | Session 1 | OPEN |
-| M-14 | Plans | "Cross-list to 3 platforms" on Free plan confusing — only 5 available at launch; Pro says "all 9" but 4 are Coming Soon | Session 1 | OPEN |
+| M-14 | Plans | "Cross-list to 3 platforms" on Free plan confusing — only 5 available at launch; Pro says "all 9" but 4 are Coming Soon | Session 1 | FIXED 82a8408 |
 | M-15 | Register / Login | Sidebar visible on register/login page — should be hidden for unauthenticated views | Session 2 | CONFIRMED N/A — login/register use render() not renderApp(); sidebar not rendered |
 | M-16 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST | Session 2 | VERIFIED ✅ — efe7ab1 — renamed to GST/HST/PST |
 | M-17 | Transactions | "$0 / $999" filter defaults shown in USD | Session 2 | VERIFIED ✅ — efe7ab1 — filter shows C$0 / C$999 |
-| M-18 | Transactions | "All Categorie" dropdown text truncated — missing 's' | Session 2 | OPEN |
+| M-18 | Transactions | "All Categorie" dropdown text truncated — missing 's' | Session 2 | CONFIRMED N/A — already reads "All Categories" in source |
 | M-19 | Roadmap | "No features found" — should have planned features pre-populated | Session 2 | OPEN |
 | M-20 | Affiliate | "$50 Minimum Payout" in USD not CAD | Session 2 | OPEN |
 | M-21 | Connections | Chrome Extension "Install Extension" button — destination link unclear | Session 2 | OPEN |
-| M-22 | Landing | "Push listings to all 9 marketplaces" — should say 5 at launch | Session 2 | OPEN |
+| M-22 | Landing | "Push listings to all 9 marketplaces" — should say 5 at launch | Session 2 | VERIFIED ✅ — 82a8408 — all copy, pills, stats, pricing updated to 5 launch platforms |
 | M-23 | Auth Pages | All auth pages (Landing/Login/Register) show gradient seam — white strip at ~75% width | Session 2 | OPEN |
 | M-24 | Size Charts | Measurements in inches (in) — should offer metric (cm) for Canada | Session 2 | OPEN |
-| M-25 | Calendar | "Month" button invisible in dark mode — white text on white background | Session 3 | OPEN |
+| M-25 | Calendar | "Month" button invisible in dark mode — white text on white background | Session 3 | FIXED 82a8408 |
 | M-26 | Knowledge Base | "No FAQs" + "No articles" — needs basic content before launch | Session 3 | OPEN |
 | M-27 | Report Builder | "Custom Query — Run SQL queries" — security concern if raw SQL exposed to users | Session 3 | OPEN |
 | M-28 | Teams | "Create Team" available on Free plan — needs tier gating | Session 3 | OPEN |
 | M-29 | Roadmap | Empty — needs at least planned features pre-populated | Session 3 | OPEN |
 | M-30 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST (duplicate of M-16) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-16 |
-| M-31 | Transactions | "All Categorie" truncated dropdown text — missing 's' (duplicate of M-18) | Session 3 | OPEN |
+| M-31 | Transactions | "All Categorie" truncated dropdown text — missing 's' (duplicate of M-18) | Session 3 | CONFIRMED N/A — already reads "All Categories" in source |
 | M-32 | Transactions | "$0 / $999" filter in USD not CAD (duplicate of M-17) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-17 |
 | M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | OPEN |
 | M-34 | Vault Buddy | Chat bubble click does nothing — no chat window opens | Session 3 | OPEN |
 | M-35 | Batch Photo | "Remove Background" and "AI Upscale" require AI backend — unclear error handling | Session 3 | OPEN |
-| M-36 | Privacy (in-app) | "GDPR Compliant" claim — Canada uses PIPEDA, not GDPR. Legal risk | Session 3 | OPEN |
+| M-36 | Privacy (in-app) | "GDPR Compliant" claim — Canada uses PIPEDA, not GDPR. Legal risk | Session 3 | VERIFIED ✅ — 8f2457c — PIPEDA Compliant |
 | M-37 | Calendar (dark) | "Month" view button invisible — white text on white bg in active state in dark mode | Session 4 | OPEN |
 | M-38 | Responsive | 34 mobile breakpoints in CSS but mobile bottom nav absent | Session 4 | CONFIRMED N/A — mobileUI.renderBottomNav() already called in renderApp(); CSS gates to ≤768px |
-| M-39 | Privacy (in-app) | Claims "GDPR Compliant" — Canada uses PIPEDA. Legal risk (duplicate of M-36) | Session 4 | OPEN |
+| M-39 | Privacy (in-app) | Claims "GDPR Compliant" — Canada uses PIPEDA. Legal risk (duplicate of M-36) | Session 4 | VERIFIED ✅ — 8f2457c — same fix |
 | #122 | Templates | `modals.editTemplate()` silent failure — returns without error but no modal opens outside Templates page context | Session 5 | OPEN |
 | #124 | Help Articles | `modals.viewArticle()` fails to open — modal immediately closes or renders in wrong DOM target | Session 5 | OPEN |
 | #133 | Support Tickets (reportBug) | Ticket card displays "undefined" text in a metadata field (likely priority or assignee) — null-guard missing in ticket card rendering function. Any support ticket shown to users will display "undefined" — looks broken and unprofessional | Session 5 (Session 4 dark mode) | VERIFIED ✅ — e097efa |
@@ -230,7 +230,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | L-1 | Login | No "show password" toggle on login | Session 1 | OPEN |
-| L-2 | Login | Green WebSocket indicator dot visible on login page — should be hidden for unauthenticated pages | Session 1 | OPEN |
+| L-2 | Login | Green WebSocket indicator dot visible on login page — should be hidden for unauthenticated pages | Session 1 | VERIFIED ✅ — 8f2457c — dot hidden by default; .ws-status-dot--visible added on renderApp() |
 | L-3 | Dashboard | "Not yet refreshed" text shown to first-time users | Session 1 | OPEN |
 | L-4 | Dashboard | "Good afternoon, demo!" uses username instead of display_name or full_name | Session 1 | OPEN |
 | L-5 | Inventory | "Low Stock" card highlights in yellow at value 0 | Session 1 | OPEN |
@@ -347,7 +347,7 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 | CA-M-4 | `src/frontend/core/utils.js:11-20` | `SUPPORTED_PLATFORMS` lists all 9 platforms — Canada launch = 5 only. **Fix:** Create `LAUNCH_PLATFORMS` filter constant. | Lists poshmark, ebay, mercari, depop, grailed, etsy, shopify, facebook, whatnot | VERIFIED ✅ — e097efa |
 | CA-M-5 | `src/frontend/handlers/handlers-tools-tasks.js:3803` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | OPEN |
 | CA-M-6 | `src/frontend/handlers/handlers-deferred.js:21168` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | OPEN |
-| CA-M-7 | `src/frontend/pages/pages-intelligence.js:1826,1914` | "Coming soon" toast messages in production pages | `toast.info('...coming soon.')` | OPEN |
+| CA-M-7 | `src/frontend/pages/pages-intelligence.js:1826,1914` | "Coming soon" toast messages in production pages | `toast.info('...coming soon.')` | FIXED 82a8408 |
 | CA-M-8 | `src/shared/ai/listing-generator.js:167,180,185,189` | `Math.random()` in template selection (4 instances) — non-deterministic listing generation | `templates.intro[Math.floor(Math.random() * length)]` | OPEN |
 | CA-M-9 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics `Math.random()` fallback (duplicate reference with expanded detail) — `healthScore`, `orderAccuracy`, `onTimeDelivery`, `qualityRating` all generate fake "good" values (90-95% range) if DB fields missing | `const healthScore = supplier.health_score \|\| Math.floor(Math.random() * 30) + 70` | OPEN |
 
