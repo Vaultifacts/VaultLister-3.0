@@ -328,8 +328,8 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 | CA-CR-1 | `src/backend/middleware/rateLimiter.js:27-28` | Rate limiting DISABLED for production — `isRateLimitBypassed()` always returns `true`. Zero brute-force, API abuse, or DoS protection. **Fix:** Change `return true` to `return false` or use env gate. | `function isRateLimitBypassed() { return true; }` | VERIFIED ✅ — abeccbb |
 | CA-CR-2 | `src/backend/services/platformSync/imageUploadHelper.js:48,138` | `Math.random()` in production image filenames — temp files are predictable, attackers can guess and access other users' temp images. **Fix:** Use `crypto.getRandomValues()`. | `'c-${Date.now()}-${Math.random().toString(36)}'` | VERIFIED ✅ — 34aa7ce |
 | CA-CR-3 | `src/backend/routes/ai.js:73,75` | Mercari/Grailed in active AI templates — these are post-launch platforms. Code executes if triggered. **Fix:** Remove or wrap with feature flag. | `mercari: 'Stylish Fashion Item', grailed: 'Designer Streetwear'` | VERIFIED ✅ — 8a1d58e |
-| CA-CR-4 | `src/backend/db/seeds/demoData.js:383-471` | `Math.random()` in demo order/tracking numbers (7 instances) — non-deterministic demo data. | `order_number: 'PSH-' + Math.random().toString(36).substr(2,8)` | OPEN |
-| CA-CR-5 | `app.js:29521` | "Cross-list to all 6 platforms" — legacy file, stale copy (not served but misleading) | `Cross-list to all 6 platforms` | OPEN |
+| CA-CR-4 | `src/backend/db/seeds/demoData.js:383-471` | `Math.random()` in demo order/tracking numbers (7 instances) — non-deterministic demo data. | `order_number: 'PSH-' + Math.random().toString(36).substr(2,8)` | FIXED — demoData.js: all 10 Math.random() order/tracking numbers replaced with hardcoded deterministic values |
+| CA-CR-5 | `app.js:29521` | "Cross-list to all 6 platforms" — legacy file, stale copy (not served but misleading) | `Cross-list to all 6 platforms` | CONFIRMED N/A — root-level app.js does not exist in this repo |
 
 ---
 
@@ -356,13 +356,13 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 |----|-----------|-------|----------------|--------|
 | CA-M-1 | `src/backend/workers/taskWorker.js:1160,1162` | Mercari/Grailed case statements active — should be feature-gated for post-launch | `case 'mercari': return await executeMercariBot(...)` | VERIFIED ✅ — e097efa |
 | CA-M-2 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics use `Math.random()` fallback — fake health/accuracy/delivery/quality scores on prod if data is missing | `Math.floor(Math.random() * 30) + 70` | VERIFIED ✅ — e097efa |
-| CA-M-3 | `src/frontend/handlers/handlers-tools-tasks.js:344` | Tag randomization uses `Math.random()` | `sort(() => 0.5 - Math.random())` | OPEN |
+| CA-M-3 | `src/frontend/handlers/handlers-tools-tasks.js:344` | Tag randomization uses `Math.random()` | `sort(() => 0.5 - Math.random())` | FIXED — handlers-tools-tasks.js: sort(() => 0.5 - Math.random()) → sort((a,b) => a.localeCompare(b)) |
 | CA-M-4 | `src/frontend/core/utils.js:11-20` | `SUPPORTED_PLATFORMS` lists all 9 platforms — Canada launch = 5 only. **Fix:** Create `LAUNCH_PLATFORMS` filter constant. | Lists poshmark, ebay, mercari, depop, grailed, etsy, shopify, facebook, whatnot | VERIFIED ✅ — e097efa |
 | CA-M-5 | `src/frontend/handlers/handlers-tools-tasks.js:3803` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | VERIFIED ✅ — 0c852be — comment updated to "5 platform-specific presets" |
 | CA-M-6 | `src/frontend/handlers/handlers-deferred.js:21168` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | VERIFIED ✅ — 0c852be — comment updated to "5 platform-specific presets" |
 | CA-M-7 | `src/frontend/pages/pages-intelligence.js:1826,1914` | "Coming soon" toast messages in production pages | `toast.info('...coming soon.')` | VERIFIED ✅ — 82a8408 |
-| CA-M-8 | `src/shared/ai/listing-generator.js:167,180,185,189` | `Math.random()` in template selection (4 instances) — non-deterministic listing generation | `templates.intro[Math.floor(Math.random() * length)]` | OPEN |
-| CA-M-9 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics `Math.random()` fallback (duplicate reference with expanded detail) — `healthScore`, `orderAccuracy`, `onTimeDelivery`, `qualityRating` all generate fake "good" values (90-95% range) if DB fields missing | `const healthScore = supplier.health_score \|\| Math.floor(Math.random() * 30) + 70` | OPEN |
+| CA-M-8 | `src/shared/ai/listing-generator.js:167,180,185,189` | `Math.random()` in template selection (4 instances) — non-deterministic listing generation | `templates.intro[Math.floor(Math.random() * length)]` | FIXED — listing-generator.js: pickTemplate() hash helper replaces all 4 Math.random() template selections |
+| CA-M-9 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics `Math.random()` fallback (duplicate reference with expanded detail) — `healthScore`, `orderAccuracy`, `onTimeDelivery`, `qualityRating` all generate fake "good" values (90-95% range) if DB fields missing | `const healthScore = supplier.health_score \|\| Math.floor(Math.random() * 30) + 70` | CONFIRMED N/A — widgets.js supplier metric fallbacks already use ?? null (no Math.random), fixed in prior session |
 
 ---
 
@@ -370,7 +370,7 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 
 | ID | File:Line | Issue | Status |
 |----|-----------|-------|--------|
-| CA-L-1 | `src/backend/db/database.js:328` | TODO comment: "Phase 3: implement tsvector full-text search" — incomplete feature | OPEN |
+| CA-L-1 | `src/backend/db/database.js:328` | TODO comment: "Phase 3: implement tsvector full-text search" — incomplete feature | FIXED — database.js: stale TODO comment updated to deferred-feature note |
 | CA-L-2 | `src/backend/middleware/rateLimiter.js:27` | TODO comment: "Re-enable for production release" — advisory only (root issue is CA-CR-1) | VERIFIED ✅ — abeccbb |
 
 ---
