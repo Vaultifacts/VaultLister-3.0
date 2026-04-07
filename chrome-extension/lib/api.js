@@ -212,6 +212,13 @@ class VaultListerAPI {
         });
     }
 
+    async reportCrossListResult(syncId, result) {
+        return await this.request(`/extension/sync/${syncId}/result`, {
+            method: 'POST',
+            body: JSON.stringify(result)
+        });
+    }
+
     // Check if logged in
     isAuthenticated() {
         return !!this.token;

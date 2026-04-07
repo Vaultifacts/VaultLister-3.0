@@ -758,6 +758,65 @@ export async function extensionRouter(ctx) {
         }
     }
 
+    // POST /api/extension/sync/:id/result - Report cross-list result from extension
+    if (method === 'POST' && path.match(/^\/sync\/[a-zA-Z0-9_-]+\/result$/)) {
+        if (!user) return { status: 401, data: { error: 'Authentication required' } };
+
+        const syncId = path.split('/')[2];
+        const { success, platform, listingUrl, error: resultError } = body;
+
+        if (typeof success !== 'boolean') {
+            return { status: 400, data: { error: 'success (boolean) is required' } };
+        }
+
+        try {
+            // Verify ownership
+            const syncItem = await query.get(
+                `SELECT * FROM extension_sync_queue WHERE id = $1 AND user_id = $2`,
+                [syncId, user.id]
+            );
+
+            if (!syncItem) {
+                return { status: 404, data: { error: 'Sync item not found' } };
+            }
+
+            const newStatus = success ? 'completed' : 'failed';
+            await query.run(
+                `UPDATE extension_sync_queue
+                 SET status = $1, processed_at = NOW(), result = $2
+                 WHERE id = $3 AND user_id = $4`,
+                [newStatus, JSON.stringify({ listingUrl, error: resultError }), syncId, user.id]
+            );
+
+            // If successful and we have a listing URL, create a listing record
+            if (success && listingUrl && platform) {
+                const payload = safeJsonParse(syncItem.payload, {});
+                const inventoryItemId = payload.inventory_item_id || null;
+
+                if (inventoryItemId) {
+                    const listingId = `lst_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
+                    await query.run(
+                        `INSERT INTO listings (id, user_id, inventory_item_id, platform, status, listing_url, listed_at)
+                         VALUES ($1, $2, $3, $4, 'active', $5, NOW())
+                         ON CONFLICT DO NOTHING`,
+                        [listingId, user.id, inventoryItemId, platform, listingUrl]
+                    );
+                }
+            }
+
+            return {
+                status: 200,
+                data: { success: true, status: newStatus }
+            };
+        } catch (error) {
+            logger.error('[Extension] error reporting sync result', user?.id, { detail: error?.message || 'Unknown error' });
+            return {
+                status: 500,
+                data: { error: 'Failed to update sync result' }
+            };
+        }
+    }
+
     return {
         status: 404,
         data: { error: 'Not found' }

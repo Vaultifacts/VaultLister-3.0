@@ -1087,6 +1087,20 @@ const modals = {
                             </label>`;
                         }).join('')}
                     </div>
+                    <div style="margin: 16px 0; padding: 12px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">
+                        <p style="font-weight: 500; margin-bottom: 8px; font-size: 14px;">Posting Method</p>
+                        <div style="display: flex; gap: 8px;">
+                            <label id="vl-method-extension" style="flex: 1; padding: 10px 12px; border: 2px solid var(--primary); border-radius: 6px; cursor: pointer; text-align: center; background: var(--primary-50); font-size: 13px; font-weight: 500;">
+                                <input type="radio" name="postingMethod" value="extension" style="display: none;" checked onchange="document.getElementById('vl-method-extension').style.borderColor='var(--primary)'; document.getElementById('vl-method-bot').style.borderColor='var(--gray-200)'; document.getElementById('vl-method-extension').style.background='var(--primary-50)'; document.getElementById('vl-method-bot').style.background='transparent'">
+                                🔌 Via Extension
+                            </label>
+                            <label id="vl-method-bot" style="flex: 1; padding: 10px 12px; border: 2px solid var(--gray-200); border-radius: 6px; cursor: pointer; text-align: center; font-size: 13px; font-weight: 500;">
+                                <input type="radio" name="postingMethod" value="bot" style="display: none;" onchange="document.getElementById('vl-method-bot').style.borderColor='var(--primary)'; document.getElementById('vl-method-extension').style.borderColor='var(--gray-200)'; document.getElementById('vl-method-bot').style.background='var(--primary-50)'; document.getElementById('vl-method-extension').style.background='transparent'">
+                                🤖 Server Bot
+                            </label>
+                        </div>
+                        <p style="font-size: 11px; color: var(--gray-500); margin-top: 8px; line-height: 1.4;">Extension uses your logged-in browser session (recommended for Poshmark, Depop, Facebook, Whatnot). Bot is automated and may be slower.</p>
+                    </div>
                     <div style="margin-top: 16px;">
                         <label class="form-label">Price Adjustment (%)</label>
                         <input type="number" name="priceAdjust" class="form-input" value="0" step="5" placeholder="e.g., +10 for 10% increase">
@@ -1095,7 +1109,7 @@ const modals = {
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                <button class="btn btn-primary" onclick="document.getElementById('crosslist-form').requestSubmit()">
+                <button class="btn btn-primary" onclick="handlers.submitCrosslistWithMethod('${itemIds.join(',')}')">
                     Cross-List Now
                 </button>
             </div>

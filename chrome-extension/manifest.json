@@ -20,7 +20,9 @@
     "https://www.depop.com/*",
     "https://www.grailed.com/*",
     "https://www.etsy.com/*",
-    "https://*.myshopify.com/*"
+    "https://*.myshopify.com/*",
+    "https://www.facebook.com/*",
+    "https://www.whatnot.com/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js",
@@ -103,6 +105,16 @@
         "https://*.myshopify.com/admin/products/*"
       ],
       "js": ["content/autofill.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://poshmark.com/create-listing*",
+        "https://www.depop.com/sell/*",
+        "https://www.facebook.com/marketplace/create/*",
+        "https://www.whatnot.com/sell*"
+      ],
+      "js": ["content/poster.js"],
       "run_at": "document_idle"
     }
   ],

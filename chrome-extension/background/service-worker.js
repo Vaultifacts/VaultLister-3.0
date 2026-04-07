@@ -7,6 +7,57 @@ import '../lib/logger.js';
 // Mutex flag to prevent concurrent badge updates
 let badgeUpdateInProgress = false;
 
+// Platform create-listing URLs for extension-based cross-listing
+const PLATFORM_LISTING_URLS = {
+    poshmark: 'https://poshmark.com/create-listing',
+    depop: 'https://www.depop.com/sell/',
+    facebook: 'https://www.facebook.com/marketplace/create/item',
+    whatnot: 'https://www.whatnot.com/sell'
+};
+
+// Process pending cross-list jobs from the sync queue
+async function processCrossListJobs() {
+    try {
+        const result = await api.getSyncQueue();
+        const pendingJobs = (result.items || []).filter(
+            item => item.action === 'cross_list' && item.status === 'pending'
+        );
+
+        if (!pendingJobs.length) return;
+
+        // Load existing tab→job mappings to avoid re-opening tabs for in-flight jobs
+        const storage = await chrome.storage.local.get(['crossListJobs']);
+        const activeJobs = storage.crossListJobs || {};
+        const activeTabIds = new Set(Object.keys(activeJobs).map(Number));
+
+        for (const job of pendingJobs) {
+            // Skip if already being processed (tab open)
+            const alreadyOpen = Object.values(activeJobs).some(j => j.syncId === job.id);
+            if (alreadyOpen) continue;
+
+            const payload = (() => { try { return JSON.parse(job.payload || '{}'); } catch { return {}; } })();
+            const platform = payload.platform || job.data?.platform;
+            const listingUrl = PLATFORM_LISTING_URLS[platform];
+
+            if (!listingUrl) continue;
+
+            // Open tab for this platform
+            const tab = await chrome.tabs.create({ url: listingUrl, active: false });
+
+            // Store job keyed by tabId
+            activeJobs[tab.id] = {
+                syncId: job.id,
+                platform,
+                listingData: payload.listing_data || job.data || {}
+            };
+        }
+
+        await chrome.storage.local.set({ crossListJobs: activeJobs });
+    } catch (error) {
+        logger.error('Failed to process cross-list jobs:', error);
+    }
+}
+
 // Resolve app URL from the same base the API client uses
 async function getAppUrl() {
     await api.loadToken();
@@ -99,6 +150,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             .then(data => sendResponse({ success: true, data }))
             .catch(error => sendResponse({ success: false, error: error.message }));
         return true; // Keep channel open for async response
+    } else if (request.action === 'getCrossListJob') {
+        // Called by poster.js when it loads — look up job for this tab
+        const tabId = sender.tab?.id;
+        chrome.storage.local.get(['crossListJobs'], (storage) => {
+            const jobs = storage.crossListJobs || {};
+            const job = jobs[tabId] || null;
+            sendResponse({ job });
+        });
+        return true;
+    } else if (request.action === 'crossListJobComplete') {
+        // Called by poster.js after form is filled (or error)
+        const { syncId, success, platform, listingUrl, error } = request;
+        const tabId = sender.tab?.id;
+
+        api.reportCrossListResult(syncId, { success, platform, listingUrl, error })
+            .catch(err => logger.error('Failed to report cross-list result:', err));
+
+        // Remove from active jobs
+        chrome.storage.local.get(['crossListJobs'], (storage) => {
+            const jobs = storage.crossListJobs || {};
+            delete jobs[tabId];
+            chrome.storage.local.set({ crossListJobs: jobs });
+        });
+
+        sendResponse({ success: true });
+        return true;
     }
 });
 
@@ -143,6 +220,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         await checkPriceUpdates();
     } else if (alarm.name === 'badge-update') {
         await updateBadge();
+        await processCrossListJobs();
     }
 });
 

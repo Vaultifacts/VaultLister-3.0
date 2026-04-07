@@ -55,7 +55,26 @@
       "mcp__plugin_notion_notion__notion-create-pages",
       "WebFetch(domain:docs.easypost.com)",
       "WebFetch(domain:www.easypost.com)",
-      "WebFetch(domain:support.easypost.com)"
+      "WebFetch(domain:support.easypost.com)",
+      "WebFetch(domain:ised-isde.canada.ca)",
+      "WebFetch(domain:corporationscanada.ic.gc.ca)",
+      "WebFetch(domain:www.cra-arc.gc.ca)",
+      "WebFetch(domain:www.alberta.ca)",
+      "WebFetch(domain:turbotax.intuit.ca)",
+      "WebFetch(domain:www.bdo.ca)",
+      "WebFetch(domain:cfib-fcei.ca)",
+      "WebFetch(domain:ownr.co)",
+      "WebFetch(domain:www.kpmg.com)",
+      "WebFetch(domain:www.moneysense.ca)",
+      "WebFetch(domain:www.ratehub.ca)",
+      "WebFetch(domain:crosslist.io)",
+      "WebFetch(domain:vendoo.co)",
+      "WebFetch(domain:listperfectly.com)",
+      "WebFetch(domain:crosslist.com)",
+      "WebFetch(domain:www.mondaq.com)",
+      "WebFetch(domain:servicealberta.gov.ab.ca)",
+      "WebFetch(domain:tpsfirm.com)",
+      "WebFetch(domain:www.pwc.com)"
     ]
   },
   "hooks": {

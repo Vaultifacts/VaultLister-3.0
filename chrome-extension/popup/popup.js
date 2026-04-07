@@ -113,21 +113,63 @@ function updateUI() {
     trackedCountEl.textContent = state.trackedCount;
 
     // Update sync queue
+    const pendingCrossLists = state.syncQueue.filter(i => i.action === 'cross_list' && i.status === 'pending');
+    const otherItems = state.syncQueue.filter(i => i.action !== 'cross_list');
+    const ACTION_LABELS = {
+        cross_list: 'Cross-List', add_inventory: 'Add Inventory',
+        update_price: 'Update Price', delete_listing: 'Delete Listing',
+        sync_sale: 'Sync Sale', add_image: 'Add Image'
+    };
+
     if (state.syncQueue.length === 0) {
-        syncQueueEl.innerHTML = '<p class="empty-state">No pending actions</p>';  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        syncQueueEl.textContent = '';
+        const empty = document.createElement('p');
+        empty.className = 'empty-state';
+        empty.textContent = 'No pending actions';
+        syncQueueEl.appendChild(empty);
     } else {
-        // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-        syncQueueEl.innerHTML = state.syncQueue.map(item => `
-            <div class="sync-item">
-                <div class="sync-item-info">
-                    <div class="sync-item-title">${escapeHtml(item.action_type)}</div>
-                    <div class="sync-item-meta">${escapeHtml(new Date(item.created_at).toLocaleDateString())}</div>
-                </div>
-                <button class="sync-item-action" data-id="${escapeHtml(item.id)}" onclick="processSyncItem(this.dataset.id)">
-                    Process
-                </button>
-            </div>
-        `).join('');
+        syncQueueEl.textContent = '';
+        if (pendingCrossLists.length) {
+            const jobEl = document.createElement('div');
+            jobEl.className = 'sync-item';
+            jobEl.style.cssText = 'background:#eef2ff;border-left:3px solid #6366f1;border-radius:6px;margin-bottom:4px;padding:8px 10px;';
+            const info = document.createElement('div');
+            info.className = 'sync-item-info';
+            const title = document.createElement('div');
+            title.className = 'sync-item-title';
+            title.style.fontWeight = '600';
+            const jobCount = pendingCrossLists.length;
+            title.textContent = jobCount + ' cross-list job' + (jobCount > 1 ? 's' : '') + ' queued';
+            const meta = document.createElement('div');
+            meta.className = 'sync-item-meta';
+            meta.style.cssText = 'font-size:11px;color:#6b7280;';
+            meta.textContent = 'Extension will open tabs automatically';
+            info.appendChild(title);
+            info.appendChild(meta);
+            jobEl.appendChild(info);
+            syncQueueEl.appendChild(jobEl);
+        }
+        otherItems.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'sync-item';
+            const info = document.createElement('div');
+            info.className = 'sync-item-info';
+            const t = document.createElement('div');
+            t.className = 'sync-item-title';
+            t.textContent = ACTION_LABELS[item.action] || item.action || 'Unknown';
+            const m = document.createElement('div');
+            m.className = 'sync-item-meta';
+            m.textContent = new Date(item.created_at).toLocaleDateString();
+            info.appendChild(t);
+            info.appendChild(m);
+            const btn = document.createElement('button');
+            btn.className = 'sync-item-action';
+            btn.textContent = 'Process';
+            btn.addEventListener('click', () => processSyncItem(item.id));
+            el.appendChild(info);
+            el.appendChild(btn);
+            syncQueueEl.appendChild(el);
+        });
     }
 }
 
