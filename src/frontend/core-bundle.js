@@ -15411,7 +15411,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'f6143082';
+    const v = 'a98e73c0';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -21485,6 +21485,8 @@ const auth = {
     },
 
     async handleOAuthCallback(preExtractedOtt) {
+        // Guard: if already authenticated (e.g. second invocation after successful exchange), skip
+        if (this.isAuthenticated()) return;
         try {
             const ott = preExtractedOtt || new URLSearchParams((window.location.hash.slice(1).split('?')[1]) || '').get('ott');
             if (!ott) {
