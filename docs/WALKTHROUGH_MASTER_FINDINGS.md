@@ -38,8 +38,8 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 | Status | Count |
 |--------|-------|
 | OPEN | 11 |
-| FIXED (code changed, not yet visually confirmed on live site) | 1 |
-| VERIFIED ✅ (visually confirmed or source-confirmed) | ~152 |
+| FIXED (code changed, not yet visually confirmed on live site) | 0 |
+| VERIFIED ✅ (visually confirmed or source-confirmed) | ~153 |
 | CONFIRMED N/A (not a bug / duplicate / already correct) | ~33 |
 | **TOTAL** | **215+** |
 
@@ -175,7 +175,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-10 | Market Intel | "Your items: 89" hardcoded — should reflect actual inventory count | Session 1 | VERIFIED ✅ — 01384e8 — reads store.state.inventoryItems.length |
 | M-11 | Dashboard | "$2,000 goal" hardcoded Monthly Goal — should be user-set or hidden until set | Session 1 | VERIFIED ✅ — 82a8408 — null default, empty state prompt, C$ currency prefix |
 | M-12 | Help | Keyboard shortcut shows ⌘K (Mac) on Windows | Session 1 | VERIFIED ✅ — 01384e8 — shows Ctrl+K on Windows/Linux, ⌘K on Mac |
-| M-13 | Image Bank | "5.00 GB free" — unclear if this is actual R2 limit or hardcoded | Session 1 | FIXED — storageLimit now reads from PLAN_STORAGE_GB[user.subscription_tier]: free=0.1GB, starter=1GB, pro=5GB, business=25GB (bundle bb9114d1) |
+| M-13 | Image Bank | "5.00 GB free" — unclear if this is actual R2 limit or hardcoded | Session 1 | VERIFIED ✅ — storageLimit reads PLAN_STORAGE_GB[user.subscription_tier]: free=0.1GB, starter=1GB, pro=5GB, business=25GB. Live chunk-settings.js confirmed: `W={free:0.1,starter:1,pro:5,business:25}[J.subscription_tier]` (2026-04-07) |
 | M-14 | Plans | "Cross-list to 3 platforms" on Free plan confusing — only 5 available at launch; Pro says "all 9" but 4 are Coming Soon | Session 1 | VERIFIED ✅ — 82a8408 (plans page) + this commit (settings/account page) |
 | M-15 | Register / Login | Sidebar visible on register/login page — should be hidden for unauthenticated views | Session 2 | CONFIRMED N/A — login/register use render() not renderApp(); sidebar not rendered |
 | M-16 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST | Session 2 | VERIFIED ✅ — efe7ab1 — renamed to GST/HST/PST |
