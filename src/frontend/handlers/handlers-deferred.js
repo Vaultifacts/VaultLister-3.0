@@ -27637,6 +27637,23 @@ Object.assign(handlers, {
         }
     },
 
+    showInstallExtensionModal() {
+        const html = `
+            <div class="modal-header">
+                <h2 class="modal-title">VaultLister Chrome Extension</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-4">The VaultLister Chrome Extension lets you capture products, track prices, and auto-fill listings directly from your browser.</p>
+                <p class="text-gray-500 text-sm">The extension is coming soon to the Chrome Web Store. We'll notify you when it's available!</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Close</button>
+            </div>
+        `;
+        modals.show(html);
+    },
+
     checkPoshmarkMonitoring: async function() {
         try {
             toast.show('Checking Poshmark closet...', 'info');

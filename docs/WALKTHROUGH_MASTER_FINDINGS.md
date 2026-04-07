@@ -37,10 +37,10 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 41 |
-| FIXED (code changed, not yet visually confirmed on live site) | 0 |
-| VERIFIED ✅ (visually confirmed or source-confirmed) | ~150 |
-| CONFIRMED N/A (not a bug / duplicate / already correct) | ~24 |
+| OPEN | 17 |
+| FIXED (code changed, not yet visually confirmed on live site) | 1 |
+| VERIFIED ✅ (visually confirmed or source-confirmed) | ~151 |
+| CONFIRMED N/A (not a bug / duplicate / already correct) | ~29 |
 | **TOTAL** | **215+** |
 
 ### Status Definitions
@@ -183,13 +183,13 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-18 | Transactions | "All Categorie" dropdown text truncated — missing 's' | Session 2 | CONFIRMED N/A — already reads "All Categories" in source |
 | M-19 | Roadmap | "No features found" — should have planned features pre-populated | Session 2 | OPEN |
 | M-20 | Affiliate | "$50 Minimum Payout" in USD not CAD | Session 2 | VERIFIED ✅ — screenshot confirms "C$50 Minimum Payout" in commission structure card (2026-04-07) |
-| M-21 | Connections | Chrome Extension "Install Extension" button — destination link unclear | Session 2 | OPEN |
+| M-21 | Connections | Chrome Extension "Install Extension" button — destination link unclear | Session 2 | FIXED — added showInstallExtensionModal() to handlers-deferred.js; shows "coming soon" modal with description (bundle b86e134c) |
 | M-22 | Landing | "Push listings to all 9 marketplaces" — should say 5 at launch | Session 2 | VERIFIED ✅ — 82a8408 — all copy, pills, stats, pricing updated to 5 launch platforms |
 | M-23 | Auth Pages | All auth pages (Landing/Login/Register) show gradient seam — white strip at ~75% width | Session 2 | VERIFIED ✅ — login page screenshot confirms gradient fills full width, no seam (2026-04-07) |
 | M-24 | Size Charts | Measurements in inches (in) — should offer metric (cm) for Canada | Session 2 | CONFIRMED N/A — duplicate of shipping fix already applied in #149/23a4729; metric units confirmed in handlers-sales-orders.js |
 | M-25 | Calendar | "Month" button invisible in dark mode — white text on white background | Session 3 | VERIFIED ✅ — 82a8408 |
 | M-26 | Knowledge Base | "No FAQs" + "No articles" — needs basic content before launch | Session 3 | OPEN |
-| M-27 | Report Builder | "Custom Query — Run SQL queries" — security concern if raw SQL exposed to users | Session 3 | OPEN |
+| M-27 | Report Builder | "Custom Query — Run SQL queries" — security concern if raw SQL exposed to users | Session 3 | CONFIRMED N/A — backend is admin-only gated (403 for non-admin), SELECT-only enforcement, table allowlist, user_id injection in validateCustomQuery (reports.js:63). UI shows to all but execution is server-side blocked. |
 | M-28 | Teams | "Create Team" available on Free plan — needs tier gating | Session 3 | VERIFIED ✅ — clicking Create Team on free plan fires toast "Team features require a Pro or Business plan" with no modal (2026-04-07) |
 | M-29 | Roadmap | Empty — needs at least planned features pre-populated | Session 3 | OPEN |
 | M-30 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST (duplicate of M-16) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-16 |
@@ -255,7 +255,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-11 | Backend | Fake 555-xxxx phone numbers in supplier data — FCC reserved range, obviously fake | Session 1 (Code audit) | CONFIRMED N/A — no 555-format phone numbers found in seed files |
 | L-12 | Market Intel | "Competitor Activity — Live Activity" with green dot suggesting live feed that doesn't exist | Session 1 | VERIFIED ✅ — 00e1551 — pages-intelligence.js: "Live" badge changed to "Coming Soon" |
 | L-13 | Register | No Full Name or Display Name field in registration | Session 2 | VERIFIED ✅ — same fix as L-7 — Full Name field confirmed in registration form |
-| L-14 | Refer a Friend | Referral code "VAULTDEMO" hardcoded — should be user-specific | Session 2 | OPEN |
+| L-14 | Refer a Friend | Referral code "VAULTDEMO" hardcoded — should be user-specific | Session 2 | VERIFIED ✅ — pages-community-help.js:742: code is `user.referral_code \|\| 'VAULT' + user.id.substring(0,6).toUpperCase()` — dynamic per user, confirmed "VAULTU1" in live render (2026-04-07) |
 | L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | VERIFIED ✅ — 15dba34 — public/terms.html + pages-community-help.js updated to April 2026 |
 | L-16 | Terms / Landing | Logo shows "M" purple circle — should be "V" blue square (brand inconsistency) | Session 2 | CONFIRMED N/A — source already renders 'V' with var(--primary-600) + border-radius (rounded square), not 'M' purple circle |
 | L-17 | Size Charts | "us US" in dropdown — double "US" label | Session 2 | VERIFIED ✅ — DOM inspection confirms options show "🇺🇸 United States" (flag renders as "us" in JPEG screenshots — confirmed working 2026-04-07) |
@@ -269,10 +269,10 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-25 | Listings | "Customize" columns button has no onclick handler | Session 3 | CONFIRMED N/A — button is a functional dropdown with column checkboxes calling handlers.toggleListingColumn |
 | L-26 | Listings | Announcement banner "✕" close button has no onclick handler | Session 3 | VERIFIED ✅ — 0c852be — index.html: added onclick="document.getElementById('announcement-banner').hidden=true" |
 | L-27 | Connections (dark) | Cloudinary/Anthropic AI toggle buttons nearly invisible in dark mode | Session 3 | VERIFIED ✅ — .rounded-lg.border shows bg rgb(17,24,39) + border rgb(55,65,81) in dark mode, confirmed live (2026-04-07) |
-| L-28 | Privacy (in-app) | "Download PDF" button — unclear if it generates a real PDF | Session 3 | OPEN |
+| L-28 | Privacy (in-app) | "Download PDF" button — unclear if it generates a real PDF | Session 3 | CONFIRMED N/A — handlers-core.js:1515: shows toast then calls window.print(), which opens browser print dialog (save as PDF). Functional. |
 | L-29 | Connections (dark) | Cloudinary/Anthropic toggles nearly invisible (duplicate of L-27) | Session 4 | VERIFIED ✅ — same fix as L-27, confirmed live (2026-04-07) |
 | L-30 | Batch Photo | "Remove Background"/"AI Upscale" may not have backend support | Session 4 | OPEN |
-| L-31 | Privacy (in-app) | "Download PDF" button — untested (duplicate of L-28) | Session 4 | OPEN |
+| L-31 | Privacy (in-app) | "Download PDF" button — untested (duplicate of L-28) | Session 4 | CONFIRMED N/A — duplicate of L-28; same window.print() implementation confirmed |
 | #127 | Cross-list Modal | "Ebay" brand name misspelled — should be "eBay" | Session 5 | VERIFIED ✅ — 15dba34 — eBay capitalization corrected |
 | #128 | Calendar | Edit Event has "Depends On" field not present in Add Event — inconsistency | Session 5 | VERIFIED ✅ — editCalendarEvent modal has no "Depends On" field, hasDependsOn:false confirmed live (2026-04-07) |
 | #130 | Reports | `modals.viewReport()` shows raw ID string instead of report content | Session 5 | VERIFIED ✅ — handlers.viewReport() fetches API then passes data object; raw ID path removed, confirmed in source (2026-04-07) |
@@ -307,7 +307,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CO-3 | Market Intel | "Updated Just now" — misleading when no data has been fetched | Session 1 | VERIFIED ✅ — 00e1551 — pages-intelligence.js: shows "no data yet" when marketIntelLastUpdated not set |
 | CO-4 | Register | Password requirement checkmarks not validated live as user types | Session 2 | CONFIRMED N/A — already wired: checkRegisterPassword fires on oninput in handlers-core.js |
 | CO-5 | Whatnot Live | Green "0% vs last week" arrows — should be neutral | Session 2 | VERIFIED ✅ — same fix as CO-1, confirmed in source (2026-04-07) |
-| CO-6 | Refer a Friend | Logo shows "V" overlaid on purple — inconsistent with other pages | Session 3 | OPEN |
+| CO-6 | Refer a Friend | Logo shows "V" overlaid on purple — inconsistent with other pages | Session 3 | CONFIRMED N/A — no logo element in Refer a Friend page content (pages-community-help.js:740-879). Only "V" present is the global sidebar-logo, consistent across all pages. (2026-04-07) |
 | #157 | My Shops | "Connect to Ebay" — should be "Connect to eBay" | Session 8 | VERIFIED ✅ — 15dba34 — handlers-deferred.js: PLATFORM_DISPLAY_NAMES lookup gives correct casing |
 | #163 | Listings / Health | Listing Health modal shows "Poor Health" score 0 AND "All listings have good health scores!" simultaneously — contradictory | Session 10 | VERIFIED ✅ — c6d006f — modal shows "Poor Health" score 25 with attention list, no all-good message (confirmed live 2026-04-07) |
 | #168 | My Shops | eBay Connect modal title shows "Connect to Ebay" not "Connect to eBay" | Session 11 | VERIFIED ✅ — 15dba34 — same fix as #157 (PLATFORM_DISPLAY_NAMES in handlers-deferred.js) |
