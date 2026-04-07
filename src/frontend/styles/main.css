@@ -2016,7 +2016,7 @@ body.dark-mode .sidebar-logout-btn:hover {
     margin-left: var(--sidebar-width);
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 .main-content {
@@ -2024,7 +2024,7 @@ body.dark-mode .sidebar-logout-btn:hover {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 @media (max-width: 1024px) {
