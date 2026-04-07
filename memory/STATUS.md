@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-07 MST
+**Updated:** 2026-04-07 MST (session 2)
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — 214 findings, 100% coverage (14 sessions)
@@ -12,15 +12,40 @@
 ## In Progress
 - Nothing in progress
 
-## In Progress
-- Nothing in progress
+## Completed This Session (2026-04-07, session 2)
 
-## Completed This Session (2026-04-07)
+### Frontend fix batch — 82a8408 (VERIFIED LIVE)
+- **CR-15**: Landing page gap reduced (features section top padding 5rem→3rem) ✅
+- **M-7**: `calcChange` returns `null` when `previous===0` (hides trend indicator) ✅
+- **M-9**: Heatmap legend `justify-content: center` (fixes "More" truncation) ✅
+- **M-11**: Monthly goal defaults to `null` (shows empty state); uses C$ prefix ✅
+- **M-14**: Cross-list count hardcoded to "5 launch platforms" ✅
+- **M-22**: Landing "9+" → "5 launch marketplaces" in all text, pills, stats, pricing ✅
+- **M-25/M-37**: Dark mode calendar active button text now visible (CSS override) ✅
+- **CA-M-7**: AR/Blockchain "Explore"/"Notify Me" buttons disabled; Fee Calc → financials nav ✅
+- **L-3**: Empty inventory state → "Add your first item to get started" ✅
 
-### Live testing + findings doc update — e24ba85 + 49f84ea
-- **#150/#151/#152/#153/#160/#161/#186**: Tested live — all undefined.get() crashes VERIFIED fixed by aca307f Bun shim fix ✅
-- Master findings doc: all 20 previously-FIXED/Needs-re-test entries promoted to VERIFIED ✅
-- Zero remaining "FIXED" or "Needs re-test" entries in WALKTHROUGH_MASTER_FINDINGS.md
+### eBay / currency / dates batch — 15dba34 (VERIFIED LIVE)
+- **#127/#157/#168**: "Ebay" → "eBay" via PLATFORM_DISPLAY_NAMES map in handlers-deferred + pages-deferred ✅ screenshot: "Connect to eBay"
+- **#167**: My Shops stats + sales table `$` → `C$` ✅ screenshot: "C$0"
+- **L-15/#137**: Privacy/ToS dates Jan/Mar 2026 → April 2026 in all 4 locations (public/privacy.html, public/terms.html, pages-community-help.js x2) ✅ text match confirmed
+
+### Nav label / banner / comments batch — 0c852be (VERIFIED LIVE)
+- **#181**: Sidebar nav "Planner" → "Daily Checklist" ✅ screenshot confirmed
+- **L-26**: Announcement banner close `onclick` handler added ✅
+- **CA-M-5/CA-M-6**: Stale "6 presets" → "5 presets" comment in both handlers files ✅
+
+### Pre-existing unpushed commits — pushed this session
+- **e9e689f**: M-4 financial health score fix (no data → 0/N/A)
+- **b1e5efe**: #142/#143/#145/#180/#183/#184/#132/#134/#139/L-27/L-29 + SVG logos
+- **9b0c023**: L-1/L-4/L-7/L-13/L-17/L-20/L-23/M-20/M-28/#122/#124/#128/#129/#130/#135/#138/#163/#177/#178/CO-1/CO-5
+- **c9c8aac**: docs FIXED/VERIFIED/N/A legend + OPEN count update
+
+### CI fix — b0911e7 + 16fc2ab
+- **b0911e7**: CI build size check now uses `dist/core-bundle.js` (was `dist/app.js`, never produced) ✅
+- **16fc2ab**: `runPriceSuggestion` in handlers-deferred + handlers-intelligence now `async` (pre-existing syntax error) ✅
+
+## Completed Previous Session (2026-04-07, session 1)
 
 ## Completed Previous Session (2026-04-06)
 
@@ -133,6 +158,13 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 
 ## Next Tasks
 1. EasyPost shipping integration — BLOCKED on API key anti-fraud review
-2. Continue with remaining OPEN findings from WALKTHROUGH_MASTER_FINDINGS.md (many MEDIUM/LOW items still open)
-3. CR-15 Landing page layout fix (white space gap between hero + feature cards)
-4. CR-9 Analytics Sales Funnel fake data ("Views 50")
+2. CR-9: Analytics Sales Funnel fake data ("Views 50") — pages-intelligence.js
+3. M-2: Market Trends Radar labels truncated ("intage", "Electron") — canvas overflow
+4. M-26: Knowledge Base "No FAQs" / "No articles" — needs basic content seeded
+5. Continue remaining OPEN findings from WALKTHROUGH_MASTER_FINDINGS.md
+
+## Unstaged Changes (pre-existing, not from this session)
+- `src/backend/db/seeds/demoData.js` — modified
+- `src/shared/ai/listing-generator.js` — modified
+- `src/frontend/handlers/handlers-tools-tasks.js` — modified (from gitStatus at session start)
+These were present before the session started. Investigate before committing.
