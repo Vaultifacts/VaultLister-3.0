@@ -341,7 +341,7 @@ Object.assign(handlers, {
         const commonTags = ['clothing', 'vintage', 'casual', 'formal', 'accessories', 'shoes', 'dress', 'top', 'pants'];
         const updated = images.map(img => {
             if (selectedImages.length === 0 || selectedImages.includes(img.id)) {
-                const randomTags = commonTags.sort(() => 0.5 - Math.random()).slice(0, 3);
+                const randomTags = commonTags.sort((a, b) => a.localeCompare(b)).slice(0, 3);
                 const existingTags = img.tags || [];
                 const newTags = [...new Set([...existingTags, ...randomTags])];
                 return { ...img, tags: newTags };

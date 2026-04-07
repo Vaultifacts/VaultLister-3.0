@@ -165,7 +165,7 @@ Object.assign(pages, {
                             </div>
                             <div class="inventory-stat-info">
                                 <span class="inventory-stat-value">${staleItems}</span>
-                                <span class="inventory-stat-label">Stale (90+ days)</span>
+                                <span class="inventory-stat-label">Stale (90d+)</span>
                             </div>
                         </div>
                         <div class="inventory-stat-card" data-testid="stat-avg-age">

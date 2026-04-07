@@ -323,9 +323,8 @@ export const query = {
         }
     },
 
-    // Full-text search on inventory — Phase 1 stub (ILIKE fallback; FTS5->tsvector in Phase 3)
+    // Full-text search on inventory — ILIKE fallback. tsvector indexes are defined in pg-schema.sql; query wiring deferred to post-launch.
     async searchInventory(searchTerm, userId, limit = 50) {
-        // TODO Phase 3: implement tsvector full-text search
         const term = `%${searchTerm}%`;
         const safeLimit = Math.min(parseInt(limit, 10) || 50, 200);
         const rows = await sql.unsafe(

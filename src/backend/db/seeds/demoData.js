@@ -380,12 +380,12 @@ async function seedOrders(userId) {
         {
             id: uuidv4(),
             platform: 'poshmark',
-            order_number: 'PSH-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+            order_number: 'PSH-VL2026001',
             buyer_username: 'fashionista_jane',
             item_title: "Vintage Levi's 501 Jeans",
             sale_price: 42.00,
             status: 'delivered',
-            tracking_number: '9400111899223033486' + Math.floor(Math.random() * 1000),
+            tracking_number: '9400111899223033486001',
             shipping_provider: 'USPS',
             shipped_at: new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString(),
             delivered_at: new Date(now - 3 * 24 * 60 * 60 * 1000).toISOString()
@@ -393,7 +393,7 @@ async function seedOrders(userId) {
         {
             id: uuidv4(),
             platform: 'ebay',
-            order_number: 'EB-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+            order_number: 'EB-VL2026002',
             buyer_username: 'sneakerhead2024',
             item_title: "Nike Air Max 90",
             sale_price: 79.99,
@@ -407,19 +407,19 @@ async function seedOrders(userId) {
         {
             id: uuidv4(),
             platform: 'mercari',
-            order_number: 'MRC-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+            order_number: 'MRC-VL2026003',
             buyer_username: 'thrift_lover',
             item_title: "Coach Leather Crossbody Bag",
             sale_price: 115.00,
             status: 'shipped',
-            tracking_number: '9261290100130428912' + Math.floor(Math.random() * 100),
+            tracking_number: '926129010013042891203',
             shipping_provider: 'USPS',
             shipped_at: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString()
         },
         {
             id: uuidv4(),
             platform: 'depop',
-            order_number: 'DEP-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+            order_number: 'DEP-VL2026004',
             buyer_username: 'vintage_vibes',
             item_title: "Vintage Band Tee - Nirvana",
             sale_price: 120.00,
@@ -432,7 +432,7 @@ async function seedOrders(userId) {
         {
             id: uuidv4(),
             platform: 'poshmark',
-            order_number: 'PSH-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+            order_number: 'PSH-VL2026005',
             buyer_username: 'closet_queen',
             item_title: "Ralph Lauren Polo Shirt",
             sale_price: 32.00,
@@ -443,7 +443,7 @@ async function seedOrders(userId) {
         {
             id: uuidv4(),
             platform: 'grailed',
-            order_number: 'GRL-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+            order_number: 'GRL-VL2026006',
             buyer_username: 'hype_collector',
             item_title: "Gucci GG Belt",
             sale_price: 340.00,
@@ -455,7 +455,7 @@ async function seedOrders(userId) {
         {
             id: uuidv4(),
             platform: 'ebay',
-            order_number: 'EB-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+            order_number: 'EB-VL2026007',
             buyer_username: 'deal_hunter88',
             item_title: "Patagonia Better Sweater",
             sale_price: 89.00,
@@ -468,7 +468,7 @@ async function seedOrders(userId) {
         {
             id: uuidv4(),
             platform: 'mercari',
-            order_number: 'MRC-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+            order_number: 'MRC-VL2026008',
             buyer_username: 'runner_mike',
             item_title: "Adidas Ultraboost",
             sale_price: 105.00,

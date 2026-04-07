@@ -3201,7 +3201,7 @@ const pages = {
 
     register() {
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
@@ -3302,7 +3302,7 @@ const pages = {
 
     forgotPassword() {
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
@@ -3337,7 +3337,7 @@ const pages = {
         const { mode = 'form', message = '' } = state || {};
         if (mode === 'success') {
             return `
-                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
                             <div style="font-size: 48px; margin-bottom: 16px; color: var(--success, #16a34a)">&#10003;</div>
@@ -3351,7 +3351,7 @@ const pages = {
         }
         if (mode === 'error') {
             return `
-                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+                <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                     <div class="card" style="width: 400px; max-width: 90%">
                         <div class="card-body text-center">
                             <div style="font-size: 48px; margin-bottom: 16px; color: var(--danger, #dc2626)">&#10007;</div>
@@ -3364,7 +3364,7 @@ const pages = {
             `;
         }
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body">
                         <div class="text-center mb-6">
@@ -3401,7 +3401,7 @@ const pages = {
         const iconColor = isLoading ? 'var(--gray-400)' : success ? 'var(--success,#16a34a)' : 'var(--danger,#dc2626)';
         const title = isLoading ? 'Verifying…' : success ? 'Email Verified!' : 'Verification Failed';
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body text-center">
                         <div class="email-verify-icon" style="color:${iconColor}">${icon}</div>
@@ -3419,7 +3419,7 @@ const pages = {
     emailVerification() {
         const email = store.state.pendingVerificationEmail || 'your email';
         return `
-            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh;">
+            <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%); min-height: 100vh; width: 100%;">
                 <div class="card" style="width: 400px; max-width: 90%">
                     <div class="card-body text-center">
                         <div class="email-verify-icon">&#9993;</div>

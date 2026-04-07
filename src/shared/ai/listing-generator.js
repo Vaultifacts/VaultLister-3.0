@@ -8,6 +8,11 @@ import { sanitizeForAI } from './sanitize-input.js';
 import { withTimeout } from '../../backend/shared/fetchWithTimeout.js';
 import { circuitBreaker } from '../../backend/shared/circuitBreaker.js';
 
+function pickTemplate(arr, seed) {
+    const idx = Math.abs(String(seed).split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0)) % arr.length;
+    return arr[idx];
+}
+
 // Brand-specific styling words
 const BRAND_STYLES = {
     'Nike': ['athletic', 'sporty', 'performance', 'swoosh'],
@@ -164,7 +169,7 @@ export function generateDescription(context) {
     // Opening line
     const categoryKey = findCategoryKey(category);
     const templates = CATEGORY_TEMPLATES[categoryKey] || CATEGORY_TEMPLATES['Tops'];
-    const intro = templates.intro[Math.floor(Math.random() * templates.intro.length)];
+    const intro = pickTemplate(templates.intro, context.id || context.title || '');
 
     let opening = `${intro} ${brand || ''} ${category || 'item'}`.trim();
     if (color) {
@@ -177,16 +182,16 @@ export function generateDescription(context) {
     // Brand-specific line
     if (brand && BRAND_STYLES[brand]) {
         const styles = BRAND_STYLES[brand];
-        const style = styles[Math.floor(Math.random() * styles.length)];
+        const style = pickTemplate(styles, context.id || context.title || '');
         lines.push(`Known for their ${style} aesthetic, ${brand} delivers quality and style.`);
     }
 
     // Features
-    const feature = templates.features[Math.floor(Math.random() * templates.features.length)];
+    const feature = pickTemplate(templates.features, context.id || context.title || '');
     lines.push(`Features ${feature}.`);
 
     // Occasion
-    const occasion = templates.occasions[Math.floor(Math.random() * templates.occasions.length)];
+    const occasion = pickTemplate(templates.occasions, context.id || context.title || '');
     lines.push(`Perfect for ${occasion}.`);
 
     // Add blank line
