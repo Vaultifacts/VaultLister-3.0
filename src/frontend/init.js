@@ -706,6 +706,7 @@ window.richTextEditor = richTextEditor;
 window.focusMode = focusMode;
 window.sessionMonitor = sessionMonitor;
 window.SUPPORTED_PLATFORMS = SUPPORTED_PLATFORMS;
+window.LAUNCH_PLATFORMS = LAUNCH_PLATFORMS;
 
 // Start the app
 initApp();

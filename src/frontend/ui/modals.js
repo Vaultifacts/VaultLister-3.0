@@ -1075,28 +1075,16 @@ const modals = {
                 <form id="crosslist-form" onsubmit="handlers.submitCrosslist(event, '${itemIds.join(',')}')">
                     <p style="margin-bottom: 16px;">Select platforms to list on:</p>
                     <div style="display: grid; gap: 12px;">
-                        ${['poshmark', 'ebay', 'etsy'].map(platform => `
-                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" name="platforms" value="${platform}">
+                        ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot'].map(platform => {
+                            const isLaunch = (window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot'])).has(platform);
+                            return `
+                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; ${isLaunch ? 'cursor: pointer;' : 'cursor: not-allowed; opacity: 0.55;'}" ${isLaunch ? '' : 'title="Coming soon"'}>
+                                <input type="checkbox" name="platforms" value="${platform}" ${isLaunch ? '' : 'disabled'}>
                                 ${components.platformBadge(platform)}
                                 <span style="flex: 1; font-weight: 500;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                            </label>
-                        `).join('')}
-                        ${['mercari', 'depop', 'grailed', 'facebook', 'whatnot'].map(platform => `
-                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" name="platforms" value="${platform}">
-                                ${components.platformBadge(platform)}
-                                <span style="flex: 1; font-weight: 500;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                            </label>
-                        `).join('')}
-                        ${['shopify'].map(platform => `
-                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; cursor: not-allowed; opacity: 0.55;" title="Coming soon">
-                                <input type="checkbox" name="platforms" value="${platform}" disabled>
-                                ${components.platformBadge(platform)}
-                                <span style="flex: 1; font-weight: 500;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                                <span class="coming-soon-badge">Coming Soon</span>
-                            </label>
-                        `).join('')}
+                                ${isLaunch ? '' : '<span class="coming-soon-badge">Coming Soon</span>'}
+                            </label>`;
+                        }).join('')}
                     </div>
                     <div style="margin-top: 16px;">
                         <label class="form-label">Price Adjustment (%)</label>
@@ -1470,7 +1458,7 @@ const modals = {
                     <div class="mb-6">
                         <label class="form-label">Select Platforms</label>
                         <div class="grid grid-cols-3 gap-3">
-                            ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'whatnot', 'shopify', 'facebook'].map(platform => `
+                            ${['poshmark', 'ebay', 'depop', 'whatnot', 'facebook'].map(platform => `
                                 <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style="border-color: var(--gray-200)">
                                     <input type="checkbox" class="platform-checkbox" name="platforms" value="${platform}">
                                     ${components.platformBadge(platform)}
@@ -1531,7 +1519,7 @@ const modals = {
                         </div>
 
                         <div id="platform-customization-container">
-                            ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'whatnot', 'shopify', 'facebook'].map(platform => `
+                            ${['poshmark', 'ebay', 'depop', 'whatnot', 'facebook'].map(platform => `
                                 <div class="platform-customization-panel hidden" data-platform="${platform}">
                                     <div class="flex items-center gap-3 mb-4 pb-3 border-b" style="border-color: var(--gray-200)">
                                         ${components.platformBadge(platform)}
@@ -2156,7 +2144,7 @@ const modals = {
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
                         <span class="badge badge-${statusColors[ticket.status]}">${ticket.status.replace(/_/g, ' ')}</span>
                         <span class="badge">${ticket.type.replace(/_/g, ' ')}</span>
-                        <span class="badge">${ticket.priority}</span>
+                        <span class="badge">${ticket.priority || 'Normal'}</span>
                     </div>
                 </div>
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>

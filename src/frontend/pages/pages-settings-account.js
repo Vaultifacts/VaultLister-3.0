@@ -768,18 +768,22 @@ Object.assign(pages, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="settings-timezone">Timezone</label>
-                                    <select id="settings-timezone" class="form-select" onchange="handlers.markSettingsChanged()">
-                                        <option value="America/New_York" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/New_York' ? 'selected' : ''}>Eastern Time (ET)</option>
-                                        <option value="America/Chicago" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Chicago' ? 'selected' : ''}>Central Time (CT)</option>
-                                        <option value="America/Denver" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Denver' ? 'selected' : ''}>Mountain Time (MT)</option>
-                                        <option value="America/Los_Angeles" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Los_Angeles' ? 'selected' : ''}>Pacific Time (PT)</option>
-                                        <option value="America/Anchorage" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Anchorage' ? 'selected' : ''}>Alaska Time (AKT)</option>
-                                        <option value="Pacific/Honolulu" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Pacific/Honolulu' ? 'selected' : ''}>Hawaii Time (HST)</option>
-                                        <option value="UTC" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'UTC' ? 'selected' : ''}>UTC</option>
-                                        <option value="Europe/London" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Europe/London' ? 'selected' : ''}>London (GMT/BST)</option>
-                                        <option value="Europe/Paris" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Europe/Paris' ? 'selected' : ''}>Paris (CET)</option>
-                                        <option value="Asia/Tokyo" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Asia/Tokyo' ? 'selected' : ''}>Tokyo (JST)</option>
-                                        <option value="Australia/Sydney" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Australia/Sydney' ? 'selected' : ''}>Sydney (AEST)</option>
+                                    <select id="settings-timezone" class="form-select" onchange="handlers.markSettingsChanged()" data-detected-tz="${Intl.DateTimeFormat().resolvedOptions().timeZone}">
+                                        ${(() => { const _tz = store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone; return [
+                                        ['America/New_York', 'Eastern Time (ET)'],
+                                        ['America/Chicago', 'Central Time (CT)'],
+                                        ['America/Denver', 'Mountain Time (MT)'],
+                                        ['America/Edmonton', 'Mountain Time — Canada (MT)'],
+                                        ['America/Los_Angeles', 'Pacific Time (PT)'],
+                                        ['America/Vancouver', 'Pacific Time — Canada (PT)'],
+                                        ['America/Anchorage', 'Alaska Time (AKT)'],
+                                        ['Pacific/Honolulu', 'Hawaii Time (HST)'],
+                                        ['UTC', 'UTC'],
+                                        ['Europe/London', 'London (GMT/BST)'],
+                                        ['Europe/Paris', 'Paris (CET)'],
+                                        ['Asia/Tokyo', 'Tokyo (JST)'],
+                                        ['Australia/Sydney', 'Sydney (AEST)'],
+                                        ].map(([v, l]) => `<option value="${v}" ${_tz === v ? 'selected' : ''}>${l}</option>`).join(''); })()}
                                     </select>
                                 </div>
                             </div>

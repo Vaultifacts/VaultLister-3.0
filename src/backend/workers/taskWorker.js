@@ -1155,11 +1155,17 @@ async function executeCustom(rule, conditions, actions) {
     return { message: `Custom automation "${rule.name}" executed`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
 }
 
+const TASK_WORKER_LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot']);
+
 async function executePlatformBot(platform, rule, conditions, actions) {
     switch (platform) {
-        case 'mercari':  return await executeMercariBot(rule, conditions, actions);
+        case 'mercari':
+            if (!TASK_WORKER_LAUNCH_PLATFORMS.has('mercari')) return { skipped: true, reason: 'post-launch platform' };
+            return await executeMercariBot(rule, conditions, actions);
         case 'depop':    return await executeDepopBot(rule, conditions, actions);
-        case 'grailed':  return await executeGrailedBot(rule, conditions, actions);
+        case 'grailed':
+            if (!TASK_WORKER_LAUNCH_PLATFORMS.has('grailed')) return { skipped: true, reason: 'post-launch platform' };
+            return await executeGrailedBot(rule, conditions, actions);
         case 'facebook': return await executeFacebookBot(rule, conditions, actions);
         case 'whatnot':  return await executeWhatnotBot(rule, conditions, actions);
         default:

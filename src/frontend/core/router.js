@@ -264,6 +264,7 @@ const router = {
         if (sidebar) {
             store.setState({ sidebarScrollPos: sidebar.scrollTop });
         }
+        store.setState({ vaultBuddyOpen: false });
         window.history.pushState({ scrollY: window.scrollY }, '', `#${path}`);
         await this.handleRoute();
     },

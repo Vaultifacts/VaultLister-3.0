@@ -6129,19 +6129,18 @@ const priceDropBanner = {
 // Supplier Card Enhanced
 const supplierCardEnhanced = {
     render(supplier) {
-        const healthScore = supplier.health_score || Math.floor(Math.random() * 30) + 70;
-        const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
+        const healthScore = supplier.health_score ?? null;
+        const healthColor = healthScore !== null ? (healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)') : 'var(--gray-400)';
         const stockStatus = supplier.stock_status || 'In Stock';
         const stockColor = stockStatus === 'In Stock' ? 'success' : stockStatus === 'Low Stock' ? 'warning' : 'error';
 
-        // Calculate reliability score based on order accuracy, delivery, and quality
-        const orderAccuracy = supplier.order_accuracy || Math.floor(Math.random() * 15) + 85;
-        const onTimeDelivery = supplier.on_time_delivery || Math.floor(Math.random() * 20) + 80;
-        const qualityRating = supplier.quality_rating || Math.floor(Math.random() * 15) + 85;
-        const reliabilityScore = supplier.reliability_score ||
-            Math.round(orderAccuracy * 0.4 + onTimeDelivery * 0.3 + qualityRating * 0.3);
-        const reliabilityColor = reliabilityScore >= 90 ? 'var(--success)' : reliabilityScore >= 70 ? 'var(--warning)' : 'var(--error)';
-        const reliabilityLabel = reliabilityScore >= 90 ? 'Excellent' : reliabilityScore >= 70 ? 'Good' : 'Needs Improvement';
+        // Reliability metrics from real data only
+        const orderAccuracy = supplier.order_accuracy ?? null;
+        const onTimeDelivery = supplier.on_time_delivery ?? null;
+        const qualityRating = supplier.quality_rating ?? null;
+        const reliabilityScore = supplier.reliability_score ?? null;
+        const reliabilityColor = reliabilityScore !== null ? (reliabilityScore >= 90 ? 'var(--success)' : reliabilityScore >= 70 ? 'var(--warning)' : 'var(--error)') : 'var(--gray-400)';
+        const reliabilityLabel = reliabilityScore !== null ? (reliabilityScore >= 90 ? 'Excellent' : reliabilityScore >= 70 ? 'Good' : 'Needs Improvement') : 'No Data';
 
         return `
             <div class="supplier-card-enhanced">
@@ -6154,12 +6153,12 @@ const supplierCardEnhanced = {
                         ${supplier.website ? `<a href="${escapeHtml(supplier.website)}" target="_blank" class="supplier-link">${components.icon('external-link', 12)} Visit</a>` : ''}
                     </div>
                     <div class="supplier-health" style="color: ${healthColor};">
-                        <div class="supplier-health-score">${healthScore}</div>
+                        <div class="supplier-health-score">${healthScore ?? '--'}</div>
                         <div class="supplier-health-label">Health</div>
                     </div>
-                    <div class="supplier-reliability" title="Reliability: ${reliabilityLabel}&#10;Order Accuracy: ${orderAccuracy}%&#10;On-Time Delivery: ${onTimeDelivery}%&#10;Quality Rating: ${qualityRating}%">
+                    <div class="supplier-reliability" title="Reliability: ${reliabilityLabel}&#10;Order Accuracy: ${orderAccuracy !== null ? orderAccuracy + '%' : 'N/A'}&#10;On-Time Delivery: ${onTimeDelivery !== null ? onTimeDelivery + '%' : 'N/A'}&#10;Quality Rating: ${qualityRating !== null ? qualityRating + '%' : 'N/A'}">
                         <div class="reliability-score-circle" style="--reliability-color: ${reliabilityColor};">
-                            <span class="reliability-value">${reliabilityScore}</span>
+                            <span class="reliability-value">${reliabilityScore ?? '--'}</span>
                         </div>
                         <div class="reliability-label">Reliability</div>
                     </div>

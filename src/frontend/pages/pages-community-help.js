@@ -1063,7 +1063,7 @@ Object.assign(pages, {
                                         </p>
                                         <div style="display: flex; gap: 1rem; font-size: 0.875rem; color: #9ca3af;">
                                             <span class="badge">${ticket.type.replace(/_/g, ' ')}</span>
-                                            <span>${ticket.priority}</span>
+                                            <span>${ticket.priority || 'Normal'}</span>
                                             <span>${new Date(ticket.created_at).toLocaleDateString()}</span>
                                         </div>
                                     </div>

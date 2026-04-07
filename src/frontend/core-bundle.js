@@ -21,6 +21,9 @@ const SUPPORTED_PLATFORMS = [
     { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ' }
 ];
 
+// Canada launch platforms only (post-launch platforms are feature-gated)
+const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot']);
+
 // ============================================
 // Global Error Handlers
 // ============================================
@@ -14899,19 +14902,18 @@ const priceDropBanner = {
 // Supplier Card Enhanced
 const supplierCardEnhanced = {
     render(supplier) {
-        const healthScore = supplier.health_score || Math.floor(Math.random() * 30) + 70;
-        const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
+        const healthScore = supplier.health_score ?? null;
+        const healthColor = healthScore !== null ? (healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)') : 'var(--gray-400)';
         const stockStatus = supplier.stock_status || 'In Stock';
         const stockColor = stockStatus === 'In Stock' ? 'success' : stockStatus === 'Low Stock' ? 'warning' : 'error';
 
-        // Calculate reliability score based on order accuracy, delivery, and quality
-        const orderAccuracy = supplier.order_accuracy || Math.floor(Math.random() * 15) + 85;
-        const onTimeDelivery = supplier.on_time_delivery || Math.floor(Math.random() * 20) + 80;
-        const qualityRating = supplier.quality_rating || Math.floor(Math.random() * 15) + 85;
-        const reliabilityScore = supplier.reliability_score ||
-            Math.round(orderAccuracy * 0.4 + onTimeDelivery * 0.3 + qualityRating * 0.3);
-        const reliabilityColor = reliabilityScore >= 90 ? 'var(--success)' : reliabilityScore >= 70 ? 'var(--warning)' : 'var(--error)';
-        const reliabilityLabel = reliabilityScore >= 90 ? 'Excellent' : reliabilityScore >= 70 ? 'Good' : 'Needs Improvement';
+        // Reliability metrics from real data only
+        const orderAccuracy = supplier.order_accuracy ?? null;
+        const onTimeDelivery = supplier.on_time_delivery ?? null;
+        const qualityRating = supplier.quality_rating ?? null;
+        const reliabilityScore = supplier.reliability_score ?? null;
+        const reliabilityColor = reliabilityScore !== null ? (reliabilityScore >= 90 ? 'var(--success)' : reliabilityScore >= 70 ? 'var(--warning)' : 'var(--error)') : 'var(--gray-400)';
+        const reliabilityLabel = reliabilityScore !== null ? (reliabilityScore >= 90 ? 'Excellent' : reliabilityScore >= 70 ? 'Good' : 'Needs Improvement') : 'No Data';
 
         return `
             <div class="supplier-card-enhanced">
@@ -14924,12 +14926,12 @@ const supplierCardEnhanced = {
                         ${supplier.website ? `<a href="${escapeHtml(supplier.website)}" target="_blank" class="supplier-link">${components.icon('external-link', 12)} Visit</a>` : ''}
                     </div>
                     <div class="supplier-health" style="color: ${healthColor};">
-                        <div class="supplier-health-score">${healthScore}</div>
+                        <div class="supplier-health-score">${healthScore ?? '--'}</div>
                         <div class="supplier-health-label">Health</div>
                     </div>
-                    <div class="supplier-reliability" title="Reliability: ${reliabilityLabel}&#10;Order Accuracy: ${orderAccuracy}%&#10;On-Time Delivery: ${onTimeDelivery}%&#10;Quality Rating: ${qualityRating}%">
+                    <div class="supplier-reliability" title="Reliability: ${reliabilityLabel}&#10;Order Accuracy: ${orderAccuracy !== null ? orderAccuracy + '%' : 'N/A'}&#10;On-Time Delivery: ${onTimeDelivery !== null ? onTimeDelivery + '%' : 'N/A'}&#10;Quality Rating: ${qualityRating !== null ? qualityRating + '%' : 'N/A'}">
                         <div class="reliability-score-circle" style="--reliability-color: ${reliabilityColor};">
-                            <span class="reliability-value">${reliabilityScore}</span>
+                            <span class="reliability-value">${reliabilityScore ?? '--'}</span>
                         </div>
                         <div class="reliability-label">Reliability</div>
                     </div>
@@ -15411,7 +15413,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'e74b9f48';
+    const v = 'fe46a395';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15496,6 +15498,7 @@ const router = {
         if (sidebar) {
             store.setState({ sidebarScrollPos: sidebar.scrollTop });
         }
+        store.setState({ vaultBuddyOpen: false });
         window.history.pushState({ scrollY: window.scrollY }, '', `#${path}`);
         await this.handleRoute();
     },
@@ -16165,7 +16168,7 @@ const components = {
                     </button>
                     <div class="search-bar">
                         ${this.icon('search', 18)}
-                        <input type="text" placeholder="Search inventory, listings..." id="global-search" aria-label="Search inventory, listings">
+                        <input type="text" placeholder="Search inventory, listings..." id="global-search" aria-label="Search inventory, listings" onfocus="handlers.openGlobalSearch()" onclick="event.stopPropagation()">
                     </div>
                 </div>
                 <div class="header-right">
@@ -22664,28 +22667,16 @@ const modals = {
                 <form id="crosslist-form" onsubmit="handlers.submitCrosslist(event, '${itemIds.join(',')}')">
                     <p style="margin-bottom: 16px;">Select platforms to list on:</p>
                     <div style="display: grid; gap: 12px;">
-                        ${['poshmark', 'ebay', 'etsy'].map(platform => `
-                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" name="platforms" value="${platform}">
+                        ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot'].map(platform => {
+                            const isLaunch = (window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot'])).has(platform);
+                            return `
+                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; ${isLaunch ? 'cursor: pointer;' : 'cursor: not-allowed; opacity: 0.55;'}" ${isLaunch ? '' : 'title="Coming soon"'}>
+                                <input type="checkbox" name="platforms" value="${platform}" ${isLaunch ? '' : 'disabled'}>
                                 ${components.platformBadge(platform)}
                                 <span style="flex: 1; font-weight: 500;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                            </label>
-                        `).join('')}
-                        ${['mercari', 'depop', 'grailed', 'facebook', 'whatnot'].map(platform => `
-                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" name="platforms" value="${platform}">
-                                ${components.platformBadge(platform)}
-                                <span style="flex: 1; font-weight: 500;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                            </label>
-                        `).join('')}
-                        ${['shopify'].map(platform => `
-                            <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; cursor: not-allowed; opacity: 0.55;" title="Coming soon">
-                                <input type="checkbox" name="platforms" value="${platform}" disabled>
-                                ${components.platformBadge(platform)}
-                                <span style="flex: 1; font-weight: 500;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                                <span class="coming-soon-badge">Coming Soon</span>
-                            </label>
-                        `).join('')}
+                                ${isLaunch ? '' : '<span class="coming-soon-badge">Coming Soon</span>'}
+                            </label>`;
+                        }).join('')}
                     </div>
                     <div style="margin-top: 16px;">
                         <label class="form-label">Price Adjustment (%)</label>
@@ -23059,7 +23050,7 @@ const modals = {
                     <div class="mb-6">
                         <label class="form-label">Select Platforms</label>
                         <div class="grid grid-cols-3 gap-3">
-                            ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'whatnot', 'shopify', 'facebook'].map(platform => `
+                            ${['poshmark', 'ebay', 'depop', 'whatnot', 'facebook'].map(platform => `
                                 <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style="border-color: var(--gray-200)">
                                     <input type="checkbox" class="platform-checkbox" name="platforms" value="${platform}">
                                     ${components.platformBadge(platform)}
@@ -23120,7 +23111,7 @@ const modals = {
                         </div>
 
                         <div id="platform-customization-container">
-                            ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'whatnot', 'shopify', 'facebook'].map(platform => `
+                            ${['poshmark', 'ebay', 'depop', 'whatnot', 'facebook'].map(platform => `
                                 <div class="platform-customization-panel hidden" data-platform="${platform}">
                                     <div class="flex items-center gap-3 mb-4 pb-3 border-b" style="border-color: var(--gray-200)">
                                         ${components.platformBadge(platform)}
@@ -23745,7 +23736,7 @@ const modals = {
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
                         <span class="badge badge-${statusColors[ticket.status]}">${ticket.status.replace(/_/g, ' ')}</span>
                         <span class="badge">${ticket.type.replace(/_/g, ' ')}</span>
-                        <span class="badge">${ticket.priority}</span>
+                        <span class="badge">${ticket.priority || 'Normal'}</span>
                     </div>
                 </div>
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
@@ -28063,6 +28054,7 @@ window.richTextEditor = richTextEditor;
 window.focusMode = focusMode;
 window.sessionMonitor = sessionMonitor;
 window.SUPPORTED_PLATFORMS = SUPPORTED_PLATFORMS;
+window.LAUNCH_PLATFORMS = LAUNCH_PLATFORMS;
 
 // Start the app
 initApp();

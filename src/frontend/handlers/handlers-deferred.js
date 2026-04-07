@@ -1791,8 +1791,11 @@ Object.assign(handlers, {
     // Export automation history to CSV,
 
     exportAutomationHistory: function() {
+        if (this._exporting) return;
+        this._exporting = true;
         const runs = store.state.automationHistoryRuns || [];
         if (runs.length === 0) {
+            this._exporting = false;
             toast.error('No history to export');
             return;
         }
@@ -1820,6 +1823,7 @@ Object.assign(handlers, {
         URL.revokeObjectURL(url);
 
         toast.success('History exported to CSV');
+        this._exporting = false;
     },
 
     // Clear automation history,

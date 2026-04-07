@@ -20,6 +20,9 @@ const SUPPORTED_PLATFORMS = [
     { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ' }
 ];
 
+// Canada launch platforms only (post-launch platforms are feature-gated)
+const LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot']);
+
 // ============================================
 // Global Error Handlers
 // ============================================

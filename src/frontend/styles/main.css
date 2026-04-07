@@ -1244,6 +1244,12 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
 /*
 @media (prefers-color-scheme: dark) {
     body {

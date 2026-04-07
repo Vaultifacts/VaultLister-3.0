@@ -323,7 +323,7 @@ const components = {
                     </button>
                     <div class="search-bar">
                         ${this.icon('search', 18)}
-                        <input type="text" placeholder="Search inventory, listings..." id="global-search" aria-label="Search inventory, listings">
+                        <input type="text" placeholder="Search inventory, listings..." id="global-search" aria-label="Search inventory, listings" onfocus="handlers.openGlobalSearch()" onclick="event.stopPropagation()">
                     </div>
                 </div>
                 <div class="header-right">
