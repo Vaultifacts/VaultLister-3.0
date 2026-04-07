@@ -202,10 +202,10 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-37 | Calendar (dark) | "Month" view button invisible — white text on white bg in active state in dark mode | Session 4 | VERIFIED ✅ — 82a8408 — duplicate of M-25 |
 | M-38 | Responsive | 34 mobile breakpoints in CSS but mobile bottom nav absent | Session 4 | CONFIRMED N/A — mobileUI.renderBottomNav() already called in renderApp(); CSS gates to ≤768px |
 | M-39 | Privacy (in-app) | Claims "GDPR Compliant" — Canada uses PIPEDA. Legal risk (duplicate of M-36) | Session 4 | VERIFIED ✅ — 8f2457c — same fix |
-| #122 | Templates | `modals.editTemplate()` silent failure — returns without error but no modal opens outside Templates page context | Session 5 | FIXED — modals.js: editTemplate() shows toast.info if template not found instead of silent failure |
+| #122 | Templates | `modals.editTemplate()` silent failure — returns without error but no modal opens outside Templates page context | Session 5 | VERIFIED ✅ — toast shows "Please navigate to the Templates page to edit this template." confirmed live (2026-04-07) |
 | #124 | Help Articles | `modals.viewArticle()` fails to open — modal immediately closes or renders in wrong DOM target | Session 5 | VERIFIED ✅ — screenshot confirms article modal opens with title/breadcrumb/content/tags/helpful buttons (2026-04-07) |
 | #133 | Support Tickets (reportBug) | Ticket card displays "undefined" text in a metadata field (likely priority or assignee) — null-guard missing in ticket card rendering function. Any support ticket shown to users will display "undefined" — looks broken and unprofessional | Session 5 (Session 4 dark mode) | VERIFIED ✅ — e097efa |
-| #129 | Whatnot | `modals.viewWhatnotEvent()` — 3 data bugs: "Invalid Date" start time, "undefined" status badge, blank event title in modal header | Session 5 | FIXED — modals.js: Invalid Date → 'TBD', undefined status → 'Scheduled', blank title → 'Untitled Event' |
+| #129 | Whatnot | `modals.viewWhatnotEvent()` — 3 data bugs: "Invalid Date" start time, "undefined" status badge, blank event title in modal header | Session 5 | FIXED (deploy pending) — modals.js 72af65a: isNaN(new Date()) guard for 'TBD', undefined→'Scheduled', blank→'Untitled Event' |
 | #142 | Add Transaction | Empty submit shows no validation error — `required` fields but no `<form>` element; state-controlled form bypasses HTML5 validation | Session 6 | FIXED — handlers-sales-orders.js: checks type/amount/date, shows toast.error on empty |
 | #143b | Add Transaction | No success feedback on submit — modal closes silently, no toast, no confirmation, no page update | Session 6 | FIXED — handlers-sales-orders.js: toast.success('Transaction added successfully.') |
 | #145 | Community | Create Post modal: empty submit shows no validation — required Title/Content fields with no `<form>` wrapper | Session 6 | VERIFIED ✅ — empty submit fires toast "Please fill in the title and content." (2026-04-07) |
@@ -222,10 +222,10 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #173 | Reports | Reports "Create Report" button — no response when clicked *(See also: #158 — same issue, discovered independently)* | Session 11 | VERIFIED ✅ — 07338ae |
 | #174 | Settings | Settings "Enable 2FA" button — no response when clicked *(See also: H-5 — same issue, discovered independently)* | Session 11 | CONFIRMED FIXED — duplicate of H-5 (VERIFIED ✅ eb9e086) |
 | #175 | Plans & Billing | Shows USD pricing ($19, $49) for Canadian launch. Pro plan claims "Cross-list to all 9 platforms" — only 5 at launch *(See also: H-8 — same issue, discovered independently)* | Session 11 | CONFIRMED N/A — confirmed correct in source (documented 15dba34) |
-| #177 | Plans & Billing | "Upgrade to Pro" / "Upgrade to Business" buttons produce no UI response — no toast, no modal, no Stripe redirect | Session 11 | FIXED — handlers-settings-account.js + handlers-deferred.js: selectPlan() calls /billing/checkout, fallback toast |
+| #177 | Plans & Billing | "Upgrade to Pro" / "Upgrade to Business" buttons produce no UI response — no toast, no modal, no Stripe redirect | Session 11 | VERIFIED ✅ — selectPlan() shows "Upgrade coming soon! Contact us at hello@vaultlister.com to upgrade." confirmed live (2026-04-07) |
 | #178 | Offline Page | `offline.html` server-redirects to `/` — Service Worker offline fallback broken | Session 13 | FIXED — public/offline.html: redirect to / removed from initial load; only fires on 'online' event |
 | #180 | Router | Unknown routes while authenticated silently fall back to dashboard — expected 404 page | Session 13 | VERIFIED ✅ — router.js — 404 page renders "Page Not Found" with Go to Dashboard + Go Back buttons, confirmed live |
-| #183 | Error Handling | 401 Unauthorized response does not redirect to login — user stays on current page with silent API failures | Session 14 | FIXED — api.js: 401 post-refresh clears state + router.navigate('login') |
+| #183 | Error Handling | 401 Unauthorized response does not redirect to login — user stays on current page with silent API failures | Session 14 | VERIFIED ✅ — api.js line 198: store.setState null + router.navigate('login') confirmed in source (2026-04-07) |
 | #185 | Vault Buddy | `toggleVaultBuddy` crashes: `TypeError: pages[store.state.currentPage] is not a function` — calls `pages[currentPage]()` instead of `window.pages[currentPage]()` for deferred chunk pages | Session 14 | VERIFIED ✅ — 07338ae |
 
 ---
@@ -268,25 +268,25 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-24 | Refer a Friend | "VAULTDEMO" referral code — hardcoded, not user-specific (duplicate of L-14) | Session 3 | CONFIRMED N/A — duplicate of L-14 |
 | L-25 | Listings | "Customize" columns button has no onclick handler | Session 3 | CONFIRMED N/A — button is a functional dropdown with column checkboxes calling handlers.toggleListingColumn |
 | L-26 | Listings | Announcement banner "✕" close button has no onclick handler | Session 3 | VERIFIED ✅ — 0c852be — index.html: added onclick="document.getElementById('announcement-banner').hidden=true" |
-| L-27 | Connections (dark) | Cloudinary/Anthropic AI toggle buttons nearly invisible in dark mode | Session 3 | FIXED — main.css: dark-mode .rounded-lg.border gets border-color #374151 + bg #111827 |
+| L-27 | Connections (dark) | Cloudinary/Anthropic AI toggle buttons nearly invisible in dark mode | Session 3 | VERIFIED ✅ — .rounded-lg.border shows bg rgb(17,24,39) + border rgb(55,65,81) in dark mode, confirmed live (2026-04-07) |
 | L-28 | Privacy (in-app) | "Download PDF" button — unclear if it generates a real PDF | Session 3 | OPEN |
-| L-29 | Connections (dark) | Cloudinary/Anthropic toggles nearly invisible (duplicate of L-27) | Session 4 | FIXED — same as L-27 |
+| L-29 | Connections (dark) | Cloudinary/Anthropic toggles nearly invisible (duplicate of L-27) | Session 4 | VERIFIED ✅ — same fix as L-27, confirmed live (2026-04-07) |
 | L-30 | Batch Photo | "Remove Background"/"AI Upscale" may not have backend support | Session 4 | OPEN |
 | L-31 | Privacy (in-app) | "Download PDF" button — untested (duplicate of L-28) | Session 4 | OPEN |
 | #127 | Cross-list Modal | "Ebay" brand name misspelled — should be "eBay" | Session 5 | VERIFIED ✅ — 15dba34 — eBay capitalization corrected |
-| #128 | Calendar | Edit Event has "Depends On" field not present in Add Event — inconsistency | Session 5 | FIXED — modals.js: removed "Depends On" field from editCalendarEvent to match Add Event |
-| #130 | Reports | `modals.viewReport()` shows raw ID string instead of report content | Session 5 | FIXED — modals.js: removed duplicate dead viewReport definition; canonical version with null guard remains |
-| #132 | Changelog | Version thumbnail cards have light background in dark mode — visual inconsistency | Session 5 | FIXED — main.css: .settings-changelog-banner dark mode bg rgba(14,165,233,0.1) |
-| #134 | Feedback Analytics | Admin badge does not inherit dark mode | Session 5 (Session 4 dark mode) | FIXED — main.css: .badge.badge-sm dark mode bg #374151 text #e5e7eb |
+| #128 | Calendar | Edit Event has "Depends On" field not present in Add Event — inconsistency | Session 5 | VERIFIED ✅ — editCalendarEvent modal has no "Depends On" field, hasDependsOn:false confirmed live (2026-04-07) |
+| #130 | Reports | `modals.viewReport()` shows raw ID string instead of report content | Session 5 | VERIFIED ✅ — handlers.viewReport() fetches API then passes data object; raw ID path removed, confirmed in source (2026-04-07) |
+| #132 | Changelog | Version thumbnail cards have light background in dark mode — visual inconsistency | Session 5 | FIXED (deploy pending) — main.css 914a15d: .timeline-content bg #1f2937 (was var(--gray-800)=#f3f4f6 — inverted scale bug) |
+| #134 | Feedback Analytics | Admin badge does not inherit dark mode | Session 5 (Session 4 dark mode) | VERIFIED ✅ — bare .badge.badge-sm shows bg rgb(55,65,81) + text rgb(229,231,235) in dark mode, confirmed live (2026-04-07) |
 | #135 | Help | Quick Start Guide step 4 text truncates: "Set up automati... to save t..." | Session 5 (Session 4 dark mode) | VERIFIED ✅ — screenshot + DOM confirm step 4 shows "Set up an automation" without truncation (2026-04-07) |
 | #137 | Privacy Policy (in-app) | Shows "Last updated: January 2026" — static privacy page shows April 5, 2026 | Session 5 (Session 4 dark mode) | VERIFIED ✅ — 15dba34 — pages-community-help.js: both dates updated to April 2026 |
 | #138 | Account | Text truncates in narrow card columns: "Member Since: Marc...", "Curre plan" | Session 5 (Session 4 dark mode) | VERIFIED ✅ — Account page screenshot shows "Full Name / Email / Username / Member Since" labels without truncation; full card text confirmed in DOM (2026-04-07) |
-| #139 | Submit Feedback | Inactive feedback type buttons retain white/light backgrounds in dark mode | Session 5 (Session 4 dark mode) | FIXED — main.css: .btn.btn-outline dark mode bg #1f2937 |
+| #139 | Submit Feedback | Inactive feedback type buttons retain white/light backgrounds in dark mode | Session 5 (Session 4 dark mode) | VERIFIED ✅ — .btn-outline shows bg rgb(31,41,55) + text rgb(229,231,235) in dark mode, confirmed live (2026-04-07) |
 | #156 | Analytics | Weekly Report shows same start/end date — "Week of Apr 5 - Apr 5, 2026" | Session 8 | VERIFIED ✅ — 00e1551 — handlers-deferred.js + handlers-sales-orders.js: end = thisWeekStart + 6 days |
 | #162 | Orders | Orders page "More" button has no onclick handler — dropdown completely inaccessible | Session 10 | VERIFIED ✅ — 00e1551 — pages-sales-orders.js: added direct onclick to button element |
 | #176 | Plans & Billing | "Upgrade to Premium" button (Current Plan section) vs "Pro" plan cards — naming inconsistency *(See also: H-9 — same issue, discovered independently)* | Session 11 | VERIFIED ✅ — bc2c9f4 (same fix as H-9) |
 | #179 | Sidebar | Sidebar collapse state not persisted — collapsing does not survive page reload | Session 13 | VERIFIED ✅ — 00e1551 — init.js: reads vaultlister_sidebar_collapsed from localStorage on startup |
-| #184 | Error Handling | 429 Too Many Requests shows generic error toast with no retry guidance | Session 14 | FIXED — api.js: 429 fallthrough shows toast.warning with retry guidance |
+| #184 | Error Handling | 429 Too Many Requests shows generic error toast with no retry guidance | Session 14 | VERIFIED ✅ — api.js line 137: toast.warning('Too many requests. Please wait a moment before trying again.') confirmed in source (2026-04-07) |
 
 ---
 
@@ -309,7 +309,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CO-5 | Whatnot Live | Green "0% vs last week" arrows — should be neutral | Session 2 | VERIFIED ✅ — same fix as CO-1, confirmed in source (2026-04-07) |
 | CO-6 | Refer a Friend | Logo shows "V" overlaid on purple — inconsistent with other pages | Session 3 | OPEN |
 | #157 | My Shops | "Connect to Ebay" — should be "Connect to eBay" | Session 8 | VERIFIED ✅ — 15dba34 — handlers-deferred.js: PLATFORM_DISPLAY_NAMES lookup gives correct casing |
-| #163 | Listings / Health | Listing Health modal shows "Poor Health" score 0 AND "All listings have good health scores!" simultaneously — contradictory | Session 10 | FIXED — handlers-inventory-catalog.js: "All listings healthy" message gated to avgScore > 70 |
+| #163 | Listings / Health | Listing Health modal shows "Poor Health" score 0 AND "All listings have good health scores!" simultaneously — contradictory | Session 10 | FIXED (deploy pending) — handlers-deferred.js c6d006f: empty→"No listings to analyze", avgScore<70→no all-good msg |
 | #168 | My Shops | eBay Connect modal title shows "Connect to Ebay" not "Connect to eBay" | Session 11 | VERIFIED ✅ — 15dba34 — same fix as #157 (PLATFORM_DISPLAY_NAMES in handlers-deferred.js) |
 | #181 | Planner / Sidebar | Sidebar label "Planner" doesn't match page H2 title "Daily Checklist" | Session 13 | VERIFIED ✅ — 0c852be — components.js + widgets.js: nav label changed to "Daily Checklist" |
 
