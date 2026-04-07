@@ -728,7 +728,7 @@ Object.assign(pages, {
         // Get listing health score
         const healthScore = activeListings > 0
             ? Math.round(((activeListings - staleListings) / activeListings) * 100)
-            : 100;
+            : null;
 
         return `
             <!-- Breadcrumb Navigation -->
@@ -800,12 +800,12 @@ Object.assign(pages, {
 
                 <div class="listings-health-bar">
                     <div class="listings-health-score">
-                        <div class="health-score-ring ${healthScore >= 80 ? 'good' : healthScore >= 50 ? 'warning' : 'poor'}">
+                        <div class="health-score-ring ${healthScore !== null && healthScore >= 80 ? 'good' : healthScore !== null && healthScore >= 50 ? 'warning' : healthScore !== null ? 'poor' : ''}">
                             <svg viewBox="0 0 36 36" class="health-ring-svg">
                                 <path class="health-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                                <path class="health-ring-fill" stroke-dasharray="${healthScore}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="health-ring-fill" stroke-dasharray="${healthScore ?? 0}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
                             </svg>
-                            <span class="health-score-value">${healthScore}%</span>
+                            <span class="health-score-value">${healthScore !== null ? healthScore + '%' : 'N/A'}</span>
                         </div>
                         <div class="health-score-label">Listing Health</div>
                     </div>
@@ -2176,7 +2176,7 @@ Object.assign(pages, {
         // Calculate average offer percentage
         const avgOfferPercent = offers.length > 0
             ? Math.round(offers.reduce((sum, o) => sum + ((o.amount / (o.listing_price || o.amount || 1)) * 100), 0) / offers.length)
-            : 0;
+            : null;
 
         // Calculate acceptance rate
         const totalResolved = acceptedOffers.length + declinedOffers.length;
@@ -2256,7 +2256,7 @@ Object.assign(pages, {
                             </svg>
                         </div>
                         <div class="insight-content">
-                            <span class="insight-value">${avgOfferPercent}%</span>
+                            <span class="insight-value">${avgOfferPercent !== null ? avgOfferPercent + '%' : 'N/A'}</span>
                             <span class="insight-label">Avg Offer</span>
                         </div>
                         <div class="insight-trend">
@@ -2651,8 +2651,8 @@ Object.assign(pages, {
                         ${components.icon('map', 24)}
                     </div>
                     <div style="flex: 1; text-align: left;">
-                        <h4 style="margin: 0 0 4px 0; font-weight: 600;">Sales Tax Nexus</h4>
-                        <p style="margin: 0; font-size: 13px; color: #666;">Track state tax obligations</p>
+                        <h4 style="margin: 0 0 4px 0; font-weight: 600;">GST/HST/PST</h4>
+                        <p style="margin: 0; font-size: 13px; color: #666;">Track Canadian tax obligations</p>
                     </div>
                 </button>
                 <button class="card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onclick="handlers.showBuyerProfiles()">
@@ -3697,6 +3697,7 @@ Object.assign(pages, {
                 </div>
 
                 <div class="financials-insights">
+                    ${(totalRevenue > 0 || purchases.length > 0) ? `
                     <div class="insight-card ${profitMargin >= 15 ? 'positive' : profitMargin >= 0 ? 'neutral' : 'negative'}">
                         <div class="insight-icon">${profitMargin >= 15 ? components.icon('thumbs-up', 16) : components.icon('info', 16)}</div>
                         <div class="insight-text">
@@ -3705,6 +3706,7 @@ Object.assign(pages, {
                               'Expenses exceed revenue - review pricing strategy'}
                         </div>
                     </div>
+                    ` : ''}
                     <div class="insight-card neutral">
                         <div class="insight-icon">${components.icon('clock', 16)}</div>
                         <div class="insight-text">
@@ -16243,11 +16245,11 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         ` : ''}
                         <div>
                             <label class="form-label" style="font-size: 12px;">Min Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         <div>
                             <label class="form-label" style="font-size: 12px;">Max Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         ${activeTab === 'purchases' ? `
                         <div>

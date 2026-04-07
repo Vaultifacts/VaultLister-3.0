@@ -42,7 +42,7 @@ Object.assign(pages, {
         // Calculate average offer percentage
         const avgOfferPercent = offers.length > 0
             ? Math.round(offers.reduce((sum, o) => sum + ((o.amount / (o.listing_price || o.amount || 1)) * 100), 0) / offers.length)
-            : 0;
+            : null;
 
         // Calculate acceptance rate
         const totalResolved = acceptedOffers.length + declinedOffers.length;
@@ -122,7 +122,7 @@ Object.assign(pages, {
                             </svg>
                         </div>
                         <div class="insight-content">
-                            <span class="insight-value">${avgOfferPercent}%</span>
+                            <span class="insight-value">${avgOfferPercent !== null ? avgOfferPercent + '%' : 'N/A'}</span>
                             <span class="insight-label">Avg Offer</span>
                         </div>
                         <div class="insight-trend">
@@ -518,8 +518,8 @@ Object.assign(pages, {
                         ${components.icon('map', 24)}
                     </div>
                     <div style="flex: 1; text-align: left;">
-                        <h4 style="margin: 0 0 4px 0; font-weight: 600;">Sales Tax Nexus</h4>
-                        <p style="margin: 0; font-size: 13px; color: #666;">Track state tax obligations</p>
+                        <h4 style="margin: 0 0 4px 0; font-weight: 600;">GST/HST/PST</h4>
+                        <p style="margin: 0; font-size: 13px; color: #666;">Track Canadian tax obligations</p>
                     </div>
                 </button>
                 <button class="card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onclick="handlers.showBuyerProfiles()">
@@ -1565,6 +1565,7 @@ Object.assign(pages, {
                 </div>
 
                 <div class="financials-insights">
+                    ${(totalRevenue > 0 || purchases.length > 0) ? `
                     <div class="insight-card ${profitMargin >= 15 ? 'positive' : profitMargin >= 0 ? 'neutral' : 'negative'}">
                         <div class="insight-icon">${profitMargin >= 15 ? components.icon('thumbs-up', 16) : components.icon('info', 16)}</div>
                         <div class="insight-text">
@@ -1573,6 +1574,7 @@ Object.assign(pages, {
                               'Expenses exceed revenue - review pricing strategy'}
                         </div>
                     </div>
+                    ` : ''}
                     <div class="insight-card neutral">
                         <div class="insight-icon">${components.icon('clock', 16)}</div>
                         <div class="insight-text">

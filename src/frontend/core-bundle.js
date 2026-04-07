@@ -15413,7 +15413,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'e0e2e7e6';
+    const v = '26ded704';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -20232,7 +20232,7 @@ const pages = {
                             <span>${slowMovers.length} item${slowMovers.length !== 1 ? 's' : ''} listed for 60+ days need attention</span>
                         </div>
                     ` : ''}
-                    ${profitMargin < 15 ? `
+                    ${totalRevenue > 0 ? (profitMargin < 15 ? `
                         <div class="quick-insight alert">
                             ${components.icon('alert-circle', 14)}
                             <span>Profit margin below target (15%). Review pricing strategy.</span>
@@ -20242,7 +20242,7 @@ const pages = {
                             ${components.icon('check-circle', 14)}
                             <span>Profit margin is healthy at ${profitMargin}%</span>
                         </div>
-                    `}
+                    `) : ''}
                 </div>
             </div>
 

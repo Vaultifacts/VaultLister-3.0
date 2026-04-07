@@ -2394,7 +2394,7 @@ const pages = {
                             <span>${slowMovers.length} item${slowMovers.length !== 1 ? 's' : ''} listed for 60+ days need attention</span>
                         </div>
                     ` : ''}
-                    ${profitMargin < 15 ? `
+                    ${totalRevenue > 0 ? (profitMargin < 15 ? `
                         <div class="quick-insight alert">
                             ${components.icon('alert-circle', 14)}
                             <span>Profit margin below target (15%). Review pricing strategy.</span>
@@ -2404,7 +2404,7 @@ const pages = {
                             ${components.icon('check-circle', 14)}
                             <span>Profit margin is healthy at ${profitMargin}%</span>
                         </div>
-                    `}
+                    `) : ''}
                 </div>
             </div>
 
