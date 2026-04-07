@@ -164,7 +164,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | M-1 | Dashboard | "100% Listing Health" shown at 0 listings — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — healthScore null → shows N/A |
-| M-2 | Analytics | Market Trends Radar labels truncated — "intage" (Vintage), "Electron" (Electronics) | Session 1 | OPEN |
+| M-2 | Analytics | Market Trends Radar labels truncated — "intage" (Vintage), "Electron" (Electronics) | Session 1 | FIXED — widgets.js: 'Electronics' shortened to 'Tech' to prevent radar label truncation |
 | M-3 | Dashboard / Analytics | "0% Avg Offer" when 0 offers exist — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — avgOfferPercent null → shows N/A |
 | M-4 | Analytics | Financial score "30" with no data — should be 0 or N/A | Session 1 | VERIFIED ✅ — e9e689f — pages-sales-orders.js push(10) fallbacks → push(0); profitMargin >= 0 → > 0 |
 | M-5 | Analytics | "Consider optimizing costs" advice shown with no data — irrelevant for empty-state users | Session 1 | VERIFIED ✅ — efe7ab1 — advice gated on hasData |
@@ -185,8 +185,8 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-20 | Affiliate | "$50 Minimum Payout" in USD not CAD | Session 2 | FIXED — pages-settings-account.js + pages-deferred.js: $50 → C$50 |
 | M-21 | Connections | Chrome Extension "Install Extension" button — destination link unclear | Session 2 | OPEN |
 | M-22 | Landing | "Push listings to all 9 marketplaces" — should say 5 at launch | Session 2 | VERIFIED ✅ — 82a8408 — all copy, pills, stats, pricing updated to 5 launch platforms |
-| M-23 | Auth Pages | All auth pages (Landing/Login/Register) show gradient seam — white strip at ~75% width | Session 2 | OPEN |
-| M-24 | Size Charts | Measurements in inches (in) — should offer metric (cm) for Canada | Session 2 | OPEN |
+| M-23 | Auth Pages | All auth pages (Landing/Login/Register) show gradient seam — white strip at ~75% width | Session 2 | FIXED — pages-core.js: width:100% on all 8 auth gradient wrapper divs |
+| M-24 | Size Charts | Measurements in inches (in) — should offer metric (cm) for Canada | Session 2 | CONFIRMED N/A — duplicate of shipping fix already applied in #149/23a4729; metric units confirmed in handlers-sales-orders.js |
 | M-25 | Calendar | "Month" button invisible in dark mode — white text on white background | Session 3 | VERIFIED ✅ — 82a8408 |
 | M-26 | Knowledge Base | "No FAQs" + "No articles" — needs basic content before launch | Session 3 | OPEN |
 | M-27 | Report Builder | "Custom Query — Run SQL queries" — security concern if raw SQL exposed to users | Session 3 | OPEN |
@@ -247,22 +247,22 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-3 | Dashboard | "Not yet refreshed" text shown to first-time users | Session 1 | VERIFIED ✅ — 82a8408 — shows "Add your first item to get started" |
 | L-4 | Dashboard | "Good afternoon, demo!" uses username instead of display_name or full_name | Session 1 | FIXED — pages-core.js: greeting uses full_name.split(' ')[0] → display_name → username |
 | L-5 | Inventory | "Low Stock" card highlights in yellow at value 0 | Session 1 | CONFIRMED N/A — lowStockItems > 0 guard already in place |
-| L-6 | Inventory | "Stale (90+ days)" label wraps to two lines in stat card | Session 1 | OPEN |
+| L-6 | Inventory | "Stale (90+ days)" label wraps to two lines in stat card | Session 1 | FIXED — pages-inventory-catalog.js + pages-deferred.js: label shortened to 'Stale (90d+)'; main.css: white-space:nowrap on .inventory-stat-label |
 | L-7 | Settings | "Full Name" empty — registration doesn't collect full name | Session 1 | FIXED — pages-core.js + auth.js: Full Name field added to register form; posted to /auth/register |
-| L-8 | Help / Support | "Contact support to change email" — no support channel defined | Session 1 | OPEN |
-| L-9 | Vault Buddy | Chat bubble occludes content — covers "Net" label in financials, "Goal" in analytics | Session 1 | OPEN |
-| L-10 | Backend | Console.log statements in production — ~10 instances in error handlers | Session 1 (Code audit) | OPEN |
-| L-11 | Backend | Fake 555-xxxx phone numbers in supplier data — FCC reserved range, obviously fake | Session 1 (Code audit) | OPEN |
+| L-8 | Help / Support | "Contact support to change email" — no support channel defined | Session 1 | FIXED — pages-settings-account.js + pages-deferred.js: replaced with mailto:hello@vaultlister.com link |
+| L-9 | Vault Buddy | Chat bubble occludes content — covers "Net" label in financials, "Goal" in analytics | Session 1 | FIXED — main.css: .vault-buddy-fab bottom: 24px → 80px |
+| L-10 | Backend | Console.log statements in production — ~10 instances in error handlers | Session 1 (Code audit) | CONFIRMED N/A — no console.log calls in backend routes/middleware error handlers |
+| L-11 | Backend | Fake 555-xxxx phone numbers in supplier data — FCC reserved range, obviously fake | Session 1 (Code audit) | CONFIRMED N/A — no 555-format phone numbers found in seed files |
 | L-12 | Market Intel | "Competitor Activity — Live Activity" with green dot suggesting live feed that doesn't exist | Session 1 | VERIFIED ✅ — 00e1551 — pages-intelligence.js: "Live" badge changed to "Coming Soon" |
 | L-13 | Register | No Full Name or Display Name field in registration | Session 2 | FIXED — same as L-7 |
 | L-14 | Refer a Friend | Referral code "VAULTDEMO" hardcoded — should be user-specific | Session 2 | OPEN |
 | L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | VERIFIED ✅ — 15dba34 — public/terms.html + pages-community-help.js updated to April 2026 |
-| L-16 | Terms / Landing | Logo shows "M" purple circle — should be "V" blue square (brand inconsistency) | Session 2 | OPEN |
+| L-16 | Terms / Landing | Logo shows "M" purple circle — should be "V" blue square (brand inconsistency) | Session 2 | CONFIRMED N/A — source already renders 'V' with var(--primary-600) + border-radius (rounded square), not 'M' purple circle |
 | L-17 | Size Charts | "us US" in dropdown — double "US" label | Session 2 | FIXED — widgets.js: size chart dropdown uses regionNames map instead of raw key |
 | L-18 | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons — unclear if functional | Session 2 | OPEN |
-| L-19 | Dashboard | Massive empty space below widgets on scroll — layout/height issue | Session 2 | OPEN |
+| L-19 | Dashboard | Massive empty space below widgets on scroll — layout/height issue | Session 2 | FIXED — main.css: removed min-height:100vh from .main-wrapper |
 | L-20 | Size Charts | "us US" dropdown label — double "US" (duplicate of L-17) | Session 3 | FIXED — same as L-17 |
-| L-21 | Size Charts | Measurements in inches — should offer cm for Canada (duplicate of M-24) | Session 3 | CONFIRMED N/A — duplicate of M-24, no separate fix needed |
+| L-21 | Size Charts | Measurements in inches — should offer cm for Canada (duplicate of M-24) | Session 3 | CONFIRMED N/A — duplicate of M-24 |
 | L-22 | Privacy / ToS | "Last updated: March 2026" — should be April (duplicate of L-15) | Session 3 | VERIFIED ✅ — 15dba34 — same fix as L-15 |
 | L-23 | Checklist | "Keep up the momentum!" shown at 0% — odd encouragement for nothing done | Session 3 | FIXED — pages-tools-tasks.js + pages-deferred.js: getProductivityGreeting() shows "Complete your first task" at 0% |
 | L-24 | Refer a Friend | "VAULTDEMO" referral code — hardcoded, not user-specific (duplicate of L-14) | Session 3 | CONFIRMED N/A — duplicate of L-14 |
