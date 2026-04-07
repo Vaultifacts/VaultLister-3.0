@@ -2423,7 +2423,8 @@ Object.assign(handlers, {
 
         // Calculate storage usage
         const estimatedStorageGB = (images.length * 0.002) + 0.1;
-        const storageLimit = 5;
+        const PLAN_STORAGE_GB = { free: 0.1, starter: 1, pro: 5, business: 25 };
+        const storageLimit = PLAN_STORAGE_GB[user.subscription_tier] || 5;
         const storagePercent = Math.min(100, (estimatedStorageGB / storageLimit) * 100);
 
         // Mock API usage
