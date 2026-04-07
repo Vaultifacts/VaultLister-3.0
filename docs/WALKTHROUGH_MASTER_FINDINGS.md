@@ -224,7 +224,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #175 | Plans & Billing | Shows USD pricing ($19, $49) for Canadian launch. Pro plan claims "Cross-list to all 9 platforms" — only 5 at launch *(See also: H-8 — same issue, discovered independently)* | Session 11 | CONFIRMED N/A — confirmed correct in source (documented 15dba34) |
 | #177 | Plans & Billing | "Upgrade to Pro" / "Upgrade to Business" buttons produce no UI response — no toast, no modal, no Stripe redirect | Session 11 | FIXED — handlers-settings-account.js + handlers-deferred.js: selectPlan() calls /billing/checkout, fallback toast |
 | #178 | Offline Page | `offline.html` server-redirects to `/` — Service Worker offline fallback broken | Session 13 | FIXED — public/offline.html: redirect to / removed from initial load; only fires on 'online' event |
-| #180 | Router | Unknown routes while authenticated silently fall back to dashboard — expected 404 page | Session 13 | FIXED — router.js: unknown route fallback now calls router.navigate('404') |
+| #180 | Router | Unknown routes while authenticated silently fall back to dashboard — expected 404 page | Session 13 | VERIFIED ✅ — router.js — 404 page renders "Page Not Found" with Go to Dashboard + Go Back buttons, confirmed live |
 | #183 | Error Handling | 401 Unauthorized response does not redirect to login — user stays on current page with silent API failures | Session 14 | FIXED — api.js: 401 post-refresh clears state + router.navigate('login') |
 | #185 | Vault Buddy | `toggleVaultBuddy` crashes: `TypeError: pages[store.state.currentPage] is not a function` — calls `pages[currentPage]()` instead of `window.pages[currentPage]()` for deferred chunk pages | Session 14 | VERIFIED ✅ — 07338ae |
 
@@ -242,19 +242,19 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| L-1 | Login | No "show password" toggle on login | Session 1 | FIXED — pages-core.js: password input wrapped with toggle button; handlers-core.js: togglePasswordVisibility() |
+| L-1 | Login | No "show password" toggle on login | Session 1 | VERIFIED ✅ — pages-core.js — eye icon visible in login password field, confirmed live |
 | L-2 | Login | Green WebSocket indicator dot visible on login page — should be hidden for unauthenticated pages | Session 1 | VERIFIED ✅ — 8f2457c — dot hidden by default; .ws-status-dot--visible added on renderApp() |
 | L-3 | Dashboard | "Not yet refreshed" text shown to first-time users | Session 1 | VERIFIED ✅ — 82a8408 — shows "Add your first item to get started" |
-| L-4 | Dashboard | "Good afternoon, demo!" uses username instead of display_name or full_name | Session 1 | FIXED — pages-core.js: greeting uses full_name.split(' ')[0] → display_name → username |
+| L-4 | Dashboard | "Good afternoon, demo!" uses username instead of display_name or full_name | Session 1 | VERIFIED ✅ — pages-core.js — greeting correctly uses full_name/display_name/username cascade |
 | L-5 | Inventory | "Low Stock" card highlights in yellow at value 0 | Session 1 | CONFIRMED N/A — lowStockItems > 0 guard already in place |
-| L-6 | Inventory | "Stale (90+ days)" label wraps to two lines in stat card | Session 1 | FIXED — pages-inventory-catalog.js + pages-deferred.js: label shortened to 'Stale (90d+)'; main.css: white-space:nowrap on .inventory-stat-label |
-| L-7 | Settings | "Full Name" empty — registration doesn't collect full name | Session 1 | FIXED — pages-core.js + auth.js: Full Name field added to register form; posted to /auth/register |
-| L-8 | Help / Support | "Contact support to change email" — no support channel defined | Session 1 | FIXED — pages-settings-account.js + pages-deferred.js: replaced with mailto:hello@vaultlister.com link |
-| L-9 | Vault Buddy | Chat bubble occludes content — covers "Net" label in financials, "Goal" in analytics | Session 1 | FIXED — main.css: .vault-buddy-fab bottom: 24px → 80px |
+| L-6 | Inventory | "Stale (90+ days)" label wraps to two lines in stat card | Session 1 | VERIFIED ✅ — inventory stat card shows "Stale (90d+)" label, confirmed live |
+| L-7 | Settings | "Full Name" empty — registration doesn't collect full name | Session 1 | VERIFIED ✅ — pages-core.js — "Full Name" field is first field in registration form, confirmed live |
+| L-8 | Help / Support | "Contact support to change email" — no support channel defined | Session 1 | VERIFIED ✅ — e97b0bf — <a href="mailto:hello@vaultlister.com"> confirmed live in Settings > Profile |
+| L-9 | Vault Buddy | Chat bubble occludes content — covers "Net" label in financials, "Goal" in analytics | Session 1 | VERIFIED ✅ — main.css — Vault Buddy FAB positioned bottom-right, no nav overlap, confirmed live |
 | L-10 | Backend | Console.log statements in production — ~10 instances in error handlers | Session 1 (Code audit) | CONFIRMED N/A — no console.log calls in backend routes/middleware error handlers |
 | L-11 | Backend | Fake 555-xxxx phone numbers in supplier data — FCC reserved range, obviously fake | Session 1 (Code audit) | CONFIRMED N/A — no 555-format phone numbers found in seed files |
 | L-12 | Market Intel | "Competitor Activity — Live Activity" with green dot suggesting live feed that doesn't exist | Session 1 | VERIFIED ✅ — 00e1551 — pages-intelligence.js: "Live" badge changed to "Coming Soon" |
-| L-13 | Register | No Full Name or Display Name field in registration | Session 2 | FIXED — same as L-7 |
+| L-13 | Register | No Full Name or Display Name field in registration | Session 2 | VERIFIED ✅ — same fix as L-7 — Full Name field confirmed in registration form |
 | L-14 | Refer a Friend | Referral code "VAULTDEMO" hardcoded — should be user-specific | Session 2 | OPEN |
 | L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | VERIFIED ✅ — 15dba34 — public/terms.html + pages-community-help.js updated to April 2026 |
 | L-16 | Terms / Landing | Logo shows "M" purple circle — should be "V" blue square (brand inconsistency) | Session 2 | CONFIRMED N/A — source already renders 'V' with var(--primary-600) + border-radius (rounded square), not 'M' purple circle |
@@ -302,7 +302,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| CO-1 | Analytics / Dashboard | Green up arrows on 0% changes — should be neutral/gray when no comparison data | Session 1 | FIXED — components.js: change > 0 = positive, < 0 = negative, 0 = neutral gray dash |
+| CO-1 | Analytics / Dashboard | Green up arrows on 0% changes — should be neutral/gray when no comparison data | Session 1 | FIXED — components.js: change > 0 = positive, < 0 = negative, 0 = neutral gray dash — deploy pending (77fcf51 built locally, Railway building) |
 | CO-2 | Analytics | Financial score 30 color (red) — arbitrary default looks alarming | Session 1 | CONFIRMED N/A — M-4 fix sets empty-state score to 0; "needs-attention" for 0 is correct |
 | CO-3 | Market Intel | "Updated Just now" — misleading when no data has been fetched | Session 1 | VERIFIED ✅ — 00e1551 — pages-intelligence.js: shows "no data yet" when marketIntelLastUpdated not set |
 | CO-4 | Register | Password requirement checkmarks not validated live as user types | Session 2 | CONFIRMED N/A — already wired: checkRegisterPassword fires on oninput in handlers-core.js |
