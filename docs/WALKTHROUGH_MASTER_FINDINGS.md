@@ -69,10 +69,10 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CR-15 | Landing Page | Massive white space gap between hero section and feature cards — layout broken | Session 2 | OPEN |
 | CR-16 | Predictions | (Confirmed duplicate of CR-11/CR-12 from Pass 3) — 100% hardcoded fake data: 6 fake items with fake prices, fake AI confidence 77%/87%/82%/75%, fake trend charts | Session 3 | VERIFIED ✅ — 07338ae |
 | CR-17 | Planner | `pages.planner()` function doesn't exist — sidebar nav item is dead. Route registered but no page function defined in any source module | Session 3 | VERIFIED ✅ — 07338ae |
-| #150 | Inventory Import | Import CSV — Parse Data crashes: "Failed to parse data: Cannot read properties of undefined (reading 'get')" — handler calls `.get()` on uninitialized state Map. Core onboarding feature completely broken | Session 6 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
-| #151 | SKU Rules | Create SKU Rule crashes: "Failed to create SKU rule: Cannot read properties of undefined (reading 'get')" — same root cause as #150 | Session 6 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
-| #160 | Plans & Billing | "Upgrade to Pro" crashes immediately: "Cannot read properties of undefined (reading 'get')" — same crash pattern as #150/#151. Core monetization flow broken | Session 8 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
-| #161 | Plans & Billing | "Upgrade to Business" crashes with same error — core monetization flow broken | Session 8 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
+| #150 | Inventory Import | Import CSV — Parse Data crashes: "Failed to parse data: Cannot read properties of undefined (reading 'get')" — handler calls `.get()` on uninitialized state Map. Core onboarding feature completely broken | Session 6 | VERIFIED ✅ — aca307f — no undefined.get crash; loadImportData/validateImport run cleanly |
+| #151 | SKU Rules | Create SKU Rule crashes: "Failed to create SKU rule: Cannot read properties of undefined (reading 'get')" — same root cause as #150 | Session 6 | VERIFIED ✅ — aca307f — loadSkuRules runs cleanly; no undefined.get crash |
+| #160 | Plans & Billing | "Upgrade to Pro" crashes immediately: "Cannot read properties of undefined (reading 'get')" — same crash pattern as #150/#151. Core monetization flow broken | Session 8 | VERIFIED ✅ — aca307f — selectPlan('pro') shows success toast, no crash |
+| #161 | Plans & Billing | "Upgrade to Business" crashes with same error — core monetization flow broken | Session 8 | VERIFIED ✅ — aca307f — selectPlan('business') shows success toast, no crash |
 | #171 | Calendar | Calendar page fails to render: `ReferenceError: date is not defined` at `pages-deferred.js:7537` — stale bundle variable name. Entire Calendar feature unavailable | Session 11 | VERIFIED ✅ — 07338ae |
 
 ---
@@ -126,14 +126,14 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #143 | Add Transaction | Modal HTML bleeds into page body — raw HTML attribute text renders visibly below modal: `onclick="event.stopPropagation()" role="document"> Add Transaction` | Session 6 | VERIFIED ✅ — 192b485 |
 | #144 | Submit Feedback | Form simultaneously fires success AND error toasts on valid submission — conflicting UX | Session 6 | VERIFIED ✅ — 192b485 |
 | #148 | Inventory | Inventory search bar fires error toast on any input — even with valid 200 API response | Session 6 | VERIFIED ✅ — aca307f — re-render wrapped in separate try-catch so render errors don't show "Search failed" toast |
-| #152 | Dashboard | Log Sale crashes: "Failed to log sale: Cannot read properties of undefined (reading 'get')" — same `db.get()` crash as #150 | Session 7 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
-| #153 | Orders | Orders Sync crashes: fires success toast then immediate failure: "Cannot read properties of undefined (reading 'get')" | Session 7 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
+| #152 | Dashboard | Log Sale crashes: "Failed to log sale: Cannot read properties of undefined (reading 'get')" — same `db.get()` crash as #150 | Session 7 | VERIFIED ✅ — aca307f — Log Sale navigates to orders-sales, no crash |
+| #153 | Orders | Orders Sync crashes: fires success toast then immediate failure: "Cannot read properties of undefined (reading 'get')" | Session 7 | VERIFIED ✅ — aca307f — syncAllPlatformOrders shows 'Syncing orders...' toast, no crash |
 | #154 | Automations | Export button fires 4+ simultaneous "Export failed" error toasts — no CSV/JSON produced | Session 7 | VERIFIED ✅ — e097efa |
 | #158 | Reports | Create Report buttons silently do nothing — no modal, no toast, no navigation *(See also: #173 — same issue, discovered independently)* | Session 8 | VERIFIED ✅ — 07338ae |
 | #170 | My Shops | All Connect modals pre-fill username with hardcoded "demo@vaultlister.com" — users must manually clear field | Session 11 | OPEN |
 | #172 | Calendar | Calendar "Today" and "Week" buttons crash: `ReferenceError: date is not defined` — same stale bundle as #171 | Session 11 | VERIFIED ✅ — 07338ae |
 | #182 | File Upload (DnD) | `sanitizeHTML()` / DOMPurify strips all drag-and-drop event handlers — `ondragover`, `ondragleave`, `ondrop`, `ondragenter`, `ondragstart`, `ondragend` missing from ADD_ATTR allowlist. Drop zones on Add Item modal, Inventory Import, and Image Bank all broken | Session 14 | VERIFIED ✅ — 07338ae |
-| #186 | Vault Buddy | Vault Buddy chat completely non-functional — all operations crash with `undefined.get` error (same root cause as #150). No conversations can be loaded, no new chats can be started | Session 14 | Needs re-test — chatbot backend .reverse() bug fixed (this session); mock tests pass |
+| #186 | Vault Buddy | Vault Buddy chat completely non-functional — all operations crash with `undefined.get` error (same root cause as #150). No conversations can be loaded, no new chats can be started | Session 14 | VERIFIED ✅ — aca307f + 5f331cc — toggleVaultBuddy opens panel; sendVaultBuddyMessage runs without crash |
 
 ---
 
