@@ -37,8 +37,8 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 210 |
-| FIXED (with commit) | 4 |
+| OPEN | 197 |
+| FIXED (with commit) | 17 |
 | **TOTAL** | **214** |
 
 ---
@@ -58,22 +58,22 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 | OPEN |
 | CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | OPEN |
 | CR-5 | eBay Integration | No eBay bot in `worker/bots/` — cross-listing to eBay via bot is impossible | Session 1 | OPEN |
-| CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything *(See also: H-19 — same issue, discovered independently)* | Session 1 | OPEN |
-| CR-8 | Help / Knowledge Base | Help page shows "1,240 views", "980 views" — no real KB exists | Session 1 | OPEN |
+| CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything *(See also: H-19 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — 07338ae |
+| CR-8 | Help / Knowledge Base | Help page shows "1,240 views", "980 views" — no real KB exists | Session 1 | VERIFIED ✅ — 07338ae |
 | CR-9 | Analytics | Sales Funnel "Views 50" is hardcoded fake data | Session 1 | OPEN |
 | CR-10 | My Shops | All 9 "Connect" buttons — none have working OAuth flows | Session 1 | OPEN |
-| CR-11 | Predictions | Entire page is hardcoded fake data — "Vintage Levi's 501 $45→$62", "Nike Air Max 90 $120→$145", "77% Model Confidence", fake AI confidence scores 87%/82%/75% | Session 2 | OPEN |
-| CR-12 | Predictions | "6 items analyzed" shown when user has 0 items — fabricated count | Session 2 | OPEN |
-| CR-13 | Changelog | All version dates are wrong — v1.6.0 "Jan 26", v1.0.0 "Nov 30" — product didn't exist then. Fabricated changelog | Session 2 | OPEN |
+| CR-11 | Predictions | Entire page is hardcoded fake data — "Vintage Levi's 501 $45→$62", "Nike Air Max 90 $120→$145", "77% Model Confidence", fake AI confidence scores 87%/82%/75% | Session 2 | VERIFIED ✅ — 07338ae |
+| CR-12 | Predictions | "6 items analyzed" shown when user has 0 items — fabricated count | Session 2 | VERIFIED ✅ — 07338ae |
+| CR-13 | Changelog | All version dates are wrong — v1.6.0 "Jan 26", v1.0.0 "Nov 30" — product didn't exist then. Fabricated changelog | Session 2 | VERIFIED ✅ — 07338ae |
 | CR-14 | Affiliate | "Apply Now" with 30% commission, $50 payout — no affiliate backend built | Session 2 | OPEN |
 | CR-15 | Landing Page | Massive white space gap between hero section and feature cards — layout broken | Session 2 | OPEN |
-| CR-16 | Predictions | (Confirmed duplicate of CR-11/CR-12 from Pass 3) — 100% hardcoded fake data: 6 fake items with fake prices, fake AI confidence 77%/87%/82%/75%, fake trend charts | Session 3 | OPEN |
-| CR-17 | Planner | `pages.planner()` function doesn't exist — sidebar nav item is dead. Route registered but no page function defined in any source module | Session 3 | OPEN |
+| CR-16 | Predictions | (Confirmed duplicate of CR-11/CR-12 from Pass 3) — 100% hardcoded fake data: 6 fake items with fake prices, fake AI confidence 77%/87%/82%/75%, fake trend charts | Session 3 | VERIFIED ✅ — 07338ae |
+| CR-17 | Planner | `pages.planner()` function doesn't exist — sidebar nav item is dead. Route registered but no page function defined in any source module | Session 3 | VERIFIED ✅ — 07338ae |
 | #150 | Inventory Import | Import CSV — Parse Data crashes: "Failed to parse data: Cannot read properties of undefined (reading 'get')" — handler calls `.get()` on uninitialized state Map. Core onboarding feature completely broken | Session 6 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
 | #151 | SKU Rules | Create SKU Rule crashes: "Failed to create SKU rule: Cannot read properties of undefined (reading 'get')" — same root cause as #150 | Session 6 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
 | #160 | Plans & Billing | "Upgrade to Pro" crashes immediately: "Cannot read properties of undefined (reading 'get')" — same crash pattern as #150/#151. Core monetization flow broken | Session 8 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
 | #161 | Plans & Billing | "Upgrade to Business" crashes with same error — core monetization flow broken | Session 8 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
-| #171 | Calendar | Calendar page fails to render: `ReferenceError: date is not defined` at `pages-deferred.js:7537` — stale bundle variable name. Entire Calendar feature unavailable | Session 11 | OPEN |
+| #171 | Calendar | Calendar page fails to render: `ReferenceError: date is not defined` at `pages-deferred.js:7537` — stale bundle variable name. Entire Calendar feature unavailable | Session 11 | VERIFIED ✅ — 07338ae |
 
 ---
 
@@ -107,9 +107,9 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-16 | Connections | Only 6 of 9 platforms shown — missing Etsy, Shopify, Whatnot | Session 2 | VERIFIED ✅ — dd50369 |
 | H-17 | Refer a Friend | Referral link `https://vaultlister.com/signup?ref=VAULTDEMO` — referral backend wiring unclear | Session 2 | VERIFIED ✅ — bc2c9f4 — migration 005 adds referral_code column; signup now records affiliate_commissions |
 | H-18 | Forgot Password | "Send Reset Link" requires `RESEND_API_KEY`/SMTP — will fail silently | Session 2 | DEPLOY CONFIG — email.js gracefully falls back to console log if RESEND_API_KEY unset; set key before launch |
-| H-19 | Help / Support | "Getting Started 2/5 (40%)" hardcoded as complete for new users *(See also: CR-7 — same issue, discovered independently)* | Session 2 | OPEN |
+| H-19 | Help / Support | "Getting Started 2/5 (40%)" hardcoded as complete for new users *(See also: CR-7 — same issue, discovered independently)* | Session 2 | VERIFIED ✅ — 07338ae |
 | H-20 | Feedback & Suggestions | "Top Contributor — top 10%" badge shown to user with 0 submissions | Session 3 | OPEN |
-| H-21 | Changelog | All version dates fabricated — v1.6.0 "Jan 26", v1.0.0 "Nov 30" | Session 3 | OPEN |
+| H-21 | Changelog | All version dates fabricated — v1.6.0 "Jan 26", v1.0.0 "Nov 30" | Session 3 | VERIFIED ✅ — 07338ae |
 | H-22 | Affiliate | Full affiliate page (30% commission, $50 payout) — no backend built | Session 3 | OPEN |
 | H-23 | Shipping Labels | "Create Label" + "Compare Rates" buttons enabled — EasyPost not built | Session 3 | VERIFIED ✅ — a0a4901 |
 | H-24 | Connections | Only 6/9 platforms shown — missing Etsy, Shopify, Whatnot | Session 3 | VERIFIED ✅ — dd50369 |
@@ -129,10 +129,10 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #152 | Dashboard | Log Sale crashes: "Failed to log sale: Cannot read properties of undefined (reading 'get')" — same `db.get()` crash as #150 | Session 7 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
 | #153 | Orders | Orders Sync crashes: fires success toast then immediate failure: "Cannot read properties of undefined (reading 'get')" | Session 7 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
 | #154 | Automations | Export button fires 4+ simultaneous "Export failed" error toasts — no CSV/JSON produced | Session 7 | OPEN |
-| #158 | Reports | Create Report buttons silently do nothing — no modal, no toast, no navigation *(See also: #173 — same issue, discovered independently)* | Session 8 | OPEN |
+| #158 | Reports | Create Report buttons silently do nothing — no modal, no toast, no navigation *(See also: #173 — same issue, discovered independently)* | Session 8 | VERIFIED ✅ — 07338ae |
 | #170 | My Shops | All Connect modals pre-fill username with hardcoded "demo@vaultlister.com" — users must manually clear field | Session 11 | OPEN |
-| #172 | Calendar | Calendar "Today" and "Week" buttons crash: `ReferenceError: date is not defined` — same stale bundle as #171 | Session 11 | OPEN |
-| #182 | File Upload (DnD) | `sanitizeHTML()` / DOMPurify strips all drag-and-drop event handlers — `ondragover`, `ondragleave`, `ondrop`, `ondragenter`, `ondragstart`, `ondragend` missing from ADD_ATTR allowlist. Drop zones on Add Item modal, Inventory Import, and Image Bank all broken | Session 14 | OPEN |
+| #172 | Calendar | Calendar "Today" and "Week" buttons crash: `ReferenceError: date is not defined` — same stale bundle as #171 | Session 11 | VERIFIED ✅ — 07338ae |
+| #182 | File Upload (DnD) | `sanitizeHTML()` / DOMPurify strips all drag-and-drop event handlers — `ondragover`, `ondragleave`, `ondrop`, `ondragenter`, `ondragstart`, `ondragend` missing from ADD_ATTR allowlist. Drop zones on Add Item modal, Inventory Import, and Image Bank all broken | Session 14 | VERIFIED ✅ — 07338ae |
 | #186 | Vault Buddy | Vault Buddy chat completely non-functional — all operations crash with `undefined.get` error (same root cause as #150). No conversations can be loaded, no new chats can be started | Session 14 | Needs re-test — chatbot backend .reverse() bug fixed (this session); mock tests pass |
 
 ---
@@ -206,14 +206,14 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #166 | Automations | "Performance" toolbar button calls `handlers.showAutomationPerformance()` — no modal opens, no output | Session 10 | OPEN |
 | #167 | Financials | Financials page uses "$" not "C$" for all monetary values | Session 10 | OPEN |
 | #169 | My Shops | 4 non-launch platforms (Mercari, Grailed, Etsy, Shopify) shown with active "Connect" buttons — no "Coming Soon" indicator | Session 11 | OPEN |
-| #173 | Reports | Reports "Create Report" button — no response when clicked *(See also: #158 — same issue, discovered independently)* | Session 11 | OPEN |
+| #173 | Reports | Reports "Create Report" button — no response when clicked *(See also: #158 — same issue, discovered independently)* | Session 11 | VERIFIED ✅ — 07338ae |
 | #174 | Settings | Settings "Enable 2FA" button — no response when clicked *(See also: H-5 — same issue, discovered independently)* | Session 11 | OPEN |
 | #175 | Plans & Billing | Shows USD pricing ($19, $49) for Canadian launch. Pro plan claims "Cross-list to all 9 platforms" — only 5 at launch *(See also: H-8 — same issue, discovered independently)* | Session 11 | OPEN |
 | #177 | Plans & Billing | "Upgrade to Pro" / "Upgrade to Business" buttons produce no UI response — no toast, no modal, no Stripe redirect | Session 11 | OPEN |
 | #178 | Offline Page | `offline.html` server-redirects to `/` — Service Worker offline fallback broken | Session 13 | OPEN |
 | #180 | Router | Unknown routes while authenticated silently fall back to dashboard — expected 404 page | Session 13 | OPEN |
 | #183 | Error Handling | 401 Unauthorized response does not redirect to login — user stays on current page with silent API failures | Session 14 | OPEN |
-| #185 | Vault Buddy | `toggleVaultBuddy` crashes: `TypeError: pages[store.state.currentPage] is not a function` — calls `pages[currentPage]()` instead of `window.pages[currentPage]()` for deferred chunk pages | Session 14 | OPEN |
+| #185 | Vault Buddy | `toggleVaultBuddy` crashes: `TypeError: pages[store.state.currentPage] is not a function` — calls `pages[currentPage]()` instead of `window.pages[currentPage]()` for deferred chunk pages | Session 14 | VERIFIED ✅ — 07338ae |
 
 ---
 

@@ -5,25 +5,28 @@ echo "Running pre-push checks..."
 # Syntax check on critical files — reads from HEAD to check committed version
 echo "Validating JavaScript syntax..."
 _TMPFILE=$(mktemp /tmp/vl3-syntax-check-XXXXXX.js)
-git show HEAD:src/frontend/app.js > "$_TMPFILE" 2>/dev/null && node --check "$_TMPFILE" || {
-    rm -f "$_TMPFILE"
-    echo "Syntax error in app.js (HEAD)! Push aborted."
-    exit 1
-}
+# app.js was archived to app-legacy.bak — check core-bundle.js instead
+if git show HEAD:src/frontend/core-bundle.js > "$_TMPFILE" 2>/dev/null; then
+    node --check "$_TMPFILE" || {
+        rm -f "$_TMPFILE"
+        echo "Syntax error in core-bundle.js (HEAD)! Push aborted."
+        exit 1
+    }
+fi
 rm -f "$_TMPFILE"
 node --check src/backend/server.js || {
     echo "Syntax error in server.js! Push aborted."
     exit 1
 }
 
-# Verify auth infrastructure integrity — reads from HEAD to avoid false positives on working-tree files
+# Verify auth infrastructure integrity — reads from HEAD (core-bundle.js is source of truth now)
 echo "Checking auth infrastructure..."
-if ! git show HEAD:src/frontend/app.js | grep -v '^\s*//' | grep -q 'token: this.state.token'; then
+if ! git show HEAD:src/frontend/core-bundle.js | grep -v '^\s*//' | grep -q 'token: this.state.token'; then
     echo "ERROR: store.persist() does not persist tokens! Push aborted."
     echo "The Remember Me feature requires token persistence in store.persist()."
     exit 1
 fi
-if ! git show HEAD:src/frontend/app.js | grep -v '^\s*//' | grep -q 'refreshToken: this.state.refreshToken'; then
+if ! git show HEAD:src/frontend/core-bundle.js | grep -v '^\s*//' | grep -q 'refreshToken: this.state.refreshToken'; then
     echo "ERROR: store.persist() does not persist refresh tokens! Push aborted."
     exit 1
 fi
