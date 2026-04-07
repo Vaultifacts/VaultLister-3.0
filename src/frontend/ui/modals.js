@@ -3347,7 +3347,7 @@ const modals = {
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div>
                         <div class="text-sm text-gray-500">Start Time</div>
-                        <div class="font-medium">${event.start_time ? new Date(event.start_time).toLocaleString() : 'TBD'}</div>
+                        <div class="font-medium">${event.start_time && !isNaN(new Date(event.start_time)) ? new Date(event.start_time).toLocaleString() : 'TBD'}</div>
                     </div>
                     <div>
                         <div class="text-sm text-gray-500">Duration</div>

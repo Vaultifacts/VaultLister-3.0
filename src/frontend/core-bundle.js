@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'aa281d1b';
+    const v = 'edc28038';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -24971,7 +24971,7 @@ const modals = {
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div>
                         <div class="text-sm text-gray-500">Start Time</div>
-                        <div class="font-medium">${event.start_time ? new Date(event.start_time).toLocaleString() : 'TBD'}</div>
+                        <div class="font-medium">${event.start_time && !isNaN(new Date(event.start_time)) ? new Date(event.start_time).toLocaleString() : 'TBD'}</div>
                     </div>
                     <div>
                         <div class="text-sm text-gray-500">Duration</div>
