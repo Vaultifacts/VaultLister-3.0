@@ -48343,8 +48343,8 @@ body.dark-mode .step-label { color: var(--gray-400); }
 body.dark-mode .timeline::before { background: var(--gray-700); }
 body.dark-mode .timeline-marker { background: var(--gray-600); }
 body.dark-mode .timeline-content {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+    background: #1f2937;
+    border-color: #374151;
 }
 body.dark-mode .timeline-title { color: white; }
 
