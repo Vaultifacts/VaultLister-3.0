@@ -3304,6 +3304,11 @@ Object.assign(handlers, {
         const desc = (form.description.value || '').toLowerCase();
         const type = form.type.value;
 
+        if (!type || isNaN(amount) || amount <= 0 || !date) {
+            toast.error('Please fill in all required fields.');
+            return;
+        }
+
         // Check for duplicates
         const purchases = store.state.purchases || [];
         const sales = store.state.sales || [];

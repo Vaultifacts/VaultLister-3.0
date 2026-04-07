@@ -164,7 +164,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | M-1 | Dashboard | "100% Listing Health" shown at 0 listings — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — healthScore null → shows N/A |
-| M-2 | Analytics | Market Trends Radar labels truncated — "intage" (Vintage), "Electron" (Electronics) | Session 1 | FIXED — widgets.js: 'Electronics'→'Tech' (0593196 2026-04-07); awaiting Railway deploy |
+| M-2 | Analytics | Market Trends Radar labels truncated — "intage" (Vintage), "Electron" (Electronics) | Session 1 | VERIFIED ✅ — DOM confirms labels: Fashion/Tech/Home/Sports/Vintage — "Electronics" replaced with "Tech" (2026-04-07) |
 | M-3 | Dashboard / Analytics | "0% Avg Offer" when 0 offers exist — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — avgOfferPercent null → shows N/A |
 | M-4 | Analytics | Financial score "30" with no data — should be 0 or N/A | Session 1 | VERIFIED ✅ — e9e689f — pages-sales-orders.js push(10) fallbacks → push(0); profitMargin >= 0 → > 0 |
 | M-5 | Analytics | "Consider optimizing costs" advice shown with no data — irrelevant for empty-state users | Session 1 | VERIFIED ✅ — efe7ab1 — advice gated on hasData |
@@ -182,7 +182,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-17 | Transactions | "$0 / $999" filter defaults shown in USD | Session 2 | VERIFIED ✅ — efe7ab1 — filter shows C$0 / C$999 |
 | M-18 | Transactions | "All Categorie" dropdown text truncated — missing 's' | Session 2 | CONFIRMED N/A — already reads "All Categories" in source |
 | M-19 | Roadmap | "No features found" — should have planned features pre-populated | Session 2 | OPEN |
-| M-20 | Affiliate | "$50 Minimum Payout" in USD not CAD | Session 2 | FIXED — pages-settings-account.js + pages-deferred.js: $50 → C$50 |
+| M-20 | Affiliate | "$50 Minimum Payout" in USD not CAD | Session 2 | VERIFIED ✅ — screenshot confirms "C$50 Minimum Payout" in commission structure card (2026-04-07) |
 | M-21 | Connections | Chrome Extension "Install Extension" button — destination link unclear | Session 2 | OPEN |
 | M-22 | Landing | "Push listings to all 9 marketplaces" — should say 5 at launch | Session 2 | VERIFIED ✅ — 82a8408 — all copy, pills, stats, pricing updated to 5 launch platforms |
 | M-23 | Auth Pages | All auth pages (Landing/Login/Register) show gradient seam — white strip at ~75% width | Session 2 | VERIFIED ✅ — login page screenshot confirms gradient fills full width, no seam (2026-04-07) |
@@ -190,7 +190,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-25 | Calendar | "Month" button invisible in dark mode — white text on white background | Session 3 | VERIFIED ✅ — 82a8408 |
 | M-26 | Knowledge Base | "No FAQs" + "No articles" — needs basic content before launch | Session 3 | OPEN |
 | M-27 | Report Builder | "Custom Query — Run SQL queries" — security concern if raw SQL exposed to users | Session 3 | OPEN |
-| M-28 | Teams | "Create Team" available on Free plan — needs tier gating | Session 3 | FIXED — modals.js: createTeam() checks subscription_tier === 'free' → toast + return |
+| M-28 | Teams | "Create Team" available on Free plan — needs tier gating | Session 3 | VERIFIED ✅ — clicking Create Team on free plan fires toast "Team features require a Pro or Business plan" with no modal (2026-04-07) |
 | M-29 | Roadmap | Empty — needs at least planned features pre-populated | Session 3 | OPEN |
 | M-30 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST (duplicate of M-16) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-16 |
 | M-31 | Transactions | "All Categorie" truncated dropdown text — missing 's' (duplicate of M-18) | Session 3 | CONFIRMED N/A — already reads "All Categories" in source |
@@ -203,12 +203,12 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-38 | Responsive | 34 mobile breakpoints in CSS but mobile bottom nav absent | Session 4 | CONFIRMED N/A — mobileUI.renderBottomNav() already called in renderApp(); CSS gates to ≤768px |
 | M-39 | Privacy (in-app) | Claims "GDPR Compliant" — Canada uses PIPEDA. Legal risk (duplicate of M-36) | Session 4 | VERIFIED ✅ — 8f2457c — same fix |
 | #122 | Templates | `modals.editTemplate()` silent failure — returns without error but no modal opens outside Templates page context | Session 5 | FIXED — modals.js: editTemplate() shows toast.info if template not found instead of silent failure |
-| #124 | Help Articles | `modals.viewArticle()` fails to open — modal immediately closes or renders in wrong DOM target | Session 5 | FIXED — pages-deferred.js: viewArticle called as modals.viewArticle() with correct slug |
+| #124 | Help Articles | `modals.viewArticle()` fails to open — modal immediately closes or renders in wrong DOM target | Session 5 | VERIFIED ✅ — screenshot confirms article modal opens with title/breadcrumb/content/tags/helpful buttons (2026-04-07) |
 | #133 | Support Tickets (reportBug) | Ticket card displays "undefined" text in a metadata field (likely priority or assignee) — null-guard missing in ticket card rendering function. Any support ticket shown to users will display "undefined" — looks broken and unprofessional | Session 5 (Session 4 dark mode) | VERIFIED ✅ — e097efa |
 | #129 | Whatnot | `modals.viewWhatnotEvent()` — 3 data bugs: "Invalid Date" start time, "undefined" status badge, blank event title in modal header | Session 5 | FIXED — modals.js: Invalid Date → 'TBD', undefined status → 'Scheduled', blank title → 'Untitled Event' |
 | #142 | Add Transaction | Empty submit shows no validation error — `required` fields but no `<form>` element; state-controlled form bypasses HTML5 validation | Session 6 | FIXED — handlers-sales-orders.js: checks type/amount/date, shows toast.error on empty |
 | #143b | Add Transaction | No success feedback on submit — modal closes silently, no toast, no confirmation, no page update | Session 6 | FIXED — handlers-sales-orders.js: toast.success('Transaction added successfully.') |
-| #145 | Community | Create Post modal: empty submit shows no validation — required Title/Content fields with no `<form>` wrapper | Session 6 | FIXED — handlers-deferred.js: title/content trim check before submitCreatePost |
+| #145 | Community | Create Post modal: empty submit shows no validation — required Title/Content fields with no `<form>` wrapper | Session 6 | VERIFIED ✅ — empty submit fires toast "Please fill in the title and content." (2026-04-07) |
 | #146 | Calendar | Add Event modal: empty submit shows no validation — required Event Title field with no `<form>` wrapper | Session 6 | CONFIRMED N/A — already validated in handlers-tools-tasks.js:2277-2280 |
 | #147 | Global Search | Search bar in top nav non-functional — typing produces no results, no dropdown, pressing Enter has no effect | Session 6 | VERIFIED ✅ — e097efa |
 | #149 | Shipping Calculator | Shows USPS carriers with imperial units (lbs/inches) — app targets Canadian sellers, should show Canada Post/Chitchats/Purolator with kg/cm and CAD | Session 6 | VERIFIED ✅ — 23a4729 |
@@ -258,13 +258,13 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-14 | Refer a Friend | Referral code "VAULTDEMO" hardcoded — should be user-specific | Session 2 | OPEN |
 | L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | VERIFIED ✅ — 15dba34 — public/terms.html + pages-community-help.js updated to April 2026 |
 | L-16 | Terms / Landing | Logo shows "M" purple circle — should be "V" blue square (brand inconsistency) | Session 2 | CONFIRMED N/A — source already renders 'V' with var(--primary-600) + border-radius (rounded square), not 'M' purple circle |
-| L-17 | Size Charts | "us US" in dropdown — double "US" label | Session 2 | FIXED — widgets.js: size chart dropdown uses regionNames map instead of raw key |
+| L-17 | Size Charts | "us US" in dropdown — double "US" label | Session 2 | VERIFIED ✅ — DOM inspection confirms options show "🇺🇸 United States" (flag renders as "us" in JPEG screenshots — confirmed working 2026-04-07) |
 | L-18 | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons — unclear if functional | Session 2 | OPEN |
-| L-19 | Dashboard | Massive empty space below widgets on scroll — layout/height issue | Session 2 | FIXED — main.css: overflow-x:clip on html/body/.main-wrapper/.main-content (root cause: overflow-x:hidden coerces overflow-y:auto, trapping ~915px below scroll); awaiting Railway deploy (c1ddf18/e816e2d 2026-04-07) |
-| L-20 | Size Charts | "us US" dropdown label — double "US" (duplicate of L-17) | Session 3 | FIXED — same as L-17 |
+| L-19 | Dashboard | Massive empty space below widgets on scroll — layout/height issue | Session 2 | VERIFIED ✅ — mc_scrollTop=0 + mw_scrollTop=0 at max scroll confirms no inner scroll container; last widget visible at y=773-904 in viewport; overflow-x:clip deployed (c1ddf18/e816e2d 2026-04-07) |
+| L-20 | Size Charts | "us US" dropdown label — double "US" (duplicate of L-17) | Session 3 | VERIFIED ✅ — same fix as L-17, confirmed 2026-04-07 |
 | L-21 | Size Charts | Measurements in inches — should offer cm for Canada (duplicate of M-24) | Session 3 | CONFIRMED N/A — duplicate of M-24 |
 | L-22 | Privacy / ToS | "Last updated: March 2026" — should be April (duplicate of L-15) | Session 3 | VERIFIED ✅ — 15dba34 — same fix as L-15 |
-| L-23 | Checklist | "Keep up the momentum!" shown at 0% — odd encouragement for nothing done | Session 3 | FIXED — pages-tools-tasks.js + pages-deferred.js: getProductivityGreeting() shows "Complete your first task" at 0% |
+| L-23 | Checklist | "Keep up the momentum!" shown at 0% — odd encouragement for nothing done | Session 3 | VERIFIED ✅ — screenshot confirms "Complete your first task to get started!" at 0%, "Keep up the momentum!" gone (2026-04-07) |
 | L-24 | Refer a Friend | "VAULTDEMO" referral code — hardcoded, not user-specific (duplicate of L-14) | Session 3 | CONFIRMED N/A — duplicate of L-14 |
 | L-25 | Listings | "Customize" columns button has no onclick handler | Session 3 | CONFIRMED N/A — button is a functional dropdown with column checkboxes calling handlers.toggleListingColumn |
 | L-26 | Listings | Announcement banner "✕" close button has no onclick handler | Session 3 | VERIFIED ✅ — 0c852be — index.html: added onclick="document.getElementById('announcement-banner').hidden=true" |
@@ -278,9 +278,9 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #130 | Reports | `modals.viewReport()` shows raw ID string instead of report content | Session 5 | FIXED — modals.js: removed duplicate dead viewReport definition; canonical version with null guard remains |
 | #132 | Changelog | Version thumbnail cards have light background in dark mode — visual inconsistency | Session 5 | FIXED — main.css: .settings-changelog-banner dark mode bg rgba(14,165,233,0.1) |
 | #134 | Feedback Analytics | Admin badge does not inherit dark mode | Session 5 (Session 4 dark mode) | FIXED — main.css: .badge.badge-sm dark mode bg #374151 text #e5e7eb |
-| #135 | Help | Quick Start Guide step 4 text truncates: "Set up automati... to save t..." | Session 5 (Session 4 dark mode) | FIXED — pages-community-help.js: flex-shrink:0 on number spans, word-break on text spans |
+| #135 | Help | Quick Start Guide step 4 text truncates: "Set up automati... to save t..." | Session 5 (Session 4 dark mode) | VERIFIED ✅ — screenshot + DOM confirm step 4 shows "Set up an automation" without truncation (2026-04-07) |
 | #137 | Privacy Policy (in-app) | Shows "Last updated: January 2026" — static privacy page shows April 5, 2026 | Session 5 (Session 4 dark mode) | VERIFIED ✅ — 15dba34 — pages-community-help.js: both dates updated to April 2026 |
-| #138 | Account | Text truncates in narrow card columns: "Member Since: Marc...", "Curre plan" | Session 5 (Session 4 dark mode) | FIXED — pages-settings-account.js + pages-deferred.js: word-break:break-word on stat cards |
+| #138 | Account | Text truncates in narrow card columns: "Member Since: Marc...", "Curre plan" | Session 5 (Session 4 dark mode) | VERIFIED ✅ — Account page screenshot shows "Full Name / Email / Username / Member Since" labels without truncation; full card text confirmed in DOM (2026-04-07) |
 | #139 | Submit Feedback | Inactive feedback type buttons retain white/light backgrounds in dark mode | Session 5 (Session 4 dark mode) | FIXED — main.css: .btn.btn-outline dark mode bg #1f2937 |
 | #156 | Analytics | Weekly Report shows same start/end date — "Week of Apr 5 - Apr 5, 2026" | Session 8 | VERIFIED ✅ — 00e1551 — handlers-deferred.js + handlers-sales-orders.js: end = thisWeekStart + 6 days |
 | #162 | Orders | Orders page "More" button has no onclick handler — dropdown completely inaccessible | Session 10 | VERIFIED ✅ — 00e1551 — pages-sales-orders.js: added direct onclick to button element |
