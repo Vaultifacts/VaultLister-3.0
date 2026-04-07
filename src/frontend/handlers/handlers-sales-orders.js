@@ -3435,11 +3435,10 @@ Object.assign(handlers, {
     showPlatformFeeCalculator: function() {
         const platforms = [
             { name: 'eBay', baseFee: 12.9, paymentFee: 2.9, paymentFixed: 0.30 },
-            { name: 'Poshmark', baseFee: 20, paymentFee: 0, paymentFixed: 0, note: 'Flat 20% or $2.95 under $15' },
-            { name: 'Mercari', baseFee: 10, paymentFee: 2.9, paymentFixed: 0.50 },
+            { name: 'Poshmark', baseFee: 20, paymentFee: 0, paymentFixed: 0, note: 'Flat 20% or C$2.95 under C$15' },
             { name: 'Depop', baseFee: 10, paymentFee: 2.9, paymentFixed: 0.30 },
-            { name: 'Facebook', baseFee: 5, paymentFee: 2.9, paymentFixed: 0.30, note: '5% or $0.40 min' },
-            { name: 'Etsy', baseFee: 6.5, paymentFee: 3, paymentFixed: 0.25, listingFee: 0.20 }
+            { name: 'Facebook', baseFee: 5, paymentFee: 2.9, paymentFixed: 0.30, note: '5% or C$0.40 min' },
+            { name: 'Whatnot', baseFee: 8, paymentFee: 0, paymentFixed: 0, note: '8% platform fee' }
         ];
 
         modals.show(`
@@ -3452,7 +3451,7 @@ Object.assign(handlers, {
                     <div class="fee-calc-input">
                         <label>Sale Price</label>
                         <div class="input-group">
-                            <span class="input-prefix">$</span>
+                            <span class="input-prefix">C$</span>
                             <input type="number" id="fee-sale-price" class="form-control form-control-lg"
                                 value="50" min="0" step="0.01" oninput="handlers.updateFeeCalculation()">
                         </div>
@@ -3466,8 +3465,8 @@ Object.assign(handlers, {
                             return `
                                 <div class="fee-platform-card" data-platform="${p.name.toLowerCase()}">
                                     <div class="platform-name">${p.name}</div>
-                                    <div class="platform-net">$${netPayout.toFixed(2)}</div>
-                                    <div class="platform-fee">-$${totalFee.toFixed(2)} fees</div>
+                                    <div class="platform-net">C$${netPayout.toFixed(2)}</div>
+                                    <div class="platform-fee">-C$${totalFee.toFixed(2)} fees</div>
                                     ${p.note ? `<div class="platform-note">${p.note}</div>` : ''}
                                 </div>
                             `;
@@ -3475,23 +3474,23 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="fee-breakdown" id="fee-breakdown">
-                        <h4 class="section-title">Fee Breakdown (eBay at $50)</h4>
+                        <h4 class="section-title">Fee Breakdown (eBay at C$50)</h4>
                         <div class="breakdown-rows">
                             <div class="breakdown-row">
                                 <span>Sale Price</span>
-                                <span>$50.00</span>
+                                <span>C$50.00</span>
                             </div>
                             <div class="breakdown-row">
                                 <span>Final Value Fee (12.9%)</span>
-                                <span>-$6.45</span>
+                                <span>-C$6.45</span>
                             </div>
                             <div class="breakdown-row">
-                                <span>Payment Processing (2.9% + $0.30)</span>
-                                <span>-$1.75</span>
+                                <span>Payment Processing (2.9% + C$0.30)</span>
+                                <span>-C$1.75</span>
                             </div>
                             <div class="breakdown-row total">
                                 <span>Your Payout</span>
-                                <span>$41.80</span>
+                                <span>C$41.80</span>
                             </div>
                         </div>
                     </div>
@@ -3510,21 +3509,20 @@ Object.assign(handlers, {
         const platforms = [
             { name: 'eBay', baseFee: 12.9, paymentFee: 2.9, paymentFixed: 0.30 },
             { name: 'Poshmark', baseFee: 20, paymentFee: 0, paymentFixed: 0 },
-            { name: 'Mercari', baseFee: 10, paymentFee: 2.9, paymentFixed: 0.50 },
             { name: 'Depop', baseFee: 10, paymentFee: 2.9, paymentFixed: 0.30 },
             { name: 'Facebook', baseFee: 5, paymentFee: 2.9, paymentFixed: 0.30 },
-            { name: 'Etsy', baseFee: 6.5, paymentFee: 3, paymentFixed: 0.25, listingFee: 0.20 }
+            { name: 'Whatnot', baseFee: 8, paymentFee: 0, paymentFixed: 0 }
         ];
 
         platforms.forEach(p => {
             let totalFee = (price * p.baseFee / 100) + (price * p.paymentFee / 100) + p.paymentFixed + (p.listingFee || 0);
 
-            // Poshmark special: $2.95 flat fee under $15
+            // Poshmark special: C$2.95 flat fee under C$15
             if (p.name === 'Poshmark' && price < 15) {
                 totalFee = 2.95;
             }
 
-            // Facebook minimum $0.40
+            // Facebook minimum C$0.40
             if (p.name === 'Facebook') {
                 totalFee = Math.max(0.40, totalFee);
             }

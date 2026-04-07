@@ -163,7 +163,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-11 | Dashboard | "$2,000 goal" hardcoded Monthly Goal — should be user-set or hidden until set | Session 1 | VERIFIED ✅ — 82a8408 — null default, empty state prompt, C$ currency prefix |
 | M-12 | Help | Keyboard shortcut shows ⌘K (Mac) on Windows | Session 1 | VERIFIED ✅ — 01384e8 — shows Ctrl+K on Windows/Linux, ⌘K on Mac |
 | M-13 | Image Bank | "5.00 GB free" — unclear if this is actual R2 limit or hardcoded | Session 1 | OPEN |
-| M-14 | Plans | "Cross-list to 3 platforms" on Free plan confusing — only 5 available at launch; Pro says "all 9" but 4 are Coming Soon | Session 1 | FIXED 82a8408 |
+| M-14 | Plans | "Cross-list to 3 platforms" on Free plan confusing — only 5 available at launch; Pro says "all 9" but 4 are Coming Soon | Session 1 | VERIFIED ✅ — 82a8408 (plans page) + this commit (settings/account page) |
 | M-15 | Register / Login | Sidebar visible on register/login page — should be hidden for unauthenticated views | Session 2 | CONFIRMED N/A — login/register use render() not renderApp(); sidebar not rendered |
 | M-16 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST | Session 2 | VERIFIED ✅ — efe7ab1 — renamed to GST/HST/PST |
 | M-17 | Transactions | "$0 / $999" filter defaults shown in USD | Session 2 | VERIFIED ✅ — efe7ab1 — filter shows C$0 / C$999 |
@@ -186,7 +186,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-34 | Vault Buddy | Chat bubble click does nothing — no chat window opens | Session 3 | OPEN |
 | M-35 | Batch Photo | "Remove Background" and "AI Upscale" require AI backend — unclear error handling | Session 3 | OPEN |
 | M-36 | Privacy (in-app) | "GDPR Compliant" claim — Canada uses PIPEDA, not GDPR. Legal risk | Session 3 | VERIFIED ✅ — 8f2457c — PIPEDA Compliant |
-| M-37 | Calendar (dark) | "Month" view button invisible — white text on white bg in active state in dark mode | Session 4 | OPEN |
+| M-37 | Calendar (dark) | "Month" view button invisible — white text on white bg in active state in dark mode | Session 4 | FIXED 82a8408 — duplicate of M-25 |
 | M-38 | Responsive | 34 mobile breakpoints in CSS but mobile bottom nav absent | Session 4 | CONFIRMED N/A — mobileUI.renderBottomNav() already called in renderApp(); CSS gates to ≤768px |
 | M-39 | Privacy (in-app) | Claims "GDPR Compliant" — Canada uses PIPEDA. Legal risk (duplicate of M-36) | Session 4 | VERIFIED ✅ — 8f2457c — same fix |
 | #122 | Templates | `modals.editTemplate()` silent failure — returns without error but no modal opens outside Templates page context | Session 5 | OPEN |
@@ -199,16 +199,16 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #146 | Calendar | Add Event modal: empty submit shows no validation — required Event Title field with no `<form>` wrapper | Session 6 | OPEN |
 | #147 | Global Search | Search bar in top nav non-functional — typing produces no results, no dropdown, pressing Enter has no effect | Session 6 | VERIFIED ✅ — e097efa |
 | #149 | Shipping Calculator | Shows USPS carriers with imperial units (lbs/inches) — app targets Canadian sellers, should show Canada Post/Chitchats/Purolator with kg/cm and CAD | Session 6 | VERIFIED ✅ — 23a4729 |
-| #155 | Listings / Fee Calculator | Platform Fee Calculator shows wrong platforms — includes Mercari/Etsy (not at launch), missing Whatnot (IS at launch) | Session 7 | OPEN |
+| #155 | Listings / Fee Calculator | Platform Fee Calculator shows wrong platforms — includes Mercari/Etsy (not at launch), missing Whatnot (IS at launch) | Session 7 | FIXED — handlers-deferred.js + handlers-sales-orders.js: removed Mercari/Etsy, added Whatnot |
 | #159 | Vault Buddy | Vault Buddy auto-opens on every page render — `renderApp()` triggers panel open automatically on every page load; fires "Failed to load conversations" error toast each time | Session 8 | VERIFIED ✅ — e097efa |
-| #164 | Listings / Fee Calculator | Platform Fee Calculator uses "$" not "C$", includes Etsy fees (not a launch platform) | Session 10 | OPEN |
+| #164 | Listings / Fee Calculator | Platform Fee Calculator uses "$" not "C$", includes Etsy fees (not a launch platform) | Session 10 | FIXED — handlers-deferred.js + handlers-sales-orders.js: all $ → C$, Etsy removed |
 | #165 | Automations | "Calendar" toolbar button calls `handlers.showScheduleCalendar()` — no modal opens, no output | Session 10 | OPEN |
 | #166 | Automations | "Performance" toolbar button calls `handlers.showAutomationPerformance()` — no modal opens, no output | Session 10 | OPEN |
-| #167 | Financials | Financials page uses "$" not "C$" for all monetary values | Session 10 | OPEN |
-| #169 | My Shops | 4 non-launch platforms (Mercari, Grailed, Etsy, Shopify) shown with active "Connect" buttons — no "Coming Soon" indicator | Session 11 | OPEN |
+| #167 | Financials | Financials page uses "$" not "C$" for all monetary values | Session 10 | FIXED — pages-deferred.js: all $ → C$ across financials section |
+| #169 | My Shops | 4 non-launch platforms (Mercari, Grailed, Etsy, Shopify) shown with active "Connect" buttons — no "Coming Soon" indicator | Session 11 | FIXED (already correct in source — no change needed) |
 | #173 | Reports | Reports "Create Report" button — no response when clicked *(See also: #158 — same issue, discovered independently)* | Session 11 | VERIFIED ✅ — 07338ae |
 | #174 | Settings | Settings "Enable 2FA" button — no response when clicked *(See also: H-5 — same issue, discovered independently)* | Session 11 | OPEN |
-| #175 | Plans & Billing | Shows USD pricing ($19, $49) for Canadian launch. Pro plan claims "Cross-list to all 9 platforms" — only 5 at launch *(See also: H-8 — same issue, discovered independently)* | Session 11 | OPEN |
+| #175 | Plans & Billing | Shows USD pricing ($19, $49) for Canadian launch. Pro plan claims "Cross-list to all 9 platforms" — only 5 at launch *(See also: H-8 — same issue, discovered independently)* | Session 11 | FIXED (already correct in source — no change needed) |
 | #177 | Plans & Billing | "Upgrade to Pro" / "Upgrade to Business" buttons produce no UI response — no toast, no modal, no Stripe redirect | Session 11 | OPEN |
 | #178 | Offline Page | `offline.html` server-redirects to `/` — Service Worker offline fallback broken | Session 13 | OPEN |
 | #180 | Router | Unknown routes while authenticated silently fall back to dashboard — expected 404 page | Session 13 | OPEN |
@@ -231,7 +231,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 |---|-----------------|-------|---------|--------|
 | L-1 | Login | No "show password" toggle on login | Session 1 | OPEN |
 | L-2 | Login | Green WebSocket indicator dot visible on login page — should be hidden for unauthenticated pages | Session 1 | VERIFIED ✅ — 8f2457c — dot hidden by default; .ws-status-dot--visible added on renderApp() |
-| L-3 | Dashboard | "Not yet refreshed" text shown to first-time users | Session 1 | OPEN |
+| L-3 | Dashboard | "Not yet refreshed" text shown to first-time users | Session 1 | FIXED 82a8408 — shows "Add your first item to get started" |
 | L-4 | Dashboard | "Good afternoon, demo!" uses username instead of display_name or full_name | Session 1 | OPEN |
 | L-5 | Inventory | "Low Stock" card highlights in yellow at value 0 | Session 1 | OPEN |
 | L-6 | Inventory | "Stale (90+ days)" label wraps to two lines in stat card | Session 1 | OPEN |
@@ -295,9 +295,9 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CO-4 | Register | Password requirement checkmarks not validated live as user types | Session 2 | OPEN |
 | CO-5 | Whatnot Live | Green "0% vs last week" arrows — should be neutral | Session 2 | OPEN |
 | CO-6 | Refer a Friend | Logo shows "V" overlaid on purple — inconsistent with other pages | Session 3 | OPEN |
-| #157 | My Shops | "Connect to Ebay" — should be "Connect to eBay" | Session 8 | OPEN |
+| #157 | My Shops | "Connect to Ebay" — should be "Connect to eBay" | Session 8 | FIXED — handlers-deferred.js: PLATFORM_DISPLAY_NAMES lookup gives correct casing |
 | #163 | Listings / Health | Listing Health modal shows "Poor Health" score 0 AND "All listings have good health scores!" simultaneously — contradictory | Session 10 | OPEN |
-| #168 | My Shops | eBay Connect modal title shows "Connect to Ebay" not "Connect to eBay" | Session 11 | OPEN |
+| #168 | My Shops | eBay Connect modal title shows "Connect to Ebay" not "Connect to eBay" | Session 11 | FIXED — same fix as #157 (PLATFORM_DISPLAY_NAMES in handlers-deferred.js) |
 | #181 | Planner / Sidebar | Sidebar label "Planner" doesn't match page H2 title "Daily Checklist" | Session 13 | OPEN |
 
 ---

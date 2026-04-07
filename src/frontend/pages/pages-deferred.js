@@ -2734,7 +2734,7 @@ Object.assign(pages, {
                                         </td>
                                         <td>1</td>
                                         <td>${components.platformBadge(sale.platform)}</td>
-                                        <td>$${(sale.platform_fee || 0).toFixed(2)} <span class="text-xs text-gray-500">(${feePercentage}%)</span></td>
+                                        <td>C$${(sale.platform_fee || 0).toFixed(2)} <span class="text-xs text-gray-500">(${feePercentage}%)</span></td>
                                         <td>
                                             <span class="badge badge-${
                                                 sale.status === 'delivered' ? 'success' :
@@ -2742,8 +2742,8 @@ Object.assign(pages, {
                                                 'gray'
                                             }">${sale.status}</span>
                                         </td>
-                                        <td class="font-medium">$${(sale.sale_price || 0).toFixed(2)}</td>
-                                        <td class="font-medium text-success">$${(sale.net_profit || 0).toFixed(2)}</td>
+                                        <td class="font-medium">C$${(sale.sale_price || 0).toFixed(2)}</td>
+                                        <td class="font-medium text-success">C$${(sale.net_profit || 0).toFixed(2)}</td>
                                         <td class="text-sm text-gray-500">${new Date(sale.created_at).toLocaleDateString()}</td>
                                     </tr>
                                     `;
@@ -2817,7 +2817,7 @@ Object.assign(pages, {
                                             <td>${escapeHtml(p.vendor_name)}</td>
                                             <td>${new Date(p.purchase_date).toLocaleDateString()}</td>
                                             <td>${p.item_count || 0}</td>
-                                            <td class="font-medium">$${(p.total_amount || 0).toFixed(2)}</td>
+                                            <td class="font-medium">C$${(p.total_amount || 0).toFixed(2)}</td>
                                             <td><span class="badge badge-${p.status === 'completed' ? 'success' : 'warning'}">${p.status}</span></td>
                                             <td>
                                                 <button class="btn btn-sm btn-ghost" onclick="handlers.viewPurchase(${p.id})">View</button>
@@ -2869,12 +2869,12 @@ Object.assign(pages, {
                                         <tr>
                                             <td>${new Date(s.created_at).toLocaleDateString()}</td>
                                             <td class="font-medium">${escapeHtml(s.listing_title || s.inventory_title || 'N/A')}</td>
-                                            <td class="text-success">$${(s.sale_price || 0).toFixed(2)}</td>
-                                            <td class="text-gray-600">$${(s.item_cost || 0).toFixed(2)}</td>
-                                            <td class="text-gray-600">$${(s.customer_shipping_cost || 0).toFixed(2)}</td>
-                                            <td class="text-gray-600">$${(s.seller_shipping_cost || s.shipping_cost || 0).toFixed(2)}</td>
-                                            <td class="text-gray-600">$${(s.platform_fee || 0).toFixed(2)}</td>
-                                            <td class="font-medium ${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">$${(s.net_profit || 0).toFixed(2)}</td>
+                                            <td class="text-success">C$${(s.sale_price || 0).toFixed(2)}</td>
+                                            <td class="text-gray-600">C$${(s.item_cost || 0).toFixed(2)}</td>
+                                            <td class="text-gray-600">C$${(s.customer_shipping_cost || 0).toFixed(2)}</td>
+                                            <td class="text-gray-600">C$${(s.seller_shipping_cost || s.shipping_cost || 0).toFixed(2)}</td>
+                                            <td class="text-gray-600">C$${(s.platform_fee || 0).toFixed(2)}</td>
+                                            <td class="font-medium ${(s.net_profit || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(s.net_profit || 0).toFixed(2)}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -2925,7 +2925,7 @@ Object.assign(pages, {
                                                                 <span class="font-medium">${escapeHtml(acct.account_name)}</span>
                                                                 <span class="text-xs text-gray-500 ml-2">(${acct.transaction_count || 0} transactions)</span>
                                                             </div>
-                                                            <span class="font-medium ${(acct.calculated_balance || 0) >= 0 ? 'text-success' : 'text-error'}">$${Math.abs(acct.calculated_balance || 0).toFixed(2)}</span>
+                                                            <span class="font-medium ${(acct.calculated_balance || 0) >= 0 ? 'text-success' : 'text-error'}">C$${Math.abs(acct.calculated_balance || 0).toFixed(2)}</span>
                                                         </div>
                                                     `).join('')}
                                                 </div>
@@ -2952,7 +2952,7 @@ Object.assign(pages, {
                     return accounts.map(a => `
                         <div class="flex justify-between py-2 ${indent ? '' : ''}" style="padding-left:${indent ? '2rem' : '1.5rem'}; border-bottom: 1px solid var(--gray-100);">
                             <span class="text-sm">${escapeHtml(a.account_name || a.name || 'Unnamed')}</span>
-                            <span class="text-sm font-medium">$${Math.abs(a.total || a.balance || 0).toFixed(2)}</span>
+                            <span class="text-sm font-medium">C$${Math.abs(a.total || a.balance || 0).toFixed(2)}</span>
                         </div>
                     `).join('');
                 };
@@ -2961,7 +2961,7 @@ Object.assign(pages, {
                 const renderSubtotal = (label, amount, color = '') => `
                     <div class="flex justify-between py-3" style="padding-left:1rem; border-bottom: 2px solid var(--gray-200); ${color ? 'color:' + color + ';' : ''}">
                         <span class="font-semibold">${label}</span>
-                        <span class="font-semibold">$${Math.abs(amount).toFixed(2)}</span>
+                        <span class="font-semibold">C$${Math.abs(amount).toFixed(2)}</span>
                     </div>
                 `;
 
@@ -2971,7 +2971,7 @@ Object.assign(pages, {
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-lg" style="color: ${amount >= 0 ? '#16a34a' : '#dc2626'}">${label}</span>
                             <span class="text-2xl font-bold" style="color: ${amount >= 0 ? '#16a34a' : '#dc2626'}">
-                                ${amount < 0 ? '-' : ''}$${Math.abs(amount).toFixed(2)}
+                                ${amount < 0 ? '-' : ''}C$${Math.abs(amount).toFixed(2)}
                             </span>
                         </div>
                     </div>
@@ -3063,7 +3063,7 @@ Object.assign(pages, {
                                                     ${sales.length > 0 ? sales.slice(0, 20).map(s => `
                                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                             <span class="text-sm">${escapeHtml(s.listing_title || s.inventory_title || 'Sale')} <span class="text-xs text-gray-400">(${new Date(s.created_at).toLocaleDateString()})</span></span>
-                                                            <span class="text-sm font-medium">$${(s.sale_price || 0).toFixed(2)}</span>
+                                                            <span class="text-sm font-medium">C$${(s.sale_price || 0).toFixed(2)}</span>
                                                         </div>
                                                     `).join('') + (sales.length > 20 ? '<div class="text-xs text-gray-400" style="padding-left:1.5rem;">... and ' + (sales.length - 20) + ' more</div>' : '') : '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No revenue recorded</div>'}
                                                 `}
@@ -3079,13 +3079,13 @@ Object.assign(pages, {
                                                     ${purchases.length > 0 ? purchases.map(p => `
                                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                             <span class="text-sm">${escapeHtml(p.vendor_name || 'Purchase')} <span class="text-xs text-gray-400">(${new Date(p.purchase_date || p.created_at).toLocaleDateString()})</span></span>
-                                                            <span class="text-sm font-medium">$${(p.total_amount || 0).toFixed(2)}</span>
+                                                            <span class="text-sm font-medium">C$${(p.total_amount || 0).toFixed(2)}</span>
                                                         </div>
                                                     `).join('') : `
                                                         ${salesCOGS > 0 ? `
                                                             <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                                 <span class="text-sm">Item Costs from Sales</span>
-                                                                <span class="text-sm font-medium">$${salesCOGS.toFixed(2)}</span>
+                                                                <span class="text-sm font-medium">C$${salesCOGS.toFixed(2)}</span>
                                                             </div>
                                                         ` : '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No COGS recorded</div>'}
                                                     `}
@@ -3098,7 +3098,7 @@ Object.assign(pages, {
                                                 <div class="flex justify-between items-center">
                                                     <span class="font-semibold" style="color: #2563eb;">Gross Profit</span>
                                                     <div>
-                                                        <span class="font-bold text-lg" style="color: ${displayGross >= 0 ? '#2563eb' : '#dc2626'};">$${displayGross.toFixed(2)}</span>
+                                                        <span class="font-bold text-lg" style="color: ${displayGross >= 0 ? '#2563eb' : '#dc2626'};">C$${displayGross.toFixed(2)}</span>
                                                         <span class="text-xs text-gray-400 ml-2">(${displayRevenue > 0 ? (displayGross / displayRevenue * 100).toFixed(1) : '0'}% margin)</span>
                                                     </div>
                                                 </div>
@@ -3117,13 +3117,13 @@ Object.assign(pages, {
                                                     ${salesPlatformFees > 0 ? `
                                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                             <span class="text-sm">Platform Fees</span>
-                                                            <span class="text-sm font-medium">$${salesPlatformFees.toFixed(2)}</span>
+                                                            <span class="text-sm font-medium">C$${salesPlatformFees.toFixed(2)}</span>
                                                         </div>
                                                     ` : ''}
                                                     ${salesShipping > 0 ? `
                                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                             <span class="text-sm">Shipping Costs</span>
-                                                            <span class="text-sm font-medium">$${salesShipping.toFixed(2)}</span>
+                                                            <span class="text-sm font-medium">C$${salesShipping.toFixed(2)}</span>
                                                         </div>
                                                     ` : ''}
                                                     ${salesPlatformFees === 0 && salesShipping === 0 ? '<div class="text-sm text-gray-400" style="padding-left:1.5rem;">No operating expenses recorded</div>' : ''}
@@ -3160,7 +3160,7 @@ Object.assign(pages, {
                                         return accounts.map(a => `
                                             <div class="flex justify-between py-1" style="padding-left:2rem; border-bottom: 1px solid var(--gray-50);">
                                                 <span class="text-sm">${escapeHtml(a.account_name || 'Unnamed')}</span>
-                                                <span class="text-sm font-medium">$${Math.abs(a.balance || 0).toFixed(2)}</span>
+                                                <span class="text-sm font-medium">C$${Math.abs(a.balance || 0).toFixed(2)}</span>
                                             </div>
                                         `).join('');
                                     };
@@ -3182,7 +3182,7 @@ Object.assign(pages, {
                                                     ${(assets.currentAssets?.otherCurrent || []).length > 0 ? '<div class="text-xs text-gray-400" style="padding-left:1rem;">Other Current Assets</div>' + renderBalanceItems(assets.currentAssets.otherCurrent) : ''}
                                                     <div class="flex justify-between py-2 font-medium text-sm" style="padding-left:1rem; border-top: 1px solid var(--gray-200);">
                                                         <span>Total Current Assets</span>
-                                                        <span>$${(totals.currentAssets || 0).toFixed(2)}</span>
+                                                        <span>C$${(totals.currentAssets || 0).toFixed(2)}</span>
                                                     </div>
                                                 </div>
 
@@ -3192,7 +3192,7 @@ Object.assign(pages, {
                                                         ${renderBalanceItems(assets.fixedAssets)}
                                                         <div class="flex justify-between py-2 font-medium text-sm" style="padding-left:1rem; border-top: 1px solid var(--gray-200);">
                                                             <span>Total Fixed Assets</span>
-                                                            <span>$${(totals.fixedAssets || 0).toFixed(2)}</span>
+                                                            <span>C$${(totals.fixedAssets || 0).toFixed(2)}</span>
                                                         </div>
                                                     </div>
                                                 ` : ''}
@@ -3203,14 +3203,14 @@ Object.assign(pages, {
                                                         ${renderBalanceItems(assets.otherAssets)}
                                                         <div class="flex justify-between py-2 font-medium text-sm" style="padding-left:1rem; border-top: 1px solid var(--gray-200);">
                                                             <span>Total Other Assets</span>
-                                                            <span>$${(totals.otherAssets || 0).toFixed(2)}</span>
+                                                            <span>C$${(totals.otherAssets || 0).toFixed(2)}</span>
                                                         </div>
                                                     </div>
                                                 ` : ''}
 
                                                 <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid #2563eb; color: #2563eb;">
                                                     <span>TOTAL ASSETS</span>
-                                                    <span>$${(totals.totalAssets || 0).toFixed(2)}</span>
+                                                    <span>C$${(totals.totalAssets || 0).toFixed(2)}</span>
                                                 </div>
                                             </div>
 
@@ -3225,7 +3225,7 @@ Object.assign(pages, {
                                                     ${(liabilities.currentLiabilities?.otherCurrent || []).length > 0 ? '<div class="text-xs text-gray-400" style="padding-left:1rem;">Other Current Liabilities</div>' + renderBalanceItems(liabilities.currentLiabilities.otherCurrent) : ''}
                                                     <div class="flex justify-between py-2 font-medium text-sm" style="padding-left:1rem; border-top: 1px solid var(--gray-200);">
                                                         <span>Total Current Liabilities</span>
-                                                        <span>$${(totals.currentLiabilities || 0).toFixed(2)}</span>
+                                                        <span>C$${(totals.currentLiabilities || 0).toFixed(2)}</span>
                                                     </div>
                                                 </div>
 
@@ -3235,14 +3235,14 @@ Object.assign(pages, {
                                                         ${renderBalanceItems(liabilities.longTermLiabilities)}
                                                         <div class="flex justify-between py-2 font-medium text-sm" style="padding-left:1rem; border-top: 1px solid var(--gray-200);">
                                                             <span>Total Long-Term Liabilities</span>
-                                                            <span>$${(totals.longTermLiabilities || 0).toFixed(2)}</span>
+                                                            <span>C$${(totals.longTermLiabilities || 0).toFixed(2)}</span>
                                                         </div>
                                                     </div>
                                                 ` : ''}
 
                                                 <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid #dc2626; color: #dc2626;">
                                                     <span>TOTAL LIABILITIES</span>
-                                                    <span>$${(totals.totalLiabilities || 0).toFixed(2)}</span>
+                                                    <span>C$${(totals.totalLiabilities || 0).toFixed(2)}</span>
                                                 </div>
                                             </div>
 
@@ -3252,7 +3252,7 @@ Object.assign(pages, {
                                                 ${renderBalanceItems(equityAccts)}
                                                 <div class="flex justify-between py-3 font-bold" style="border-top: 2px solid #16a34a; color: #16a34a;">
                                                     <span>TOTAL EQUITY</span>
-                                                    <span>$${(totals.equity || 0).toFixed(2)}</span>
+                                                    <span>C$${(totals.equity || 0).toFixed(2)}</span>
                                                 </div>
                                             </div>
 
@@ -3260,12 +3260,12 @@ Object.assign(pages, {
                                             <div class="p-4 rounded-lg" style="background: rgba(107,114,128,0.08); border: 2px solid var(--gray-300);">
                                                 <div class="flex justify-between items-center">
                                                     <span class="font-bold">TOTAL LIABILITIES + EQUITY</span>
-                                                    <span class="text-xl font-bold">$${(totals.totalLiabilitiesAndEquity || 0).toFixed(2)}</span>
+                                                    <span class="text-xl font-bold">C$${(totals.totalLiabilitiesAndEquity || 0).toFixed(2)}</span>
                                                 </div>
                                             </div>
 
                                             <div class="mt-3 p-3 rounded-lg text-center text-sm font-medium ${stmt.balanceCheck ? '' : ''}" style="background: ${stmt.balanceCheck ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}; color: ${stmt.balanceCheck ? '#16a34a' : '#dc2626'};">
-                                                ${stmt.balanceCheck ? 'Balanced: Assets ($' + (totals.totalAssets || 0).toFixed(2) + ') = Liabilities + Equity ($' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')' : 'Not Balanced: Assets ($' + (totals.totalAssets || 0).toFixed(2) + ') != Liabilities + Equity ($' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')'}
+                                                ${stmt.balanceCheck ? 'Balanced: Assets (C$' + (totals.totalAssets || 0).toFixed(2) + ') = Liabilities + Equity (C$' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')' : 'Not Balanced: Assets (C$' + (totals.totalAssets || 0).toFixed(2) + ') != Liabilities + Equity (C$' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')'}
                                             </div>
                                         </div>
                                     `;
@@ -3300,7 +3300,7 @@ Object.assign(pages, {
                                     const renderCFLine = (label, amount, isPositive) => `
                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                             <span class="text-sm">${label}</span>
-                                            <span class="text-sm font-medium" style="color: ${isPositive ? '#16a34a' : '#dc2626'};">${isPositive ? '+' : '-'}$${Math.abs(amount).toFixed(2)}</span>
+                                            <span class="text-sm font-medium" style="color: ${isPositive ? '#16a34a' : '#dc2626'};">${isPositive ? '+' : '-'}C$${Math.abs(amount).toFixed(2)}</span>
                                         </div>
                                     `;
 
@@ -3322,7 +3322,7 @@ Object.assign(pages, {
                                                 ${shippingCosts > 0 ? renderCFLine('Shipping & postage paid', shippingCosts, false) : ''}
                                                 <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid #2563eb; color: ${netOperating >= 0 ? '#16a34a' : '#dc2626'};">
                                                     <span>Net Cash from Operations</span>
-                                                    <span>${netOperating >= 0 ? '' : '-'}$${Math.abs(netOperating).toFixed(2)}</span>
+                                                    <span>${netOperating >= 0 ? '' : '-'}C$${Math.abs(netOperating).toFixed(2)}</span>
                                                 </div>
                                             </div>
 
@@ -3331,15 +3331,15 @@ Object.assign(pages, {
                                                 <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #7c3aed;">Cash Flow from Investing Activities</h4>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Equipment & supplies purchases</span>
-                                                    <span class="text-sm font-medium text-gray-400">$0.00</span>
+                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Asset disposals / sales</span>
-                                                    <span class="text-sm font-medium text-gray-400">$0.00</span>
+                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
                                                 <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid #7c3aed;">
                                                     <span>Net Cash from Investing</span>
-                                                    <span>$${Math.abs(netInvesting).toFixed(2)}</span>
+                                                    <span>C$${Math.abs(netInvesting).toFixed(2)}</span>
                                                 </div>
                                             </div>
 
@@ -3348,19 +3348,19 @@ Object.assign(pages, {
                                                 <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #0891b2;">Cash Flow from Financing Activities</h4>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner contributions / investments</span>
-                                                    <span class="text-sm font-medium text-gray-400">$0.00</span>
+                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner withdrawals / draws</span>
-                                                    <span class="text-sm font-medium text-gray-400">$0.00</span>
+                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Loan proceeds / repayments</span>
-                                                    <span class="text-sm font-medium text-gray-400">$0.00</span>
+                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
                                                 <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid #0891b2;">
                                                     <span>Net Cash from Financing</span>
-                                                    <span>$${Math.abs(netFinancing).toFixed(2)}</span>
+                                                    <span>C$${Math.abs(netFinancing).toFixed(2)}</span>
                                                 </div>
                                             </div>
 
@@ -3410,7 +3410,7 @@ Object.assign(pages, {
                                             <!-- Beginning Balance -->
                                             <div class="flex justify-between py-3 font-semibold" style="border-bottom: 2px solid var(--gray-200);">
                                                 <span>Beginning Owners Equity</span>
-                                                <span>$${beginningEquity.toFixed(2)}</span>
+                                                <span>C$${beginningEquity.toFixed(2)}</span>
                                             </div>
 
                                             <!-- Equity Accounts Detail -->
@@ -3420,7 +3420,7 @@ Object.assign(pages, {
                                                     ${equityAccts.map(a => `
                                                         <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                             <span class="text-sm">${escapeHtml(a.account_name || 'Unnamed')}</span>
-                                                            <span class="text-sm font-medium">$${Math.abs(a.balance || 0).toFixed(2)}</span>
+                                                            <span class="text-sm font-medium">C$${Math.abs(a.balance || 0).toFixed(2)}</span>
                                                         </div>
                                                     `).join('')}
                                                 </div>
@@ -3432,29 +3432,29 @@ Object.assign(pages, {
 
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner Contributions / Investments</span>
-                                                    <span class="text-sm font-medium" style="color: #16a34a;">+$${ownerContributions.toFixed(2)}</span>
+                                                    <span class="text-sm font-medium" style="color: #16a34a;">+C$${ownerContributions.toFixed(2)}</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Net Income (Loss) for Period</span>
                                                     <span class="text-sm font-medium" style="color: ${netIncome >= 0 ? '#16a34a' : '#dc2626'};">
-                                                        ${netIncome >= 0 ? '+' : '-'}$${Math.abs(netIncome).toFixed(2)}
+                                                        ${netIncome >= 0 ? '+' : '-'}C$${Math.abs(netIncome).toFixed(2)}
                                                     </span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:2rem; border-bottom: 1px solid var(--gray-50);">
                                                     <span class="text-xs text-gray-400">Revenue</span>
-                                                    <span class="text-xs text-gray-500">$${totalRevenue.toFixed(2)}</span>
+                                                    <span class="text-xs text-gray-500">C$${totalRevenue.toFixed(2)}</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:2rem; border-bottom: 1px solid var(--gray-50);">
                                                     <span class="text-xs text-gray-400">Less: COGS</span>
-                                                    <span class="text-xs text-gray-500">($${totalCOGS.toFixed(2)})</span>
+                                                    <span class="text-xs text-gray-500">(C$${totalCOGS.toFixed(2)})</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:2rem; border-bottom: 1px solid var(--gray-50);">
                                                     <span class="text-xs text-gray-400">Less: Operating Expenses</span>
-                                                    <span class="text-xs text-gray-500">($${totalExpenses.toFixed(2)})</span>
+                                                    <span class="text-xs text-gray-500">(C$${totalExpenses.toFixed(2)})</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner Withdrawals / Draws</span>
-                                                    <span class="text-sm font-medium" style="color: #dc2626;">-$${ownerWithdrawals.toFixed(2)}</span>
+                                                    <span class="text-sm font-medium" style="color: #dc2626;">-C$${ownerWithdrawals.toFixed(2)}</span>
                                                 </div>
                                             </div>
 
@@ -3500,13 +3500,13 @@ Object.assign(pages, {
                                         <div class="p-4 bg-green-50 rounded-lg">
                                             <div class="flex justify-between items-center">
                                                 <span class="font-semibold text-green-700">Total Income</span>
-                                                <span class="text-xl font-bold text-green-900">$${(pnl.income?.total || 0).toFixed(2)}</span>
+                                                <span class="text-xl font-bold text-green-900">C$${(pnl.income?.total || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
                                         <div class="p-4 bg-orange-50 rounded-lg">
                                             <div class="flex justify-between items-center">
                                                 <span class="font-semibold text-orange-700">Cost of Goods Sold</span>
-                                                <span class="text-xl font-bold text-orange-900">$${(pnl.costOfGoodsSold?.total || 0).toFixed(2)}</span>
+                                                <span class="text-xl font-bold text-orange-900">C$${(pnl.costOfGoodsSold?.total || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
                                         <div class="p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
@@ -3515,13 +3515,13 @@ Object.assign(pages, {
                                                     <span class="font-semibold text-blue-700">Gross Profit</span>
                                                     <span class="text-sm text-blue-500 ml-2">(${pnl.grossProfit?.margin || 0}% margin)</span>
                                                 </div>
-                                                <span class="text-xl font-bold text-blue-900">$${(pnl.grossProfit?.amount || 0).toFixed(2)}</span>
+                                                <span class="text-xl font-bold text-blue-900">C$${(pnl.grossProfit?.amount || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
                                         <div class="p-4 bg-red-50 rounded-lg">
                                             <div class="flex justify-between items-center">
                                                 <span class="font-semibold text-red-700">Total Expenses</span>
-                                                <span class="text-xl font-bold text-red-900">$${(pnl.expenses?.total || 0).toFixed(2)}</span>
+                                                <span class="text-xl font-bold text-red-900">C$${(pnl.expenses?.total || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
                                         <div class="p-4 bg-purple-100 rounded-lg border-2 border-purple-300">
@@ -3530,7 +3530,7 @@ Object.assign(pages, {
                                                     <span class="font-bold text-purple-700">Net Income</span>
                                                     <span class="text-sm text-purple-500 ml-2">(${pnl.netIncome?.margin || 0}% net margin)</span>
                                                 </div>
-                                                <span class="text-2xl font-bold ${(pnl.netIncome?.amount || 0) >= 0 ? 'text-success' : 'text-error'}">$${(pnl.netIncome?.amount || 0).toFixed(2)}</span>
+                                                <span class="text-2xl font-bold ${(pnl.netIncome?.amount || 0) >= 0 ? 'text-success' : 'text-error'}">C$${(pnl.netIncome?.amount || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -3592,17 +3592,17 @@ Object.assign(pages, {
         const healthFactors = [];
         if (profitMargin >= 20) healthFactors.push(25);
         else if (profitMargin >= 10) healthFactors.push(15);
-        else if (profitMargin >= 0) healthFactors.push(10);
+        else if (profitMargin > 0) healthFactors.push(10);
         else healthFactors.push(0);
 
         if (netProfit > 0) healthFactors.push(25);
         else healthFactors.push(0);
 
         if (accounts.length > 0) healthFactors.push(25);
-        else healthFactors.push(10);
+        else healthFactors.push(0);
 
         if (purchases.length > 0 || (store.state.sales || []).length > 0) healthFactors.push(25);
-        else healthFactors.push(10);
+        else healthFactors.push(0);
 
         const financialHealthScore = healthFactors.reduce((a, b) => a + b, 0);
 
@@ -3667,21 +3667,21 @@ Object.assign(pages, {
                             <div class="financial-summary-item revenue">
                                 <div class="summary-item-icon">${components.icon('trending-up', 18)}</div>
                                 <div class="summary-item-content">
-                                    <span class="summary-item-value">$${totalRevenue.toFixed(2)}</span>
+                                    <span class="summary-item-value">C$${totalRevenue.toFixed(2)}</span>
                                     <span class="summary-item-label">Revenue</span>
                                 </div>
                             </div>
                             <div class="financial-summary-item expenses">
                                 <div class="summary-item-icon">${components.icon('trending-down', 18)}</div>
                                 <div class="summary-item-content">
-                                    <span class="summary-item-value">$${totalExpenses.toFixed(2)}</span>
+                                    <span class="summary-item-value">C$${totalExpenses.toFixed(2)}</span>
                                     <span class="summary-item-label">Expenses</span>
                                 </div>
                             </div>
                             <div class="financial-summary-item profit ${netProfit >= 0 ? 'positive' : 'negative'}">
                                 <div class="summary-item-icon">${netProfit >= 0 ? components.icon('dollar', 18) : components.icon('alert-circle', 18)}</div>
                                 <div class="summary-item-content">
-                                    <span class="summary-item-value">${netProfit >= 0 ? '' : '-'}$${Math.abs(netProfit).toFixed(2)}</span>
+                                    <span class="summary-item-value">${netProfit >= 0 ? '' : '-'}C$${Math.abs(netProfit).toFixed(2)}</span>
                                     <span class="summary-item-label">Net Profit</span>
                                 </div>
                             </div>
@@ -3814,18 +3814,18 @@ Object.assign(pages, {
                                 return gross > 0 ? `
                                     <div style="text-align: center; margin-bottom: 20px;">
                                         <div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div>
-                                        <div style="font-size: 36px; font-weight: 700; color: var(--danger);">$${Math.round(total).toLocaleString()}</div>
-                                        <div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: $${Math.round(quarterly).toLocaleString()}</div>
+                                        <div style="font-size: 36px; font-weight: 700; color: var(--danger);">C$${Math.round(total).toLocaleString()}</div>
+                                        <div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: C$${Math.round(quarterly).toLocaleString()}</div>
                                     </div>
                                     <div style="display: grid; gap: 8px;">
                                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Taxable Income</span><span class="font-medium">$${taxable.toLocaleString()}</span>
+                                            <span>Taxable Income</span><span class="font-medium">C$${taxable.toLocaleString()}</span>
                                         </div>
                                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Income Tax</span><span class="font-medium">$${Math.round(incomeTax).toLocaleString()}</span>
+                                            <span>Income Tax</span><span class="font-medium">C$${Math.round(incomeTax).toLocaleString()}</span>
                                         </div>
                                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;">
-                                            <span>Self-Employment Tax</span><span class="font-medium">$${Math.round(seTax).toLocaleString()}</span>
+                                            <span>Self-Employment Tax</span><span class="font-medium">C$${Math.round(seTax).toLocaleString()}</span>
                                         </div>
                                         <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;">
                                             <span>Effective Rate</span><span>${gross > 0 ? (total / gross * 100).toFixed(1) : 0}%</span>
@@ -4000,15 +4000,15 @@ Object.assign(pages, {
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">$${(store.state.bankBalance || 0).toLocaleString()}</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">C$${(store.state.bankBalance || 0).toLocaleString()}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Bank Balance</div>
                         </div>
                         <div style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: 700; color: var(--success);">$${(store.state.bookBalance || 0).toLocaleString()}</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--success);">C$${(store.state.bookBalance || 0).toLocaleString()}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Book Balance</div>
                         </div>
                         <div style="text-align: center; padding: 16px; background: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger-light, #fef2f2)' : 'var(--success-light, #f0fdf4)'}; border-radius: 8px;">
-                            <div style="font-size: 24px; font-weight: 700; color: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger)' : 'var(--success)'};">$${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)).toLocaleString()}</div>
+                            <div style="font-size: 24px; font-weight: 700; color: ${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)) > 50 ? 'var(--danger)' : 'var(--success)'};">C$${Math.abs((store.state.bankBalance || 0) - (store.state.bookBalance || 0)).toLocaleString()}</div>
                             <div style="font-size: 12px; color: var(--gray-500);">Difference</div>
                         </div>
                     </div>
@@ -4065,6 +4065,11 @@ Object.assign(pages, {
     // Shops page,
 
     shops() {
+        const PLATFORM_DISPLAY_NAMES = {
+            ebay: 'eBay', poshmark: 'Poshmark', depop: 'Depop',
+            facebook: 'Facebook Marketplace', whatnot: 'Whatnot',
+            mercari: 'Mercari', grailed: 'Grailed', etsy: 'Etsy', shopify: 'Shopify'
+        };
         const shops = store.state.shops || [];
         const connectedShops = shops.filter(s => s.is_connected);
         const lastSync = store.state.lastShopSync;
@@ -4393,6 +4398,7 @@ Object.assign(pages, {
                     const healthScore = isConnected ? Math.floor(Math.random() * 30) + 70 : null;
                     const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
                     const isPostLaunch = ['mercari', 'grailed', 'etsy', 'shopify'].includes(platform);
+                    const platformDisplayName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
 
                     return `
                         <div class="card shop-card ${isConnected ? 'connected' : ''}">
@@ -4400,7 +4406,7 @@ Object.assign(pages, {
                                 <div class="flex items-center gap-4 mb-4">
                                     ${components.platformLogoLarge(platform)}
                                     <div style="flex: 1;">
-                                        <div class="font-medium text-lg">${platform.charAt(0).toUpperCase() + platform.slice(1)}</div>
+                                        <div class="font-medium text-lg">${platformDisplayName}</div>
                                         ${statusHtml}
                                         ${usernameHtml}
                                     </div>
@@ -4423,7 +4429,7 @@ Object.assign(pages, {
                                             <div style="font-size: 10px; color: var(--gray-500);">Sales</div>
                                         </div>
                                         <div style="padding: 8px; background: var(--success-50); border-radius: 6px;">
-                                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : Math.floor(Math.random() * 500) + 100}</div>
+                                            <div style="font-size: 16px; font-weight: 600; color: var(--success);">C$${fees.totalRevenue > 0 ? fees.totalRevenue.toFixed(0) : Math.floor(Math.random() * 500) + 100}</div>
                                             <div style="font-size: 10px; color: var(--gray-500);">Revenue</div>
                                         </div>
                                     </div>
@@ -4435,18 +4441,18 @@ Object.assign(pages, {
                                         </div>
                                         <div style="display: flex; justify-content: space-between; align-items: baseline;">
                                             <div>
-                                                <span style="font-size: 18px; font-weight: 700; color: var(--error);">-$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : (Math.random() * 50 + 10).toFixed(2)}</span>
+                                                <span style="font-size: 18px; font-weight: 700; color: var(--error);">-C$${fees.totalFees > 0 ? fees.totalFees.toFixed(2) : (Math.random() * 50 + 10).toFixed(2)}</span>
                                             </div>
                                             <div style="text-align: right;">
                                                 <div style="font-size: 10px; color: var(--gray-500);">Net:</div>
-                                                <div style="font-size: 13px; font-weight: 600; color: var(--success);">$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : (Math.random() * 400 + 80).toFixed(2)}</div>
+                                                <div style="font-size: 13px; font-weight: 600; color: var(--success);">C$${fees.netRevenue > 0 ? fees.netRevenue.toFixed(2) : (Math.random() * 400 + 80).toFixed(2)}</div>
                                             </div>
                                         </div>
                                         <div style="margin-top: 6px; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;">
                                             <div style="width: ${fees.feePercentage || (fees.feeRate * 100)}%; height: 100%; background: var(--error); border-radius: 2px;"></div>
                                         </div>
                                         <div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; text-align: center;">
-                                            ${fees.feePercentage || (fees.feeRate * 100).toFixed(1)}% of revenue goes to ${platform.charAt(0).toUpperCase() + platform.slice(1)}
+                                            ${fees.feePercentage || (fees.feeRate * 100).toFixed(1)}% of revenue goes to ${platformDisplayName}
                                         </div>
                                     </div>
                                 `;
@@ -4493,7 +4499,7 @@ Object.assign(pages, {
                                                 : `<div style="width: 40px; height: 40px; border-radius: 8px; background: ${brandColor}20; display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-weight: 700; font-size: 16px;">${shop.platform.charAt(0).toUpperCase()}</div>`
                                             }
                                             <div>
-                                                <div class="font-medium">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</div>
+                                                <div class="font-medium">${PLATFORM_DISPLAY_NAMES[shop.platform] || shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</div>
                                                 <div class="text-xs text-gray-500">${branding.tagline || 'No tagline set'}</div>
                                             </div>
                                         </div>
@@ -6438,7 +6444,7 @@ Object.assign(pages, {
                             ${components.icon('refresh', 16)} Sync
                         </button>
                         <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button aria-haspopup="menu" class="btn btn-secondary">
+                            <button aria-haspopup="menu" class="btn btn-secondary" style="white-space: nowrap;">
                                 ${components.icon('list', 14)} More
                                 ${components.icon('chevron-down', 12)}
                             </button>
@@ -9663,7 +9669,7 @@ Object.assign(pages, {
         return `
             <div class="page-header">
                 <h1 class="page-title">Terms of Service</h1>
-                <p class="page-description">Last updated: January 2026</p>
+                <p class="page-description">Last updated: April 2026</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
                     <button class="btn btn-sm btn-secondary" onclick="handlers.showTermsOfService()">
                         ${components.icon('eye', 14)} View in Modal
@@ -9725,7 +9731,7 @@ Object.assign(pages, {
         return `
             <div class="page-header">
                 <h1 class="page-title">Privacy Policy</h1>
-                <p class="page-description">Last updated: January 2026</p>
+                <p class="page-description">Last updated: April 2026</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
                     <button class="btn btn-sm btn-secondary" onclick="handlers.showPrivacyDataExport()">
                         ${components.icon('download', 14)} Download My Data

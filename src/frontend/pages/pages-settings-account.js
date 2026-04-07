@@ -2383,7 +2383,7 @@ Object.assign(pages, {
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Cross-list to 3 platforms
+                                Cross-list to 5 platforms
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
