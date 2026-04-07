@@ -1958,4 +1958,73 @@ const handlers = {
         }
     },
 
+    submitCrosslistWithMethod: async function(itemIdsStr) {
+        const EXTENSION_PLATFORMS = new Set(['poshmark', 'depop', 'facebook', 'whatnot']);
+        const form = document.getElementById('crosslist-form');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        const selectedPlatforms = formData.getAll('platforms');
+        const postingMethod = formData.get('postingMethod') || 'extension';
+
+        if (!selectedPlatforms.length) {
+            return toast.warning('Select at least one platform');
+        }
+
+        const ids = itemIdsStr ? itemIdsStr.split(',').filter(Boolean) : [];
+        if (!ids.length) return;
+
+        if (postingMethod === 'extension') {
+            const extPlatforms = selectedPlatforms.filter(p => EXTENSION_PLATFORMS.has(p));
+            const botPlatforms = selectedPlatforms.filter(p => !EXTENSION_PLATFORMS.has(p));
+
+            if (!extPlatforms.length && !botPlatforms.length) {
+                return toast.warning('No platforms selected');
+            }
+
+            try {
+                await api.ensureCSRFToken();
+                const inventory = store.state.inventory || [];
+                for (const inventoryItemId of ids) {
+                    const item = inventory.find(i => i.id === inventoryItemId) || {};
+                    const listing_data = {
+                        title: item.name || item.title || '',
+                        description: item.description || '',
+                        list_price: item.list_price || item.price || 0,
+                        brand: item.brand || '',
+                        images: Array.isArray(item.images) ? item.images : []
+                    };
+                    for (const platform of extPlatforms) {
+                        await api.post('/extension/sync', {
+                            action_type: 'cross_list',
+                            data: {
+                                inventory_item_id: inventoryItemId,
+                                platform,
+                                listing_data
+                            }
+                        });
+                    }
+                }
+
+                if (botPlatforms.length) {
+                    await api.post('/listings/crosslist', {
+                        itemIds: ids,
+                        platforms: botPlatforms,
+                        priceAdjustment: parseFloat(formData.get('priceAdjust') || '0')
+                    });
+                }
+
+                modals.close();
+                const extMsg = extPlatforms.length ? `${extPlatforms.length} platform(s) queued for extension posting` : '';
+                const botMsg = botPlatforms.length ? `${botPlatforms.length} platform(s) posted via server` : '';
+                toast.success([extMsg, botMsg].filter(Boolean).join(' + ') + '. Extension will open tabs shortly.');
+            } catch (error) {
+                toast.error('Cross-list failed: ' + (error.message || 'Unknown error'));
+            }
+        } else {
+            const fakeEvent = { preventDefault: () => {}, target: form };
+            handlers.submitCrosslist(fakeEvent, itemIdsStr);
+        }
+    },
+
 };

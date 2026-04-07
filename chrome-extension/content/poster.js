@@ -86,7 +86,7 @@ async function uploadImages(imageUrls, fileInputSelector) {
     try {
         const files = await Promise.all(
             imageUrls.slice(0, 8).map(async (url, i) => {
-                const resp = await fetch(url, { credentials: 'include' });
+                const resp = await fetch(url, { credentials: 'omit' });
                 const blob = await resp.blob();
                 const ext = blob.type === 'image/png' ? 'png' : 'jpg';
                 return new File([blob], `photo_${i + 1}.${ext}`, { type: blob.type || 'image/jpeg' });
