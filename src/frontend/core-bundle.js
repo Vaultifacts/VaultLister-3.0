@@ -15411,7 +15411,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '94cc24d2';
+    const v = 'e97476f4';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27364,7 +27364,7 @@ async function initApp() {
     // Auto-login with demo account if not authenticated (for development/testing)
     // Skip auto-login if explicitly on login/register page
     const currentHash = window.location.hash.slice(1) || 'dashboard';
-    const skipAutoLogin = currentHash === 'login' || currentHash === 'register';
+    const skipAutoLogin = currentHash === 'login' || currentHash === 'register' || currentHash.startsWith('auth-callback');
 
     if (!auth.isAuthenticated() && !skipAutoLogin) {
         // Attempt token refresh if we have a stored refresh token

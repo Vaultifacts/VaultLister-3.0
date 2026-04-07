@@ -14,7 +14,7 @@ async function initApp() {
     // Auto-login with demo account if not authenticated (for development/testing)
     // Skip auto-login if explicitly on login/register page
     const currentHash = window.location.hash.slice(1) || 'dashboard';
-    const skipAutoLogin = currentHash === 'login' || currentHash === 'register';
+    const skipAutoLogin = currentHash === 'login' || currentHash === 'register' || currentHash.startsWith('auth-callback');
 
     if (!auth.isAuthenticated() && !skipAutoLogin) {
         // Attempt token refresh if we have a stored refresh token
