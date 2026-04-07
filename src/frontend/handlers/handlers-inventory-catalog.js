@@ -1740,6 +1740,7 @@ Object.assign(handlers, {
             }
 
             try {
+                await api.ensureCSRFToken();
                 // Queue extension jobs — include item data so poster.js can fill the form
                 const inventory = store.state.inventory || [];
                 for (const inventoryItemId of ids) {
