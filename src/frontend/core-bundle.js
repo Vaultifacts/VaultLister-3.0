@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'cd2c8410';
+    const v = '9379938d';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16726,14 +16726,15 @@ const components = {
         const currentPercent = (current / max) * 100;
         const previousPercent = (previous / max) * 100;
         const change = previous > 0 ? ((current - previous) / previous * 100).toFixed(1) : 0;
-        const isUp = current >= previous;
+        const changeClass = current > previous ? 'positive' : current < previous ? 'negative' : 'neutral';
+        const changeArrow = current > previous ? '↑' : current < previous ? '↓' : '→';
 
         return `
             <div class="comparison-bar">
                 <div class="comparison-bar-header">
                     <span class="comparison-bar-label">${escapeHtml(label)}</span>
-                    <span class="comparison-bar-change ${isUp ? 'positive' : 'negative'}">
-                        ${isUp ? '↑' : '↓'} ${Math.abs(change)}%
+                    <span class="comparison-bar-change ${changeClass}">
+                        ${changeArrow} ${Math.abs(change)}%
                     </span>
                 </div>
                 <div class="comparison-bar-rows">
