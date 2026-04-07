@@ -125,14 +125,19 @@ const api = {
             clearTimeout(timeoutId);
 
             // Handle rate limiting with retry — only auto-retry for short waits (< 30s)
-            if (response.status === 429 && retryCount < this.maxRetries) {
+            if (response.status === 429) {
                 const retryAfter = parseInt(response.headers.get('Retry-After') || '1', 10);
-                if (retryAfter < 30) {
+                if (retryCount < this.maxRetries && retryAfter < 30) {
                     const delay = Math.max(retryAfter * 1000, this.retryDelay * (retryCount + 1));
                     toast.warning(`Rate limited. Retrying in ${Math.ceil(delay / 1000)}s...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                     return this.request(endpoint, options, retryCount + 1, isRetryAfterRefresh);
                 }
+                // Retries exhausted or wait too long — show actionable guidance
+                toast.warning('Too many requests. Please wait a moment before trying again.');
+                const err = new Error('Too many requests. Please wait a moment before trying again.');
+                err.status = 429;
+                throw err;
             }
 
             // Handle server errors with retry (except for client errors)
@@ -174,24 +179,24 @@ const api = {
             const data = contentType.includes('application/json') ? await response.json() : { error: await response.text() };
 
             // Handle token expiration - try to refresh and retry
-            if (!response.ok && response.status === 401 && !isRetryAfterRefresh && !endpoint.includes('/auth/login')) {
+            if (!response.ok && response.status === 401 && !endpoint.includes('/auth/login')) {
                 if (!navigator.onLine) {
                     throw new Error('You are offline. Please reconnect to continue.');
                 }
-                const refreshed = await this.refreshAccessToken();
-                if (refreshed) {
-                    // Retry the original request with new token
-                    return this.request(endpoint, options, 0, true);
-                } else {
-                    // Refresh failed — only redirect if we are actually online.
-                    // An offline 401 is a network artifact, not a real auth failure.
-                    if (!navigator.onLine) {
-                        throw new Error('You are offline. Please reconnect to continue.');
+                if (!isRetryAfterRefresh) {
+                    const refreshed = await this.refreshAccessToken();
+                    if (refreshed) {
+                        // Retry the original request with new token
+                        return this.request(endpoint, options, 0, true);
                     }
-                    store.setState({ user: null, token: null, refreshToken: null });
-                    router.navigate('login');
-                    throw new Error('Session expired. Please log in again.');
                 }
+                // Refresh failed or retry itself got 401 — clear session and redirect to login
+                if (!navigator.onLine) {
+                    throw new Error('You are offline. Please reconnect to continue.');
+                }
+                store.setState({ user: null, token: null, refreshToken: null });
+                router.navigate('login');
+                throw new Error('Session expired. Please log in again.');
             }
 
             if (!response.ok) {

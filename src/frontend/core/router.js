@@ -519,7 +519,7 @@ const router = {
             }
         } else {
             console.error('[Router] No handler found for:', path);  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
-            renderApp(`<div style="padding:40px;text-align:center"><h2>Page Not Found</h2><p>The page "${escapeHtml(path)}" could not be found.</p><button class="btn btn-primary" onclick="router.navigate('dashboard')">Go to Dashboard</button></div>`);
+            router.navigate('404');
         }
 
         // Restore sidebar scroll position and main content scroll after rendering

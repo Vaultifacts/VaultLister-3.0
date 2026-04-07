@@ -24931,6 +24931,33 @@ body.dark-mode .change-item:hover {
     background: #111827;
 }
 
+/* #132: Settings changelog banner dark mode */
+body.dark-mode .settings-changelog-banner {
+    background: rgba(14, 165, 233, 0.1) !important;
+    border-color: rgba(14, 165, 233, 0.3) !important;
+}
+
+body.dark-mode .settings-changelog-banner div[style*="color: #0c4a6e"] {
+    color: #7dd3fc !important;
+}
+
+/* #134: Role/admin badge dark mode — bare badge-sm without color variant */
+body.dark-mode .badge.badge-sm:not([class*="badge-primary"]):not([class*="badge-success"]):not([class*="badge-warning"]):not([class*="badge-error"]):not([class*="badge-gray"]):not([class*="badge-outline"]) {
+    background: #374151 !important;
+    color: #e5e7eb !important;
+}
+
+/* #139: Feedback type buttons inactive state dark mode */
+body.dark-mode .btn.btn-outline {
+    background: #1f2937 !important;
+}
+
+/* L-27/L-29: Integration container rows dark mode contrast */
+body.dark-mode .rounded-lg.border {
+    border-color: #374151 !important;
+    background: #111827;
+}
+
 /* ============================================
    Company Section Styles - About, Terms, Privacy
    ============================================ */

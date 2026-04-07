@@ -1413,24 +1413,24 @@ const components = {
             shopify: '#96BF48'
         };
 
-        const letters = {
-            poshmark: 'P',
-            ebay: 'e',
-            mercari: 'M',
-            depop: 'd',
-            grailed: 'G',
-            facebook: 'f',
-            etsy: 'E',
-            whatnot: 'W',
-            shopify: 'S'
+        const icons = {
+            poshmark: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>`,
+            ebay: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 8.5v7h2.5v-2.5H7V16h2.5v-7H7v2h-2.5v-2H2zm7.5 0v7H12c1.93 0 3.5-1.57 3.5-3.5S13.93 8.5 12 8.5H9.5zm2.5 2h.5c.83 0 1.5.67 1.5 1.5S13.33 13.5 12.5 13.5H12v-3zm4 0v5h5v-1.5h-3V13h2.5v-1.5H18v-1h3V8.5h-5v2z"/></svg>`,
+            mercari: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 13H9V9h2l1 3 1-3h2v6h-2v-3l-.5 1.5h-1L10 12v3z"/></svg>`,
+            depop: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 13V9h2.5c1.93 0 3.5 1.57 3.5 3.5S14.43 16 12.5 16H10zm2.5-5.5H12v3h.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/></svg>`,
+            grailed: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2 13h-3.5c-1.38 0-2.5-1.12-2.5-2.5v-1c0-1.38 1.12-2.5 2.5-2.5H14V10h-3.5C9.12 10 8 11.12 8 12.5v1C8 14.88 9.12 16 10.5 16H16v-3h-2v2z"/></svg>`,
+            facebook: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
+            etsy: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2 13H9V9h5v1.5h-3V12h2.5v1.5H11v1.5h3V15z"/></svg>`,
+            whatnot: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>`,
+            shopify: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>`
         };
 
         const color = colors[platform] || 'var(--gray-600)';
-        const letter = letters[platform] || platform?.[0]?.toUpperCase() || '?';
+        const icon = icons[platform] || `<span style="font-size:10px;font-weight:700;">${platform?.[0]?.toUpperCase() || '?'}</span>`;
         const displayName = platform ? platform.charAt(0).toUpperCase() + platform.slice(1) : 'Unknown';
 
         return `<span class="platform-badge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:${color};color:white;border-radius:4px;font-size:12px;font-weight:600;" title="${displayName}">
-            <span style="width:16px;height:16px;background:white;color:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">${letter}</span>
+            <span style="width:16px;height:16px;background:white;color:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${icon}</span>
             ${displayName}
         </span>`;
     },
@@ -1438,15 +1438,15 @@ const components = {
     // Platform logo for larger display (shop cards)
     platformLogoLarge(platform) {
         const configs = {
-            poshmark: { bg: '#AC1A2F', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm0-8h-2V7h2v2zm6 8h-2v-4c0-1.1-.9-2-2-2s-2 .9-2 2v4h-2V7h2v3.1c.6-.7 1.5-1.1 2.5-1.1 1.93 0 3.5 1.57 3.5 3.5V17z"/></svg>` },
-            ebay: { bg: '#FFFFFF', border: '1px solid #e5e7eb', svg: `<svg width="36" height="16" viewBox="0 0 60 24"><text x="0" y="19" font-family="Arial,sans-serif" font-weight="bold" font-size="20"><tspan fill="#E53238">e</tspan><tspan fill="#0064D2">b</tspan><tspan fill="#F5AF02">a</tspan><tspan fill="#86B817">y</tspan></text></svg>` },
-            mercari: { bg: '#FF3B58', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/><path d="M12 2L2 7l10 5 10-5-10-5z" fill="white" opacity="0.9"/></svg>` },
-            depop: { bg: '#FF2300', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="9" fill="none" stroke="white" stroke-width="2"/><path d="M10 8h2c1.66 0 3 1.34 3 3s-1.34 3-3 3h-2V8z" fill="white"/></svg>` },
-            grailed: { bg: '#000000', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/><circle cx="19" cy="7" r="2" fill="white"/></svg>` },
-            etsy: { bg: '#F1641E', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 4v16l2-1V5h4c1.1 0 2 .9 2 2v1h2V6c0-1.1-.9-2-2-2H8zm0 7h5v2H8v-2z"/></svg>` },
-            shopify: { bg: '#96BF48', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M15.5 2.1c-.1 0-.2 0-.3.1-.1 0-1.5.4-1.5.4s-1-1-1.1-1.1c-.1-.1-.3-.1-.4-.1L11 22l8.3-1.8S15.6 2.3 15.5 2.1zM11.3 7.8l-.7 2.1s-.8-.4-1.7-.4c-1.3 0-1.4.8-1.4 1 0 1.1 2.9 1.5 2.9 4.1 0 2-1.3 3.3-3 3.3-2.1 0-3.1-1.3-3.1-1.3l.5-1.8s1.1.9 2 .9c.6 0 .8-.5.8-.8 0-1.4-2.4-1.5-2.4-3.9 0-2 1.4-3.9 4.3-3.9.8 0 1.8.3 1.8.3z"/></svg>` },
+            poshmark: { bg: '#AC1A2F', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>` },
+            ebay: { bg: '#FFFFFF', border: '1px solid #e5e7eb', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="#E53238"><path d="M2 8.5v7h2.5v-2.5H7V16h2.5v-7H7v2h-2.5v-2H2zm7.5 0v7H12c1.93 0 3.5-1.57 3.5-3.5S13.93 8.5 12 8.5H9.5zm2.5 2h.5c.83 0 1.5.67 1.5 1.5S13.33 13.5 12.5 13.5H12v-3zm4 0v5h5v-1.5h-3V13h2.5v-1.5H18v-1h3V8.5h-5v2z"/></svg>` },
+            mercari: { bg: '#FF3B58', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 13H9V9h2l1 3 1-3h2v6h-2v-3l-.5 1.5h-1L10 12v3z"/></svg>` },
+            depop: { bg: '#FF2300', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 13V9h2.5c1.93 0 3.5 1.57 3.5 3.5S14.43 16 12.5 16H10zm2.5-5.5H12v3h.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/></svg>` },
+            grailed: { bg: '#000000', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2 13h-3.5c-1.38 0-2.5-1.12-2.5-2.5v-1c0-1.38 1.12-2.5 2.5-2.5H14V10h-3.5C9.12 10 8 11.12 8 12.5v1C8 14.88 9.12 16 10.5 16H16v-3h-2v2z"/></svg>` },
+            etsy: { bg: '#F1641E', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2 13H9V9h5v1.5h-3V12h2.5v1.5H11v1.5h3V15z"/></svg>` },
+            shopify: { bg: '#96BF48', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M15.5 4.9c-.1 0-1.4-.1-1.4-.1s-.9-.9-1-1c-.1-.1-.3-.1-.4 0l-.5.2C11.9 3.5 11.5 3 11 3c-.9 0-1.4.7-1.7 1.4-.5.1-1.5.5-1.6.5-.5.2-.5.2-.5.7l-1 7.9 7.2 1.4 3.1-.8-.8-8.6c0-.4-.1-.5-.2-.6zm-4 .2c-.3.1-.6.2-.9.3.2-.7.5-1 .8-1.1.1.2.1.5.1.8z"/></svg>` },
             facebook: { bg: '#1877F2', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>` },
-            whatnot: { bg: '#FF6600', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>` }
+            whatnot: { bg: '#FF6600', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 7H4c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-1 9H5V9h14v7zM8 4h8v2H8z"/></svg>` }
         };
 
         const cfg = configs[platform];

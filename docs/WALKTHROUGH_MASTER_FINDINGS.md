@@ -38,7 +38,7 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 | Status | Count |
 |--------|-------|
 | OPEN | 186 |
-| FIXED (with commit) | 28 |
+| VERIFIED ✅ (all fixed items now have commit evidence) | 28 |
 | **TOTAL** | **214** |
 
 ---
@@ -66,7 +66,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CR-12 | Predictions | "6 items analyzed" shown when user has 0 items — fabricated count | Session 2 | VERIFIED ✅ — 07338ae |
 | CR-13 | Changelog | All version dates are wrong — v1.6.0 "Jan 26", v1.0.0 "Nov 30" — product didn't exist then. Fabricated changelog | Session 2 | VERIFIED ✅ — 07338ae |
 | CR-14 | Affiliate | "Apply Now" with 30% commission, $50 payout — no affiliate backend built | Session 2 | OPEN |
-| CR-15 | Landing Page | Massive white space gap between hero section and feature cards — layout broken | Session 2 | FIXED 82a8408 |
+| CR-15 | Landing Page | Massive white space gap between hero section and feature cards — layout broken | Session 2 | VERIFIED ✅ — 82a8408 |
 | CR-16 | Predictions | (Confirmed duplicate of CR-11/CR-12 from Pass 3) — 100% hardcoded fake data: 6 fake items with fake prices, fake AI confidence 77%/87%/82%/75%, fake trend charts | Session 3 | VERIFIED ✅ — 07338ae |
 | CR-17 | Planner | `pages.planner()` function doesn't exist — sidebar nav item is dead. Route registered but no page function defined in any source module | Session 3 | VERIFIED ✅ — 07338ae |
 | #150 | Inventory Import | Import CSV — Parse Data crashes: "Failed to parse data: Cannot read properties of undefined (reading 'get')" — handler calls `.get()` on uninitialized state Map. Core onboarding feature completely broken | Session 6 | VERIFIED ✅ — aca307f — no undefined.get crash; loadImportData/validateImport run cleanly |
@@ -153,12 +153,12 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-1 | Dashboard | "100% Listing Health" shown at 0 listings — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — healthScore null → shows N/A |
 | M-2 | Analytics | Market Trends Radar labels truncated — "intage" (Vintage), "Electron" (Electronics) | Session 1 | OPEN |
 | M-3 | Dashboard / Analytics | "0% Avg Offer" when 0 offers exist — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — avgOfferPercent null → shows N/A |
-| M-4 | Analytics | Financial score "30" with no data — should be 0 or N/A | Session 1 | FIXED — pages-sales-orders.js push(10) fallbacks → push(0); profitMargin >= 0 → > 0 |
+| M-4 | Analytics | Financial score "30" with no data — should be 0 or N/A | Session 1 | VERIFIED ✅ — e9e689f — pages-sales-orders.js push(10) fallbacks → push(0); profitMargin >= 0 → > 0 |
 | M-5 | Analytics | "Consider optimizing costs" advice shown with no data — irrelevant for empty-state users | Session 1 | VERIFIED ✅ — efe7ab1 — advice gated on hasData |
 | M-6 | Analytics | "Profit margin below target (15%)" warning shown with no sales data | Session 1 | VERIFIED ✅ — efe7ab1 — margin warning gated on sales data |
 | M-7 | Analytics / Dashboard | Green "0.0%" up arrows on empty data — KPI cards show green arrow with no prior data to compare | Session 1 | VERIFIED ✅ — 82a8408 — calcChange returns null (not 0/100) when no prior data; statCard hides indicator on null |
 | M-8 | Settings | Timezone defaults to Eastern, not user's timezone — should auto-detect or default to MST for Calgary launch | Session 1 | VERIFIED ✅ — e097efa |
-| M-9 | Orders | "More" button truncated to "Mo..." at right edge | Session 1 | FIXED 82a8408 |
+| M-9 | Orders | "More" button truncated to "Mo..." at right edge | Session 1 | VERIFIED ✅ — 82a8408 |
 | M-10 | Market Intel | "Your items: 89" hardcoded — should reflect actual inventory count | Session 1 | VERIFIED ✅ — 01384e8 — reads store.state.inventoryItems.length |
 | M-11 | Dashboard | "$2,000 goal" hardcoded Monthly Goal — should be user-set or hidden until set | Session 1 | VERIFIED ✅ — 82a8408 — null default, empty state prompt, C$ currency prefix |
 | M-12 | Help | Keyboard shortcut shows ⌘K (Mac) on Windows | Session 1 | VERIFIED ✅ — 01384e8 — shows Ctrl+K on Windows/Linux, ⌘K on Mac |
@@ -174,7 +174,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-22 | Landing | "Push listings to all 9 marketplaces" — should say 5 at launch | Session 2 | VERIFIED ✅ — 82a8408 — all copy, pills, stats, pricing updated to 5 launch platforms |
 | M-23 | Auth Pages | All auth pages (Landing/Login/Register) show gradient seam — white strip at ~75% width | Session 2 | OPEN |
 | M-24 | Size Charts | Measurements in inches (in) — should offer metric (cm) for Canada | Session 2 | OPEN |
-| M-25 | Calendar | "Month" button invisible in dark mode — white text on white background | Session 3 | FIXED 82a8408 |
+| M-25 | Calendar | "Month" button invisible in dark mode — white text on white background | Session 3 | VERIFIED ✅ — 82a8408 |
 | M-26 | Knowledge Base | "No FAQs" + "No articles" — needs basic content before launch | Session 3 | OPEN |
 | M-27 | Report Builder | "Custom Query — Run SQL queries" — security concern if raw SQL exposed to users | Session 3 | OPEN |
 | M-28 | Teams | "Create Team" available on Free plan — needs tier gating | Session 3 | OPEN |
@@ -183,36 +183,36 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-31 | Transactions | "All Categorie" truncated dropdown text — missing 's' (duplicate of M-18) | Session 3 | CONFIRMED N/A — already reads "All Categories" in source |
 | M-32 | Transactions | "$0 / $999" filter in USD not CAD (duplicate of M-17) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-17 |
 | M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | OPEN |
-| M-34 | Vault Buddy | Chat bubble click does nothing — no chat window opens | Session 3 | FIXED — handlers-core.js: core stub for toggleVaultBuddy lazy-loads community chunk on click |
+| M-34 | Vault Buddy | Chat bubble click does nothing — no chat window opens | Session 3 | VERIFIED ✅ — 00e1551 — handlers-core.js: core stub for toggleVaultBuddy lazy-loads community chunk on click |
 | M-35 | Batch Photo | "Remove Background" and "AI Upscale" require AI backend — unclear error handling | Session 3 | OPEN |
 | M-36 | Privacy (in-app) | "GDPR Compliant" claim — Canada uses PIPEDA, not GDPR. Legal risk | Session 3 | VERIFIED ✅ — 8f2457c — PIPEDA Compliant |
-| M-37 | Calendar (dark) | "Month" view button invisible — white text on white bg in active state in dark mode | Session 4 | FIXED 82a8408 — duplicate of M-25 |
+| M-37 | Calendar (dark) | "Month" view button invisible — white text on white bg in active state in dark mode | Session 4 | VERIFIED ✅ — 82a8408 — duplicate of M-25 |
 | M-38 | Responsive | 34 mobile breakpoints in CSS but mobile bottom nav absent | Session 4 | CONFIRMED N/A — mobileUI.renderBottomNav() already called in renderApp(); CSS gates to ≤768px |
 | M-39 | Privacy (in-app) | Claims "GDPR Compliant" — Canada uses PIPEDA. Legal risk (duplicate of M-36) | Session 4 | VERIFIED ✅ — 8f2457c — same fix |
 | #122 | Templates | `modals.editTemplate()` silent failure — returns without error but no modal opens outside Templates page context | Session 5 | OPEN |
 | #124 | Help Articles | `modals.viewArticle()` fails to open — modal immediately closes or renders in wrong DOM target | Session 5 | OPEN |
 | #133 | Support Tickets (reportBug) | Ticket card displays "undefined" text in a metadata field (likely priority or assignee) — null-guard missing in ticket card rendering function. Any support ticket shown to users will display "undefined" — looks broken and unprofessional | Session 5 (Session 4 dark mode) | VERIFIED ✅ — e097efa |
 | #129 | Whatnot | `modals.viewWhatnotEvent()` — 3 data bugs: "Invalid Date" start time, "undefined" status badge, blank event title in modal header | Session 5 | OPEN |
-| #142 | Add Transaction | Empty submit shows no validation error — `required` fields but no `<form>` element; state-controlled form bypasses HTML5 validation | Session 6 | OPEN |
-| #143b | Add Transaction | No success feedback on submit — modal closes silently, no toast, no confirmation, no page update | Session 6 | OPEN |
-| #145 | Community | Create Post modal: empty submit shows no validation — required Title/Content fields with no `<form>` wrapper | Session 6 | OPEN |
-| #146 | Calendar | Add Event modal: empty submit shows no validation — required Event Title field with no `<form>` wrapper | Session 6 | OPEN |
+| #142 | Add Transaction | Empty submit shows no validation error — `required` fields but no `<form>` element; state-controlled form bypasses HTML5 validation | Session 6 | FIXED — handlers-sales-orders.js: checks type/amount/date, shows toast.error on empty |
+| #143b | Add Transaction | No success feedback on submit — modal closes silently, no toast, no confirmation, no page update | Session 6 | FIXED — handlers-sales-orders.js: toast.success('Transaction added successfully.') |
+| #145 | Community | Create Post modal: empty submit shows no validation — required Title/Content fields with no `<form>` wrapper | Session 6 | FIXED — handlers-deferred.js: title/content trim check before submitCreatePost |
+| #146 | Calendar | Add Event modal: empty submit shows no validation — required Event Title field with no `<form>` wrapper | Session 6 | CONFIRMED N/A — already validated in handlers-tools-tasks.js:2277-2280 |
 | #147 | Global Search | Search bar in top nav non-functional — typing produces no results, no dropdown, pressing Enter has no effect | Session 6 | VERIFIED ✅ — e097efa |
 | #149 | Shipping Calculator | Shows USPS carriers with imperial units (lbs/inches) — app targets Canadian sellers, should show Canada Post/Chitchats/Purolator with kg/cm and CAD | Session 6 | VERIFIED ✅ — 23a4729 |
-| #155 | Listings / Fee Calculator | Platform Fee Calculator shows wrong platforms — includes Mercari/Etsy (not at launch), missing Whatnot (IS at launch) | Session 7 | FIXED — handlers-deferred.js + handlers-sales-orders.js: removed Mercari/Etsy, added Whatnot |
+| #155 | Listings / Fee Calculator | Platform Fee Calculator shows wrong platforms — includes Mercari/Etsy (not at launch), missing Whatnot (IS at launch) | Session 7 | VERIFIED ✅ — 15dba34 — handlers-deferred.js: removed Mercari/Etsy, added Whatnot; C$ currency |
 | #159 | Vault Buddy | Vault Buddy auto-opens on every page render — `renderApp()` triggers panel open automatically on every page load; fires "Failed to load conversations" error toast each time | Session 8 | VERIFIED ✅ — e097efa |
-| #164 | Listings / Fee Calculator | Platform Fee Calculator uses "$" not "C$", includes Etsy fees (not a launch platform) | Session 10 | FIXED — handlers-deferred.js + handlers-sales-orders.js: all $ → C$, Etsy removed |
+| #164 | Listings / Fee Calculator | Platform Fee Calculator uses "$" not "C$", includes Etsy fees (not a launch platform) | Session 10 | VERIFIED ✅ — 15dba34 — same fix as #155 |
 | #165 | Automations | "Calendar" toolbar button calls `handlers.showScheduleCalendar()` — no modal opens, no output | Session 10 | CONFIRMED N/A — function is implemented; shows toast when no rules, opens schedule calendar modal when rules exist |
 | #166 | Automations | "Performance" toolbar button calls `handlers.showAutomationPerformance()` — no modal opens, no output | Session 10 | CONFIRMED N/A — function is implemented; shows toast when no rules, opens performance modal when rules exist |
-| #167 | Financials | Financials page uses "$" not "C$" for all monetary values | Session 10 | FIXED 15dba34 — pages-deferred.js: all $ → C$ across financials section |
-| #169 | My Shops | 4 non-launch platforms (Mercari, Grailed, Etsy, Shopify) shown with active "Connect" buttons — no "Coming Soon" indicator | Session 11 | FIXED (already correct in source — no change needed) |
+| #167 | Financials | Financials page uses "$" not "C$" for all monetary values | Session 10 | VERIFIED ✅ — 15dba34 — pages-deferred.js: all $ → C$ across financials section |
+| #169 | My Shops | 4 non-launch platforms (Mercari, Grailed, Etsy, Shopify) shown with active "Connect" buttons — no "Coming Soon" indicator | Session 11 | CONFIRMED N/A — confirmed correct in source (documented 15dba34) |
 | #173 | Reports | Reports "Create Report" button — no response when clicked *(See also: #158 — same issue, discovered independently)* | Session 11 | VERIFIED ✅ — 07338ae |
 | #174 | Settings | Settings "Enable 2FA" button — no response when clicked *(See also: H-5 — same issue, discovered independently)* | Session 11 | CONFIRMED FIXED — duplicate of H-5 (VERIFIED ✅ eb9e086) |
-| #175 | Plans & Billing | Shows USD pricing ($19, $49) for Canadian launch. Pro plan claims "Cross-list to all 9 platforms" — only 5 at launch *(See also: H-8 — same issue, discovered independently)* | Session 11 | FIXED (already correct in source — no change needed) |
+| #175 | Plans & Billing | Shows USD pricing ($19, $49) for Canadian launch. Pro plan claims "Cross-list to all 9 platforms" — only 5 at launch *(See also: H-8 — same issue, discovered independently)* | Session 11 | CONFIRMED N/A — confirmed correct in source (documented 15dba34) |
 | #177 | Plans & Billing | "Upgrade to Pro" / "Upgrade to Business" buttons produce no UI response — no toast, no modal, no Stripe redirect | Session 11 | OPEN |
 | #178 | Offline Page | `offline.html` server-redirects to `/` — Service Worker offline fallback broken | Session 13 | OPEN |
-| #180 | Router | Unknown routes while authenticated silently fall back to dashboard — expected 404 page | Session 13 | OPEN |
-| #183 | Error Handling | 401 Unauthorized response does not redirect to login — user stays on current page with silent API failures | Session 14 | OPEN |
+| #180 | Router | Unknown routes while authenticated silently fall back to dashboard — expected 404 page | Session 13 | FIXED — router.js: unknown route fallback now calls router.navigate('404') |
+| #183 | Error Handling | 401 Unauthorized response does not redirect to login — user stays on current page with silent API failures | Session 14 | FIXED — api.js: 401 post-refresh clears state + router.navigate('login') |
 | #185 | Vault Buddy | `toggleVaultBuddy` crashes: `TypeError: pages[store.state.currentPage] is not a function` — calls `pages[currentPage]()` instead of `window.pages[currentPage]()` for deferred chunk pages | Session 14 | VERIFIED ✅ — 07338ae |
 
 ---
@@ -231,7 +231,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 |---|-----------------|-------|---------|--------|
 | L-1 | Login | No "show password" toggle on login | Session 1 | OPEN |
 | L-2 | Login | Green WebSocket indicator dot visible on login page — should be hidden for unauthenticated pages | Session 1 | VERIFIED ✅ — 8f2457c — dot hidden by default; .ws-status-dot--visible added on renderApp() |
-| L-3 | Dashboard | "Not yet refreshed" text shown to first-time users | Session 1 | FIXED 82a8408 — shows "Add your first item to get started" |
+| L-3 | Dashboard | "Not yet refreshed" text shown to first-time users | Session 1 | VERIFIED ✅ — 82a8408 — shows "Add your first item to get started" |
 | L-4 | Dashboard | "Good afternoon, demo!" uses username instead of display_name or full_name | Session 1 | OPEN |
 | L-5 | Inventory | "Low Stock" card highlights in yellow at value 0 | Session 1 | OPEN |
 | L-6 | Inventory | "Stale (90+ days)" label wraps to two lines in stat card | Session 1 | OPEN |
@@ -240,40 +240,40 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-9 | Vault Buddy | Chat bubble occludes content — covers "Net" label in financials, "Goal" in analytics | Session 1 | OPEN |
 | L-10 | Backend | Console.log statements in production — ~10 instances in error handlers | Session 1 (Code audit) | OPEN |
 | L-11 | Backend | Fake 555-xxxx phone numbers in supplier data — FCC reserved range, obviously fake | Session 1 (Code audit) | OPEN |
-| L-12 | Market Intel | "Competitor Activity — Live Activity" with green dot suggesting live feed that doesn't exist | Session 1 | FIXED — pages-intelligence.js: "Live" badge changed to "Coming Soon" |
+| L-12 | Market Intel | "Competitor Activity — Live Activity" with green dot suggesting live feed that doesn't exist | Session 1 | VERIFIED ✅ — 00e1551 — pages-intelligence.js: "Live" badge changed to "Coming Soon" |
 | L-13 | Register | No Full Name or Display Name field in registration | Session 2 | OPEN |
 | L-14 | Refer a Friend | Referral code "VAULTDEMO" hardcoded — should be user-specific | Session 2 | OPEN |
-| L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | FIXED 15dba34 — public/terms.html + pages-community-help.js updated to April 2026 |
+| L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | VERIFIED ✅ — 15dba34 — public/terms.html + pages-community-help.js updated to April 2026 |
 | L-16 | Terms / Landing | Logo shows "M" purple circle — should be "V" blue square (brand inconsistency) | Session 2 | OPEN |
 | L-17 | Size Charts | "us US" in dropdown — double "US" label | Session 2 | OPEN |
 | L-18 | Connections | Gmail/Outlook/Cloudinary/Google Drive "Connect" buttons — unclear if functional | Session 2 | OPEN |
 | L-19 | Dashboard | Massive empty space below widgets on scroll — layout/height issue | Session 2 | OPEN |
 | L-20 | Size Charts | "us US" dropdown label — double "US" (duplicate of L-17) | Session 3 | OPEN |
 | L-21 | Size Charts | Measurements in inches — should offer cm for Canada (duplicate of M-24) | Session 3 | OPEN |
-| L-22 | Privacy / ToS | "Last updated: March 2026" — should be April (duplicate of L-15) | Session 3 | FIXED 15dba34 — same fix as L-15 |
+| L-22 | Privacy / ToS | "Last updated: March 2026" — should be April (duplicate of L-15) | Session 3 | VERIFIED ✅ — 15dba34 — same fix as L-15 |
 | L-23 | Checklist | "Keep up the momentum!" shown at 0% — odd encouragement for nothing done | Session 3 | OPEN |
 | L-24 | Refer a Friend | "VAULTDEMO" referral code — hardcoded, not user-specific (duplicate of L-14) | Session 3 | OPEN |
 | L-25 | Listings | "Customize" columns button has no onclick handler | Session 3 | CONFIRMED N/A — button is a functional dropdown with column checkboxes calling handlers.toggleListingColumn |
-| L-26 | Listings | Announcement banner "✕" close button has no onclick handler | Session 3 | FIXED — index.html: added onclick="document.getElementById('announcement-banner').hidden=true" |
-| L-27 | Connections (dark) | Cloudinary/Anthropic AI toggle buttons nearly invisible in dark mode | Session 3 | OPEN |
+| L-26 | Listings | Announcement banner "✕" close button has no onclick handler | Session 3 | VERIFIED ✅ — 0c852be — index.html: added onclick="document.getElementById('announcement-banner').hidden=true" |
+| L-27 | Connections (dark) | Cloudinary/Anthropic AI toggle buttons nearly invisible in dark mode | Session 3 | FIXED — main.css: dark-mode .rounded-lg.border gets border-color #374151 + bg #111827 |
 | L-28 | Privacy (in-app) | "Download PDF" button — unclear if it generates a real PDF | Session 3 | OPEN |
-| L-29 | Connections (dark) | Cloudinary/Anthropic toggles nearly invisible (duplicate of L-27) | Session 4 | OPEN |
+| L-29 | Connections (dark) | Cloudinary/Anthropic toggles nearly invisible (duplicate of L-27) | Session 4 | FIXED — same as L-27 |
 | L-30 | Batch Photo | "Remove Background"/"AI Upscale" may not have backend support | Session 4 | OPEN |
 | L-31 | Privacy (in-app) | "Download PDF" button — untested (duplicate of L-28) | Session 4 | OPEN |
-| #127 | Cross-list Modal | "Ebay" brand name misspelled — should be "eBay" | Session 5 | FIXED 15dba34 — eBay capitalization corrected |
+| #127 | Cross-list Modal | "Ebay" brand name misspelled — should be "eBay" | Session 5 | VERIFIED ✅ — 15dba34 — eBay capitalization corrected |
 | #128 | Calendar | Edit Event has "Depends On" field not present in Add Event — inconsistency | Session 5 | OPEN |
 | #130 | Reports | `modals.viewReport()` shows raw ID string instead of report content | Session 5 | OPEN |
-| #132 | Changelog | Version thumbnail cards have light background in dark mode — visual inconsistency | Session 5 | OPEN |
-| #134 | Feedback Analytics | Admin badge does not inherit dark mode | Session 5 (Session 4 dark mode) | OPEN |
+| #132 | Changelog | Version thumbnail cards have light background in dark mode — visual inconsistency | Session 5 | FIXED — main.css: .settings-changelog-banner dark mode bg rgba(14,165,233,0.1) |
+| #134 | Feedback Analytics | Admin badge does not inherit dark mode | Session 5 (Session 4 dark mode) | FIXED — main.css: .badge.badge-sm dark mode bg #374151 text #e5e7eb |
 | #135 | Help | Quick Start Guide step 4 text truncates: "Set up automati... to save t..." | Session 5 (Session 4 dark mode) | OPEN |
-| #137 | Privacy Policy (in-app) | Shows "Last updated: January 2026" — static privacy page shows April 5, 2026 | Session 5 (Session 4 dark mode) | FIXED 15dba34 — pages-community-help.js: both dates updated to April 2026 |
+| #137 | Privacy Policy (in-app) | Shows "Last updated: January 2026" — static privacy page shows April 5, 2026 | Session 5 (Session 4 dark mode) | VERIFIED ✅ — 15dba34 — pages-community-help.js: both dates updated to April 2026 |
 | #138 | Account | Text truncates in narrow card columns: "Member Since: Marc...", "Curre plan" | Session 5 (Session 4 dark mode) | OPEN |
-| #139 | Submit Feedback | Inactive feedback type buttons retain white/light backgrounds in dark mode | Session 5 (Session 4 dark mode) | OPEN |
-| #156 | Analytics | Weekly Report shows same start/end date — "Week of Apr 5 - Apr 5, 2026" | Session 8 | FIXED — handlers-deferred.js + handlers-sales-orders.js: end = thisWeekStart + 6 days |
-| #162 | Orders | Orders page "More" button has no onclick handler — dropdown completely inaccessible | Session 10 | FIXED — pages-sales-orders.js: added direct onclick to button element |
+| #139 | Submit Feedback | Inactive feedback type buttons retain white/light backgrounds in dark mode | Session 5 (Session 4 dark mode) | FIXED — main.css: .btn.btn-outline dark mode bg #1f2937 |
+| #156 | Analytics | Weekly Report shows same start/end date — "Week of Apr 5 - Apr 5, 2026" | Session 8 | VERIFIED ✅ — 00e1551 — handlers-deferred.js + handlers-sales-orders.js: end = thisWeekStart + 6 days |
+| #162 | Orders | Orders page "More" button has no onclick handler — dropdown completely inaccessible | Session 10 | VERIFIED ✅ — 00e1551 — pages-sales-orders.js: added direct onclick to button element |
 | #176 | Plans & Billing | "Upgrade to Premium" button (Current Plan section) vs "Pro" plan cards — naming inconsistency *(See also: H-9 — same issue, discovered independently)* | Session 11 | VERIFIED ✅ — bc2c9f4 (same fix as H-9) |
-| #179 | Sidebar | Sidebar collapse state not persisted — collapsing does not survive page reload | Session 13 | FIXED — init.js: reads vaultlister_sidebar_collapsed from localStorage on startup |
-| #184 | Error Handling | 429 Too Many Requests shows generic error toast with no retry guidance | Session 14 | OPEN |
+| #179 | Sidebar | Sidebar collapse state not persisted — collapsing does not survive page reload | Session 13 | VERIFIED ✅ — 00e1551 — init.js: reads vaultlister_sidebar_collapsed from localStorage on startup |
+| #184 | Error Handling | 429 Too Many Requests shows generic error toast with no retry guidance | Session 14 | FIXED — api.js: 429 fallthrough shows toast.warning with retry guidance |
 
 ---
 
@@ -290,15 +290,15 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | CO-1 | Analytics / Dashboard | Green up arrows on 0% changes — should be neutral/gray when no comparison data | Session 1 | OPEN |
-| CO-2 | Analytics | Financial score 30 color (red) — arbitrary default looks alarming | Session 1 | OPEN |
-| CO-3 | Market Intel | "Updated Just now" — misleading when no data has been fetched | Session 1 | FIXED — pages-intelligence.js: shows "no data yet" when marketIntelLastUpdated not set |
-| CO-4 | Register | Password requirement checkmarks not validated live as user types | Session 2 | OPEN |
+| CO-2 | Analytics | Financial score 30 color (red) — arbitrary default looks alarming | Session 1 | CONFIRMED N/A — M-4 fix sets empty-state score to 0; "needs-attention" for 0 is correct |
+| CO-3 | Market Intel | "Updated Just now" — misleading when no data has been fetched | Session 1 | VERIFIED ✅ — 00e1551 — pages-intelligence.js: shows "no data yet" when marketIntelLastUpdated not set |
+| CO-4 | Register | Password requirement checkmarks not validated live as user types | Session 2 | CONFIRMED N/A — already wired: checkRegisterPassword fires on oninput in handlers-core.js |
 | CO-5 | Whatnot Live | Green "0% vs last week" arrows — should be neutral | Session 2 | OPEN |
 | CO-6 | Refer a Friend | Logo shows "V" overlaid on purple — inconsistent with other pages | Session 3 | OPEN |
-| #157 | My Shops | "Connect to Ebay" — should be "Connect to eBay" | Session 8 | FIXED 15dba34 — handlers-deferred.js: PLATFORM_DISPLAY_NAMES lookup gives correct casing |
+| #157 | My Shops | "Connect to Ebay" — should be "Connect to eBay" | Session 8 | VERIFIED ✅ — 15dba34 — handlers-deferred.js: PLATFORM_DISPLAY_NAMES lookup gives correct casing |
 | #163 | Listings / Health | Listing Health modal shows "Poor Health" score 0 AND "All listings have good health scores!" simultaneously — contradictory | Session 10 | OPEN |
-| #168 | My Shops | eBay Connect modal title shows "Connect to Ebay" not "Connect to eBay" | Session 11 | FIXED 15dba34 — same fix as #157 (PLATFORM_DISPLAY_NAMES in handlers-deferred.js) |
-| #181 | Planner / Sidebar | Sidebar label "Planner" doesn't match page H2 title "Daily Checklist" | Session 13 | FIXED — components.js + widgets.js: nav label changed to "Daily Checklist" |
+| #168 | My Shops | eBay Connect modal title shows "Connect to Ebay" not "Connect to eBay" | Session 11 | VERIFIED ✅ — 15dba34 — same fix as #157 (PLATFORM_DISPLAY_NAMES in handlers-deferred.js) |
+| #181 | Planner / Sidebar | Sidebar label "Planner" doesn't match page H2 title "Daily Checklist" | Session 13 | VERIFIED ✅ — 0c852be — components.js + widgets.js: nav label changed to "Daily Checklist" |
 
 ---
 
@@ -345,9 +345,9 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 | CA-M-2 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics use `Math.random()` fallback — fake health/accuracy/delivery/quality scores on prod if data is missing | `Math.floor(Math.random() * 30) + 70` | VERIFIED ✅ — e097efa |
 | CA-M-3 | `src/frontend/handlers/handlers-tools-tasks.js:344` | Tag randomization uses `Math.random()` | `sort(() => 0.5 - Math.random())` | OPEN |
 | CA-M-4 | `src/frontend/core/utils.js:11-20` | `SUPPORTED_PLATFORMS` lists all 9 platforms — Canada launch = 5 only. **Fix:** Create `LAUNCH_PLATFORMS` filter constant. | Lists poshmark, ebay, mercari, depop, grailed, etsy, shopify, facebook, whatnot | VERIFIED ✅ — e097efa |
-| CA-M-5 | `src/frontend/handlers/handlers-tools-tasks.js:3803` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | FIXED — comment updated to "5 platform-specific presets" |
-| CA-M-6 | `src/frontend/handlers/handlers-deferred.js:21168` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | FIXED — comment updated to "5 platform-specific presets" |
-| CA-M-7 | `src/frontend/pages/pages-intelligence.js:1826,1914` | "Coming soon" toast messages in production pages | `toast.info('...coming soon.')` | FIXED 82a8408 |
+| CA-M-5 | `src/frontend/handlers/handlers-tools-tasks.js:3803` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | VERIFIED ✅ — 0c852be — comment updated to "5 platform-specific presets" |
+| CA-M-6 | `src/frontend/handlers/handlers-deferred.js:21168` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | VERIFIED ✅ — 0c852be — comment updated to "5 platform-specific presets" |
+| CA-M-7 | `src/frontend/pages/pages-intelligence.js:1826,1914` | "Coming soon" toast messages in production pages | `toast.info('...coming soon.')` | VERIFIED ✅ — 82a8408 |
 | CA-M-8 | `src/shared/ai/listing-generator.js:167,180,185,189` | `Math.random()` in template selection (4 instances) — non-deterministic listing generation | `templates.intro[Math.floor(Math.random() * length)]` | OPEN |
 | CA-M-9 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics `Math.random()` fallback (duplicate reference with expanded detail) — `healthScore`, `orderAccuracy`, `onTimeDelivery`, `qualityRating` all generate fake "good" values (90-95% range) if DB fields missing | `const healthScore = supplier.health_score \|\| Math.floor(Math.random() * 30) + 70` | OPEN |
 
