@@ -2185,15 +2185,15 @@ const pages = {
 
         // Sales funnel stages
         const funnelStages = [
-            { name: 'Views', value: Math.floor(totalSales * 50), color: 'var(--primary-300)' },
-            { name: 'Likes', value: Math.floor(totalSales * 15), color: 'var(--primary-400)' },
-            { name: 'Offers', value: Math.floor(totalSales * 5), color: 'var(--primary-500)' },
+            { name: 'Views', value: analyticsData.stats?.listings?.views || 0, color: 'var(--primary-300)' },
+            { name: 'Likes', value: analyticsData.stats?.listings?.likes || 0, color: 'var(--primary-400)' },
+            { name: 'Offers', value: analyticsData.stats?.offers?.total || 0, color: 'var(--primary-500)' },
             { name: 'Sales', value: totalSales, color: 'var(--primary-600)' }
         ];
 
         // Time of day heatmap data
-        const heatmapData = Array.from({ length: 7 }, (_, day) =>
-            Array.from({ length: 24 }, (_, hour) => Math.random())
+        const heatmapData = Array.from({ length: 7 }, () =>
+            Array.from({ length: 24 }, () => 0)
         );
 
         // Goal tracking

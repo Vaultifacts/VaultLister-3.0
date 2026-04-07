@@ -2688,7 +2688,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
                     <input type="text" class="help-search-input" placeholder="Search help articles, FAQs, and tutorials..." oninput="handlers.searchHelp(this.value)">
-                    <kbd class="help-search-shortcut">⌘K</kbd>
+                    <kbd class="help-search-shortcut">${/Mac|iPhone|iPad/i.test(navigator.platform) ? '⌘K' : 'Ctrl+K'}</kbd>
                 </div>
                 <div id="help-search-results" class="help-search-results hidden"></div>
             </div>
@@ -3026,7 +3026,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <div class="impact-stat-label">Features Influenced</div>
                             </div>
                         </div>
-                        <div class="contributor-badge-section">
+                        ${userImpact.feedbackSubmitted > 0 ? `<div class="contributor-badge-section">
                             <div class="contributor-badge">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2">
                                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -3034,7 +3034,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <span>Top Contributor</span>
                             </div>
                             <p class="badge-description">You're in the top 10% of contributors this month!</p>
-                        </div>
+                        </div>` : ''}
                     </div>
                 </div>
             </div>
