@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-07 MST (session 2)
+**Updated:** 2026-04-07 MST (session 3)
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — 214 findings, 100% coverage (14 sessions)
@@ -11,6 +11,14 @@
 
 ## In Progress
 - Nothing in progress
+
+## Completed This Session (2026-04-07, session 3)
+
+### Walkthrough findings resolved — 39c5fb4, 004b3c9, 2d665f9
+- **H-14** → CONFIRMED N/A: `runPredictionModel()` is a local setTimeout stub (Math.random), no ANTHROPIC_API_KEY needed ✅
+- **M-21** → VERIFIED ✅ LIVE: Install Extension modal confirmed — "coming soon to Chrome Web Store" modal opens correctly (2026-04-07)
+- **M-13** FIXED → `storageLimit` now reads `PLAN_STORAGE_GB[user.subscription_tier]`: free=0.1GB, starter=1GB, pro=5GB, business=25GB in both `handlers-deferred.js` + `handlers-settings-account.js` (bundle bb9114d1)
+- Findings doc: OPEN 14→12, CONFIRMED N/A ~32→~33, VERIFIED ~151→~152, FIXED 0→1
 
 ## Completed This Session (2026-04-07, session 2)
 
@@ -158,10 +166,12 @@ window.store.setState({user:{id:'demo',username:'demo',email:'demo@vaultlister.c
 
 ## Next Tasks
 1. EasyPost shipping integration — BLOCKED on API key anti-fraud review
-2. CR-9: Analytics Sales Funnel fake data ("Views 50") — pages-intelligence.js
-3. M-2: Market Trends Radar labels truncated ("intage", "Electron") — canvas overflow
-4. M-26: Knowledge Base "No FAQs" / "No articles" — needs basic content seeded
-5. Continue remaining OPEN findings from WALKTHROUGH_MASTER_FINDINGS.md
+2. M-26: Knowledge Base "No FAQs" / "No articles" — needs basic content seeded (if proceeding as content task)
+3. CR-5: Build eBay bot in worker/bots/ — eBay cross-listing completely blocked without it
+4. CR-14/H-22: Build affiliate backend — "Apply Now" page is non-functional
+5. M-13 deploy verify — after Railway redeploys 004b3c9, confirm storage limit uses plan tier on live site
+6. Set Railway env vars: OAUTH_MODE=real, STRIPE_PRICE_ID_PRO/BUSINESS, RESEND_API_KEY (user action required)
+NOTE: CR-9 (Analytics Sales Funnel) + M-2 (Radar labels) are already VERIFIED ✅ — removed from task list
 
 ## Unstaged Changes (pre-existing, not from this session)
 - `src/backend/db/seeds/demoData.js` — modified
