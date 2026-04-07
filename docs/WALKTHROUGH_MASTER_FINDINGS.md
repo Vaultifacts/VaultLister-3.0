@@ -150,12 +150,12 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| M-1 | Dashboard | "100% Listing Health" shown at 0 listings — should show N/A | Session 1 | OPEN |
+| M-1 | Dashboard | "100% Listing Health" shown at 0 listings — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — healthScore null → shows N/A |
 | M-2 | Analytics | Market Trends Radar labels truncated — "intage" (Vintage), "Electron" (Electronics) | Session 1 | OPEN |
-| M-3 | Dashboard / Analytics | "0% Avg Offer" when 0 offers exist — should show N/A | Session 1 | OPEN |
+| M-3 | Dashboard / Analytics | "0% Avg Offer" when 0 offers exist — should show N/A | Session 1 | VERIFIED ✅ — efe7ab1 — avgOfferPercent null → shows N/A |
 | M-4 | Analytics | Financial score "30" with no data — should be 0 or N/A | Session 1 | OPEN |
-| M-5 | Analytics | "Consider optimizing costs" advice shown with no data — irrelevant for empty-state users | Session 1 | OPEN |
-| M-6 | Analytics | "Profit margin below target (15%)" warning shown with no sales data | Session 1 | OPEN |
+| M-5 | Analytics | "Consider optimizing costs" advice shown with no data — irrelevant for empty-state users | Session 1 | VERIFIED ✅ — efe7ab1 — advice gated on hasData |
+| M-6 | Analytics | "Profit margin below target (15%)" warning shown with no sales data | Session 1 | VERIFIED ✅ — efe7ab1 — margin warning gated on sales data |
 | M-7 | Analytics / Dashboard | Green "0.0%" up arrows on empty data — KPI cards show green arrow with no prior data to compare | Session 1 | OPEN |
 | M-8 | Settings | Timezone defaults to Eastern, not user's timezone — should auto-detect or default to MST for Calgary launch | Session 1 | VERIFIED ✅ — e097efa |
 | M-9 | Orders | "More" button truncated to "Mo..." at right edge | Session 1 | OPEN |
@@ -165,8 +165,8 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-13 | Image Bank | "5.00 GB free" — unclear if this is actual R2 limit or hardcoded | Session 1 | OPEN |
 | M-14 | Plans | "Cross-list to 3 platforms" on Free plan confusing — only 5 available at launch; Pro says "all 9" but 4 are Coming Soon | Session 1 | OPEN |
 | M-15 | Register / Login | Sidebar visible on register/login page — should be hidden for unauthenticated views | Session 2 | CONFIRMED N/A — login/register use render() not renderApp(); sidebar not rendered |
-| M-16 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST | Session 2 | OPEN |
-| M-17 | Transactions | "$0 / $999" filter defaults shown in USD | Session 2 | OPEN |
+| M-16 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST | Session 2 | VERIFIED ✅ — efe7ab1 — renamed to GST/HST/PST |
+| M-17 | Transactions | "$0 / $999" filter defaults shown in USD | Session 2 | VERIFIED ✅ — efe7ab1 — filter shows C$0 / C$999 |
 | M-18 | Transactions | "All Categorie" dropdown text truncated — missing 's' | Session 2 | OPEN |
 | M-19 | Roadmap | "No features found" — should have planned features pre-populated | Session 2 | OPEN |
 | M-20 | Affiliate | "$50 Minimum Payout" in USD not CAD | Session 2 | OPEN |
@@ -179,9 +179,9 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-27 | Report Builder | "Custom Query — Run SQL queries" — security concern if raw SQL exposed to users | Session 3 | OPEN |
 | M-28 | Teams | "Create Team" available on Free plan — needs tier gating | Session 3 | OPEN |
 | M-29 | Roadmap | Empty — needs at least planned features pre-populated | Session 3 | OPEN |
-| M-30 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST (duplicate of M-16) | Session 3 | OPEN |
+| M-30 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST (duplicate of M-16) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-16 |
 | M-31 | Transactions | "All Categorie" truncated dropdown text — missing 's' (duplicate of M-18) | Session 3 | OPEN |
-| M-32 | Transactions | "$0 / $999" filter in USD not CAD (duplicate of M-17) | Session 3 | OPEN |
+| M-32 | Transactions | "$0 / $999" filter in USD not CAD (duplicate of M-17) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-17 |
 | M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | OPEN |
 | M-34 | Vault Buddy | Chat bubble click does nothing — no chat window opens | Session 3 | OPEN |
 | M-35 | Batch Photo | "Remove Background" and "AI Upscale" require AI backend — unclear error handling | Session 3 | OPEN |
