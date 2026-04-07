@@ -1144,10 +1144,11 @@ Object.assign(pages, {
         const opportunities = store.state.marketOpportunities || [];
         const trendingTerms = store.state.trendingKeywords || [];
 
-        const lastUpdated = store.state.marketIntelLastUpdated ? new Date(store.state.marketIntelLastUpdated) : new Date();
-        const minutesAgo = Math.round((Date.now() - lastUpdated.getTime()) / 60000);
-        const freshnessLabel = minutesAgo < 1 ? 'Just now' : minutesAgo < 60 ? `${minutesAgo}m ago` : `${Math.round(minutesAgo / 60)}h ago`;
-        const freshnessColor = minutesAgo < 5 ? 'var(--success)' : minutesAgo < 30 ? 'var(--warning)' : 'var(--danger-600)';
+        const hasIntelData = !!store.state.marketIntelLastUpdated;
+        const lastUpdated = hasIntelData ? new Date(store.state.marketIntelLastUpdated) : null;
+        const minutesAgo = lastUpdated ? Math.round((Date.now() - lastUpdated.getTime()) / 60000) : null;
+        const freshnessLabel = !hasIntelData ? 'no data yet' : minutesAgo < 1 ? '< 1m ago' : minutesAgo < 60 ? `${minutesAgo}m ago` : `${Math.round(minutesAgo / 60)}h ago`;
+        const freshnessColor = !hasIntelData ? 'var(--gray-500)' : minutesAgo < 5 ? 'var(--success)' : minutesAgo < 30 ? 'var(--warning)' : 'var(--danger-600)';
 
         return `
             <div class="page-header">
@@ -1231,7 +1232,7 @@ Object.assign(pages, {
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Market Trends Radar</h3>
-                        <span class="badge badge-primary" style="font-size: 11px;">Live</span>
+                        <span class="badge badge-secondary" style="font-size: 11px;">Coming Soon</span>
                     </div>
                     <div class="card-body">
                         ${marketTrendsRadar.render(marketTrends)}

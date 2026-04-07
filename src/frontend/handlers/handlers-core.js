@@ -1918,4 +1918,19 @@ const handlers = {
         input.style.borderColor = 'var(--success)';
     },
 
+    toggleVaultBuddy: function() {
+        const isOpen = !store.state.vaultBuddyOpen;
+        store.setState({ vaultBuddyOpen: isOpen });
+        if (store.state.currentPage) {
+            renderApp(window.pages[store.state.currentPage]());
+        }
+        if (isOpen && !store.state.vaultBuddyConversationsLoaded) {
+            loadChunk('community').then(() => {
+                if (handlers.loadVaultBuddyConversations) {
+                    handlers.loadVaultBuddyConversations();
+                }
+            }).catch(() => {});
+        }
+    },
+
 };

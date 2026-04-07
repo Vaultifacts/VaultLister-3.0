@@ -3091,7 +3091,7 @@ Object.assign(handlers, {
                 <div class="weekly-report-container">
                     <!-- Week Summary -->
                     <div class="report-period">
-                        <span class="period-label">Week of ${thisWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        <span class="period-label">Week of ${thisWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(thisWeekStart.getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                     </div>
 
                     <!-- Key Metrics -->

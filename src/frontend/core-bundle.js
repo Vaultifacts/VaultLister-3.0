@@ -15413,7 +15413,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a67ed0ea';
+    const v = '94674b03';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27350,6 +27350,21 @@ const handlers = {
         input.style.borderColor = 'var(--success)';
     },
 
+    toggleVaultBuddy: function() {
+        const isOpen = !store.state.vaultBuddyOpen;
+        store.setState({ vaultBuddyOpen: isOpen });
+        if (store.state.currentPage) {
+            renderApp(window.pages[store.state.currentPage]());
+        }
+        if (isOpen && !store.state.vaultBuddyConversationsLoaded) {
+            loadChunk('community').then(() => {
+                if (handlers.loadVaultBuddyConversations) {
+                    handlers.loadVaultBuddyConversations();
+                }
+            }).catch(() => {});
+        }
+    },
+
 };
 
 // ──── src/frontend/init.js ────
@@ -27396,6 +27411,12 @@ async function initApp() {
         document.body.classList.add('dark-mode');
         store.setState({ darkMode: true });
     }
+
+    // Restore sidebar collapse state from localStorage
+    try {
+        const sidebarCollapsed = localStorage.getItem('vaultlister_sidebar_collapsed') === '1';
+        if (sidebarCollapsed) store.state.sidebarCollapsed = true;
+    } catch(e) {}
 
     // Initialize UI helpers
     themeManager.init();

@@ -2055,7 +2055,7 @@ Object.assign(pages, {
                             ${components.icon('refresh', 16)} Sync
                         </button>
                         <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                            <button aria-haspopup="menu" class="btn btn-secondary">
+                            <button aria-haspopup="menu" class="btn btn-secondary" onclick="this.closest('.dropdown').classList.toggle('open');event.stopPropagation();">
                                 ${components.icon('list', 14)} More
                                 ${components.icon('chevron-down', 12)}
                             </button>

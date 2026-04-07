@@ -42,6 +42,12 @@ async function initApp() {
         store.setState({ darkMode: true });
     }
 
+    // Restore sidebar collapse state from localStorage
+    try {
+        const sidebarCollapsed = localStorage.getItem('vaultlister_sidebar_collapsed') === '1';
+        if (sidebarCollapsed) store.state.sidebarCollapsed = true;
+    } catch(e) {}
+
     // Initialize UI helpers
     themeManager.init();
     offlineManager.init();

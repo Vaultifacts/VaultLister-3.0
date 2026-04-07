@@ -183,7 +183,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-31 | Transactions | "All Categorie" truncated dropdown text — missing 's' (duplicate of M-18) | Session 3 | CONFIRMED N/A — already reads "All Categories" in source |
 | M-32 | Transactions | "$0 / $999" filter in USD not CAD (duplicate of M-17) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-17 |
 | M-33 | Privacy Policy | Contact email "privacy@vaultlister.com" — may not be set up | Session 3 | OPEN |
-| M-34 | Vault Buddy | Chat bubble click does nothing — no chat window opens | Session 3 | OPEN |
+| M-34 | Vault Buddy | Chat bubble click does nothing — no chat window opens | Session 3 | FIXED — handlers-core.js: core stub for toggleVaultBuddy lazy-loads community chunk on click |
 | M-35 | Batch Photo | "Remove Background" and "AI Upscale" require AI backend — unclear error handling | Session 3 | OPEN |
 | M-36 | Privacy (in-app) | "GDPR Compliant" claim — Canada uses PIPEDA, not GDPR. Legal risk | Session 3 | VERIFIED ✅ — 8f2457c — PIPEDA Compliant |
 | M-37 | Calendar (dark) | "Month" view button invisible — white text on white bg in active state in dark mode | Session 4 | FIXED 82a8408 — duplicate of M-25 |
@@ -240,7 +240,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-9 | Vault Buddy | Chat bubble occludes content — covers "Net" label in financials, "Goal" in analytics | Session 1 | OPEN |
 | L-10 | Backend | Console.log statements in production — ~10 instances in error handlers | Session 1 (Code audit) | OPEN |
 | L-11 | Backend | Fake 555-xxxx phone numbers in supplier data — FCC reserved range, obviously fake | Session 1 (Code audit) | OPEN |
-| L-12 | Market Intel | "Competitor Activity — Live Activity" with green dot suggesting live feed that doesn't exist | Session 1 | OPEN |
+| L-12 | Market Intel | "Competitor Activity — Live Activity" with green dot suggesting live feed that doesn't exist | Session 1 | FIXED — pages-intelligence.js: "Live" badge changed to "Coming Soon" |
 | L-13 | Register | No Full Name or Display Name field in registration | Session 2 | OPEN |
 | L-14 | Refer a Friend | Referral code "VAULTDEMO" hardcoded — should be user-specific | Session 2 | OPEN |
 | L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | FIXED 15dba34 — public/terms.html + pages-community-help.js updated to April 2026 |
@@ -269,10 +269,10 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #137 | Privacy Policy (in-app) | Shows "Last updated: January 2026" — static privacy page shows April 5, 2026 | Session 5 (Session 4 dark mode) | FIXED 15dba34 — pages-community-help.js: both dates updated to April 2026 |
 | #138 | Account | Text truncates in narrow card columns: "Member Since: Marc...", "Curre plan" | Session 5 (Session 4 dark mode) | OPEN |
 | #139 | Submit Feedback | Inactive feedback type buttons retain white/light backgrounds in dark mode | Session 5 (Session 4 dark mode) | OPEN |
-| #156 | Analytics | Weekly Report shows same start/end date — "Week of Apr 5 - Apr 5, 2026" | Session 8 | OPEN |
-| #162 | Orders | Orders page "More" button has no onclick handler — dropdown completely inaccessible | Session 10 | OPEN |
+| #156 | Analytics | Weekly Report shows same start/end date — "Week of Apr 5 - Apr 5, 2026" | Session 8 | FIXED — handlers-deferred.js + handlers-sales-orders.js: end = thisWeekStart + 6 days |
+| #162 | Orders | Orders page "More" button has no onclick handler — dropdown completely inaccessible | Session 10 | FIXED — pages-sales-orders.js: added direct onclick to button element |
 | #176 | Plans & Billing | "Upgrade to Premium" button (Current Plan section) vs "Pro" plan cards — naming inconsistency *(See also: H-9 — same issue, discovered independently)* | Session 11 | VERIFIED ✅ — bc2c9f4 (same fix as H-9) |
-| #179 | Sidebar | Sidebar collapse state not persisted — collapsing does not survive page reload | Session 13 | OPEN |
+| #179 | Sidebar | Sidebar collapse state not persisted — collapsing does not survive page reload | Session 13 | FIXED — init.js: reads vaultlister_sidebar_collapsed from localStorage on startup |
 | #184 | Error Handling | 429 Too Many Requests shows generic error toast with no retry guidance | Session 14 | OPEN |
 
 ---
@@ -291,7 +291,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 |---|-----------------|-------|---------|--------|
 | CO-1 | Analytics / Dashboard | Green up arrows on 0% changes — should be neutral/gray when no comparison data | Session 1 | OPEN |
 | CO-2 | Analytics | Financial score 30 color (red) — arbitrary default looks alarming | Session 1 | OPEN |
-| CO-3 | Market Intel | "Updated Just now" — misleading when no data has been fetched | Session 1 | OPEN |
+| CO-3 | Market Intel | "Updated Just now" — misleading when no data has been fetched | Session 1 | FIXED — pages-intelligence.js: shows "no data yet" when marketIntelLastUpdated not set |
 | CO-4 | Register | Password requirement checkmarks not validated live as user types | Session 2 | OPEN |
 | CO-5 | Whatnot Live | Green "0% vs last week" arrows — should be neutral | Session 2 | OPEN |
 | CO-6 | Refer a Friend | Logo shows "V" overlaid on purple — inconsistent with other pages | Session 3 | OPEN |
