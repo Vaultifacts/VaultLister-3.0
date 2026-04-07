@@ -37,7 +37,7 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 12 |
+| OPEN | 11 |
 | FIXED (code changed, not yet visually confirmed on live site) | 1 |
 | VERIFIED ✅ (visually confirmed or source-confirmed) | ~152 |
 | CONFIRMED N/A (not a bug / duplicate / already correct) | ~33 |
