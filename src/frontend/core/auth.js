@@ -232,13 +232,9 @@ const auth = {
         }
     },
 
-    async handleOAuthCallback() {
+    async handleOAuthCallback(preExtractedOtt) {
         try {
-            console.log('[OAuth] handleOAuthCallback START hash=' + window.location.hash);
-            const hashParts = window.location.hash.slice(1).split('?');
-            const params = new URLSearchParams(hashParts[1] || '');
-            const ott = params.get('ott');
-            console.log('[OAuth] ott=' + (ott ? ott.substring(0, 8) + '...' : 'NULL'));
+            const ott = preExtractedOtt || new URLSearchParams((window.location.hash.slice(1).split('?')[1]) || '').get('ott');
             if (!ott) {
                 router.navigate('login');
                 toast.error('Sign-in failed. Please try again.');
@@ -246,23 +242,22 @@ const auth = {
             }
             // Raw fetch bypasses api.request's 401→token-refresh interceptor
             const res = await fetch('/api/auth/oauth-session?ott=' + ott);
-            console.log('[OAuth] exchange status=' + res.status);
             if (!res.ok) throw new Error('OTT exchange failed: ' + res.status);
             const data = await res.json();
-            console.log('[OAuth] got user=' + data.user?.email + ' tokenLen=' + (data.token?.length || 0));
             store.setState({
                 user: data.user,
                 token: data.token,
                 refreshToken: data.refreshToken
             });
+            // Connect WebSocket immediately after OAuth login
+            if (window.VaultListerSocket) {
+                window.VaultListerSocket.connect(data.token).catch(() => {});
+            }
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
-            console.log('[OAuth] navigating to ' + dest + ' isAuth=' + auth.isAuthenticated());
-            await router.navigate(dest);
-            console.log('[OAuth] navigate complete hash=' + window.location.hash + ' isAuth=' + auth.isAuthenticated());
+            router.navigate(dest);
             toast.success('Welcome!');
         } catch (error) {
-            console.error('[OAuth] ERROR:', error.message);
             router.navigate('login');
             toast.error('Sign-in failed. Please try again.');
         }

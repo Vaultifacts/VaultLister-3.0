@@ -15411,7 +15411,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'fe7c7ce4';
+    const v = 'f6143082';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -21484,13 +21484,9 @@ const auth = {
         }
     },
 
-    async handleOAuthCallback() {
+    async handleOAuthCallback(preExtractedOtt) {
         try {
-            console.log('[OAuth] handleOAuthCallback START hash=' + window.location.hash);
-            const hashParts = window.location.hash.slice(1).split('?');
-            const params = new URLSearchParams(hashParts[1] || '');
-            const ott = params.get('ott');
-            console.log('[OAuth] ott=' + (ott ? ott.substring(0, 8) + '...' : 'NULL'));
+            const ott = preExtractedOtt || new URLSearchParams((window.location.hash.slice(1).split('?')[1]) || '').get('ott');
             if (!ott) {
                 router.navigate('login');
                 toast.error('Sign-in failed. Please try again.');
@@ -21498,23 +21494,22 @@ const auth = {
             }
             // Raw fetch bypasses api.request's 401→token-refresh interceptor
             const res = await fetch('/api/auth/oauth-session?ott=' + ott);
-            console.log('[OAuth] exchange status=' + res.status);
             if (!res.ok) throw new Error('OTT exchange failed: ' + res.status);
             const data = await res.json();
-            console.log('[OAuth] got user=' + data.user?.email + ' tokenLen=' + (data.token?.length || 0));
             store.setState({
                 user: data.user,
                 token: data.token,
                 refreshToken: data.refreshToken
             });
+            // Connect WebSocket immediately after OAuth login
+            if (window.VaultListerSocket) {
+                window.VaultListerSocket.connect(data.token).catch(() => {});
+            }
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
-            console.log('[OAuth] navigating to ' + dest + ' isAuth=' + auth.isAuthenticated());
-            await router.navigate(dest);
-            console.log('[OAuth] navigate complete hash=' + window.location.hash + ' isAuth=' + auth.isAuthenticated());
+            router.navigate(dest);
             toast.success('Welcome!');
         } catch (error) {
-            console.error('[OAuth] ERROR:', error.message);
             router.navigate('login');
             toast.error('Sign-in failed. Please try again.');
         }
@@ -27459,6 +27454,9 @@ async function initApp() {
     // Register routes
     router.register('login', () => render(window.pages.login()));
     router.register('auth-callback', async () => {
+        // Capture OTT immediately — the hash may change during async operations.
+        const hashParts = window.location.hash.slice(1).split('?');
+        const ott = new URLSearchParams(hashParts[1] || '').get('ott');
         // Show spinner directly — cannot use renderApp() because the user is not
         // yet authenticated (OTT exchange hasn't happened) and renderApp's auth
         // guard would redirect to #login, wiping the OTT from the hash.
@@ -27475,7 +27473,7 @@ async function initApp() {
             spinner.appendChild(msg);
             app.replaceChildren(spinner);
         }
-        await auth.handleOAuthCallback();
+        await auth.handleOAuthCallback(ott);
     });
     router.register('register', () => render(window.pages.register()));
     router.register('forgot-password', () => render(window.pages.forgotPassword()));

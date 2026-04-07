@@ -102,6 +102,9 @@ async function initApp() {
     // Register routes
     router.register('login', () => render(window.pages.login()));
     router.register('auth-callback', async () => {
+        // Capture OTT immediately — the hash may change during async operations.
+        const hashParts = window.location.hash.slice(1).split('?');
+        const ott = new URLSearchParams(hashParts[1] || '').get('ott');
         // Show spinner directly — cannot use renderApp() because the user is not
         // yet authenticated (OTT exchange hasn't happened) and renderApp's auth
         // guard would redirect to #login, wiping the OTT from the hash.
@@ -118,7 +121,7 @@ async function initApp() {
             spinner.appendChild(msg);
             app.replaceChildren(spinner);
         }
-        await auth.handleOAuthCallback();
+        await auth.handleOAuthCallback(ott);
     });
     router.register('register', () => render(window.pages.register()));
     router.register('forgot-password', () => render(window.pages.forgotPassword()));
