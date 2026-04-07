@@ -120,7 +120,7 @@ function staticCacheMiddleware(ctx) {
 function getPreloadHints() {
     const criticalAssets = [
         { path: '/styles/main.css', as: 'style' },
-        { path: '/app.js', as: 'script' },
+        { path: '/core-bundle.js', as: 'script' },
     ];
 
     return criticalAssets.map(asset => {
