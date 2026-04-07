@@ -795,11 +795,12 @@ export async function extensionRouter(ctx) {
 
                 if (inventoryItemId) {
                     const listingId = `lst_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
+                    const title = safeJsonParse(syncItem.payload, {})?.listing_data?.title || 'Cross-listed item';
                     await query.run(
-                        `INSERT INTO listings (id, user_id, inventory_item_id, platform, status, listing_url, listed_at)
-                         VALUES ($1, $2, $3, $4, 'active', $5, NOW())
+                        `INSERT INTO listings (id, user_id, inventory_id, platform, title, status, platform_url, listed_at)
+                         VALUES ($1, $2, $3, $4, $5, 'active', $6, NOW())
                          ON CONFLICT DO NOTHING`,
-                        [listingId, user.id, inventoryItemId, platform, listingUrl]
+                        [listingId, user.id, inventoryItemId, platform, title, listingUrl]
                     );
                 }
             }

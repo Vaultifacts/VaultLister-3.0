@@ -1740,15 +1740,24 @@ Object.assign(handlers, {
             }
 
             try {
-                // Queue extension jobs
+                // Queue extension jobs — include item data so poster.js can fill the form
+                const inventory = store.state.inventory || [];
                 for (const inventoryItemId of ids) {
+                    const item = inventory.find(i => i.id === inventoryItemId) || {};
+                    const listing_data = {
+                        title: item.name || item.title || '',
+                        description: item.description || '',
+                        list_price: item.list_price || item.price || 0,
+                        brand: item.brand || '',
+                        images: Array.isArray(item.images) ? item.images : []
+                    };
                     for (const platform of extPlatforms) {
                         await api.post('/extension/sync', {
                             action_type: 'cross_list',
                             data: {
                                 inventory_item_id: inventoryItemId,
                                 platform,
-                                listing_data: {}
+                                listing_data
                             }
                         });
                     }

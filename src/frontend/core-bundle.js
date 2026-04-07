@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'fd2d4c89';
+    const v = '71354ed3';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -22696,7 +22696,7 @@ const modals = {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <form id="crosslist-form" onsubmit="handlers.submitCrosslist(event, '${itemIds.join(',')}')">
+                <form id="crosslist-form" onsubmit="event.preventDefault(); handlers.submitCrosslistWithMethod('${itemIds.join(',')}')">
                     <p style="margin-bottom: 16px;">Select platforms to list on:</p>
                     <div style="display: grid; gap: 12px;">
                         ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot'].map(platform => {

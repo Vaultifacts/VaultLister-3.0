@@ -161,20 +161,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
     } else if (request.action === 'crossListJobComplete') {
         // Called by poster.js after form is filled (or error)
+        // Keep service worker alive (return true) until fetch + storage write complete
         const { syncId, success, platform, listingUrl, error } = request;
         const tabId = sender.tab?.id;
 
         api.reportCrossListResult(syncId, { success, platform, listingUrl, error })
-            .catch(err => logger.error('Failed to report cross-list result:', err));
-
-        // Remove from active jobs
-        chrome.storage.local.get(['crossListJobs'], (storage) => {
-            const jobs = storage.crossListJobs || {};
-            delete jobs[tabId];
-            chrome.storage.local.set({ crossListJobs: jobs });
-        });
-
-        sendResponse({ success: true });
+            .catch(err => logger.error('Failed to report cross-list result:', err))
+            .finally(() => {
+                chrome.storage.local.get(['crossListJobs'], (storage) => {
+                    const jobs = storage.crossListJobs || {};
+                    delete jobs[tabId];
+                    chrome.storage.local.set({ crossListJobs: jobs }, () => {
+                        sendResponse({ success: true });
+                    });
+                });
+            });
         return true;
     }
 });

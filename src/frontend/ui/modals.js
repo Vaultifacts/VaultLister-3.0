@@ -1072,7 +1072,7 @@ const modals = {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
-                <form id="crosslist-form" onsubmit="handlers.submitCrosslist(event, '${itemIds.join(',')}')">
+                <form id="crosslist-form" onsubmit="event.preventDefault(); handlers.submitCrosslistWithMethod('${itemIds.join(',')}')">
                     <p style="margin-bottom: 16px;">Select platforms to list on:</p>
                     <div style="display: grid; gap: 12px;">
                         ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot'].map(platform => {
