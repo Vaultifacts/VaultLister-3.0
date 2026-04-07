@@ -257,10 +257,10 @@ const auth = {
             }
             const dest = store.state._intendedRoute || 'dashboard';
             store.setState({ _intendedRoute: null });
-            router.navigate(dest);
+            await router.navigate(dest);
             toast.success('Welcome!');
         } catch (error) {
-            router.navigate('login');
+            await router.navigate('login');
             toast.error('Sign-in failed. Please try again.');
         }
     },
