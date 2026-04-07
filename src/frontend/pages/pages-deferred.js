@@ -9025,7 +9025,7 @@ Object.assign(pages, {
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Cross-list to 3 platforms
+                                Cross-list to 5 platforms
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
@@ -9068,7 +9068,7 @@ Object.assign(pages, {
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Cross-list to all ${(window.SUPPORTED_PLATFORMS || []).length} platforms
+                                Cross-list to all 5 launch platforms
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
@@ -12521,7 +12521,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         `).join('')}
                     </div>
 
-                    <div class="mt-6" style="display: flex; gap: 8px; align-items: center; justify-content: flex-end; font-size: 12px;">
+                    <div class="mt-6" style="display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 12px;">
                         <span style="color: var(--text-secondary);">Less</span>
                         <div class="heatmap-cell" data-intensity="0" style="width: 16px; height: 16px; border-radius: 2px; display: inline-block;"></div>
                         <div class="heatmap-cell" data-intensity="1" style="width: 16px; height: 16px; border-radius: 2px; display: inline-block;"></div>

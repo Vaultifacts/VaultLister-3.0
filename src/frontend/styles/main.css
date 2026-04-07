@@ -18668,6 +18668,11 @@ body.dark-mode .ai-tag-suggestion {
     box-shadow: var(--shadow-sm);
 }
 
+body.dark-mode .calendar-view-btn.active {
+    background: var(--gray-700);
+    color: var(--gray-100);
+}
+
 /* Event Color Legend */
 .calendar-legend {
     display: flex;

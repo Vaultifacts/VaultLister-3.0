@@ -83,7 +83,7 @@ Object.assign(pages, {
                         `).join('')}
                     </div>
 
-                    <div class="mt-6" style="display: flex; gap: 8px; align-items: center; justify-content: flex-end; font-size: 12px;">
+                    <div class="mt-6" style="display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 12px;">
                         <span style="color: var(--text-secondary);">Less</span>
                         <div class="heatmap-cell" data-intensity="0" style="width: 16px; height: 16px; border-radius: 2px; display: inline-block;"></div>
                         <div class="heatmap-cell" data-intensity="1" style="width: 16px; height: 16px; border-radius: 2px; display: inline-block;"></div>
@@ -1795,7 +1795,7 @@ Object.assign(pages, {
                                     <div style="font-size: 28px;">${cat.icon}</div>
                                     <div style="font-weight: 600; font-size: 15px;">${cat.title}</div>
                                     <div style="font-size: 13px; color: var(--gray-500, #6b7280); flex: 1;">${cat.desc}</div>
-                                    <button class="btn btn-secondary btn-sm" style="align-self: flex-start; margin-top: 4px;" onclick="toast.info('External resource links coming soon.')">Explore</button>
+                                    <button class="btn btn-secondary btn-sm" style="align-self: flex-start; margin-top: 4px;" disabled title="Coming Soon">Explore</button>
                                 </div>
                             </div>
                         `).join('')}
@@ -1829,7 +1829,7 @@ Object.assign(pages, {
                     <p style="color: var(--gray-500, #6b7280); font-size: 14px; max-width: 400px; margin: 0 auto 16px;">
                         Get notified when estate sales, liquidation events, or thrift store specials appear near you. Coming in a future update.
                     </p>
-                    <button class="btn btn-secondary" onclick="toast.info('Location alerts will be available in a future update.')">Notify Me When Available</button>
+                    <button class="btn btn-secondary" disabled title="Coming Soon">Notify Me When Available</button>
                 </div>
             </div>
         `;
@@ -1883,7 +1883,7 @@ Object.assign(pages, {
                 icon: '🧮',
                 title: 'Fee Calculator',
                 desc: 'Calculate platform fees, taxes, and net profit for any sale.',
-                action: `if (typeof handlers.showFeeCalculator === 'function') { handlers.showFeeCalculator(); } else { toast.info('Fee calculator coming soon.'); }`,
+                action: `router.navigate('financials')`,
                 label: 'Open Calculator',
             },
             {

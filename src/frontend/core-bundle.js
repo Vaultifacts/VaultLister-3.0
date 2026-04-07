@@ -15413,7 +15413,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'de533621';
+    const v = '138a31a0';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -17905,7 +17905,7 @@ const pages = {
         const lastWeekRevenue = lastWeekSales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
 
         // Calculate change percentages for stat cards
-        const calcChange = (current, previous) => previous > 0 ? Math.round(((current - previous) / previous) * 100) : (current > 0 ? 100 : 0);
+        const calcChange = (current, previous) => previous > 0 ? Math.round(((current - previous) / previous) * 100) : null;
 
         const thisWeekInventory = (store.state.inventory || []).filter(i => new Date(i.created_at) >= periodAgo).length;
         const lastWeekInventory = (store.state.inventory || []).filter(i => { const d = new Date(i.created_at); return d >= twoPeriodAgo && d < periodAgo; }).length;
@@ -18248,7 +18248,7 @@ const pages = {
                     ${components.icon('sales', 14)} Log Sale
                 </button>
                 <span class="dashboard-last-updated text-xs text-gray-400" style="margin-left: auto;">
-                    ${store.state.dashboardLastRefresh ? `Updated ${components.relativeTime(new Date(store.state.dashboardLastRefresh).toISOString())}` : 'Not yet refreshed'}
+                    ${store.state.dashboardLastRefresh ? `Updated ${components.relativeTime(new Date(store.state.dashboardLastRefresh).toISOString())}` : 'Add your first item to get started'}
                 </span>
             </div>
             ${store.state._widgetPanelOpen ? widgetManager.showSettingsPanel() : ''}
@@ -18337,11 +18337,19 @@ const pages = {
                         </div>
                     </div>
                     <div class="card-body flex items-center justify-center gap-6">
-                        ${components.progressRing(goalPercent, 80, 8, goalPercent >= 100 ? 'green' : 'primary', 'goal')}
-                        <div>
-                            <div class="text-2xl font-bold">$${thisMonthRevenue.toLocaleString()}</div>
-                            ${monthlyGoal ? `<div class="text-sm text-gray-500">of $${monthlyGoal.toLocaleString()} goal</div><div class="text-xs text-gray-400 mt-1">${Math.round(goalPercent)}% complete</div>` : '<div class="text-sm text-gray-400">No goal set — <span style="text-decoration:underline;cursor:pointer" onclick="event.stopPropagation();handlers.setMonthlyGoal()">Set a goal</span></div>'}
-                        </div>
+                        ${monthlyGoal ? `
+                            ${components.progressRing(goalPercent, 80, 8, goalPercent >= 100 ? 'green' : 'primary', 'goal')}
+                            <div>
+                                <div class="text-2xl font-bold">C$${thisMonthRevenue.toLocaleString()}</div>
+                                <div class="text-sm text-gray-500">of C$${monthlyGoal.toLocaleString()} goal</div>
+                                <div class="text-xs text-gray-400 mt-1">${Math.round(goalPercent)}% complete</div>
+                            </div>
+                        ` : `
+                            <div class="text-center text-gray-400">
+                                <div class="text-sm mb-2">No goal set</div>
+                                <div class="text-xs">Click to set your monthly revenue goal</div>
+                            </div>
+                        `}
                     </div>
                 </div>
                 ` : ''}
