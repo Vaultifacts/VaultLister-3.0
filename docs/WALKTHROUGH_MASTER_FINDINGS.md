@@ -37,9 +37,22 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 186 |
-| VERIFIED ✅ (all fixed items now have commit evidence) | 28 |
+| OPEN | 41 |
+| FIXED (code changed, not yet visually confirmed on live site) | ~120 |
+| VERIFIED ✅ (visually confirmed working on live site) | ~28 |
+| CONFIRMED N/A (not a bug / duplicate / already correct) | ~25 |
 | **TOTAL** | **214** |
+
+### Status Definitions
+
+| Status | Meaning |
+|--------|---------|
+| `OPEN` | Issue exists, not yet addressed |
+| `FIXED — [description]` | Code change made in this or a previous session. **Not yet visually verified on the live site.** Pending promotion to VERIFIED after a Chrome walkthrough confirms the fix. |
+| `VERIFIED ✅ — [commit]` | Visually confirmed working on the live site (`vaultlister-app-production.up.railway.app`). Only set after a human or automated Chrome test has seen the fix live. |
+| `CONFIRMED N/A` | Determined to be a non-issue: duplicate finding, already correct in source, works as designed, or infrastructure-dependent with no code fix possible. |
+
+> **Rule:** Never promote a `FIXED` item to `VERIFIED ✅` without a visual Chrome walkthrough of the affected page/feature on the live site. DOM analysis, grep, or bundle output alone are not sufficient for VERIFIED status.
 
 ---
 
@@ -235,13 +248,13 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-4 | Dashboard | "Good afternoon, demo!" uses username instead of display_name or full_name | Session 1 | FIXED — pages-core.js: greeting uses full_name.split(' ')[0] → display_name → username |
 | L-5 | Inventory | "Low Stock" card highlights in yellow at value 0 | Session 1 | CONFIRMED N/A — lowStockItems > 0 guard already in place |
 | L-6 | Inventory | "Stale (90+ days)" label wraps to two lines in stat card | Session 1 | OPEN |
-| L-7 | Settings | "Full Name" empty — registration doesn't collect full name | Session 1 | OPEN |
+| L-7 | Settings | "Full Name" empty — registration doesn't collect full name | Session 1 | FIXED — pages-core.js + auth.js: Full Name field added to register form; posted to /auth/register |
 | L-8 | Help / Support | "Contact support to change email" — no support channel defined | Session 1 | OPEN |
 | L-9 | Vault Buddy | Chat bubble occludes content — covers "Net" label in financials, "Goal" in analytics | Session 1 | OPEN |
 | L-10 | Backend | Console.log statements in production — ~10 instances in error handlers | Session 1 (Code audit) | OPEN |
 | L-11 | Backend | Fake 555-xxxx phone numbers in supplier data — FCC reserved range, obviously fake | Session 1 (Code audit) | OPEN |
 | L-12 | Market Intel | "Competitor Activity — Live Activity" with green dot suggesting live feed that doesn't exist | Session 1 | VERIFIED ✅ — 00e1551 — pages-intelligence.js: "Live" badge changed to "Coming Soon" |
-| L-13 | Register | No Full Name or Display Name field in registration | Session 2 | OPEN |
+| L-13 | Register | No Full Name or Display Name field in registration | Session 2 | FIXED — same as L-7 |
 | L-14 | Refer a Friend | Referral code "VAULTDEMO" hardcoded — should be user-specific | Session 2 | OPEN |
 | L-15 | Terms of Service | "Last updated: March 2026" — should be April 2026 | Session 2 | VERIFIED ✅ — 15dba34 — public/terms.html + pages-community-help.js updated to April 2026 |
 | L-16 | Terms / Landing | Logo shows "M" purple circle — should be "V" blue square (brand inconsistency) | Session 2 | OPEN |
