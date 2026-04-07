@@ -175,9 +175,9 @@ function buildBundle(files, outName, versionToInject) {
     try { unlinkSync(tmpFile); } catch {}
 }
 
-// ── Build Phase 1: core bundle (dist/app.js) ─────────────────────────────────
-console.log('Building core bundle (dist/app.js)...');
-buildBundle(coreFiles, 'app.js', bundleVersion);
+// ── Build Phase 1: core bundle (dist/core-bundle.js) ─────────────────────────
+console.log('Building core bundle (dist/core-bundle.js)...');
+buildBundle(coreFiles, 'core-bundle.js', bundleVersion);
 
 // ── Build Phase 2: route-group chunks ────────────────────────────────────────
 console.log('Building route-group chunks...');
@@ -232,9 +232,9 @@ if (existsSync(cssPath)) {
 
 // ── Report ────────────────────────────────────────────────────────────────────
 console.log('\nBuild complete:');
-if (existsSync(join(DIST, 'app.js'))) {  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-    const size = statSync(join(DIST, 'app.js')).size;  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
-    console.log(`  dist/app.js          (${(size / 1024).toFixed(0)} KB)`);
+if (existsSync(join(DIST, 'core-bundle.js'))) {  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    const size = statSync(join(DIST, 'core-bundle.js')).size;  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+    console.log(`  dist/core-bundle.js  (${(size / 1024).toFixed(0)} KB)`);
 }
 for (const chunk of chunkDefs) {
     const p = join(DIST, `chunk-${chunk.name}.js`);  // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
