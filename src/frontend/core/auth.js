@@ -233,8 +233,11 @@ const auth = {
     },
 
     async handleOAuthCallback(preExtractedOtt) {
-        // Guard: if already authenticated (e.g. second invocation after successful exchange), skip
-        if (this.isAuthenticated()) return;
+        // Guard: if already authenticated (e.g. second invocation or hydrated session), go to dashboard
+        if (this.isAuthenticated()) {
+            await router.navigate(store.state._intendedRoute || 'dashboard');
+            return;
+        }
         try {
             const ott = preExtractedOtt || new URLSearchParams((window.location.hash.slice(1).split('?')[1]) || '').get('ott');
             if (!ott) {
