@@ -13801,7 +13801,7 @@ const sizeConverter = {
                         <option value="shoes_mens" ${category === 'shoes_mens' ? 'selected' : ''}>Men's Shoes</option>
                     </select>
                     <select id="size-region" class="form-select" onchange="sizeConverter.updateSizeOptions()">
-                        ${Object.keys(chart).map(region => `<option value="${region}">${this.regionFlags[region]} ${region}</option>`).join('')}
+                        ${Object.keys(chart).map(region => `<option value="${region}">${this.regionFlags[region]} ${this.regionNames[region] || region}</option>`).join('')}
                     </select>
                     <select id="size-value" class="form-select" onchange="sizeConverter.convert()">
                         ${chart[Object.keys(chart)[0]].map(size => `<option value="${size}">${size}</option>`).join('')}
@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '90dc07f9';
+    const v = '12deb99b';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16460,8 +16460,8 @@ const components = {
                     ${sparkline}
                 </div>
                 ${change !== null ? `
-                    <div class="stat-card-change ${change >= 0 ? 'positive' : 'negative'}">
-                        ${change >= 0 ? '↑' : '↓'} ${Math.abs(change)}%
+                    <div class="stat-card-change ${change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral'}">
+                        ${change > 0 ? '↑' : change < 0 ? '↓' : '–'} ${Math.abs(change)}%
                         <span class="text-gray-500">${periodLabel}</span>
                     </div>
                 ` : ''}
@@ -18104,7 +18104,7 @@ const pages = {
             <div class="dashboard-hero">
                 <div class="dashboard-hero-content">
                     <div class="dashboard-hero-greeting">
-                        <h1>${getGreeting()}, ${store.state.user?.display_name || store.state.user?.username || 'Reseller'}!</h1>
+                        <h1>${getGreeting()}, ${store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller')}!</h1>
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">
@@ -20995,12 +20995,18 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="login-password" class="form-label">Password</label>
-                                <input id="login-password" type="password" class="form-input" name="password" required
-                                       autocomplete="current-password" aria-label="Password"
-                                       aria-describedby="login-password-error"
-                                       placeholder="Enter your password"
-                                       minlength="8" maxlength="128"
-                                       oninput="handlers.validateLoginField(this)">
+                                <div style="position: relative;">
+                                    <input id="login-password" type="password" class="form-input" name="password" required
+                                           autocomplete="current-password" aria-label="Password"
+                                           aria-describedby="login-password-error"
+                                           placeholder="Enter your password"
+                                           minlength="8" maxlength="128"
+                                           oninput="handlers.validateLoginField(this)"
+                                           style="padding-right: 44px;">
+                                    <button type="button" aria-label="Show password" onclick="handlers.togglePasswordVisibility('login-password', this)" style="position:absolute;right:0;top:0;height:44px;width:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--gray-500);">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
                                 <span class="field-error-text" id="login-password-error" role="alert">Password is required</span>
                             </div>
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
@@ -21048,6 +21054,12 @@ const pages = {
                         </div>
                         <form id="register-form" onsubmit="auth.register(event)">
                             <div class="form-group">
+                                <label for="reg-full-name" class="form-label">Full Name</label>
+                                <input id="reg-full-name" type="text" class="form-input" name="full_name" required
+                                       autocomplete="name" aria-label="Full name" placeholder="Your full name"
+                                       maxlength="100">
+                            </div>
+                            <div class="form-group">
                                 <label for="reg-email" class="form-label">Email</label>
                                 <input id="reg-email" type="email" class="form-input" name="email" required
                                        autocomplete="email" aria-label="Email address" placeholder="you@example.com"
@@ -21060,10 +21072,16 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="reg-password" class="form-label">Password</label>
+                                <div style="position: relative;">
                                 <input id="reg-password" type="password" class="form-input" name="password" required
                                        placeholder="Min 12 characters" minlength="12" autocomplete="new-password"
                                        aria-label="Password" aria-describedby="password-reqs reg-strength-label"
-                                       oninput="handlers.checkRegisterPassword(this)">
+                                       oninput="handlers.checkRegisterPassword(this)"
+                                       style="padding-right: 44px;">
+                                    <button type="button" aria-label="Show password" onclick="handlers.togglePasswordVisibility('reg-password', this)" style="position:absolute;right:0;top:0;height:44px;width:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--gray-500);">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
                                 <div id="reg-strength-meter" style="display:none; margin-top:6px;">
                                     <div style="height:4px; background:var(--gray-200,#e5e7eb); border-radius:2px; overflow:hidden;">
                                         <div id="reg-strength-bar" style="height:100%; width:0%; transition:width 0.3s,background 0.3s; border-radius:2px;"></div>
@@ -21453,6 +21471,7 @@ const auth = {
         const username = form.username.value;
         const password = form.password.value;
         const confirmPassword = form.confirmPassword.value;
+        const full_name = (form.full_name?.value || '').trim();
         const submitBtn = document.getElementById('register-submit-btn');
         const inputs = form.querySelectorAll('input');
 
@@ -21477,7 +21496,7 @@ const auth = {
 
         try {
             const refParam = new URLSearchParams(window.location.search).get('ref') || new URLSearchParams(window.location.hash.split('?')[1] || '').get('ref');
-            const data = await api.post('/auth/register', { email, username, password, ...(refParam ? { referralCode: refParam } : {}) });
+            const data = await api.post('/auth/register', { email, username, password, ...(full_name ? { full_name } : {}), ...(refParam ? { referralCode: refParam } : {}) });
             store.setState({
                 user: data.user,
                 token: data.token,
@@ -22872,7 +22891,10 @@ const modals = {
 
     editTemplate(templateId) {
         const template = store.state.templates.find(t => t.id === templateId);
-        if (!template) return;
+        if (!template) {
+            toast.info('Please navigate to the Templates page to edit this template.');
+            return;
+        }
 
         this.show(`
             <div class="modal-header">
@@ -24570,15 +24592,6 @@ const modals = {
                         <textarea name="description" class="form-textarea" rows="3">${escapeHtml(event.description || '')}</textarea>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Depends On (optional)</label>
-                        <select name="depends_on" class="form-select">
-                            <option value="">No dependency</option>
-                            ${(store.state.calendarEvents || []).filter(e => e.id !== eventId).map(evt => `
-                                <option value="${evt.id}" ${event.depends_on === evt.id ? 'selected' : ''}>[${evt.date}] ${escapeHtml(evt.title)}</option>
-                            `).join('')}
-                        </select>
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -24692,6 +24705,11 @@ const modals = {
 
     // Create Team Modal
     createTeam() {
+        const tier = store.state.user?.subscription_tier || 'free';
+        if (tier === 'free') {
+            toast.info('Team features require a Pro or Business plan. Upgrade to get started.');
+            return;
+        }
         this.show(`
             <div class="modal-header">
                 <h2 class="modal-title">${components.icon('plus', 24)} Create New Team</h2>
@@ -24942,14 +24960,14 @@ const modals = {
 
         this.show(`
             <div class="modal-header">
-                <h2>${escapeHtml(event.title)}</h2>
+                <h2>${escapeHtml(event.title || event.name || 'Untitled Event')}</h2>
                 <button class="btn btn-icon btn-ghost" onclick="modals.close()" aria-label="Close modal">${components.icon('close', 20)}</button>
             </div>
             <div class="modal-body">
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div>
                         <div class="text-sm text-gray-500">Start Time</div>
-                        <div class="font-medium">${new Date(event.start_time).toLocaleString()}</div>
+                        <div class="font-medium">${event.start_time ? new Date(event.start_time).toLocaleString() : 'TBD'}</div>
                     </div>
                     <div>
                         <div class="text-sm text-gray-500">Duration</div>
@@ -24961,7 +24979,7 @@ const modals = {
                     </div>
                     <div>
                         <div class="text-sm text-gray-500">Status</div>
-                        <span class="badge badge-${event.status === 'completed' ? 'success' : event.status === 'live' ? 'primary' : 'gray'}">${event.status}</span>
+                        <span class="badge badge-${(event.status || 'scheduled') === 'completed' ? 'success' : (event.status || 'scheduled') === 'live' ? 'primary' : 'gray'}">${event.status || 'Scheduled'}</span>
                     </div>
                 </div>
 
@@ -25029,58 +25047,7 @@ const modals = {
         `);
     },
 
-    // Report viewing modal
-    viewReport(report, widgetData) {
-        const widgets = report.widgets || [];
-
-        this.show(`
-            <div class="modal-header">
-                <h2>${escapeHtml(report.name)}</h2>
-                <button class="btn btn-icon btn-ghost" onclick="modals.close()" aria-label="Close modal">${components.icon('close', 20)}</button>
-            </div>
-            <div class="modal-body">
-                ${report.description ? `<p class="text-gray-500 mb-4">${escapeHtml(report.description)}</p>` : ''}
-                <div class="grid grid-cols-2 gap-4">
-                    ${widgets.map(widget => {
-                        const data = widgetData[widget.id] || { type: 'empty', message: 'No data' };
-                        return `
-                            <div class="card ${widget.size === 'large' ? 'col-span-2' : ''}">
-                                <div class="card-header"><h4 class="card-title">${escapeHtml(widget.label)}</h4></div>
-                                <div class="card-body">
-                                    ${data.type === 'stat' ? `
-                                        <div class="text-3xl font-bold">${data.value}${data.unit || ''}</div>
-                                        ${data.count !== undefined ? `<div class="text-sm text-gray-500">${data.count} items</div>` : ''}
-                                    ` : data.type === 'table' && data.data ? `
-                                        <div class="table-container">
-                                            <table class="table table-sm">
-                                                <tbody>
-                                                    ${data.data.slice(0, 5).map(row => `
-                                                        <tr>
-                                                            <td>${escapeHtml(row.title || row.name || 'N/A')}</td>
-                                                            <td class="text-right">$${(row.total_revenue || row.revenue || 0).toFixed(2)}</td>
-                                                        </tr>
-                                                    `).join('')}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    ` : data.type === 'line' || data.type === 'pie' ? `
-                                        <div class="text-sm text-gray-500">Chart visualization</div>
-                                        ${data.data?.length ? `<div class="text-xs">${data.data.length} data points</div>` : ''}
-                                    ` : `<div class="text-gray-500">${data.message || 'No data available'}</div>`}
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Close</button>
-                <button class="btn btn-primary" onclick="handlers.editReport('${report.id}'); modals.close();">Edit Report</button>
-            </div>
-        `, 'modal-xl');
-    },
-
-    // Duplicate viewArticle removed — full version with API loading and markdown rendering is at line ~39148
+    // Duplicate viewReport removed — canonical version with null guard is below
 
     // Add item to Whatnot event modal
     addItemToEvent(eventId) {
@@ -25450,6 +25417,31 @@ const handlers = {
 
     logout() {
         auth.logout();
+    },
+
+    togglePasswordVisibility(inputId, btn) {
+        const inp = document.getElementById(inputId);
+        if (!inp) return;
+        const show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        const svg = btn.querySelector('svg');
+        if (!svg) return;
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+        if (show) {
+            const p1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            p1.setAttribute('d', 'M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24');
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', '1'); line.setAttribute('y1', '1');
+            line.setAttribute('x2', '23'); line.setAttribute('y2', '23');
+            svg.appendChild(p1); svg.appendChild(line);
+        } else {
+            const p2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            p2.setAttribute('d', 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z');
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', '12'); circle.setAttribute('cy', '12'); circle.setAttribute('r', '3');
+            svg.appendChild(p2); svg.appendChild(circle);
+        }
     },
 
     validateLoginField(input) {

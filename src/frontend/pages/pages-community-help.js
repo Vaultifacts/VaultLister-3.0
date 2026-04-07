@@ -154,20 +154,20 @@ Object.assign(pages, {
                     <div class="card-body">
                         <ol class="flex flex-col gap-4">
                             <li class="flex gap-3">
-                                <span class="font-bold text-primary">1.</span>
-                                <span>Add items to your inventory</span>
+                                <span class="font-bold text-primary" style="flex-shrink:0;">1.</span>
+                                <span style="min-width:0;word-break:break-word;">Add items to your inventory</span>
                             </li>
                             <li class="flex gap-3">
-                                <span class="font-bold text-primary">2.</span>
-                                <span>Connect your selling platforms</span>
+                                <span class="font-bold text-primary" style="flex-shrink:0;">2.</span>
+                                <span style="min-width:0;word-break:break-word;">Connect your selling platforms</span>
                             </li>
                             <li class="flex gap-3">
-                                <span class="font-bold text-primary">3.</span>
-                                <span>Cross-list to multiple platforms</span>
+                                <span class="font-bold text-primary" style="flex-shrink:0;">3.</span>
+                                <span style="min-width:0;word-break:break-word;">Cross-list to multiple platforms</span>
                             </li>
                             <li class="flex gap-3">
-                                <span class="font-bold text-primary">4.</span>
-                                <span>Set up automations to save time</span>
+                                <span class="font-bold text-primary" style="flex-shrink:0;">4.</span>
+                                <span style="min-width:0;word-break:break-word;">Set up automations to save time</span>
                             </li>
                         </ol>
                     </div>

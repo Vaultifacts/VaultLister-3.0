@@ -5023,7 +5023,7 @@ const sizeConverter = {
                         <option value="shoes_mens" ${category === 'shoes_mens' ? 'selected' : ''}>Men's Shoes</option>
                     </select>
                     <select id="size-region" class="form-select" onchange="sizeConverter.updateSizeOptions()">
-                        ${Object.keys(chart).map(region => `<option value="${region}">${this.regionFlags[region]} ${region}</option>`).join('')}
+                        ${Object.keys(chart).map(region => `<option value="${region}">${this.regionFlags[region]} ${this.regionNames[region] || region}</option>`).join('')}
                     </select>
                     <select id="size-value" class="form-select" onchange="sizeConverter.convert()">
                         ${chart[Object.keys(chart)[0]].map(size => `<option value="${size}">${size}</option>`).join('')}

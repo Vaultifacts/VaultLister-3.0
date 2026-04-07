@@ -1268,7 +1268,10 @@ const modals = {
 
     editTemplate(templateId) {
         const template = store.state.templates.find(t => t.id === templateId);
-        if (!template) return;
+        if (!template) {
+            toast.info('Please navigate to the Templates page to edit this template.');
+            return;
+        }
 
         this.show(`
             <div class="modal-header">
@@ -2966,15 +2969,6 @@ const modals = {
                         <textarea name="description" class="form-textarea" rows="3">${escapeHtml(event.description || '')}</textarea>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Depends On (optional)</label>
-                        <select name="depends_on" class="form-select">
-                            <option value="">No dependency</option>
-                            ${(store.state.calendarEvents || []).filter(e => e.id !== eventId).map(evt => `
-                                <option value="${evt.id}" ${event.depends_on === evt.id ? 'selected' : ''}>[${evt.date}] ${escapeHtml(evt.title)}</option>
-                            `).join('')}
-                        </select>
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -3088,6 +3082,11 @@ const modals = {
 
     // Create Team Modal
     createTeam() {
+        const tier = store.state.user?.subscription_tier || 'free';
+        if (tier === 'free') {
+            toast.info('Team features require a Pro or Business plan. Upgrade to get started.');
+            return;
+        }
         this.show(`
             <div class="modal-header">
                 <h2 class="modal-title">${components.icon('plus', 24)} Create New Team</h2>
@@ -3338,14 +3337,14 @@ const modals = {
 
         this.show(`
             <div class="modal-header">
-                <h2>${escapeHtml(event.title)}</h2>
+                <h2>${escapeHtml(event.title || event.name || 'Untitled Event')}</h2>
                 <button class="btn btn-icon btn-ghost" onclick="modals.close()" aria-label="Close modal">${components.icon('close', 20)}</button>
             </div>
             <div class="modal-body">
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div>
                         <div class="text-sm text-gray-500">Start Time</div>
-                        <div class="font-medium">${new Date(event.start_time).toLocaleString()}</div>
+                        <div class="font-medium">${event.start_time ? new Date(event.start_time).toLocaleString() : 'TBD'}</div>
                     </div>
                     <div>
                         <div class="text-sm text-gray-500">Duration</div>
@@ -3357,7 +3356,7 @@ const modals = {
                     </div>
                     <div>
                         <div class="text-sm text-gray-500">Status</div>
-                        <span class="badge badge-${event.status === 'completed' ? 'success' : event.status === 'live' ? 'primary' : 'gray'}">${event.status}</span>
+                        <span class="badge badge-${(event.status || 'scheduled') === 'completed' ? 'success' : (event.status || 'scheduled') === 'live' ? 'primary' : 'gray'}">${event.status || 'Scheduled'}</span>
                     </div>
                 </div>
 
@@ -3425,58 +3424,7 @@ const modals = {
         `);
     },
 
-    // Report viewing modal
-    viewReport(report, widgetData) {
-        const widgets = report.widgets || [];
-
-        this.show(`
-            <div class="modal-header">
-                <h2>${escapeHtml(report.name)}</h2>
-                <button class="btn btn-icon btn-ghost" onclick="modals.close()" aria-label="Close modal">${components.icon('close', 20)}</button>
-            </div>
-            <div class="modal-body">
-                ${report.description ? `<p class="text-gray-500 mb-4">${escapeHtml(report.description)}</p>` : ''}
-                <div class="grid grid-cols-2 gap-4">
-                    ${widgets.map(widget => {
-                        const data = widgetData[widget.id] || { type: 'empty', message: 'No data' };
-                        return `
-                            <div class="card ${widget.size === 'large' ? 'col-span-2' : ''}">
-                                <div class="card-header"><h4 class="card-title">${escapeHtml(widget.label)}</h4></div>
-                                <div class="card-body">
-                                    ${data.type === 'stat' ? `
-                                        <div class="text-3xl font-bold">${data.value}${data.unit || ''}</div>
-                                        ${data.count !== undefined ? `<div class="text-sm text-gray-500">${data.count} items</div>` : ''}
-                                    ` : data.type === 'table' && data.data ? `
-                                        <div class="table-container">
-                                            <table class="table table-sm">
-                                                <tbody>
-                                                    ${data.data.slice(0, 5).map(row => `
-                                                        <tr>
-                                                            <td>${escapeHtml(row.title || row.name || 'N/A')}</td>
-                                                            <td class="text-right">$${(row.total_revenue || row.revenue || 0).toFixed(2)}</td>
-                                                        </tr>
-                                                    `).join('')}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    ` : data.type === 'line' || data.type === 'pie' ? `
-                                        <div class="text-sm text-gray-500">Chart visualization</div>
-                                        ${data.data?.length ? `<div class="text-xs">${data.data.length} data points</div>` : ''}
-                                    ` : `<div class="text-gray-500">${data.message || 'No data available'}</div>`}
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Close</button>
-                <button class="btn btn-primary" onclick="handlers.editReport('${report.id}'); modals.close();">Edit Report</button>
-            </div>
-        `, 'modal-xl');
-    },
-
-    // Duplicate viewArticle removed — full version with API loading and markdown rendering is at line ~39148
+    // Duplicate viewReport removed — canonical version with null guard is below
 
     // Add item to Whatnot event modal
     addItemToEvent(eventId) {

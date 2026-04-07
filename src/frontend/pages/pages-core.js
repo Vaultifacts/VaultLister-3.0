@@ -261,7 +261,7 @@ const pages = {
             <div class="dashboard-hero">
                 <div class="dashboard-hero-content">
                     <div class="dashboard-hero-greeting">
-                        <h1>${getGreeting()}, ${store.state.user?.display_name || store.state.user?.username || 'Reseller'}!</h1>
+                        <h1>${getGreeting()}, ${store.state.user?.full_name ? store.state.user.full_name.split(' ')[0] : (store.state.user?.display_name || store.state.user?.username || 'Reseller')}!</h1>
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">
@@ -3152,12 +3152,18 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="login-password" class="form-label">Password</label>
-                                <input id="login-password" type="password" class="form-input" name="password" required
-                                       autocomplete="current-password" aria-label="Password"
-                                       aria-describedby="login-password-error"
-                                       placeholder="Enter your password"
-                                       minlength="8" maxlength="128"
-                                       oninput="handlers.validateLoginField(this)">
+                                <div style="position: relative;">
+                                    <input id="login-password" type="password" class="form-input" name="password" required
+                                           autocomplete="current-password" aria-label="Password"
+                                           aria-describedby="login-password-error"
+                                           placeholder="Enter your password"
+                                           minlength="8" maxlength="128"
+                                           oninput="handlers.validateLoginField(this)"
+                                           style="padding-right: 44px;">
+                                    <button type="button" aria-label="Show password" onclick="handlers.togglePasswordVisibility('login-password', this)" style="position:absolute;right:0;top:0;height:44px;width:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--gray-500);">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
                                 <span class="field-error-text" id="login-password-error" role="alert">Password is required</span>
                             </div>
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
@@ -3205,6 +3211,12 @@ const pages = {
                         </div>
                         <form id="register-form" onsubmit="auth.register(event)">
                             <div class="form-group">
+                                <label for="reg-full-name" class="form-label">Full Name</label>
+                                <input id="reg-full-name" type="text" class="form-input" name="full_name" required
+                                       autocomplete="name" aria-label="Full name" placeholder="Your full name"
+                                       maxlength="100">
+                            </div>
+                            <div class="form-group">
                                 <label for="reg-email" class="form-label">Email</label>
                                 <input id="reg-email" type="email" class="form-input" name="email" required
                                        autocomplete="email" aria-label="Email address" placeholder="you@example.com"
@@ -3217,10 +3229,16 @@ const pages = {
                             </div>
                             <div class="form-group">
                                 <label for="reg-password" class="form-label">Password</label>
+                                <div style="position: relative;">
                                 <input id="reg-password" type="password" class="form-input" name="password" required
                                        placeholder="Min 12 characters" minlength="12" autocomplete="new-password"
                                        aria-label="Password" aria-describedby="password-reqs reg-strength-label"
-                                       oninput="handlers.checkRegisterPassword(this)">
+                                       oninput="handlers.checkRegisterPassword(this)"
+                                       style="padding-right: 44px;">
+                                    <button type="button" aria-label="Show password" onclick="handlers.togglePasswordVisibility('reg-password', this)" style="position:absolute;right:0;top:0;height:44px;width:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--gray-500);">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
                                 <div id="reg-strength-meter" style="display:none; margin-top:6px;">
                                     <div style="height:4px; background:var(--gray-200,#e5e7eb); border-radius:2px; overflow:hidden;">
                                         <div id="reg-strength-bar" style="height:100%; width:0%; transition:width 0.3s,background 0.3s; border-radius:2px;"></div>

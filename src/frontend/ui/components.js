@@ -610,8 +610,8 @@ const components = {
                     ${sparkline}
                 </div>
                 ${change !== null ? `
-                    <div class="stat-card-change ${change >= 0 ? 'positive' : 'negative'}">
-                        ${change >= 0 ? '↑' : '↓'} ${Math.abs(change)}%
+                    <div class="stat-card-change ${change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral'}">
+                        ${change > 0 ? '↑' : change < 0 ? '↓' : '–'} ${Math.abs(change)}%
                         <span class="text-gray-500">${periodLabel}</span>
                     </div>
                 ` : ''}

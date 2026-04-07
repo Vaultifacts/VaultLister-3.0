@@ -26165,12 +26165,14 @@ Object.assign(handlers, {
 
     async selectPlan(planId) {
         try {
-            await api.post('/billing/select-plan', { planId });
-            toast.success(`Plan ${planId} selected successfully`);
-            const userData = await api.get('/auth/me');
-            if (userData?.user) store.setState({ user: userData.user });
+            const result = await api.post('/billing/checkout', { planId });
+            if (result?.url) {
+                window.location.href = result.url;
+            } else {
+                toast.info('Upgrade coming soon! Contact us at hello@vaultlister.com to upgrade.');
+            }
         } catch (error) {
-            toast.error(error.message || 'Failed to select plan');
+            toast.info('Upgrade coming soon! Contact us at hello@vaultlister.com to upgrade.');
         }
     },
 

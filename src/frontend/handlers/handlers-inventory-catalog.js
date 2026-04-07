@@ -4175,12 +4175,12 @@ Object.assign(handlers, {
                                 `).join('')}
                             </div>
                         </div>
-                    ` : `
+                    ` : avgScore > 70 ? `
                         <div class="health-all-good">
                             ${components.icon('check-circle', 40)}
                             <p>All listings have good health scores!</p>
                         </div>
-                    `}
+                    ` : ''}
 
                     <!-- Improvement Tips -->
                     <div class="health-tips">

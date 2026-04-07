@@ -98,24 +98,21 @@
     </div>
 
     <script>
-        // Check connection status
-        function updateStatus() {
+        function setOfflineStatus() {
             const statusText = document.getElementById('status-text');
-            if (navigator.onLine) {
-                statusText.textContent = 'Connection restored!';
-                statusText.className = 'status-online';
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 1000);
-            } else {
-                statusText.textContent = 'Currently offline';
-                statusText.className = 'status-offline';
-            }
+            statusText.textContent = 'Currently offline';
+            statusText.className = 'status-offline';
         }
 
-        window.addEventListener('online', updateStatus);
-        window.addEventListener('offline', updateStatus);
-        updateStatus();
+        window.addEventListener('online', function() {
+            const statusText = document.getElementById('status-text');
+            statusText.textContent = 'Connection restored!';
+            statusText.className = 'status-online';
+            setTimeout(() => { window.location.href = '/'; }, 1000);
+        });
+
+        window.addEventListener('offline', setOfflineStatus);
+        setOfflineStatus();
     </script>
 </body>
 </html>

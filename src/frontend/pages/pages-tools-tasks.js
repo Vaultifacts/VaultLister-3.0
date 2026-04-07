@@ -119,6 +119,12 @@ Object.assign(pages, {
         // Time-based greeting
         const getProductivityGreeting = () => {
             const hour = new Date().getHours();
+            if (completionRate === 0) {
+                if (hour < 12) return { greeting: 'Good morning', message: 'Complete your first task to get started!' };
+                if (hour < 17) return { greeting: 'Good afternoon', message: 'Complete your first task to get started!' };
+                if (hour < 21) return { greeting: 'Good evening', message: 'Complete your first task to get started!' };
+                return { greeting: 'Night owl mode', message: 'Complete your first task to get started!' };
+            }
             if (hour < 12) return { greeting: 'Good morning', message: 'Start your day strong!' };
             if (hour < 17) return { greeting: 'Good afternoon', message: 'Keep up the momentum!' };
             if (hour < 21) return { greeting: 'Good evening', message: 'Finish strong today!' };

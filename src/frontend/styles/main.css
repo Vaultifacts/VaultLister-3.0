@@ -2998,6 +2998,10 @@ body.dark-mode .system-status-label { color: var(--gray-400); }
     color: var(--error);
 }
 
+.stat-card-change.neutral {
+    color: var(--gray-500);
+}
+
 /* ============================================
    Components - Platform Icons
    ============================================ */

@@ -186,6 +186,7 @@ const auth = {
         const username = form.username.value;
         const password = form.password.value;
         const confirmPassword = form.confirmPassword.value;
+        const full_name = (form.full_name?.value || '').trim();
         const submitBtn = document.getElementById('register-submit-btn');
         const inputs = form.querySelectorAll('input');
 
@@ -210,7 +211,7 @@ const auth = {
 
         try {
             const refParam = new URLSearchParams(window.location.search).get('ref') || new URLSearchParams(window.location.hash.split('?')[1] || '').get('ref');
-            const data = await api.post('/auth/register', { email, username, password, ...(refParam ? { referralCode: refParam } : {}) });
+            const data = await api.post('/auth/register', { email, username, password, ...(full_name ? { full_name } : {}), ...(refParam ? { referralCode: refParam } : {}) });
             store.setState({
                 user: data.user,
                 token: data.token,

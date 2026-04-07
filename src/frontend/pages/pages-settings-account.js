@@ -1980,7 +1980,7 @@ Object.assign(pages, {
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Member Since</label>
-                                <input type="text" class="form-input" value="${memberSince}" readonly>
+                                <div class="form-input" style="word-break:break-word;white-space:normal;height:auto;cursor:default;">${escapeHtml(memberSince)}</div>
                             </div>
                         </div>
                         <div class="flex justify-end" style="margin-top: 16px;">
@@ -1997,12 +1997,12 @@ Object.assign(pages, {
                         <h2 class="card-title">${components.icon('star', 20)} Subscription</h2>
                     </div>
                     <div class="card-body">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="badge badge-primary" style="font-size: 14px; padding: 6px 16px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                                <span class="badge badge-primary" style="font-size: 14px; padding: 6px 16px; flex-shrink: 0;">
                                     ${(user.subscription_tier || 'free').charAt(0).toUpperCase() + (user.subscription_tier || 'free').slice(1)}
                                 </span>
-                                <span style="color: var(--gray-500);">Current plan</span>
+                                <span style="color: var(--gray-500); word-break: break-word;">Current plan</span>
                             </div>
                             <button class="btn btn-primary" onclick="router.navigate('settings')">
                                 Manage Subscription
@@ -2567,7 +2567,7 @@ Object.assign(pages, {
                             <div class="text-sm text-gray-500">Referrals tracked for 90 days after click</div>
                         </div>
                         <div class="text-center p-6 rounded-lg" style="background: var(--gray-50);">
-                            <div class="text-4xl font-bold text-warning mb-2">$50</div>
+                            <div class="text-4xl font-bold text-warning mb-2">C$50</div>
                             <div class="font-medium mb-1">Minimum Payout</div>
                             <div class="text-sm text-gray-500">Monthly payouts via PayPal or bank transfer</div>
                         </div>
