@@ -15411,7 +15411,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'd54ddd11';
+    const v = 'fe7c7ce4';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -27459,7 +27459,22 @@ async function initApp() {
     // Register routes
     router.register('login', () => render(window.pages.login()));
     router.register('auth-callback', async () => {
-        renderApp('<div style="display:flex;align-items:center;justify-content:center;min-height:60vh"><div class="loading-spinner"></div><p style="margin-left:1rem;color:#6b7280">Completing sign-in...</p></div>');
+        // Show spinner directly — cannot use renderApp() because the user is not
+        // yet authenticated (OTT exchange hasn't happened) and renderApp's auth
+        // guard would redirect to #login, wiping the OTT from the hash.
+        const app = document.getElementById('app');
+        if (app) {
+            const spinner = document.createElement('div');
+            spinner.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:60vh';
+            const dot = document.createElement('div');
+            dot.className = 'loading-spinner';
+            const msg = document.createElement('p');
+            msg.style.cssText = 'margin-left:1rem;color:#6b7280';
+            msg.textContent = 'Completing sign-in\u2026';
+            spinner.appendChild(dot);
+            spinner.appendChild(msg);
+            app.replaceChildren(spinner);
+        }
         await auth.handleOAuthCallback();
     });
     router.register('register', () => render(window.pages.register()));
