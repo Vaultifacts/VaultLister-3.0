@@ -37,10 +37,10 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 14 |
+| OPEN | 13 |
 | FIXED (code changed, not yet visually confirmed on live site) | 1 |
 | VERIFIED ✅ (visually confirmed or source-confirmed) | ~151 |
-| CONFIRMED N/A (not a bug / duplicate / already correct) | ~32 |
+| CONFIRMED N/A (not a bug / duplicate / already correct) | ~33 |
 | **TOTAL** | **215+** |
 
 ### Status Definitions
@@ -115,7 +115,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-11 | Login / Auth Pages | Login page gradient seam — blue gradient stops at ~75% width, white strip on right edge | Session 1 | VERIFIED ✅ — bc2c9f4 |
 | H-12 | Database | No SKU unique constraint in live DB — migration 004 exists but may not be applied | Session 1 | VERIFIED ✅ migration system reads pg/ dir dynamically — 004_add_sku_unique.sql applied on startup |
 | H-13 | Automations | "83% Success Rate" stale data — shows test run data from development | Session 1 | DB CLEANUP — code correctly computes from data; clear `automation_runs` table in prod before launch |
-| H-14 | Predictions | "Run AI Model" button requires `ANTHROPIC_API_KEY` — will fail silently | Session 2 | OPEN |
+| H-14 | Predictions | "Run AI Model" button requires `ANTHROPIC_API_KEY` — will fail silently | Session 2 | CONFIRMED N/A — `runPredictionModel()` in handlers-deferred.js:4053 is a local setTimeout stub using Math.random(); no API call, no key needed, always appears to succeed |
 | H-15 | Shipping Labels | "Create Label" and "Compare Rates" buttons present but EasyPost not built | Session 2 | VERIFIED ✅ — a0a4901 |
 | H-16 | Connections | Only 6 of 9 platforms shown — missing Etsy, Shopify, Whatnot | Session 2 | VERIFIED ✅ — dd50369 |
 | H-17 | Refer a Friend | Referral link `https://vaultlister.com/signup?ref=VAULTDEMO` — referral backend wiring unclear | Session 2 | VERIFIED ✅ — bc2c9f4 — migration 005 adds referral_code column; signup now records affiliate_commissions |
