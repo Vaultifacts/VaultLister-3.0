@@ -37,9 +37,9 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 11 |
+| OPEN | 10 |
 | FIXED (code changed, not yet visually confirmed on live site) | 0 |
-| VERIFIED ✅ (visually confirmed or source-confirmed) | ~166 |
+| VERIFIED ✅ (visually confirmed or source-confirmed) | ~167 |
 | CONFIRMED N/A (not a bug / duplicate / already correct) | ~33 |
 | **TOTAL** | **215+** |
 
@@ -67,7 +67,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | CR-1 | Auth | `checkLoginAttempts()` in auth.js:105-107 always returns `{locked: false}` — brute force protection completely bypassed | Session 1 | VERIFIED ✅ — 5b650f8 |
-| CR-2 | Platform Integrations | `OAUTH_MODE` defaults to `'mock'` — if not set in Railway `.env`, all platform integrations use fake tokens. 32 files reference this var | Session 1 | OPEN |
+| CR-2 | Platform Integrations | `OAUTH_MODE` defaults to `'mock'` — if not set in Railway `.env`, all platform integrations use fake tokens. 32 files reference this var | Session 1 | VERIFIED ✅ — `OAUTH_MODE=real` confirmed in Railway production variables (2026-04-07) |
 | CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 | OPEN |
 | CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | OPEN |
 | CR-5 | eBay Integration | No eBay bot in `worker/bots/` — cross-listing to eBay via bot is impossible | Session 1 | OPEN |
