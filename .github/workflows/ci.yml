@@ -710,7 +710,7 @@ jobs:
 
       - name: Check build size
         run: |
-          BUILD_SIZE=$(stat -c%s dist/app.js)
+          BUILD_SIZE=$(stat -c%s dist/core-bundle.js)
           MAX_SIZE=3145728
           echo "Build size: ${BUILD_SIZE} bytes ($(( BUILD_SIZE / 1024 )) KB)"
           echo "Threshold: ${MAX_SIZE} bytes (3 MB)"
