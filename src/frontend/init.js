@@ -1146,7 +1146,7 @@ handlers.showProrationCalculator = async function() {
                         <select id="proration-plan-select" class="form-select" onchange="handlers.showProrationCalculator()">
                             ${plans.filter(p => p.name !== currentPlan).map(plan => `
                                 <option value="${plan.name}" ${plan.name === selectedPlanName ? 'selected' : ''}>
-                                    ${escapeHtml(plan.display_name)} - $${plan.price}/month (${formatLimit(plan.limits?.listings)} listings)
+                                    ${escapeHtml(plan.display_name)} - C$${plan.price}/month (${formatLimit(plan.limits?.listings)} listings)
                                 </option>
                             `).join('')}
                         </select>
@@ -1163,15 +1163,15 @@ handlers.showProrationCalculator = async function() {
                         </div>
                         <div class="proration-detail-row" style="display: flex; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 4px;">
                             <span>Prorated Credit:</span>
-                            <strong style="color: var(--success);">-$${prorationCredit.toFixed(2)}</strong>
+                            <strong style="color: var(--success);">-C$${prorationCredit.toFixed(2)}</strong>
                         </div>
                         <div class="proration-detail-row" style="display: flex; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 4px;">
                             <span>New Plan Price:</span>
-                            <strong>$${newPrice.toFixed(2)}/month</strong>
+                            <strong>C$${newPrice.toFixed(2)}/month</strong>
                         </div>
                         <div class="proration-detail-row" style="display: flex; justify-content: space-between; padding: 12px; background: var(--primary-50); border-radius: 4px; border: 1px solid var(--primary-200);">
                             <span style="font-weight: 600;">Amount Due Today:</span>
-                            <strong style="color: var(--primary-600); font-size: 18px;">$${Math.max(0, amountDue).toFixed(2)}</strong>
+                            <strong style="color: var(--primary-600); font-size: 18px;">C$${Math.max(0, amountDue).toFixed(2)}</strong>
                         </div>
                     </div>
                 </div>
@@ -1207,7 +1207,7 @@ handlers.showPlanComparison = async function() {
         const currentPlan = store.state.user?.subscription_tier || 'free';
         const formatLimit = (val) => val === -1 ? 'Unlimited' : val;
         const features = [
-            { label: 'Monthly Price', getValue: (p) => `$${p.price}/mo` },
+            { label: 'Monthly Price', getValue: (p) => `C$${p.price}/mo` },
             { label: 'Active Listings', getValue: (p) => formatLimit(p.limits?.listings) },
             { label: 'Order Limit', getValue: (p) => formatLimit(p.limits?.orders) },
             { label: 'Storage', getValue: (p) => p.limits?.storage_mb >= 1000 ? `${(p.limits.storage_mb / 1000).toFixed(0)} GB` : `${p.limits?.storage_mb} MB` },
@@ -1314,7 +1314,7 @@ handlers.showTaxNexus = async function() {
                                 return `
                                     <tr style="border-bottom: 1px solid var(--gray-100); background: ${bgColor || ''};">
                                         <td style="padding: 12px; font-weight: 500;">${escapeHtml(row.state)}</td>
-                                        <td style="padding: 12px; text-align: right;">$${row.sales_total.toLocaleString()}</td>
+                                        <td style="padding: 12px; text-align: right;">C$${row.sales_total.toLocaleString()}</td>
                                         <td style="padding: 12px; text-align: right;">${row.transaction_count}</td>
                                         <td style="padding: 12px; text-align: center;">
                                             <span style="background: ${percent >= 95 ? '#fecaca' : percent >= 70 ? '#fcd34d' : '#dcfce7'}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">

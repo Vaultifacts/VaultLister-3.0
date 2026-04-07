@@ -3525,9 +3525,9 @@ const productCard = {
                         </div>
                     ` : ''}
                     <div class="product-card-price">
-                        <span class="product-card-price-current">$${product.price.toFixed(2)}</span>
+                        <span class="product-card-price-current">C$${product.price.toFixed(2)}</span>
                         ${hasDiscount ? `
-                            <span class="product-card-price-original">$${product.originalPrice.toFixed(2)}</span>
+                            <span class="product-card-price-original">C$${product.originalPrice.toFixed(2)}</span>
                             <span class="product-card-price-discount">-${discount}%</span>
                         ` : ''}
                     </div>
@@ -5589,7 +5589,7 @@ const revenueWidget = {
                     <div class="revenue-widget-title">Revenue</div>
                     <div class="revenue-widget-period">${period}</div>
                 </div>
-                <div class="revenue-widget-value">$${value.toLocaleString()}</div>
+                <div class="revenue-widget-value">C$${value.toLocaleString()}</div>
                 <div class="revenue-widget-change ${changeClass}">
                     ${components.icon(changeIcon, 14)}
                     ${change >= 0 ? '+' : ''}${change}%
@@ -5604,7 +5604,7 @@ const revenueWidget = {
                         ${comparisons.map(c => `
                             <div class="revenue-comparison-item">
                                 <div class="revenue-comparison-label">${c.label}</div>
-                                <div class="revenue-comparison-value">$${c.value.toLocaleString()}</div>
+                                <div class="revenue-comparison-value">C$${c.value.toLocaleString()}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -5735,7 +5735,7 @@ const activityStream = {
                 </div>
                 ${activity.amount ? `
                     <div class="activity-stream-amount ${activity.amount > 0 ? 'positive' : ''}">
-                        ${activity.amount > 0 ? '+' : ''}$${Math.abs(activity.amount).toFixed(2)}
+                        ${activity.amount > 0 ? '+' : ''}C$${Math.abs(activity.amount).toFixed(2)}
                     </div>
                 ` : ''}
             </div>
@@ -6325,7 +6325,7 @@ const priceRangeSlider = {
             minValue = 0,
             maxValue = 1000,
             step = 1,
-            format = (v) => `$${v}`,
+            format = (v) => `C$${v}`,
             onChange = null
         } = options;
 
@@ -7248,7 +7248,7 @@ const cartDrawer = {
                     <div class="cart-item-details">
                         <div class="cart-item-title">${item.title}</div>
                         <div class="cart-item-meta">${item.meta || ''}</div>
-                        <div class="cart-item-price">$${item.price.toFixed(2)}</div>
+                        <div class="cart-item-price">C$${item.price.toFixed(2)}</div>
                     </div>
                     <span class="cart-item-remove" onclick="cartDrawer.removeItem(${i})">
                         ${components.icon('x', 16)}
@@ -7259,7 +7259,7 @@ const cartDrawer = {
 
         const total = document.querySelector('.cart-summary-row.total span:last-child');
         if (total) {
-            total.textContent = `$${this.getTotal().toFixed(2)}`;
+            total.textContent = `C$${this.getTotal().toFixed(2)}`;
         }
 
         const countBadge = document.querySelector('.cart-drawer-count');

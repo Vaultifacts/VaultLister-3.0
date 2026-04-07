@@ -3526,9 +3526,9 @@ const productCard = {
                         </div>
                     ` : ''}
                     <div class="product-card-price">
-                        <span class="product-card-price-current">$${product.price.toFixed(2)}</span>
+                        <span class="product-card-price-current">C$${product.price.toFixed(2)}</span>
                         ${hasDiscount ? `
-                            <span class="product-card-price-original">$${product.originalPrice.toFixed(2)}</span>
+                            <span class="product-card-price-original">C$${product.originalPrice.toFixed(2)}</span>
                             <span class="product-card-price-discount">-${discount}%</span>
                         ` : ''}
                     </div>
@@ -5590,7 +5590,7 @@ const revenueWidget = {
                     <div class="revenue-widget-title">Revenue</div>
                     <div class="revenue-widget-period">${period}</div>
                 </div>
-                <div class="revenue-widget-value">$${value.toLocaleString()}</div>
+                <div class="revenue-widget-value">C$${value.toLocaleString()}</div>
                 <div class="revenue-widget-change ${changeClass}">
                     ${components.icon(changeIcon, 14)}
                     ${change >= 0 ? '+' : ''}${change}%
@@ -5605,7 +5605,7 @@ const revenueWidget = {
                         ${comparisons.map(c => `
                             <div class="revenue-comparison-item">
                                 <div class="revenue-comparison-label">${c.label}</div>
-                                <div class="revenue-comparison-value">$${c.value.toLocaleString()}</div>
+                                <div class="revenue-comparison-value">C$${c.value.toLocaleString()}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -5736,7 +5736,7 @@ const activityStream = {
                 </div>
                 ${activity.amount ? `
                     <div class="activity-stream-amount ${activity.amount > 0 ? 'positive' : ''}">
-                        ${activity.amount > 0 ? '+' : ''}$${Math.abs(activity.amount).toFixed(2)}
+                        ${activity.amount > 0 ? '+' : ''}C$${Math.abs(activity.amount).toFixed(2)}
                     </div>
                 ` : ''}
             </div>
@@ -6326,7 +6326,7 @@ const priceRangeSlider = {
             minValue = 0,
             maxValue = 1000,
             step = 1,
-            format = (v) => `$${v}`,
+            format = (v) => `C$${v}`,
             onChange = null
         } = options;
 
@@ -7249,7 +7249,7 @@ const cartDrawer = {
                     <div class="cart-item-details">
                         <div class="cart-item-title">${item.title}</div>
                         <div class="cart-item-meta">${item.meta || ''}</div>
-                        <div class="cart-item-price">$${item.price.toFixed(2)}</div>
+                        <div class="cart-item-price">C$${item.price.toFixed(2)}</div>
                     </div>
                     <span class="cart-item-remove" onclick="cartDrawer.removeItem(${i})">
                         ${components.icon('x', 16)}
@@ -7260,7 +7260,7 @@ const cartDrawer = {
 
         const total = document.querySelector('.cart-summary-row.total span:last-child');
         if (total) {
-            total.textContent = `$${this.getTotal().toFixed(2)}`;
+            total.textContent = `C$${this.getTotal().toFixed(2)}`;
         }
 
         const countBadge = document.querySelector('.cart-drawer-count');
@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '5e26f01d';
+    const v = '3b3f7231';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -28517,7 +28517,7 @@ handlers.showProrationCalculator = async function() {
                         <select id="proration-plan-select" class="form-select" onchange="handlers.showProrationCalculator()">
                             ${plans.filter(p => p.name !== currentPlan).map(plan => `
                                 <option value="${plan.name}" ${plan.name === selectedPlanName ? 'selected' : ''}>
-                                    ${escapeHtml(plan.display_name)} - $${plan.price}/month (${formatLimit(plan.limits?.listings)} listings)
+                                    ${escapeHtml(plan.display_name)} - C$${plan.price}/month (${formatLimit(plan.limits?.listings)} listings)
                                 </option>
                             `).join('')}
                         </select>
@@ -28534,15 +28534,15 @@ handlers.showProrationCalculator = async function() {
                         </div>
                         <div class="proration-detail-row" style="display: flex; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 4px;">
                             <span>Prorated Credit:</span>
-                            <strong style="color: var(--success);">-$${prorationCredit.toFixed(2)}</strong>
+                            <strong style="color: var(--success);">-C$${prorationCredit.toFixed(2)}</strong>
                         </div>
                         <div class="proration-detail-row" style="display: flex; justify-content: space-between; padding: 12px; background: var(--gray-50); border-radius: 4px;">
                             <span>New Plan Price:</span>
-                            <strong>$${newPrice.toFixed(2)}/month</strong>
+                            <strong>C$${newPrice.toFixed(2)}/month</strong>
                         </div>
                         <div class="proration-detail-row" style="display: flex; justify-content: space-between; padding: 12px; background: var(--primary-50); border-radius: 4px; border: 1px solid var(--primary-200);">
                             <span style="font-weight: 600;">Amount Due Today:</span>
-                            <strong style="color: var(--primary-600); font-size: 18px;">$${Math.max(0, amountDue).toFixed(2)}</strong>
+                            <strong style="color: var(--primary-600); font-size: 18px;">C$${Math.max(0, amountDue).toFixed(2)}</strong>
                         </div>
                     </div>
                 </div>
@@ -28578,7 +28578,7 @@ handlers.showPlanComparison = async function() {
         const currentPlan = store.state.user?.subscription_tier || 'free';
         const formatLimit = (val) => val === -1 ? 'Unlimited' : val;
         const features = [
-            { label: 'Monthly Price', getValue: (p) => `$${p.price}/mo` },
+            { label: 'Monthly Price', getValue: (p) => `C$${p.price}/mo` },
             { label: 'Active Listings', getValue: (p) => formatLimit(p.limits?.listings) },
             { label: 'Order Limit', getValue: (p) => formatLimit(p.limits?.orders) },
             { label: 'Storage', getValue: (p) => p.limits?.storage_mb >= 1000 ? `${(p.limits.storage_mb / 1000).toFixed(0)} GB` : `${p.limits?.storage_mb} MB` },
@@ -28685,7 +28685,7 @@ handlers.showTaxNexus = async function() {
                                 return `
                                     <tr style="border-bottom: 1px solid var(--gray-100); background: ${bgColor || ''};">
                                         <td style="padding: 12px; font-weight: 500;">${escapeHtml(row.state)}</td>
-                                        <td style="padding: 12px; text-align: right;">$${row.sales_total.toLocaleString()}</td>
+                                        <td style="padding: 12px; text-align: right;">C$${row.sales_total.toLocaleString()}</td>
                                         <td style="padding: 12px; text-align: right;">${row.transaction_count}</td>
                                         <td style="padding: 12px; text-align: center;">
                                             <span style="background: ${percent >= 95 ? '#fecaca' : percent >= 70 ? '#fcd34d' : '#dcfce7'}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">
