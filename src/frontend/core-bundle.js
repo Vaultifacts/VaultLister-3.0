@@ -14333,7 +14333,7 @@ const financialDashboardHeader = {
                     ${label}
                 </div>
                 <div class="financial-metric-value ${isPositive ? 'positive' : 'negative'}">
-                    ${value < 0 ? '-' : ''}$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ${value < 0 ? '-' : ''}C$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
                 ${change !== undefined ? `
                     <div class="financial-metric-change ${changeUp ? 'up' : 'down'}">
@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '13b75ed9';
+    const v = 'a2bdbfaa';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -18117,7 +18117,7 @@ const pages = {
                                 </svg>
                             </div>
                             <div class="today-stat-info">
-                                <span class="today-stat-value">$${todayRevenue.toLocaleString()}</span>
+                                <span class="today-stat-value">C$${todayRevenue.toLocaleString()}</span>
                                 <span class="today-stat-label">Today's Revenue</span>
                             </div>
                         </div>
@@ -18282,7 +18282,7 @@ const pages = {
                                         <span class="platform-perf-name">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
                                         <span class="platform-perf-stats">${data.sales} ${data.sales === 1 ? 'sale' : 'sales'}</span>
                                     </div>
-                                    <div class="platform-perf-revenue">$${data.revenue.toLocaleString()}</div>
+                                    <div class="platform-perf-revenue">C$${data.revenue.toLocaleString()}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -18972,21 +18972,21 @@ const pages = {
                                     <div class="mini-pnl-bar-track">
                                         <div class="mini-pnl-bar" style="width: ${(revenue / maxVal * 100).toFixed(1)}%; background: var(--success);"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: var(--success);">$${revenue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: var(--success);">C$${revenue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                                 </div>
                                 <div class="mini-pnl-row">
                                     <span class="mini-pnl-label">COGS</span>
                                     <div class="mini-pnl-bar-track">
                                         <div class="mini-pnl-bar" style="width: ${(cogs / maxVal * 100).toFixed(1)}%; background: var(--error);"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: var(--error);">-$${cogs.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: var(--error);">-C$${cogs.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                                 </div>
                                 <div class="mini-pnl-row">
                                     <span class="mini-pnl-label">Fees</span>
                                     <div class="mini-pnl-bar-track">
                                         <div class="mini-pnl-bar" style="width: ${(fees / maxVal * 100).toFixed(1)}%; background: var(--warning-500);"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: var(--warning-600);">-$${fees.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: var(--warning-600);">-C$${fees.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                                 </div>
                                 <div class="mini-pnl-divider"></div>
                                 <div class="mini-pnl-row mini-pnl-net">
@@ -18994,7 +18994,7 @@ const pages = {
                                     <div class="mini-pnl-bar-track">
                                         <div class="mini-pnl-bar" style="width: ${(Math.abs(net) / maxVal * 100).toFixed(1)}%; background: ${net >= 0 ? 'var(--primary-500)' : 'var(--error)'};"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: ${net >= 0 ? 'var(--primary-600)' : 'var(--error)'}; font-weight: 700;">$${net.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: ${net >= 0 ? 'var(--primary-600)' : 'var(--error)'}; font-weight: 700;">C$${net.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                                 </div>
                             </div>
                         </div>
@@ -22701,11 +22701,12 @@ const modals = {
                     <div style="display: grid; gap: 12px;">
                         ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot'].map(platform => {
                             const isLaunch = (window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot'])).has(platform);
+                            const displayName = {ebay:'eBay',poshmark:'Poshmark',mercari:'Mercari',depop:'Depop',grailed:'Grailed',etsy:'Etsy',shopify:'Shopify',facebook:'Facebook',whatnot:'Whatnot'}[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
                             return `
                             <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; ${isLaunch ? 'cursor: pointer;' : 'cursor: not-allowed; opacity: 0.55;'}" ${isLaunch ? '' : 'title="Coming soon"'}>
                                 <input type="checkbox" name="platforms" value="${platform}" ${isLaunch ? '' : 'disabled'}>
                                 ${components.platformBadge(platform)}
-                                <span style="flex: 1; font-weight: 500;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
+                                <span style="flex: 1; font-weight: 500;">${displayName}</span>
                                 ${isLaunch ? '' : '<span class="coming-soon-badge">Coming Soon</span>'}
                             </label>`;
                         }).join('')}
@@ -23085,13 +23086,15 @@ const modals = {
                     <div class="mb-6">
                         <label class="form-label">Select Platforms</label>
                         <div class="grid grid-cols-3 gap-3">
-                            ${['poshmark', 'ebay', 'depop', 'whatnot', 'facebook'].map(platform => `
+                            ${['poshmark', 'ebay', 'depop', 'whatnot', 'facebook'].map(platform => {
+                                const name = {ebay:'eBay',poshmark:'Poshmark',depop:'Depop',whatnot:'Whatnot',facebook:'Facebook'}[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
+                                return `
                                 <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style="border-color: var(--gray-200)">
                                     <input type="checkbox" class="platform-checkbox" name="platforms" value="${platform}">
                                     ${components.platformBadge(platform)}
-                                    <span class="font-medium">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                                </label>
-                            `).join('')}
+                                    <span class="font-medium">${name}</span>
+                                </label>`;
+                            }).join('')}
                         </div>
                     </div>
 

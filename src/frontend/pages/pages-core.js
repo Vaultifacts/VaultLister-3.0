@@ -273,7 +273,7 @@ const pages = {
                                 </svg>
                             </div>
                             <div class="today-stat-info">
-                                <span class="today-stat-value">$${todayRevenue.toLocaleString()}</span>
+                                <span class="today-stat-value">C$${todayRevenue.toLocaleString()}</span>
                                 <span class="today-stat-label">Today's Revenue</span>
                             </div>
                         </div>
@@ -438,7 +438,7 @@ const pages = {
                                         <span class="platform-perf-name">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
                                         <span class="platform-perf-stats">${data.sales} ${data.sales === 1 ? 'sale' : 'sales'}</span>
                                     </div>
-                                    <div class="platform-perf-revenue">$${data.revenue.toLocaleString()}</div>
+                                    <div class="platform-perf-revenue">C$${data.revenue.toLocaleString()}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -1128,21 +1128,21 @@ const pages = {
                                     <div class="mini-pnl-bar-track">
                                         <div class="mini-pnl-bar" style="width: ${(revenue / maxVal * 100).toFixed(1)}%; background: var(--success);"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: var(--success);">$${revenue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: var(--success);">C$${revenue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                                 </div>
                                 <div class="mini-pnl-row">
                                     <span class="mini-pnl-label">COGS</span>
                                     <div class="mini-pnl-bar-track">
                                         <div class="mini-pnl-bar" style="width: ${(cogs / maxVal * 100).toFixed(1)}%; background: var(--error);"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: var(--error);">-$${cogs.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: var(--error);">-C$${cogs.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                                 </div>
                                 <div class="mini-pnl-row">
                                     <span class="mini-pnl-label">Fees</span>
                                     <div class="mini-pnl-bar-track">
                                         <div class="mini-pnl-bar" style="width: ${(fees / maxVal * 100).toFixed(1)}%; background: var(--warning-500);"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: var(--warning-600);">-$${fees.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: var(--warning-600);">-C$${fees.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                                 </div>
                                 <div class="mini-pnl-divider"></div>
                                 <div class="mini-pnl-row mini-pnl-net">
@@ -1150,7 +1150,7 @@ const pages = {
                                     <div class="mini-pnl-bar-track">
                                         <div class="mini-pnl-bar" style="width: ${(Math.abs(net) / maxVal * 100).toFixed(1)}%; background: ${net >= 0 ? 'var(--primary-500)' : 'var(--error)'};"></div>
                                     </div>
-                                    <span class="mini-pnl-value" style="color: ${net >= 0 ? 'var(--primary-600)' : 'var(--error)'}; font-weight: 700;">$${net.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                    <span class="mini-pnl-value" style="color: ${net >= 0 ? 'var(--primary-600)' : 'var(--error)'}; font-weight: 700;">C$${net.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                                 </div>
                             </div>
                         </div>

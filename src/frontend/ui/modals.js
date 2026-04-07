@@ -1077,11 +1077,12 @@ const modals = {
                     <div style="display: grid; gap: 12px;">
                         ${['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'etsy', 'shopify', 'facebook', 'whatnot'].map(platform => {
                             const isLaunch = (window.LAUNCH_PLATFORMS || new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot'])).has(platform);
+                            const displayName = {ebay:'eBay',poshmark:'Poshmark',mercari:'Mercari',depop:'Depop',grailed:'Grailed',etsy:'Etsy',shopify:'Shopify',facebook:'Facebook',whatnot:'Whatnot'}[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
                             return `
                             <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; ${isLaunch ? 'cursor: pointer;' : 'cursor: not-allowed; opacity: 0.55;'}" ${isLaunch ? '' : 'title="Coming soon"'}>
                                 <input type="checkbox" name="platforms" value="${platform}" ${isLaunch ? '' : 'disabled'}>
                                 ${components.platformBadge(platform)}
-                                <span style="flex: 1; font-weight: 500;">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
+                                <span style="flex: 1; font-weight: 500;">${displayName}</span>
                                 ${isLaunch ? '' : '<span class="coming-soon-badge">Coming Soon</span>'}
                             </label>`;
                         }).join('')}
@@ -1461,13 +1462,15 @@ const modals = {
                     <div class="mb-6">
                         <label class="form-label">Select Platforms</label>
                         <div class="grid grid-cols-3 gap-3">
-                            ${['poshmark', 'ebay', 'depop', 'whatnot', 'facebook'].map(platform => `
+                            ${['poshmark', 'ebay', 'depop', 'whatnot', 'facebook'].map(platform => {
+                                const name = {ebay:'eBay',poshmark:'Poshmark',depop:'Depop',whatnot:'Whatnot',facebook:'Facebook'}[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
+                                return `
                                 <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors" style="border-color: var(--gray-200)">
                                     <input type="checkbox" class="platform-checkbox" name="platforms" value="${platform}">
                                     ${components.platformBadge(platform)}
-                                    <span class="font-medium">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
-                                </label>
-                            `).join('')}
+                                    <span class="font-medium">${name}</span>
+                                </label>`;
+                            }).join('')}
                         </div>
                     </div>
 

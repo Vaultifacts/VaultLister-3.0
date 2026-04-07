@@ -5555,7 +5555,7 @@ const financialDashboardHeader = {
                     ${label}
                 </div>
                 <div class="financial-metric-value ${isPositive ? 'positive' : 'negative'}">
-                    ${value < 0 ? '-' : ''}$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ${value < 0 ? '-' : ''}C$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
                 ${change !== undefined ? `
                     <div class="financial-metric-change ${changeUp ? 'up' : 'down'}">

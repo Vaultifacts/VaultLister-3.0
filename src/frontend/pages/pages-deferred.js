@@ -912,6 +912,7 @@ Object.assign(pages, {
                                 <option value="depop" ${platformFilter === 'depop' ? 'selected' : ''}>Ⓓ Depop</option>
                                 <option value="grailed" ${platformFilter === 'grailed' ? 'selected' : ''}>Ⓖ Grailed</option>
                                 <option value="facebook" ${platformFilter === 'facebook' ? 'selected' : ''}>Ⓕ Facebook</option>
+                                <option value="whatnot" ${platformFilter === 'whatnot' ? 'selected' : ''}>⬡ Whatnot</option>
                             </select>
                         </div>
                         <div style="margin-left: auto;">

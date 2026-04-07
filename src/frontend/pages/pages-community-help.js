@@ -3009,7 +3009,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Your Impact</h3>
-                        <span class="badge badge-success">Contributor</span>
+                        ${userImpact.feedbackSubmitted > 0 ? '<span class="badge badge-success">Contributor</span>' : ''}
                     </div>
                     <div class="card-body">
                         <div class="your-impact-stats">

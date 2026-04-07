@@ -2129,14 +2129,14 @@ Object.assign(handlers, {
                 <div class="daily-summary-revenue">
                     <div class="revenue-main">
                         <div class="revenue-label">Today's Revenue</div>
-                        <div class="revenue-value">$${todayRevenue.toFixed(2)}</div>
+                        <div class="revenue-value">C$${todayRevenue.toFixed(2)}</div>
                         <div class="revenue-change ${revenueChange >= 0 ? 'positive' : 'negative'}">
                             ${revenueChange >= 0 ? '↑' : '↓'} ${Math.abs(revenueChange).toFixed(1)}% vs yesterday
                         </div>
                     </div>
                     <div class="revenue-profit">
                         <div class="profit-label">Net Profit</div>
-                        <div class="profit-value ${todayProfit >= 0 ? 'positive' : 'negative'}">$${todayProfit.toFixed(2)}</div>
+                        <div class="profit-value ${todayProfit >= 0 ? 'positive' : 'negative'}">C$${todayProfit.toFixed(2)}</div>
                     </div>
                 </div>
 
