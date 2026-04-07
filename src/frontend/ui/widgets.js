@@ -6206,7 +6206,7 @@ const supplierCardEnhanced = {
 // Market Trends Radar
 const marketTrendsRadar = {
     render(data) {
-        const categories = data.categories || ['Fashion', 'Electronics', 'Home', 'Sports', 'Vintage'];
+        const categories = data.categories || ['Fashion', 'Tech', 'Home', 'Sports', 'Vintage'];
         const values = data.values || [0.8, 0.6, 0.7, 0.5, 0.9];
         const centerX = 100, centerY = 100, radius = 80;
         const angleStep = (2 * Math.PI) / categories.length;

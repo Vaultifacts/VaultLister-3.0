@@ -14984,7 +14984,7 @@ const supplierCardEnhanced = {
 // Market Trends Radar
 const marketTrendsRadar = {
     render(data) {
-        const categories = data.categories || ['Fashion', 'Electronics', 'Home', 'Sports', 'Vintage'];
+        const categories = data.categories || ['Fashion', 'Tech', 'Home', 'Sports', 'Vintage'];
         const values = data.values || [0.8, 0.6, 0.7, 0.5, 0.9];
         const centerX = 100, centerY = 100, radius = 80;
         const angleStep = (2 * Math.PI) / categories.length;
@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a2bdbfaa';
+    const v = 'f98b3341';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
