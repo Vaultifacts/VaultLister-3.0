@@ -37,8 +37,8 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 
 | Status | Count |
 |--------|-------|
-| OPEN | 197 |
-| FIXED (with commit) | 17 |
+| OPEN | 186 |
+| FIXED (with commit) | 28 |
 | **TOTAL** | **214** |
 
 ---
@@ -89,12 +89,12 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| H-1 | App-wide | 100+ `Math.random()` fallbacks in app.js — fake health scores, prices, percentages throughout if data is missing | Session 1 | OPEN |
+| H-1 | App-wide | 100+ `Math.random()` fallbacks in app.js — fake health scores, prices, percentages throughout if data is missing | Session 1 | VERIFIED ✅ — b3c5358 |
 | H-2 | Dashboard / Orders / Offers / Financials / Analytics | All dollar amounts show "$" not "C$" — global currency localization missing for Canadian launch | Session 1 | VERIFIED ✅ — 2c6b7df |
 | H-3 | My Shops | Mercari/Grailed/Etsy/Shopify show active "Connect" buttons — should be "Coming Soon" for post-launch platforms | Session 1 | VERIFIED ✅ — d81cb79 |
 | H-4 | Orders | Shipping Labels button enabled but EasyPost not built — clicking will fail | Session 1 | VERIFIED ✅ — 1f0f44f |
 | H-5 | Settings | "Enable 2FA" button — STATUS.md marks as Fail *(See also: #174 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — eb9e086 |
-| H-6 | Dashboard | Massive empty space on scroll — scrolling past dashboard widgets shows huge white void with sidebar detached | Session 1 | OPEN |
+| H-6 | Dashboard | Massive empty space on scroll — scrolling past dashboard widgets shows huge white void with sidebar detached | Session 1 | VERIFIED ✅ — e097efa |
 | H-7 | Automations | "Est. at $30/hr" rate hardcoded — should be C$ and user-configurable | Session 1 | VERIFIED ✅ — eb9e086 |
 | H-8 | Plans & Billing | Pricing shows USD ($19/$49) not CAD — plans page uses US pricing for Canadian launch *(See also: #175 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ f2390bf |
 | H-9 | Plans & Billing | "Upgrade to Premium" (top button) vs "Upgrade to Pro" (plan cards) — naming inconsistency *(See also: #176 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — bc2c9f4 |
@@ -119,7 +119,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-28 | Responsive | Sidebar doesn't collapse on mobile viewport — no hamburger menu visible | Session 4 | VERIFIED ✅ — bc2c9f4 — added display:none default + show at ≤1024px breakpoint |
 | #123 | Community | `modals.viewPost()` crashes: "Cannot read properties of undefined (reading 'find')" — community post viewing broken | Session 5 | VERIFIED ✅ — 192b485 |
 | #125 | Support Tickets | `modals.viewTicket()` crashes: "Cannot read properties of undefined (reading 'length')" — support ticket viewing broken | Session 5 | VERIFIED ✅ — 192b485 |
-| #126 | Cross-list Modal | Cross-list modal shows Etsy/Mercari/Grailed as active — for Canada launch only eBay, Poshmark, Facebook, Depop, Whatnot should be active | Session 5 | OPEN |
+| #126 | Cross-list Modal | Cross-list modal shows Etsy/Mercari/Grailed as active — for Canada launch only eBay, Poshmark, Facebook, Depop, Whatnot should be active | Session 5 | VERIFIED ✅ — e097efa |
 | #131 | Confirm Dialogs | `modals.confirm()` — danger button invisible in light mode. `btn-danger` has transparent background (`--red-600`/`--error` CSS variable not resolving). Affects all delete confirmations | Session 5 | VERIFIED ✅ — aca307f — replaced undefined --red-600/--red-700 with --error-600/--error-700 |
 | #136 | Privacy Policy (in-app) | In-app Privacy Policy contains "Your inventory, listings, and sales data never leave your device unless you explicitly share them" and "Data is not uploaded to any cloud servers without your consent" — factually false for a Railway-hosted cloud SaaS where ALL data is uploaded to cloud servers by design. Legal/trust risk: users may argue they were misled about data storage | Session 5 (Session 4 dark mode) | VERIFIED ✅ — aca307f — replaced with accurate cloud storage statements |
 | #141 | Inventory | Add Item success triggers "undefined" content in main area — router navigates post-submit but target page function returns undefined. Page crashes after every successful item add | Session 6 | VERIFIED ✅ — aca307f — changed pages.inventory() to window.pages.inventory() (Bun chunk shim fix) |
@@ -128,7 +128,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | #148 | Inventory | Inventory search bar fires error toast on any input — even with valid 200 API response | Session 6 | VERIFIED ✅ — aca307f — re-render wrapped in separate try-catch so render errors don't show "Search failed" toast |
 | #152 | Dashboard | Log Sale crashes: "Failed to log sale: Cannot read properties of undefined (reading 'get')" — same `db.get()` crash as #150 | Session 7 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
 | #153 | Orders | Orders Sync crashes: fires success toast then immediate failure: "Cannot read properties of undefined (reading 'get')" | Session 7 | Needs re-test — mock tests pass; likely resolved by Bun chunk shim fix (aca307f) |
-| #154 | Automations | Export button fires 4+ simultaneous "Export failed" error toasts — no CSV/JSON produced | Session 7 | OPEN |
+| #154 | Automations | Export button fires 4+ simultaneous "Export failed" error toasts — no CSV/JSON produced | Session 7 | VERIFIED ✅ — e097efa |
 | #158 | Reports | Create Report buttons silently do nothing — no modal, no toast, no navigation *(See also: #173 — same issue, discovered independently)* | Session 8 | VERIFIED ✅ — 07338ae |
 | #170 | My Shops | All Connect modals pre-fill username with hardcoded "demo@vaultlister.com" — users must manually clear field | Session 11 | OPEN |
 | #172 | Calendar | Calendar "Today" and "Week" buttons crash: `ReferenceError: date is not defined` — same stale bundle as #171 | Session 11 | VERIFIED ✅ — 07338ae |
@@ -157,14 +157,14 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-5 | Analytics | "Consider optimizing costs" advice shown with no data — irrelevant for empty-state users | Session 1 | OPEN |
 | M-6 | Analytics | "Profit margin below target (15%)" warning shown with no sales data | Session 1 | OPEN |
 | M-7 | Analytics / Dashboard | Green "0.0%" up arrows on empty data — KPI cards show green arrow with no prior data to compare | Session 1 | OPEN |
-| M-8 | Settings | Timezone defaults to Eastern, not user's timezone — should auto-detect or default to MST for Calgary launch | Session 1 | OPEN |
+| M-8 | Settings | Timezone defaults to Eastern, not user's timezone — should auto-detect or default to MST for Calgary launch | Session 1 | VERIFIED ✅ — e097efa |
 | M-9 | Orders | "More" button truncated to "Mo..." at right edge | Session 1 | OPEN |
 | M-10 | Market Intel | "Your items: 89" hardcoded — should reflect actual inventory count | Session 1 | OPEN |
 | M-11 | Dashboard | "$2,000 goal" hardcoded Monthly Goal — should be user-set or hidden until set | Session 1 | OPEN |
 | M-12 | Help | Keyboard shortcut shows ⌘K (Mac) on Windows | Session 1 | OPEN |
 | M-13 | Image Bank | "5.00 GB free" — unclear if this is actual R2 limit or hardcoded | Session 1 | OPEN |
 | M-14 | Plans | "Cross-list to 3 platforms" on Free plan confusing — only 5 available at launch; Pro says "all 9" but 4 are Coming Soon | Session 1 | OPEN |
-| M-15 | Register / Login | Sidebar visible on register/login page — should be hidden for unauthenticated views | Session 2 | OPEN |
+| M-15 | Register / Login | Sidebar visible on register/login page — should be hidden for unauthenticated views | Session 2 | CONFIRMED N/A — login/register use render() not renderApp(); sidebar not rendered |
 | M-16 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST | Session 2 | OPEN |
 | M-17 | Transactions | "$0 / $999" filter defaults shown in USD | Session 2 | OPEN |
 | M-18 | Transactions | "All Categorie" dropdown text truncated — missing 's' | Session 2 | OPEN |
@@ -187,20 +187,20 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-35 | Batch Photo | "Remove Background" and "AI Upscale" require AI backend — unclear error handling | Session 3 | OPEN |
 | M-36 | Privacy (in-app) | "GDPR Compliant" claim — Canada uses PIPEDA, not GDPR. Legal risk | Session 3 | OPEN |
 | M-37 | Calendar (dark) | "Month" view button invisible — white text on white bg in active state in dark mode | Session 4 | OPEN |
-| M-38 | Responsive | 34 mobile breakpoints in CSS but mobile bottom nav absent | Session 4 | OPEN |
+| M-38 | Responsive | 34 mobile breakpoints in CSS but mobile bottom nav absent | Session 4 | CONFIRMED N/A — mobileUI.renderBottomNav() already called in renderApp(); CSS gates to ≤768px |
 | M-39 | Privacy (in-app) | Claims "GDPR Compliant" — Canada uses PIPEDA. Legal risk (duplicate of M-36) | Session 4 | OPEN |
 | #122 | Templates | `modals.editTemplate()` silent failure — returns without error but no modal opens outside Templates page context | Session 5 | OPEN |
 | #124 | Help Articles | `modals.viewArticle()` fails to open — modal immediately closes or renders in wrong DOM target | Session 5 | OPEN |
-| #133 | Support Tickets (reportBug) | Ticket card displays "undefined" text in a metadata field (likely priority or assignee) — null-guard missing in ticket card rendering function. Any support ticket shown to users will display "undefined" — looks broken and unprofessional | Session 5 (Session 4 dark mode) | OPEN |
+| #133 | Support Tickets (reportBug) | Ticket card displays "undefined" text in a metadata field (likely priority or assignee) — null-guard missing in ticket card rendering function. Any support ticket shown to users will display "undefined" — looks broken and unprofessional | Session 5 (Session 4 dark mode) | VERIFIED ✅ — e097efa |
 | #129 | Whatnot | `modals.viewWhatnotEvent()` — 3 data bugs: "Invalid Date" start time, "undefined" status badge, blank event title in modal header | Session 5 | OPEN |
 | #142 | Add Transaction | Empty submit shows no validation error — `required` fields but no `<form>` element; state-controlled form bypasses HTML5 validation | Session 6 | OPEN |
 | #143b | Add Transaction | No success feedback on submit — modal closes silently, no toast, no confirmation, no page update | Session 6 | OPEN |
 | #145 | Community | Create Post modal: empty submit shows no validation — required Title/Content fields with no `<form>` wrapper | Session 6 | OPEN |
 | #146 | Calendar | Add Event modal: empty submit shows no validation — required Event Title field with no `<form>` wrapper | Session 6 | OPEN |
-| #147 | Global Search | Search bar in top nav non-functional — typing produces no results, no dropdown, pressing Enter has no effect | Session 6 | OPEN |
+| #147 | Global Search | Search bar in top nav non-functional — typing produces no results, no dropdown, pressing Enter has no effect | Session 6 | VERIFIED ✅ — e097efa |
 | #149 | Shipping Calculator | Shows USPS carriers with imperial units (lbs/inches) — app targets Canadian sellers, should show Canada Post/Chitchats/Purolator with kg/cm and CAD | Session 6 | VERIFIED ✅ — 23a4729 |
 | #155 | Listings / Fee Calculator | Platform Fee Calculator shows wrong platforms — includes Mercari/Etsy (not at launch), missing Whatnot (IS at launch) | Session 7 | OPEN |
-| #159 | Vault Buddy | Vault Buddy auto-opens on every page render — `renderApp()` triggers panel open automatically on every page load; fires "Failed to load conversations" error toast each time | Session 8 | OPEN |
+| #159 | Vault Buddy | Vault Buddy auto-opens on every page render — `renderApp()` triggers panel open automatically on every page load; fires "Failed to load conversations" error toast each time | Session 8 | VERIFIED ✅ — e097efa |
 | #164 | Listings / Fee Calculator | Platform Fee Calculator uses "$" not "C$", includes Etsy fees (not a launch platform) | Session 10 | OPEN |
 | #165 | Automations | "Calendar" toolbar button calls `handlers.showScheduleCalendar()` — no modal opens, no output | Session 10 | OPEN |
 | #166 | Automations | "Performance" toolbar button calls `handlers.showAutomationPerformance()` — no modal opens, no output | Session 10 | OPEN |
@@ -341,10 +341,10 @@ Discovered by automated source code scan of `src/`, `worker/bots/` (excluding le
 
 | ID | File:Line | Issue | Code Reference | Status |
 |----|-----------|-------|----------------|--------|
-| CA-M-1 | `src/backend/workers/taskWorker.js:1160,1162` | Mercari/Grailed case statements active — should be feature-gated for post-launch | `case 'mercari': return await executeMercariBot(...)` | OPEN |
-| CA-M-2 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics use `Math.random()` fallback — fake health/accuracy/delivery/quality scores on prod if data is missing | `Math.floor(Math.random() * 30) + 70` | OPEN |
+| CA-M-1 | `src/backend/workers/taskWorker.js:1160,1162` | Mercari/Grailed case statements active — should be feature-gated for post-launch | `case 'mercari': return await executeMercariBot(...)` | VERIFIED ✅ — e097efa |
+| CA-M-2 | `src/frontend/ui/widgets.js:6132,6138,6139,6140` | Supplier metrics use `Math.random()` fallback — fake health/accuracy/delivery/quality scores on prod if data is missing | `Math.floor(Math.random() * 30) + 70` | VERIFIED ✅ — e097efa |
 | CA-M-3 | `src/frontend/handlers/handlers-tools-tasks.js:344` | Tag randomization uses `Math.random()` | `sort(() => 0.5 - Math.random())` | OPEN |
-| CA-M-4 | `src/frontend/core/utils.js:11-20` | `SUPPORTED_PLATFORMS` lists all 9 platforms — Canada launch = 5 only. **Fix:** Create `LAUNCH_PLATFORMS` filter constant. | Lists poshmark, ebay, mercari, depop, grailed, etsy, shopify, facebook, whatnot | OPEN |
+| CA-M-4 | `src/frontend/core/utils.js:11-20` | `SUPPORTED_PLATFORMS` lists all 9 platforms — Canada launch = 5 only. **Fix:** Create `LAUNCH_PLATFORMS` filter constant. | Lists poshmark, ebay, mercari, depop, grailed, etsy, shopify, facebook, whatnot | VERIFIED ✅ — e097efa |
 | CA-M-5 | `src/frontend/handlers/handlers-tools-tasks.js:3803` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | OPEN |
 | CA-M-6 | `src/frontend/handlers/handlers-deferred.js:21168` | Comment says "6 platform presets" — stale | `// 6 platform-specific presets` | OPEN |
 | CA-M-7 | `src/frontend/pages/pages-intelligence.js:1826,1914` | "Coming soon" toast messages in production pages | `toast.info('...coming soon.')` | OPEN |
