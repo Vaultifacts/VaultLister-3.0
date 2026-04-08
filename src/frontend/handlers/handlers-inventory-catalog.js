@@ -2106,7 +2106,7 @@ Object.assign(handlers, {
         const params = new URLSearchParams();
 
         // Add all active filters to params
-        Object.entries(store.state.activeFilters).forEach(([column, value]) => {
+        Object.entries(store.state.activeFilters || {}).forEach(([column, value]) => {
             params.append(column, value);
         });
 
@@ -2167,7 +2167,7 @@ Object.assign(handlers, {
         const container = document.getElementById('active-filters-list');
         if (!container) return;
 
-        const activeFilters = store.state.activeFilters;
+        const activeFilters = store.state.activeFilters || {};
         if (Object.keys(activeFilters).length === 0) {
             container.innerHTML = sanitizeHTML('<div style="font-size: 12px; color: var(--gray-500); padding: 8px;">No active filters</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             return;
@@ -4413,12 +4413,33 @@ Object.assign(handlers, {
             .sort((a, b) => b.count - a.count)
             .slice(0, 10);
 
-        // Check current inventory for these items
+        // Also include inventory items explicitly flagged as needing restock
+        const flaggedItems = inventory.filter(i => {
+            const ss = (i.stock_status || '').toLowerCase();
+            return ss.includes('low') || ss.includes('reorder') || ss === 'out of stock';
+        });
+        flaggedItems.forEach(i => {
+            const title = i.title || i.name || 'Unknown';
+            if (!restockSuggestions.find(r => r.title === title)) {
+                restockSuggestions.push({
+                    title,
+                    count: 0,
+                    revenue: 0,
+                    avgPrice: parseFloat(i.price) || 0,
+                    lastSold: null,
+                    currentStock: parseInt(i.quantity) || 0
+                });
+            }
+        });
+
+        // Check current inventory for sales-based items
         restockSuggestions.forEach(item => {
-            const inStock = inventory.filter(i =>
-                (i.title || i.name || '').toLowerCase().includes(item.title.toLowerCase().split(' ')[0])
-            ).reduce((sum, i) => sum + (parseInt(i.quantity) || 1), 0);
-            item.currentStock = inStock;
+            if (item.currentStock === undefined) {
+                const inStock = inventory.filter(i =>
+                    (i.title || i.name || '').toLowerCase().includes(item.title.toLowerCase().split(' ')[0])
+                ).reduce((sum, i) => sum + (parseInt(i.quantity) || 1), 0);
+                item.currentStock = inStock;
+            }
         });
 
         modals.show(`
@@ -4829,7 +4850,7 @@ Object.assign(handlers, {
                             placeholder="Search by SKU, title, or barcode..."
                             oninput="handlers.performQuickLookup(this.value)"
                             autofocus>
-                        <div class="lookup-hint">Type at least 2 characters to search</div>
+                        <div class="lookup-hint">Start typing to search</div>
                     </div>
                     <div id="quick-lookup-results" class="lookup-results">
                         <!-- Results appear here -->
@@ -4846,8 +4867,8 @@ Object.assign(handlers, {
         const resultsEl = document.getElementById('quick-lookup-results');
         if (!resultsEl) return;
 
-        if (query.length < 2) {
-            resultsEl.innerHTML = sanitizeHTML('<div class="lookup-empty">Enter at least 2 characters</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        if (query.length < 1) {
+            resultsEl.innerHTML = sanitizeHTML('<div class="lookup-empty">Start typing to search</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             return;
         }
 

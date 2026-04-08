@@ -8866,7 +8866,7 @@ const globalSearch = {
             { id: 'dashboard', label: 'Dashboard', section: 'Sell', icon: 'dashboard' },
             { id: 'inventory', label: 'Inventory', section: 'Sell', icon: 'inventory' },
             { id: 'listings', label: 'Listings', section: 'Sell', icon: 'list' },
-            { id: 'orders-sales', label: 'Orders & Sales', section: 'Sell', icon: 'sales' },
+            { id: 'orders-sales', label: 'Offers, Orders, & Shipping', section: 'Sell', icon: 'sales' },
             { id: 'offers', label: 'Offers', section: 'Sell', icon: 'offers' },
             { id: 'automations', label: 'Automations', section: 'Manage', icon: 'automation' },
             { id: 'financials', label: 'Financials', section: 'Manage', icon: 'dollar' },
@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '32f09e30';
+    const v = '8575e5ed';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16050,7 +16050,7 @@ const components = {
             { section: 'Sell', items: [
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
                 { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
-                { id: 'orders-sales', label: 'Orders & Sales', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
+                { id: 'orders-sales', label: 'Offers, Orders, & Shipping', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
                 { id: 'offers', label: 'Offers', icon: 'offers', badge: store.state.offers.filter(o => o.status === 'pending').length || null }
             ]},
             { section: 'Manage', items: [
@@ -16558,7 +16558,7 @@ const components = {
             'inventory': { label: 'Inventory', section: 'Sell' },
             'listings': { label: 'Listings', section: 'Sell' },
             'orders': { label: 'Orders', section: 'Sell' },
-            'orders-sales': { label: 'Orders & Sales', section: 'Sell' },
+            'orders-sales': { label: 'Offers, Orders, & Shipping', section: 'Sell' },
             'offers': { label: 'Offers', section: 'Sell' },
             'automations': { label: 'Automations', section: 'Manage' },
             'checklist': { label: 'Checklist', section: 'Manage' },
@@ -20084,7 +20084,7 @@ const pages = {
                         ${components.icon('sun', 16)} Seasons
                     </button>
                     <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                        <button aria-haspopup="menu" class="btn btn-secondary">
+                        <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>
                         <div class="dropdown-menu" style="right: 0; min-width: 160px;">
@@ -20266,25 +20266,28 @@ const pages = {
 
             <!-- Sales Funnel & Goal Tracker -->
             <div class="grid grid-cols-3 gap-6 mb-6">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('filter', 18)} Sales Funnel</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${salesFunnelVertical.render(funnelStages)}
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('clock', 18)} Activity by Time</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${timeHeatmap.render(heatmapData)}
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('target', 18)} Goal Progress</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${goalTrackerWidget.render(revenueGoal)}

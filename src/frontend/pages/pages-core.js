@@ -2240,7 +2240,7 @@ const pages = {
                         ${components.icon('sun', 16)} Seasons
                     </button>
                     <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                        <button aria-haspopup="menu" class="btn btn-secondary">
+                        <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('more-horizontal', 16)} More
                         </button>
                         <div class="dropdown-menu" style="right: 0; min-width: 160px;">
@@ -2422,25 +2422,28 @@ const pages = {
 
             <!-- Sales Funnel & Goal Tracker -->
             <div class="grid grid-cols-3 gap-6 mb-6">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('filter', 18)} Sales Funnel</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${salesFunnelVertical.render(funnelStages)}
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('clock', 18)} Activity by Time</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${timeHeatmap.render(heatmapData)}
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('target', 18)} Goal Progress</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${goalTrackerWidget.render(revenueGoal)}

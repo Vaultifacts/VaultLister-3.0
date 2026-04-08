@@ -509,20 +509,20 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showCreateListingFolder()">
                             ${components.icon('folder', 16)} New Folder
                         </button>
-                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div class="dropdown">
                             <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
                             <div class="dropdown-menu" style="min-width: 220px; right: 0;">
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showImportFromMarketplace()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); modals.chooseListingMode()">
                                     ${components.icon('plus', 16)} Create New
                                 </button>
                                 <div class="dropdown-divider"></div>
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showCSVImport()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showCSVImport()">
                                     ${components.icon('upload', 16)} Import from CSV
                                 </button>
                             </div>
@@ -550,20 +550,20 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showCreateListingFolder()">
                             ${components.icon('folder', 16)} New Folder
                         </button>
-                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div class="dropdown">
                             <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
                             <div class="dropdown-menu" style="min-width: 220px; right: 0;">
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showImportFromMarketplace()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); modals.chooseListingMode()">
                                     ${components.icon('plus', 16)} Create New
                                 </button>
                                 <div class="dropdown-divider"></div>
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showCSVImport()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showCSVImport()">
                                     ${components.icon('upload', 16)} Import from CSV
                                 </button>
                             </div>
@@ -736,13 +736,13 @@ Object.assign(pages, {
                 <ol style="display: flex; align-items: center; gap: 6px; list-style: none; padding: 0; margin: 0; font-size: 13px;">
                     <li>
                         <a href="#" onclick="router.navigate('dashboard'); return false;" style="color: var(--gray-500); text-decoration: none;">
-                            ${components.icon('home', 14)} Home
+                            ${components.icon('home', 14)} Dashboard
                         </a>
                     </li>
                     <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
                     <li>
                         <a href="#" onclick="handlers.switchListingsTab('listings'); return false;" style="color: ${currentListingsTab === 'listings' ? 'var(--primary-600)' : 'var(--gray-500)'}; text-decoration: none; font-weight: ${currentListingsTab === 'listings' ? '600' : '400'};">
-                            My Listings
+                            Listings
                         </a>
                     </li>
                     ${currentListingsTab !== 'listings' ? `
@@ -777,20 +777,20 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showPlatformFeeCalculator()" title="Platform Fee Calculator">
                             ${components.icon('percent', 16)} Fees
                         </button>
-                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div class="dropdown">
                             <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
                             <div class="dropdown-menu" style="min-width: 220px; right: 0;">
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showImportFromMarketplace()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); modals.chooseListingMode()">
                                     ${components.icon('plus', 16)} Create New
                                 </button>
                                 <div class="dropdown-divider"></div>
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showCSVImport()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showCSVImport()">
                                     ${components.icon('upload', 16)} Import from CSV
                                 </button>
                             </div>
@@ -800,13 +800,19 @@ Object.assign(pages, {
 
                 <div class="listings-health-bar">
                     <div class="listings-health-score">
-                        <div class="health-score-ring ${healthScore !== null && healthScore >= 80 ? 'good' : healthScore !== null && healthScore >= 50 ? 'warning' : healthScore !== null ? 'poor' : ''}">
+                        ${healthScore === null ? `
+                        <div class="health-score-ring empty" style="display:flex;align-items:center;justify-content:center;min-height:60px;">
+                            <span class="health-score-value" style="font-size:12px;color:var(--gray-500);text-align:center;">Add listings to see your Listing Health Score</span>
+                        </div>
+                        ` : `
+                        <div class="health-score-ring ${healthScore >= 80 ? 'good' : healthScore >= 50 ? 'warning' : 'poor'}">
                             <svg viewBox="0 0 36 36" class="health-ring-svg">
                                 <path class="health-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                                <path class="health-ring-fill" stroke-dasharray="${healthScore ?? 0}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="health-ring-fill" stroke-dasharray="${healthScore}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
                             </svg>
-                            <span class="health-score-value">${healthScore !== null ? healthScore + '%' : 'N/A'}</span>
+                            <span class="health-score-value">${healthScore}%</span>
                         </div>
+                        `}
                         <div class="health-score-label">Listing Health</div>
                     </div>
 
@@ -918,7 +924,7 @@ Object.assign(pages, {
                         <div style="margin-left: auto;">
                             <div style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px;">Columns</div>
                             <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                                <button aria-haspopup="menu" class="btn btn-secondary btn-sm">
+                                <button aria-haspopup="menu" class="btn btn-secondary">
                                     ${components.icon('list', 14)} Customize
                                 </button>
                                 <div class="dropdown-menu" style="min-width: 200px; right: 0; padding: 12px;">
@@ -1107,6 +1113,9 @@ Object.assign(pages, {
                                                     </button>
                                                     <button class="dropdown-item" onclick="handlers.editListing('${listing.id}')">
                                                         ${components.icon('edit', 14)} Edit
+                                                    </button>
+                                                    <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); modals.advancedCrosslist(['${listing.id}'])">
+                                                        ${components.icon('share', 14)} Advanced Crosslist
                                                     </button>
                                                     ${isStale ? `
                                                     <button class="dropdown-item text-warning" onclick="handlers.refreshListing('${listing.id}')" style="color: var(--warning-600);">
@@ -1532,21 +1541,6 @@ Object.assign(pages, {
                     <p class="page-description">Enable or disable automation rules and configure scheduling</p>
                 </div>
                 <div class="flex gap-2">
-                    <button class="btn btn-ghost" onclick="handlers.showTemplateMarketplace()" title="Browse shared templates">
-                        ${components.icon('shopping-bag', 16)} Templates
-                    </button>
-                    <button class="btn btn-ghost" onclick="handlers.exportAutomationRulesJSON()" title="Export rules as JSON">
-                        ${components.icon('download', 16)} Export
-                    </button>
-                    <button class="btn btn-ghost" onclick="handlers.showImportAutomationRules()" title="Import rules from JSON">
-                        ${components.icon('upload', 16)} Import
-                    </button>
-                    <button class="btn btn-ghost" onclick="handlers.showImportFromURL()" title="Import rules from URL">
-                        ${components.icon('link', 16)} URL
-                    </button>
-                    <button class="btn btn-ghost" onclick="handlers.exportAutomationHistoryCSV()" title="Export run history to CSV">
-                        ${components.icon('file-text', 16)} CSV
-                    </button>
                     <button class="btn btn-ghost" onclick="handlers.showScheduleCalendar()" title="Schedule calendar view">
                         ${components.icon('calendar', 16)} Calendar
                     </button>
@@ -1556,9 +1550,6 @@ Object.assign(pages, {
                     ${store.state.automationTagFilter ? '<button class="btn btn-ghost" onclick="handlers.filterByRuleTag(\'\')" title="Clear tag filter" style="color:var(--primary-600);">' + components.icon('x', 16) + ' Tag: ' + escapeHtml(store.state.automationTagFilter) + '</button>' : ''}
                     <button class="btn btn-secondary" onclick="handlers.showAutomationHistory()">
                         ${components.icon('history', 16)} History
-                    </button>
-                    <button class="btn btn-primary" onclick="handlers.showCreateCustomAutomation()">
-                        ${components.icon('plus', 16)} Create Custom
                     </button>
                 </div>
             </div>
@@ -1922,7 +1913,8 @@ Object.assign(pages, {
                                     <input type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
                                         onchange="handlers.updateAutomationNotifPref('desktop_enabled', this.checked)"
                                         style="accent-color: var(--primary-500);">
-                                    <span class="text-sm">${components.icon('monitor', 14)} Desktop notifications</span>
+                                    ${components.icon('monitor', 16)}
+                                    <span class="text-sm">Desktop notifications</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer">
                                     <input type="checkbox" ${notifPrefs.email_enabled ? 'checked' : ''}
@@ -1935,10 +1927,13 @@ Object.assign(pages, {
                         <div>
                             <label class="form-label mb-3">Quick Actions</label>
                             <div class="flex flex-col gap-2">
+                                <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_all', true)">
+                                    ${components.icon('bell', 14)} Enable All
+                                </button>
                                 <button class="btn btn-sm btn-secondary" onclick="handlers.updateAutomationNotifPref('_mute_all', true)">
                                     ${components.icon('bell-off', 14)} Mute All
                                 </button>
-                                <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_recommended', true)">
+                                <button class="btn btn-sm btn-secondary" onclick="handlers.updateAutomationNotifPref('_enable_recommended', true)">
                                     ${components.icon('bell', 14)} Recommended
                                 </button>
                             </div>
@@ -1986,7 +1981,7 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
                         ${automations.filter(rule => {
                             const searchQ = (store.state.automationSearchQuery || '').toLowerCase();
                             const catFilter = store.state.automationCategoryFilter || 'all';
@@ -2007,7 +2002,9 @@ Object.assign(pages, {
                                 case 'enabled': return (b.is_enabled ? 1 : 0) - (a.is_enabled ? 1 : 0);
                                 default: return a.name.localeCompare(b.name);
                             }
-                        }).map(rule => `
+                        }).map(rule => (() => {
+                            const isCollapsed = !!(store.state.collapsedAutomations || {})[rule.id];
+                            return `
                             <div class="automation-card" draggable="true" style="${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'outline: 2px solid var(--primary-500); outline-offset: -2px;' : ''}" ondragstart="handlers.onRuleDragStart(event, '${rule.id}')" ondragend="handlers.onRuleDragEnd(event)" ondragover="handlers.onRuleDragOver(event)" ondragleave="handlers.onRuleDragLeave(event)" ondrop="handlers.onRuleDrop(event, '${rule.id}')">
                                 <div class="automation-card-content">
                                     <div class="automation-card-header">
@@ -2016,10 +2013,16 @@ Object.assign(pages, {
                                             ${components.platformBadge(rule.platform)}
                                             <span>${rule.name}</span>
                                         </div>
-                                        <div class="automation-card-sparkline">
-                                            ${components.sparkline(getDailyRunCounts(rule.name, rule.id), { width: 80, height: 24, color: rule.is_enabled ? 'var(--success-500)' : 'var(--gray-400)' })}
+                                        <div style="display:flex;align-items:center;gap:8px;">
+                                            <div class="automation-card-sparkline">
+                                                ${components.sparkline(getDailyRunCounts(rule.name, rule.id), { width: 80, height: 24, color: rule.is_enabled ? 'var(--success-500)' : 'var(--gray-400)' })}
+                                            </div>
+                                            <button class="btn btn-icon btn-sm btn-ghost" aria-label="${isCollapsed ? 'Expand' : 'Collapse'} ${escapeHtml(rule.name)}" aria-expanded="${isCollapsed ? 'false' : 'true'}" onclick="event.stopPropagation();handlers.toggleAutomationCollapse('${rule.id}')" style="padding:4px;transition:transform 0.2s;transform:rotate(${isCollapsed ? '180deg' : '0deg'});">
+                                                ${components.icon('chevron-up', 14)}
+                                            </button>
                                         </div>
                                     </div>
+                                    <div class="automation-card-body" style="${isCollapsed ? 'display:none;' : ''}">
                                     <div class="text-sm text-gray-500">${rule.description}</div>
                                     ${(() => {
                                         const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
@@ -2057,6 +2060,7 @@ Object.assign(pages, {
                                         })()}`;
                                         })()}
                                     </div>
+                                    </div>
                                 </div>
                                 <div class="automation-card-actions">
                                     <button class="btn btn-secondary" onclick="handlers.testAutomation('${rule.id}')" title="Test Run" style="padding: 10px 16px;">
@@ -2088,7 +2092,7 @@ Object.assign(pages, {
                                     </label>
                                 </div>
                             </div>
-                        `).join('')}
+                        `; })()).join('')}
                     </div>
                 </div>
             </div>
@@ -3621,8 +3625,8 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="handlers.showBudgetSettings()">
                         ${components.icon('sliders', 16)} Budget
                     </button>
-                    <div class="dropdown">
-                        <button class="btn btn-secondary" onclick="this.parentElement.classList.toggle('open')">
+                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
                         <div class="dropdown-menu">
@@ -3717,22 +3721,21 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <!-- Financial Dashboard Header -->
-            ${financialDashboardHeader.render(dashboardMetrics)}
-
             <!-- Profit Margin Gauge & Cash Flow Waterfall -->
             <div class="grid grid-cols-2 gap-6 mb-6">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('target', 18)} Profit Margin</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${profitMarginGauge.render(profitMargin)}
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('bar-chart', 18)} Cash Flow Breakdown</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${waterfallChart.render(waterfallData)}
@@ -3742,17 +3745,19 @@ Object.assign(pages, {
 
             <!-- Financial Ratios & Budget Progress -->
             <div class="grid grid-cols-2 gap-6 mb-6">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('activity', 18)} Financial Ratios</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${financialRatios.render(financialRatios.calculate(financialRatiosData))}
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('pie-chart', 18)} Budget Progress</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${budgetProgress.render(budgetData)}
@@ -6433,7 +6438,7 @@ Object.assign(pages, {
                     <div class="orders-hero-actions">
                         ${viewModeToggle.render(store.state.ordersViewMode || 'list', 'handlers.setOrdersViewMode')}
                         <button class="btn btn-secondary" onclick="handlers.showShippingCalculator()" title="Shipping Cost Calculator">
-                            ${components.icon('truck', 16)} Ship Calc
+                            ${components.icon('truck', 16)} Shipping Calculator
                         </button>
                         <button class="btn btn-secondary" onclick="handlers.showReturnAnalytics()" title="Return Analytics">
                             ${components.icon('rotate-ccw', 16)} Returns

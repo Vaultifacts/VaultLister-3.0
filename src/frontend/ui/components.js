@@ -200,7 +200,7 @@ const components = {
             { section: 'Sell', items: [
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
                 { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
-                { id: 'orders-sales', label: 'Orders & Sales', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
+                { id: 'orders-sales', label: 'Offers, Orders, & Shipping', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
                 { id: 'offers', label: 'Offers', icon: 'offers', badge: store.state.offers.filter(o => o.status === 'pending').length || null }
             ]},
             { section: 'Manage', items: [
@@ -708,7 +708,7 @@ const components = {
             'inventory': { label: 'Inventory', section: 'Sell' },
             'listings': { label: 'Listings', section: 'Sell' },
             'orders': { label: 'Orders', section: 'Sell' },
-            'orders-sales': { label: 'Orders & Sales', section: 'Sell' },
+            'orders-sales': { label: 'Offers, Orders, & Shipping', section: 'Sell' },
             'offers': { label: 'Offers', section: 'Sell' },
             'automations': { label: 'Automations', section: 'Manage' },
             'checklist': { label: 'Checklist', section: 'Manage' },

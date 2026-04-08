@@ -88,7 +88,7 @@ const globalSearch = {
             { id: 'dashboard', label: 'Dashboard', section: 'Sell', icon: 'dashboard' },
             { id: 'inventory', label: 'Inventory', section: 'Sell', icon: 'inventory' },
             { id: 'listings', label: 'Listings', section: 'Sell', icon: 'list' },
-            { id: 'orders-sales', label: 'Orders & Sales', section: 'Sell', icon: 'sales' },
+            { id: 'orders-sales', label: 'Offers, Orders, & Shipping', section: 'Sell', icon: 'sales' },
             { id: 'offers', label: 'Offers', section: 'Sell', icon: 'offers' },
             { id: 'automations', label: 'Automations', section: 'Manage', icon: 'automation' },
             { id: 'financials', label: 'Financials', section: 'Manage', icon: 'dollar' },

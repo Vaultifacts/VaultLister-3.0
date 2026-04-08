@@ -160,9 +160,10 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="handlers.showShareChecklist()">
                         ${components.icon('share-2', 16)} Share
                     </button>
-                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                        <button aria-haspopup="menu" class="btn btn-secondary">
+                    <div class="dropdown" style="position: relative;">
+                        <button aria-haspopup="menu" class="btn btn-secondary" onclick="this.closest('.dropdown').classList.toggle('open');event.stopPropagation();">
                             ${components.icon('download', 16)} Export
+                            ${components.icon('chevron-down', 12)}
                         </button>
                         <div class="dropdown-menu" style="min-width: 160px; right: 0;">
                             <button class="dropdown-item" onclick="handlers.exportChecklist('markdown')">
@@ -173,9 +174,6 @@ Object.assign(pages, {
                             </button>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="handlers.showAddChecklistItem()">
-                        ${components.icon('plus', 16)} Add Task
-                    </button>
                 </div>
             </div>
 
@@ -303,11 +301,11 @@ Object.assign(pages, {
                     <button class="btn btn-primary" onclick="handlers.showAddChecklistItem()">
                         ${components.icon('plus', 16)} Add Task
                     </button>
-                    <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(true)" title="Complete all active tasks">
-                        ${components.icon('check-square', 14)} Complete All
+                    <button class="btn btn-secondary" onclick="handlers.bulkCompleteChecklist(true)" title="Complete all active tasks">
+                        ${components.icon('check-square', 16)} Mark All Complete
                     </button>
-                    <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
-                        ${components.icon('square', 14)} Uncomplete All
+                    <button class="btn btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
+                        ${components.icon('square', 16)} Mark All Incomplete
                     </button>
                     <div class="keyboard-hints" style="display: flex; gap: 8px; font-size: 11px; color: var(--gray-400); align-items: center; margin-left: auto;">
                         <span title="Press N to add task"><kbd>N</kbd> Add</span>

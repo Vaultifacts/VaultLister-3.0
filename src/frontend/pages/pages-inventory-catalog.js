@@ -186,7 +186,7 @@ Object.assign(pages, {
             <div class="card">
                 <div class="card-header">
                     <div class="flex items-center gap-2" style="position: relative;">
-                        <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)">
+                        <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)" onkeydown="if(event.key==='Enter'){handlers.searchInventory(this.value)}">
                         <select class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
                             <option value="">All Categories</option>
                             ${(store.state.inventoryCategories || []).map(c => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
@@ -242,7 +242,7 @@ Object.assign(pages, {
                             {id: 'age', label: 'Age'},
                             {id: 'actions', label: 'Actions'}
                         ])" title="Column Settings">
-                            ${components.icon('columns', 14)}
+                            Customize Columns
                         </button>
                     </div>
                 </div>

@@ -7500,8 +7500,8 @@ Object.assign(handlers, {
                     <input type="url"
                            id="marketplace-url"
                            class="form-control"
-                           placeholder="https://poshmark.com/listing/..."
-                           style="margin-bottom: 8px;">
+                           placeholder="Paste listing URL here..."
+                           style="margin-bottom: 8px; width: 100%;">
                     <small style="color: var(--gray-500); font-size: 12px;">
                         Paste the URL of the listing you want to import
                     </small>
@@ -8566,10 +8566,15 @@ Object.assign(handlers, {
     // Listing Folders,
 
     showCreateListingFolder: async function() {
-        const folderName = await modals.prompt('Enter a name for the new folder:', { title: 'Create Folder', placeholder: 'Folder name' });
-        if (!folderName || !folderName.trim()) return;
-
-        this.createListingFolder(folderName.trim());
+        if (this._creatingListingFolder) return;
+        this._creatingListingFolder = true;
+        try {
+            const folderName = await modals.prompt('Enter a name for the new folder:', { title: 'Create Folder', placeholder: 'Folder name' });
+            if (!folderName || !folderName.trim()) return;
+            await this.createListingFolder(folderName.trim());
+        } finally {
+            this._creatingListingFolder = false;
+        }
     },
 
     createListingFolder: async function(name) {
@@ -15393,6 +15398,15 @@ Object.assign(handlers, {
         }
     },
 
+    toggleAutomationCollapse: function(ruleId) {
+        const collapsed = Object.assign({}, store.state.collapsedAutomations || {});
+        collapsed[ruleId] = !collapsed[ruleId];
+        store.setState({ collapsedAutomations: collapsed });
+        if (store.state.currentPage === 'automations') {
+            document.querySelector('.page-content').innerHTML = sanitizeHTML(window.pages.automations()); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        }
+    },
+
     toggleAutomationSelect: function(ruleId, checked) {
         const selected = [...(store.state.selectedAutomationIds || [])];
         if (checked && !selected.includes(ruleId)) selected.push(ruleId);
@@ -15598,7 +15612,9 @@ Object.assign(handlers, {
             on_success: true, on_failure: true, on_partial: true,
             daily_summary: false, desktop_enabled: true, email_enabled: false
         };
-        if (key === '_mute_all') {
+        if (key === '_enable_all') {
+            Object.keys(current).forEach(k => { current[k] = true; });
+        } else if (key === '_mute_all') {
             Object.keys(current).forEach(k => { current[k] = false; });
         } else if (key === '_enable_recommended') {
             current.on_failure = true;
@@ -26446,7 +26462,7 @@ Object.assign(handlers, {
 
     loadInventoryAnalytics: async function() {
         try { const res = await api.get('/analytics/inventory-deep'); store.setState({ inventoryAnalytics: res.data || res }); return res.data || res; }
-        catch (err) { toast.error('Failed to load inventory analytics'); return null; }
+        catch (err) { return null; }
     },
 
     switchInventoryTab: function(tabName) {

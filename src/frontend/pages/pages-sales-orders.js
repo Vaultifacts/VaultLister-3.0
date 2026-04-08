@@ -2043,7 +2043,7 @@ Object.assign(pages, {
                     <div class="orders-hero-actions">
                         ${viewModeToggle.render(store.state.ordersViewMode || 'list', 'handlers.setOrdersViewMode')}
                         <button class="btn btn-secondary" onclick="handlers.showShippingCalculator()" title="Shipping Cost Calculator">
-                            ${components.icon('truck', 16)} Ship Calc
+                            ${components.icon('truck', 16)} Shipping Calculator
                         </button>
                         <button class="btn btn-secondary" onclick="handlers.showReturnAnalytics()" title="Return Analytics">
                             ${components.icon('rotate-ccw', 16)} Returns
@@ -2054,7 +2054,7 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.syncAllPlatformOrders()">
                             ${components.icon('refresh', 16)} Sync
                         </button>
-                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div class="dropdown" style="position: relative;">
                             <button aria-haspopup="menu" class="btn btn-secondary" onclick="this.closest('.dropdown').classList.toggle('open');event.stopPropagation();">
                                 ${components.icon('list', 14)} More
                                 ${components.icon('chevron-down', 12)}
