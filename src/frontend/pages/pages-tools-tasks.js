@@ -140,14 +140,6 @@ Object.assign(pages, {
                 </div>
                 <div class="flex items-center gap-3">
                     ${streakCounter.render(streakDays)}
-                    <div class="calendar-view-toggle">
-                        <button class="calendar-view-btn ${viewMode === 'list' ? 'active' : ''}" onclick="handlers.setChecklistView('list')">
-                            ${components.icon('list', 14)}
-                        </button>
-                        <button class="calendar-view-btn ${viewMode === 'kanban' ? 'active' : ''}" onclick="handlers.setChecklistView('kanban')">
-                            ${components.icon('columns', 14)}
-                        </button>
-                    </div>
                     <button class="btn btn-secondary" onclick="handlers.selectAllChecklistItems()">
                         ${components.icon('check-square', 16)} Select All
                     </button>
@@ -315,6 +307,19 @@ Object.assign(pages, {
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
                         ${components.icon('square', 14)} Mark All Incomplete
                     </button>
+                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
+                            ${components.icon(viewMode === 'kanban' ? 'columns' : 'list', 14)} ${viewMode === 'kanban' ? 'Kanban View' : 'List View'} ${components.icon('chevron-down', 12)}
+                        </button>
+                        <div class="dropdown-menu" style="min-width: 160px;">
+                            <button class="dropdown-item ${viewMode === 'list' ? 'active' : ''}" onclick="handlers.setChecklistView('list')">
+                                ${components.icon('list', 14)} List View
+                            </button>
+                            <button class="dropdown-item ${viewMode === 'kanban' ? 'active' : ''}" onclick="handlers.setChecklistView('kanban')">
+                                ${components.icon('columns', 14)} Kanban View
+                            </button>
+                        </div>
+                    </div>
                     <div class="keyboard-hints" style="display: flex; gap: 8px; font-size: 11px; color: var(--gray-400); align-items: center; margin-left: auto;">
                         <span title="Press N to add task"><kbd>N</kbd> Add</span>
                         <span title="Press A to select all"><kbd>A</kbd> Select</span>
