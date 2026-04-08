@@ -242,7 +242,7 @@ Object.assign(pages, {
                             {id: 'age', label: 'Age'},
                             {id: 'actions', label: 'Actions'}
                         ])" title="Column Settings">
-                            ${components.icon('columns', 14)}
+                            Customize Columns
                         </button>
                     </div>
                 </div>

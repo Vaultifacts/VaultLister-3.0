@@ -336,7 +336,7 @@ Object.assign(pages, {
                     // Health score for connected shops
                     const healthScore = isConnected ? Math.floor(Math.random() * 30) + 70 : null;
                     const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
-                    const isPostLaunch = ['mercari', 'grailed', 'etsy', 'shopify'].includes(platform);
+                    const isPostLaunch = ['mercari', 'grailed', 'etsy'].includes(platform);
                     const platformDisplayName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
 
                     return `

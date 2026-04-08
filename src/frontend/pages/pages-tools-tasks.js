@@ -173,9 +173,6 @@ Object.assign(pages, {
                             </button>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="handlers.showAddChecklistItem()">
-                        ${components.icon('plus', 16)} Add Task
-                    </button>
                 </div>
             </div>
 
@@ -252,7 +249,11 @@ Object.assign(pages, {
 
             <!-- Progress & Pomodoro Row -->
             <div class="grid grid-cols-3 gap-6 mb-6">
-                <div class="card">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;">
+                        <h3 class="card-title">Today's Progress</h3>
+                        <button class="widget-collapse-btn btn btn-ghost btn-sm" onclick="this.closest('.collapsible-card').classList.toggle('widget-collapsed')">${components.icon('chevron-up', 14)}</button>
+                    </div>
                     <div class="card-body">
                         <div class="task-progress-ring flex items-center gap-4">
                             ${components.progressRing(items.length > 0 ? (completedItems.length / items.length) * 100 : 0, 60, 6, 'primary')}
@@ -263,14 +264,19 @@ Object.assign(pages, {
                         </div>
                     </div>
                 </div>
-                <div class="card">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;">
+                        <h3 class="card-title">Pomodoro Timer</h3>
+                        <button class="widget-collapse-btn btn btn-ghost btn-sm" onclick="this.closest('.collapsible-card').classList.toggle('widget-collapsed')">${components.icon('chevron-up', 14)}</button>
+                    </div>
                     <div class="card-body">
                         ${pomodoroTimer.render()}
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
                         <h3 class="card-title">Quick Stats</h3>
+                        <button class="widget-collapse-btn btn btn-ghost btn-sm" onclick="this.closest('.collapsible-card').classList.toggle('widget-collapsed')">${components.icon('chevron-up', 14)}</button>
                     </div>
                     <div class="card-body">
                         <div class="space-y-2">
@@ -304,10 +310,10 @@ Object.assign(pages, {
                         ${components.icon('plus', 16)} Add Task
                     </button>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(true)" title="Complete all active tasks">
-                        ${components.icon('check-square', 14)} Complete All
+                        ${components.icon('check-square', 14)} Mark All Complete
                     </button>
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
-                        ${components.icon('square', 14)} Uncomplete All
+                        ${components.icon('square', 14)} Mark All Incomplete
                     </button>
                     <div class="keyboard-hints" style="display: flex; gap: 8px; font-size: 11px; color: var(--gray-400); align-items: center; margin-left: auto;">
                         <span title="Press N to add task"><kbd>N</kbd> Add</span>
