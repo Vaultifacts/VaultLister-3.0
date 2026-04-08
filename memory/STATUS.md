@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-07 MST (session 3)
+**Updated:** 2026-04-08 MST (session 4)
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — 214 findings, 100% coverage (14 sessions)
@@ -10,7 +10,7 @@
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
 ## In Progress
-- Nothing in progress
+- Awaiting Railway deploy of `7ac7b46` + `2f93086` (~8 min from push) — then final visual verification of #196/#226/#228/#229/#230/#231
 
 ## Completed This Session (2026-04-07, session 3)
 
