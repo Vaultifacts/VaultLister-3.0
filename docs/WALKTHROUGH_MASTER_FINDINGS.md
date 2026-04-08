@@ -559,7 +559,7 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 | #215 | Automations | (1) "Desktop notifications" label is missing a computer icon between it and the checkbox; (2) no quick action option to "Enable All" notifications | 2026-04-08 | FIXED — 1fcf99a |
 | #218 | Financials | No option to set a custom budget alert threshold | 2026-04-08 | FIXED — 05f419d |
 | #229 | Planner | "Complete All" and "Uncomplete All" buttons are disproportionately sized compared to the Add Task button. Rename: "Complete All" → "Mark All Complete" and "Uncomplete All" → "Mark All Incomplete" | 2026-04-08 | FIXED — 7ac7b46 |
-| #230 | Planner | Move the view options (e.g. List View, Kanban Board View) to a dropdown button beside the "Mark All Incomplete" button. The dropdown should display the name of the current active view. Add more view options | 2026-04-08 | FIXED — (pending) |
+| #230 | Planner | Move the view options (e.g. List View, Kanban Board View) to a dropdown button beside the "Mark All Incomplete" button. The dropdown should display the name of the current active view. Add more view options | 2026-04-08 | FIXED — 2f93086 |
 
 ---
 
