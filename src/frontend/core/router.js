@@ -425,7 +425,11 @@ const router = {
                 } else if (path === 'recently-deleted') {
                     await handlers.loadDeletedItems();
                 } else if (path === 'analytics') {
-                    await handlers.loadAnalytics();
+                    // Render shell immediately, load data in background to avoid blocking navigation
+                    handlers.loadAnalytics().then(() => {
+                        if (store.state.currentPage === 'analytics') renderApp(window.pages.analytics());
+                    }).catch(err => console.error('[Router] Analytics background load failed:', err));  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+                    // Skip the await so render proceeds below without waiting
                 } else if (path === 'financials') {
                     await Promise.all([
                         handlers.loadPurchases(),

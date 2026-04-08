@@ -649,17 +649,21 @@ Object.assign(handlers, {
             if (!term || term.length === 0) {
                 // Clear search - reload full inventory
                 await handlers.loadInventory();
-                if (store.state.currentPage === 'inventory') {
-                    const pageContent = window.pages.inventory();
-                    document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                    // Restore focus to search input after DOM update
-                    requestAnimationFrame(() => {
-                        const searchInput = document.getElementById('inventory-search');
-                        if (searchInput) {
-                            searchInput.focus();
-                            searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
-                        }
-                    });
+                try {
+                    if (store.state.currentPage === 'inventory') {
+                        const pageContent = window.pages.inventory();
+                        document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                        // Restore focus to search input after DOM update
+                        requestAnimationFrame(() => {
+                            const searchInput = document.getElementById('inventory-search');
+                            if (searchInput) {
+                                searchInput.focus();
+                                searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+                            }
+                        });
+                    }
+                } catch (renderErr) {
+                    console.error('Search render failed:', renderErr);
                 }
                 return;
             }
@@ -674,6 +678,7 @@ Object.assign(handlers, {
                 if (store.state.currentPage === 'inventory') {
                     const pageContent = window.pages.inventory();
                     document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                    // Restore focus to search input after DOM update
                     requestAnimationFrame(() => {
                         const searchInput = document.getElementById('inventory-search');
                         if (searchInput) {
@@ -714,7 +719,7 @@ Object.assign(handlers, {
     setListingsViewMode: function(mode) {
         store.setState({ listingsViewMode: mode });
         localStorage.setItem('vl_listings_view_mode', mode);
-        renderApp(pages.listings());
+        renderApp(window.pages.listings());
     },
 
 
@@ -886,7 +891,7 @@ Object.assign(handlers, {
     toggleAllAutomations: function(enabled) {
         store.setState({ automationsPaused: !enabled });
         toast.info(enabled ? 'All automations enabled' : 'All automations paused');
-        renderApp(pages.automations());
+        renderApp(window.pages.automations());
     },
 
 
@@ -896,7 +901,7 @@ Object.assign(handlers, {
         } else if (panel === 'scheduledRuns') {
             store.setState({ scheduledRunsCollapsed: !store.state.scheduledRunsCollapsed });
         }
-        renderApp(pages.automations());
+        renderApp(window.pages.automations());
     },
 
 
@@ -1313,8 +1318,11 @@ Object.assign(handlers, {
 
 
     exportAutomationHistory: function() {
+        if (this._exporting) return;
+        this._exporting = true;
         const runs = store.state.automationHistoryRuns || [];
         if (runs.length === 0) {
+            this._exporting = false;
             toast.error('No history to export');
             return;
         }
@@ -1342,6 +1350,7 @@ Object.assign(handlers, {
         URL.revokeObjectURL(url);
 
         toast.success('History exported to CSV');
+        this._exporting = false;
     },
 
     // Clear automation history,
@@ -1583,19 +1592,25 @@ Object.assign(handlers, {
         const items = store.state.inventory.filter(i => ids.includes(i.id));
         if (items.length === 0) return;
 
-        const headers = ['Title', 'SKU', 'Brand', 'Size', 'List Price', 'Cost Price', 'Quantity', 'Status'];
-        const rows = items.map(item => [
-            item.title,
-            item.sku || '',
-            item.brand || '',
-            item.size || '',
-            item.list_price || '',
-            item.cost_price || '',
-            item.quantity || 1,
-            item.status || ''
-        ]);
+        const INVENTORY_COL_MAP = {
+            title:       { label: 'Title',       val: i => i.title || '' },
+            sku:         { label: 'SKU',          val: i => i.sku || '' },
+            price:       { label: 'List Price',   val: i => i.list_price || '' },
+            marketplace: { label: 'Marketplace',  val: i => i.marketplace || '' },
+            quantity:    { label: 'Quantity',     val: i => i.quantity || 1 },
+            stock_level: { label: 'Stock Level',  val: i => i.stock_level || '' },
+            location:    { label: 'Location',     val: i => i.location || '' },
+            status:      { label: 'Status',       val: i => i.status || '' },
+            created_at:  { label: 'Created',      val: i => i.created_at || '' },
+        };
+        const defaultCols = ['title', 'sku', 'price', 'marketplace', 'quantity', 'status'];
+        const visibleCols = (window.tablePrefs?.getVisibleColumns('inventory', defaultCols) || defaultCols)
+            .filter(c => INVENTORY_COL_MAP[c]);
 
-        const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
+        const headers = visibleCols.map(c => INVENTORY_COL_MAP[c].label);
+        const rows = items.map(item => visibleCols.map(c => INVENTORY_COL_MAP[c].val(item)));
+
+        const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1731,7 +1746,7 @@ Object.assign(handlers, {
 
             // Re-render inventory page if currently viewing it
             if (store.state.currentPage === 'inventory') {
-                const pageContent = window.pages.inventory();
+                const pageContent = pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
         } catch (error) {
@@ -1769,7 +1784,7 @@ Object.assign(handlers, {
             await handlers.loadInventory();
 
             if (store.state.currentPage === 'inventory') {
-                const pageContent = window.pages.inventory();
+                const pageContent = pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
 
@@ -1797,7 +1812,7 @@ Object.assign(handlers, {
             await handlers.loadInventory();
 
             if (store.state.currentPage === 'inventory') {
-                const pageContent = window.pages.inventory();
+                const pageContent = pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
 
@@ -1816,21 +1831,26 @@ Object.assign(handlers, {
         if (ids.length === 0) return toast.warning('No items selected');
 
         const items = store.state.inventory.filter(item => ids.includes(item.id));
-        const csv = [
-            ['Title', 'SKU', 'Brand', 'Size', 'Category', 'List Price', 'Cost', 'Status', 'Quantity', 'Created'].join(','),
-            ...items.map(item => [
-                `"${(item.title || '').replace(/"/g, '""')}"`,
-                `"${item.sku || ''}"`,
-                `"${item.brand || ''}"`,
-                `"${item.size || ''}"`,
-                `"${item.category || ''}"`,
-                item.list_price || 0,
-                item.cost_price || 0,
-                item.status || 'draft',
-                item.quantity || 1,
-                item.created_at || ''
-            ].join(','))
-        ].join('\n');
+
+        const INVENTORY_COL_MAP = {
+            title:       { label: 'Title',       val: i => i.title || '' },
+            sku:         { label: 'SKU',          val: i => i.sku || '' },
+            price:       { label: 'List Price',   val: i => i.list_price || 0 },
+            marketplace: { label: 'Marketplace',  val: i => i.marketplace || '' },
+            quantity:    { label: 'Quantity',     val: i => i.quantity || 1 },
+            stock_level: { label: 'Stock Level',  val: i => i.stock_level || '' },
+            location:    { label: 'Location',     val: i => i.location || '' },
+            status:      { label: 'Status',       val: i => i.status || 'draft' },
+            created_at:  { label: 'Created',      val: i => i.created_at || '' },
+        };
+        const defaultCols = ['title', 'sku', 'price', 'marketplace', 'quantity', 'status'];
+        const visibleCols = (window.tablePrefs?.getVisibleColumns('inventory', defaultCols) || defaultCols)
+            .filter(c => INVENTORY_COL_MAP[c]);
+
+        const headers = visibleCols.map(c => INVENTORY_COL_MAP[c].label);
+        const rows = items.map(item => visibleCols.map(c => INVENTORY_COL_MAP[c].val(item)));
+
+        const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
 
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -1860,7 +1880,7 @@ Object.assign(handlers, {
             await handlers.loadInventory();
 
             if (store.state.currentPage === 'inventory') {
-                const pageContent = window.pages.inventory();
+                const pageContent = pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             }
 
@@ -2106,7 +2126,7 @@ Object.assign(handlers, {
         const params = new URLSearchParams();
 
         // Add all active filters to params
-        Object.entries(store.state.activeFilters || {}).forEach(([column, value]) => {
+        Object.entries(store.state.activeFilters).forEach(([column, value]) => {
             params.append(column, value);
         });
 
@@ -2122,7 +2142,7 @@ Object.assign(handlers, {
 
             // Re-render inventory page
             if (store.state.currentPage === 'inventory') {
-                const pageContent = window.pages.inventory();
+                const pageContent = pages.inventory();
                 document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
                 // Keep menu open if it was visible
@@ -2167,7 +2187,7 @@ Object.assign(handlers, {
         const container = document.getElementById('active-filters-list');
         if (!container) return;
 
-        const activeFilters = store.state.activeFilters || {};
+        const activeFilters = store.state.activeFilters;
         if (Object.keys(activeFilters).length === 0) {
             container.innerHTML = sanitizeHTML('<div style="font-size: 12px; color: var(--gray-500); padding: 8px;">No active filters</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             return;
@@ -2198,7 +2218,7 @@ Object.assign(handlers, {
 
         // Re-render the inventory page
         if (store.state.currentPage === 'inventory') {
-            const pageContent = window.pages.inventory();
+            const pageContent = pages.inventory();
             document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         }
 
@@ -2276,7 +2296,7 @@ Object.assign(handlers, {
 
             // Re-render inventory page
             if (store.state.currentPage === 'inventory') {
-                const pageContent = window.pages.inventory();
+                const pageContent = pages.inventory();
                 const container = document.querySelector('.page-content');
                 if (container) container.innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
@@ -2326,8 +2346,8 @@ Object.assign(handlers, {
                     <input type="url"
                            id="marketplace-url"
                            class="form-control"
-                           placeholder="https://poshmark.com/listing/..."
-                           style="margin-bottom: 8px;">
+                           placeholder="Paste listing URL here..."
+                           style="margin-bottom: 8px; width: 100%;">
                     <small style="color: var(--gray-500); font-size: 12px;">
                         Paste the URL of the listing you want to import
                     </small>
@@ -2589,7 +2609,7 @@ Object.assign(handlers, {
             await this.loadListings();
         }
 
-        renderApp(pages.listings());
+        renderApp(window.pages.listings());
     },
 
 
@@ -2822,7 +2842,7 @@ Object.assign(handlers, {
 
             // Re-render listings page using renderApp for proper state handling
             if (store.state.currentPage === 'listings') {
-                renderApp(pages.listings());
+                renderApp(window.pages.listings());
             }
         } catch (error) {
             toast.error('Failed to archive listing: ' + error.message);
@@ -2845,7 +2865,7 @@ Object.assign(handlers, {
 
             // Re-render listings page using renderApp for proper state handling
             if (store.state.currentPage === 'listings') {
-                renderApp(pages.listings());
+                renderApp(window.pages.listings());
             }
         } catch (error) {
             toast.error('Failed to restore listing: ' + error.message);
@@ -3127,7 +3147,7 @@ Object.assign(handlers, {
                 toast.success(`Price drop scheduled for ${scheduledDate.toLocaleDateString()}`);
             }
 
-            renderApp(pages.listings());
+            renderApp(window.pages.listings());
         } catch (error) {
             console.error('Error saving price drop schedule:', error);
             toast.error('Failed to save price drop schedule');
@@ -3415,10 +3435,15 @@ Object.assign(handlers, {
 
 
     showCreateListingFolder: async function() {
-        const folderName = await modals.prompt('Enter a name for the new folder:', { title: 'Create Folder', placeholder: 'Folder name' });
-        if (!folderName || !folderName.trim()) return;
-
-        this.createListingFolder(folderName.trim());
+        if (this._creatingListingFolder) return;
+        this._creatingListingFolder = true;
+        try {
+            const folderName = await modals.prompt('Enter a name for the new folder:', { title: 'Create Folder', placeholder: 'Folder name' });
+            if (!folderName || !folderName.trim()) return;
+            await this.createListingFolder(folderName.trim());
+        } finally {
+            this._creatingListingFolder = false;
+        }
     },
 
 
@@ -4175,7 +4200,11 @@ Object.assign(handlers, {
                                 `).join('')}
                             </div>
                         </div>
-                    ` : avgScore > 70 ? `
+                    ` : analyzed.length === 0 ? `
+                        <div class="health-all-good">
+                            <p>No listings to analyze yet.</p>
+                        </div>
+                    ` : avgScore >= 70 ? `
                         <div class="health-all-good">
                             ${components.icon('check-circle', 40)}
                             <p>All listings have good health scores!</p>
@@ -4413,33 +4442,12 @@ Object.assign(handlers, {
             .sort((a, b) => b.count - a.count)
             .slice(0, 10);
 
-        // Also include inventory items explicitly flagged as needing restock
-        const flaggedItems = inventory.filter(i => {
-            const ss = (i.stock_status || '').toLowerCase();
-            return ss.includes('low') || ss.includes('reorder') || ss === 'out of stock';
-        });
-        flaggedItems.forEach(i => {
-            const title = i.title || i.name || 'Unknown';
-            if (!restockSuggestions.find(r => r.title === title)) {
-                restockSuggestions.push({
-                    title,
-                    count: 0,
-                    revenue: 0,
-                    avgPrice: parseFloat(i.price) || 0,
-                    lastSold: null,
-                    currentStock: parseInt(i.quantity) || 0
-                });
-            }
-        });
-
-        // Check current inventory for sales-based items
+        // Check current inventory for these items
         restockSuggestions.forEach(item => {
-            if (item.currentStock === undefined) {
-                const inStock = inventory.filter(i =>
-                    (i.title || i.name || '').toLowerCase().includes(item.title.toLowerCase().split(' ')[0])
-                ).reduce((sum, i) => sum + (parseInt(i.quantity) || 1), 0);
-                item.currentStock = inStock;
-            }
+            const inStock = inventory.filter(i =>
+                (i.title || i.name || '').toLowerCase().includes(item.title.toLowerCase().split(' ')[0])
+            ).reduce((sum, i) => sum + (parseInt(i.quantity) || 1), 0);
+            item.currentStock = inStock;
         });
 
         modals.show(`
@@ -4679,7 +4687,7 @@ Object.assign(handlers, {
     },
 
 
-    createBundleListing: async function() {
+    createBundleListing: function() {
         const inventory = store.state.inventory || [];
         const selectedItems = store.state.bundleItems || [];
         const discount = parseFloat(document.getElementById('bundle-discount')?.value) || 15;
@@ -4688,31 +4696,14 @@ Object.assign(handlers, {
         const bundleValue = items.reduce((sum, i) => sum + (parseFloat(i.list_price) || 0), 0);
         const bundlePrice = bundleValue * (1 - discount / 100);
 
+        // Create bundle listing
         const bundleTitle = items.length <= 3
             ? items.map(i => i.title || i.name).join(' + ')
             : `${items.length}-Piece Bundle: ${items[0].title || items[0].name} & More`;
 
-        const bundleData = {
-            title: bundleTitle,
-            listPrice: bundlePrice,
-            type: 'bundle',
-            status: 'draft',
-            bundleItemIds: JSON.stringify(selectedItems),
-            source: 'bundle'
-        };
-
-        try {
-            await api.ensureCSRFToken();
-            const result = await api.post('/inventory', bundleData);
-            store.setState({ bundleItems: [], inventory: [...store.state.inventory, result.item] });
-            modals.close();
-            toast.success(`Bundle created: ${bundleTitle} at C$${bundlePrice.toFixed(2)}`);
-            if (result.item && result.item.id) {
-                handlers.editItem(result.item.id);
-            }
-        } catch (error) {
-            toast.error(error.message || 'Failed to create bundle');
-        }
+        toast.success(`Bundle created: ${bundleTitle} at C$${bundlePrice.toFixed(2)}`);
+        store.setState({ bundleItems: [] });
+        modals.close();
     },
 
     // Seasonal Trends Indicator,
@@ -4850,7 +4841,7 @@ Object.assign(handlers, {
                             placeholder="Search by SKU, title, or barcode..."
                             oninput="handlers.performQuickLookup(this.value)"
                             autofocus>
-                        <div class="lookup-hint">Start typing to search</div>
+                        <div class="lookup-hint">Type at least 2 characters to search</div>
                     </div>
                     <div id="quick-lookup-results" class="lookup-results">
                         <!-- Results appear here -->
@@ -4867,8 +4858,8 @@ Object.assign(handlers, {
         const resultsEl = document.getElementById('quick-lookup-results');
         if (!resultsEl) return;
 
-        if (query.length < 1) {
-            resultsEl.innerHTML = sanitizeHTML('<div class="lookup-empty">Start typing to search</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        if (query.length < 2) {
+            resultsEl.innerHTML = sanitizeHTML('<div class="lookup-empty">Enter at least 2 characters</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             return;
         }
 
@@ -5067,7 +5058,6 @@ Object.assign(handlers, {
         const name = document.getElementById('edit-auto-name')?.value?.trim();
         const schedule = document.getElementById('edit-auto-schedule')?.value;
         const enabled = document.getElementById('edit-auto-enabled')?.value === 'true';
-        if (!name) { toast.error('Automation name is required'); return; }
         try {
             await api.ensureCSRFToken();
             await api.put('/automations/' + ruleId, { name, schedule, is_active: enabled });
@@ -5648,7 +5638,7 @@ Object.assign(handlers, {
 
                 // Re-render dashboard if we're on it
                 if (store.state.currentPage === 'dashboard') {
-                    renderApp(pages.dashboard());
+                    renderApp(window.pages.dashboard());
                 }
             }
         } catch (error) {
@@ -5690,7 +5680,7 @@ Object.assign(handlers, {
 
                 // Re-render dashboard if we're on it
                 if (store.state.currentPage === 'dashboard') {
-                    renderApp(pages.dashboard());
+                    renderApp(window.pages.dashboard());
                 }
             }
         } catch (error) {
@@ -5717,8 +5707,8 @@ Object.assign(handlers, {
                 toast.success(data.message || 'Listing delisted successfully');
 
                 // Re-render current page
-                if (store.state.currentPage && pages[store.state.currentPage]) {
-                    renderApp(pages[store.state.currentPage]());
+                if (store.state.currentPage && window.pages[store.state.currentPage]) {
+                    renderApp(window.pages[store.state.currentPage]());
                 }
             }
         } catch (error) {
@@ -5745,8 +5735,8 @@ Object.assign(handlers, {
                 toast.success(data.message || 'Listing relisted successfully');
 
                 // Re-render current page
-                if (store.state.currentPage && pages[store.state.currentPage]) {
-                    renderApp(pages[store.state.currentPage]());
+                if (store.state.currentPage && window.pages[store.state.currentPage]) {
+                    renderApp(window.pages[store.state.currentPage]());
                 }
             }
         } catch (error) {
@@ -6587,7 +6577,7 @@ Object.assign(handlers, {
             selectedImages: [] // Clear selection when changing folders
         });
         if (store.state.currentPage === 'image-bank') {
-            renderApp(pages.imageBank());
+            renderApp(window.pages.imageBank());
         }
     },
 
@@ -6598,7 +6588,7 @@ Object.assign(handlers, {
         store.setState({ imageBankViewMode: mode });
         // Re-render the image bank page to apply the new view mode
         if (store.state.currentPage === 'image-bank') {
-            renderApp(pages.imageBank());
+            renderApp(window.pages.imageBank());
         }
     },
 
@@ -7047,7 +7037,7 @@ Object.assign(handlers, {
         try {
             const data = await api.get(`/relisting/stale?days=${days || 30}`);
             store.setState({ staleListings: data.listings || [] });
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to load stale listings');
         }
@@ -7124,7 +7114,7 @@ Object.assign(handlers, {
             document.getElementById('relisting-rule-modal')?.remove();
             toast.success('Relisting rule created');
             await handlers.loadRelistingData();
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to create rule: ' + e.message);
         }
@@ -7143,7 +7133,7 @@ Object.assign(handlers, {
             await api.delete(`/relisting/rules/${ruleId}`);
             toast.success('Rule deleted');
             await handlers.loadRelistingData();
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to delete rule');
         }
@@ -7157,7 +7147,7 @@ Object.assign(handlers, {
             toast.success(data.message);
             await handlers.loadRelistingData();
             store.setState({ relistingTab: 'queue' });
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to queue for relisting');
         }
@@ -7192,7 +7182,7 @@ Object.assign(handlers, {
             const data = await api.post('/relisting/process', { process_all: true });
             toast.success(data.message);
             await handlers.loadRelistingData();
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to process queue');
         }
@@ -7205,7 +7195,7 @@ Object.assign(handlers, {
             await api.delete(`/relisting/queue/${queueId}`);
             toast.success('Removed from queue');
             await handlers.loadRelistingData();
-            renderApp(pages.smartRelisting());
+            renderApp(window.pages.smartRelisting());
         } catch (e) {
             toast.error('Failed to remove from queue');
         }
@@ -7242,7 +7232,7 @@ Object.assign(handlers, {
                     preview: result.preview
                 }
             });
-            renderApp(pages.inventoryImport());
+            renderApp(window.pages.inventoryImport());
             toast.success(`Parsed ${result.preview?.total_rows || 0} rows`);
         } catch (err) {
             toast.error('Failed to parse data: ' + err.message);
@@ -7286,7 +7276,7 @@ Object.assign(handlers, {
             api.post(`/inventory-import/jobs/${jobId}/cancel`, {}).catch(err => console.error('Failed to cancel import:', err));
         }
         store.setState({ currentImportJob: null });
-        renderApp(pages.inventoryImport());
+        renderApp(window.pages.inventoryImport());
     },
 
 
@@ -7579,7 +7569,7 @@ Object.assign(handlers, {
                     (result.failed > 0 ? `, ${result.failed} failed` : ''));
                 store.setState({ currentImportJob: null, importTab: 'jobs' });
                 await handlers.loadImportData();
-                renderApp(pages.inventoryImport());
+                renderApp(window.pages.inventoryImport());
             }
         } catch (e) {
             toast.error('Import failed: ' + e.message);
@@ -7620,7 +7610,7 @@ Object.assign(handlers, {
             await api.delete(`/inventory-import/jobs/${jobId}`);
             toast.success('Job deleted');
             await handlers.loadImportData();
-            renderApp(pages.inventoryImport());
+            renderApp(window.pages.inventoryImport());
         } catch (e) {
             toast.error('Failed to delete job');
         }
@@ -7634,7 +7624,7 @@ Object.assign(handlers, {
             await api.delete(`/inventory-import/mappings/${mappingId}`);
             toast.success('Mapping deleted');
             await handlers.loadImportData();
-            renderApp(pages.inventoryImport());
+            renderApp(window.pages.inventoryImport());
         } catch (e) {
             toast.error('Failed to delete mapping');
         }
@@ -7789,7 +7779,7 @@ Object.assign(handlers, {
             // Reload image bank to show updated usage counts
             await handlers.loadImageBankImages();
             await handlers.loadImageStorageStats();
-            renderApp(pages.imageBank());
+            renderApp(window.pages.imageBank());
         } catch (error) {
             console.error('Error scanning image usage:', error);
             toast.error('Failed to scan image usage');
@@ -8263,7 +8253,7 @@ Object.assign(handlers, {
             selected = selected.filter(sid => sid !== id);
         }
         store.setState({ selectedDeletedIds: selected });
-        renderApp(pages.recentlyDeleted());
+        renderApp(window.pages.recentlyDeleted());
     },
 
 
@@ -8274,7 +8264,7 @@ Object.assign(handlers, {
         } else {
             store.setState({ selectedDeletedIds: [] });
         }
-        renderApp(pages.recentlyDeleted());
+        renderApp(window.pages.recentlyDeleted());
     },
 
     // ============================================

@@ -12630,6 +12630,9 @@ body.dark-mode .notification-channel-btn {
     background: var(--gray-100);
 }
 
+.widget-collapsed .card-body { display: none; }
+.widget-collapsed .widget-collapse-btn { transform: rotate(180deg); }
+
 /* Dashboard Widget Resize Handles */
 .dashboard-widget {
     position: relative;

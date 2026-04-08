@@ -6,7 +6,7 @@ Object.assign(handlers, {
     setOrdersViewMode: function(mode) {
         store.setState({ ordersViewMode: mode });
         localStorage.setItem('vl_orders_view_mode', mode);
-        renderApp(pages.orders());
+        renderApp(window.pages.orders());
     },
 
     // Offer handlers,
@@ -40,7 +40,7 @@ Object.assign(handlers, {
             toast.success('Offer accepted!');
             // Update in-place to avoid full app re-render (preserves scroll position)
             const pageEl = document.querySelector('.page-content');
-            if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
             console.error('Failed to accept offer:', error);
             const errorMsg = error.message || 'Unknown error';
@@ -168,7 +168,7 @@ Object.assign(handlers, {
             store.setState({ offers });
             toast.info('Offer declined');
             const pageEl = document.querySelector('.page-content');
-            if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
             console.error('Failed to decline offer:', error);
             const errorMsg = error.message || 'Unknown error';
@@ -294,7 +294,7 @@ Object.assign(handlers, {
             store.setState({ offers });
             toast.success(`Counter offer of C$${counterAmount.toFixed(2)} sent!`);
             const pageEl = document.querySelector('.page-content');
-            if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
             console.error('Failed to send counter offer:', error);
             const errorMsg = error.message || 'Unknown error';
@@ -349,7 +349,7 @@ Object.assign(handlers, {
             store.setState({ offersStatusFilter: value, selectedOffers: [] });
         }
         const pageEl = document.querySelector('.page-content');
-        if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     },
 
     // Toggle selection of a single offer,
@@ -364,7 +364,7 @@ Object.assign(handlers, {
             store.setState({ selectedOffers: selectedOffers.filter(id => id !== offerId) });
         }
         const pageEl = document.querySelector('.page-content');
-        if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     },
 
     // Select or deselect all pending offers,
@@ -379,7 +379,7 @@ Object.assign(handlers, {
             store.setState({ selectedOffers: [] });
         }
         const pageEl = document.querySelector('.page-content');
-        if (pageEl) { pageEl.innerHTML = sanitizeHTML(pages.offers()); } else { renderApp(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        if (pageEl) { pageEl.innerHTML = sanitizeHTML(window.pages.offers()); } else { renderApp(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
     },
 
     // Bulk accept all selected offers,
@@ -394,7 +394,7 @@ Object.assign(handlers, {
         if (!await modals.confirm(`Accept ${selectedOffers.length} offer${selectedOffers.length > 1 ? 's' : ''}?`)) return;
 
         store.setState({ offersProcessing: true });
-        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
         let successCount = 0;
         let failCount = 0;
@@ -422,7 +422,7 @@ Object.assign(handlers, {
             } else {
                 toast.warning(`Accepted ${successCount}, failed ${failCount}`);
             }
-            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
             console.error('Failed to bulk accept offers:', error);
             toast.error('Failed to process offers: ' + (error.message || 'Unknown error'));
@@ -443,7 +443,7 @@ Object.assign(handlers, {
         if (!await modals.confirm(`Decline ${selectedOffers.length} offer${selectedOffers.length > 1 ? 's' : ''}?`, { danger: true })) return;
 
         store.setState({ offersProcessing: true });
-        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+        { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
 
         let successCount = 0;
         let failCount = 0;
@@ -471,7 +471,7 @@ Object.assign(handlers, {
             } else {
                 toast.warning(`Declined ${successCount}, failed ${failCount}`);
             }
-            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            { const el = document.querySelector('.page-content'); if (el) el.innerHTML = sanitizeHTML(window.pages.offers()); }  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
         } catch (error) {
             console.error('Failed to bulk decline offers:', error);
             toast.error('Failed to process offers: ' + (error.message || 'Unknown error'));
@@ -488,45 +488,51 @@ Object.assign(handlers, {
 
 
     showAddTransaction: function() {
-        modals.show('Add Transaction', `
-            <form onsubmit="handlers.saveTransaction(event)">
-                <div class="form-group">
-                    <label class="form-label">Type</label>
-                    <select class="form-select" name="type" required>
-                        <option value="sale">Sale</option>
-                        <option value="expense">Expense</option>
-                        <option value="refund">Refund</option>
-                        <option value="fee">Platform Fee</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Amount</label>
-                    <input type="number" class="form-input" name="amount" step="0.01" min="0.01" max="99999.99" required oninput="handlers.validateTxAmount(this)">
-                    <div id="tx-amount-error" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;"></div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <input type="text" class="form-input" name="description">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Date</label>
-                    <input type="date" class="form-input" name="date" value="${toLocalDate(new Date())}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Category</label>
-                    <select class="form-select" name="category">
-                        <option value="shipping">Shipping</option>
-                        <option value="supplies">Supplies</option>
-                        <option value="marketing">Marketing</option>
-                        <option value="fees">Fees</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Transaction</button>
-                </div>
-            </form>
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Add Transaction</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="handlers.saveTransaction(event)">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="type" required>
+                            <option value="sale">Sale</option>
+                            <option value="expense">Expense</option>
+                            <option value="refund">Refund</option>
+                            <option value="fee">Platform Fee</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        <input type="number" class="form-input" name="amount" step="0.01" min="0.01" max="99999.99" required oninput="handlers.validateTxAmount(this)">
+                        <div id="tx-amount-error" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-input" name="description">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-input" name="date" value="${toLocalDate(new Date())}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category">
+                            <option value="shipping">Shipping</option>
+                            <option value="supplies">Supplies</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="fees">Fees</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Transaction</button>
+                    </div>
+                </form>
+            </div>
         `);
     },
 
@@ -583,22 +589,22 @@ Object.assign(handlers, {
         }
 
         store.setState({ _txDuplicateConfirmed: false });
-        toast.success('Transaction added successfully.');
+        toast.success('Transaction added');
         modals.close();
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
 
     setTransactionView: function(view) {
         store.setState({ transactionView: view });
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
 
     setTxQuickDate: function(period) {
         store.setState({ txDateFilter: period });
         handlers.saveTxFilters();
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
 
@@ -765,7 +771,7 @@ Object.assign(handlers, {
             await api.post(`/financials/transactions/${txId}/split`, { splits });
             toast.success('Transaction split successfully');
             modals.close();
-            renderApp(pages.transactions());
+            renderApp(window.pages.transactions());
         } catch (err) {
             toast.error('Split failed: ' + (err.message || 'Unknown error'));
         }
@@ -779,7 +785,7 @@ Object.assign(handlers, {
             toast.info('Auto-categorizing transactions...');
             const data = await api.post('/financials/auto-categorize');
             toast.success(data.message || 'Done');
-            renderApp(pages.transactions());
+            renderApp(window.pages.transactions());
         } catch (err) {
             toast.error('Auto-categorize failed: ' + (err.message || 'Unknown error'));
         }
@@ -791,7 +797,7 @@ Object.assign(handlers, {
         const idx = selected.indexOf(id);
         if (idx >= 0) selected.splice(idx, 1); else selected.push(id);
         store.setState({ selectedPurchases: [...selected] });
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
 
@@ -802,7 +808,7 @@ Object.assign(handlers, {
         } else {
             store.setState({ selectedPurchases: [] });
         }
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
 
@@ -821,7 +827,7 @@ Object.assign(handlers, {
         store.setState({ selectedPurchases: [] });
         await handlers.loadPurchases();
         toast.success(`Updated ${updated} of ${selected.length} purchases to "${category}"`);
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
     // Recurring Transaction Templates,
@@ -1191,7 +1197,7 @@ Object.assign(handlers, {
 
     setFinancialsTab: function(tab) {
         store.setState({ financialsTab: tab });
-        renderApp(pages.financials());
+        renderApp(window.pages.financials());
     },
 
 
@@ -1228,7 +1234,7 @@ Object.assign(handlers, {
         store.setState({ monthlyBudget: parseFloat(budget) || 500 });
         toast.success('Budget settings saved');
         modals.close();
-        renderApp(pages.financials());
+        renderApp(window.pages.financials());
     },
 
     // Analytics handlers,
@@ -1236,7 +1242,7 @@ Object.assign(handlers, {
 
     setAnalyticsPeriod: function(period) {
         store.setState({ analyticsPeriod: period });
-        renderApp(pages.analytics());
+        renderApp(window.pages.analytics());
     },
 
 
@@ -1244,7 +1250,7 @@ Object.assign(handlers, {
         toast.info('Refreshing analytics data...');
         setTimeout(() => {
             toast.success('Analytics updated');
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }, 1000);
     },
 
@@ -1289,7 +1295,7 @@ Object.assign(handlers, {
         });
         toast.success('Goals updated');
         modals.close();
-        renderApp(pages.analytics());
+        renderApp(window.pages.analytics());
     },
 
 
@@ -1826,7 +1832,7 @@ Object.assign(handlers, {
 
         // Refresh orders page if on it
         if (store.state.currentPage === 'orders') {
-            renderApp(pages.orders());
+            renderApp(window.pages.orders());
         }
     },
 
@@ -1840,7 +1846,7 @@ Object.assign(handlers, {
         toast.info('Reminder removed');
 
         if (store.state.currentPage === 'orders') {
-            renderApp(pages.orders());
+            renderApp(window.pages.orders());
         }
     },
 
@@ -2514,7 +2520,7 @@ Object.assign(handlers, {
             store.setState({ orders });
             modals.close();
             toast.success('Return initiated successfully');
-            renderApp(pages.orders());
+            renderApp(window.pages.orders());
         } catch (error) {
             toast.error('Failed to initiate return: ' + error.message);
         }
@@ -2586,7 +2592,7 @@ Object.assign(handlers, {
             store.setState({ orders });
             toast.success('Priority updated to ' + priority);
             modals.close();
-            renderApp(pages.orders());
+            renderApp(window.pages.orders());
         } catch (err) {
             toast.error('Failed to update priority: ' + err.message);
         }
@@ -2647,7 +2653,7 @@ Object.assign(handlers, {
             toast.success('Order split into ' + count + ' shipments');
             modals.close();
             await handlers.loadOrders();
-            renderApp(pages.orders());
+            renderApp(window.pages.orders());
         } catch (err) {
             toast.error('Failed to split shipment: ' + err.message);
         }
@@ -2822,20 +2828,28 @@ Object.assign(handlers, {
                         <h4 class="section-title">${components.icon('box', 16)} Package Details</h4>
                         <div class="shipping-calc-grid">
                             <div class="calc-input-group">
-                                <label>Weight (kg)</label>
-                                <input type="number" id="ship-weight" class="form-control" value="0.5" min="0.1" step="0.1" onchange="handlers.updateShippingCalc()">
+                                <label for="ship-weight">Weight</label>
+                                <div style="display:flex;gap:4px;align-items:center;">
+                                    <input type="number" id="ship-weight" class="form-control" value="1" min="0.1" step="0.1" onchange="handlers.updateShippingCalc()" style="flex:1;">
+                                    <select id="ship-weight-unit" aria-label="Weight unit" onchange="handlers.updateWeightUnit(this.value)" style="padding:4px 6px;">
+                                        <option value="oz" ${(store.state.shippingWeightUnit || 'oz') === 'oz' ? 'selected' : ''}>oz</option>
+                                        <option value="lb" ${(store.state.shippingWeightUnit || 'oz') === 'lb' ? 'selected' : ''}>lb</option>
+                                        <option value="kg" ${(store.state.shippingWeightUnit || 'oz') === 'kg' ? 'selected' : ''}>kg</option>
+                                        <option value="g" ${(store.state.shippingWeightUnit || 'oz') === 'g' ? 'selected' : ''}>g</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="calc-input-group">
-                                <label>Length (cm)</label>
-                                <input type="number" id="ship-length" class="form-control" value="30" min="1" step="1" onchange="handlers.updateShippingCalc()">
+                                <label>Length (in)</label>
+                                <input type="number" id="ship-length" class="form-control" value="12" min="1" onchange="handlers.updateShippingCalc()">
                             </div>
                             <div class="calc-input-group">
-                                <label>Width (cm)</label>
-                                <input type="number" id="ship-width" class="form-control" value="23" min="1" step="1" onchange="handlers.updateShippingCalc()">
+                                <label>Width (in)</label>
+                                <input type="number" id="ship-width" class="form-control" value="9" min="1" onchange="handlers.updateShippingCalc()">
                             </div>
                             <div class="calc-input-group">
-                                <label>Height (cm)</label>
-                                <input type="number" id="ship-height" class="form-control" value="10" min="1" step="1" onchange="handlers.updateShippingCalc()">
+                                <label>Height (in)</label>
+                                <input type="number" id="ship-height" class="form-control" value="4" min="1" onchange="handlers.updateShippingCalc()">
                             </div>
                         </div>
                     </div>
@@ -2844,8 +2858,8 @@ Object.assign(handlers, {
                     <div class="shipping-calc-section">
                         <h4 class="section-title">${components.icon('zap', 16)} Quick Presets</h4>
                         <div class="shipping-presets">
-                            <button class="preset-btn" onclick="handlers.applyShippingPreset('letter')">
-                                ${components.icon('mail', 14)} Letter
+                            <button class="preset-btn" onclick="handlers.applyShippingPreset('envelope')">
+                                ${components.icon('mail', 14)} Envelope
                             </button>
                             <button class="preset-btn" onclick="handlers.applyShippingPreset('small')">
                                 ${components.icon('box', 14)} Small Box
@@ -2856,8 +2870,8 @@ Object.assign(handlers, {
                             <button class="preset-btn" onclick="handlers.applyShippingPreset('large')">
                                 ${components.icon('archive', 14)} Large Box
                             </button>
-                            <button class="preset-btn" onclick="handlers.applyShippingPreset('extralarge')">
-                                ${components.icon('shopping-bag', 14)} Extra Large
+                            <button class="preset-btn" onclick="handlers.applyShippingPreset('poly')">
+                                ${components.icon('shopping-bag', 14)} Poly Mailer
                             </button>
                         </div>
                     </div>
@@ -2868,7 +2882,7 @@ Object.assign(handlers, {
                         <div id="shipping-estimates" class="shipping-estimates-grid">
                             <!-- Populated by updateShippingCalc -->
                         </div>
-                        <p class="shipping-disclaimer">* Estimates only in CAD. Actual rates depend on zone, fuel surcharges, and dimensional pricing. Use Rate Shopping for precise quotes.</p>
+                        <p class="shipping-disclaimer">* Estimates only. Actual rates may vary based on zone, service level, and promotions.</p>
                     </div>
 
                     <!-- Dimensional Weight Info -->
@@ -2892,11 +2906,11 @@ Object.assign(handlers, {
 
     applyShippingPreset: function(preset) {
         const presets = {
-            letter: { weight: 0.1, length: 30, width: 24, height: 1 },
-            small: { weight: 0.5, length: 20, width: 15, height: 10 },
-            medium: { weight: 1.0, length: 30, width: 25, height: 15 },
-            large: { weight: 2.0, length: 45, width: 35, height: 25 },
-            extralarge: { weight: 5.0, length: 60, width: 45, height: 30 }
+            envelope: { weight: 0.3, length: 12, width: 9, height: 0.5 },
+            small: { weight: 1, length: 8, width: 6, height: 4 },
+            medium: { weight: 3, length: 12, width: 9, height: 6 },
+            large: { weight: 5, length: 18, width: 12, height: 8 },
+            poly: { weight: 0.5, length: 14, width: 10, height: 2 }
         };
 
         const p = presets[preset];
@@ -2921,30 +2935,21 @@ Object.assign(handlers, {
         const width = parseFloat(document.getElementById('ship-width')?.value) || 9;
         const height = parseFloat(document.getElementById('ship-height')?.value) || 4;
 
-        // Calculate dimensional weight (L x W x H cm³ / 5000 = kg, international metric standard)
-        const dimWeight = (length * width * height) / 5000;
+        // Calculate dimensional weight (L x W x H / 139 for most carriers)
+        const dimWeight = (length * width * height) / 139;
         const billableWeight = Math.max(weight, dimWeight);
 
         // Carrier rate estimates (simplified - real world would use API)
-        // Rates shown in CAD. Estimates only — actual rates vary by carrier.
         const rates = [
-            { carrier: 'Canada Post', service: 'Regular Parcel', rate: billableWeight <= 0.5 ? 10.50 : 12.00 + (billableWeight * 2.0), days: '5-8' },
-            { carrier: 'Canada Post', service: 'Expedited Parcel', rate: 14.00 + (billableWeight * 2.5), days: '3-6' },
-            { carrier: 'Canada Post', service: 'Xpresspost', rate: 18.00 + (billableWeight * 3.5), days: '2-3' },
-            { carrier: 'Canada Post', service: 'Priority', rate: 28.00 + (billableWeight * 5.0), days: '1-2' },
-            { carrier: 'FedEx Canada', service: 'Ground', rate: 13.50 + (billableWeight * 2.8), days: '2-5' },
-            { carrier: 'FedEx Canada', service: 'Express Saver', rate: 19.00 + (billableWeight * 3.8), days: '3' },
-            { carrier: 'FedEx Canada', service: '2Day', rate: 24.00 + (billableWeight * 4.5), days: '2' },
-            { carrier: 'FedEx Canada', service: 'Standard Overnight', rate: 38.00 + (billableWeight * 6.0), days: '1' },
-            { carrier: 'Chitchats', service: 'Standard', rate: 8.00 + (billableWeight * 1.5), days: '5-10' },
-            { carrier: 'Chitchats', service: 'Express', rate: 12.00 + (billableWeight * 2.5), days: '3-5' },
-            { carrier: 'UPS Canada', service: 'Standard', rate: 14.00 + (billableWeight * 3.0), days: '2-5' },
-            { carrier: 'UPS Canada', service: 'Expedited', rate: 18.00 + (billableWeight * 3.5), days: '2-3' },
-            { carrier: 'UPS Canada', service: 'Express', rate: 30.00 + (billableWeight * 5.5), days: '1-2' },
-            { carrier: 'Purolator', service: 'Ground', rate: 15.00 + (billableWeight * 3.2), days: '1-3' },
-            { carrier: 'Purolator', service: 'Express', rate: 24.00 + (billableWeight * 4.8), days: '1-2' },
-            { carrier: 'Purolator', service: 'Express 9AM', rate: 34.00 + (billableWeight * 6.5), days: '1' }
-        ];
+            { carrier: 'USPS', service: 'First Class', rate: weight <= 1 ? 4.50 : null, days: '2-5' },
+            { carrier: 'USPS', service: 'Priority Mail', rate: 8.50 + (billableWeight * 0.5), days: '1-3' },
+            { carrier: 'USPS', service: 'Ground Advantage', rate: 5.50 + (billableWeight * 0.3), days: '2-5' },
+            { carrier: 'UPS', service: 'Ground', rate: 9.50 + (billableWeight * 0.8), days: '1-5' },
+            { carrier: 'UPS', service: '2nd Day Air', rate: 18.00 + (billableWeight * 1.5), days: '2' },
+            { carrier: 'FedEx', service: 'Ground', rate: 9.00 + (billableWeight * 0.75), days: '1-5' },
+            { carrier: 'FedEx', service: 'Express Saver', rate: 16.00 + (billableWeight * 1.2), days: '3' },
+            { carrier: 'Pirate Ship', service: 'Simple Export', rate: 7.50 + (billableWeight * 0.4), days: '2-5' }
+        ].filter(r => r.rate !== null);
 
         // Sort by price
         rates.sort((a, b) => a.rate - b.rate);
@@ -2969,15 +2974,15 @@ Object.assign(handlers, {
             dimEl.innerHTML = sanitizeHTML(`
                 <div class="dim-weight-row">
                     <span>Actual Weight:</span>
-                    <strong>${weight.toFixed(1)} kg</strong>
+                    <strong>${weight.toFixed(1)} lbs</strong>
                 </div>
                 <div class="dim-weight-row">
                     <span>Dimensional Weight:</span>
-                    <strong>${dimWeight.toFixed(1)} kg</strong>
+                    <strong>${dimWeight.toFixed(1)} lbs</strong>
                 </div>
                 <div class="dim-weight-row billable">
                     <span>Billable Weight:</span>
-                    <strong>${billableWeight.toFixed(1)} kg</strong>
+                    <strong>${billableWeight.toFixed(1)} lbs</strong>
                     ${dimWeight > weight ? '<span class="dim-warning">(DIM weight applies)</span>' : ''}
                 </div>
             `);
@@ -3597,7 +3602,7 @@ Object.assign(handlers, {
                 <div class="mb-4">
                     <h4 class="font-medium mb-3">Quick Sync by Platform</h4>
                     <div class="flex flex-wrap gap-2">
-                        ${(window.SUPPORTED_PLATFORMS || []).map(p => p.id).map(p => `
+                        ${['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'].map(p => `
                             <button class="btn btn-sm btn-secondary" onclick="handlers.syncPlatformOrders('${p}')">
                                 ${components.platformBadge(p)} Sync
                             </button>
@@ -3664,7 +3669,7 @@ Object.assign(handlers, {
             // Reload orders
             await handlers.loadOrders();
             if (store.state.currentPage === 'orders') {
-                renderApp(pages.orders());
+                renderApp(window.pages.orders());
             }
         } catch (error) {
             toast.error('Failed to import CSV: ' + error.message);
@@ -3693,7 +3698,7 @@ Object.assign(handlers, {
 
             await handlers.loadOrders();
             if (store.state.currentPage === 'orders') {
-                renderApp(pages.orders());
+                renderApp(window.pages.orders());
             }
         } catch (error) {
             toast.error('Failed to sync orders: ' + error.message);
@@ -3710,7 +3715,7 @@ Object.assign(handlers, {
             toast.success(result.message || 'Orders synced from ' + platform);
             await handlers.loadOrders();
             if (store.state.currentPage === 'orders') {
-                renderApp(pages.orders());
+                renderApp(window.pages.orders());
             }
         } catch (error) {
             toast.error('Failed to sync ' + platform + ' orders: ' + error.message);
@@ -3853,7 +3858,7 @@ Object.assign(handlers, {
     switchFinancialsTab: function(tab) {
         store.setState({ financialsTab: tab });
         if (store.state.currentPage === 'financials') {
-            renderApp(pages.financials());
+            renderApp(window.pages.financials());
         }
     },
 
@@ -3861,7 +3866,7 @@ Object.assign(handlers, {
     switchFinancialStatementsSubTab: function(subTab) {
         store.setState({ financialStatementsSubTab: subTab });
         if (store.state.currentPage === 'financials') {
-            renderApp(pages.financials());
+            renderApp(window.pages.financials());
         }
     },
 
@@ -3890,32 +3895,19 @@ Object.assign(handlers, {
     },
 
 
-    convertCurrency: async function() {
+    convertCurrency: function() {
         const amount = parseFloat(document.getElementById('currency-amount')?.value || 100);
         const target = document.getElementById('currency-target')?.value || 'EUR';
-        const resultEl = document.getElementById('currency-result');
-        if (!resultEl) return;
-
-        // Use cached rates or fetch
-        let rates = store.state.currencyRates;
-        if (!rates) {
-            resultEl.innerHTML = '<span class="text-gray-400">Loading rates...</span>'; // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            try {
-                const res = await api.get('/currency/rates');
-                rates = res.data?.rates || res.rates;
-                if (rates) store.setState({ currencyRates: rates });
-            } catch (e) {
-                rates = { EUR: 0.925, GBP: 0.795, CAD: 1.365, AUD: 1.535, JPY: 149.8 };
-            }
-        }
-
+        const rates = { EUR: 0.925, GBP: 0.795, CAD: 1.365, AUD: 1.535, JPY: 149.8 };
+        const symbols = { EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$', JPY: '¥' };
         const rate = rates[target] || 1;
-        const symbols = { EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$', JPY: '¥', USD: '$' };
-        const converted = (amount * rate).toFixed(2);
-        const safeTarget = target.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        const safeSymbol = (symbols[target] || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        resultEl.innerHTML = '<span class="text-2xl font-bold">' + safeSymbol + converted + '</span>' + // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-            '<div class="text-xs text-gray-500 mt-1">1 USD = ' + rate.toFixed(4) + ' ' + safeTarget + '</div>';
+        const converted = amount * rate;
+        const el = document.getElementById('currency-result');
+        if (el) {
+            const safeTarget = target.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            el.innerHTML = sanitizeHTML('<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">') + (symbols[target] || '') + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 USD = ' + rate + ' ' + safeTarget + ' (indicative rate)</div>';
+        }
     },
 
 
@@ -3981,7 +3973,7 @@ Object.assign(handlers, {
         store.setState({ financialGoals });
         toast.success('Financial goal "' + newGoal.name + '" created');
         modals.close();
-        renderApp(pages.financials());
+        renderApp(window.pages.financials());
     },
 
 
@@ -4011,7 +4003,7 @@ Object.assign(handlers, {
         store.setState({ bankBalance });
         toast.success('Bank balance updated to $' + bankBalance.toLocaleString());
         modals.close();
-        renderApp(pages.financials());
+        renderApp(window.pages.financials());
     },
 
 
@@ -4166,7 +4158,7 @@ Object.assign(handlers, {
             modals.close();
             await this.loadPurchases();
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to add purchase: ' + error.message);
@@ -4242,7 +4234,7 @@ Object.assign(handlers, {
             toast.success('Purchase deleted');
             await this.loadPurchases();
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to delete purchase: ' + error.message);
@@ -4449,7 +4441,7 @@ Object.assign(handlers, {
             modals.close();
             await this.loadAccounts();
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to add account: ' + error.message);
@@ -4464,7 +4456,7 @@ Object.assign(handlers, {
             toast.success(result.message || 'Default accounts created');
             await this.loadAccounts();
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to create default accounts: ' + error.message);
@@ -4594,7 +4586,7 @@ Object.assign(handlers, {
             });
 
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to generate statements: ' + error.message);
@@ -4614,7 +4606,7 @@ Object.assign(handlers, {
             const data = await api.get(`/financials/profit-loss?${params.toString()}`);
             store.setState({ profitLossReport: data.profitLoss });
             if (store.state.currentPage === 'financials') {
-                renderApp(pages.financials());
+                renderApp(window.pages.financials());
             }
         } catch (error) {
             toast.error('Failed to generate P&L: ' + error.message);
@@ -4628,7 +4620,7 @@ Object.assign(handlers, {
         store.setState({ salesDateStart: start, salesDateEnd: end });
         // Re-render to filter (filtering done in the page render)
         if (store.state.currentPage === 'financials') {
-            renderApp(pages.financials());
+            renderApp(window.pages.financials());
         }
     },
 
@@ -4677,7 +4669,7 @@ Object.assign(handlers, {
 
             case 'platform-comparison':
                 headers = ['Platform', 'Total Sales', 'Revenue', 'Fees', 'Net Profit', 'Avg Sale'];
-                const platforms = (window.SUPPORTED_PLATFORMS || []).map(p => p.id);
+                const platforms = ['poshmark', 'ebay', 'whatnot', 'depop', 'shopify', 'facebook'];
                 data = platforms.map(p => {
                     const platformSales = (store.state.sales || []).filter(s => s.platform === p);
                     const revenue = platformSales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
@@ -4797,7 +4789,7 @@ Object.assign(handlers, {
 
         // Re-render page using renderApp for proper state handling
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
             // Force sync dropdown value after full re-render
             requestAnimationFrame(() => {
                 const dd = document.getElementById('analytics-period');
@@ -4810,7 +4802,7 @@ Object.assign(handlers, {
     toggleAnalyticsCompare: function() {
         store.setState({ analyticsCompareMode: !store.state.analyticsCompareMode });
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }
     },
 
@@ -4837,7 +4829,7 @@ Object.assign(handlers, {
 
         // Re-render using renderApp for proper state handling
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }
     },
 
@@ -4853,7 +4845,7 @@ Object.assign(handlers, {
             });
         }
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }
     },
 
@@ -4869,7 +4861,7 @@ Object.assign(handlers, {
             });
         }
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }
     },
 
@@ -4963,7 +4955,7 @@ Object.assign(handlers, {
 
         toast.success('Analytics settings saved');
         modals.close();
-        renderApp(pages.analytics());
+        renderApp(window.pages.analytics());
     },
 
     // Switch chart display type (line, bar, pie),
@@ -4973,7 +4965,7 @@ Object.assign(handlers, {
         const chartDisplayModes = { ...store.state.chartDisplayModes, [chartId]: type };
         store.setState({ chartDisplayModes });
         if (store.state.currentPage === 'analytics') {
-            renderApp(pages.analytics());
+            renderApp(window.pages.analytics());
         }
     },
 
@@ -5049,7 +5041,7 @@ Object.assign(handlers, {
             store.setState({ sales: data.sales || [] });
 
             if (store.state.currentPage === 'analytics') {
-                renderApp(pages.analytics());
+                renderApp(window.pages.analytics());
             }
         } catch (error) {
             toast.error('Failed to filter sales: ' + error.message);
@@ -5060,7 +5052,7 @@ Object.assign(handlers, {
     setTransactionsTab: function(tab) {
         store.setState({ transactionsTab: tab });
         localStorage.setItem('vaultlister_tx_tab', tab);
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
 
@@ -5089,7 +5081,7 @@ Object.assign(handlers, {
         handlers._txSearchTimer = setTimeout(() => {
             const focusedId = document.activeElement?.dataset?.txFilter;
             const cursorPos = document.activeElement?.selectionStart;
-            renderApp(pages.transactions());
+            renderApp(window.pages.transactions());
             // Restore focus to the input after re-render
             if (focusedId) {
                 const el = document.querySelector(`[data-tx-filter="${focusedId}"]`);
@@ -5221,7 +5213,7 @@ Object.assign(handlers, {
         await handlers.loadPurchases();
         toast.success(`Imported ${imported} expense transactions (${skipped} skipped)`);
         modals.close();
-        if (store.state.currentPage === 'transactions') renderApp(pages.transactions());
+        if (store.state.currentPage === 'transactions') renderApp(window.pages.transactions());
     },
 
 
@@ -5413,7 +5405,7 @@ Object.assign(handlers, {
         }
 
         modals.close();
-        renderApp(pages.transactions());
+        renderApp(window.pages.transactions());
     },
 
 
@@ -5444,7 +5436,7 @@ Object.assign(handlers, {
             // Reload purchases
             await handlers.loadPurchases();
             if (store.state.currentPage === 'transactions') {
-                renderApp(pages.transactions());
+                renderApp(window.pages.transactions());
             }
         } catch (error) {
             toast.error('Failed to add purchase: ' + error.message);
@@ -5563,7 +5555,7 @@ Object.assign(handlers, {
             document.getElementById('create-label-modal')?.remove();
             toast.success('Shipping label created');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to create label: ' + e.message);
         }
@@ -5647,7 +5639,7 @@ Object.assign(handlers, {
             await api.delete(`/shipping-labels-mgmt/${labelId}`);
             toast.success('Label deleted');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to delete label');
         }
@@ -5699,7 +5691,7 @@ Object.assign(handlers, {
             toast.success('Batch created');
             await handlers.loadShippingLabelsData();
             store.setState({ shippingLabelsTab: 'batches' });
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to create batch');
         }
@@ -5712,7 +5704,7 @@ Object.assign(handlers, {
             const data = await api.post(`/shipping-labels-mgmt/batches/${batchId}/process`, {});
             toast.success(data.message);
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to process batch');
         }
@@ -5773,7 +5765,7 @@ Object.assign(handlers, {
             document.getElementById('add-address-modal')?.remove();
             toast.success('Address saved');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to save address: ' + e.message);
         }
@@ -5786,7 +5778,7 @@ Object.assign(handlers, {
             await api.patch(`/shipping-labels-mgmt/addresses/${addrId}`, { is_default: true });
             toast.success('Default address updated');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to update address');
         }
@@ -5800,7 +5792,7 @@ Object.assign(handlers, {
             await api.delete(`/shipping-labels-mgmt/addresses/${addrId}`);
             toast.success('Address deleted');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to delete address');
         }
@@ -5815,7 +5807,7 @@ Object.assign(handlers, {
         store.setState({
             editingReport: { name: '', description: '', widgets: [], date_range: '30d' }
         });
-        renderApp(pages.reports());
+        renderApp(window.pages.reports());
     },
 
 
@@ -5835,7 +5827,7 @@ Object.assign(handlers, {
         if (!report) return;
         const widgets = [...(report.widgets || []), { type, label, size, id: 'w-' + Date.now() }];
         store.setState({ editingReport: { ...report, widgets } });
-        renderApp(pages.reports());
+        renderApp(window.pages.reports());
     },
 
 
@@ -5845,7 +5837,7 @@ Object.assign(handlers, {
         const widgets = [...(report.widgets || [])];
         widgets.splice(index, 1);
         store.setState({ editingReport: { ...report, widgets } });
-        renderApp(pages.reports());
+        renderApp(window.pages.reports());
     },
 
 
@@ -5880,7 +5872,7 @@ Object.assign(handlers, {
             }
             store.setState({ editingReport: null });
             await handlers.loadReportsData();
-            renderApp(pages.reports());
+            renderApp(window.pages.reports());
         } catch (e) {
             toast.error('Failed to save report: ' + e.message);
         }
@@ -5900,7 +5892,7 @@ Object.assign(handlers, {
             });
             toast.success(result.message || 'Labels marked as printed');
             await handlers.loadShippingLabelsData();
-            renderApp(pages.shippingLabelsPage());
+            renderApp(window.pages.shippingLabelsPage());
         } catch (e) {
             toast.error('Failed to mark labels as printed');
         }
@@ -6148,7 +6140,7 @@ Object.assign(handlers, {
             toast.success('Report created successfully');
             modals.close();
             await this.loadReports();
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
         } catch (err) {
             toast.error('Failed to create report');
             console.error(err);
@@ -6162,7 +6154,7 @@ Object.assign(handlers, {
             toast.success('Report created from template');
             modals.close();
             await this.loadReports();
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
         } catch (err) {
             toast.error('Failed to create report from template');
         }
@@ -6173,7 +6165,7 @@ Object.assign(handlers, {
         try {
             const data = await api.post(`/reports/${id}/run`, {});
             store.setState({ reportResults: data.results || { columns: [], rows: [] } });
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
             toast.success('Report executed successfully');
         } catch (err) {
             toast.error('Failed to run report');
@@ -6196,7 +6188,7 @@ Object.assign(handlers, {
             toast.success('Report updated');
             modals.close();
             await this.loadReports();
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
         } catch (err) {
             toast.error('Failed to update report');
             console.error(err);
@@ -6352,7 +6344,7 @@ Object.assign(handlers, {
         try {
             const data = await api.post('/reports/query', { query });
             store.setState({ reportResults: data.results || { columns: [], rows: [] } });
-            renderApp(pages.reportBuilder());
+            renderApp(window.pages.reportBuilder());
             modals.close();
             toast.success('Query executed successfully');
         } catch (err) {

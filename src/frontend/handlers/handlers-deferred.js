@@ -3937,6 +3937,16 @@ Object.assign(handlers, {
         renderApp(window.pages.financials());
     },
 
+    setBudgetAlertThreshold: function(value) {
+        const threshold = Math.min(100, Math.max(1, parseInt(value) || 80));
+        store.setState({ budgetAlertThreshold: threshold });
+        toast.success('Budget alert threshold updated');
+    },
+
+    updateWeightUnit: function(value) {
+        store.setState({ shippingWeightUnit: value });
+    },
+
     showBudgetSettings: function() {
         modals.show(`
             <div class="modal-header">
@@ -10044,8 +10054,16 @@ Object.assign(handlers, {
                         <h4 class="section-title">${components.icon('box', 16)} Package Details</h4>
                         <div class="shipping-calc-grid">
                             <div class="calc-input-group">
-                                <label>Weight (lbs)</label>
-                                <input type="number" id="ship-weight" class="form-control" value="1" min="0.1" step="0.1" onchange="handlers.updateShippingCalc()">
+                                <label for="ship-weight">Weight</label>
+                                <div style="display:flex;gap:4px;align-items:center;">
+                                    <input type="number" id="ship-weight" class="form-control" value="1" min="0.1" step="0.1" onchange="handlers.updateShippingCalc()" style="flex:1;">
+                                    <select id="ship-weight-unit" aria-label="Weight unit" onchange="handlers.updateWeightUnit(this.value)" style="padding:4px 6px;">
+                                        <option value="oz" ${(store.state.shippingWeightUnit || 'oz') === 'oz' ? 'selected' : ''}>oz</option>
+                                        <option value="lb" ${(store.state.shippingWeightUnit || 'oz') === 'lb' ? 'selected' : ''}>lb</option>
+                                        <option value="kg" ${(store.state.shippingWeightUnit || 'oz') === 'kg' ? 'selected' : ''}>kg</option>
+                                        <option value="g" ${(store.state.shippingWeightUnit || 'oz') === 'g' ? 'selected' : ''}>g</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="calc-input-group">
                                 <label>Length (in)</label>

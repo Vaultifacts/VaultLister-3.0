@@ -1069,6 +1069,7 @@ Object.assign(pages, {
                                         ${visibleColumns.includes('price') ? `
                                             <td>
                                                 <div class="font-medium">C$${listing.price}</div>
+                                                <span class="listing-fee text-sm text-muted">${listing.platform_fee ? 'Fee: C$' + parseFloat(listing.platform_fee).toFixed(2) : 'Fee: N/A'}</span>
                                                 ${(() => {
                                                     const priceHistory = listing.price_history ? (typeof listing.price_history === 'string' ? JSON.parse(listing.price_history) : listing.price_history) : [listing.price * 1.1, listing.price * 1.05, listing.price];
                                                     if (priceHistory.length >= 2) {
@@ -1316,8 +1317,20 @@ Object.assign(pages, {
     // Automations page,
 
     automations() {
-        // Use shared automation presets (loaded from /shared/automations/presets.js)
-        const allPresets = window.AUTOMATION_PRESETS || [];
+        const BUILTIN_AUTOMATIONS = [
+            { id: 'poshmark_share_closet', platform: 'poshmark', name: 'Share Closet', description: 'Automatically share all your Poshmark listings at set intervals', icon: 'share-2', category: 'sharing' },
+            { id: 'poshmark_follow_back', platform: 'poshmark', name: 'Follow Back', description: 'Automatically follow users who follow you', icon: 'user-plus', category: 'engagement' },
+            { id: 'poshmark_offer_likers', platform: 'poshmark', name: 'Offer to Likers', description: 'Automatically send discounted offers to users who liked your listings', icon: 'tag', category: 'offers' },
+            { id: 'poshmark_community_share', platform: 'poshmark', name: 'Community Sharing', description: 'Share items from community feeds to increase visibility', icon: 'users', category: 'sharing' },
+            { id: 'depop_refresh', platform: 'depop', name: 'Refresh Listings', description: 'Automatically refresh Depop listings to boost visibility', icon: 'refresh-cw', category: 'listing' },
+            { id: 'grailed_bump', platform: 'grailed', name: 'Bump Listings', description: 'Automatically bump Grailed listings to the top', icon: 'trending-up', category: 'listing' },
+            { id: 'mercari_relist', platform: 'mercari', name: 'Relist Items', description: 'Automatically relist sold-out or expired Mercari items', icon: 'repeat', category: 'listing' },
+            { id: 'facebook_refresh', platform: 'facebook', name: 'Refresh Listings', description: 'Automatically refresh Facebook Marketplace listings', icon: 'refresh-cw', category: 'listing' },
+        ];
+        // Use shared automation presets if available, otherwise fall back to built-in list
+        const allPresets = (window.AUTOMATION_PRESETS && window.AUTOMATION_PRESETS.length > 0)
+            ? window.AUTOMATION_PRESETS
+            : BUILTIN_AUTOMATIONS;
 
         // Merge presets with existing rules to show enabled state
         const automations = allPresets.map(preset => {
@@ -1698,12 +1711,12 @@ Object.assign(pages, {
                         </div>
                         <div class="performance-metric-card">
                             <div class="metric-icon efficiency">
-                                ${components.icon('trending-up', 24)}
+                                ${components.icon('activity', 24)}
                             </div>
                             <div class="metric-content">
-                                <div class="metric-value">${successRate}%</div>
-                                <div class="metric-label">Success Rate</div>
-                                <div class="metric-comparison ${successRate >= 95 ? 'positive' : 'neutral'}">Target: 95%</div>
+                                <div class="metric-value">${runsToday}</div>
+                                <div class="metric-label">Runs Today</div>
+                                <div class="metric-comparison neutral">${totalRuns} total</div>
                             </div>
                         </div>
                         <div class="performance-metric-card">
@@ -2889,7 +2902,9 @@ Object.assign(pages, {
                 </div>
             `,
 
-            accounts: `
+            accounts: (() => {
+                const coaSubTab = store.state.coaSubTab || 'accounts';
+                return `
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Chart of Accounts</h3>
@@ -2902,16 +2917,39 @@ Object.assign(pages, {
                             </button>
                         </div>
                     </div>
-                    <div class="card-body">
-                        ${accounts.length === 0 ? `
-                            <div class="empty-state">
-                                <div class="empty-state-icon">${components.icon('list', 48)}</div>
-                                <h3 class="empty-state-title">No accounts set up</h3>
-                                <p class="empty-state-description">Create accounts to organize your financial transactions</p>
-                                <button class="btn btn-primary" onclick="handlers.seedDefaultAccounts()">Create Default Accounts</button>
-                            </div>
-                        ` : `
-                            ${(() => {
+                    <div class="card-body" style="display:flex;gap:0;padding:0;">
+                        <nav class="coa-left-nav" role="navigation" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                            <button class="coa-nav-item ${coaSubTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'accounts'}" onclick="store.setState({coaSubTab:'accounts'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'accounts' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'accounts' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'accounts' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
+                                ${components.icon('list', 14)} Accounts
+                            </button>
+                            <button class="coa-nav-item ${coaSubTab === 'purchases' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'purchases'}" onclick="store.setState({coaSubTab:'purchases'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'purchases' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'purchases' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'purchases' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
+                                ${components.icon('shopping-cart', 14)} Purchases
+                            </button>
+                            <button class="coa-nav-item ${coaSubTab === 'sales' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'sales'}" onclick="store.setState({coaSubTab:'sales'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'sales' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'sales' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'sales' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
+                                ${components.icon('dollar-sign', 14)} Sales
+                            </button>
+                        </nav>
+                        <div style="flex:1;padding:16px;">
+                            ${coaSubTab === 'purchases' ? `
+                                <div class="empty-state" style="padding:40px 0;">
+                                    <div class="empty-state-icon">${components.icon('shopping-cart', 48)}</div>
+                                    <h3 class="empty-state-title">No purchases recorded yet</h3>
+                                    <p class="empty-state-description">Purchase records will appear here once you add inventory costs or expenses.</p>
+                                </div>
+                            ` : coaSubTab === 'sales' ? `
+                                <div class="empty-state" style="padding:40px 0;">
+                                    <div class="empty-state-icon">${components.icon('dollar-sign', 48)}</div>
+                                    <h3 class="empty-state-title">No sales recorded yet</h3>
+                                    <p class="empty-state-description">Sales records will appear here once you have completed sales.</p>
+                                </div>
+                            ` : accounts.length === 0 ? `
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">${components.icon('list', 48)}</div>
+                                    <h3 class="empty-state-title">No accounts set up</h3>
+                                    <p class="empty-state-description">Create accounts to organize your financial transactions</p>
+                                    <button class="btn btn-primary" onclick="handlers.seedDefaultAccounts()">Create Default Accounts</button>
+                                </div>
+                            ` : (() => {
                                 const grouped = store.state.accountsGrouped || {};
                                 const categories = ['Assets', 'Liabilities', 'Equity', 'Income', 'Expenses'];
                                 return categories.map(cat => {
@@ -2939,10 +2977,11 @@ Object.assign(pages, {
                                     `;
                                 }).join('');
                             })()}
-                        `}
+                        </div>
                     </div>
                 </div>
-            `,
+                `;
+            })(),
 
             statements: (() => {
                 const statementsSubTab = store.state.financialStatementsSubTab || 'income';
@@ -3761,6 +3800,12 @@ Object.assign(pages, {
                     </div>
                     <div class="card-body">
                         ${budgetProgress.render(budgetData)}
+                        <div class="budget-alert-setting mt-2">
+                            <label class="text-sm" for="budget-alert-threshold">Alert at:</label>
+                            <input type="number" id="budget-alert-threshold" min="1" max="100" value="${store.state.budgetAlertThreshold || 80}"
+                                onchange="handlers.setBudgetAlertThreshold(this.value)"
+                                style="width:60px; padding:2px 4px;" aria-label="Budget alert threshold percentage" /> %
+                        </div>
                     </div>
                 </div>
             </div>
@@ -4032,32 +4077,6 @@ Object.assign(pages, {
                                 '<button class="btn btn-sm btn-ghost" onclick="handlers.matchTransaction()" title="Match">' + components.icon('check', 14) + '</button>' +
                             '</div>' +
                         '</div>').join('')}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Fee Breakdown by Marketplace -->
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">${components.icon('dollar-sign', 18)} Platform Fee Analysis</h3>
-                </div>
-                <div class="card-body">
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Platform</th>
-                                    <th>Gross Sales</th>
-                                    <th>Fee Rate</th>
-                                    <th>Total Fees</th>
-                                    <th>Net Revenue</th>
-                                    <th>% of Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td colspan="6" class="text-center text-gray-400" style="padding: 2rem;">No sales data yet. Platform fee analysis will appear once you have sales across connected platforms.</td></tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>

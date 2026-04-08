@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '8575e5ed';
+    const v = 'c9da21a5';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -15664,7 +15664,11 @@ const router = {
                 } else if (path === 'recently-deleted') {
                     await handlers.loadDeletedItems();
                 } else if (path === 'analytics') {
-                    await handlers.loadAnalytics();
+                    // Render shell immediately, load data in background to avoid blocking navigation
+                    handlers.loadAnalytics().then(() => {
+                        if (store.state.currentPage === 'analytics') renderApp(window.pages.analytics());
+                    }).catch(err => console.error('[Router] Analytics background load failed:', err));  // nosemgrep: javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+                    // Skip the await so render proceeds below without waiting
                 } else if (path === 'financials') {
                     await Promise.all([
                         handlers.loadPurchases(),
