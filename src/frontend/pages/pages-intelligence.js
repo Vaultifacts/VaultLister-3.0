@@ -482,10 +482,12 @@ Object.assign(pages, {
                 </div>
                 <div class="card-body">
                     ${(() => {
-                        const alerts = store.state.trendAlerts || [];
-                        if (alerts.length === 0) {
-                            return '<p style="color: var(--gray-500); font-size: 13px; text-align: center; padding: 24px 0;">No trend alerts at this time.</p>';
-                        }
+                        const alerts = store.state.trendAlerts || [
+                            { category: 'Vintage Denim', type: 'price_up', change: '+18%', message: 'Prices rising in vintage denim category. Consider listing vintage items now.', severity: 'success', time: '2 hours ago' },
+                            { category: 'Designer Bags', type: 'demand_spike', change: '+25%', message: 'Demand spike detected for designer bags on eBay and Poshmark.', severity: 'info', time: '5 hours ago' },
+                            { category: 'Athletic Shoes', type: 'price_drop', change: '-12%', message: 'Market prices declining for athletic shoes. Hold off on new acquisitions.', severity: 'warning', time: '1 day ago' },
+                            { category: 'Band Tees', type: 'saturation', change: '+40% listings', message: 'Market becoming saturated with band tees. Differentiate with rare finds.', severity: 'error', time: '2 days ago' }
+                        ];
                         return `
                             <div class="space-y-3">
                                 ${alerts.map(alert => {
@@ -524,11 +526,11 @@ Object.assign(pages, {
                             total: 156, correct: 118, avgError: 8.2, bestCategory: 'Shoes', worstCategory: 'Accessories',
                             monthly: [72, 75, 68, 80, 76, 82, 78, 85]
                         };
-                        const successRate = accuracy.total > 0 ? ((accuracy.correct / accuracy.total) * 100).toFixed(1) : 'N/A';
+                        const successRate = accuracy.total > 0 ? ((accuracy.correct / accuracy.total) * 100).toFixed(1) : 0;
                         return `
                             <div class="grid grid-cols-4 gap-4 mb-4">
                                 <div style="text-align: center; padding: 14px; background: var(--primary-50); border-radius: 10px;">
-                                    <div style="font-size: 24px; font-weight: 700; color: var(--primary);">${successRate === 'N/A' ? 'N/A' : successRate + '%'}</div>
+                                    <div style="font-size: 24px; font-weight: 700; color: var(--primary);">${successRate}%</div>
                                     <div class="text-xs text-gray-500">Accuracy Rate</div>
                                 </div>
                                 <div style="text-align: center; padding: 14px; background: var(--gray-50); border-radius: 10px;">
@@ -714,7 +716,7 @@ Object.assign(pages, {
     suppliers() {
         const suppliers = store.state.suppliers || [];
 
-        let displaySuppliers = suppliers.slice();
+        let displaySuppliers = suppliers;
 
         // Apply search filter (Feature 1)
         const searchQuery = store.state.supplierSearchQuery || '';
@@ -1144,11 +1146,10 @@ Object.assign(pages, {
         const opportunities = store.state.marketOpportunities || [];
         const trendingTerms = store.state.trendingKeywords || [];
 
-        const hasIntelData = !!store.state.marketIntelLastUpdated;
-        const lastUpdated = hasIntelData ? new Date(store.state.marketIntelLastUpdated) : null;
-        const minutesAgo = lastUpdated ? Math.round((Date.now() - lastUpdated.getTime()) / 60000) : null;
-        const freshnessLabel = !hasIntelData ? 'no data yet' : minutesAgo < 1 ? '< 1m ago' : minutesAgo < 60 ? `${minutesAgo}m ago` : `${Math.round(minutesAgo / 60)}h ago`;
-        const freshnessColor = !hasIntelData ? 'var(--gray-500)' : minutesAgo < 5 ? 'var(--success)' : minutesAgo < 30 ? 'var(--warning)' : 'var(--danger-600)';
+        const lastUpdated = store.state.marketIntelLastUpdated ? new Date(store.state.marketIntelLastUpdated) : new Date();
+        const minutesAgo = Math.round((Date.now() - lastUpdated.getTime()) / 60000);
+        const freshnessLabel = minutesAgo < 1 ? 'Just now' : minutesAgo < 60 ? `${minutesAgo}m ago` : `${Math.round(minutesAgo / 60)}h ago`;
+        const freshnessColor = minutesAgo < 5 ? 'var(--success)' : minutesAgo < 30 ? 'var(--warning)' : 'var(--danger-600)';
 
         return `
             <div class="page-header">
@@ -1213,7 +1214,7 @@ Object.assign(pages, {
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Active Competitors</div>
                     <div style="font-size: 36px; font-weight: 700; color: var(--primary-600);">${competitors.length || 0}</div>
-                    <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;"></div>
+                    <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">Tracking active</div>
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Avg Competitor Items</div>
@@ -1232,7 +1233,7 @@ Object.assign(pages, {
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Market Trends Radar</h3>
-                        <span class="badge badge-secondary" style="font-size: 11px;">Coming Soon</span>
+                        <span class="badge badge-primary" style="font-size: 11px;">Live</span>
                     </div>
                     <div class="card-body">
                         ${marketTrendsRadar.render(marketTrends)}
@@ -1756,171 +1757,4 @@ Object.assign(pages, {
         `;
     },
 
-});
-
-Object.assign(pages, {
-    sourcing() {
-        const categories = [
-            { icon: '🏪', title: 'Thrift Stores', desc: 'Goodwill, Value Village, and local thrift shops. Best selection mid-week after weekend donations.' },
-            { icon: '🏡', title: 'Estate Sales', desc: 'Full household liquidations — often priced to clear. Check EstateSales.net and Estify for local listings.' },
-            { icon: '📦', title: 'Liquidation', desc: 'Bulk lots from retailers and warehouses. B-Stock, Liquidation.com, and BULQ offer pallets and cases.' },
-            { icon: '🏭', title: 'Wholesale', desc: 'Buy new inventory direct from distributors. Alibaba, Faire, and FashionGo for apparel.' },
-            { icon: '🏘️', title: 'Garage Sales', desc: 'Neighbourhood sales every weekend. Use Garage Sale Finder or Facebook Marketplace to plan your route.' },
-            { icon: '🛒', title: 'Online Arbitrage', desc: 'Buy discounted items online and resell at a profit. Tools like Tactical Arbitrage help find deals fast.' },
-            { icon: '🏷️', title: 'Retail Clearance', desc: 'End-of-season clearance at major retailers. Target, Walmart, and TJ Maxx routinely mark down 70%+.' },
-            { icon: '↩️', title: 'Returns & Overstock', desc: 'Customer returns and excess stock from brands. Direct Liquidation and Optoro specialize in this.' },
-        ];
-
-        const tips = [
-            { title: 'Best days to thrift', body: 'Tuesday–Thursday see the freshest inventory after weekend donation drops. Avoid Saturdays when competition is highest.' },
-            { title: 'Spot profitable items fast', body: 'Check sold prices on eBay and Poshmark before buying. Use your phone camera on barcodes — most reseller apps scan instantly.' },
-            { title: 'The 3x rule', body: 'Aim for at least 3× your cost after fees and shipping. If you pay $10, your target sale price should be $30+.' },
-            { title: 'Build supplier relationships', body: 'Introduce yourself at your best sources. Regular buyers often get early access, bulk discounts, and holds on good items.' },
-        ];
-
-        return `
-            <div class="page-header">
-                <h1 class="page-title">Sourcing Hub</h1>
-                <p class="page-description">Find profitable inventory sources</p>
-            </div>
-
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">Sourcing Categories</h3>
-                </div>
-                <div class="card-body">
-                    <div class="grid grid-cols-2 gap-4" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));">
-                        ${categories.map(cat => `
-                            <div class="card" style="margin: 0; border: 1px solid var(--border-color, #e5e7eb);">
-                                <div class="card-body" style="display: flex; flex-direction: column; gap: 8px;">
-                                    <div style="font-size: 28px;">${cat.icon}</div>
-                                    <div style="font-weight: 600; font-size: 15px;">${cat.title}</div>
-                                    <div style="font-size: 13px; color: var(--gray-500, #6b7280); flex: 1;">${cat.desc}</div>
-                                    <button class="btn btn-secondary btn-sm" style="align-self: flex-start; margin-top: 4px;" disabled title="Coming Soon">Explore</button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">Sourcing Tips</h3>
-                </div>
-                <div class="card-body">
-                    <div class="grid grid-cols-2 gap-4" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
-                        ${tips.map(tip => `
-                            <div style="padding: 16px; background: var(--gray-50, #f9fafb); border-radius: 8px; border-left: 3px solid var(--primary-color, #6366f1);">
-                                <div style="font-weight: 600; font-size: 14px; margin-bottom: 6px;">${tip.title}</div>
-                                <div style="font-size: 13px; color: var(--gray-600, #4b5563); line-height: 1.5;">${tip.body}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Local Sourcing Alerts</h3>
-                </div>
-                <div class="card-body" style="text-align: center; padding: 32px;">
-                    <div style="font-size: 40px; margin-bottom: 12px;">📍</div>
-                    <div style="font-weight: 600; font-size: 15px; margin-bottom: 8px;">Location-Based Alerts</div>
-                    <p style="color: var(--gray-500, #6b7280); font-size: 14px; max-width: 400px; margin: 0 auto 16px;">
-                        Get notified when estate sales, liquidation events, or thrift store specials appear near you. Coming in a future update.
-                    </p>
-                    <button class="btn btn-secondary" disabled title="Coming Soon">Notify Me When Available</button>
-                </div>
-            </div>
-        `;
-    },
-
-    tools() {
-        const toolCards = [
-            {
-                icon: '📦',
-                title: 'Shipping Calculator',
-                desc: 'Estimate shipping costs across carriers before you list.',
-                action: `if (typeof handlers.showShippingCalculator === 'function') { handlers.showShippingCalculator(); } else { toast.info('Shipping calculator not available.'); }`,
-                label: 'Open Calculator',
-            },
-            {
-                icon: '📷',
-                title: 'Barcode Scanner',
-                desc: 'Scan barcodes to look up items and add them to inventory.',
-                action: `router.navigate('inventory')`,
-                label: 'Go to Inventory',
-            },
-            {
-                icon: '🖼️',
-                title: 'Image Editor',
-                desc: 'Crop, background-remove, and enhance your listing photos.',
-                action: `router.navigate('image-bank')`,
-                label: 'Open Image Bank',
-            },
-            {
-                icon: '💰',
-                title: 'Price Lookup',
-                desc: 'Research sold comps and market prices for any item.',
-                action: `router.navigate('analytics')`,
-                label: 'Go to Analytics',
-            },
-            {
-                icon: '📋',
-                title: 'Listing Templates',
-                desc: 'Create and manage reusable listing templates to list faster.',
-                action: `router.navigate('listings')`,
-                label: 'Go to Listings',
-            },
-            {
-                icon: '💱',
-                title: 'Currency Converter',
-                desc: 'Convert currencies for international sales and purchases.',
-                action: `router.navigate('financials')`,
-                label: 'Go to Financials',
-            },
-            {
-                icon: '🧮',
-                title: 'Fee Calculator',
-                desc: 'Calculate platform fees, taxes, and net profit for any sale.',
-                action: `router.navigate('financials')`,
-                label: 'Open Calculator',
-            },
-            {
-                icon: '📐',
-                title: 'Size Charts',
-                desc: 'Reference size charts for clothing, shoes, and accessories.',
-                action: `router.navigate('settings')`,
-                label: 'Go to Settings',
-            },
-        ];
-
-        return `
-            <div class="page-header">
-                <h1 class="page-title">Tools</h1>
-                <p class="page-description">Quick access to all your reseller tools</p>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">All Tools</h3>
-                </div>
-                <div class="card-body">
-                    <div class="grid grid-cols-2 gap-4" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));">
-                        ${toolCards.map(tool => `
-                            <div class="card" style="margin: 0; border: 1px solid var(--border-color, #e5e7eb);">
-                                <div class="card-body" style="display: flex; flex-direction: column; gap: 8px;">
-                                    <div style="font-size: 28px;">${tool.icon}</div>
-                                    <div style="font-weight: 600; font-size: 15px;">${tool.title}</div>
-                                    <div style="font-size: 13px; color: var(--gray-500, #6b7280); flex: 1;">${tool.desc}</div>
-                                    <button class="btn btn-primary btn-sm" style="align-self: flex-start; margin-top: 4px;" onclick="${tool.action}">${tool.label}</button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-        `;
-    },
 });

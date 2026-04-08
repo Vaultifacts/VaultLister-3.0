@@ -4,6 +4,11 @@
 
 Object.assign(pages, {
     shops() {
+        const PLATFORM_DISPLAY_NAMES = {
+            ebay: 'eBay', poshmark: 'Poshmark', depop: 'Depop',
+            facebook: 'Facebook Marketplace', whatnot: 'Whatnot',
+            mercari: 'Mercari', grailed: 'Grailed', etsy: 'Etsy', shopify: 'Shopify'
+        };
         const shops = store.state.shops || [];
         const connectedShops = shops.filter(s => s.is_connected);
         const lastSync = store.state.lastShopSync;
@@ -331,7 +336,8 @@ Object.assign(pages, {
                     // Health score for connected shops
                     const healthScore = isConnected ? Math.floor(Math.random() * 30) + 70 : null;
                     const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
-                    const isPostLaunch = ['mercari', 'grailed', 'etsy'].includes(platform);
+                    const isPostLaunch = ['mercari', 'grailed', 'etsy', 'shopify'].includes(platform);
+                    const platformDisplayName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
 
                     return `
                         <div class="card shop-card ${isConnected ? 'connected' : ''}">
@@ -339,7 +345,7 @@ Object.assign(pages, {
                                 <div class="flex items-center gap-4 mb-4">
                                     ${components.platformLogoLarge(platform)}
                                     <div style="flex: 1;">
-                                        <div class="font-medium text-lg">${(window.SUPPORTED_PLATFORMS || []).find(p => p.id === platform)?.name || platform.charAt(0).toUpperCase() + platform.slice(1)}</div>
+                                        <div class="font-medium text-lg">${platformDisplayName}</div>
                                         ${statusHtml}
                                         ${usernameHtml}
                                     </div>
@@ -385,7 +391,7 @@ Object.assign(pages, {
                                             <div style="width: ${fees.feePercentage || (fees.feeRate * 100)}%; height: 100%; background: var(--error); border-radius: 2px;"></div>
                                         </div>
                                         <div style="font-size: 9px; color: var(--gray-500); margin-top: 4px; text-align: center;">
-                                            ${fees.feePercentage || (fees.feeRate * 100).toFixed(1)}% of revenue goes to ${platform.charAt(0).toUpperCase() + platform.slice(1)}
+                                            ${fees.feePercentage || (fees.feeRate * 100).toFixed(1)}% of revenue goes to ${platformDisplayName}
                                         </div>
                                     </div>
                                 `;
@@ -432,7 +438,7 @@ Object.assign(pages, {
                                                 : `<div style="width: 40px; height: 40px; border-radius: 8px; background: ${brandColor}20; display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-weight: 700; font-size: 16px;">${shop.platform.charAt(0).toUpperCase()}</div>`
                                             }
                                             <div>
-                                                <div class="font-medium">${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</div>
+                                                <div class="font-medium">${PLATFORM_DISPLAY_NAMES[shop.platform] || shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}</div>
                                                 <div class="text-xs text-gray-500">${branding.tagline || 'No tagline set'}</div>
                                             </div>
                                         </div>
@@ -768,22 +774,18 @@ Object.assign(pages, {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="settings-timezone">Timezone</label>
-                                    <select id="settings-timezone" class="form-select" onchange="handlers.markSettingsChanged()" data-detected-tz="${Intl.DateTimeFormat().resolvedOptions().timeZone}">
-                                        ${(() => { const _tz = store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone; return [
-                                        ['America/New_York', 'Eastern Time (ET)'],
-                                        ['America/Chicago', 'Central Time (CT)'],
-                                        ['America/Denver', 'Mountain Time (MT)'],
-                                        ['America/Edmonton', 'Mountain Time — Canada (MT)'],
-                                        ['America/Los_Angeles', 'Pacific Time (PT)'],
-                                        ['America/Vancouver', 'Pacific Time — Canada (PT)'],
-                                        ['America/Anchorage', 'Alaska Time (AKT)'],
-                                        ['Pacific/Honolulu', 'Hawaii Time (HST)'],
-                                        ['UTC', 'UTC'],
-                                        ['Europe/London', 'London (GMT/BST)'],
-                                        ['Europe/Paris', 'Paris (CET)'],
-                                        ['Asia/Tokyo', 'Tokyo (JST)'],
-                                        ['Australia/Sydney', 'Sydney (AEST)'],
-                                        ].map(([v, l]) => `<option value="${v}" ${_tz === v ? 'selected' : ''}>${l}</option>`).join(''); })()}
+                                    <select id="settings-timezone" class="form-select" onchange="handlers.markSettingsChanged()">
+                                        <option value="America/New_York" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/New_York' ? 'selected' : ''}>Eastern Time (ET)</option>
+                                        <option value="America/Chicago" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Chicago' ? 'selected' : ''}>Central Time (CT)</option>
+                                        <option value="America/Denver" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Denver' ? 'selected' : ''}>Mountain Time (MT)</option>
+                                        <option value="America/Los_Angeles" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Los_Angeles' ? 'selected' : ''}>Pacific Time (PT)</option>
+                                        <option value="America/Anchorage" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'America/Anchorage' ? 'selected' : ''}>Alaska Time (AKT)</option>
+                                        <option value="Pacific/Honolulu" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Pacific/Honolulu' ? 'selected' : ''}>Hawaii Time (HST)</option>
+                                        <option value="UTC" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'UTC' ? 'selected' : ''}>UTC</option>
+                                        <option value="Europe/London" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Europe/London' ? 'selected' : ''}>London (GMT/BST)</option>
+                                        <option value="Europe/Paris" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Europe/Paris' ? 'selected' : ''}>Paris (CET)</option>
+                                        <option value="Asia/Tokyo" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Asia/Tokyo' ? 'selected' : ''}>Tokyo (JST)</option>
+                                        <option value="Australia/Sydney" ${(store.state.userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone) === 'Australia/Sydney' ? 'selected' : ''}>Sydney (AEST)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1054,8 +1056,8 @@ Object.assign(pages, {
                                         <div class="notification-item-row">
                                             <span>New offer</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push" aria-label="Push notification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email" aria-label="Email notification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
@@ -1075,8 +1077,8 @@ Object.assign(pages, {
                                         <div class="notification-item-row">
                                             <span>Counter offer received</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push" aria-label="Push notification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email" aria-label="Email notification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                     </div>
@@ -1108,8 +1110,8 @@ Object.assign(pages, {
                                         <div class="notification-item-row">
                                             <span>Price change alert</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push" aria-label="Push notification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email" aria-label="Email notification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
@@ -1135,15 +1137,15 @@ Object.assign(pages, {
                                         <div class="notification-item-row">
                                             <span>Platform sync errors</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push" aria-label="Push notification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email" aria-label="Email notification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
                                             <span>Security alerts</span>
                                             <div class="notification-channels">
-                                                <button class="channel-btn active" data-channel="push" aria-label="Push notification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                                                <button class="channel-btn active" data-channel="email" aria-label="Email notification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
+                                                <button class="channel-btn active" data-channel="push"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                                                <button class="channel-btn active" data-channel="email"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></button>
                                             </div>
                                         </div>
                                         <div class="notification-item-row">
@@ -1646,7 +1648,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Orders that have been fulfilled and delivered</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" name="completedOrders" onchange="handlers.updateRetentionSetting(\'completedOrders\', this.value)">' +
+                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'completedOrders\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.completedOrders === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1658,7 +1660,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Items moved to sold/archived status</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" name="soldItems" onchange="handlers.updateRetentionSetting(\'soldItems\', this.value)">' +
+                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'soldItems\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.soldItems === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1670,7 +1672,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Performance metrics and statistics</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" name="analyticsData" onchange="handlers.updateRetentionSetting(\'analyticsData\', this.value)">' +
+                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'analyticsData\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.analyticsData === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1682,7 +1684,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Read notifications and alerts</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" name="notifications" onchange="handlers.updateRetentionSetting(\'notifications\', this.value)">' +
+                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'notifications\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.notifications === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -1694,7 +1696,7 @@ Object.assign(pages, {
                                                 '<p class="text-sm text-gray-500">Run history and task logs</p>' +
                                             '</div>' +
                                         '</div>' +
-                                        '<select class="form-select form-select-sm" name="automationLogs" onchange="handlers.updateRetentionSetting(\'automationLogs\', this.value)">' +
+                                        '<select class="form-select form-select-sm" onchange="handlers.updateRetentionSetting(\'automationLogs\', this.value)">' +
                                             retentionOptions.map(opt => '<option value="' + opt.value + '" ' + (retentionSettings.automationLogs === opt.value ? 'selected' : '') + '>' + opt.label + '</option>').join('') +
                                         '</select>' +
                                     '</div>' +
@@ -2319,7 +2321,7 @@ Object.assign(pages, {
 
     plansBilling() {
         const user = store.state.user || {};
-        const currentPlan = store.getPlanTier();
+        const currentPlan = user.subscription_tier || 'free';
 
         return `
             <div class="page-header">
@@ -2350,20 +2352,6 @@ Object.assign(pages, {
                                 Manage Subscription
                             </button>
                         `}
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Usage -->
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">AI Listing Generator</h3>
-                </div>
-                <div class="card-body">
-                    <div class="setting-item">
-                        <div class="setting-label">Monthly Usage</div>
-                        <div class="setting-value">${store.state.aiUsageCount || 0} / 50 used this month</div>
-                        <div class="setting-description">Pro plan includes 50 AI-generated listings per month</div>
                     </div>
                 </div>
             </div>
@@ -2426,7 +2414,7 @@ Object.assign(pages, {
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>
-                                Cross-list to all ${(window.SUPPORTED_PLATFORMS || []).length} platforms
+                                Cross-list to all 5 launch platforms
                             </li>
                             <li class="flex items-center gap-2 text-sm">
                                 <span style="color: var(--success);">${components.icon('check', 16)}</span>

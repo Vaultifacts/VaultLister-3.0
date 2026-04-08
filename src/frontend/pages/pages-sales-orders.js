@@ -752,7 +752,9 @@ Object.assign(pages, {
                 </div>
             `,
 
-            accounts: `
+            accounts: (() => {
+                const coaSubTab = store.state.coaSubTab || 'accounts';
+                return `
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Chart of Accounts</h3>
@@ -765,16 +767,39 @@ Object.assign(pages, {
                             </button>
                         </div>
                     </div>
-                    <div class="card-body">
-                        ${accounts.length === 0 ? `
-                            <div class="empty-state">
-                                <div class="empty-state-icon">${components.icon('list', 48)}</div>
-                                <h3 class="empty-state-title">No accounts set up</h3>
-                                <p class="empty-state-description">Create accounts to organize your financial transactions</p>
-                                <button class="btn btn-primary" onclick="handlers.seedDefaultAccounts()">Create Default Accounts</button>
-                            </div>
-                        ` : `
-                            ${(() => {
+                    <div class="card-body" style="display:flex;gap:0;padding:0;">
+                        <nav class="coa-left-nav" role="navigation" aria-label="Chart of Accounts sections" style="width:160px;min-width:140px;border-right:1px solid var(--gray-200);padding:12px 0;flex-shrink:0;">
+                            <button class="coa-nav-item ${coaSubTab === 'accounts' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'accounts'}" onclick="store.setState({coaSubTab:'accounts'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'accounts' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'accounts' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'accounts' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
+                                ${components.icon('list', 14)} Accounts
+                            </button>
+                            <button class="coa-nav-item ${coaSubTab === 'purchases' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'purchases'}" onclick="store.setState({coaSubTab:'purchases'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'purchases' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'purchases' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'purchases' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
+                                ${components.icon('shopping-cart', 14)} Purchases
+                            </button>
+                            <button class="coa-nav-item ${coaSubTab === 'sales' ? 'active' : ''}" role="tab" aria-selected="${coaSubTab === 'sales'}" onclick="store.setState({coaSubTab:'sales'});renderApp(window.pages.financials())" style="display:block;width:100%;text-align:left;padding:8px 16px;background:${coaSubTab === 'sales' ? 'var(--primary-50)' : 'none'};color:${coaSubTab === 'sales' ? 'var(--primary-600)' : 'var(--gray-700)'};font-weight:${coaSubTab === 'sales' ? '600' : '400'};border:none;cursor:pointer;font-size:13px;">
+                                ${components.icon('dollar-sign', 14)} Sales
+                            </button>
+                        </nav>
+                        <div style="flex:1;padding:16px;">
+                            ${coaSubTab === 'purchases' ? `
+                                <div class="empty-state" style="padding:40px 0;">
+                                    <div class="empty-state-icon">${components.icon('shopping-cart', 48)}</div>
+                                    <h3 class="empty-state-title">No purchases recorded yet</h3>
+                                    <p class="empty-state-description">Purchase records will appear here once you add inventory costs or expenses.</p>
+                                </div>
+                            ` : coaSubTab === 'sales' ? `
+                                <div class="empty-state" style="padding:40px 0;">
+                                    <div class="empty-state-icon">${components.icon('dollar-sign', 48)}</div>
+                                    <h3 class="empty-state-title">No sales recorded yet</h3>
+                                    <p class="empty-state-description">Sales records will appear here once you have completed sales.</p>
+                                </div>
+                            ` : accounts.length === 0 ? `
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">${components.icon('list', 48)}</div>
+                                    <h3 class="empty-state-title">No accounts set up</h3>
+                                    <p class="empty-state-description">Create accounts to organize your financial transactions</p>
+                                    <button class="btn btn-primary" onclick="handlers.seedDefaultAccounts()">Create Default Accounts</button>
+                                </div>
+                            ` : (() => {
                                 const grouped = store.state.accountsGrouped || {};
                                 const categories = ['Assets', 'Liabilities', 'Equity', 'Income', 'Expenses'];
                                 return categories.map(cat => {
@@ -802,10 +827,11 @@ Object.assign(pages, {
                                     `;
                                 }).join('');
                             })()}
-                        `}
+                        </div>
                     </div>
                 </div>
-            `,
+                `;
+            })(),
 
             statements: (() => {
                 const statementsSubTab = store.state.financialStatementsSubTab || 'income';
@@ -1133,7 +1159,7 @@ Object.assign(pages, {
                                             </div>
 
                                             <div class="mt-3 p-3 rounded-lg text-center text-sm font-medium ${stmt.balanceCheck ? '' : ''}" style="background: ${stmt.balanceCheck ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}; color: ${stmt.balanceCheck ? '#16a34a' : '#dc2626'};">
-                                                ${stmt.balanceCheck ? 'Balanced: Assets ($' + (totals.totalAssets || 0).toFixed(2) + ') = Liabilities + Equity ($' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')' : 'Not Balanced: Assets ($' + (totals.totalAssets || 0).toFixed(2) + ') != Liabilities + Equity ($' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')'}
+                                                ${stmt.balanceCheck ? 'Balanced: Assets (C$' + (totals.totalAssets || 0).toFixed(2) + ') = Liabilities + Equity (C$' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')' : 'Not Balanced: Assets (C$' + (totals.totalAssets || 0).toFixed(2) + ') != Liabilities + Equity (C$' + (totals.totalLiabilitiesAndEquity || 0).toFixed(2) + ')'}
                                             </div>
                                         </div>
                                     `;
@@ -1199,11 +1225,11 @@ Object.assign(pages, {
                                                 <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #7c3aed;">Cash Flow from Investing Activities</h4>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Equipment & supplies purchases</span>
-                                                    <span class="text-sm font-medium text-gray-400">$0.00</span>
+                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Asset disposals / sales</span>
-                                                    <span class="text-sm font-medium text-gray-400">$0.00</span>
+                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
                                                 <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid #7c3aed;">
                                                     <span>Net Cash from Investing</span>
@@ -1216,15 +1242,15 @@ Object.assign(pages, {
                                                 <h4 class="font-bold text-sm uppercase tracking-wider mb-2" style="color: #0891b2;">Cash Flow from Financing Activities</h4>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner contributions / investments</span>
-                                                    <span class="text-sm font-medium text-gray-400">$0.00</span>
+                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Owner withdrawals / draws</span>
-                                                    <span class="text-sm font-medium text-gray-400">$0.00</span>
+                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
                                                 <div class="flex justify-between py-2" style="padding-left:1.5rem; border-bottom: 1px solid var(--gray-100);">
                                                     <span class="text-sm">Loan proceeds / repayments</span>
-                                                    <span class="text-sm font-medium text-gray-400">$0.00</span>
+                                                    <span class="text-sm font-medium text-gray-400">C$0.00</span>
                                                 </div>
                                                 <div class="flex justify-between py-3 font-semibold" style="border-top: 2px solid #0891b2;">
                                                     <span>Net Cash from Financing</span>
@@ -1488,8 +1514,8 @@ Object.assign(pages, {
                     <button class="btn btn-secondary" onclick="handlers.showBudgetSettings()">
                         ${components.icon('sliders', 16)} Budget
                     </button>
-                    <div class="dropdown">
-                        <button class="btn btn-secondary" onclick="this.parentElement.classList.toggle('open')">
+                    <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <button aria-haspopup="menu" class="btn btn-secondary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                             ${components.icon('download', 16)} Export
                         </button>
                         <div class="dropdown-menu">
@@ -1584,22 +1610,21 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            <!-- Financial Dashboard Header -->
-            ${financialDashboardHeader.render(dashboardMetrics)}
-
             <!-- Profit Margin Gauge & Cash Flow Waterfall -->
             <div class="grid grid-cols-2 gap-6 mb-6">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('target', 18)} Profit Margin</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${profitMarginGauge.render(profitMargin)}
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('bar-chart', 18)} Cash Flow Breakdown</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${waterfallChart.render(waterfallData)}
@@ -1609,20 +1634,28 @@ Object.assign(pages, {
 
             <!-- Financial Ratios & Budget Progress -->
             <div class="grid grid-cols-2 gap-6 mb-6">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('activity', 18)} Financial Ratios</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${financialRatios.render(financialRatios.calculate(financialRatiosData))}
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
+                <div class="card collapsible-card">
+                    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
                         <h3 class="card-title">${components.icon('pie-chart', 18)} Budget Progress</h3>
+                        <button class="widget-collapse-btn" aria-label="Collapse" onclick="const c=this.closest('.collapsible-card');c.classList.toggle('collapsed');this.textContent=c.classList.contains('collapsed')?'\u25BC':'\u25B2';" title="Collapse/Expand">&#x25B2;</button>
                     </div>
                     <div class="card-body">
                         ${budgetProgress.render(budgetData)}
+                        <div class="budget-alert-setting mt-2">
+                            <label class="text-sm" for="budget-alert-threshold">Alert at:</label>
+                            <input type="number" id="budget-alert-threshold" min="1" max="100" value="${store.state.budgetAlertThreshold || 80}"
+                                onchange="handlers.setBudgetAlertThreshold(this.value)"
+                                style="width:60px; padding:2px 4px;" aria-label="Budget alert threshold percentage" /> %
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1696,7 +1729,7 @@ Object.assign(pages, {
                                             <span>Self-Employment Tax</span><span class="font-medium">C$${Math.round(seTax).toLocaleString()}</span>
                                         </div>
                                         <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;">
-                                            <span>Effective Rate</span><span>${gross > 0 ? (total / gross * 100).toFixed(1) + '%' : 'N/A'}</span>
+                                            <span>Effective Rate</span><span>${gross > 0 ? (total / gross * 100).toFixed(1) : 0}%</span>
                                         </div>
                                     </div>
                                 ` : '<div style="text-align: center; color: var(--gray-400); padding: 40px 0;"><p>Enter your income to calculate estimated taxes</p></div>';
@@ -1777,22 +1810,13 @@ Object.assign(pages, {
                     <div style="margin-top: 16px;">
                         <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Common Rates (vs USD)</div>
                         <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
-                            ${(store.state.currencyRates
-                                ? [
-                                    { code: 'EUR', rate: store.state.currencyRates.EUR, symbol: '€' },
-                                    { code: 'GBP', rate: store.state.currencyRates.GBP, symbol: '£' },
-                                    { code: 'CAD', rate: store.state.currencyRates.CAD, symbol: 'C$' },
-                                    { code: 'AUD', rate: store.state.currencyRates.AUD, symbol: 'A$' },
-                                    { code: 'JPY', rate: store.state.currencyRates.JPY, symbol: '¥' }
-                                ]
-                                : [
-                                    { code: 'EUR', rate: 0.925, symbol: '€' },
-                                    { code: 'GBP', rate: 0.795, symbol: '£' },
-                                    { code: 'CAD', rate: 1.365, symbol: 'C$' },
-                                    { code: 'AUD', rate: 1.535, symbol: 'A$' },
-                                    { code: 'JPY', rate: 149.8, symbol: '¥' }
-                                ]
-                            ).map(c => '<div style="text-align: center; padding: 8px; background: var(--gray-50); border-radius: 6px;">' +
+                            ${[
+                                { code: 'EUR', rate: 0.925, symbol: '€' },
+                                { code: 'GBP', rate: 0.795, symbol: '£' },
+                                { code: 'CAD', rate: 1.365, symbol: 'C$' },
+                                { code: 'AUD', rate: 1.535, symbol: 'A$' },
+                                { code: 'JPY', rate: 149.8, symbol: '¥' }
+                            ].map(c => '<div style="text-align: center; padding: 8px; background: var(--gray-50); border-radius: 6px;">' +
                                 '<div style="font-size: 12px; font-weight: 600;">' + c.code + '</div>' +
                                 '<div style="font-size: 11px; color: var(--gray-500);">' + c.symbol + c.rate + '</div>' +
                             '</div>').join('')}
@@ -1903,32 +1927,6 @@ Object.assign(pages, {
                                 '<button class="btn btn-sm btn-ghost" onclick="handlers.matchTransaction()" title="Match">' + components.icon('check', 14) + '</button>' +
                             '</div>' +
                         '</div>').join('')}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Fee Breakdown by Marketplace -->
-            <div class="card mb-6">
-                <div class="card-header">
-                    <h3 class="card-title">${components.icon('dollar-sign', 18)} Platform Fee Analysis</h3>
-                </div>
-                <div class="card-body">
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Platform</th>
-                                    <th>Gross Sales</th>
-                                    <th>Fee Rate</th>
-                                    <th>Total Fees</th>
-                                    <th>Net Revenue</th>
-                                    <th>% of Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td colspan="6" class="text-center text-gray-400" style="padding: 2rem;">No sales data yet. Platform fee analysis will appear once you have sales across connected platforms.</td></tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
@@ -2048,14 +2046,14 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showReturnAnalytics()" title="Return Analytics">
                             ${components.icon('rotate-ccw', 16)} Returns
                         </button>
-                        <button class="btn btn-primary" disabled style="opacity:0.5;cursor:not-allowed;" title="EasyPost integration coming soon">
+                        <button class="btn btn-primary" onclick="router.navigate('shipping-labels')">
                             ${components.icon('tag', 16)} Shipping Labels
                         </button>
                         <button class="btn btn-secondary" onclick="handlers.syncAllPlatformOrders()">
                             ${components.icon('refresh', 16)} Sync
                         </button>
-                        <div class="dropdown" style="position: relative;">
-                            <button aria-haspopup="menu" class="btn btn-secondary" onclick="this.closest('.dropdown').classList.toggle('open');event.stopPropagation();">
+                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                            <button aria-haspopup="menu" class="btn btn-secondary" style="white-space: nowrap;">
                                 ${components.icon('list', 14)} More
                                 ${components.icon('chevron-down', 12)}
                             </button>
@@ -2298,11 +2296,11 @@ Object.assign(pages, {
                                                     if (invItem) itemCost = parseFloat(invItem.cost_price) || 0;
                                                 }
                                                 const netProfit = salePrice - platformFee - shippingCost - itemCost;
-                                                const margin = salePrice > 0 ? ((netProfit / salePrice) * 100).toFixed(0) : 'N/A';
+                                                const margin = salePrice > 0 ? ((netProfit / salePrice) * 100).toFixed(0) : 0;
                                                 const profitClass = netProfit > 0 ? 'text-green-600' : netProfit < 0 ? 'text-red-600' : '';
                                                 return `<td>
                                                     <div class="font-medium ${profitClass}">C$${netProfit.toFixed(2)}</div>
-                                                    <div class="text-xs text-gray-500">${margin === 'N/A' ? 'N/A margin' : margin + '% margin'}</div>
+                                                    <div class="text-xs text-gray-500">${margin}% margin</div>
                                                 </td>`;
                                             })() : ''}
                                             ${visibleColumns.includes('shipping_method') ? `<td>${escapeHtml(order.shipping_provider || 'Standard')}</td>` : ''}
@@ -2393,10 +2391,10 @@ Object.assign(pages, {
                             <button class="btn btn-secondary btn-sm" onclick="handlers.printSelectedLabels()" id="print-labels-btn" style="display:none;">
                                 ${components.icon('tag', 14)} Print Selected
                             </button>
-                            <button class="btn btn-secondary btn-sm" disabled style="opacity:0.5;cursor:not-allowed;" title="EasyPost integration coming soon">
+                            <button class="btn btn-secondary btn-sm" onclick="handlers.showRateShoppingModal()">
                                 Compare Rates
                             </button>
-                            <button class="btn btn-primary btn-sm" disabled style="opacity:0.5;cursor:not-allowed;" title="EasyPost integration coming soon">
+                            <button class="btn btn-primary btn-sm" onclick="handlers.showCreateLabelModal()">
                                 ${components.icon('plus', 14)} Create Label
                             </button>
                         </div>
@@ -2986,11 +2984,11 @@ Object.assign(pages, {
                         ` : ''}
                         <div>
                             <label class="form-label" style="font-size: 12px;">Min Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$0" step="0.01" value="${store.state.txAmountMin || ''}" onchange="store.setState({txAmountMin: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         <div>
                             <label class="form-label" style="font-size: 12px;">Max Amount</label>
-                            <input type="number" class="form-input" style="width: 100px;" placeholder="$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
+                            <input type="number" class="form-input" style="width: 100px;" placeholder="C$999" step="0.01" value="${store.state.txAmountMax || ''}" onchange="store.setState({txAmountMax: this.value}); handlers.saveTxFilters(); renderApp(pages.transactions());">
                         </div>
                         ${activeTab === 'purchases' ? `
                         <div>

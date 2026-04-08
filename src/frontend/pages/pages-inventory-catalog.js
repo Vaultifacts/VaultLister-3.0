@@ -186,7 +186,7 @@ Object.assign(pages, {
             <div class="card">
                 <div class="card-header">
                     <div class="flex items-center gap-2" style="position: relative;">
-                        <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)" onkeydown="if(event.key==='Enter'){handlers.searchInventory(this.value)}">
+                        <input type="text" class="form-input" id="inventory-search" data-testid="inventory-search-input" style="width: 200px" placeholder="Search items..." value="${store.state.searchTerm || ''}" oninput="handlers.debouncedSearch(this.value)">
                         <select class="form-select" style="width:140px;height:36px;font-size:13px;" onchange="handlers.filterByCategory(this.value)" data-testid="category-filter-select">
                             <option value="">All Categories</option>
                             ${(store.state.inventoryCategories || []).map(c => '<option value="' + escapeHtml(c.name) + '"' + (store.state.categoryFilter === c.name ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>').join('')}
@@ -242,7 +242,7 @@ Object.assign(pages, {
                             {id: 'age', label: 'Age'},
                             {id: 'actions', label: 'Actions'}
                         ])" title="Column Settings">
-                            Customize Columns
+                            ${components.icon('columns', 14)}
                         </button>
                     </div>
                 </div>
@@ -510,20 +510,20 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showCreateListingFolder()">
                             ${components.icon('folder', 16)} New Folder
                         </button>
-                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div class="dropdown">
                             <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
                             <div class="dropdown-menu" style="min-width: 220px; right: 0;">
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showImportFromMarketplace()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); modals.chooseListingMode()">
                                     ${components.icon('plus', 16)} Create New
                                 </button>
                                 <div class="dropdown-divider"></div>
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showCSVImport()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showCSVImport()">
                                     ${components.icon('upload', 16)} Import from CSV
                                 </button>
                             </div>
@@ -551,20 +551,20 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showCreateListingFolder()">
                             ${components.icon('folder', 16)} New Folder
                         </button>
-                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div class="dropdown">
                             <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
                             <div class="dropdown-menu" style="min-width: 220px; right: 0;">
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showImportFromMarketplace()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); modals.chooseListingMode()">
                                     ${components.icon('plus', 16)} Create New
                                 </button>
                                 <div class="dropdown-divider"></div>
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showCSVImport()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showCSVImport()">
                                     ${components.icon('upload', 16)} Import from CSV
                                 </button>
                             </div>
@@ -737,13 +737,13 @@ Object.assign(pages, {
                 <ol style="display: flex; align-items: center; gap: 6px; list-style: none; padding: 0; margin: 0; font-size: 13px;">
                     <li>
                         <a href="#" onclick="router.navigate('dashboard'); return false;" style="color: var(--gray-500); text-decoration: none;">
-                            ${components.icon('home', 14)} Home
+                            ${components.icon('home', 14)} Dashboard
                         </a>
                     </li>
                     <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
                     <li>
                         <a href="#" onclick="handlers.switchListingsTab('listings'); return false;" style="color: ${currentListingsTab === 'listings' ? 'var(--primary-600)' : 'var(--gray-500)'}; text-decoration: none; font-weight: ${currentListingsTab === 'listings' ? '600' : '400'};">
-                            My Listings
+                            Listings
                         </a>
                     </li>
                     ${currentListingsTab !== 'listings' ? `
@@ -778,20 +778,20 @@ Object.assign(pages, {
                         <button class="btn btn-secondary" onclick="handlers.showPlatformFeeCalculator()" title="Platform Fee Calculator">
                             ${components.icon('percent', 16)} Fees
                         </button>
-                        <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
+                        <div class="dropdown">
                             <button aria-haspopup="menu" class="btn btn-primary" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open')">
                                 ${components.icon('plus', 16)} Add New Listing(s)
                                 ${components.icon('chevron-down', 14)}
                             </button>
                             <div class="dropdown-menu" style="min-width: 220px; right: 0;">
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showImportFromMarketplace()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showImportFromMarketplace()">
                                     ${components.icon('import', 16)} Import From Marketplace
                                 </button>
                                 <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); modals.chooseListingMode()">
                                     ${components.icon('plus', 16)} Create New
                                 </button>
                                 <div class="dropdown-divider"></div>
-                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showCSVImport()">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); handlers.showCSVImport()">
                                     ${components.icon('upload', 16)} Import from CSV
                                 </button>
                             </div>
@@ -801,13 +801,19 @@ Object.assign(pages, {
 
                 <div class="listings-health-bar">
                     <div class="listings-health-score">
-                        <div class="health-score-ring ${healthScore === null ? 'poor' : healthScore >= 80 ? 'good' : healthScore >= 50 ? 'warning' : 'poor'}">
+                        ${healthScore === null ? `
+                        <div class="health-score-ring empty" style="display:flex;align-items:center;justify-content:center;min-height:60px;">
+                            <span class="health-score-value" style="font-size:12px;color:var(--gray-500);text-align:center;">Add listings to see your Listing Health Score</span>
+                        </div>
+                        ` : `
+                        <div class="health-score-ring ${healthScore >= 80 ? 'good' : healthScore >= 50 ? 'warning' : 'poor'}">
                             <svg viewBox="0 0 36 36" class="health-ring-svg">
                                 <path class="health-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                                <path class="health-ring-fill" stroke-dasharray="${healthScore ?? 0}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="health-ring-fill" stroke-dasharray="${healthScore}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
                             </svg>
-                            <span class="health-score-value">${healthScore === null ? 'N/A' : healthScore + '%'}</span>
+                            <span class="health-score-value">${healthScore}%</span>
                         </div>
+                        `}
                         <div class="health-score-label">Listing Health</div>
                     </div>
 
@@ -919,7 +925,7 @@ Object.assign(pages, {
                         <div style="margin-left: auto;">
                             <div style="font-size: 13px; font-weight: 500; color: var(--gray-600); margin-bottom: 4px;">Columns</div>
                             <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
-                                <button aria-haspopup="menu" class="btn btn-secondary btn-sm">
+                                <button aria-haspopup="menu" class="btn btn-secondary">
                                     ${components.icon('list', 14)} Customize
                                 </button>
                                 <div class="dropdown-menu" style="min-width: 200px; right: 0; padding: 12px;">
@@ -1064,6 +1070,7 @@ Object.assign(pages, {
                                         ${visibleColumns.includes('price') ? `
                                             <td>
                                                 <div class="font-medium">C$${listing.price}</div>
+                                                <span class="listing-fee text-sm text-muted">${listing.platform_fee ? 'Fee: C$' + parseFloat(listing.platform_fee).toFixed(2) : 'Fee: N/A'}</span>
                                                 ${(() => {
                                                     const priceHistory = listing.price_history ? (typeof listing.price_history === 'string' ? JSON.parse(listing.price_history) : listing.price_history) : [listing.price * 1.1, listing.price * 1.05, listing.price];
                                                     if (priceHistory.length >= 2) {
@@ -1108,6 +1115,9 @@ Object.assign(pages, {
                                                     </button>
                                                     <button class="dropdown-item" onclick="handlers.editListing('${listing.id}')">
                                                         ${components.icon('edit', 14)} Edit
+                                                    </button>
+                                                    <button class="dropdown-item" onclick="event.stopPropagation(); this.closest('.dropdown').classList.remove('open'); modals.advancedCrosslist(['${listing.id}'])">
+                                                        ${components.icon('share', 14)} Advanced Crosslist
                                                     </button>
                                                     ${isStale ? `
                                                     <button class="dropdown-item text-warning" onclick="handlers.refreshListing('${listing.id}')" style="color: var(--warning-600);">
@@ -1310,8 +1320,20 @@ Object.assign(pages, {
 
 
     automations() {
-        // Use shared automation presets (loaded from /shared/automations/presets.js)
-        const allPresets = window.AUTOMATION_PRESETS || [];
+        const BUILTIN_AUTOMATIONS = [
+            { id: 'poshmark_share_closet', platform: 'poshmark', name: 'Share Closet', description: 'Automatically share all your Poshmark listings at set intervals', icon: 'share-2', category: 'sharing' },
+            { id: 'poshmark_follow_back', platform: 'poshmark', name: 'Follow Back', description: 'Automatically follow users who follow you', icon: 'user-plus', category: 'engagement' },
+            { id: 'poshmark_offer_likers', platform: 'poshmark', name: 'Offer to Likers', description: 'Automatically send discounted offers to users who liked your listings', icon: 'tag', category: 'offers' },
+            { id: 'poshmark_community_share', platform: 'poshmark', name: 'Community Sharing', description: 'Share items from community feeds to increase visibility', icon: 'users', category: 'sharing' },
+            { id: 'depop_refresh', platform: 'depop', name: 'Refresh Listings', description: 'Automatically refresh Depop listings to boost visibility', icon: 'refresh-cw', category: 'listing' },
+            { id: 'grailed_bump', platform: 'grailed', name: 'Bump Listings', description: 'Automatically bump Grailed listings to the top', icon: 'trending-up', category: 'listing' },
+            { id: 'mercari_relist', platform: 'mercari', name: 'Relist Items', description: 'Automatically relist sold-out or expired Mercari items', icon: 'repeat', category: 'listing' },
+            { id: 'facebook_refresh', platform: 'facebook', name: 'Refresh Listings', description: 'Automatically refresh Facebook Marketplace listings', icon: 'refresh-cw', category: 'listing' },
+        ];
+        // Use shared automation presets if available, otherwise fall back to built-in list
+        const allPresets = (window.AUTOMATION_PRESETS && window.AUTOMATION_PRESETS.length > 0)
+            ? window.AUTOMATION_PRESETS
+            : BUILTIN_AUTOMATIONS;
 
         // Merge presets with existing rules to show enabled state
         const automations = allPresets.map(preset => {
@@ -1412,7 +1434,7 @@ Object.assign(pages, {
         const successfulRuns = apiStats.successfulRuns ?? runHistory.filter(r => r.status === 'success').length;
         const totalRuns = apiStats.totalRuns ?? runHistory.length;
         const failedRuns = apiStats.failedRuns ?? runHistory.filter(r => r.status === 'failed' || r.status === 'failure').length;
-        const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : null;
+        const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
 
         // Calculate time saved (mock calculation based on active automations)
         const timeSavedPerAutomation = { sharing: 45, engagement: 20, offers: 15, bundles: 10, pricing: 25, maintenance: 30 };
@@ -1535,21 +1557,6 @@ Object.assign(pages, {
                     <p class="page-description">Enable or disable automation rules and configure scheduling</p>
                 </div>
                 <div class="flex gap-2">
-                    <button class="btn btn-ghost" onclick="handlers.showTemplateMarketplace()" title="Browse shared templates">
-                        ${components.icon('shopping-bag', 16)} Templates
-                    </button>
-                    <button class="btn btn-ghost" onclick="handlers.exportAutomationRulesJSON()" title="Export rules as JSON">
-                        ${components.icon('download', 16)} Export
-                    </button>
-                    <button class="btn btn-ghost" onclick="handlers.showImportAutomationRules()" title="Import rules from JSON">
-                        ${components.icon('upload', 16)} Import
-                    </button>
-                    <button class="btn btn-ghost" onclick="handlers.showImportFromURL()" title="Import rules from URL">
-                        ${components.icon('link', 16)} URL
-                    </button>
-                    <button class="btn btn-ghost" onclick="handlers.exportAutomationHistoryCSV()" title="Export run history to CSV">
-                        ${components.icon('file-text', 16)} CSV
-                    </button>
                     <button class="btn btn-ghost" onclick="handlers.showScheduleCalendar()" title="Schedule calendar view">
                         ${components.icon('calendar', 16)} Calendar
                     </button>
@@ -1559,9 +1566,6 @@ Object.assign(pages, {
                     ${store.state.automationTagFilter ? '<button class="btn btn-ghost" onclick="handlers.filterByRuleTag(\'\')" title="Clear tag filter" style="color:var(--primary-600);">' + components.icon('x', 16) + ' Tag: ' + escapeHtml(store.state.automationTagFilter) + '</button>' : ''}
                     <button class="btn btn-secondary" onclick="handlers.showAutomationHistory()">
                         ${components.icon('history', 16)} History
-                    </button>
-                    <button class="btn btn-primary" onclick="handlers.showCreateCustomAutomation()">
-                        ${components.icon('plus', 16)} Create Custom
                     </button>
                 </div>
             </div>
@@ -1624,7 +1628,7 @@ Object.assign(pages, {
                             ${components.icon('trending-up', 20)}
                         </div>
                         <div>
-                            <div class="automation-stat-value">${successRate === null ? 'N/A' : successRate + '%'}</div>
+                            <div class="automation-stat-value">${successRate}%</div>
                             <div class="automation-stat-label">Success Rate</div>
                         </div>
                     </div>
@@ -1710,12 +1714,12 @@ Object.assign(pages, {
                         </div>
                         <div class="performance-metric-card">
                             <div class="metric-icon efficiency">
-                                ${components.icon('trending-up', 24)}
+                                ${components.icon('activity', 24)}
                             </div>
                             <div class="metric-content">
-                                <div class="metric-value">${successRate === null ? 'N/A' : successRate + '%'}</div>
-                                <div class="metric-label">Success Rate</div>
-                                <div class="metric-comparison ${successRate !== null && successRate >= 95 ? 'positive' : 'neutral'}">Target: 95%</div>
+                                <div class="metric-value">${runsToday}</div>
+                                <div class="metric-label">Runs Today</div>
+                                <div class="metric-comparison neutral">${totalRuns} total</div>
                             </div>
                         </div>
                         <div class="performance-metric-card">
@@ -1925,7 +1929,8 @@ Object.assign(pages, {
                                     <input type="checkbox" ${notifPrefs.desktop_enabled ? 'checked' : ''}
                                         onchange="handlers.updateAutomationNotifPref('desktop_enabled', this.checked)"
                                         style="accent-color: var(--primary-500);">
-                                    <span class="text-sm">${components.icon('monitor', 14)} Desktop notifications</span>
+                                    ${components.icon('monitor', 16)}
+                                    <span class="text-sm">Desktop notifications</span>
                                 </label>
                                 <label class="flex items-center gap-3 cursor-pointer">
                                     <input type="checkbox" ${notifPrefs.email_enabled ? 'checked' : ''}
@@ -1938,10 +1943,13 @@ Object.assign(pages, {
                         <div>
                             <label class="form-label mb-3">Quick Actions</label>
                             <div class="flex flex-col gap-2">
+                                <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_all', true)">
+                                    ${components.icon('bell', 14)} Enable All
+                                </button>
                                 <button class="btn btn-sm btn-secondary" onclick="handlers.updateAutomationNotifPref('_mute_all', true)">
                                     ${components.icon('bell-off', 14)} Mute All
                                 </button>
-                                <button class="btn btn-sm btn-primary" onclick="handlers.updateAutomationNotifPref('_enable_recommended', true)">
+                                <button class="btn btn-sm btn-secondary" onclick="handlers.updateAutomationNotifPref('_enable_recommended', true)">
                                     ${components.icon('bell', 14)} Recommended
                                 </button>
                             </div>
@@ -1989,7 +1997,7 @@ Object.assign(pages, {
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
                         ${automations.filter(rule => {
                             const searchQ = (store.state.automationSearchQuery || '').toLowerCase();
                             const catFilter = store.state.automationCategoryFilter || 'all';
@@ -2010,7 +2018,9 @@ Object.assign(pages, {
                                 case 'enabled': return (b.is_enabled ? 1 : 0) - (a.is_enabled ? 1 : 0);
                                 default: return a.name.localeCompare(b.name);
                             }
-                        }).map(rule => `
+                        }).map(rule => (() => {
+                            const isCollapsed = !!(store.state.collapsedAutomations || {})[rule.id];
+                            return `
                             <div class="automation-card" draggable="true" style="${(store.state.selectedAutomationIds || []).includes(rule.id) ? 'outline: 2px solid var(--primary-500); outline-offset: -2px;' : ''}" ondragstart="handlers.onRuleDragStart(event, '${rule.id}')" ondragend="handlers.onRuleDragEnd(event)" ondragover="handlers.onRuleDragOver(event)" ondragleave="handlers.onRuleDragLeave(event)" ondrop="handlers.onRuleDrop(event, '${rule.id}')">
                                 <div class="automation-card-content">
                                     <div class="automation-card-header">
@@ -2019,10 +2029,16 @@ Object.assign(pages, {
                                             ${components.platformBadge(rule.platform)}
                                             <span>${rule.name}</span>
                                         </div>
-                                        <div class="automation-card-sparkline">
-                                            ${components.sparkline(getDailyRunCounts(rule.name, rule.id), { width: 80, height: 24, color: rule.is_enabled ? 'var(--success-500)' : 'var(--gray-400)' })}
+                                        <div style="display:flex;align-items:center;gap:8px;">
+                                            <div class="automation-card-sparkline">
+                                                ${components.sparkline(getDailyRunCounts(rule.name, rule.id), { width: 80, height: 24, color: rule.is_enabled ? 'var(--success-500)' : 'var(--gray-400)' })}
+                                            </div>
+                                            <button class="btn btn-icon btn-sm btn-ghost" aria-label="${isCollapsed ? 'Expand' : 'Collapse'} ${escapeHtml(rule.name)}" aria-expanded="${isCollapsed ? 'false' : 'true'}" onclick="event.stopPropagation();handlers.toggleAutomationCollapse('${rule.id}')" style="padding:4px;transition:transform 0.2s;transform:rotate(${isCollapsed ? '180deg' : '0deg'});">
+                                                ${components.icon('chevron-up', 14)}
+                                            </button>
                                         </div>
                                     </div>
+                                    <div class="automation-card-body" style="${isCollapsed ? 'display:none;' : ''}">
                                     <div class="text-sm text-gray-500">${rule.description}</div>
                                     ${(() => {
                                         const ruleTags = (() => { try { return JSON.parse(rule.tags || '[]'); } catch { return []; } })();
@@ -2060,6 +2076,7 @@ Object.assign(pages, {
                                         })()}`;
                                         })()}
                                     </div>
+                                    </div>
                                 </div>
                                 <div class="automation-card-actions">
                                     <button class="btn btn-secondary" onclick="handlers.testAutomation('${rule.id}')" title="Test Run" style="padding: 10px 16px;">
@@ -2091,7 +2108,7 @@ Object.assign(pages, {
                                     </label>
                                 </div>
                             </div>
-                        `).join('')}
+                        `; })()).join('')}
                     </div>
                 </div>
             </div>

@@ -805,10 +805,17 @@ Object.assign(handlers, {
         const form = event.target;
         const formData = new FormData(form);
 
+        const title = (formData.get('title') || '').trim();
+        const content = (formData.get('content') || '').trim();
+        if (!title || !content) {
+            toast.error('Please fill in the title and content.');
+            return;
+        }
+
         const postData = {
             type: formData.get('type'),
-            title: formData.get('title'),
-            content: formData.get('content'),
+            title: title,
+            content: content,
             tags: formData.get('tags') ? formData.get('tags').split(',').map(t => t.trim()).filter(Boolean) : []
         };
 

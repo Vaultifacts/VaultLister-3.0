@@ -8,7 +8,7 @@ Object.assign(handlers, {
         document.querySelectorAll('.prediction-filter-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.filter === filter);
         });
-        renderApp(pages.predictions());
+        renderApp(window.pages.predictions());
     },
 
 
@@ -22,7 +22,7 @@ Object.assign(handlers, {
                 })) || []
             });
             toast.success('Predictions updated with latest data');
-            renderApp(pages.predictions());
+            renderApp(window.pages.predictions());
         }, 2000);
     },
 
@@ -31,7 +31,7 @@ Object.assign(handlers, {
         toast.info('Refreshing predictions...');
         setTimeout(() => {
             toast.success('Predictions refreshed');
-            renderApp(pages.predictions());
+            renderApp(window.pages.predictions());
         }, 1000);
     },
 
@@ -154,7 +154,7 @@ Object.assign(handlers, {
         toast.info('Refreshing supplier data...');
         setTimeout(() => {
             toast.success('Supplier data refreshed');
-            renderApp(pages.suppliers());
+            renderApp(window.pages.suppliers());
         }, 1500);
     },
 
@@ -229,7 +229,7 @@ Object.assign(handlers, {
         store.setState({ suppliers });
         toast.success('Supplier added successfully');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
 
@@ -344,7 +344,7 @@ Object.assign(handlers, {
         store.setState({ suppliers });
         toast.success('Rating saved');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
 
@@ -396,7 +396,7 @@ Object.assign(handlers, {
         store.setState({ suppliers });
         toast.success('Supplier updated');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     // Feature 1: Search suppliers,
@@ -429,7 +429,7 @@ Object.assign(handlers, {
         store.setState({ suppliers });
         toast.success('Supplier deleted');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     // Feature 4: Supplier form validation,
@@ -562,7 +562,7 @@ Object.assign(handlers, {
         store.setState({ suppliers: updated, _csvSuppliers: null });
         toast.success(`${csvSuppliers.length} suppliers imported successfully`);
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
 
@@ -650,7 +650,7 @@ Object.assign(handlers, {
         store.setState({ purchaseOrders });
         toast.success('Purchase order ' + poNum + ' created');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
 
@@ -700,7 +700,7 @@ Object.assign(handlers, {
         store.setState({ purchaseOrders });
         toast.success('PO status updated to ' + status);
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
 
@@ -757,7 +757,7 @@ Object.assign(handlers, {
         store.setState({ supplierContacts });
         toast.success('Contact added');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
 
@@ -811,7 +811,7 @@ Object.assign(handlers, {
         store.setState({ supplierComms });
         toast.success('Communication logged');
         modals.close();
-        renderApp(pages.suppliers());
+        renderApp(window.pages.suppliers());
     },
 
     // Market Intel handlers,
@@ -823,7 +823,7 @@ Object.assign(handlers, {
             await handlers.loadMarketIntel();
             toast.success('Market data refreshed');
             if (store.state.currentPage === 'market-intel') {
-                renderApp(pages.marketIntel());
+                renderApp(window.pages.marketIntel());
             }
         } catch (err) {
             toast.error('Failed to refresh data');
@@ -911,7 +911,7 @@ Object.assign(handlers, {
         store.setState({ competitors });
         toast.success('Now tracking ' + newCompetitor.name);
         modals.close();
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
 
@@ -996,7 +996,7 @@ Object.assign(handlers, {
         store.setState({ competitors });
         toast.success('Competitor removed');
         modals.close();
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
 
@@ -1252,7 +1252,7 @@ Object.assign(handlers, {
         store.setState({ priceWatchlist });
         toast.success('Now watching "' + newWatch.title + '"');
         modals.close();
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
 
@@ -1260,7 +1260,7 @@ Object.assign(handlers, {
         const priceWatchlist = (store.state.priceWatchlist || []).filter(w => w.id !== id);
         store.setState({ priceWatchlist });
         toast.success('Item removed from watchlist');
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
 
@@ -1418,7 +1418,7 @@ Object.assign(handlers, {
             maxPrice: form.maxPrice.value ? parseFloat(form.maxPrice.value) : null,
             alertEnabled: form.alertEnabled.checked,
             lastRun: null,
-            results: Math.floor(Math.random() * 30) + 5,
+            results: 0,
             created_at: new Date().toISOString()
         };
 
@@ -1426,7 +1426,7 @@ Object.assign(handlers, {
         store.setState({ savedSearches });
         toast.success('Saved search "' + newSearch.name + '" created');
         modals.close();
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
 
@@ -1434,7 +1434,7 @@ Object.assign(handlers, {
         const savedSearches = (store.state.savedSearches || []).filter(s => s.id !== id);
         store.setState({ savedSearches });
         toast.success('Saved search removed');
-        renderApp(pages.marketIntel());
+        renderApp(window.pages.marketIntel());
     },
 
 
@@ -1445,11 +1445,11 @@ Object.assign(handlers, {
         toast.info('Running search: ' + search.name + '...');
         setTimeout(() => {
             const savedSearches = (store.state.savedSearches || []).map(s =>
-                s.id === id ? { ...s, lastRun: new Date().toISOString(), results: Math.floor(Math.random() * 50) + 5 } : s
+                s.id === id ? { ...s, lastRun: new Date().toISOString(), results: null } : s
             );
             store.setState({ savedSearches });
             toast.success('Found ' + (savedSearches.find(s => s.id === id)?.results || 0) + ' results for "' + search.name + '"');
-            renderApp(pages.marketIntel());
+            renderApp(window.pages.marketIntel());
         }, 1200);
     },
 
