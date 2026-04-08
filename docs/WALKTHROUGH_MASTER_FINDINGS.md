@@ -543,9 +543,9 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 | #222 | Financials | No collapse options on any cards and no ability to manually resize cards, unlike the Dashboard page | 2026-04-08 | FIXED — 1fcf99a |
 | #224 | Analytics | "More" dropdown menu UI is broken/misaligned | 2026-04-08 | FIXED — 1fcf99a |
 | #225 | Analytics | Cards have no collapse options and no ability to manually resize, unlike the Dashboard page | 2026-04-08 | FIXED — 1fcf99a |
-| #226 | My Shops | Platform priority update: Poshmark, eBay, Depop, Shopify, Facebook, and Whatnot are now the priority launch platforms. All others (Mercari, Grailed, Etsy, and any remaining) should display as "Coming Soon" | 2026-04-08 | FIXED — 1fcf99a |
-| #228 | Planner | Cards have no collapse options and do not allow manual resizing, unlike the Dashboard page | 2026-04-08 | FIXED — 05f419d |
-| #231 | Planner | (1) Export dropdown menu UI is broken/misaligned; (2) there is already an Add Task button above the task list — remove the duplicate Add Task button at the top of the page | 2026-04-08 | FIXED — 1fcf99a |
+| #226 | My Shops | Platform priority update: Poshmark, eBay, Depop, Shopify, Facebook, and Whatnot are now the priority launch platforms. All others (Mercari, Grailed, Etsy, and any remaining) should display as "Coming Soon" | 2026-04-08 | FIXED — 7ac7b46 |
+| #228 | Planner | Cards have no collapse options and do not allow manual resizing, unlike the Dashboard page | 2026-04-08 | FIXED — 7ac7b46 |
+| #231 | Planner | (1) Export dropdown menu UI is broken/misaligned; (2) there is already an Add Task button above the task list — remove the duplicate Add Task button at the top of the page | 2026-04-08 | FIXED — 7ac7b46 |
 
 ---
 
@@ -558,7 +558,7 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 | #203 | Listings | Listing URL field on the "Import from Marketplace" popup modal is very small and does not clearly indicate it is an input field | 2026-04-08 | FIXED — 1fcf99a |
 | #215 | Automations | (1) "Desktop notifications" label is missing a computer icon between it and the checkbox; (2) no quick action option to "Enable All" notifications | 2026-04-08 | FIXED — 1fcf99a |
 | #218 | Financials | No option to set a custom budget alert threshold | 2026-04-08 | FIXED — 05f419d |
-| #229 | Planner | "Complete All" and "Uncomplete All" buttons are disproportionately sized compared to the Add Task button. Rename: "Complete All" → "Mark All Complete" and "Uncomplete All" → "Mark All Incomplete" | 2026-04-08 | FIXED — 1fcf99a |
+| #229 | Planner | "Complete All" and "Uncomplete All" buttons are disproportionately sized compared to the Add Task button. Rename: "Complete All" → "Mark All Complete" and "Uncomplete All" → "Mark All Incomplete" | 2026-04-08 | FIXED — 7ac7b46 |
 | #230 | Planner | Move the view options (e.g. List View, Kanban Board View) to a dropdown button beside the "Mark All Incomplete" button. The dropdown should display the name of the current active view. Add more view options | 2026-04-08 | FIXED — 05f419d |
 
 ---
@@ -567,7 +567,7 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| #196 | Inventory | Column Settings button displays a pause-like icon — replace with text label "Customize Columns" to clarify the button's purpose | 2026-04-08 | FIXED — 1fcf99a |
+| #196 | Inventory | Column Settings button displays a pause-like icon — replace with text label "Customize Columns" to clarify the button's purpose | 2026-04-08 | FIXED — 7ac7b46 |
 | #205 | Listings | "Customize" button is not proportional to the other dropdown menu buttons | 2026-04-08 | FIXED — 1fcf99a |
 | #208 | Orders & Sales | (1) Sidebar/page label should read "Offers, Orders, & Shipping" instead of "Orders"; (2) Shipping Calculator button label should read "Shipping Calculator" instead of "Ship Calc" | 2026-04-08 | FIXED — 1fcf99a |
 
