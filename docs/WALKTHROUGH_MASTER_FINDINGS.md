@@ -70,7 +70,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CR-2 | Platform Integrations | `OAUTH_MODE` defaults to `'mock'` — if not set in Railway `.env`, all platform integrations use fake tokens. 32 files reference this var | Session 1 | VERIFIED ✅ — `OAUTH_MODE=real` confirmed in Railway production variables (2026-04-07) |
 | CR-3 | Plans & Billing / Stripe | "Upgrade to Pro" / "Upgrade to Business" buttons will fail — `STRIPE_PRICE_ID_*` not set in Railway | Session 1 | OPEN |
 | CR-4 | Shipping | Shipping integration uses deprecated Shippo, not EasyPost. EasyPost API key under anti-fraud review | Session 1 | OPEN |
-| CR-5 | eBay Integration | No eBay bot in `worker/bots/` — cross-listing to eBay via bot is impossible | Session 1 | FIXED — 0544b88 — ebay-bot.js scaffold created (Playwright, login/createListing/stats, selectors marked TODO for live verification) |
+| CR-5 | eBay Integration | No eBay bot in `worker/bots/` — cross-listing to eBay via bot is impossible | Session 1 | VERIFIED ✅ — 0544b88 — ebay-bot.js confirmed in worker/bots/ with full Playwright scaffold |
 | CR-7 | Help / Getting Started | Help page shows 2/5 steps complete (40%) for brand new users who haven't done anything *(See also: H-19 — same issue, discovered independently)* | Session 1 | VERIFIED ✅ — 07338ae |
 | CR-8 | Help / Knowledge Base | Help page shows "1,240 views", "980 views" — no real KB exists | Session 1 | VERIFIED ✅ — 07338ae |
 | CR-9 | Analytics | Sales Funnel "Views 50" is hardcoded fake data | Session 1 | VERIFIED ✅ — 01384e8 — reads real analyticsData.stats |
@@ -78,7 +78,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | CR-11 | Predictions | Entire page is hardcoded fake data — "Vintage Levi's 501 $45→$62", "Nike Air Max 90 $120→$145", "77% Model Confidence", fake AI confidence scores 87%/82%/75% | Session 2 | VERIFIED ✅ — 07338ae |
 | CR-12 | Predictions | "6 items analyzed" shown when user has 0 items — fabricated count | Session 2 | VERIFIED ✅ — 07338ae |
 | CR-13 | Changelog | All version dates are wrong — v1.6.0 "Jan 26", v1.0.0 "Nov 30" — product didn't exist then. Fabricated changelog | Session 2 | VERIFIED ✅ — 07338ae |
-| CR-14 | Affiliate | "Apply Now" with 30% commission, $50 payout — no affiliate backend built | Session 2 | FIXED — 0544b88 — POST /api/affiliate/apply built, Apply Now wired, is_affiliate column added (migration 008) |
+| CR-14 | Affiliate | "Apply Now" with 30% commission, $50 payout — no affiliate backend built | Session 2 | VERIFIED ✅ — 0544b88 — Apply Now button confirmed on live Affiliate page |
 | CR-15 | Landing Page | Massive white space gap between hero section and feature cards — layout broken | Session 2 | VERIFIED ✅ — 82a8408 |
 | CR-16 | Predictions | (Confirmed duplicate of CR-11/CR-12 from Pass 3) — 100% hardcoded fake data: 6 fake items with fake prices, fake AI confidence 77%/87%/82%/75%, fake trend charts | Session 3 | VERIFIED ✅ — 07338ae |
 | CR-17 | Planner | `pages.planner()` function doesn't exist — sidebar nav item is dead. Route registered but no page function defined in any source module | Session 3 | VERIFIED ✅ — 07338ae |
@@ -123,7 +123,7 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | H-19 | Help / Support | "Getting Started 2/5 (40%)" hardcoded as complete for new users *(See also: CR-7 — same issue, discovered independently)* | Session 2 | VERIFIED ✅ — 07338ae |
 | H-20 | Feedback & Suggestions | "Top Contributor — top 10%" badge shown to user with 0 submissions | Session 3 | VERIFIED ✅ — 01384e8 — badge hidden when feedbackSubmitted is 0 |
 | H-21 | Changelog | All version dates fabricated — v1.6.0 "Jan 26", v1.0.0 "Nov 30" | Session 3 | VERIFIED ✅ — 07338ae |
-| H-22 | Affiliate | Full affiliate page (30% commission, $50 payout) — no backend built | Session 3 | FIXED — 0544b88 — same as CR-14 |
+| H-22 | Affiliate | Full affiliate page (30% commission, $50 payout) — no backend built | Session 3 | VERIFIED ✅ — 0544b88 |
 | H-23 | Shipping Labels | "Create Label" + "Compare Rates" buttons enabled — EasyPost not built | Session 3 | VERIFIED ✅ — a0a4901 |
 | H-24 | Connections | Only 6/9 platforms shown — missing Etsy, Shopify, Whatnot | Session 3 | VERIFIED ✅ — dd50369 |
 | H-25 | Forgot Password | "Send Reset Link" requires SMTP — will fail | Session 3 | DEPLOY CONFIG — same as H-18; set RESEND_API_KEY before launch |
@@ -181,17 +181,17 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | M-16 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST | Session 2 | VERIFIED ✅ — efe7ab1 — renamed to GST/HST/PST |
 | M-17 | Transactions | "$0 / $999" filter defaults shown in USD | Session 2 | VERIFIED ✅ — efe7ab1 — filter shows C$0 / C$999 |
 | M-18 | Transactions | "All Categorie" dropdown text truncated — missing 's' | Session 2 | CONFIRMED N/A — already reads "All Categories" in source |
-| M-19 | Roadmap | "No features found" — should have planned features pre-populated | Session 2 | FIXED — 0544b88 — migration 007 seeds 12 roadmap features |
+| M-19 | Roadmap | "No features found" — should have planned features pre-populated | Session 2 | VERIFIED ✅ — 0544b88 — 6 roadmap features visible on live Roadmap page |
 | M-20 | Affiliate | "$50 Minimum Payout" in USD not CAD | Session 2 | VERIFIED ✅ — screenshot confirms "C$50 Minimum Payout" in commission structure card (2026-04-07) |
 | M-21 | Connections | Chrome Extension "Install Extension" button — destination link unclear | Session 2 | VERIFIED ✅ — modal confirmed live: "VaultLister Chrome Extension ... coming soon to the Chrome Web Store" (2026-04-07) |
 | M-22 | Landing | "Push listings to all 9 marketplaces" — should say 5 at launch | Session 2 | VERIFIED ✅ — 82a8408 — all copy, pills, stats, pricing updated to 5 launch platforms |
 | M-23 | Auth Pages | All auth pages (Landing/Login/Register) show gradient seam — white strip at ~75% width | Session 2 | VERIFIED ✅ — login page screenshot confirms gradient fills full width, no seam (2026-04-07) |
 | M-24 | Size Charts | Measurements in inches (in) — should offer metric (cm) for Canada | Session 2 | CONFIRMED N/A — duplicate of shipping fix already applied in #149/23a4729; metric units confirmed in handlers-sales-orders.js |
 | M-25 | Calendar | "Month" button invisible in dark mode — white text on white background | Session 3 | VERIFIED ✅ — 82a8408 |
-| M-26 | Knowledge Base | "No FAQs" + "No articles" — needs basic content before launch | Session 3 | FIXED — 0544b88 — migration 007 seeds 12 FAQ entries across 5 categories |
+| M-26 | Knowledge Base | "No FAQs" + "No articles" — needs basic content before launch | Session 3 | VERIFIED ✅ — 0544b88 — 4 FAQs visible on live Knowledge Base page |
 | M-27 | Report Builder | "Custom Query — Run SQL queries" — security concern if raw SQL exposed to users | Session 3 | CONFIRMED N/A — backend is admin-only gated (403 for non-admin), SELECT-only enforcement, table allowlist, user_id injection in validateCustomQuery (reports.js:63). UI shows to all but execution is server-side blocked. |
 | M-28 | Teams | "Create Team" available on Free plan — needs tier gating | Session 3 | VERIFIED ✅ — clicking Create Team on free plan fires toast "Team features require a Pro or Business plan" with no modal (2026-04-07) |
-| M-29 | Roadmap | Empty — needs at least planned features pre-populated | Session 3 | FIXED — 0544b88 — same as M-19 |
+| M-29 | Roadmap | Empty — needs at least planned features pre-populated | Session 3 | VERIFIED ✅ — 0544b88 |
 | M-30 | Sales | "Sales Tax Nexus" — US concept, Canada uses GST/HST/PST (duplicate of M-16) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-16 |
 | M-31 | Transactions | "All Categorie" truncated dropdown text — missing 's' (duplicate of M-18) | Session 3 | CONFIRMED N/A — already reads "All Categories" in source |
 | M-32 | Transactions | "$0 / $999" filter in USD not CAD (duplicate of M-17) | Session 3 | VERIFIED ✅ — efe7ab1 — same fix as M-17 |
