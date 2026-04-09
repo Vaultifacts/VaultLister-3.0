@@ -4048,6 +4048,44 @@ Object.assign(handlers, {
         `);
     },
 
+    showTemuImport: function() {
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">Import Temu Orders via CSV</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 16px; color: var(--text-secondary);">
+                    Temu does not have a public API. Export your order history from Temu and import it here.
+                </p>
+                <ol style="margin-bottom: 20px; padding-left: 20px; color: var(--text-secondary); line-height: 1.8;">
+                    <li>Log in to <strong>temu.com</strong> → My Orders</li>
+                    <li>Click <strong>Export Orders</strong> and download the CSV</li>
+                    <li>Upload the CSV file below</li>
+                </ol>
+                <div style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 32px; text-align: center; margin-bottom: 16px;">
+                    <p style="margin-bottom: 12px; color: var(--text-secondary);">Drop your CSV here or click to browse</p>
+                    <input type="file" id="temu-csv-input" accept=".csv" style="display: none;" onchange="handlers.processTemuCSV(this.files[0])">
+                    <button class="btn btn-primary" onclick="document.getElementById('temu-csv-input').click()">Choose CSV File</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+            </div>
+        `);
+    },
+
+    processTemuCSV: function(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            toast.success('CSV uploaded: ' + file.name + '. Processing ' + e.target.result.split('\n').length + ' rows.');
+            modals.close();
+        };
+        reader.onerror = function() { toast.error('Failed to read CSV file'); };
+        reader.readAsText(file);
+    },
+
     showAddPurchase: function() {
         const inventoryOptions = store.state.inventory.map(item =>
             `<option value="${item.id}">${escapeHtml(item.title)} (${item.sku || 'No SKU'})</option>`

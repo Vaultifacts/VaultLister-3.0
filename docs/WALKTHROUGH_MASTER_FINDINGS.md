@@ -602,3 +602,7 @@ We need to be able to track the following metrics:
 - We need to set expected performance levels so we know how metrics perform
 - We need to identify failure checkpoints so we can see why metrics are not hitting expected performance levels
 
+
+![The following text is displaying on the changelog subscribe button popup modal --> "onclick="event.stopPropagation()" role="document"> Subscribe to Updates](image-1.png)
+![Terms of Service is being displayed as "Terms" but should say "Terms of Service (TOS)". Also Privacy Policy is being displayed as "Privacy" but should say "Privacy Policy"](image-2.png)
+![Instead of a Full Name field, I would like to have two seperate fields "First Name" and "Last Name". Also I would like to have a "Change Email" button below the Email Field, which allows the user to change their email for their account. Additionally I would like a Password Section display with this other information that has a "Change Password" button which allows the user to change their password after receiving an email prompting the user to change their password](image-3.png)
