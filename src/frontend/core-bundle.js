@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a43c0112';
+    const v = 'dcc8189a';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -28727,13 +28727,12 @@ handlers.showPlanComparison = async function() {
 // Sales Tools handlers
 handlers.showTaxNexus = async function() {
     try {
-        const response = await api.get('/sales-tools/tax-nexus');
-        const taxData = response || [
+        const taxData = await api.get('/sales-tools/tax-nexus').catch(() => [
             { state: 'California', sales_total: 85000, transaction_count: 340, threshold: 100000, has_nexus: true, registered: true },
             { state: 'Texas', sales_total: 45000, transaction_count: 180, threshold: 100000, has_nexus: false, registered: false },
             { state: 'Florida', sales_total: 78000, transaction_count: 312, threshold: 100000, has_nexus: true, registered: true },
             { state: 'New York', sales_total: 92000, transaction_count: 368, threshold: 100000, has_nexus: true, registered: true }
-        ];
+        ]) || [];
 
         const alerts = await api.get('/sales-tools/tax-nexus/alerts').catch(() => [
             { state: 'Texas', type: 'warning', message: 'Approaching sales threshold (45% of limit)' }
@@ -28814,12 +28813,11 @@ handlers.recalculateTaxNexus = async function() {
 
 handlers.showBuyerProfiles = async function() {
     try {
-        const response = await api.get('/sales-tools/buyers');
-        const buyers = response || [
+        const buyers = await api.get('/sales-tools/buyers').catch(() => [
             { id: 1, name: 'John Collector', platform: 'eBay', purchases: 45, returns: 2, return_rate: 4.4, rating: 4.8, blocked: false },
             { id: 2, name: 'Sarah Reseller', platform: 'Mercari', purchases: 28, returns: 1, return_rate: 3.6, rating: 4.9, blocked: false },
             { id: 3, name: 'Mike Bulk Buyer', platform: 'eBay', purchases: 156, returns: 8, return_rate: 5.1, rating: 4.5, blocked: false }
-        ];
+        ]) || [];
 
         const currentFilter = store.state.buyerFilter || 'all';
         const filteredBuyers = buyers.filter(b => {
