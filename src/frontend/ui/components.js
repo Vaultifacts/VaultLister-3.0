@@ -201,8 +201,7 @@ const components = {
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
                 { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
                 { id: 'sales', label: 'Sales & Purchases', icon: 'dollar' },
-                { id: 'orders-sales', label: 'Offers, Orders, & Shipping', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
-                { id: 'offers', label: 'Offers', icon: 'offers', badge: store.state.offers.filter(o => o.status === 'pending').length || null }
+                { id: 'orders-sales', label: 'Offers, Orders, & Shipping', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' }
             ]},
             { section: 'Manage', items: [
                 { id: 'automations', label: 'Automations', icon: 'automation' },

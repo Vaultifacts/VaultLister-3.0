@@ -90,7 +90,6 @@ const globalSearch = {
             { id: 'listings', label: 'Listings', section: 'Sell', icon: 'list' },
             { id: 'sales', label: 'Sales & Purchases', section: 'Sell', icon: 'dollar' },
             { id: 'orders-sales', label: 'Offers, Orders, & Shipping', section: 'Sell', icon: 'sales' },
-            { id: 'offers', label: 'Offers', section: 'Sell', icon: 'offers' },
             { id: 'automations', label: 'Automations', section: 'Manage', icon: 'automation' },
             { id: 'financials', label: 'Financials', section: 'Manage', icon: 'dollar' },
             { id: 'analytics', label: 'Analytics', section: 'Manage', icon: 'analytics' },

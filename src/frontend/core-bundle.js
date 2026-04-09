@@ -8868,7 +8868,6 @@ const globalSearch = {
             { id: 'listings', label: 'Listings', section: 'Sell', icon: 'list' },
             { id: 'sales', label: 'Sales & Purchases', section: 'Sell', icon: 'dollar' },
             { id: 'orders-sales', label: 'Offers, Orders, & Shipping', section: 'Sell', icon: 'sales' },
-            { id: 'offers', label: 'Offers', section: 'Sell', icon: 'offers' },
             { id: 'automations', label: 'Automations', section: 'Manage', icon: 'automation' },
             { id: 'financials', label: 'Financials', section: 'Manage', icon: 'dollar' },
             { id: 'analytics', label: 'Analytics', section: 'Manage', icon: 'analytics' },
@@ -15419,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'a143a0a9';
+    const v = '9bf283b9';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16055,8 +16054,7 @@ const components = {
                 { id: 'inventory', label: 'Inventory', icon: 'inventory', badge: inventoryAlerts > 0 ? inventoryAlerts : null, badgeType: 'warning' },
                 { id: 'listings', label: 'Listings', icon: 'list', badge: draftListings > 0 ? draftListings : null, badgeType: 'info' },
                 { id: 'sales', label: 'Sales & Purchases', icon: 'dollar' },
-                { id: 'orders-sales', label: 'Offers, Orders, & Shipping', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' },
-                { id: 'offers', label: 'Offers', icon: 'offers', badge: store.state.offers.filter(o => o.status === 'pending').length || null }
+                { id: 'orders-sales', label: 'Offers, Orders, & Shipping', icon: 'sales', badge: unseenOrders > 0 ? unseenOrders : null, badgeType: 'primary' }
             ]},
             { section: 'Manage', items: [
                 { id: 'automations', label: 'Automations', icon: 'automation' },
