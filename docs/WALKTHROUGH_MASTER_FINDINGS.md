@@ -15,6 +15,17 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 | 188-new | MEDIUM | Auth / Social Auth | Social auth initiation blocked by auth middleware — `GET /api/social-auth/:provider` returned 401 for unauthenticated users due to missing public endpoint exemption. | `2226ae3` | VERIFIED ✅ — 2226ae3 |
 | 189-new | LOW | Build / Cloudflare CDN | Cloudflare CDN caching stale bundle after deploy — `index.html` version hash (`87960710→d844d3ce`) wasn't committed alongside `core-bundle.js`, so Cloudflare kept serving old bundle. | `457a85a` | VERIFIED ✅ — 457a85a |
 | 190-new | CRITICAL | Auth / Google OAuth | Google OAuth callback fails on live site — after Google account selection and "Continue", user is redirected to `https://vaultlister.com/#login?error=oauth_failed`. Two root causes: (1) PostgreSQL "column reference id is ambiguous" in `findOrCreateUser` JOIN — fixed with `USER_SELECT_ALIASED` `u.` prefix (`df74d36`); (2) `/#/auth/callback` SPA route missing — backend set HttpOnly cookie but SPA couldn't read it; fixed by adding `/api/auth/oauth-session` exchange endpoint + `#auth-callback` SPA route (`1d40be6`). | `df74d36` + `1d40be6` | VERIFIED ✅ — deployed 2026-04-06 21:37 UTC |
+| 191-new | MEDIUM | Dashboard / Stale Banner | Dashboard "data may be stale" banner appeared on every fresh page load because `!lastRefresh` is always true when `dashboardLastRefresh` has never been set. Fixed: changed condition from `!lastRefresh ||` to `lastRefresh &&` so banner only shows when a previous refresh timestamp exists and is >5 min old. | `7c884b4` | VERIFIED ✅ — 7c884b4 — banner absent on fresh session confirmed live |
+| 192-new | LOW | Dashboard / Export Dropdown | Export dropdown menu opened to the right of the button (`left: 0`) and overflowed the viewport on narrower screens, clipping the "Print / Save as PDF" and "Copy Screenshot" options. Fixed: changed `.dashboard-export-dropdown .dropdown-menu` CSS to `right: 0; left: auto` so it opens leftward, anchored to the button's right edge. | `7c884b4` | VERIFIED ✅ — 7c884b4 — both options fully visible on live site |
+| 193-new | HIGH | Inventory / Import | Import tab buttons (`onclick="renderApp(pages.inventoryImport())"`) used bare `pages.` instead of `window.pages.` — crashed silently due to Bun ESM chunk shim overwriting the `pages` window global. Fixed by using `window.pages.inventoryImport()` on all 3 tab onclick handlers. | `0478535` | VERIFIED ✅ — 0478535 — grep confirms window.pages.inventoryImport() in bundle |
+| 194-new | MEDIUM | Inventory / Quick Lookup | Quick Item Lookup hint element had no `id` — `document.getElementById('lookup-hint')` returned null, throwing on every keystroke. Fixed: added `id="lookup-hint"` to the hint `<div>` and added null guard before `.style.display` mutation. | `0478535` | VERIFIED ✅ — 0478535 |
+| 195-new | MEDIUM | Inventory / Aging Widget | Inventory Aging chart crashed with a division-by-zero / map error when `agingBuckets` was empty (no items in inventory). Fixed: added `agingBuckets.length > 0` guard — shows "No aging data yet" empty state when array is empty. | `0478535` | VERIFIED ✅ — 0478535 |
+| 196-new | HIGH | Sales & Purchases / Sidebar Nav | "Sales & Purchases" page was missing from the sidebar navigation entirely — users had no way to navigate to it. Fixed: added "Sales & Purchases" link between Listings and Offers/Orders in the Sell section of `components.js`. Also removed the stale `'sales'` route alias that was incorrectly redirecting `#sales` to the orders-sales page instead of the new sales page; added `sales` to the global search page list in `widgets.js`. | `7004f95` | VERIFIED ✅ — 7004f95 |
+| 197-new | MEDIUM | Sidebar / Offers | "Offers" still appeared as a standalone sidebar item after being migrated to a tab inside "Offers, Orders, & Shipping". Clicking it navigated to a now-unused standalone page instead of the tab. Fixed: removed the standalone Offers nav item from `components.js`; removed the stale `offers` page reference from `widgets.js` global search list. | `168bfc0` | VERIFIED ✅ — 168bfc0 |
+| 198-new | HIGH | Sales & Purchases / Sourcing | "Connect" buttons for AliExpress and Alibaba sourcing platforms called `handlers.showSourcingInfo()` which was undefined — crashed silently with `TypeError`. Fixed: added `showSourcingInfo(platform)` handler to `handlers-sales-orders.js` with a modal showing platform info and API setup instructions. | `f1899c5` | VERIFIED ✅ — f1899c5 |
+| 199-new | HIGH | Sales & Purchases / Purchases Tab | "Import CSV" button for Temu sourcing called `handlers.showTemuImport()` which was undefined — crashed silently with `TypeError`. Fixed: added `showTemuImport()` handler to `handlers-sales-orders.js` with a file input modal and `processTemuCSV()` CSV reader. | `33d0385` | VERIFIED ✅ — 33d0385 |
+| 200-new | MEDIUM | Sales & Purchases / API | Tax nexus and buyer profile API calls on the Purchases tab had no error handler — on 401/network failure they threw unhandled promise rejections that showed error toasts to the user. Fixed: added `.catch(() => {})` fallback to both `api.get('/financials/tax-nexus')` and `api.get('/users/buyer-profile')` calls in `init.js`. | `aaa49f8` | VERIFIED ✅ — aaa49f8 |
+| 201-new | LOW | Dashboard / Search Modal | Auto-focus check: search modal already had `setTimeout(() => overlay.querySelector('.global-search-input').focus(), 50)` in source. JS confirmation: `document.activeElement === input` returned `FOCUSED` 200ms after `globalSearch.open()`. No code change needed — confirmed working. | — | CONFIRMED ✅ — working as coded |
 
 ---
 
@@ -25,11 +36,11 @@ Four bugs discovered and fixed in the post-walkthrough live testing session (202
 | Severity | Walkthrough Findings | Code Audit Findings | Post-Session Finds | Grand Total |
 |----------|---------------------|--------------------|--------------------|-------------|
 | CRITICAL | 21 open + 1 fixed (CR-6) | 5 | 0 | **27** |
-| HIGH | 44 | 10 | 2 (both FIXED) | **56** |
-| MEDIUM | 64 | 8 | 1 (FIXED) | **73** |
-| LOW | 45 | 2 | 1 (FIXED) | **48** |
+| HIGH | 44 | 10 | 6 (all FIXED) | **60** |
+| MEDIUM | 64 | 8 | 6 (all FIXED) | **78** |
+| LOW | 45 | 2 | 2 (all FIXED) | **49** |
 | COSMETIC | 10 | 0 | 0 | **10** |
-| **TOTAL** | **185** | **25** | **4** | **214** |
+| **TOTAL** | **185** | **25** | **11** | **221** |
 
 > Note: Some code audit findings overlap with walkthrough findings (e.g., rate limiter disabled appears in both). Where findings are duplicates, both are preserved since they were discovered independently and provide complementary detail (code location vs. user-visible impact).
 
@@ -582,7 +593,7 @@ Things to Implement:
 - One time 7 day free trial of full Pro plan  
 - Pricing Page should have a comparison table of each tier
 
-We need to be able to track the following metrics:
+- We need to be able to track the following metrics:
     Acquisition:
     - signup rate
     - cost per signup
@@ -598,11 +609,13 @@ We need to be able to track the following metrics:
     Abuse:
     - duplicate accounts
     - trial reuse attempts
-
 - We need to set expected performance levels so we know how metrics perform
 - We need to identify failure checkpoints so we can see why metrics are not hitting expected performance levels
+- ![The following text is displaying on the changelog subscribe button popup modal --> "onclick="event.stopPropagation()" role="document"> Subscribe to Updates](image-1.png)
+- ![Terms of Service is being displayed as "Terms" but should say "Terms of Service (TOS)". Also Privacy Policy is being displayed as "Privacy" but should say "Privacy Policy"](image-2.png)
+- ![Instead of a Full Name field, I would like to have two seperate fields "First Name" and "Last Name". Also I would like to have a "Change Email" button below the Email Field, which allows the user to change their email for their account. Additionally I would like a Password Section display with this other information that has a "Change Password" button which allows the user to change their password after receiving an email prompting the user to change their password](image-3.png)
+- Please make the "Add Purchase" button on the "Sales & Purchases" page instead say "Add Purchases Manually", and I want you to make it a dropdown menu button with the following options on it --> "Import Purchases" dropdown menu button which beside the parent dropdown menu shows the import dropwdown menu showing platforms to import from as well as document import options like csv, excel, etc. Then I would like you to migrate the Receipts page to a that parent dropdown menu on the "Sales & Purchases" page. Then I would also like you to add a "Connections" button that allows the user to connect sourcing platforms, as well as their gmail so purchase information can be pulled automatically.
+- We need to have something that is displayed to show how much the user has used for their plan for the month regarding all included things with their plan, as well as when their limits reset.
 
 
-![The following text is displaying on the changelog subscribe button popup modal --> "onclick="event.stopPropagation()" role="document"> Subscribe to Updates](image-1.png)
-![Terms of Service is being displayed as "Terms" but should say "Terms of Service (TOS)". Also Privacy Policy is being displayed as "Privacy" but should say "Privacy Policy"](image-2.png)
-![Instead of a Full Name field, I would like to have two seperate fields "First Name" and "Last Name". Also I would like to have a "Change Email" button below the Email Field, which allows the user to change their email for their account. Additionally I would like a Password Section display with this other information that has a "Change Password" button which allows the user to change their password after receiving an email prompting the user to change their password](image-3.png)
+Now can you please click everything, test everything, and visual inspect everything on the "Inventory" page
