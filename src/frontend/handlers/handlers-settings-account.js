@@ -1884,6 +1884,70 @@ Object.assign(handlers, {
             mercari: 'Mercari', grailed: 'Grailed', etsy: 'Etsy', shopify: 'Shopify'
         };
         const platformName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
+        const PLAYWRIGHT_ONLY = new Set(['poshmark', 'mercari', 'depop', 'grailed', 'whatnot']);
+
+        if (PLAYWRIGHT_ONLY.has(platform)) {
+            modals.show(`
+                <div class="modal-header">
+                    <h2>Connect to ${platformName}</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info" style="margin-bottom: 20px;">
+                        ${components.icon('info', 16)} VaultLister uses secure browser automation for ${platformName}. Enter your login credentials to connect.
+                    </div>
+                    <form id="connect-shop-form" onsubmit="handlers.submitShopConnection(event, '${platform}')">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-input" required placeholder="Your ${platformName} username">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="apiKey" class="form-input" required placeholder="Your ${platformName} password" autocomplete="off">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            ${components.icon('link', 16)} Connect ${platformName}
+                        </button>
+                    </form>
+                </div>
+            `);
+            return;
+        }
+
+        if (platform === 'shopify') {
+            modals.show(`
+                <div class="modal-header">
+                    <h2>Connect to Shopify</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 16px; color: var(--gray-600); font-size: 14px;">Enter your Shopify store URL to connect via OAuth.</p>
+                    <div class="form-group">
+                        <label class="form-label">Shopify Store URL</label>
+                        <input type="text" id="shopify-domain-input" class="form-input" placeholder="mystore.myshopify.com" autocomplete="off">
+                        <p style="margin-top: 6px; font-size: 12px; color: var(--gray-500);">Find this in your Shopify admin URL</p>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="
+                        const domain = document.getElementById('shopify-domain-input').value.trim().replace(/^https?:\\/\\//, '').replace(/\\/$/, '');
+                        if (!domain) { toast.error('Please enter your Shopify store URL'); return; }
+                        handlers.connectOAuth('shopify', domain);
+                    ">
+                        ${components.icon('link', 16)} Connect with Shopify OAuth
+                    </button>
+                    <div style="text-align: center; margin: 16px 0; color: var(--gray-400); font-size: 14px;">— or —</div>
+                    <form id="connect-shop-form" onsubmit="handlers.submitShopConnection(event, 'shopify')">
+                        <div class="form-group">
+                            <label class="form-label">Access Token (manual)</label>
+                            <input type="password" name="apiKey" class="form-input" placeholder="shpat_..." autocomplete="off">
+                        </div>
+                        <input type="hidden" name="username" value="shopify-store">
+                        <button type="submit" class="btn btn-secondary" style="width: 100%;">Connect with Access Token</button>
+                    </form>
+                </div>
+            `);
+            return;
+        }
+
         modals.show(`
             <div class="modal-header">
                 <h2>Connect to ${platformName}</h2>
@@ -1993,10 +2057,11 @@ Object.assign(handlers, {
     },
 
 
-    connectOAuth: async function(platform) {
+    connectOAuth: async function(platform, shopDomain = null) {
         try {
             // Get authorization URL from backend
-            const response = await api.get(`/oauth/authorize/${platform}`);
+            const url = shopDomain ? `/oauth/authorize/${platform}?shop=${encodeURIComponent(shopDomain)}` : `/oauth/authorize/${platform}`;
+            const response = await api.get(url);
 
             if (!response || !response.authUrl) {
                 // OAuth not configured for this platform - show helpful message

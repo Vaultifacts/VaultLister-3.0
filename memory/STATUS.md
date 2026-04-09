@@ -9,8 +9,20 @@
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
+## Completed This Session (2026-04-08, session 4)
+
+### Walkthrough fixes VERIFIED LIVE — 915589b
+- **#196** VERIFIED ✅ LIVE: "Customize Columns" text label in Inventory toolbar (was icon-only)
+- **#226** VERIFIED ✅ LIVE: Shopify shows "Connect" in My Shops (Mercari/Grailed/Etsy still "Coming Soon")
+- **#228** VERIFIED ✅ LIVE: Collapse (^) buttons on Today's Progress, Pomodoro Timer, Quick Stats cards
+- **#229** VERIFIED ✅ LIVE: "Mark All Complete" / "Mark All Incomplete" buttons in Daily Checklist toolbar
+- **#230** VERIFIED ✅ LIVE: "List View" named dropdown beside Mark All Incomplete
+- **#231** VERIFIED ✅ LIVE: Single Add Task button (duplicate removed from header)
+- Chunk verification method: fetch `/chunk-tools.js`, `/chunk-inventory.js`, `/chunk-settings.js` directly — fixes confirmed in minified output
+- Bundle on live site: `17d54beb` (confirmed via core-bundle.js script tag)
+
 ## In Progress
-- Awaiting Railway deploy of `7ac7b46` + `2f93086` (~8 min from push) — then final visual verification of #196/#226/#228/#229/#230/#231
+- None
 
 ## Completed This Session (2026-04-07, session 3)
 

@@ -41,6 +41,18 @@ export async function oauthRouter(ctx) {
             return { status: 400, data: { error: `${platform} does not support OAuth. Connect via Settings → My Shops using your ${platform} credentials. VaultLister uses browser automation for this platform.` } };
         }
 
+        // For Shopify, require shop domain parameter
+        if (platform === 'shopify') {
+            const shopDomain = queryParams?.shop;
+            if (!shopDomain) {
+                return { status: 400, data: { error: 'Shopify requires a shop domain parameter (e.g. mystore.myshopify.com). Pass ?shop=mystore.myshopify.com' } };
+            }
+            // Validate shop domain format
+            if (!/^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$/.test(shopDomain)) {
+                return { status: 400, data: { error: 'Invalid Shopify shop domain. Must be in format: mystore.myshopify.com' } };
+            }
+        }
+
         // Generate state token for CSRF protection (include platform prefix for callback routing)
         const stateToken = platform + '_' + generateStateToken();
         const stateId = uuidv4();
@@ -56,17 +68,21 @@ export async function oauthRouter(ctx) {
             codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
         }
 
+        // If Shopify: store shopDomain in code_verifier for use at callback
+        const stateCodeVerifier = platform === 'shopify' ? (queryParams?.shop || null) : codeVerifier;
+
         // Store state in database (code_verifier stored for PKCE token exchange)
         await query.run(`
             INSERT INTO oauth_states (id, user_id, platform, state_token, redirect_uri, expires_at, code_verifier)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [stateId, user.id, platform, stateToken, redirectUri, expiresAt.toISOString(), codeVerifier]);
+        `, [stateId, user.id, platform, stateToken, redirectUri, expiresAt.toISOString(), stateCodeVerifier]);
 
         // Get OAuth config based on mode
         const oauthMode = process.env.OAUTH_MODE || 'mock';
+        const shopDomainForConfig = platform === 'shopify' ? (queryParams?.shop || null) : null;
         let config;
         try {
-            config = getOAuthConfig(platform, oauthMode);
+            config = getOAuthConfig(platform, oauthMode, shopDomainForConfig);
         } catch (configErr) {
             return { status: configErr.status || 503, data: { error: configErr.message } };
         }
@@ -141,15 +157,16 @@ export async function oauthRouter(ctx) {
 
         // Exchange code for tokens
         const oauthMode = process.env.OAUTH_MODE || 'mock';
+        const shopDomain = (stateRecord.platform === 'shopify' && stateRecord.code_verifier) ? stateRecord.code_verifier : null;
         let config;
         try {
-            config = getOAuthConfig(platform, oauthMode);
+            config = getOAuthConfig(platform, oauthMode, shopDomain);
         } catch (configErr) {
             return { status: configErr.status || 503, data: { error: configErr.message } };
         }
 
         try {
-            const tokenResponse = await exchangeCodeForTokens(platform, code, config, oauthMode, stateRecord.code_verifier);
+            const tokenResponse = await exchangeCodeForTokens(platform, code, config, oauthMode, stateRecord.platform === 'shopify' ? null : stateRecord.code_verifier);
 
             // Encrypt tokens before storage
             const encryptedAccessToken = encryptToken(tokenResponse.access_token);
@@ -252,7 +269,8 @@ export async function oauthRouter(ctx) {
         try {
             const refreshToken = decryptToken(shop.oauth_refresh_token);
             const oauthMode = process.env.OAUTH_MODE || 'mock';
-            const config = getOAuthConfig(platform, oauthMode);
+            const shopDomainForRefresh = (platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store') ? shop.platform_username : null;
+            const config = getOAuthConfig(platform, oauthMode, shopDomainForRefresh);
 
             const tokenResponse = await refreshAccessToken(platform, refreshToken, config, oauthMode);
 
@@ -331,7 +349,8 @@ export async function oauthRouter(ctx) {
         try {
             const refreshToken = decryptToken(shop.oauth_refresh_token);
             const oauthMode = process.env.OAUTH_MODE || 'mock';
-            const config = getOAuthConfig(platform, oauthMode);
+            const shopDomainForReconnect = (platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store') ? shop.platform_username : null;
+            const config = getOAuthConfig(platform, oauthMode, shopDomainForReconnect);
             const tokenResponse = await refreshAccessToken(platform, refreshToken, config, oauthMode);
 
             const encryptedAccessToken = encryptToken(tokenResponse.access_token);
@@ -381,7 +400,8 @@ export async function oauthRouter(ctx) {
             // Optionally revoke token with platform (for real OAuth)
             if (process.env.OAUTH_MODE !== 'mock' && shop.oauth_token) {
                 const accessToken = decryptToken(shop.oauth_token);
-                const config = getOAuthConfig(platform, process.env.OAUTH_MODE);
+                const shopDomainForRevoke = (platform === 'shopify' && shop.platform_username && shop.platform_username !== 'shopify-store') ? shop.platform_username : null;
+                const config = getOAuthConfig(platform, process.env.OAUTH_MODE, shopDomainForRevoke);
                 await revokeToken(platform, accessToken, config);
             }
 
@@ -523,7 +543,7 @@ export async function oauthRouter(ctx) {
 /**
  * Get OAuth configuration for a platform
  */
-function getOAuthConfig(platform, mode) {
+function getOAuthConfig(platform, mode, shopDomain = null) {
     if (mode === 'mock') {
         const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
         return {
@@ -602,7 +622,16 @@ function getOAuthConfig(platform, mode) {
             clientId: process.env.WHATNOT_CLIENT_ID,
             clientSecret: process.env.WHATNOT_CLIENT_SECRET,
         },
-        shopify: {
+        shopify: shopDomain ? {
+            authorizationUrl: `https://${shopDomain}/admin/oauth/authorize`,
+            tokenUrl: `https://${shopDomain}/admin/oauth/access_token`,
+            userInfoUrl: `https://${shopDomain}/admin/api/2024-01/shop.json`,
+            revokeUrl: null,
+            clientId: process.env.SHOPIFY_CLIENT_ID,
+            clientSecret: process.env.SHOPIFY_CLIENT_SECRET,
+            redirectUri: process.env.OAUTH_REDIRECT_URI,
+            scopes: ['read_products', 'write_products', 'read_orders', 'write_orders']
+        } : {
             authorizationUrl: 'https://accounts.shopify.com/oauth/authorize',
             tokenUrl: 'https://accounts.shopify.com/oauth/token',
             userInfoUrl: 'https://accounts.shopify.com/api/user',
@@ -656,6 +685,27 @@ async function exchangeCodeForTokens(platform, code, config, mode, codeVerifier 
             token_type: 'Bearer',
             scope: 'read write listings'
         };
+    }
+
+    // Shopify per-shop token exchange: POST JSON body with client_id + client_secret + code
+    if (platform === 'shopify') {
+        const response = await fetch(config.tokenUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                client_id: config.clientId,
+                client_secret: config.clientSecret,
+                code
+            }),
+            signal: AbortSignal.timeout(30000)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            throw new Error(`Token exchange failed: ${response.statusText} - ${errorData}`);
+        }
+
+        return await response.json();
     }
 
     // Build token request body
