@@ -273,7 +273,6 @@ const router = {
     routeAliases: {
         'my-listings': { target: 'listings', tab: null },
         'orders': { target: 'orders-sales', tab: 'orders' },
-        'sales': { target: 'orders-sales', tab: 'sales-summary' },
         'transactions': { target: 'financials', tab: 'transactions', storeKey: 'financialsTab' },
         'report-builder': { target: 'analytics', tab: 'reports', storeKey: 'analyticsTab' },
         'predictions': { target: 'analytics', tab: 'predictions', storeKey: 'analyticsTab' },
