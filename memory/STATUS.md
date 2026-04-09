@@ -9,6 +9,28 @@
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
+## Completed This Session (2026-04-08, session 6)
+
+### Full visual inspection sweep on live Railway site — e36ba6e
+- **Dashboard** ✅ renders with all widgets
+- **My Shops** ✅ — Poshmark shows credentials-only modal (no OAuth); eBay shows OAuth flow
+- **Automations** ✅ renders with category cards, scheduler health, performance metrics
+- **Financials** ✅ renders with Financial Overview, chart, Chart of Accounts tabs
+- **Analytics** ✅ renders with Sales Funnel, Activity heatmap, goal progress
+- **Daily Checklist** ✅ — "List View ▾" named dropdown confirmed (icon-only toggles removed); `chunk-tools.js` overwrites stale deferred version
+- **Community** ✅ — tabs: Discussion Forum, Success Stories, Tips & Tricks, Leaderboard
+- **Roadmap** ✅ — 6 features visible with vote counts and status badges (data from DB seed)
+- **Knowledge Base** ✅ — 4 FAQs showing (`supportArticles()` page, not `help()`)
+- **Affiliate** ✅ — "Apply Now" button visible in hero, commission structure, FAQ section
+- **Sales & Purchases** ✅ — Sales|Purchases tabs, correct title (#206 re-confirmed)
+- **Orders (Offers, Orders, & Shipping)** ✅ — Orders|Offers tabs, correct title (#207 re-confirmed)
+- **VERIFIED in findings doc**: CR-5, CR-14, H-22, M-19, M-26, M-29 → all promoted from FIXED to VERIFIED ✅
+
+### Key finding: deferred chunk stale copies
+- `window.pages.checklist` and `window.pages.help` served from stale `chunk-deferred.js` until the route-specific chunk loads
+- On real navigation (via router), `chunk-tools.js`/`chunk-community.js` load and overwrite the deferred versions — users see correct code
+- `pages-deferred.js` is the root cause; these stale copies don't affect live users navigating via sidebar
+
 ## Completed This Session (2026-04-08, session 5)
 
 ### Walkthrough Phase 1 visual verification + #206/#207/#227 built — e6b1180, a59edab, 62a10e9
