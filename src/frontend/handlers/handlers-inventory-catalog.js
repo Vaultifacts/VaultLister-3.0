@@ -4841,7 +4841,7 @@ Object.assign(handlers, {
                             placeholder="Search by SKU, title, or barcode..."
                             oninput="handlers.performQuickLookup(this.value)"
                             autofocus>
-                        <div class="lookup-hint">Type at least 2 characters to search</div>
+                        <div id="lookup-hint" class="lookup-hint">Type at least 2 characters to search</div>
                     </div>
                     <div id="quick-lookup-results" class="lookup-results">
                         <!-- Results appear here -->
@@ -4858,10 +4858,13 @@ Object.assign(handlers, {
         const resultsEl = document.getElementById('quick-lookup-results');
         if (!resultsEl) return;
 
+        const hintEl = document.getElementById('lookup-hint');
         if (query.length < 2) {
+            if (hintEl) hintEl.style.display = '';
             resultsEl.innerHTML = sanitizeHTML('<div class="lookup-empty">Enter at least 2 characters</div>');  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
             return;
         }
+        if (hintEl) hintEl.style.display = 'none';
 
         const inventory = store.state.inventory || [];
         const listings = store.state.listings || [];

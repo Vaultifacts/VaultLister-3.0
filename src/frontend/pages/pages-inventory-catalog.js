@@ -2548,15 +2548,15 @@ Object.assign(pages, {
 
             <div class="tabs mb-6" role="tablist">
                 <button class="tab ${activeTab === 'upload' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'upload' ? 'true' : 'false'}"
-                        onclick="store.setState({importTab:'upload'}); renderApp(pages.inventoryImport());">
+                        onclick="store.setState({importTab:'upload'}); renderApp(window.pages.inventoryImport());">
                     Upload
                 </button>
                 <button class="tab ${activeTab === 'jobs' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'jobs' ? 'true' : 'false'}"
-                        onclick="store.setState({importTab:'jobs'}); renderApp(pages.inventoryImport());">
+                        onclick="store.setState({importTab:'jobs'}); renderApp(window.pages.inventoryImport());">
                     Import History
                 </button>
                 <button class="tab ${activeTab === 'mappings' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'mappings' ? 'true' : 'false'}"
-                        onclick="store.setState({importTab:'mappings'}); renderApp(pages.inventoryImport());">
+                        onclick="store.setState({importTab:'mappings'}); renderApp(window.pages.inventoryImport());">
                     Saved Mappings
                 </button>
             </div>
