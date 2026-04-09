@@ -4012,6 +4012,42 @@ Object.assign(handlers, {
     },
 
 
+    showSourcingInfo: function(platform) {
+        const info = {
+            aliexpress: {
+                name: 'AliExpress',
+                description: 'Connect via the AliExpress Open Platform API to automatically import purchase orders.',
+                steps: ['Register as an AliExpress Open Platform developer', 'Create an app and get your App Key & Secret', 'Enter credentials in Settings → Integrations → AliExpress'],
+                note: 'AliExpress API access requires approval from their developer program.'
+            },
+            alibaba: {
+                name: 'Alibaba',
+                description: 'Connect via the Alibaba B2B API to import wholesale purchase orders.',
+                steps: ['Sign up for Alibaba Open Platform access', 'Create an application and obtain API credentials', 'Enter credentials in Settings → Integrations → Alibaba'],
+                note: 'Alibaba B2B API is available to registered business accounts.'
+            }
+        };
+        const p = info[platform] || { name: platform, description: 'Integration coming soon.', steps: [], note: '' };
+        modals.show(`
+            <div class="modal-header">
+                <h2>Connect ${escapeHtml(p.name)}</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom:16px">${escapeHtml(p.description)}</p>
+                ${p.steps.length ? `
+                <h4 style="margin-bottom:8px;font-weight:600">Setup Steps</h4>
+                <ol style="padding-left:20px;margin-bottom:16px">
+                    ${p.steps.map(s => `<li style="margin-bottom:4px">${escapeHtml(s)}</li>`).join('')}
+                </ol>` : ''}
+                ${p.note ? `<p class="text-muted" style="font-size:0.875rem">${escapeHtml(p.note)}</p>` : ''}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Close</button>
+            </div>
+        `);
+    },
+
     showAddPurchase: function() {
         const inventoryOptions = store.state.inventory.map(item =>
             `<option value="${item.id}">${escapeHtml(item.title)} (${item.sku || 'No SKU'})</option>`
