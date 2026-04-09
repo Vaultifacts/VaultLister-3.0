@@ -342,7 +342,7 @@ const pages = {
             <!-- Stale Data Banner -->
             ${(() => {
                 const lastRefresh = store.state.dashboardLastRefresh;
-                const isStale = !lastRefresh || (Date.now() - lastRefresh > 5 * 60 * 1000);
+                const isStale = lastRefresh && (Date.now() - lastRefresh > 5 * 60 * 1000);
                 return isStale ? `
                     <div class="dashboard-stale-banner" id="stale-data-banner">
                         <span>${components.icon('alert-triangle', 14)} Dashboard data may be stale.</span>

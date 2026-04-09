@@ -15418,7 +15418,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '335e2059';
+    const v = '688857dc';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -18189,7 +18189,7 @@ const pages = {
             <!-- Stale Data Banner -->
             ${(() => {
                 const lastRefresh = store.state.dashboardLastRefresh;
-                const isStale = !lastRefresh || (Date.now() - lastRefresh > 5 * 60 * 1000);
+                const isStale = lastRefresh && (Date.now() - lastRefresh > 5 * 60 * 1000);
                 return isStale ? `
                     <div class="dashboard-stale-banner" id="stale-data-banner">
                         <span>${components.icon('alert-triangle', 14)} Dashboard data may be stale.</span>

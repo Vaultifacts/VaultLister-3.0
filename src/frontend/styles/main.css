@@ -67694,7 +67694,8 @@ kbd {
     display: none;
     position: absolute;
     top: 100%;
-    left: 0;
+    right: 0;
+    left: auto;
     z-index: 100;
     min-width: 200px;
     background: var(--bg-primary);
