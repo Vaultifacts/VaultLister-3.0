@@ -26984,6 +26984,15 @@ body.dark-mode .dashboard-customize-section .btn:hover {
     font-weight: 500;
 }
 
+.health-score-tier {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    margin-top: 2px;
+}
+.health-score-tier.tier-good { color: var(--success); }
+.health-score-tier.tier-warning { color: var(--warning); }
+.health-score-tier.tier-poor { color: var(--error); }
+
 .listings-health-stats {
     display: flex;
     gap: var(--space-6);

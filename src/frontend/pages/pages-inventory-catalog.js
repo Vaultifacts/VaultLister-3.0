@@ -813,6 +813,7 @@ Object.assign(pages, {
                             </svg>
                             <span class="health-score-value">${healthScore}%</span>
                         </div>
+                        <div class="health-score-tier ${healthScore >= 80 ? 'tier-good' : healthScore >= 50 ? 'tier-warning' : 'tier-poor'}">${healthScore >= 80 ? 'Excellent' : healthScore >= 50 ? 'Good' : 'Needs Work'}</div>
                         `}
                         <div class="health-score-label">Listing Health</div>
                     </div>
