@@ -21,7 +21,7 @@
 ### VERIFIED items updated in WALKTHROUGH_MASTER_FINDINGS.md:
 - #191–#205, #208–#225, #232 → VERIFIED ✅
 - #206, #207 → VERIFIED ✅ — e6b1180 + a59edab
-- #227 → FIXED — e6b1180 + a59edab + 62a10e9 (pending live verification)
+- #227 → VERIFIED ✅ — e6b1180 + a59edab + 62a10e9 (Poshmark credentials-only modal + Shopify shop-domain OAuth modal)
 
 ## Completed This Session (2026-04-08, session 4)
 

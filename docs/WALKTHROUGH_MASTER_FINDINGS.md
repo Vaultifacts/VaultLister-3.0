@@ -500,7 +500,7 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| #227 | My Shops | No OAuth connection setup for any priority platform except eBay — Poshmark, Depop, Shopify, Facebook, and Whatnot all need real OAuth flows built. *(See also: CR-10 — all 9 connect buttons have no working OAuth flows)* | 2026-04-08 | FIXED — e6b1180 + a59edab |
+| #227 | My Shops | No OAuth connection setup for any priority platform except eBay — Poshmark, Depop, Shopify, Facebook, and Whatnot all need real OAuth flows built. *(See also: CR-10 — all 9 connect buttons have no working OAuth flows)* | 2026-04-08 | VERIFIED ✅ — e6b1180 + a59edab + 62a10e9 |
 
 ---
 
