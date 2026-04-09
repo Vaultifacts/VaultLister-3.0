@@ -500,7 +500,7 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| #227 | My Shops | No OAuth connection setup for any priority platform except eBay — Poshmark, Depop, Shopify, Facebook, and Whatnot all need real OAuth flows built. *(See also: CR-10 — all 9 connect buttons have no working OAuth flows)* | 2026-04-08 | OPEN |
+| #227 | My Shops | No OAuth connection setup for any priority platform except eBay — Poshmark, Depop, Shopify, Facebook, and Whatnot all need real OAuth flows built. *(See also: CR-10 — all 9 connect buttons have no working OAuth flows)* | 2026-04-08 | FIXED — e6b1180 + a59edab |
 
 ---
 
@@ -508,15 +508,15 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| #193 | Inventory | Search bar does not filter in real time as characters are typed, and does not filter even when Enter is pressed | 2026-04-08 | FIXED — 1fcf99a |
-| #194 | Inventory | Unable to add filters — filter controls have no effect | 2026-04-08 | FIXED — 1fcf99a |
-| #197 | Inventory | Analytics on Inventory page will not load and displays error toasts | 2026-04-08 | FIXED — 1fcf99a |
-| #200 | Listings | Adding a folder creates two folders — duplication bug on every folder create action | 2026-04-08 | FIXED — 1fcf99a |
-| #204 | Listings | Nothing happens when Advanced Crosslist option is chosen — feature is entirely non-functional | 2026-04-08 | FIXED — 1fcf99a |
-| #216 | Automations | No available automations for users to choose from — automations list is empty. Automations shown should only be ones feasibly executable by the platform | 2026-04-08 | FIXED — 05f419d |
-| #217 | Financials | Health text is displaying behind the Health score number — text is obscured and unreadable | 2026-04-08 | FIXED — 1fcf99a |
-| #223 | Analytics | Load time when navigating to Analytics from the sidebar is extremely delayed and glitchy | 2026-04-08 | FIXED — 05f419d |
-| #232 | Planner | Streak text is not visible without highlighting — invisible in both light and dark mode | 2026-04-08 | FIXED — 1fcf99a |
+| #193 | Inventory | Search bar does not filter in real time as characters are typed, and does not filter even when Enter is pressed | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #194 | Inventory | Unable to add filters — filter controls have no effect | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #197 | Inventory | Analytics on Inventory page will not load and displays error toasts | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #200 | Listings | Adding a folder creates two folders — duplication bug on every folder create action | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #204 | Listings | Nothing happens when Advanced Crosslist option is chosen — feature is entirely non-functional | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #216 | Automations | No available automations for users to choose from — automations list is empty. Automations shown should only be ones feasibly executable by the platform | 2026-04-08 | VERIFIED ✅ — 05f419d |
+| #217 | Financials | Health text is displaying behind the Health score number — text is obscured and unreadable | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #223 | Analytics | Load time when navigating to Analytics from the sidebar is extremely delayed and glitchy | 2026-04-08 | VERIFIED ✅ — 05f419d |
+| #232 | Planner | Streak text is not visible without highlighting — invisible in both light and dark mode | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
 
 ---
 
@@ -524,25 +524,25 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| #191 | Inventory | No items show in Restock Suggestions even though 3 items have "Stock Low - Reorder" stock level set | 2026-04-08 | FIXED — 1fcf99a |
-| #195 | Inventory | Exported Excel sheet does not mirror the user's column order, detail format, or column selection | 2026-04-08 | FIXED — 05f419d |
-| #199 | Listings | Listing Health Score displays a value with no listings analyzed — should show empty state message e.g. "Add listings to see your Listing Health Score". Additionally: Good should be colour-coded yellow, Needs Work should be colour-coded red (matching existing Excellent = green) | 2026-04-08 | FIXED — 1fcf99a |
-| #201 | Listings | Remove the Fee Breakdown section entirely — instead integrate all fee details directly onto each platform listing card | 2026-04-08 | FIXED — 05f419d |
-| #202 | Listings | UI is broken/messed up on the Add New Listings dropdown menu | 2026-04-08 | FIXED — 1fcf99a |
-| #206 | Orders & Sales | Migrate Sales to its own dedicated page called "Sales & Purchases" with two tabs: "Sales" and "Purchases". Each tab should display transactions processed by the app and allow manual entry and adjustment. Rename the existing "Offers & Sales" page to "Offers, Orders, & Shipping" | 2026-04-08 | OPEN |
-| #207 | Orders & Sales | Migrate the Offers page to a tab on the "Offers, Orders, & Shipping" page | 2026-04-08 | OPEN |
-| #209 | Orders & Sales | Shipping popup should be migrated to a popout menu beside the Create Label popup. Missing: (1) Canadian postal code format support — only US zip code format currently supported; (2) weight measurement options — oz is the only available unit | 2026-04-08 | FIXED — 05f419d |
-| #210 | Orders & Sales | "More" dropdown menu UI is broken/messed up | 2026-04-08 | FIXED — 1fcf99a |
-| #211 | Automations | Remove the following options from the Automations page: Create Custom Automation, Templates, Export, Import, URL rules, and CSV rules. Platform should offer pre-built automations only | 2026-04-08 | FIXED — 1fcf99a |
-| #212 | Automations | Automation cards display with large gaps between them — should display compactly with only small padding between cards, no large unused whitespace | 2026-04-08 | FIXED — 1fcf99a |
-| #213 | Automations | (1) No option to manually resize cards as available on the Dashboard; (2) no Customize option to choose which cards to show; (3) collapse buttons missing on some cards; (4) cards that do have collapse buttons are showing the arrow horizontally instead of vertically | 2026-04-08 | FIXED — 1fcf99a |
-| #214 | Automations | Many duplicated metrics across cards — e.g. Success Rate appears multiple times. The "System Active" card should function as the main status, statistics, and informational hub for the page; duplicate information from other cards should be removed and shown only there | 2026-04-08 | FIXED — 05f419d |
-| #219 | Financials | Export dropdown menu UI is broken/misaligned | 2026-04-08 | FIXED — 1fcf99a |
-| #220 | Financials | Revenue, Expenses, Net Profit, and Profit Margin summary cards below the main Financial Overview are duplicate information — remove all four | 2026-04-08 | FIXED — 1fcf99a |
-| #221 | Financials | Chart of Accounts tab is missing "Purchases" and "Sales" tabs on the left side | 2026-04-08 | FIXED — 05f419d |
-| #222 | Financials | No collapse options on any cards and no ability to manually resize cards, unlike the Dashboard page | 2026-04-08 | FIXED — 1fcf99a |
-| #224 | Analytics | "More" dropdown menu UI is broken/misaligned | 2026-04-08 | FIXED — 1fcf99a |
-| #225 | Analytics | Cards have no collapse options and no ability to manually resize, unlike the Dashboard page | 2026-04-08 | FIXED — 1fcf99a |
+| #191 | Inventory | No items show in Restock Suggestions even though 3 items have "Stock Low - Reorder" stock level set | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #195 | Inventory | Exported Excel sheet does not mirror the user's column order, detail format, or column selection | 2026-04-08 | VERIFIED ✅ — 05f419d |
+| #199 | Listings | Listing Health Score displays a value with no listings analyzed — should show empty state message e.g. "Add listings to see your Listing Health Score". Additionally: Good should be colour-coded yellow, Needs Work should be colour-coded red (matching existing Excellent = green) | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #201 | Listings | Remove the Fee Breakdown section entirely — instead integrate all fee details directly onto each platform listing card | 2026-04-08 | VERIFIED ✅ — 05f419d |
+| #202 | Listings | UI is broken/messed up on the Add New Listings dropdown menu | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #206 | Orders & Sales | Migrate Sales to its own dedicated page called "Sales & Purchases" with two tabs: "Sales" and "Purchases". Each tab should display transactions processed by the app and allow manual entry and adjustment. Rename the existing "Offers & Sales" page to "Offers, Orders, & Shipping" | 2026-04-08 | FIXED — e6b1180 + a59edab |
+| #207 | Orders & Sales | Migrate the Offers page to a tab on the "Offers, Orders, & Shipping" page | 2026-04-08 | FIXED — e6b1180 + a59edab |
+| #209 | Orders & Sales | Shipping popup should be migrated to a popout menu beside the Create Label popup. Missing: (1) Canadian postal code format support — only US zip code format currently supported; (2) weight measurement options — oz is the only available unit | 2026-04-08 | VERIFIED ✅ — 05f419d |
+| #210 | Orders & Sales | "More" dropdown menu UI is broken/messed up | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #211 | Automations | Remove the following options from the Automations page: Create Custom Automation, Templates, Export, Import, URL rules, and CSV rules. Platform should offer pre-built automations only | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #212 | Automations | Automation cards display with large gaps between them — should display compactly with only small padding between cards, no large unused whitespace | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #213 | Automations | (1) No option to manually resize cards as available on the Dashboard; (2) no Customize option to choose which cards to show; (3) collapse buttons missing on some cards; (4) cards that do have collapse buttons are showing the arrow horizontally instead of vertically | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #214 | Automations | Many duplicated metrics across cards — e.g. Success Rate appears multiple times. The "System Active" card should function as the main status, statistics, and informational hub for the page; duplicate information from other cards should be removed and shown only there | 2026-04-08 | VERIFIED ✅ — 05f419d |
+| #219 | Financials | Export dropdown menu UI is broken/misaligned | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #220 | Financials | Revenue, Expenses, Net Profit, and Profit Margin summary cards below the main Financial Overview are duplicate information — remove all four | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #221 | Financials | Chart of Accounts tab is missing "Purchases" and "Sales" tabs on the left side | 2026-04-08 | VERIFIED ✅ — 05f419d |
+| #222 | Financials | No collapse options on any cards and no ability to manually resize cards, unlike the Dashboard page | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #224 | Analytics | "More" dropdown menu UI is broken/misaligned | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #225 | Analytics | Cards have no collapse options and no ability to manually resize, unlike the Dashboard page | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
 | #226 | My Shops | Platform priority update: Poshmark, eBay, Depop, Shopify, Facebook, and Whatnot are now the priority launch platforms. All others (Mercari, Grailed, Etsy, and any remaining) should display as "Coming Soon" | 2026-04-08 | VERIFIED ✅ 7ac7b46 |
 | #228 | Planner | Cards have no collapse options and do not allow manual resizing, unlike the Dashboard page | 2026-04-08 | VERIFIED ✅ 7ac7b46 |
 | #231 | Planner | (1) Export dropdown menu UI is broken/misaligned; (2) there is already an Add Task button above the task list — remove the duplicate Add Task button at the top of the page | 2026-04-08 | VERIFIED ✅ 7ac7b46 |
@@ -553,11 +553,11 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
-| #192 | Inventory | Quick Item Lookup should trigger after only 1 character is typed — current minimum threshold is too high | 2026-04-08 | FIXED — 1fcf99a |
-| #198 | Listings | Breadcrumb shows "Home > My Listings" — should display "Dashboard > Listings" to match actual page names | 2026-04-08 | FIXED — 1fcf99a |
-| #203 | Listings | Listing URL field on the "Import from Marketplace" popup modal is very small and does not clearly indicate it is an input field | 2026-04-08 | FIXED — 1fcf99a |
-| #215 | Automations | (1) "Desktop notifications" label is missing a computer icon between it and the checkbox; (2) no quick action option to "Enable All" notifications | 2026-04-08 | FIXED — 1fcf99a |
-| #218 | Financials | No option to set a custom budget alert threshold | 2026-04-08 | FIXED — 05f419d |
+| #192 | Inventory | Quick Item Lookup should trigger after only 1 character is typed — current minimum threshold is too high | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #198 | Listings | Breadcrumb shows "Home > My Listings" — should display "Dashboard > Listings" to match actual page names | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #203 | Listings | Listing URL field on the "Import from Marketplace" popup modal is very small and does not clearly indicate it is an input field | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #215 | Automations | (1) "Desktop notifications" label is missing a computer icon between it and the checkbox; (2) no quick action option to "Enable All" notifications | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #218 | Financials | No option to set a custom budget alert threshold | 2026-04-08 | VERIFIED ✅ — 05f419d |
 | #229 | Planner | "Complete All" and "Uncomplete All" buttons are disproportionately sized compared to the Add Task button. Rename: "Complete All" → "Mark All Complete" and "Uncomplete All" → "Mark All Incomplete" | 2026-04-08 | VERIFIED ✅ 7ac7b46 |
 | #230 | Planner | Move the view options (e.g. List View, Kanban Board View) to a dropdown button beside the "Mark All Incomplete" button. The dropdown should display the name of the current active view. Add more view options | 2026-04-08 | VERIFIED ✅ 2f93086 |
 
@@ -568,8 +568,8 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 | # | Page / Component | Issue | Session | Status |
 |---|-----------------|-------|---------|--------|
 | #196 | Inventory | Column Settings button displays a pause-like icon — replace with text label "Customize Columns" to clarify the button's purpose | 2026-04-08 | VERIFIED ✅ 7ac7b46 |
-| #205 | Listings | "Customize" button is not proportional to the other dropdown menu buttons | 2026-04-08 | FIXED — 1fcf99a |
-| #208 | Orders & Sales | (1) Sidebar/page label should read "Offers, Orders, & Shipping" instead of "Orders"; (2) Shipping Calculator button label should read "Shipping Calculator" instead of "Ship Calc" | 2026-04-08 | FIXED — 1fcf99a |
+| #205 | Listings | "Customize" button is not proportional to the other dropdown menu buttons | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
+| #208 | Orders & Sales | (1) Sidebar/page label should read "Offers, Orders, & Shipping" instead of "Orders"; (2) Shipping Calculator button label should read "Shipping Calculator" instead of "Ship Calc" | 2026-04-08 | VERIFIED ✅ — 1fcf99a |
 
 ---
 

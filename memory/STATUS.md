@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-08 MST (session 4)
+**Updated:** 2026-04-08 MST (session 5)
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — 214 findings, 100% coverage (14 sessions)
@@ -8,6 +8,25 @@
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed: SQL ambiguity `df74d36`, display_name `421e4f0`, missing auth-callback route `1d40be6`, wrong redirect URLs `4dafcf8`, 401 interceptor bypass + hashParts URL parsing `9065bc1`/`5a4cf09`, Redis OTT → PostgreSQL-backed OTT `77a07e1`. Redeployed `ffb6e89`. ✅ VERIFIED LIVE: route registered, OTT endpoint responds, minified bundle has correct hash logic, raw fetch confirmed
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
+
+## Completed This Session (2026-04-08, session 5)
+
+### Walkthrough Phase 1 visual verification + #206/#207/#227 built — e6b1180, a59edab
+- **Visual verification pass** (screenshots on live site): Automations, Orders, Financials, Analytics, Daily Checklist — all FIXED items confirmed rendering correctly
+- **#206 BUILT** ✅: Sales page → "Sales & Purchases" with Sales | Purchases tabs; Purchases tab has sourcing platform cards (AliExpress, Alibaba, Temu, Manual Entry) + purchases table loading from `/api/financials/purchases`
+- **#207 BUILT** ✅: Orders page renamed "Offers, Orders, & Shipping"; Offers tab added; sidebar "Offers" nav delegates to Orders page with Offers tab active
+- **#227 BUILT** ✅: Playwright-only platforms (Poshmark, Depop, Whatnot, Mercari, Grailed) show credentials modal; Shopify shows shop-domain-first OAuth flow; `oauth_states.code_verifier` stores shop domain for Shopify callback
+- **Bug found + fixed**: `pages-deferred.js` (chunk-deferred.js) contained stale copies of `sales()`, `orders()`, `offers()` that loaded asynchronously and overwrote the updated chunk-sales.js versions. Removed 1039 lines from pages-deferred.js — a59edab
+- Awaiting Railway deploy (a59edab) to verify #206/#207/#227 live
+
+### VERIFIED items updated in WALKTHROUGH_MASTER_FINDINGS.md:
+- #191, #192, #193, #194, #195, #197, #198, #199, #200, #201, #202, #203, #204, #205 → VERIFIED ✅
+- #208, #209, #210 → VERIFIED ✅
+- #211, #212, #213, #214, #215, #216 → VERIFIED ✅
+- #217, #218, #219, #220, #221, #222 → VERIFIED ✅
+- #223, #224, #225 → VERIFIED ✅
+- #232 → VERIFIED ✅
+- #206, #207, #227 → FIXED — e6b1180 + a59edab (pending live verification)
 
 ## Completed This Session (2026-04-08, session 4)
 
