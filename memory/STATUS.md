@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-08 MST (session 5)
+**Updated:** 2026-04-08 MST (session 7)
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — 214 findings, 100% coverage (14 sessions)
@@ -8,6 +8,17 @@
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed: SQL ambiguity `df74d36`, display_name `421e4f0`, missing auth-callback route `1d40be6`, wrong redirect URLs `4dafcf8`, 401 interceptor bypass + hashParts URL parsing `9065bc1`/`5a4cf09`, Redis OTT → PostgreSQL-backed OTT `77a07e1`. Redeployed `ffb6e89`. ✅ VERIFIED LIVE: route registered, OTT endpoint responds, minified bundle has correct hash logic, raw fetch confirmed
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
+
+## Completed This Session (2026-04-08, session 7)
+
+### Full visual inspection of Sales & Purchases page — 33d0385
+- **Sales tab** ✅ — title, description, stats row (Total Sales/Revenue/Gross Profit/Pending Shipments), GST/HST/PST card (modal opens + renders table), Buyer Profiles card (modal opens + shows buyer list with star ratings, All/Flagged/Blocked filter tabs), filter row (Platform: 7 options, Status: 4 options, Item/Buyer search inputs), empty state
+- **Purchases tab** ✅ — stats row (Total Purchases/Total Spent/Pending/This Month), Sourcing Platforms section (AliExpress/Alibaba/Temu cards), Add Purchase modal (all fields present: Vendor, Date, Payment, Line Items, Shipping, Tax, Notes), empty state
+- **Bugs found + fixed (2 new):**
+  - `showTemuImport` undefined (Temu Import CSV button was calling non-existent handler) → implemented modal + processTemuCSV in handlers-sales-orders.js — 33d0385
+  - `showSourcingInfo` undefined (AliExpress/Alibaba Connect buttons) → fixed in f1899c5/aaa49f8 (prior session)
+  - `showTaxNexus`/`showBuyerProfiles` error toasts → fixed with .catch() fallback in aaa49f8 (prior session)
+- **Pending deploy**: All 3 commits (f1899c5, aaa49f8, 33d0385) pushed → bundle 335e2059 deploying on Railway
 
 ## Completed This Session (2026-04-08, session 6)
 
