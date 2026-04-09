@@ -457,5 +457,29 @@ export async function affiliateRouter(ctx) {
         }
     }
 
+    // POST /api/affiliate/apply - Apply to become an affiliate
+    if (method === 'POST' && path === '/apply') {
+        try {
+            const existingUser = await query.get(`SELECT is_affiliate, affiliate_applied_at FROM users WHERE id = ?`, [user.id]);
+
+            if (existingUser?.is_affiliate) {
+                return { status: 400, data: { error: 'You are already an affiliate' } };
+            }
+            if (existingUser?.affiliate_applied_at) {
+                return { status: 400, data: { error: 'Application already submitted — we will review it within 2 business days' } };
+            }
+
+            await query.run(
+                `UPDATE users SET affiliate_applied_at = NOW() WHERE id = ?`,
+                [user.id]
+            );
+
+            return { status: 200, data: { message: 'Application submitted! We will review it within 2 business days.' } };
+        } catch (error) {
+            logger.error('[Affiliate] Error submitting application', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to submit application' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }

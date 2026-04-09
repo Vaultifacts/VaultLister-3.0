@@ -39,6 +39,14 @@ export const RATE_LIMITS = {
         loginCooldown:  60000,
         maxActionsPerRun: 30,
     },
+    ebay: {
+        listingCreate:  3000,   // 3s between listing actions
+        listingUpdate:  2000,
+        search:         2000,
+        pageLoad:       1500,
+        login:          5000,
+        betweenActions: 2500,
+    },
 };
 
 // Add random jitter to a base delay (±30%)

@@ -5987,5 +5987,16 @@ Object.assign(handlers, {
             console.error('Poshmark monitoring check failed:', e);
             toast.error('Check failed — try again');
         }
+    },
+
+    applyAffiliate: async function() {
+        if (!confirm('Apply to the VaultLister Affiliate Program? Earn 30% commission on every referral. We\'ll review your application within 2 business days.')) return;
+        try {
+            const result = await api.post('/affiliate/apply', {});
+            toast.success(result.message || 'Application submitted!');
+            renderApp(window.pages.affiliate());
+        } catch (err) {
+            toast.error(err.message || 'Failed to submit application');
+        }
     }
 });
