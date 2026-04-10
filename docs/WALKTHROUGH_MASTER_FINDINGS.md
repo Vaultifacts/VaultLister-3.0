@@ -904,16 +904,81 @@ The following elements functioned correctly and provided a good user experience:
 - Vault Buddy (when accessible) — chat panel opens with "Start New Chat" and "My Chats" tabs, clear capability descriptions, and a "Start New Chat" CTA.
 
 
+QA Report: Offers, Orders, & Shipping Tab
+🐛 BUGS (Functional Issues)
+1. "Clear Filters" Button is Non-Functional (Orders Tab)
+Clicking the "Clear Filters" link shows a "Filters cleared" success toast but does NOT actually reset the filter dropdowns. The Status dropdown continued to display the previously selected value ("Delivered") and the "Clear Filters" link itself remained visible, confirming nothing was actually cleared. This is a broken feature.
+2. "Batch Ship by Region" Button Does Nothing (More → Orders)
+Clicking "Batch Ship by Region" from the More dropdown produces no response — no modal, no navigation, no toast. The button is entirely non-functional.
+3. "Order Map" Button Does Nothing (More → Orders)
+Same as above — clicking "Order Map" produces no response whatsoever. Non-functional.
+4. "Upload CSV" Button Dismisses the Import Orders Modal Instead of Opening a File Dialog
+In the Import Orders modal, clicking the "Upload CSV" option (which is styled as a button/area, not a file input) closes the entire modal without opening a file picker or taking any action. The modal silently disappears. The intended behavior would be to open an OS file picker or inline file upload flow.
+5. Compare Shipping Rates — "Failed to Fetch Rates" Error (Shipping Labels Page)
+On the Shipping Labels page, clicking Compare Rates → Get Rates returns a generic red error: "Failed to fetch rates." No additional detail is given. This may be a missing API integration, but the user experience is poor — there's no explanation of why it failed or what to try next.
+6. "Shipping Labels" Button in Orders Action Bar Navigates Away (Design/Behavior Bug)
+Clicking the "Shipping Labels" action button from the Orders page navigates the user entirely away to a separate #shipping-labels page rather than opening an inline panel or modal. There's no "back" prompt and users lose context. This is likely a navigation design bug — if the button is meant to be a quick shortcut it should stay within the Orders context.
+7. "Batches" Sub-Tab on Shipping Labels Has No Create Button
+The Batches tab shows "No batches created yet" with no way to create one — no "Create Batch" button or action. The other two tabs (Labels, Return Addresses) both have action buttons. The Batches tab is a dead end.
+8. Massive White Gap Bug on Offers Tab (Same as Dashboard)
+The same white gap rendering bug present on the Dashboard also appears on the Offers sub-tab. After scrolling past the stats cards, a large blank white area (approximately 40% of the viewport height) appears above the actual page content, and the "Offer History" and "Offer Analytics" sections below cannot be scrolled into view normally. The back-to-top button works but scrolling down is broken.
+9. Action Bar Horizontal Overflow (Orders Tab)
+The Orders action bar contains more buttons than can fit in the visible container width (Shipping Calculator, Returns, Shipping Labels, Sync, More). The extra buttons are cut off to the right and require horizontal scrolling of the entire page to access — the overflow is not contained. No scroll indicator is shown and users have no way of knowing additional buttons exist off-screen. This is a significant layout/responsive bug.
+10. "Clear Filters" Link Only Appears When Using Pipeline Status Cards, Not Manual Dropdowns
+When a user manually changes the Platform or Status dropdown filter directly, the "Clear Filters" link does NOT appear. It only shows when a pipeline status card is clicked. Inconsistent filtering UX.
+🎨 VISUAL ISSUES
+1. View Toggle Buttons Have No Active State Indicator
+The List, Grid, and Compact view toggle buttons in the Orders action bar have no visible active/selected state. A user can't tell which view mode is currently active at a glance.
+2. Offer History by Item Modal — Orphaned Stats Card (2+1 Layout)
+In the "Offer History by Item" modal, three stats cards render in a 2+1 pattern (two on top row, one alone on the bottom row). The "Overall Accept Rate" card is orphaned — the same orphaned card pattern seen throughout the app (Dashboard, Daily Summary, Profit Tracker modals).
+3. Platform Filter Inconsistency Between Orders and Offers Tabs
+The Orders tab Platform filter includes: Poshmark, eBay, Whatnot, Depop, Shopify, Facebook. The Offers tab Platform filter includes: Poshmark, eBay, Whatnot, Depop, Mercari. Mercari appears in Offers but not Orders; Facebook and Shopify appear in Orders but not Offers. If these platforms are supported, their presence should be consistent across both tabs. If intentional, there is no explanation.
+4. Create Shipping Label — Validation Error Shows Toast Only, No Field Highlighting
+When submitting the Create Shipping Label form with missing required fields, a toast appears ("Recipient name is required") but the specific field is not highlighted or scrolled to in the form. Users must manually hunt for the problem field.
+5. URL Hash Shows #orders-sales Instead of Something More Intuitive
+When landing on the Offers, Orders, & Shipping tab, the URL sets to #orders-sales, which doesn't match the page name shown in breadcrumbs or the sidebar ("Offers, Orders, & Shipping"). This could confuse users sharing or bookmarking URLs.
+🧩 UX/POLISH ISSUES
+1. No "Add Order" / Manual Order Entry Button
+The Orders tab has no way to manually add an order. There's no equivalent of an "Add Item" button. If a user processes an offline sale or wants to manually log an order, there's no path to do so from this screen.
+2. Sync Button Only Shows Results Toast, Not What Was Synced
+When Sync is clicked and platforms are not connected, the toast says "No connected platforms found. Connect a marketplace in My Shops to sync orders." — this is helpful, but there's no inline link to "My Shops" directly from the toast for faster navigation.
+3. "Import Orders" Modal — Quick Sync Platform Buttons Have No Visual Feedback
+The Quick Sync by Platform buttons (Poshmark, Ebay, Whatnot, etc.) in the Import Orders modal are styled nicely but when clicked (on an account with no connected shops), no feedback is given. Users may think the sync is working silently.
+4. Offer History Section Is Not Reachable by Normal Scrolling
+Due to the white gap bug, the "Offer History" and "Offer Analytics" sections in the Offers tab are effectively hidden from the user. Even knowing they exist (via page source), a regular user would never see them. This makes the Offers tab feel incomplete.
+5. Offers Tab — No Way to Send/Create an Offer
+The Offers tab only shows analytics and incoming offer history. There's no "Send Counter Offer," "Make an Offer," or offer creation flow visible. While some platforms handle this on their own side, a management panel might be expected to have offer-sending or auto-accept/decline automation options here.
+6. Offer History by Item — Modal Opening Already Provides Stats, Redundant With Offers Page Stats
+The "Item History" modal shows Items with Offers, Most Offers (Single Item), and Overall Accept Rate. These are different but closely related to what the main Offers page already shows (Pending Review, Acceptance Rate). The relationship between these isn't explained.
+7. Compare Rates vs. Shipping Calculator — Feature Overlap
+The "Compare Rates" button on the Shipping Labels page fails entirely, while the "Shipping Calculator" button on the Orders page works beautifully and does essentially the same thing. These appear to be duplicate features, with one broken and one working well.
+✅ WHAT WORKS WELL
+- Shipping Cost Calculator (from Orders action bar) — This is excellent. Pre-filled dimensions, quick preset buttons (Envelope, Small Box, Medium Box, Large Box, Poly Mailer) that update dimensions and recalculate rates instantly with a success toast. Shows 6+ carrier/service options (USPS First Class, USPS Ground Advantage, Pirate Ship, USPS Priority Mail, FedEx Ground, UPS Ground, FedEx Express Saver, UPS 2nd Day Air) with prices in C$, transit times, and a "Best Value" badge. Also includes a Dimensional Weight calculator showing actual vs. billable weight. Excellent feature.
+- Return Analytics Modal — Clean, well-designed. Shows return rate (0%), total returns, lost revenue, a color-coded benchmark bar (Excellent/Average/Needs Improvement), and helpful "Reduce Returns" tips. Appropriate empty state messaging ("No returns recorded. Great job!").
+- Pipeline Status Cards (Pending → Confirmed → Shipped → Delivered) — Clickable and function as quick status filters. Clear visual pipeline flow with arrows between stages.
+- Summary Stats Bar — Total Value, All Time Orders, Completion Rate displayed cleanly below the pipeline.
+- Search Field (Orders) — Accepts typed input correctly. Platform, Status, and Date Range dropdowns all render proper options and apply visually.
+- Offers Tab Stats Cards — Visually well-differentiated using color-coded cards (blue, green, blue, yellow). Pending Review, Acceptance Rate, Avg Offer, and Revenue from Offers are all meaningful metrics.
+- Shipping Labels Page — Labels Tab — Clean layout with Compare Rates and Create Label buttons. Create Label form is comprehensive: Carrier selection (USPS, UPS, FedEx, DHL), Service, Package Details (Weight, L, W, H), From Address, To Address including email. Validation on empty submit shows toast.
+- Shipping Labels — Return Addresses Tab — Add Return Address form is well-structured with Name, Company, Street, Street 2, City, State, ZIP, Phone, and "Set as Default" checkbox. Empty state is clear.
+- "More" Dropdown — Opens correctly with 5 well-organized options. Import Orders modal is nicely designed with Upload CSV, Sync Platforms, and Quick Sync by Platform options with branded platform buttons.
+- Generate Labels Empty State — Shows a helpful message "No orders selected. Select orders using the checkboxes in the table, then click Generate Labels." — properly contextual.
+- Export CSV Feedback — "No orders to export" toast is clear and appropriate.
+- Sync Button Feedback — Shows a loading toast then informational toast (no connected platforms found) with useful actionable advice.
+- Offer History by Item Modal — Opens correctly from "Item History" button, shows meaningful stats even in empty state.
+Back to Top button — Works on both Orders and Offers tabs.
+- Breadcrumb navigation — Home → Sell → Offers, Orders, & Shipping shows correctly and the hierarchy is logical.
+
 
 
 
 Things to Implement:
-- Add Monthly Billing, Quarterly Billing, and Yearly Billing options
-- Pricing tiers will be --> Free, Starter, Pro, Business
-- One time 7 day free trial of full Pro plan  
-- Pricing Page should have a comparison table of each tier
+- Add Monthly Billing, Quarterly Billing, and Yearly Billing options — VERIFIED ✅ — 5e2b7ab — billing period toggle (Monthly/Quarterly/Yearly) + Save X% badges added to Plans & Billing page
+- Pricing tiers will be --> Free, Starter, Pro, Business — VERIFIED ✅ — 5e2b7ab — 4-column plan grid with Free ($0), Starter (TBD), Pro (C$19), Business (C$49)
+- One time 7 day free trial of full Pro plan — VERIFIED ✅ — 5e2b7ab — "7-day free trial" badge on Pro card
+- Pricing Page should have a comparison table of each tier — VERIFIED ✅ — 5e2b7ab — 10-row × 4-column plan comparison table added
 
-- We need to be able to track the following metrics:
+- We need to be able to track the following metrics: — VERIFIED ✅ — 5e2b7ab — Admin Business Metrics page at /admin-business-metrics with all 10 KPIs below
     Acquisition:
     - signup rate
     - cost per signup
@@ -929,25 +994,25 @@ Things to Implement:
     Abuse:
     - duplicate accounts
     - trial reuse attempts
-- We need to set expected performance levels so we know how metrics perform
-- We need to identify failure checkpoints so we can see why metrics are not hitting expected performance levels
-- ![The following text is displaying on the changelog subscribe button popup modal --> "onclick="event.stopPropagation()" role="document"> Subscribe to Updates](image-1.png)
-- ![Terms of Service is being displayed as "Terms" but should say "Terms of Service (TOS)". Also Privacy Policy is being displayed as "Privacy" but should say "Privacy Policy"](image-2.png)
-- ![Instead of a Full Name field, I would like to have two seperate fields "First Name" and "Last Name". Also I would like to have a "Change Email" button below the Email Field, which allows the user to change their email for their account. Additionally I would like a Password Section display with this other information that has a "Change Password" button which allows the user to change their password after receiving an email prompting the user to change their password](image-3.png)
-- Please make the "Add Purchase" button on the "Sales & Purchases" page instead say "Add Purchases Manually", and I want you to make it a dropdown menu button with the following options on it --> "Import Purchases" dropdown menu button which beside the parent dropdown menu shows the import dropwdown menu showing platforms to import from as well as document import options like csv, excel, etc. Then I would like you to migrate the Receipts page to a that parent dropdown menu on the "Sales & Purchases" page. Then I would also like you to add a "Connections" button that allows the user to connect sourcing platforms, as well as their gmail so purchase information can be pulled automatically.
-- We need to have something that is displayed to show how much the user has used for their plan for the month regarding all included things with their plan, as well as when their limits reset.
-- On the My Shops page, reorder the appearance of the platforms, with the coming soon platforms appearing in the bottom row after all of the ones able to connect to
+- We need to set expected performance levels so we know how metrics perform — VERIFIED ✅ — 5e2b7ab — Target column in each metrics table
+- We need to identify failure checkpoints so we can see why metrics are not hitting expected performance levels — VERIFIED ✅ — 5e2b7ab — Failure Checkpoint column with action thresholds
+- ![The following text is displaying on the changelog subscribe button popup modal --> "onclick="event.stopPropagation()" role="document"> Subscribe to Updates](image-1.png) — VERIFIED ✅ — d8f5c43 — modals.show() args fixed; title now embedded in content string
+- ![Terms of Service is being displayed as "Terms" but should say "Terms of Service (TOS)". Also Privacy Policy is being displayed as "Privacy" but should say "Privacy Policy"](image-2.png) — VERIFIED ✅ — d8f5c43 — all 5 public HTML footer links updated (landing, terms, privacy, glossary, api-changelog)
+- ![Instead of a Full Name field, I would like to have two seperate fields "First Name" and "Last Name". Also I would like to have a "Change Email" button below the Email Field, which allows the user to change their email for their account. Additionally I would like a Password Section display with this other information that has a "Change Password" button which allows the user to change their password after receiving an email prompting the user to change their password](image-3.png) — VERIFIED ✅ — d8f5c43 — First Name + Last Name fields, Change Email button, Change Password button added to Settings > Profile
+- Please make the "Add Purchase" button on the "Sales & Purchases" page instead say "Add Purchases Manually", and I want you to make it a dropdown menu button with the following options on it --> "Import Purchases" dropdown menu button which beside the parent dropdown menu shows the import dropwdown menu showing platforms to import from as well as document import options like csv, excel, etc. Then I would like you to migrate the Receipts page to a that parent dropdown menu on the "Sales & Purchases" page. Then I would also like you to add a "Connections" button that allows the user to connect sourcing platforms, as well as their gmail so purchase information can be pulled automatically. — VERIFIED ✅ — d8f5c43 — "Add Purchases Manually" dropdown + Import submenu (AliExpress/Alibaba/Temu + CSV/Excel) + Receipts nav + Connections button
+- We need to have something that is displayed to show how much the user has used for their plan for the month regarding all included things with their plan, as well as when their limits reset. — VERIFIED ✅ — d8f5c43 — "This Month's Usage" card with 4 progress bars (Inventory, Listings, AI Generations, Automations) + "Resets on the 1st of each month"
+- On the My Shops page, reorder the appearance of the platforms, with the coming soon platforms appearing in the bottom row after all of the ones able to connect to — VERIFIED ✅ — d8f5c43 — SUPPORTED_PLATFORMS reordered: poshmark→ebay→depop→facebook→whatnot first, then mercari→grailed→etsy→shopify
 
 
-- [Please use these Poshmark images as the associated Poshmark images across our app. Ensure you follow all of their official usage guidelines](../Poshmark-Logos.zip)
-- [Please use these Grailed images as the associated Grailed images across our app. Ensure you follow all of their official usage guidelines](../Grailed-logos.zip)
-- [Please use these Depop images as the associated Depop images across our app. Ensure you follow all of their official usage guidelines](../Depop-logos.zip)
-- [Please use these Shopify images as the associated Shopify images across our app. Ensure you follow all of their official usage guidelines](../Shopify-logos.zip)
-- [Please use these eBay images as the associated eBay images across our app. Ensure you follow all of their official usage guidelines](../ebay-logos.zip)
-- [Please use these Facebook images as the associated Facebook images across our app. Ensure you follow all of their official usage guidelines](../Facebook-logos.zip)
-- [Please use these Etsy images as the associated Etsy images across our app. Ensure you follow all of their official usage guidelines](../Etsy-logos.zip)
-- [Please use these Mercari images as the associated Mercari images across our app. Ensure you follow all of their official usage guidelines](../Mercari-logos.zip)
-- [Please use these Whatnot images as the associated Whatnot images across our app. Ensure you follow all of their official usage guidelines](../Whatnot-logos.zip)
+- [Please use these Poshmark images as the associated Poshmark images across our app. Ensure you follow all of their official usage guidelines](../Poshmark-Logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/poshmark/logo.png (HTTP 200)
+- [Please use these Grailed images as the associated Grailed images across our app. Ensure you follow all of their official usage guidelines](../Grailed-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/grailed/logo.png (HTTP 200)
+- [Please use these Depop images as the associated Depop images across our app. Ensure you follow all of their official usage guidelines](../Depop-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/depop/logo.svg (HTTP 200)
+- [Please use these Shopify images as the associated Shopify images across our app. Ensure you follow all of their official usage guidelines](../Shopify-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/shopify/logo.svg (HTTP 200)
+- [Please use these eBay images as the associated eBay images across our app. Ensure you follow all of their official usage guidelines](../ebay-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/ebay/logo.svg (HTTP 200)
+- [Please use these Facebook images as the associated Facebook images across our app. Ensure you follow all of their official usage guidelines](../Facebook-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/facebook/logo.png (HTTP 200)
+- [Please use these Etsy images as the associated Etsy images across our app. Ensure you follow all of their official usage guidelines](../Etsy-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/etsy/logo.svg (HTTP 200)
+- [Please use these Mercari images as the associated Mercari images across our app. Ensure you follow all of their official usage guidelines](../Mercari-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/mercari/logo.svg (HTTP 200)
+- [Please use these Whatnot images as the associated Whatnot images across our app. Ensure you follow all of their official usage guidelines](../Whatnot-logos.zip) — VERIFIED ✅ — d8f5c43 — /assets/logos/whatnot/logo.svg (HTTP 200)
 
 
 Now can you please click everything, test everything, and visual inspect everything on the "Inventory" page

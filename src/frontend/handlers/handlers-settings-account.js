@@ -4726,9 +4726,19 @@ Object.assign(handlers, {
         });
         document.querySelectorAll('.inv-tab-pane').forEach(pane => { pane.style.display = pane.dataset.tab === tabName ? 'block' : 'none'; });
         if (tabName === 'analytics' && !store.state.inventoryAnalytics) {
-            handlers.loadInventoryAnalytics().then(() => {
+            const _analyticsErr = '<div class="text-center py-8 text-gray-500">Unable to load analytics. Try refreshing.</div>';
+            const _analyticsTimer = setTimeout(() => {
                 const pane = document.querySelector('.inv-tab-pane[data-tab="analytics"]');
-                if (pane) pane.innerHTML = sanitizeHTML(handlers._renderInventoryAnalyticsContent());  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                if (pane && !store.state.inventoryAnalytics) {
+                    pane.innerHTML = sanitizeHTML(_analyticsErr); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                }
+            }, 8000);
+            handlers.loadInventoryAnalytics().then((data) => {
+                clearTimeout(_analyticsTimer);
+                const pane = document.querySelector('.inv-tab-pane[data-tab="analytics"]');
+                if (pane) {
+                    pane.innerHTML = sanitizeHTML(data ? handlers._renderInventoryAnalyticsContent() : _analyticsErr); // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+                }
             });
         }
     },

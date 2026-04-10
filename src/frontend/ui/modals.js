@@ -567,7 +567,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Low Stock Threshold</label>
-                            <input type="number" class="form-input" name="lowStockThreshold" min="1" value="5" placeholder="Alert when stock falls below this number">
+                            <input type="number" class="form-input" name="lowStockThreshold" min="0" value="1" placeholder="Alert when stock falls below this number">
                         </div>
                     </div>
 

@@ -3428,6 +3428,16 @@ Object.assign(handlers, {
             const barWidth = Math.min(100, Math.max(0, 50 + (roi / 2)));
             profitBar.style.width = barWidth + '%';
             profitIndicator.className = 'profit-indicator ' + (netProfit >= 0 ? 'profit' : 'loss');
+            // Add/update gauge marker
+            let marker = profitIndicator.querySelector('.profit-gauge-marker');
+            if (!marker) {
+                marker = document.createElement('div');
+                marker.className = 'profit-gauge-marker';
+                marker.style.cssText = 'position:absolute;top:-6px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--gray-800);transform:translateX(-50%);pointer-events:none;';
+                profitIndicator.style.position = 'relative';
+                profitIndicator.appendChild(marker);
+            }
+            marker.style.left = barWidth + '%';
         }
     },
 
@@ -3612,7 +3622,7 @@ Object.assign(handlers, {
                                     <div class="oldest-item-title">${escapeHtml(oldestItem.title || oldestItem.name || 'Unknown')}</div>
                                     <div class="oldest-item-meta">
                                         ${oldestItem.sku ? `SKU: ${oldestItem.sku} • ` : ''}
-                                        Listed C$${parseFloat(oldestItem.list_price || 0).toFixed(2)}
+                                        ${oldestItem.status === 'active' ? 'Listed' : oldestItem.status === 'draft' ? 'Draft' : oldestItem.status ? oldestItem.status.charAt(0).toUpperCase() + oldestItem.status.slice(1) : 'Not Listed'} C$${parseFloat(oldestItem.list_price || 0).toFixed(2)}
                                     </div>
                                 </div>
                                 <div class="oldest-item-age">
@@ -3842,6 +3852,17 @@ Object.assign(handlers, {
                             ${components.icon('eye', 14)} Preview
                         </button>
                         <div id="bulk-price-preview-list" class="preview-list"></div>
+                        <!-- Margin preview scale -->
+                        <div id="bulk-margin-scale-wrap" style="margin-top:12px;display:none;">
+                            <div style="font-size:12px;color:var(--gray-600);margin-bottom:4px;">Avg Margin Preview</div>
+                            <div id="bulk-margin-indicator" style="position:relative;height:10px;border-radius:5px;background:linear-gradient(to right,var(--error),var(--warning-400) 50%,var(--success));overflow:visible;">
+                                <div id="bulk-margin-marker" style="position:absolute;top:-5px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid var(--gray-800);transform:translateX(-50%);"></div>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-500);margin-top:2px;">
+                                <span>Loss</span><span>Break Even</span><span>Profit</span>
+                            </div>
+                            <div id="bulk-margin-label" style="font-size:12px;font-weight:600;text-align:center;margin-top:4px;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3990,7 +4011,7 @@ Object.assign(handlers, {
                             <div class="stock-summary-count">${lowStockItems.length}</div>
                             <div class="stock-summary-label">Low Stock</div>
                         </div>
-                        <div class="stock-summary-card success">
+                        <div class="stock-summary-card ${inventory.length - outOfStockItems.length - lowStockItems.length > 0 ? 'success' : 'danger'}">
                             <div class="stock-summary-count">${inventory.length - outOfStockItems.length - lowStockItems.length}</div>
                             <div class="stock-summary-label">In Stock</div>
                         </div>
@@ -4004,7 +4025,7 @@ Object.assign(handlers, {
                                 ${outOfStockItems.slice(0, 10).map(item => `
                                     <div class="stock-item">
                                         <span class="stock-item-title">${escapeHtml(item.title || item.name || 'Unknown')}</span>
-                                        <span class="stock-item-qty">0</span>
+                                        <span class="stock-item-qty" style="background:var(--error);color:#fff;border-radius:4px;padding:1px 6px;font-size:12px;font-weight:600;">0</span>
                                     </div>
                                 `).join('')}
                                 ${outOfStockItems.length > 10 ? `<div class="stock-more">+${outOfStockItems.length - 10} more</div>` : ''}
@@ -4020,7 +4041,7 @@ Object.assign(handlers, {
                                 ${lowStockItems.slice(0, 10).map(item => `
                                     <div class="stock-item">
                                         <span class="stock-item-title">${escapeHtml(item.title || item.name || 'Unknown')}</span>
-                                        <span class="stock-item-qty">${item.quantity || 1}</span>
+                                        <span class="stock-item-qty" style="background:var(--warning-400);color:var(--gray-800);border-radius:4px;padding:1px 6px;font-size:12px;font-weight:600;">${parseInt(item.quantity) || 1}</span>
                                     </div>
                                 `).join('')}
                                 ${lowStockItems.length > 10 ? `<div class="stock-more">+${lowStockItems.length - 10} more</div>` : ''}
@@ -8273,5 +8294,41 @@ Object.assign(handlers, {
     // ============================================
     // Report Builder Handlers
     // ============================================,
+
+    // Fix #9: Stat card click filter
+    filterByStatCard: function(filterKey) {
+        // Toggle off if already active
+        const current = store.state.statCardFilter;
+        store.setState({ statCardFilter: current === filterKey ? '' : filterKey });
+        renderApp(window.pages.inventory());
+    },
+
+    // Fix #10: Swap filter value input to select when "status" column is chosen
+    onFilterColumnChange: function(column) {
+        const container = document.getElementById('filter-value');
+        if (!container) return;
+        if (column === 'status') {
+            const sel = document.createElement('select');
+            sel.className = 'form-select';
+            sel.id = 'filter-value';
+            sel.setAttribute('data-testid', 'filter-value-input');
+            sel.style.width = '150px';
+            sel.innerHTML = '<option value="">All</option><option value="active">Active</option><option value="draft">Draft</option><option value="low_stock">Low Stock</option><option value="out_of_stock">Out of Stock</option><option value="stale">Stale</option>';
+            container.parentNode.replaceChild(sel, container);
+        } else {
+            // Restore to text input if switching away from status
+            const existing = document.getElementById('filter-value');
+            if (existing && existing.tagName === 'SELECT') {
+                const inp = document.createElement('input');
+                inp.type = 'text';
+                inp.className = 'form-input';
+                inp.id = 'filter-value';
+                inp.setAttribute('data-testid', 'filter-value-input');
+                inp.placeholder = 'Value';
+                inp.style.width = '150px';
+                existing.parentNode.replaceChild(inp, existing);
+            }
+        }
+    },
 
 });

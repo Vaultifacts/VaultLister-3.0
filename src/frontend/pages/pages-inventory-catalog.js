@@ -46,6 +46,33 @@ Object.assign(pages, {
             return sum + (Number.isFinite(days) && days >= 0 ? days : 0);
         }, 0) / items.length)) : 0;
 
+        // Fix #11: scroll to top on page render
+        if (typeof window !== 'undefined') window.scrollTo(0, 0);
+
+        // Apply stat card filter if active
+        const statCardFilter = store.state.statCardFilter;
+        if (statCardFilter) {
+            const today2 = new Date();
+            if (statCardFilter === 'active') {
+                items = items.filter(i => i.status === 'active');
+            } else if (statCardFilter === 'draft') {
+                items = items.filter(i => i.status === 'draft');
+            } else if (statCardFilter === 'low_stock') {
+                items = items.filter(i => {
+                    const qty = i.quantity != null ? i.quantity : 1;
+                    const thr = i.low_stock_threshold || 5;
+                    return qty <= thr && qty > 0;
+                });
+            } else if (statCardFilter === 'out_of_stock') {
+                items = items.filter(i => (i.quantity != null ? i.quantity : 1) === 0);
+            } else if (statCardFilter === 'stale') {
+                items = items.filter(i => {
+                    const d = new Date(i.created_at);
+                    return Math.floor((today2 - d) / (1000 * 60 * 60 * 24)) >= 90;
+                });
+            }
+        }
+
         return `
             <!-- Inventory Tab Bar -->
             <div class="flex gap-0 mb-4" style="border-bottom: 2px solid var(--gray-200);">
@@ -60,7 +87,7 @@ Object.assign(pages, {
             </div>
 
             <div class="inv-tab-pane" data-tab="analytics" style="display:none;">
-                ${store.state.inventoryAnalytics ? handlers._renderInventoryAnalyticsContent() : '<div class="text-center py-8 text-gray-500">Loading analytics...</div>'}
+                ${store.state.inventoryAnalytics ? handlers._renderInventoryAnalyticsContent() : '<div class="text-center py-8 text-gray-500">Click the Analytics tab to load inventory analytics.</div>'}
             </div>
 
             <div class="inv-tab-pane active" data-tab="catalog" style="display:block;">
@@ -107,7 +134,7 @@ Object.assign(pages, {
                         </div>
                     </div>
                     <div class="inventory-hero-stats">
-                        <div class="inventory-stat-card" data-testid="stat-active">
+                        <div class="inventory-stat-card" data-testid="stat-active" style="cursor:pointer;" title="Filter by Active" onclick="handlers.filterByStatCard('active')">
                             <div class="inventory-stat-icon info">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -116,10 +143,10 @@ Object.assign(pages, {
                             </div>
                             <div class="inventory-stat-info">
                                 <span class="inventory-stat-value">${activeItems}</span>
-                                <span class="inventory-stat-label">Active</span>
+                                <span class="inventory-stat-label">Active${statCardFilter === 'active' ? ' ✕' : ''}</span>
                             </div>
                         </div>
-                        <div class="inventory-stat-card" data-testid="stat-drafts">
+                        <div class="inventory-stat-card" data-testid="stat-drafts" style="cursor:pointer;" title="Filter by Drafts" onclick="handlers.filterByStatCard('draft')">
                             <div class="inventory-stat-icon muted">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -128,10 +155,10 @@ Object.assign(pages, {
                             </div>
                             <div class="inventory-stat-info">
                                 <span class="inventory-stat-value">${draftItems}</span>
-                                <span class="inventory-stat-label">Drafts</span>
+                                <span class="inventory-stat-label">Drafts${statCardFilter === 'draft' ? ' ✕' : ''}</span>
                             </div>
                         </div>
-                        <div class="inventory-stat-card ${lowStockItems > 0 ? 'warning' : ''}" data-testid="stat-low-stock">
+                        <div class="inventory-stat-card ${lowStockItems > 0 ? 'warning' : ''}" data-testid="stat-low-stock" style="cursor:pointer;" title="Filter by Low Stock" onclick="handlers.filterByStatCard('low_stock')">
                             <div class="inventory-stat-icon ${lowStockItems > 0 ? 'warning' : 'muted'}">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
@@ -141,10 +168,10 @@ Object.assign(pages, {
                             </div>
                             <div class="inventory-stat-info">
                                 <span class="inventory-stat-value">${lowStockItems}</span>
-                                <span class="inventory-stat-label">Low Stock</span>
+                                <span class="inventory-stat-label">Low Stock${statCardFilter === 'low_stock' ? ' ✕' : ''}</span>
                             </div>
                         </div>
-                        <div class="inventory-stat-card ${outOfStock > 0 ? 'danger' : ''}" data-testid="stat-out-of-stock">
+                        <div class="inventory-stat-card ${outOfStock > 0 ? 'danger' : ''}" data-testid="stat-out-of-stock" style="cursor:pointer;" title="Filter by Out of Stock" onclick="handlers.filterByStatCard('out_of_stock')">
                             <div class="inventory-stat-icon ${outOfStock > 0 ? 'danger' : 'muted'}">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -153,10 +180,10 @@ Object.assign(pages, {
                             </div>
                             <div class="inventory-stat-info">
                                 <span class="inventory-stat-value">${outOfStock}</span>
-                                <span class="inventory-stat-label">Out of Stock</span>
+                                <span class="inventory-stat-label">Out of Stock${statCardFilter === 'out_of_stock' ? ' ✕' : ''}</span>
                             </div>
                         </div>
-                        <div class="inventory-stat-card ${staleItems > 0 ? 'warning' : ''}" data-testid="stat-stale">
+                        <div class="inventory-stat-card ${staleItems > 0 ? 'warning' : ''}" data-testid="stat-stale" style="cursor:pointer;" title="Filter by Stale" onclick="handlers.filterByStatCard('stale')">
                             <div class="inventory-stat-icon ${staleItems > 0 ? 'warning' : 'muted'}">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -165,7 +192,7 @@ Object.assign(pages, {
                             </div>
                             <div class="inventory-stat-info">
                                 <span class="inventory-stat-value">${staleItems}</span>
-                                <span class="inventory-stat-label">Stale (90d+)</span>
+                                <span class="inventory-stat-label">Stale (90d+)${statCardFilter === 'stale' ? ' ✕' : ''}</span>
                             </div>
                         </div>
                         <div class="inventory-stat-card" data-testid="stat-avg-age">
@@ -199,7 +226,7 @@ Object.assign(pages, {
                             <div style="margin-bottom: 12px;">
                                 <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Add Filter</h4>
                                 <div class="flex items-center gap-2">
-                                    <select class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px">
+                                    <select class="form-select" id="filter-column" data-testid="filter-column-select" style="width: 120px" onchange="handlers.onFilterColumnChange(this.value)">
                                         <option value="">Column</option>
                                         <option value="status">Status</option>
                                         <option value="category">Category</option>
@@ -237,6 +264,7 @@ Object.assign(pages, {
                             {id: 'quantity', label: 'Quantity'},
                             {id: 'stock_level', label: 'Stock Level'},
                             {id: 'location', label: 'Location'},
+                            {id: 'tags', label: 'Tags'},
                             {id: 'status', label: 'Status'},
                             {id: 'created_at', label: 'Created'},
                             {id: 'age', label: 'Age'},

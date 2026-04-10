@@ -15421,7 +15421,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '98e1e729';
+    const v = '0f6c2c2a';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -22213,7 +22213,7 @@ const modals = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Low Stock Threshold</label>
-                            <input type="number" class="form-input" name="lowStockThreshold" min="1" value="5" placeholder="Alert when stock falls below this number">
+                            <input type="number" class="form-input" name="lowStockThreshold" min="0" value="1" placeholder="Alert when stock falls below this number">
                         </div>
                     </div>
 
