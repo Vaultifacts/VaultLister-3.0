@@ -972,47 +972,47 @@ Back to Top button — Works on both Orders and Offers tabs.
 
 Financials Tab:
 🔴 Bugs / Broken Functionality
-1. Budget Progress – Missing Category Labels
+1. Budget Progress – Missing Category Labels — VERIFIED ✅ — 682c8b6 — widget reads b.name||b.category; category names now render on all bars
 Severity: High
 All four Budget Progress bars have empty category name labels. The HTML structure clearly shows a blank <span></span> where the category title should appear (e.g., "Marketing," "Inventory," etc.). Users see only the dollar amounts (C$0/C$200, C$0/C$500, C$0/C$300, C$0/C$400) with no way to identify what each line item represents. This renders the widget essentially useless.
-2. Cash Flow Chart – Data Inconsistency with Financial Overview
+2. Cash Flow Chart – Data Inconsistency with Financial Overview — VERIFIED ✅ — 682c8b6 — waterfallCOGS = totalExpenses-shipping-fees so chart and overview cards share same computed values
 Severity: High
 The Financial Overview shows Net Profit: -C$35.99 and Expenses: C$35.99, but the Cash Flow Breakdown chart shows COGS: -C$22 and Net: -C$36. These figures are inconsistent in two ways:
 Net Profit (-$35.99) doesn't match the chart's Net value (-$36)
 Expenses ($35.99) doesn't equal COGS alone ($22) — the remaining ~$14 is unaccounted for in the chart (no expense category explains it)
-3. Tax Estimate Calculator – Currency Mismatch (USD vs CAD)
+3. Tax Estimate Calculator – Currency Mismatch (USD vs CAD) — VERIFIED ✅ — 682c8b6 — all ($) labels changed to (C$) in calculator inputs and output
 Severity: MediumThe Tax Estimate Calculator uses USD denomination for its input fields (labeled "Gross Income ()","Deductions()", "Deductions (
 )","Deductions()", "Self-Employment Income ()").Theaccount/appisconfiguredinCanadianDollars(allpricesareshownasC)"). The account/app is configured in Canadian Dollars (all prices are shown as C
 )").Theaccount/appisconfiguredinCanadianDollars(allpricesareshownasC). The calculator should either use the user's local currency (CAD) or clearly state it calculates in USD. As-is, it's misleading.
-4. Multi-Currency Converter – Wrong Base Currency
+4. Multi-Currency Converter – Wrong Base Currency — VERIFIED ✅ — 682c8b6 — From selector added defaulting to CAD; rates computed CAD-relative; shows "1 CAD = X USD"
 Severity: Medium
 The converter defaults to converting from USD (showing "1 USD = 0.925 EUR") but the entire app operates in CAD. The "Convert To" dropdown includes CAD as a target but not as the source. For a Canadian-currency account, the converter should default to CAD as the source currency, or let users choose the base currency.
 🟡 Visual / UX Issues
-5. Health Score – No Scale Indicator
+5. Health Score – No Scale Indicator — VERIFIED ✅ — 682c8b6 — "/ 100" subscript added below score; .health-score-scale CSS class in main.css
 Severity: Medium
 The circular gauge shows "25" with a "Needs Attention" badge, but there is no indication of the scale (e.g., "out of 100" or any min/max label). A user has no context for whether 25 is very bad, moderately bad, or near-average. A label like "25/100" or a tooltip explaining the scoring criteria is needed.
-6. Cash Flow Breakdown – Misleading "+" Sign on $0 Values
+6. Cash Flow Breakdown – Misleading "+" Sign on $0 Values — VERIFIED ✅ — 682c8b6 — zero waterfall values now render "C$0" with no sign instead of "+C$0"
 Severity: Low
 Revenue, Shipping, and Fees all display "+C$0" in green. Showing a positive sign on zero-value items is misleading — it implies a positive contribution when there is none. These should display as a neutral "C$0" without a sign, or simply be omitted/greyed out.
-7. Profit Margin Gauge – Misaligned Indicator Arrow
+7. Profit Margin Gauge – Misaligned Indicator Arrow — VERIFIED ✅ — 682c8b6 — SVG needle + pivot added with trigonometric rotation to exact arc position
 Severity: Low
 The Profit Margin gauge shows a small red arrow/indicator that appears to be slightly mis-positioned relative to the 0.0% value — it sits slightly to the left of the label instead of directly at the pointer position on the arc. Small but visually sloppy.
-8. Financial Overview – Layout Difference at Responsive Width
+8. Financial Overview – Layout Difference at Responsive Width — PRE-EXISTING ✅ — responsive single-column stacking on narrow viewports is standard mobile behavior
 Severity: Low
 At the standard desktop width, the Financial Overview shows Revenue, Expenses, Net Profit, and Margin in a 2×2 grid (horizontal). At a slightly narrower/responsive viewport, they stack vertically in a single column. While this may be intentional for mobile, the stacked vertical layout for Margin takes up a lot of space unnecessarily and the layout shift is jarring.
-9. Financial Ratios – All Values Show "Review" Badge
+9. Financial Ratios – All Values Show "Review" Badge — VERIFIED ✅ — 682c8b6 — N/A ratio badges now show tooltip "N/A — no sales data recorded yet"
 Severity: Low / Informational
 All three ratios (Gross Margin: N/A, Current Ratio: 0.00, Debt-to-Equity: N/A) display a "Review" status badge in red/pink. While this is understandable given no sales data, the "0.00" for Current Ratio is potentially incorrect — a Current Ratio of 0 typically means no current assets, which could be misleading if accounts haven't been set up. A tooltip or explanation of why these are "N/A" would help.
 🔵 Missing Features / Empty States
-10. Chart of Accounts – No Accounts Set Up (Expected, but Noted)
+10. Chart of Accounts – No Accounts Set Up (Expected, but Noted) — PRE-EXISTING ✅ — expected empty state for new account; Create Default Accounts CTA is present
 The Chart of Accounts section shows an empty state: "No accounts set up — Create accounts to organize your financial transactions." The "Create Default Accounts" button is present. The "Sales" sub-tab in the sidebar nav has no content. This is expected for a new account but the empty state could benefit from a brief explanation of what default accounts look like.
-11. Cash Flow Projection – No Data
+11. Cash Flow Projection – No Data — PRE-EXISTING ✅ — expected empty state; shows correctly when sales data exists
 Shows "No sales data yet. Cash flow projections will appear after your first sale." This is an expected empty state for a new account.
-12. Financial Goals – Empty
+12. Financial Goals – Empty — PRE-EXISTING ✅ — functional empty state; no goals created yet
 "Set financial goals to track your progress" — no goals created yet. Functional empty state.
-13. Expense Categories – Empty
+13. Expense Categories – Empty — PRE-EXISTING ✅ — functional empty state; populates from sales data
 "No expense data yet. Start selling to see expense breakdowns." Functional empty state.
-14. Bank Reconciliation – Zero Balances
+14. Bank Reconciliation – Zero Balances — PRE-EXISTING ✅ — expected state with no reconciliation performed; Start Reconciliation CTA present
 Bank Balance: C$0, Book Balance: C$0, Difference: C$0. No reconciliation has been performed. The "Start Reconciliation" CTA is present but no walkthroughs or guidance.
 ✅ Things That Work Correctly
 - Budget and Export buttons are present and functional (Export has a dropdown with CSV, PDF Report, and Excel)
