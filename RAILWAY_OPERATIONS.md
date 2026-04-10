@@ -219,7 +219,15 @@ bun run ops:smoke:prod
 railway scale -s vaultlister-app -e production --us-west2=1
 ```
 
-Scale worker to two replicas, verify queue safety, then return to one:
+Do not scale `vaultlister-worker` above one replica in production yet. The `task_queue` claim path is concurrent-safe, but the worker process also owns singleton scheduler loops for token refresh, email polling, price checks, GDPR cleanup, and data cleanup. Those scheduler loops need Redis locks or leader election before worker replicas can safely run above one.
+
+Worker replica scale testing is allowed only after one of these is true:
+
+- distributed locks are added around every scheduler cycle
+- scheduler ownership is split into a separate singleton scheduler service
+- the test is performed in staging with no production side effects
+
+After scheduler locking exists, use:
 
 ```powershell
 railway scale -s vaultlister-worker -e production --us-west2=2
@@ -231,11 +239,12 @@ railway scale -s vaultlister-worker -e production --us-west2=1
 Expected result:
 
 - WebSocket Redis pub/sub smoke passes with two API replicas.
-- Safe `task_queue` smoke completes exactly once with two worker replicas.
+- Safe `task_queue` smoke completes exactly once with two worker replicas after scheduler locking exists.
 - Queue thresholds remain below configured limits.
 
 Failure checkpoints:
 
 - Immediately scale back to one replica if duplicate task execution is observed.
+- Immediately scale back to one replica if duplicate scheduler runs are observed.
 - Immediately scale back if worker heartbeat health becomes stale.
 - Keep scale changes out of active deploy windows to avoid mixing rollout and capacity signals.
