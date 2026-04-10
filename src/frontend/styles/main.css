@@ -26601,6 +26601,8 @@ body.dark-mode .right-card h4 {
     backdrop-filter: blur(10px);
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-lg);
+    min-width: 180px;
+    flex: 1 1 180px;
 }
 
 .today-stat-icon {
@@ -27937,7 +27939,7 @@ body.dark-mode .expense-item-amount {
 
 .daily-summary-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     margin-bottom: 20px;
 }
@@ -62645,7 +62647,7 @@ body.dark-mode .health-tips-list li {
 
 .target-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
 }
 

@@ -67,7 +67,11 @@ const pages = {
         const lastWeekRevenue = lastWeekSales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
 
         // Calculate change percentages for stat cards
-        const calcChange = (current, previous) => previous > 0 ? Math.round(((current - previous) / previous) * 100) : null;
+        const calcChange = (current, previous) => {
+            if (previous === 0) return null;
+            if (current === previous) return null;
+            return Math.round(((current - previous) / previous) * 100);
+        };
 
         const thisWeekInventory = (store.state.inventory || []).filter(i => new Date(i.created_at) >= periodAgo).length;
         const lastWeekInventory = (store.state.inventory || []).filter(i => { const d = new Date(i.created_at); return d >= twoPeriodAgo && d < periodAgo; }).length;
@@ -375,9 +379,12 @@ const pages = {
                 <button class="btn btn-primary btn-sm" onclick="handlers.refreshDashboard()" title="Refresh dashboard data">
                     ${components.icon('refresh-cw', 14)} Refresh
                 </button>
-                <select class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)" title="Date range for metrics">
-                    ${['7d','30d','90d','6m','1y','all'].map(p => `<option value="${p}" ${(store.state.dashboardPeriod || '30d') === p ? 'selected' : ''}>${{'7d':'Last 7 Days','30d':'Last 30 Days','90d':'Last 90 Days','6m':'Last 6 Months','1y':'Last Year','all':'All Time'}[p]}</option>`).join('')}
-                </select>
+                <div style="display:inline-flex; align-items:center; gap:4px; position:relative;">
+                    <select class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)" title="Date range for metrics">
+                        ${['7d','30d','90d','6m','1y','all'].map(p => `<option value="${p}" ${(store.state.dashboardPeriod || '30d') === p ? 'selected' : ''}>${{'7d':'Last 7 Days','30d':'Last 30 Days','90d':'Last 90 Days','6m':'Last 6 Months','1y':'Last Year','all':'All Time'}[p]}</option>`).join('')}
+                    </select>
+                    ${(store.state.dashboardPeriod && store.state.dashboardPeriod !== '30d') ? `<span class="badge badge-primary badge-sm" style="pointer-events:none;">${{'7d':'7d','90d':'90d','6m':'6m','1y':'1y','all':'All'}[store.state.dashboardPeriod] || store.state.dashboardPeriod}</span>` : ''}
+                </div>
                 <button class="btn btn-secondary btn-sm" onclick="handlers.showDailySummary()">
                     ${components.icon('sun', 14)} Daily Summary
                 </button>
@@ -409,9 +416,11 @@ const pages = {
                 <button class="btn btn-success btn-sm" onclick="loadChunk('sales').then(() => handlers.showAddSale()).catch(() => toast.error('Failed to load sale form'))" title="Log a sale">
                     ${components.icon('sales', 14)} Log Sale
                 </button>
-                <span class="dashboard-last-updated text-xs text-gray-400" style="margin-left: auto;">
-                    ${store.state.dashboardLastRefresh ? `Updated ${components.relativeTime(new Date(store.state.dashboardLastRefresh).toISOString())}` : 'Add your first item to get started'}
-                </span>
+                <div style="display:flex; justify-content:flex-end; align-items:center; margin-left:auto;">
+                    <span class="dashboard-last-updated text-xs text-gray-400">
+                        ${store.state.dashboardLastRefresh ? `Updated ${components.relativeTime(new Date(store.state.dashboardLastRefresh).toISOString())}` : 'Add your first item to get started'}
+                    </span>
+                </div>
             </div>
             ${store.state._widgetPanelOpen ? widgetManager.showSettingsPanel() : ''}
 

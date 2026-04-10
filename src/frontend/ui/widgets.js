@@ -694,7 +694,7 @@ const onboarding = {
         { id: 'connect-shop', title: 'Connect your first shop', description: 'Link a selling platform to get started', action: "router.navigate('shops')", completed: false },
         { id: 'add-item', title: 'Add your first item', description: 'Add an item to your inventory', action: "modals.addItem()", completed: false },
         { id: 'create-listing', title: 'Create your first listing', description: 'List an item for sale', action: "router.navigate('listings')", completed: false },
-        { id: 'first-sale', title: 'Make your first sale', description: 'Record or sync your first sale', action: "router.navigate('transactions')", completed: false }
+        { id: 'first-sale', title: 'Make your first sale', description: 'Record or sync your first sale', action: "loadChunk('sales').then(() => handlers.showAddSale()).catch(() => router.navigate('sales'))", completed: false }
     ],
 
     init() {
@@ -1297,6 +1297,12 @@ const widgetManager = {
                 </div>
                 <p class="text-xs text-gray-500 mb-3">Drag the right edge of any panel to resize it. Click to toggle visibility.</p>
                 <div class="widget-settings-list">
+                    <div class="widget-settings-row">
+                        <label class="widget-settings-toggle">
+                            <input type="checkbox" ${localStorage.getItem('vaultlister_onboarding_dismissed') !== 'true' ? 'checked' : ''} aria-label="Toggle Getting Started checklist visibility" onchange="if(this.checked){localStorage.removeItem('vaultlister_onboarding_dismissed');}else{localStorage.setItem('vaultlister_onboarding_dismissed','true');} store.setState({_widgetPanelOpen:true}); handlers.customizeDashboard()">
+                            <span>Getting Started</span>
+                        </label>
+                    </div>
                     ${widgets.map(w => `
                         <div class="widget-settings-row ${!w.visible ? 'hidden-widget' : ''}">
                             <label class="widget-settings-toggle">

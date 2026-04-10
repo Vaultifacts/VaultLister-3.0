@@ -274,7 +274,7 @@ const handlers = {
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Monthly Revenue Goal ($)</label>
+                    <label class="form-label">Monthly Revenue Goal (C$)</label>
                     <input type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100">
                 </div>
             </div>
@@ -1862,6 +1862,8 @@ const handlers = {
                 handlers.loadPurchases()
             ]);
             store.setState({ dashboardLastRefresh: Date.now() });
+            const staleBanner = document.getElementById('stale-data-banner');
+            if (staleBanner) staleBanner.remove();
             if (store.state.currentPage === 'dashboard') {
                 router.navigate('dashboard');
                 toast.success('Dashboard refreshed');
@@ -1882,10 +1884,9 @@ const handlers = {
             window.print();
             document.body.classList.remove('dashboard-print-mode');
         } else if (format === 'screenshot') {
-            document.body.classList.add('dashboard-print-mode');
-            toast.show('Use your browser\'s print dialog → "Save as PDF" or screenshot tool (Win+Shift+S)', 'info', 5000);
-            window.print();
-            document.body.classList.remove('dashboard-print-mode');
+            const isMac = navigator.platform.toUpperCase().includes('MAC');
+            const shortcut = isMac ? 'Cmd+Shift+4' : 'Win+Shift+S';
+            toast.info(`Use your OS screenshot tool (${shortcut}) to capture the dashboard, or use Print → Save as PDF.`, 5000);
         }
     },
 

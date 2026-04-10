@@ -7770,6 +7770,8 @@ const shortcutsManager = {
     },
 
     render() {
+        const isMac = navigator.platform.toUpperCase().includes('MAC');
+        const mod = isMac ? 'Cmd' : 'Ctrl';
         const grouped = {};
         this.shortcuts.forEach(s => {
             if (!grouped[s.category]) grouped[s.category] = [];
@@ -7785,7 +7787,7 @@ const shortcutsManager = {
                             <div class="shortcut-row">
                                 <span class="shortcut-action">${s.description}</span>
                                 <div class="shortcut-keys">
-                                    ${s.keys.split('+').map(k => `<span class="shortcut-key">${k}</span>`).join('')}
+                                    ${s.keys.split('+').map(k => `<span class="shortcut-key">${k === 'Cmd' ? mod : k}</span>`).join('')}
                                 </div>
                             </div>
                         `).join('')}
@@ -9474,7 +9476,7 @@ const onboarding = {
         { id: 'connect-shop', title: 'Connect your first shop', description: 'Link a selling platform to get started', action: "router.navigate('shops')", completed: false },
         { id: 'add-item', title: 'Add your first item', description: 'Add an item to your inventory', action: "modals.addItem()", completed: false },
         { id: 'create-listing', title: 'Create your first listing', description: 'List an item for sale', action: "router.navigate('listings')", completed: false },
-        { id: 'first-sale', title: 'Make your first sale', description: 'Record or sync your first sale', action: "router.navigate('transactions')", completed: false }
+        { id: 'first-sale', title: 'Make your first sale', description: 'Record or sync your first sale', action: "loadChunk('sales').then(() => handlers.showAddSale()).catch(() => router.navigate('sales'))", completed: false }
     ],
 
     init() {
@@ -10077,6 +10079,12 @@ const widgetManager = {
                 </div>
                 <p class="text-xs text-gray-500 mb-3">Drag the right edge of any panel to resize it. Click to toggle visibility.</p>
                 <div class="widget-settings-list">
+                    <div class="widget-settings-row">
+                        <label class="widget-settings-toggle">
+                            <input type="checkbox" ${localStorage.getItem('vaultlister_onboarding_dismissed') !== 'true' ? 'checked' : ''} aria-label="Toggle Getting Started checklist visibility" onchange="if(this.checked){localStorage.removeItem('vaultlister_onboarding_dismissed');}else{localStorage.setItem('vaultlister_onboarding_dismissed','true');} store.setState({_widgetPanelOpen:true}); handlers.customizeDashboard()">
+                            <span>Getting Started</span>
+                        </label>
+                    </div>
                     ${widgets.map(w => `
                         <div class="widget-settings-row ${!w.visible ? 'hidden-widget' : ''}">
                             <label class="widget-settings-toggle">
@@ -15421,7 +15429,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '8014f404';
+    const v = '452b422a';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16325,7 +16333,8 @@ const components = {
 
         // Render chat list
         const renderChatList = () => {
-            if (conversations.length === 0) {
+            const visibleConvs = conversations.filter(conv => conv.last_message || (conv.message_count && conv.message_count > 0));
+            if (visibleConvs.length === 0) {
                 return `
                     <div class="vault-buddy-no-chats">
                         <p>No conversations yet.</p>
@@ -16335,7 +16344,7 @@ const components = {
                     </div>
                 `;
             }
-            return conversations.map(conv => `
+            return visibleConvs.map(conv => `
                 <div class="vault-buddy-chat-item" style="position: relative;">
                     <div role="button" tabindex="0" onclick="handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}');}" style="cursor: pointer;" aria-label="Open conversation: ${escapeHtml(conv.title || 'New Chat')}">
                         <h5>${escapeHtml(conv.title || 'New Chat')}</h5>
@@ -16750,16 +16759,16 @@ const components = {
                     <div class="comparison-bar-row">
                         <span class="comparison-bar-period">This period</span>
                         <div class="comparison-bar-track">
-                            <div class="comparison-bar-fill current" style="width: ${currentPercent}%; background: var(--${color}-500);"></div>
+                            <div class="comparison-bar-fill current" style="width: ${currentPercent}%; min-width: 8px; background: var(--${color}-500);"></div>
                         </div>
-                        <span class="comparison-bar-value">${current.toLocaleString()}</span>
+                        <span class="comparison-bar-value">${current > 0 ? current.toLocaleString() : '—'}</span>
                     </div>
                     <div class="comparison-bar-row">
                         <span class="comparison-bar-period">Last period</span>
                         <div class="comparison-bar-track">
-                            <div class="comparison-bar-fill previous" style="width: ${previousPercent}%; background: var(--${color}-200);"></div>
+                            <div class="comparison-bar-fill previous" style="width: ${previousPercent}%; min-width: 8px; background: var(--${color}-200);"></div>
                         </div>
-                        <span class="comparison-bar-value">${previous.toLocaleString()}</span>
+                        <span class="comparison-bar-value">${previous > 0 ? previous.toLocaleString() : '—'}</span>
                     </div>
                 </div>
             </div>
@@ -17932,7 +17941,11 @@ const pages = {
         const lastWeekRevenue = lastWeekSales.reduce((sum, s) => sum + (s.sale_price || 0), 0);
 
         // Calculate change percentages for stat cards
-        const calcChange = (current, previous) => previous > 0 ? Math.round(((current - previous) / previous) * 100) : null;
+        const calcChange = (current, previous) => {
+            if (previous === 0) return null;
+            if (current === previous) return null;
+            return Math.round(((current - previous) / previous) * 100);
+        };
 
         const thisWeekInventory = (store.state.inventory || []).filter(i => new Date(i.created_at) >= periodAgo).length;
         const lastWeekInventory = (store.state.inventory || []).filter(i => { const d = new Date(i.created_at); return d >= twoPeriodAgo && d < periodAgo; }).length;
@@ -18240,9 +18253,12 @@ const pages = {
                 <button class="btn btn-primary btn-sm" onclick="handlers.refreshDashboard()" title="Refresh dashboard data">
                     ${components.icon('refresh-cw', 14)} Refresh
                 </button>
-                <select class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)" title="Date range for metrics">
-                    ${['7d','30d','90d','6m','1y','all'].map(p => `<option value="${p}" ${(store.state.dashboardPeriod || '30d') === p ? 'selected' : ''}>${{'7d':'Last 7 Days','30d':'Last 30 Days','90d':'Last 90 Days','6m':'Last 6 Months','1y':'Last Year','all':'All Time'}[p]}</option>`).join('')}
-                </select>
+                <div style="display:inline-flex; align-items:center; gap:4px; position:relative;">
+                    <select class="dashboard-period-select" onchange="handlers.setDashboardPeriod(this.value)" title="Date range for metrics">
+                        ${['7d','30d','90d','6m','1y','all'].map(p => `<option value="${p}" ${(store.state.dashboardPeriod || '30d') === p ? 'selected' : ''}>${{'7d':'Last 7 Days','30d':'Last 30 Days','90d':'Last 90 Days','6m':'Last 6 Months','1y':'Last Year','all':'All Time'}[p]}</option>`).join('')}
+                    </select>
+                    ${(store.state.dashboardPeriod && store.state.dashboardPeriod !== '30d') ? `<span class="badge badge-primary badge-sm" style="pointer-events:none;">${{'7d':'7d','90d':'90d','6m':'6m','1y':'1y','all':'All'}[store.state.dashboardPeriod] || store.state.dashboardPeriod}</span>` : ''}
+                </div>
                 <button class="btn btn-secondary btn-sm" onclick="handlers.showDailySummary()">
                     ${components.icon('sun', 14)} Daily Summary
                 </button>
@@ -18274,9 +18290,11 @@ const pages = {
                 <button class="btn btn-success btn-sm" onclick="loadChunk('sales').then(() => handlers.showAddSale()).catch(() => toast.error('Failed to load sale form'))" title="Log a sale">
                     ${components.icon('sales', 14)} Log Sale
                 </button>
-                <span class="dashboard-last-updated text-xs text-gray-400" style="margin-left: auto;">
-                    ${store.state.dashboardLastRefresh ? `Updated ${components.relativeTime(new Date(store.state.dashboardLastRefresh).toISOString())}` : 'Add your first item to get started'}
-                </span>
+                <div style="display:flex; justify-content:flex-end; align-items:center; margin-left:auto;">
+                    <span class="dashboard-last-updated text-xs text-gray-400">
+                        ${store.state.dashboardLastRefresh ? `Updated ${components.relativeTime(new Date(store.state.dashboardLastRefresh).toISOString())}` : 'Add your first item to get started'}
+                    </span>
+                </div>
             </div>
             ${store.state._widgetPanelOpen ? widgetManager.showSettingsPanel() : ''}
 
@@ -25735,7 +25753,7 @@ const handlers = {
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Monthly Revenue Goal ($)</label>
+                    <label class="form-label">Monthly Revenue Goal (C$)</label>
                     <input type="number" class="form-input" id="monthly-goal-input" value="${current}" min="0" step="100">
                 </div>
             </div>
@@ -27323,6 +27341,8 @@ const handlers = {
                 handlers.loadPurchases()
             ]);
             store.setState({ dashboardLastRefresh: Date.now() });
+            const staleBanner = document.getElementById('stale-data-banner');
+            if (staleBanner) staleBanner.remove();
             if (store.state.currentPage === 'dashboard') {
                 router.navigate('dashboard');
                 toast.success('Dashboard refreshed');
@@ -27343,10 +27363,9 @@ const handlers = {
             window.print();
             document.body.classList.remove('dashboard-print-mode');
         } else if (format === 'screenshot') {
-            document.body.classList.add('dashboard-print-mode');
-            toast.show('Use your browser\'s print dialog → "Save as PDF" or screenshot tool (Win+Shift+S)', 'info', 5000);
-            window.print();
-            document.body.classList.remove('dashboard-print-mode');
+            const isMac = navigator.platform.toUpperCase().includes('MAC');
+            const shortcut = isMac ? 'Cmd+Shift+4' : 'Win+Shift+S';
+            toast.info(`Use your OS screenshot tool (${shortcut}) to capture the dashboard, or use Print → Save as PDF.`, 5000);
         }
     },
 

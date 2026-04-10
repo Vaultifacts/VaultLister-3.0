@@ -7769,6 +7769,8 @@ const shortcutsManager = {
     },
 
     render() {
+        const isMac = navigator.platform.toUpperCase().includes('MAC');
+        const mod = isMac ? 'Cmd' : 'Ctrl';
         const grouped = {};
         this.shortcuts.forEach(s => {
             if (!grouped[s.category]) grouped[s.category] = [];
@@ -7784,7 +7786,7 @@ const shortcutsManager = {
                             <div class="shortcut-row">
                                 <span class="shortcut-action">${s.description}</span>
                                 <div class="shortcut-keys">
-                                    ${s.keys.split('+').map(k => `<span class="shortcut-key">${k}</span>`).join('')}
+                                    ${s.keys.split('+').map(k => `<span class="shortcut-key">${k === 'Cmd' ? mod : k}</span>`).join('')}
                                 </div>
                             </div>
                         `).join('')}

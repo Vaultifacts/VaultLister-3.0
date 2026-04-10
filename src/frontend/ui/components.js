@@ -467,7 +467,8 @@ const components = {
 
         // Render chat list
         const renderChatList = () => {
-            if (conversations.length === 0) {
+            const visibleConvs = conversations.filter(conv => conv.last_message || (conv.message_count && conv.message_count > 0));
+            if (visibleConvs.length === 0) {
                 return `
                     <div class="vault-buddy-no-chats">
                         <p>No conversations yet.</p>
@@ -477,7 +478,7 @@ const components = {
                     </div>
                 `;
             }
-            return conversations.map(conv => `
+            return visibleConvs.map(conv => `
                 <div class="vault-buddy-chat-item" style="position: relative;">
                     <div role="button" tabindex="0" onclick="handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlers.openVaultBuddyConversation('${escapeHtml(conv.id)}');}" style="cursor: pointer;" aria-label="Open conversation: ${escapeHtml(conv.title || 'New Chat')}">
                         <h5>${escapeHtml(conv.title || 'New Chat')}</h5>
@@ -892,16 +893,16 @@ const components = {
                     <div class="comparison-bar-row">
                         <span class="comparison-bar-period">This period</span>
                         <div class="comparison-bar-track">
-                            <div class="comparison-bar-fill current" style="width: ${currentPercent}%; background: var(--${color}-500);"></div>
+                            <div class="comparison-bar-fill current" style="width: ${currentPercent}%; min-width: 8px; background: var(--${color}-500);"></div>
                         </div>
-                        <span class="comparison-bar-value">${current.toLocaleString()}</span>
+                        <span class="comparison-bar-value">${current > 0 ? current.toLocaleString() : '—'}</span>
                     </div>
                     <div class="comparison-bar-row">
                         <span class="comparison-bar-period">Last period</span>
                         <div class="comparison-bar-track">
-                            <div class="comparison-bar-fill previous" style="width: ${previousPercent}%; background: var(--${color}-200);"></div>
+                            <div class="comparison-bar-fill previous" style="width: ${previousPercent}%; min-width: 8px; background: var(--${color}-200);"></div>
                         </div>
-                        <span class="comparison-bar-value">${previous.toLocaleString()}</span>
+                        <span class="comparison-bar-value">${previous > 0 ? previous.toLocaleString() : '—'}</span>
                     </div>
                 </div>
             </div>
