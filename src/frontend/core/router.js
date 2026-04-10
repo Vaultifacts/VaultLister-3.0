@@ -92,6 +92,7 @@ const pageChunkMap = {
 
     // admin
     'admin-metrics': 'admin',
+    'admin-business-metrics': 'admin',
 
     // AR Preview — lives in pages-deferred.js (deferred chunk)
     'ar-preview': 'deferred',

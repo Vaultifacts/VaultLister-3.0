@@ -739,6 +739,7 @@ const components = {
             'tools': { label: 'Tools', section: 'Manage' },
             'community': { label: 'Community', section: '' },
             'admin-metrics': { label: 'Admin Metrics', section: '' },
+            'admin-business-metrics': { label: 'Metrics Dashboard', section: 'Admin' },
             'recently-deleted': { label: 'Recently Deleted', section: 'Sell' },
             'receipt-parser': { label: 'Receipt Parser', section: 'Manage' },
             'whatnot-live': { label: 'Whatnot Live', section: 'Manage' },

@@ -15333,6 +15333,7 @@ const pageChunkMap = {
 
     // admin
     'admin-metrics': 'admin',
+    'admin-business-metrics': 'admin',
 
     // AR Preview — lives in pages-deferred.js (deferred chunk)
     'ar-preview': 'deferred',
@@ -15420,7 +15421,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = 'ed9daca1';
+    const v = '98e1e729';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -16594,6 +16595,7 @@ const components = {
             'tools': { label: 'Tools', section: 'Manage' },
             'community': { label: 'Community', section: '' },
             'admin-metrics': { label: 'Admin Metrics', section: '' },
+            'admin-business-metrics': { label: 'Metrics Dashboard', section: 'Admin' },
             'recently-deleted': { label: 'Recently Deleted', section: 'Sell' },
             'receipt-parser': { label: 'Receipt Parser', section: 'Manage' },
             'whatnot-live': { label: 'Whatnot Live', section: 'Manage' },
@@ -27687,6 +27689,7 @@ async function initApp() {
         await handlers.refreshAdminMetrics?.();
         renderApp(window.pages.adminMetrics());
     });
+    router.register('admin-business-metrics', () => renderApp(window.pages.adminBusinessMetrics()));
     router.register('community', () => renderApp(window.pages.community()));
     router.register('help', () => router.navigate('help-support'));
 

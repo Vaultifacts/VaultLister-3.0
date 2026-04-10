@@ -820,6 +820,88 @@ The following elements functioned correctly and looked good:
 - Empty states across all sub-tabs — all are well-written with helpful descriptions and appropriate CTAs.
 
 
+Dashboard Tab — Complete QA Findings Report
+BUGS (Functional Issues)
+1. Massive White Gap on Dashboard — Triggered by Scrolling (Critical)
+When the user scrolls down past the action bar, an enormous blank/white area appears between the action bar and the first dashboard widget (Stats Overview). The gap spans multiple full viewport heights, requiring extensive scrolling before any widget becomes visible. The gap is persistent and grows larger the more the Vault Buddy chat panel has been opened. After closing the Vault Buddy panel, the gap reduces significantly. The "Back to Top" button also fails to bring the user back to the top of the page when this gap is present. This is the most severe usability bug on the dashboard — the widgets are effectively hidden from users who scroll down.
+2. "Log Sale" Button Opens "Add New Item" Form (Critical)
+Clicking the "Log Sale" button in the action bar opens the "Add New Item" inventory form instead of a sale-logging modal. These are completely different workflows — "Log Sale" should open a form to record a completed sale transaction. This is either a wrong event handler or a copy-paste error in the button wiring.
+3. Daily Summary Modal — "Add Item", "Full Analytics", and "Checklist" Buttons All Non-functional (Critical)
+The three bottom action buttons in the "Daily Business Summary" modal do absolutely nothing when clicked. "Add Item" should open the Add New Item form, "Full Analytics" should navigate to the Analytics page, and "Checklist" should navigate to the Daily Checklist. None of these work — the buttons are visually rendered but have no click handlers attached.
+4. Daily Summary Modal — "View" Button in Action Items Non-functional
+The "View" button next to "1 task on your checklist" in the Action Items section of the Daily Summary modal does nothing when clicked. It should navigate to the Daily Checklist or at minimum open it.
+5. Profit Target Tracker — Target Label Doesn't Update When Input Changes
+In the Profit Target Tracker modal, changing the value in the Daily Target input field (e.g., from 50 to 100) does not update the "C$0 / C$50" goal label displayed above it. The input value changes visually, but the target display remains locked at the old value until the modal is closed and reopened.
+6. "Restock" Button in Low Stock Alerts Widget Opens Wrong Form
+Clicking "Restock" on an item in the Low Stock Alerts dashboard widget opens the "Add New Item" form (for creating a new inventory entry) instead of an edit/restock dialog for the existing item. A "Restock" action should update the quantity of the existing item, not create a new one.
+7. Global Search Input Doesn't Accept Typed Text
+Clicking the search bar and typing (e.g., "test") produces no visible result — the placeholder text remains, the input field doesn't display the typed characters, and the quick actions list doesn't filter. The search field is non-functional for keyboard input, making the global search/command palette unusable.
+8. Vault Buddy Chat Panel — "Close" (X) Button Unresponsive When Opened Over a Modal
+When the Vault Buddy chat panel is open at the same time as another modal (e.g., "Add New Item"), the X button in the Vault Buddy panel header does not respond to clicks. The panel can only be closed by pressing Escape (which also closes the other modal) or by clicking its close button when no other modals are active.
+9. Hero Section Stats Cards Not Clickable
+Clicking any of the four hero stats cards (Today's Revenue, Today's Sales, New Listings, Pending Orders) does nothing. These should logically navigate to the corresponding sections (Sales & Purchases, Listings, etc.) when clicked, as is standard UX for dashboard stat cards.
+VISUAL ISSUES
+10. Hero Section — "Pending Orders" Orphaned in Normal View
+In normal (sidebar-expanded) mode, the four hero stat cards display as 3 in a row with "Pending Orders" alone on a second row, centered. In Focus Mode (full-screen), all four correctly display in a single row. This is a responsive layout issue — the content area is too narrow with the sidebar visible to fit 4 cards in a row, but no attempt is made to adapt the layout (e.g., 2×2 grid).
+11. Daily Business Summary — "Pending Offers" Orphaned
+The same orphan pattern occurs inside the Daily Business Summary modal: Sales Today, To Ship, and New Listings display in a 3-column row, with "Pending Offers" alone on a second row. Should use a 2×2 grid instead.
+12. Profit Target Tracker — "Monthly Target" Orphaned
+Monthly Target sits alone in the bottom-left while Daily and Weekly Targets are displayed 2-across above it. Should be a 3-column layout or 1×3 row.
+13. Keyboard Shortcuts Dialog Shows "Cmd" Instead of "Ctrl" on Windows
+The Keyboard Shortcuts modal lists shortcuts as "Cmd+K", "Cmd+N", etc. On a Windows/Linux system, the modifier key is "Ctrl", not "Cmd". This needs to be platform-aware.
+14. Set Monthly Goal Modal Uses ""Insteadof"C" Instead of "C
+"Insteadof"C"
+The "Set Monthly Goal" modal labels the input as "Monthly Revenue Goal ()"—usingaplaindollarsign—whiletherestofthedashboardconsistentlydisplayscurrencyas"C)" — using a plain dollar sign — while the rest of the dashboard consistently displays currency as "C
+)"—usingaplaindollarsign—whiletherestofthedashboardconsistentlydisplayscurrencyas"C". This is an inconsistency.
+
+15. Stats Overview — "↓ 100% vs last week" for Total Inventory Appears Wrong
+Total Inventory shows "↓ 100% vs last week" in red, suggesting it dropped 100% — but the actual inventory has 3 items. This likely reflects a comparison from a period where inventory was also 3 to... still 3, or indicates a calculation bug. A 100% decrease in inventory that still shows 3 items is confusing and may be erroneous.
+16. Stats Overview Cards — Mysterious Tiny Colored Dots
+Each Stats Overview card has a tiny colored dot (blue or green) at the bottom-right corner. There is no tooltip, label, or legend explaining what these dots represent. They appear to serve no obvious purpose and may be leftover mini-chart placeholder elements.
+17. Stats Overview Cards — Mini Bar Chart Icons Don't Do Anything
+Each card has small bar chart icon next to the title. Clicking these does nothing. If they are meant to expand a chart or show trend data, they are broken. If purely decorative, they look interactive and should be styled differently.
+18. "Getting Started" Widget — No Way to Restore Once Dismissed
+Clicking the X on the "Getting Started" widget permanently dismisses it from the dashboard. The Customize Dashboard panel does not include a "Getting Started" option — so there is no way for the user to bring it back if they dismissed it accidentally. The checklist should be restorable via Customize Dashboard.
+19. "Stale Data" Banner Persists After Refresh
+After refreshing the dashboard via the orange "Refresh now" button in the stale data banner, the banner remains visible instead of disappearing after the refresh succeeds. The banner should auto-dismiss once the data has been refreshed.
+20. "Copy Screenshot" Export Option Has No Feedback
+Clicking "Copy Screenshot" in the Export dropdown closes the dropdown with no visible feedback — no toast, no "Copied!" confirmation, nothing. The user has no way to know if the screenshot was successfully copied to the clipboard or if the action failed.
+21. Action Bar Alignment — Hint Text Position Inconsistent
+The hint text to the right of the action bar ("Add your first item to get started", "Updated just now", "Updated Xm ago") sits at the end of the second row of buttons but with no left-side counterpart, making it appear unattached. It also switches between different messages with no transition.
+UX / POLISH ISSUES
+22. Vault Buddy Chat Panel Overlaps Dashboard Content
+When the Vault Buddy (AI assistant) panel is open, it overlaps the right side of the dashboard widgets, obscuring content. It has no minimize or dock option — users must fully close it to see the dashboard underneath. The panel also appears to contribute to the white gap rendering issue described in Bug #1.
+23. Vault Buddy Chat — "My Chats" History Shows Duplicate/Identical Entries
+From the page text, the Vault Buddy's "My Chats" tab shows multiple entries all with the same greeting message ("Hi! 👋 I'm Vault Buddy..."), suggesting these are all empty/un-started chats. These should either not be created until the user actually sends a message, or duplicate empty chats should not be stored.
+24. Comparison Widget — No Visual Chart
+The Comparison widget shows only text numbers (Sales: -0%, This period 0, Last period 0) with no chart or visual representation, despite being visible in Focus Mode with thin progress bar indicators. In normal mode the progress bars are invisible/zero-width, providing no visual context.
+25. Getting Started Checklist Navigation Is Inconsistent
+The four Getting Started items navigate to different destinations: item 1 goes to My Shops, item 2 opens the Add New Item modal, item 3 navigates to the Listings page, and item 4 navigates to the Financials page. Item 4 ("Make your first sale") navigating to Financials is odd — it should more naturally go to the Sales & Purchases tab or open a "Log Sale" dialog.
+26. Date Range Persists After Navigation
+Changing the date range to "Last 7 Days" persists after navigating away and returning to the dashboard. Some users may expect it to reset to the default (Last 30 Days) on each visit, while others may prefer it to persist. The current behavior has no indicator that a non-default range is active beyond the dropdown label.
+WHAT WORKS WELL
+The following elements functioned correctly and provided a good user experience:
+- Refresh button — shows loading toast, success toast, and updates the "Updated just now" timestamp. Excellent feedback.
+- Date range selector — correctly updates with "Updating metrics..." and "Metrics updated" toasts. All 6 options (Last 7 Days, 30 Days, 90 Days, 6 Months, Last Year, All Time) are available.
+- Daily Summary modal — opens correctly, shows today's date, revenue/profit stats, and 4 activity counters. Header design is polished.
+- Profit Target Tracker — opens cleanly with 3 circular progress gauges, the motivational banner ("Every sale gets you closer to your goal!"), and the Avg Daily Profit / Days Left / Needed Daily Rate summary is useful.
+- Quick Notes — full-featured with color categories (Default, Yellow, Green, Blue, Pink, Purple), add/edit/copy/delete per note, timestamp on each note, and Clear All/Done buttons. Note creation works flawlessly.
+- Customize Dashboard — comprehensive widget control panel with 22+ widget options, each with 1/3, 1/2, 2/3, and Full size presets. Show All, Hide All, Expand All, Collapse All, Reset Defaults all work. Close button works.
+- "Stale data" banner — appears automatically with an orange "Refresh now" CTA when data hasn't been updated recently. Good proactive design.
+- Export dropdown — offers Print/Save as PDF and Copy Screenshot options.
+- Add Item button — correctly opens the "Add New Item" form.
+- Getting Started checklist — collapse/expand toggle (▲/▼) works, X dismissal works, all 4 items navigate to appropriate destinations.
+- "New in v1.6.0" banner — dismissible with X, "View Changelog" correctly navigates to a well-built Changelog page.
+- Focus Mode (full-screen button) — excellent feature; hides sidebar and topbar for distraction-free view. Also fixes the hero 4-card grid layout. Exit Focus Mode button is clearly labeled.
+- Notification bell — opens a clean "No new notifications" dropdown with "All Notifications" link that navigates to a full notifications management page.
+- Global search / command palette — opens instantly, shows categorized Quick Actions (Dashboard, Inventory, Listings, Orders, Automations, Analytics) with keyboard navigation hints. (Note: text input is broken as described in Bug #7.)
+- Keyboard Shortcuts dialog — opens via "?" button, lists 9 shortcuts clearly. (Cmd vs. Ctrl platform issue noted above.)
+- User avatar menu — opens correctly with Account, Settings, Logout options.
+- Monthly Goal widget — "Click to edit goal" correctly opens a "Set Monthly Goal" modal. Edit button also works. Collapse button works.
+- Quick Actions widget — "Add Item" button correctly opens Add New Item form.
+- Low Stock Alerts widget — correctly identifies 3 items that are below the threshold (quantity 1, threshold 5) and shows their SKUs and "Restock" buttons.
+- Recent Activity widget — correctly shows timestamped inventory additions.
+- Vault Buddy (when accessible) — chat panel opens with "Start New Chat" and "My Chats" tabs, clear capability descriptions, and a "Start New Chat" CTA.
 
 
 

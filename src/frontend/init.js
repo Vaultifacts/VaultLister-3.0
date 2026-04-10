@@ -213,6 +213,7 @@ async function initApp() {
         await handlers.refreshAdminMetrics?.();
         renderApp(window.pages.adminMetrics());
     });
+    router.register('admin-business-metrics', () => renderApp(window.pages.adminBusinessMetrics()));
     router.register('community', () => renderApp(window.pages.community()));
     router.register('help', () => router.navigate('help-support'));
 

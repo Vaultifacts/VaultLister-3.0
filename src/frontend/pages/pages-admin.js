@@ -117,6 +117,183 @@ Object.assign(pages, {
         `;
     },
 
+    adminBusinessMetrics() {
+        const user = store.state.user;
+        if (!(user?.is_admin || user?.role === 'admin')) {
+            return `
+                <div class="page-header">
+                    <h1 class="page-title">Metrics Dashboard</h1>
+                </div>
+                <div class="card">
+                    <div class="card-body text-center" style="padding: 48px;">
+                        <div style="margin-bottom: 16px; color: var(--danger);">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                        </div>
+                        <h2 style="margin-bottom: 8px;">Access Denied</h2>
+                        <p style="color: var(--text-secondary);">You do not have permission to view this page. Admin access is required.</p>
+                        <button class="btn btn-primary mt-4" onclick="router.navigate('dashboard')">Back to Dashboard</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        const now = new Date();
+        const lastUpdated = now.toLocaleString('en-CA', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Edmonton' });
+
+        // Mock data definitions with status evaluation
+        const mkRow = (metric, current, target, status, checkpoint) => {
+            const badgeClass = status === 'On Target' ? 'badge-success' : status === 'Watch' ? 'badge-warning' : 'badge-danger';
+            return `
+                <tr style="border-bottom: 1px solid var(--gray-100);">
+                    <td style="padding: 10px 16px; font-size: 13px; font-weight: 500;">${escapeHtml(metric)}</td>
+                    <td style="padding: 10px 16px; text-align: center; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;">${escapeHtml(current)}</td>
+                    <td style="padding: 10px 16px; text-align: center;"><span class="badge badge-success" style="font-size: 11px;">${escapeHtml(target)}</span></td>
+                    <td style="padding: 10px 16px; text-align: center;"><span class="badge ${badgeClass}" style="font-size: 11px;">${escapeHtml(status)}</span></td>
+                    <td style="padding: 10px 16px; font-size: 11px; color: var(--text-secondary);">${escapeHtml(checkpoint)}</td>
+                </tr>
+            `;
+        };
+
+        const mkTable = (rows) => `
+            <div class="card-body" style="padding:0;">
+                <table style="width:100%; border-collapse:collapse; font-size:13px;" role="table">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--gray-200); background:var(--gray-50);">
+                            <th style="padding:10px 16px; text-align:left; color:var(--gray-600); font-weight:600; font-size:12px;">Metric</th>
+                            <th style="padding:10px 16px; text-align:center; color:var(--gray-600); font-weight:600; font-size:12px;">Current</th>
+                            <th style="padding:10px 16px; text-align:center; color:var(--gray-600); font-weight:600; font-size:12px;">Target</th>
+                            <th style="padding:10px 16px; text-align:center; color:var(--gray-600); font-weight:600; font-size:12px;">Status</th>
+                            <th style="padding:10px 16px; text-align:left; color:var(--gray-600); font-weight:600; font-size:12px;">Failure Checkpoint</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows.join('')}</tbody>
+                </table>
+            </div>
+        `;
+
+        const categories = [
+            {
+                id: 'acquisition',
+                label: 'Acquisition',
+                icon: 'users',
+                rows: [
+                    mkRow('Signup Rate', '3.2%', '≥ 5%', 'Watch', '<2% — investigate landing page, CAC, ad spend'),
+                    mkRow('Cost Per Signup', 'C$8.40', '≤ C$5', 'Watch', '>C$15 — review ad spend efficiency'),
+                ]
+            },
+            {
+                id: 'activation',
+                label: 'Activation',
+                icon: 'zap',
+                rows: [
+                    mkRow('Listings Created (first 7 days, per new user)', '2.1', '≥ 3', 'Watch', '<1 — onboarding flow issue'),
+                    mkRow('Marketplaces Connected (per new user)', '1.4', '≥ 1', 'On Target', '0 — connection flow broken or confusing'),
+                ]
+            },
+            {
+                id: 'conversion',
+                label: 'Conversion',
+                icon: 'dollar',
+                rows: [
+                    mkRow('Trial Start Rate (of signups)', '28%', '≥ 30%', 'Watch', '<10% — pricing page not compelling'),
+                    mkRow('Trial → Paid %', '8%', '≥ 25%', 'Action Needed', '<10% — trial experience issue or pricing mismatch'),
+                ]
+            },
+            {
+                id: 'retention',
+                label: 'Retention',
+                icon: 'refresh-cw',
+                rows: [
+                    mkRow('Active Users (DAU/MAU ratio)', '18%', '≥ 20%', 'Watch', '<5% — engagement/value problem'),
+                    mkRow('Churn Rate (monthly)', '4.2%', '≤ 5%', 'On Target', '>15% — pricing, bugs, or competitor'),
+                ]
+            },
+            {
+                id: 'abuse',
+                label: 'Abuse',
+                icon: 'alert-triangle',
+                rows: [
+                    mkRow('Duplicate Accounts (detected)', '2 / week', '0 / week', 'Watch', '>5/week — add device fingerprinting'),
+                    mkRow('Trial Reuse Attempts', '0 / week', '0 / week', 'On Target', '>3/week — tighten trial eligibility check'),
+                ]
+            }
+        ];
+
+        const totalMetrics = 10;
+        const onTargetCount = 3;
+        const watchCount = 6;
+        const actionNeededCount = 1;
+
+        const iconSvg = (name, size = 16) => {
+            const icons = {
+                'users': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+                'zap': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+                'dollar': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+                'refresh-cw': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`,
+                'alert-triangle': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+                'bar-chart': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>`,
+            };
+            return icons[name] || '';
+        };
+
+        return `
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Metrics Dashboard</h1>
+                    <p class="page-description">Internal business health metrics — admin only</p>
+                </div>
+                <div class="page-actions" style="display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:12px; color:var(--text-secondary);">Last updated: ${escapeHtml(lastUpdated)}</span>
+                    <button class="btn btn-secondary btn-sm" onclick="router.navigate('admin-metrics')" aria-label="Go to system health metrics">System Health</button>
+                </div>
+            </div>
+
+            <!-- Summary card -->
+            <div class="card mb-6" aria-labelledby="bm-summary-title">
+                <div class="card-header">
+                    <h3 class="card-title" id="bm-summary-title">${iconSvg('bar-chart', 18)} Summary</h3>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-4 gap-4">
+                        <div style="padding:16px; background:var(--gray-50); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Total Metrics</div>
+                            <div style="font-size:32px; font-weight:700;">${totalMetrics}</div>
+                        </div>
+                        <div style="padding:16px; background:var(--success-50,#f0fdf4); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">On Target</div>
+                            <div style="font-size:32px; font-weight:700; color:var(--success);">${onTargetCount}</div>
+                        </div>
+                        <div style="padding:16px; background:var(--warning-50,#fffbeb); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Watch</div>
+                            <div style="font-size:32px; font-weight:700; color:var(--warning);">${watchCount}</div>
+                        </div>
+                        <div style="padding:16px; background:var(--danger-50,#fef2f2); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Action Needed</div>
+                            <div style="font-size:32px; font-weight:700; color:var(--danger);">${actionNeededCount}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            ${categories.map(cat => `
+            <div class="card mb-6" aria-labelledby="bm-${escapeHtml(cat.id)}-title">
+                <div class="card-header">
+                    <h3 class="card-title" id="bm-${escapeHtml(cat.id)}-title" style="display:flex; align-items:center; gap:8px;">
+                        ${iconSvg(cat.icon, 18)} ${escapeHtml(cat.label)}
+                    </h3>
+                </div>
+                ${mkTable(cat.rows)}
+            </div>
+            `).join('')}
+
+            <div style="font-size:12px; color:var(--text-secondary); text-align:right; padding-bottom:8px;">
+                All values are mock/placeholder data for internal planning. No backend connection.
+            </div>
+        `;
+    },
+
     adminMetrics() {
         const user = store.state.user;
         if (!user || !user.is_admin) {
@@ -219,6 +396,20 @@ Object.assign(pages, {
                             <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
                         </svg>
                         ${isLoading ? 'Refreshing...' : 'Refresh'}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Tools Quick Links -->
+            <div class="card mb-6" aria-label="Admin tools">
+                <div class="card-body" style="display:flex; gap:12px; flex-wrap:wrap; padding:16px;">
+                    <button class="btn btn-secondary btn-sm" onclick="router.navigate('admin-business-metrics')" aria-label="View business health metrics" style="min-height:44px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="margin-right:6px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+                        Metrics Dashboard
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="handlers.loadFeatureFlags()" aria-label="View feature flags" style="min-height:44px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="margin-right:6px;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                        Feature Flags
                     </button>
                 </div>
             </div>

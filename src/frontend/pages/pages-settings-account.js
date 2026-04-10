@@ -2419,8 +2419,29 @@ Object.assign(pages, {
                 </div>
             </div>
 
+            <!-- Billing Period Toggle -->
+            <div class="card mb-6">
+                <div class="card-body" style="display:flex; align-items:center; justify-content:center; gap:12px; padding:16px;">
+                    <span class="text-sm font-medium">Billing period:</span>
+                    <div style="display:flex; background:var(--gray-100); border-radius:8px; padding:4px; gap:4px;">
+                        <button class="btn btn-sm ${(store.state.billingPeriod||'monthly')==='monthly' ? 'btn-primary' : 'btn-ghost'}"
+                            onclick="store.setState({billingPeriod:'monthly'}); renderApp(window.pages.plansBilling());">
+                            Monthly
+                        </button>
+                        <button class="btn btn-sm ${(store.state.billingPeriod||'monthly')==='quarterly' ? 'btn-primary' : 'btn-ghost'}"
+                            onclick="store.setState({billingPeriod:'quarterly'}); renderApp(window.pages.plansBilling());">
+                            Quarterly <span style="font-size:11px; color:var(--success); font-weight:600;">Save X%</span>
+                        </button>
+                        <button class="btn btn-sm ${(store.state.billingPeriod||'monthly')==='yearly' ? 'btn-primary' : 'btn-ghost'}"
+                            onclick="store.setState({billingPeriod:'yearly'}); renderApp(window.pages.plansBilling());">
+                            Yearly <span style="font-size:11px; color:var(--success); font-weight:600;">Save X%</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Pricing Plans -->
-            <div class="grid grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-4 gap-6 mb-6">
                 <!-- Free Plan -->
                 <div class="card ${currentPlan === 'free' ? 'ring-2 ring-primary' : ''}">
                     <div class="card-body text-center">
@@ -2461,10 +2482,57 @@ Object.assign(pages, {
                     </div>
                 </div>
 
+                <!-- Starter Plan -->
+                <div class="card ${currentPlan === 'starter' ? 'ring-2 ring-primary' : ''}">
+                    <div class="card-body text-center">
+                        <h3 class="text-xl font-bold mb-2">Starter</h3>
+                        <div class="text-4xl font-bold text-primary mb-1">TBD</div>
+                        <div class="text-sm text-gray-500 mb-4">per month</div>
+                        <ul class="text-left space-y-2 mb-6">
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Up to 500 inventory items
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Cross-list to all launch platforms
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                Standard analytics
+                            </li>
+                            <li class="flex items-center gap-2 text-sm">
+                                <span style="color: var(--success);">${components.icon('check', 16)}</span>
+                                25 AI generations/month
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-gray-400">
+                                <span>${components.icon('x', 16)}</span>
+                                Advanced automations
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-gray-400">
+                                <span>${components.icon('x', 16)}</span>
+                                Priority support
+                            </li>
+                        </ul>
+                        ${currentPlan === 'starter' ? `
+                            <button class="btn btn-outline w-full" disabled>Current Plan</button>
+                        ` : currentPlan === 'free' ? `
+                            <button class="btn btn-secondary w-full" onclick="handlers.selectPlan('starter')">Upgrade to Starter</button>
+                        ` : `
+                            <button class="btn btn-outline w-full" onclick="handlers.confirmPlanChange('starter')">Switch to Starter</button>
+                        `}
+                    </div>
+                </div>
+
                 <!-- Pro Plan -->
                 <div class="card ${currentPlan === 'pro' ? 'ring-2 ring-primary' : ''}" style="position: relative;">
-                    <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 4px 16px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600;">
-                        Most Popular
+                    <div style="position: absolute; top: -24px; left: 50%; transform: translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:4px;">
+                        <div style="background: var(--success); color: white; padding: 2px 12px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600;">
+                            7-day free trial
+                        </div>
+                        <div style="background: var(--primary); color: white; padding: 4px 16px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600;">
+                            Most Popular
+                        </div>
                     </div>
                     <div class="card-body text-center">
                         <h3 class="text-xl font-bold mb-2">Pro</h3>
@@ -2558,6 +2626,48 @@ Object.assign(pages, {
                         <p>No billing history yet</p>
                         <p class="text-sm">Upgrade to a paid plan to see your invoices here</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- Plan Comparison Table -->
+            <div class="card mt-6">
+                <div class="card-header">
+                    <h3 class="card-title">Plan Comparison</h3>
+                </div>
+                <div class="card-body" style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--gray-200);">
+                                <th style="text-align:left; padding:12px 16px; color:var(--gray-600); font-weight:600;">Feature</th>
+                                <th style="text-align:center; padding:12px 16px; font-weight:700;">Free</th>
+                                <th style="text-align:center; padding:12px 16px; font-weight:700;">Starter</th>
+                                <th style="text-align:center; padding:12px 16px; font-weight:700; color:var(--primary);">Pro</th>
+                                <th style="text-align:center; padding:12px 16px; font-weight:700;">Business</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${[
+                                ['Inventory items', '100', '500', 'Unlimited', 'Unlimited'],
+                                ['Active listings', '50', '250', 'Unlimited', 'Unlimited'],
+                                ['Selling platforms', '5', 'All launch', 'All launch', 'All'],
+                                ['AI listing generator', '—', '25/mo', '50/mo', 'Unlimited'],
+                                ['Automations', '—', '5 active', '20 active', 'Unlimited'],
+                                ['Analytics', 'Basic', 'Standard', 'Advanced', 'Advanced'],
+                                ['Bulk operations', '—', '—', '—', components.icon('check', 16)],
+                                ['API access', '—', '—', '—', components.icon('check', 16)],
+                                ['Priority support', '—', '—', '—', components.icon('check', 16)],
+                                ['7-day free trial', '—', '—', components.icon('check', 16), '—'],
+                            ].map((row, i) => `
+                                <tr style="border-bottom:1px solid var(--gray-100); background:${i % 2 === 0 ? 'transparent' : 'var(--gray-50)'};">
+                                    <td style="padding:10px 16px; font-weight:500;">${row[0]}</td>
+                                    <td style="padding:10px 16px; text-align:center; color:var(--gray-600);">${row[1]}</td>
+                                    <td style="padding:10px 16px; text-align:center; color:var(--gray-600);">${row[2]}</td>
+                                    <td style="padding:10px 16px; text-align:center; color:var(--primary); font-weight:500;">${row[3]}</td>
+                                    <td style="padding:10px 16px; text-align:center; color:var(--gray-600);">${row[4]}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         `;
