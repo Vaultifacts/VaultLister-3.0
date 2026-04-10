@@ -10183,7 +10183,7 @@ const tablePrefs = {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="space-y-2">
+                <div class="space-y-2" style="max-height: 400px; overflow-y: auto;">
                     ${columns.map(col => `
                         <label class="flex items-center gap-3 p-2 rounded hover:bg-gray-50">
                             <input type="checkbox" data-column="${col.id}" ${prefs.visibleColumns.includes(col.id) ? 'checked' : ''} aria-label="Toggle ${col.label} column visibility">
@@ -15421,7 +15421,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '00f97cf2';
+    const v = '89bb77bb';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -22823,12 +22823,27 @@ const modals = {
                         <h3 class="font-semibold text-lg mb-2">Quick Cross List</h3>
                         <p class="text-sm text-gray-500">Create a single listing and optionally list on multiple platforms. Same details for all platforms. Best for simple, fast listings.</p>
                     </div>
-                    <div class="listing-mode-card" onclick="modals.close(); router.navigate('crosslist')">
+                    <div class="listing-mode-card" onclick="toast.info('Advanced Cross List coming soon — use Quick Cross List for now.')">
                         <div class="listing-mode-card-icon">
                             ${components.icon('settings', 32)}
                         </div>
                         <h3 class="font-semibold text-lg mb-2">Advanced Cross List</h3>
                         <p class="text-sm text-gray-500">Customize your listing for each platform individually. Set platform-specific titles, descriptions, pricing, and fields. Best for maximizing visibility and sales.</p>
+                        <span class="badge badge-secondary" style="margin-top:8px;display:inline-block;">Coming Soon</span>
+                    </div>
+                    <div class="listing-mode-card" onclick="modals.close(); handlers.showImportFromMarketplace()">
+                        <div class="listing-mode-card-icon">
+                            ${components.icon('import', 32)}
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Import from Marketplace</h3>
+                        <p class="text-sm text-gray-500">Paste a listing URL from Poshmark, eBay, Depop, or other platforms to import the item details automatically.</p>
+                    </div>
+                    <div class="listing-mode-card" onclick="modals.close(); handlers.showCSVImport()">
+                        <div class="listing-mode-card-icon">
+                            ${components.icon('upload', 32)}
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Import from CSV</h3>
+                        <p class="text-sm text-gray-500">Bulk import listings from a CSV file. Download the template to get started.</p>
                     </div>
                 </div>
             </div>
@@ -23064,7 +23079,7 @@ const modals = {
                 `}
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-secondary" onclick="modals.addItem()">Cancel</button>
             </div>
         `);
     },
@@ -23386,7 +23401,7 @@ const modals = {
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                <button class="btn btn-secondary" onclick="modals.addItem()">Cancel</button>
                 <button id="ai-analyze-btn" class="btn btn-primary" onclick="handlers.startAIAnalysis()" disabled>
                     Analyze Image
                 </button>
@@ -24684,7 +24699,7 @@ const modals = {
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="handlers.stopBarcodeScanner(); modals.close()">Cancel</button>
+                <button class="btn btn-secondary" onclick="handlers.stopBarcodeScanner(); modals.addItem()">Cancel</button>
                 <button class="btn btn-primary" id="barcode-apply-btn" onclick="handlers.applyBarcodeData()" disabled>
                     Apply to Form
                 </button>

@@ -503,9 +503,15 @@ Object.assign(pages, {
                 <div class="page-header flex justify-between items-start">
                     <div>
                         <h1 class="page-title">My Listings</h1>
-                        <p class="page-description">View and manage your listings across all platforms</p>
+                        <p class="page-description">Create and manage reusable listing templates</p>
                     </div>
                     <div class="flex gap-2">
+                        <button class="btn btn-secondary" onclick="handlers.showListingHealth()" title="Listing Health Score">
+                            ${components.icon('activity', 16)} Health
+                        </button>
+                        <button class="btn btn-secondary" onclick="handlers.showPlatformFeeCalculator()" title="Platform Fee Calculator">
+                            ${components.icon('percent', 16)} Fees
+                        </button>
                         <button class="btn btn-secondary" onclick="handlers.showCreateListingFolder()">
                             ${components.icon('folder', 16)} New Folder
                         </button>
@@ -547,6 +553,12 @@ Object.assign(pages, {
                         <p class="page-description">View and manage your listings across all platforms</p>
                     </div>
                     <div class="flex gap-2">
+                        <button class="btn btn-secondary" onclick="handlers.showListingHealth()" title="Listing Health Score">
+                            ${components.icon('activity', 16)} Health
+                        </button>
+                        <button class="btn btn-secondary" onclick="handlers.showPlatformFeeCalculator()" title="Platform Fee Calculator">
+                            ${components.icon('percent', 16)} Fees
+                        </button>
                         <button class="btn btn-secondary" onclick="handlers.showCreateListingFolder()">
                             ${components.icon('folder', 16)} New Folder
                         </button>
@@ -576,18 +588,31 @@ Object.assign(pages, {
                     <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('templates')">Listing Templates</button>
                     <button class="tab active" role="tab" aria-selected="true" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
+                <script>window.scrollTo(0, 0);</script>
                 ${pages.recentlyDeleted()}
             `;
         }
 
         // Archived listings tab
         if (currentListingsTab === 'archived') {
-            const archivedListings = (store.state.listings || []).filter(l => l.status === 'archived');
+            const archivedSearch = (store.state.archivedListingsSearch || '').toLowerCase();
+            const allArchived = (store.state.listings || []).filter(l => l.status === 'archived');
+            const archivedListings = archivedSearch
+                ? allArchived.filter(l => (l.title || '').toLowerCase().includes(archivedSearch) || (l.sku || '').toLowerCase().includes(archivedSearch))
+                : allArchived;
             return `
                 <div class="page-header flex justify-between items-start">
                     <div>
                         <h1 class="page-title">My Listings</h1>
                         <p class="page-description">Archived listings that have been removed from active selling</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-secondary" onclick="handlers.showListingHealth()" title="Listing Health Score">
+                            ${components.icon('activity', 16)} Health
+                        </button>
+                        <button class="btn btn-secondary" onclick="handlers.showPlatformFeeCalculator()" title="Platform Fee Calculator">
+                            ${components.icon('percent', 16)} Fees
+                        </button>
                     </div>
                 </div>
                 <div class="tabs mb-6" role="tablist">
@@ -597,6 +622,16 @@ Object.assign(pages, {
                     <button class="tab" role="tab" aria-selected="false" onclick="handlers.switchListingsTab('recently-deleted')">Recently Deleted</button>
                 </div>
                 <div class="card">
+                    <div class="card-header">
+                        <div class="flex items-center gap-3">
+                            <div class="input-with-icon" style="flex:1;max-width:320px;">
+                                ${components.icon('search', 16)}
+                                <input type="text" class="form-input" placeholder="Search archived listings..." value="${escapeHtml(store.state.archivedListingsSearch || '')}"
+                                    oninput="store.setState({ archivedListingsSearch: this.value }); renderApp(window.pages.listings());" style="padding-left:32px;">
+                            </div>
+                            <span class="text-sm text-gray-500">${archivedListings.length} of ${allArchived.length} archived</span>
+                        </div>
+                    </div>
                     ${archivedListings.length > 0 ? `
                         <div class="table-container">
                             <table class="table">
@@ -655,7 +690,7 @@ Object.assign(pages, {
 
         let listings = store.state.listings || [];
         const allListings = store.state.listings || [];
-        const folders = store.state.listingFolders || [];
+        const folders = (store.state.listingFolders || []).filter((f, i, arr) => arr.findIndex(x => x.id === f.id) === i);
 
         // Calculate listings stats (before filtering)
         const totalListings = allListings.length;
@@ -731,35 +766,6 @@ Object.assign(pages, {
             : null;
 
         return `
-            <!-- Breadcrumb Navigation -->
-            <nav class="listing-breadcrumb mb-4" aria-label="Breadcrumb">
-                <ol style="display: flex; align-items: center; gap: 6px; list-style: none; padding: 0; margin: 0; font-size: 13px;">
-                    <li>
-                        <a href="#" onclick="router.navigate('dashboard'); return false;" style="color: var(--gray-500); text-decoration: none;">
-                            ${components.icon('home', 14)} Dashboard
-                        </a>
-                    </li>
-                    <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
-                    <li>
-                        <a href="#" onclick="handlers.switchListingsTab('listings'); return false;" style="color: ${currentListingsTab === 'listings' ? 'var(--primary-600)' : 'var(--gray-500)'}; text-decoration: none; font-weight: ${currentListingsTab === 'listings' ? '600' : '400'};">
-                            Listings
-                        </a>
-                    </li>
-                    ${currentListingsTab !== 'listings' ? `
-                        <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
-                        <li style="color: var(--primary-600); font-weight: 600;">
-                            ${currentListingsTab === 'archived' ? 'Archived' : currentListingsTab === 'templates' ? 'Templates' : currentListingsTab === 'recently-deleted' ? 'Recently Deleted' : 'Listings'}
-                        </li>
-                    ` : ''}
-                    ${statusFilter !== 'all' ? `
-                        <li style="color: var(--gray-400);">${components.icon('chevron-right', 12)}</li>
-                        <li style="color: var(--primary-600); font-weight: 600;">
-                            ${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-                        </li>
-                    ` : ''}
-                </ol>
-            </nav>
-
             <!-- Listings Hero Section -->
             <div class="listings-hero">
                 <div class="listings-hero-header">
@@ -801,8 +807,8 @@ Object.assign(pages, {
                 <div class="listings-health-bar">
                     <div class="listings-health-score">
                         ${healthScore === null ? `
-                        <div class="health-score-ring empty" style="display:flex;align-items:center;justify-content:center;min-height:60px;">
-                            <span class="health-score-value" style="font-size:12px;color:var(--gray-500);text-align:center;">Add listings to see your Listing Health Score</span>
+                        <div class="health-score-ring empty" style="display:flex;align-items:center;justify-content:center;min-height:60px;min-width:140px;">
+                            <span class="health-score-value" style="font-size:12px;color:var(--gray-500);text-align:center;line-height:1.4;">Add listings to see your Health Score</span>
                         </div>
                         ` : `
                         <div class="health-score-ring ${healthScore >= 80 ? 'good' : healthScore >= 50 ? 'warning' : 'poor'}">
@@ -817,7 +823,7 @@ Object.assign(pages, {
                     </div>
 
                     <div class="listings-health-stats">
-                        <div class="health-stat">
+                        <div class="health-stat" style="cursor:pointer;" onclick="handlers.filterListings('status', 'active')" title="View active listings">
                             <div class="health-stat-icon active">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="20 6 9 17 4 12"></polyline>
@@ -828,7 +834,7 @@ Object.assign(pages, {
                                 <span class="health-stat-label">Active</span>
                             </div>
                         </div>
-                        <div class="health-stat">
+                        <div class="health-stat" style="cursor:pointer;" onclick="handlers.filterListings('status', 'draft')" title="View draft listings">
                             <div class="health-stat-icon draft">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -840,7 +846,7 @@ Object.assign(pages, {
                                 <span class="health-stat-label">Drafts</span>
                             </div>
                         </div>
-                        <div class="health-stat ${staleListings > 0 ? 'warning' : ''}">
+                        <div class="health-stat ${staleListings > 0 ? 'warning' : ''}" style="cursor:pointer;" onclick="handlers.filterListings('status', 'stale')" title="View stale listings">
                             <div class="health-stat-icon ${staleListings > 0 ? 'stale' : 'fresh'}">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -852,7 +858,7 @@ Object.assign(pages, {
                                 <span class="health-stat-label">Need Refresh</span>
                             </div>
                         </div>
-                        <div class="health-stat">
+                        <div class="health-stat" style="cursor:pointer;" onclick="handlers.showListingHealth()" title="View listing health details">
                             <div class="health-stat-icon age">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -974,8 +980,8 @@ Object.assign(pages, {
                         `).join('')}
                     </div>
                 ` : `
-                    <div class="table-container table-sticky-header" style="max-height: 70vh; overflow-y: auto;">
-                        <table class="table">
+                    <div class="table-container table-sticky-header" style="max-height: 70vh; overflow-y: auto; overflow-x: auto;">
+                        <table class="table" style="min-width: 800px;">
                             <thead>
                                 <tr>
                                     <th style="width: 50px"></th>

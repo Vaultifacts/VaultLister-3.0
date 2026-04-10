@@ -494,6 +494,14 @@ Object.assign(handlers, {
         const form = event.target;
         const formData = new FormData(form);
 
+        const titleVal = (formData.get('title') || '').trim();
+        if (!titleVal) {
+            const titleInput = form.querySelector('[name="title"]');
+            if (titleInput) { titleInput.classList.add('input-error'); titleInput.focus(); }
+            toast.error('Title is required');
+            return;
+        }
+
         let category = formData.get('category');
         if (category === 'other') {
             category = formData.get('customCategory') || '';
@@ -7486,8 +7494,11 @@ Object.assign(handlers, {
         const selectedMarketplace = store.state.importMarketplace || 'poshmark';
 
         const modalContent = `
+            <div class="modal-header">
+                <h2 class="modal-title">Import From Marketplace</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
             <div style="padding: 24px;">
-                <h2 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700;">Import From Marketplace</h2>
                 <p style="margin: 0 0 24px 0; color: var(--gray-600);">Paste a listing URL to import the item</p>
 
                 <div style="margin-bottom: 24px;">
@@ -7531,8 +7542,8 @@ Object.assign(handlers, {
 
     fetchMarketplaceListing: async function() {
         const url = document.getElementById('marketplace-url')?.value;
-        if (!url) {
-            toast.warning('Please enter a listing URL');
+        if (!url || !url.trim()) {
+            toast.error('Please enter a marketplace URL');
             document.getElementById('marketplace-url')?.focus();
             return;
         }
@@ -7587,12 +7598,19 @@ Object.assign(handlers, {
                 </div>
 
                 <div style="margin-bottom: 24px;">
-                    <label for="csv-file" class="form-label">Select CSV File</label>
-                    <input type="file"
-                           id="csv-file"
-                           accept=".csv"
-                           class="form-control"
-                           onchange="handlers.previewCSV(event)">
+                    <label class="form-label">Select CSV File</label>
+                    <div class="dropzone" id="csv-dropzone"
+                         style="border: 2px dashed var(--gray-300); border-radius: 8px; padding: 32px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;"
+                         ondragover="event.preventDefault(); this.style.borderColor='var(--primary-500)'; this.style.background='var(--primary-50)';"
+                         ondragleave="this.style.borderColor=''; this.style.background='';"
+                         ondrop="event.preventDefault(); this.style.borderColor=''; this.style.background=''; if(event.dataTransfer.files[0]) { document.getElementById('csv-file').files = event.dataTransfer.files; handlers.previewCSV({ target: document.getElementById('csv-file') }); }"
+                         onclick="document.getElementById('csv-file').click()">
+                        <div style="color: var(--gray-400); margin-bottom: 8px;">${components.icon('upload', 32)}</div>
+                        <p style="font-weight: 500; color: var(--gray-700); margin: 0 0 4px 0;">Drop CSV file here or click to browse</p>
+                        <p id="csv-file-name" style="font-size: 12px; color: var(--gray-500); margin: 0;">No file selected</p>
+                        <input type="file" id="csv-file" accept=".csv" style="display:none;"
+                               onchange="document.getElementById('csv-file-name').textContent = this.files[0]?.name || 'No file selected'; handlers.previewCSV(event);">
+                    </div>
                 </div>
 
                 <div id="csv-preview" style="margin-bottom: 24px; display: none;">
@@ -8580,7 +8598,8 @@ Object.assign(handlers, {
         this._creatingListingFolder = true;
         try {
             const folderName = await modals.prompt('Enter a name for the new folder:', { title: 'Create Folder', placeholder: 'Folder name' });
-            if (!folderName || !folderName.trim()) return;
+            if (folderName === null || folderName === undefined) return;
+            if (!folderName.trim()) { toast.error('Folder name cannot be empty'); return; }
             await this.createListingFolder(folderName.trim());
         } finally {
             this._creatingListingFolder = false;
@@ -11029,11 +11048,11 @@ Object.assign(handlers, {
                                 <span class="dist-count">${analyzed.filter(a => a.score >= 80).length}</span>
                             </div>
                             <div class="dist-bar-row">
-                                <span class="dist-label warning">${components.icon('alert-circle', 14)} Good (60-79)</span>
+                                <span class="dist-label warning">${components.icon('check-circle', 14)} Good (60-79)</span>
                                 <span class="dist-count">${analyzed.filter(a => a.score >= 60 && a.score < 80).length}</span>
                             </div>
                             <div class="dist-bar-row">
-                                <span class="dist-label danger">${components.icon('x-circle', 14)} Needs Work (<60)</span>
+                                <span class="dist-label danger">${components.icon('check-circle', 14)} Needs Work (&lt;60)</span>
                                 <span class="dist-count">${analyzed.filter(a => a.score < 60).length}</span>
                             </div>
                         </div>
@@ -12231,13 +12250,15 @@ Object.assign(handlers, {
                         </div>
                     </div>
 
-                    <div class="fee-comparison-grid" id="fee-comparison">
-                        ${platforms.map(p => {
+                    <div class="fee-comparison-grid" id="fee-comparison" style="display:flex;flex-wrap:wrap;gap:8px;">
+                        ${platforms.map((p, idx) => {
                             const price = 50;
-                            const totalFee = (price * p.baseFee / 100) + (price * p.paymentFee / 100) + p.paymentFixed + (p.listingFee || 0);
+                            let totalFee = (price * p.baseFee / 100) + (price * p.paymentFee / 100) + p.paymentFixed + (p.listingFee || 0);
+                            if (p.name === 'Poshmark' && price < 15) totalFee = 2.95;
+                            if (p.name === 'Facebook') totalFee = Math.max(0.40, totalFee);
                             const netPayout = price - totalFee;
                             return `
-                                <div class="fee-platform-card" data-platform="${p.name.toLowerCase()}">
+                                <div class="fee-platform-card" data-platform="${p.name.toLowerCase()}" data-base-fee="${p.baseFee}" data-payment-fee="${p.paymentFee}" data-payment-fixed="${p.paymentFixed}" style="cursor:pointer;flex:1;min-width:120px;" onclick="handlers.selectFeeBreakdownPlatform('${p.name.toLowerCase()}', ${p.baseFee}, ${p.paymentFee}, ${p.paymentFixed})">
                                     <div class="platform-name">${p.name}</div>
                                     <div class="platform-net">C$${netPayout.toFixed(2)}</div>
                                     <div class="platform-fee">-C$${totalFee.toFixed(2)} fees</div>
@@ -12248,23 +12269,23 @@ Object.assign(handlers, {
                     </div>
 
                     <div class="fee-breakdown" id="fee-breakdown">
-                        <h4 class="section-title">Fee Breakdown (eBay at C$50)</h4>
-                        <div class="breakdown-rows">
+                        <h4 class="section-title" id="fee-breakdown-title">Fee Breakdown (eBay at C$50)</h4>
+                        <div class="breakdown-rows" id="fee-breakdown-rows">
                             <div class="breakdown-row">
                                 <span>Sale Price</span>
-                                <span>C$50.00</span>
+                                <span id="fbd-sale-price">C$50.00</span>
                             </div>
-                            <div class="breakdown-row">
-                                <span>Final Value Fee (12.9%)</span>
-                                <span>-C$6.45</span>
+                            <div class="breakdown-row" id="fbd-row-base">
+                                <span id="fbd-base-label">Final Value Fee (12.9%)</span>
+                                <span id="fbd-base-value">-C$6.45</span>
                             </div>
-                            <div class="breakdown-row">
-                                <span>Payment Processing (2.9% + C$0.30)</span>
-                                <span>-C$1.75</span>
+                            <div class="breakdown-row" id="fbd-row-payment">
+                                <span id="fbd-payment-label">Payment Processing (2.9% + C$0.30)</span>
+                                <span id="fbd-payment-value">-C$1.75</span>
                             </div>
                             <div class="breakdown-row total">
                                 <span>Your Payout</span>
-                                <span>C$41.80</span>
+                                <span id="fbd-payout">C$41.80</span>
                             </div>
                         </div>
                     </div>
@@ -12290,15 +12311,8 @@ Object.assign(handlers, {
         platforms.forEach(p => {
             let totalFee = (price * p.baseFee / 100) + (price * p.paymentFee / 100) + p.paymentFixed + (p.listingFee || 0);
 
-            // Poshmark special: C$2.95 flat fee under C$15
-            if (p.name === 'Poshmark' && price < 15) {
-                totalFee = 2.95;
-            }
-
-            // Facebook minimum C$0.40
-            if (p.name === 'Facebook') {
-                totalFee = Math.max(0.40, totalFee);
-            }
+            if (p.name === 'Poshmark' && price < 15) totalFee = 2.95;
+            if (p.name === 'Facebook') totalFee = Math.max(0.40, totalFee);
 
             const netPayout = price - totalFee;
             const card = document.querySelector(`.fee-platform-card[data-platform="${p.name.toLowerCase()}"]`);
@@ -12307,6 +12321,54 @@ Object.assign(handlers, {
                 card.querySelector('.platform-fee').textContent = '-C$' + totalFee.toFixed(2) + ' fees';
             }
         });
+
+        // Update the fee breakdown for whichever platform is currently selected
+        const selectedCard = document.querySelector('.fee-platform-card.selected');
+        if (selectedCard) {
+            const pName = selectedCard.querySelector('.platform-name')?.textContent;
+            const baseFee = parseFloat(selectedCard.dataset.baseFee) || 0;
+            const paymentFee = parseFloat(selectedCard.dataset.paymentFee) || 0;
+            const paymentFixed = parseFloat(selectedCard.dataset.paymentFixed) || 0;
+            this.selectFeeBreakdownPlatform(selectedCard.dataset.platform, baseFee, paymentFee, paymentFixed);
+        } else {
+            // Default: update breakdown for eBay
+            this.selectFeeBreakdownPlatform('ebay', 12.9, 2.9, 0.30);
+        }
+    },
+
+    selectFeeBreakdownPlatform: function(platformKey, baseFee, paymentFee, paymentFixed) {
+        const price = parseFloat(document.getElementById('fee-sale-price')?.value) || 0;
+        const platformName = platformKey.charAt(0).toUpperCase() + platformKey.slice(1);
+
+        let baseFeeAmt = price * baseFee / 100;
+        let paymentFeeAmt = price * paymentFee / 100 + paymentFixed;
+        if (platformKey === 'poshmark' && price < 15) { baseFeeAmt = 2.95; paymentFeeAmt = 0; }
+        if (platformKey === 'facebook') { const min = Math.max(0.40, price * baseFee / 100 + price * paymentFee / 100 + paymentFixed); baseFeeAmt = min - paymentFeeAmt; }
+        const totalFee = baseFeeAmt + paymentFeeAmt;
+        const payout = price - totalFee;
+
+        const titleEl = document.getElementById('fee-breakdown-title');
+        const salePriceEl = document.getElementById('fbd-sale-price');
+        const baseLabel = document.getElementById('fbd-base-label');
+        const baseValue = document.getElementById('fbd-base-value');
+        const paymentLabel = document.getElementById('fbd-payment-label');
+        const paymentValue = document.getElementById('fbd-payment-value');
+        const payoutEl = document.getElementById('fbd-payout');
+        const paymentRow = document.getElementById('fbd-row-payment');
+
+        if (titleEl) titleEl.textContent = `Fee Breakdown (${platformName} at C$${price.toFixed(2)})`;
+        if (salePriceEl) salePriceEl.textContent = `C$${price.toFixed(2)}`;
+        if (baseLabel) baseLabel.textContent = `${platformName} Fee (${baseFee}%)`;
+        if (baseValue) baseValue.textContent = `-C$${baseFeeAmt.toFixed(2)}`;
+        if (paymentRow) paymentRow.style.display = paymentFee === 0 && paymentFixed === 0 ? 'none' : '';
+        if (paymentLabel) paymentLabel.textContent = paymentFixed > 0 ? `Payment Processing (${paymentFee}% + C$${paymentFixed.toFixed(2)})` : `Payment Processing (${paymentFee}%)`;
+        if (paymentValue) paymentValue.textContent = `-C$${paymentFeeAmt.toFixed(2)}`;
+        if (payoutEl) payoutEl.textContent = `C$${payout.toFixed(2)}`;
+
+        // Highlight selected card
+        document.querySelectorAll('.fee-platform-card').forEach(c => c.classList.remove('selected'));
+        const card = document.querySelector(`.fee-platform-card[data-platform="${platformKey}"]`);
+        if (card) card.classList.add('selected');
     },
 
     // Bulk Shipping Labels,
@@ -18090,43 +18152,22 @@ Object.assign(handlers, {
 
     applyTemplate: async function(templateId) {
         try {
-            // Increment use count
             await api.post(`/templates/${templateId}/use`);
-
             const template = store.state.templates.find(t => t.id === templateId);
             if (!template) return;
 
-            // Populate form fields with template data
-            const form = document.getElementById('add-item-form');
-            if (!form) return;
-
-            if (template.title_pattern) {
-                const titleInput = form.querySelector('[name="title"]');
-                if (titleInput) titleInput.value = template.title_pattern;
-            }
-
-            if (template.description_template) {
-                const descInput = form.querySelector('[name="description"]');
-                if (descInput) descInput.value = template.description_template;
-            }
-
-            if (template.category) {
-                const categoryInput = form.querySelector('[name="category"]');
-                if (categoryInput) categoryInput.value = template.category;
-            }
-
-            if (template.condition_default) {
-                const conditionInput = form.querySelector('[name="condition"]');
-                if (conditionInput) conditionInput.value = template.condition_default;
-            }
-
-            if (template.tags && template.tags.length > 0) {
-                const tagsInput = form.querySelector('[name="tags"]');
-                if (tagsInput) tagsInput.value = template.tags.join(', ');
-            }
-
-            toast.success('Template applied!');
-            modals.close();
+            // Re-open addItem modal first, then populate
+            modals.addItem();
+            setTimeout(() => {
+                const form = document.getElementById('add-item-form');
+                if (!form) return;
+                if (template.title_pattern) { const el = form.querySelector('[name="title"]'); if (el) el.value = template.title_pattern; }
+                if (template.description_template) { const el = form.querySelector('[name="description"]'); if (el) el.value = template.description_template; }
+                if (template.category) { const el = form.querySelector('[name="category"]'); if (el) el.value = template.category; }
+                if (template.condition_default) { const el = form.querySelector('[name="condition"]'); if (el) el.value = template.condition_default; }
+                if (template.tags && template.tags.length > 0) { const el = form.querySelector('[name="tags"]'); if (el) el.value = template.tags.join(', '); }
+                toast.success('Template applied!');
+            }, 150);
         } catch (error) {
             toast.error(error.message);
         }

@@ -1403,7 +1403,7 @@ const tablePrefs = {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="space-y-2">
+                <div class="space-y-2" style="max-height: 400px; overflow-y: auto;">
                     ${columns.map(col => `
                         <label class="flex items-center gap-3 p-2 rounded hover:bg-gray-50">
                             <input type="checkbox" data-column="${col.id}" ${prefs.visibleColumns.includes(col.id) ? 'checked' : ''} aria-label="Toggle ${col.label} column visibility">
