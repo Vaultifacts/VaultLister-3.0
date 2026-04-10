@@ -58,10 +58,23 @@ describe('tokenRefreshScheduler', () => {
       expect(getOAuthConfig('ebay', 'mock').redirectUri).toBeTruthy();
     });
 
-    test('real mode returns eBay sandbox URLs by default', () => {
+    test('real mode returns eBay production URLs by default', () => {
+      const config = getOAuthConfig('ebay', 'real');
+      expect(config.authorizationUrl).toContain('auth.ebay.com');
+      expect(config.tokenUrl).toContain('api.ebay.com');
+    });
+
+    test('real mode returns eBay sandbox URLs when EBAY_ENVIRONMENT=sandbox', () => {
+      const originalEnvironment = process.env.EBAY_ENVIRONMENT;
+      process.env.EBAY_ENVIRONMENT = 'sandbox';
       const config = getOAuthConfig('ebay', 'real');
       expect(config.authorizationUrl).toContain('sandbox.ebay.com');
       expect(config.tokenUrl).toContain('sandbox.ebay.com');
+      if (originalEnvironment === undefined) {
+        delete process.env.EBAY_ENVIRONMENT;
+      } else {
+        process.env.EBAY_ENVIRONMENT = originalEnvironment;
+      }
     });
 
     test('real mode returns platform-specific config for poshmark', () => {
@@ -93,24 +106,24 @@ describe('tokenRefreshScheduler', () => {
   });
 
   describe('getRefreshSchedulerStatus', () => {
-    test('returns status with expected shape', () => {
+    test('returns status with expected shape', async () => {
       stopTokenRefreshScheduler();
       mockQueryGet.mockReturnValue({
         total_oauth_shops: 2, connected_shops: 1,
         shops_with_errors: 0, expiring_soon: 0
       });
-      const status = getRefreshSchedulerStatus();
+      const status = await getRefreshSchedulerStatus();
       expect(status.running).toBe(false);
       expect(status).toHaveProperty('intervalMs');
       expect(status).toHaveProperty('lastRun');
     });
 
-    test('handles missing DB columns with fallback', () => {
+    test('handles missing DB columns with fallback', async () => {
       stopTokenRefreshScheduler();
       mockQueryGet
         .mockImplementationOnce(() => { throw new Error('no such column: consecutive_refresh_failures'); })
         .mockReturnValueOnce({ total_oauth_shops: 2, connected_shops: 1, shops_with_errors: 0, expiring_soon: 0 });
-      const status = getRefreshSchedulerStatus();
+      const status = await getRefreshSchedulerStatus();
       expect(status.running).toBe(false);
       expect(status.total_oauth_shops).toBe(2);
     });

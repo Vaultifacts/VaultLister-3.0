@@ -87,7 +87,7 @@ async function checkAndQueueDueShops() {
 
         for (const shop of dueShops) {
             try {
-                queueTask('sync_shop', { platform: shop.platform, shopId: shop.id, userId: shop.user_id });
+                await queueTask('sync_shop', { platform: shop.platform, shopId: shop.id, userId: shop.user_id });
                 logger.info(`[SyncScheduler] Queued auto-sync for ${shop.platform} (shop: ${shop.id}, user: ${shop.user_id})`);
             } catch (err) {
                 logger.error(`[SyncScheduler] Failed to queue sync for shop ${shop.id}:`, err.message);

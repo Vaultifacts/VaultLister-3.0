@@ -7,11 +7,6 @@ import { describe, test, expect, mock, beforeEach, afterAll } from 'bun:test';
 // Mocks — must come before imports
 // ============================================
 
-mock.module('uuid', () => ({
-    v4: mock(() => 'mock-uuid-sync'),
-    default: { v4: mock(() => 'mock-uuid-sync') }
-}));
-
 const mockQueryAll = mock(() => []);
 const mockQueryRun = mock(() => ({ changes: 1 }));
 const mockQueryGet = mock(() => null);
@@ -41,17 +36,6 @@ mock.module('../backend/shared/logger.js', () => ({
     default: { info: mock(), error: mock(), warn: mock(), debug: mock() }
 }));
 
-const mockQueueTask = mock(() => ({ id: 'queued-task-1', type: 'sync_shop', status: 'pending' }));
-
-mock.module('../backend/workers/taskWorker.js', () => ({
-    startTaskWorker: mock(() => {}),
-    stopTaskWorker: mock(() => {}),
-    queueTask: mockQueueTask,
-    getTaskWorkerStatus: mock(() => ({ running: false })),
-    getWorkerStatus: mock(() => ({ running: false })),
-    default: {}
-}));
-
 // ============================================
 // Import module under test
 // ============================================
@@ -72,7 +56,7 @@ describe('syncScheduler — startSyncScheduler()', () => {
         mockQueryAll.mockReset();
         mockQueryAll.mockImplementation(() => []);
         mockQueryRun.mockReset();
-        mockQueueTask.mockClear();
+        mockQueryRun.mockReturnValue({ changes: 1 });
     });
 
     test('should start without throwing', () => {
@@ -105,12 +89,15 @@ describe('syncScheduler — startSyncScheduler()', () => {
         startSyncScheduler();
         await new Promise(r => setTimeout(r, 20));
 
-        expect(mockQueueTask).toHaveBeenCalledWith('sync_shop', {
+        const queuedPayloads = mockQueryRun.mock.calls
+            .filter(call => call[0].includes('INSERT INTO task_queue'))
+            .map(call => JSON.parse(call[1][2]));
+        expect(queuedPayloads).toContainEqual({
             platform: 'poshmark',
             shopId: 'shop-1',
             userId: 'user-1'
         });
-        expect(mockQueueTask).toHaveBeenCalledWith('sync_shop', {
+        expect(queuedPayloads).toContainEqual({
             platform: 'ebay',
             shopId: 'shop-2',
             userId: 'user-2'
@@ -123,7 +110,7 @@ describe('syncScheduler — startSyncScheduler()', () => {
         mockQueryAll.mockReturnValue([]);
         startSyncScheduler();
         await new Promise(r => setTimeout(r, 20));
-        expect(mockQueueTask).not.toHaveBeenCalled();
+        expect(mockQueryRun).not.toHaveBeenCalled();
         stopSyncScheduler();
     });
 });
@@ -133,7 +120,8 @@ describe('syncScheduler — stopSyncScheduler()', () => {
         stopSyncScheduler();
         mockQueryAll.mockReset();
         mockQueryAll.mockImplementation(() => []);
-        mockQueueTask.mockClear();
+        mockQueryRun.mockReset();
+        mockQueryRun.mockReturnValue({ changes: 1 });
     });
 
     test('should stop without throwing', () => {
@@ -158,12 +146,12 @@ describe('syncScheduler — stopSyncScheduler()', () => {
 
         startSyncScheduler();
         stopSyncScheduler();
-        mockQueueTask.mockClear();
+        mockQueryRun.mockClear();
 
         // Wait longer than CHECK_INTERVAL_MS would fire
         await new Promise(r => setTimeout(r, 30));
         // queueTask should NOT have been called again after stop
-        expect(mockQueueTask.mock.calls.length).toBeLessThanOrEqual(1);
+        expect(mockQueryRun.mock.calls.length).toBeLessThanOrEqual(1);
     });
 });
 
@@ -172,7 +160,7 @@ describe('syncScheduler — resilience', () => {
         stopSyncScheduler();
         mockQueryAll.mockReset();
         mockQueryRun.mockReset();
-        mockQueueTask.mockClear();
+        mockQueryRun.mockReturnValue({ changes: 1 });
     });
 
     test('should not throw when database query fails', async () => {
@@ -189,10 +177,10 @@ describe('syncScheduler — resilience', () => {
         ]);
 
         let callCount = 0;
-        mockQueueTask.mockImplementation(() => {
+        mockQueryRun.mockImplementation(() => {
             callCount++;
             if (callCount === 1) throw new Error('Queue error for shop-1');
-            return { id: 'task-2', type: 'sync_shop', status: 'pending' };
+            return { changes: 1 };
         });
 
         startSyncScheduler();
@@ -200,6 +188,6 @@ describe('syncScheduler — resilience', () => {
         stopSyncScheduler();
 
         // Both shops should have been attempted; second succeeded
-        expect(mockQueueTask).toHaveBeenCalledTimes(2);
+        expect(mockQueryRun).toHaveBeenCalledTimes(2);
     });
 });

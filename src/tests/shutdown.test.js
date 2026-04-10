@@ -11,11 +11,6 @@ import { describe, test, expect, mock, afterAll } from 'bun:test';
 // These MUST come before any imports that trigger those packages.
 // ============================================
 
-mock.module('uuid', () => ({
-    v4: mock(() => 'mock-uuid-1234'),
-    default: { v4: mock(() => 'mock-uuid-1234') }
-}));
-
 mock.module('ioredis', () => {
     function MockRedis() {
         this.on = mock(() => this);
@@ -90,16 +85,6 @@ mock.module('../backend/routes/oauth.js', () => ({
     oauthRouter: mock(() => ({ status: 200, data: {} })),
     getOAuthConfig: mock(() => ({})),
     revokeToken: mock(() => Promise.resolve()),
-    default: {}
-}));
-
-mock.module('../backend/workers/taskWorker.js', () => ({
-    startTaskWorker: mock(() => {}),
-    stopTaskWorker: mock(() => {}),
-    queueTask: mock(() => ({ id: 'mock-task' })),
-    getTaskWorkerStatus: mock(() => ({ running: false })),
-    getWorkerStatus: mock(() => ({ running: false })),
-    cleanupOldTasks: mock(() => {}),
     default: {}
 }));
 

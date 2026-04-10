@@ -71,12 +71,12 @@ describe('emailPollingWorker (unit)', () => {
   });
 
   describe('getEmailPollingStatus', () => {
-    test('returns expected shape', () => {
+    test('returns expected shape', async () => {
       mockQueryGet.mockReturnValue({
         total_accounts: 3, enabled_accounts: 2,
         syncing_accounts: 0, error_accounts: 1
       });
-      const status = getEmailPollingStatus();
+      const status = await getEmailPollingStatus();
       expect(status).toHaveProperty('running');
       expect(status).toHaveProperty('intervalMs');
       expect(status).toHaveProperty('lastRun');
@@ -84,15 +84,15 @@ describe('emailPollingWorker (unit)', () => {
       expect(status.enabled_accounts).toBe(2);
     });
 
-    test('running false when stopped', () => {
+    test('running false when stopped', async () => {
       stopEmailPollingWorker();
       mockQueryGet.mockReturnValue({ total_accounts: 0 });
-      expect(getEmailPollingStatus().running).toBe(false);
+      expect((await getEmailPollingStatus()).running).toBe(false);
     });
 
-    test('intervalMs defaults to 5 minutes', () => {
+    test('intervalMs defaults to 5 minutes', async () => {
       mockQueryGet.mockReturnValue({});
-      const status = getEmailPollingStatus();
+      const status = await getEmailPollingStatus();
       expect(status.intervalMs).toBe(5 * 60 * 1000);
     });
   });

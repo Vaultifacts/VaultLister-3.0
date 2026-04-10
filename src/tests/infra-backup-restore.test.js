@@ -26,7 +26,7 @@ describe('pg-backup script validation', () => {
 
     test('pg-backup.js handles --compress flag', () => {
         expect(backupSrc).toContain('--compress');
-        expect(backupSrc).toContain('createGzip');
+        expect(backupSrc).toContain("execFileAsync('gzip'");
     });
 });
 
@@ -65,12 +65,13 @@ describe('Backup retention policy (M19)', () => {
         ? readFileSync(join(ROOT, 'scripts/pg-backup.js'), 'utf-8')
         : '';
 
-    test('pg-backup.js enforces daily/weekly/monthly retention', () => {
-        expect(backupSrc).toMatch(/daily|weekly|monthly/);
+    test('pg-backup.js enforces local backup retention', () => {
+        expect(backupSrc).toContain('cleanupOldBackups');
+        expect(backupSrc).toContain('keepCount');
     });
 
-    test('pg-backup.js uses RETENTION config object', () => {
-        expect(backupSrc).toContain('RETENTION');
+    test('pg-backup.js keeps the seven newest local backups', () => {
+        expect(backupSrc).toContain('cleanupOldBackups(backupDir, 7)');
     });
 });
 
@@ -81,5 +82,33 @@ describe('Backup retention policy (M19)', () => {
 describe('Post-deploy check script', () => {
     test('scripts/post-deploy-check.mjs exists', () => {
         expect(existsSync(join(ROOT, 'scripts/post-deploy-check.mjs'))).toBe(true);
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Railway Deploy Verification
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Railway deploy verification script', () => {
+    const verifierPath = join(ROOT, 'scripts/verify-railway-deploy.mjs');
+    const verifierSrc = existsSync(verifierPath) ? readFileSync(verifierPath, 'utf-8') : '';
+
+    test('scripts/verify-railway-deploy.mjs exists', () => {
+        expect(existsSync(verifierPath)).toBe(true);
+    });
+
+    test('verifier reads Railway status JSON', () => {
+        expect(verifierSrc).toContain('railway');
+        expect(verifierSrc).toContain('status');
+        expect(verifierSrc).toContain('--json');
+    });
+
+    test('verifier checks app and worker deployment config', () => {
+        expect(verifierSrc).toContain('vaultlister-app');
+        expect(verifierSrc).toContain('vaultlister-worker');
+        expect(verifierSrc).toContain('/railway.json');
+        expect(verifierSrc).toContain('/worker/railway.json');
+        expect(verifierSrc).toContain('/api/health/ready');
+        expect(verifierSrc).toContain('drainingSeconds');
     });
 });
