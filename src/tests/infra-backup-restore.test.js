@@ -111,4 +111,9 @@ describe('Railway deploy verification script', () => {
         expect(verifierSrc).toContain('/api/health/ready');
         expect(verifierSrc).toContain('drainingSeconds');
     });
+
+    test('verifier accepts short commit SHAs', () => {
+        expect(verifierSrc).toContain('compareCommit');
+        expect(verifierSrc).toContain('actual.startsWith(expected)');
+    });
 });

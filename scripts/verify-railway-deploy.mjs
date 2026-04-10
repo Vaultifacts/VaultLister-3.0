@@ -44,7 +44,7 @@ if (args.includes('--help')) {
     console.log(`Usage: bun scripts/verify-railway-deploy.mjs [options]
 
 Options:
-  --commit <sha>          Require app and worker latest deployments to match this commit.
+  --commit <sha>          Require app and worker latest deployments to match this commit. Short SHAs are accepted.
   --environment <name>    Railway environment to inspect. Default: production.
   --skip-commit           Do not compare deployment commit hashes.
   --json                  Print machine-readable result JSON.
@@ -114,7 +114,7 @@ for (const [serviceName, expected] of Object.entries(EXPECTED_DEFAULTS.services)
     compare(serviceName, 'numReplicas', summary.numReplicas, expected.numReplicas);
 
     if (options.commit && !options.skipCommit) {
-        compare(serviceName, 'commit', summary.commit, options.commit);
+        compareCommit(serviceName, summary.commit, options.commit);
     }
 }
 
@@ -163,6 +163,12 @@ function findService(environment, name) {
 function compare(serviceName, field, actual, expected) {
     if (actual !== expected) {
         failures.push(`${serviceName}.${field}: expected ${formatValue(expected)}, got ${formatValue(actual)}`);
+    }
+}
+
+function compareCommit(serviceName, actual, expected) {
+    if (!actual || !expected || !actual.startsWith(expected)) {
+        failures.push(`${serviceName}.commit: expected ${formatValue(expected)}, got ${formatValue(actual)}`);
     }
 }
 
