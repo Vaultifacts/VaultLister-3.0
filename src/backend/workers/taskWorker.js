@@ -8,6 +8,7 @@ import { query } from '../db/database.js';
 import { syncShop } from '../services/platformSync/index.js';
 import { createOAuthNotification, NotificationTypes } from '../services/notificationService.js';
 import { set as setRedisValue } from '../services/redis.js';
+import { withRedisLock } from '../services/redisLock.js';
 import { logger } from '../shared/logger.js';
 import { auditLog } from '../services/platformSync/platformAuditLog.js';
 import { writeFileSync, mkdirSync } from 'fs';
@@ -24,11 +25,17 @@ const AUTOMATION_QUEUE_NAME = 'automation-jobs';
 
 // FIXED 2026-02-24: Automation schedule checking integrated into taskWorker (Issue #3)
 const AUTOMATION_CHECK_INTERVAL_MS = 60 * 1000;
+const AUTOMATION_CHECK_LOCK_KEY = 'worker:lock:automationScheduleCheck';
+const AUTOMATION_CHECK_LOCK_TTL_MS = 2 * 60 * 1000;
 let lastAutomationCheck = 0;
 const DAILY_SUMMARY_CHECK_MS = 60 * 60 * 1000; // Check every hour
+const DAILY_SUMMARY_LOCK_KEY = 'worker:lock:dailySummaryCheck';
+const DAILY_SUMMARY_LOCK_TTL_MS = 10 * 60 * 1000;
 let lastDailySummaryCheck = 0;
 // Issue #182: auto-purge deleted inventory items past 30-day retention, checked every 24 hours
 const PURGE_DELETED_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const PURGE_DELETED_LOCK_KEY = 'worker:lock:purgeDeletedInventory';
+const PURGE_DELETED_LOCK_TTL_MS = 30 * 60 * 1000;
 let lastPurgeDeletedCheck = 0;
 
 let workerInterval = null;
@@ -160,17 +167,38 @@ async function processQueue() {
         const now = Date.now();
         if (now - lastAutomationCheck >= AUTOMATION_CHECK_INTERVAL_MS) {
             lastAutomationCheck = now;
-            try { await checkAutomationSchedules(); }
+            try {
+                await withRedisLock(
+                    AUTOMATION_CHECK_LOCK_KEY,
+                    AUTOMATION_CHECK_LOCK_TTL_MS,
+                    checkAutomationSchedules,
+                    { name: 'automation schedule check' }
+                );
+            }
             catch (schedErr) { logger.error('[TaskWorker] Automation schedule check failed:', schedErr.message); }
         }
         if (now - lastDailySummaryCheck >= DAILY_SUMMARY_CHECK_MS) {
             lastDailySummaryCheck = now;
-            try { await checkDailySummaries(); }
+            try {
+                await withRedisLock(
+                    DAILY_SUMMARY_LOCK_KEY,
+                    DAILY_SUMMARY_LOCK_TTL_MS,
+                    checkDailySummaries,
+                    { name: 'daily summary check' }
+                );
+            }
             catch (err) { logger.error('[TaskWorker] Daily summary check failed:', err.message); }
         }
         if (now - lastPurgeDeletedCheck >= PURGE_DELETED_INTERVAL_MS) {
             lastPurgeDeletedCheck = now;
-            try { await executePurgeDeletedInventoryTask({}); }
+            try {
+                await withRedisLock(
+                    PURGE_DELETED_LOCK_KEY,
+                    PURGE_DELETED_LOCK_TTL_MS,
+                    () => executePurgeDeletedInventoryTask({}),
+                    { name: 'purge deleted inventory' }
+                );
+            }
             catch (err) { logger.error('[TaskWorker] Purge deleted inventory failed:', err.message); }
         }
 

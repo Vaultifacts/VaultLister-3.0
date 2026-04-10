@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { query } from '../db/database.js';
 import emailService from '../services/email.js';
 import { set as setRedisValue } from '../services/redis.js';
+import { acquireRedisLock } from '../services/redisLock.js';
 import { logger } from '../shared/logger.js';
 import { getOAuthConfig, revokeToken } from '../routes/oauth.js';
 import { decryptToken } from '../utils/encryption.js';
@@ -13,6 +14,8 @@ let intervalId = null;
 let lastRun = 0;
 const HEARTBEAT_KEY = 'worker:health:gdprWorker';
 const HEARTBEAT_TTL_SECONDS = 14400;
+const GDPR_WORKER_LOCK_KEY = 'worker:lock:gdprWorker';
+const GDPR_WORKER_LOCK_TTL_MS = 50 * 60 * 1000;
 
 async function writeHeartbeat() {
     await setRedisValue(
@@ -219,16 +222,30 @@ async function cleanupExportRequests() {
 }
 
 async function runGDPRCycle() {
+    const lock = await acquireRedisLock(
+        GDPR_WORKER_LOCK_KEY,
+        GDPR_WORKER_LOCK_TTL_MS,
+        { name: 'GDPR worker' }
+    );
+
+    if (!lock.acquired) {
+        return;
+    }
+
     lastRun = Date.now();
 
-    await processAccountDeletions().catch(e => logger.error('[GDPRWorker] processAccountDeletions failed', null, { detail: e.message }));
-    await sendDeletionReminders().catch(e => logger.error('[GDPRWorker] sendDeletionReminders failed', null, { detail: e.message }));
-    await cleanupExportRequests().catch(e => logger.error('[GDPRWorker] cleanupExportRequests failed', null, { detail: e.message }));
-
     try {
-        await writeHeartbeat();
-    } catch (heartbeatError) {
-        logger.warn('[GDPR Worker] Failed to write heartbeat', null, { detail: heartbeatError.message });
+        await processAccountDeletions().catch(e => logger.error('[GDPRWorker] processAccountDeletions failed', null, { detail: e.message }));
+        await sendDeletionReminders().catch(e => logger.error('[GDPRWorker] sendDeletionReminders failed', null, { detail: e.message }));
+        await cleanupExportRequests().catch(e => logger.error('[GDPRWorker] cleanupExportRequests failed', null, { detail: e.message }));
+
+        try {
+            await writeHeartbeat();
+        } catch (heartbeatError) {
+            logger.warn('[GDPR Worker] Failed to write heartbeat', null, { detail: heartbeatError.message });
+        }
+    } finally {
+        await lock.release();
     }
 }
 

@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { createNotification } from '../services/notificationService.js';
 import { set as setRedisValue } from '../services/redis.js';
+import { acquireRedisLock } from '../services/redisLock.js';
 import { logger } from '../shared/logger.js';
 import { TIMEOUTS } from '../shared/constants.js';
 
@@ -13,6 +14,8 @@ const MAX_ITEMS_PER_CYCLE = 50;
 const CHECK_DELAY_MS = 500; // Delay between checks to avoid rate limiting
 const HEARTBEAT_KEY = 'worker:health:priceCheckWorker';
 const HEARTBEAT_TTL_SECONDS = 7200;
+const PRICE_CHECK_LOCK_KEY = 'worker:lock:priceCheckWorker';
+const PRICE_CHECK_LOCK_TTL_MS = 45 * 60 * 1000;
 
 let pollInterval = null;
 let isRunning = false;
@@ -74,6 +77,17 @@ async function runPriceChecks() {
     lastRun = Date.now();
 
     isRunning = true;
+    const lock = await acquireRedisLock(
+        PRICE_CHECK_LOCK_KEY,
+        PRICE_CHECK_LOCK_TTL_MS,
+        { name: 'price check worker' }
+    );
+
+    if (!lock.acquired) {
+        isRunning = false;
+        return;
+    }
+
     logger.info('[PriceCheckWorker] Starting price check cycle...');
 
     try {
@@ -122,6 +136,7 @@ async function runPriceChecks() {
         } catch (heartbeatError) {
             logger.warn('[PriceCheckWorker] Failed to write heartbeat', null, { detail: heartbeatError.message });
         }
+        await lock.release();
         isRunning = false;
     }
 }

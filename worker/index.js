@@ -13,6 +13,7 @@ import { startEmailPollingWorker, stopEmailPollingWorker } from '../src/backend/
 import { startPriceCheckWorker, stopPriceCheckWorker } from '../src/backend/workers/priceCheckWorker.js';
 import { startGDPRWorker, stopGDPRWorker } from '../src/backend/workers/gdprWorker.js';
 import redisService from '../src/backend/services/redis.js';
+import { withRedisLock } from '../src/backend/services/redisLock.js';
 import { monitoring } from '../src/backend/services/monitoring.js';
 import { logger } from '../src/backend/shared/logger.js';
 
@@ -34,6 +35,8 @@ logger.info('[Worker] Redis service initialized');
 const connection = { url: REDIS_URL };
 let startupCleanupTimeout = null;
 let cleanupInterval = null;
+const CLEANUP_EXPIRED_DATA_LOCK_KEY = 'worker:lock:cleanupExpiredData';
+const CLEANUP_EXPIRED_DATA_LOCK_TTL_MS = 60 * 60 * 1000;
 
 // Stale job detection: mark tasks stuck in 'active' state for > 10 minutes as failed
 const STALE_JOB_THRESHOLD_MS = 10 * 60 * 1000;
@@ -56,6 +59,19 @@ async function cleanStaleJobs() {
         }
     } catch (err) {
         logger.error('[Worker] Stale job cleanup error:', err.message);
+    }
+}
+
+async function runCleanupExpiredData() {
+    try {
+        await withRedisLock(
+            CLEANUP_EXPIRED_DATA_LOCK_KEY,
+            CLEANUP_EXPIRED_DATA_LOCK_TTL_MS,
+            cleanupExpiredData,
+            { name: 'expired data cleanup' }
+        );
+    } catch (err) {
+        logger.error('[Worker] Expired data cleanup error:', err.message);
     }
 }
 
@@ -247,8 +263,8 @@ startEmailPollingWorker();
 startPriceCheckWorker();
 startGDPRWorker();
 monitoring.init();
-startupCleanupTimeout = setTimeout(() => cleanupExpiredData(), 30000);
-cleanupInterval = setInterval(() => cleanupExpiredData(), 24 * 60 * 60 * 1000);
+startupCleanupTimeout = setTimeout(runCleanupExpiredData, 30000);
+cleanupInterval = setInterval(runCleanupExpiredData, 24 * 60 * 60 * 1000);
 
 // Graceful shutdown
 async function shutdown() {

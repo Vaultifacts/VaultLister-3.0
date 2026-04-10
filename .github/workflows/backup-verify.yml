@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   verify-backup:
@@ -169,3 +170,34 @@ jobs:
           echo "Backup file: ${LATEST_BACKUP_NAME:-unknown}"
           echo "Check the steps above for details."
           exit 1
+
+  notify-failure:
+    name: Notify Backup Restore Failure
+    runs-on: ubuntu-latest
+    needs: [verify-backup]
+    if: failure()
+    steps:
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const title = `[Backup Restore Failure] Weekly restore verification — Run #${context.runNumber}`;
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'backup-restore-failure',
+              per_page: 10
+            });
+            const existing = issues.data.find(i => i.title.startsWith('[Backup Restore Failure] Weekly restore verification'));
+            if (existing) {
+              core.notice(`Backup restore failure detected, existing issue: ${existing.html_url}`);
+              return;
+            }
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: `Weekly backup restore verification failed.\n\n**Commit:** \`${context.sha}\`\n**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nTreat this as a restore-readiness incident until a backup restore verification succeeds.`,
+              labels: ['backup-restore-failure', 'automated']
+            });
+            core.notice(`Created backup restore failure issue: ${issue.data.html_url}`);

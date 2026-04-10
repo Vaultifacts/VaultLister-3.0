@@ -19,6 +19,7 @@ import {
 import { detectReceipt, extractVendorName, inferReceiptType } from '../services/receiptDetector.js';
 import { createNotification } from '../services/notificationService.js';
 import { set as setRedisValue } from '../services/redis.js';
+import { acquireRedisLock } from '../services/redisLock.js';
 import { logger } from '../shared/logger.js';
 
 // Truncate account IDs in logs for PII safety
@@ -33,6 +34,8 @@ const MAX_CONSECUTIVE_FAILURES = parseInt(process.env.EMAIL_MAX_FAILURES) || 5;
 const TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000; // Refresh tokens expiring in 5 minutes
 const HEARTBEAT_KEY = 'worker:health:emailPollingWorker';
 const HEARTBEAT_TTL_SECONDS = 1800;
+const EMAIL_POLLING_LOCK_KEY = 'worker:lock:emailPollingWorker';
+const EMAIL_POLLING_LOCK_TTL_MS = 30 * 60 * 1000;
 
 let pollingInterval = null;
 let isRunning = false;
@@ -105,6 +108,16 @@ async function pollEmailAccounts() {
 
     isRunning = true;
     lastRun = Date.now();
+    const lock = await acquireRedisLock(
+        EMAIL_POLLING_LOCK_KEY,
+        EMAIL_POLLING_LOCK_TTL_MS,
+        { name: 'email polling worker' }
+    );
+
+    if (!lock.acquired) {
+        isRunning = false;
+        return;
+    }
 
     try {
         // Find accounts due for sync (not syncing, enabled, with refresh token)
@@ -144,6 +157,7 @@ async function pollEmailAccounts() {
         } catch (heartbeatError) {
             logger.warn('[EmailPolling] Failed to write heartbeat', null, { detail: heartbeatError.message });
         }
+        await lock.release();
         isRunning = false;
     }
 }

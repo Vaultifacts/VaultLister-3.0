@@ -3,9 +3,12 @@
 
 import { query } from '../db/database.js';
 import { queueTask } from '../workers/taskWorker.js';
+import { acquireRedisLock } from './redisLock.js';
 import { logger } from '../shared/logger.js';
 
 const CHECK_INTERVAL_MS = 60 * 1000; // Check every 60 seconds
+const SYNC_SCHEDULER_LOCK_KEY = 'worker:lock:syncScheduler';
+const SYNC_SCHEDULER_LOCK_TTL_MS = 2 * 60 * 1000;
 
 let schedulerInterval = null;
 
@@ -43,6 +46,16 @@ export function stopSyncScheduler() {
  * Find shops due for auto-sync and queue a sync task for each
  */
 async function checkAndQueueDueShops() {
+    const lock = await acquireRedisLock(
+        SYNC_SCHEDULER_LOCK_KEY,
+        SYNC_SCHEDULER_LOCK_TTL_MS,
+        { name: 'sync scheduler' }
+    );
+
+    if (!lock.acquired) {
+        return;
+    }
+
     try {
         let dueShops;
         try {
@@ -82,5 +95,7 @@ async function checkAndQueueDueShops() {
         }
     } catch (error) {
         logger.error('[SyncScheduler] Error in checkAndQueueDueShops:', error);
+    } finally {
+        await lock.release();
     }
 }

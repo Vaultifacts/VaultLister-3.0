@@ -5,6 +5,7 @@ import { query } from '../db/database.js';
 import { encryptToken, decryptToken } from '../utils/encryption.js';
 import { createOAuthNotification, NotificationTypes } from './notificationService.js';
 import { set as setRedisValue } from './redis.js';
+import { acquireRedisLock, withRedisLock } from './redisLock.js';
 import logger from '../shared/logger.js';
 import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
 
@@ -17,6 +18,10 @@ const PERMANENT_ERROR_PATTERNS = ['invalid_client', 'invalid_grant', 'unauthoriz
 const FAILURE_RESET_HOURS = 24; // Reset failure count after this many hours of no errors
 const HEARTBEAT_KEY = 'worker:health:tokenRefreshScheduler';
 const HEARTBEAT_TTL_SECONDS = 1800;
+const REFRESH_LOCK_KEY = 'worker:lock:tokenRefreshScheduler';
+const REFRESH_LOCK_TTL_MS = 30 * 60 * 1000;
+const POSHMARK_KEEPALIVE_LOCK_KEY = 'worker:lock:poshmarkKeepAlive';
+const POSHMARK_KEEPALIVE_LOCK_TTL_MS = 30 * 60 * 1000;
 
 let schedulerInterval = null;
 let poshmarkKeepAliveInterval = null;
@@ -97,14 +102,24 @@ export async function startTokenRefreshScheduler() {
         // Run after a 30s delay (let server fully start first)
         setTimeout(async () => {
             try {
-                await refreshPoshmarkSession();
+                await withRedisLock(
+                    POSHMARK_KEEPALIVE_LOCK_KEY,
+                    POSHMARK_KEEPALIVE_LOCK_TTL_MS,
+                    refreshPoshmarkSession,
+                    { name: 'Poshmark keep-alive' }
+                );
             } catch (e) {
                 logger.warn('[TokenRefresh] Poshmark keep-alive initial run failed:', e.message);
             }
         }, 30000);
         poshmarkKeepAliveInterval = setInterval(async () => {
             try {
-                await refreshPoshmarkSession();
+                await withRedisLock(
+                    POSHMARK_KEEPALIVE_LOCK_KEY,
+                    POSHMARK_KEEPALIVE_LOCK_TTL_MS,
+                    refreshPoshmarkSession,
+                    { name: 'Poshmark keep-alive' }
+                );
             } catch (e) {
                 logger.warn('[TokenRefresh] Poshmark keep-alive failed:', e.message);
             }
@@ -143,6 +158,16 @@ export async function refreshExpiringTokens() {
 
     isRunning = true;
     lastRun = Date.now();
+    const lock = await acquireRedisLock(
+        REFRESH_LOCK_KEY,
+        REFRESH_LOCK_TTL_MS,
+        { name: 'token refresh scheduler' }
+    );
+
+    if (!lock.acquired) {
+        isRunning = false;
+        return;
+    }
 
     try {
         const expiryThreshold = new Date(Date.now() + TOKEN_EXPIRY_BUFFER_MS).toISOString();
@@ -225,6 +250,7 @@ export async function refreshExpiringTokens() {
         } catch (heartbeatError) {
             logger.warn('[TokenRefresh] Failed to write heartbeat:', heartbeatError.message);
         }
+        await lock.release();
         isRunning = false;
     }
 }
