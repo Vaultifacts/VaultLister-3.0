@@ -289,14 +289,14 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 
 
 | #134 | Feedback Analytics | Admin badge does not inherit dark mode | Session 5 (Session 4 dark mode) | VERIFIED ✅ — bare .badge.badge-sm shows bg rgb(55,65,81) + text rgb(229,231,235) in dark mode, confirmed live (2026-04-07) |
-| #135 | Help | Quick Start Guide step 4 text truncates: "Set up automati... to save t..." | Session 5 (Session 4 dark mode) | VERIFIED ✅ — screenshot + DOM confirm step 4 shows "Set up an automation" without truncation (2026-04-07) |
+
 | #137 | Privacy Policy (in-app) | Shows "Last updated: January 2026" — static privacy page shows April 5, 2026 | Session 5 (Session 4 dark mode) | VERIFIED ✅ — 15dba34 — pages-community-help.js: both dates updated to April 2026 |
 | #138 | Account | Text truncates in narrow card columns: "Member Since: Marc...", "Curre plan" | Session 5 (Session 4 dark mode) | VERIFIED ✅ — Account page screenshot shows "Full Name / Email / Username / Member Since" labels without truncation; full card text confirmed in DOM (2026-04-07) |
 | #139 | Submit Feedback | Inactive feedback type buttons retain white/light backgrounds in dark mode | Session 5 (Session 4 dark mode) | VERIFIED ✅ — .btn-outline shows bg rgb(31,41,55) + text rgb(229,231,235) in dark mode, confirmed live (2026-04-07) |
-| #156 | Analytics | Weekly Report shows same start/end date — "Week of Apr 5 - Apr 5, 2026" | Session 8 | VERIFIED ✅ — 00e1551 — handlers-deferred.js + handlers-sales-orders.js: end = thisWeekStart + 6 days |
-| #162 | Orders | Orders page "More" button has no onclick handler — dropdown completely inaccessible | Session 10 | VERIFIED ✅ — 00e1551 — pages-sales-orders.js: added direct onclick to button element |
-| #176 | Plans & Billing | "Upgrade to Premium" button (Current Plan section) vs "Pro" plan cards — naming inconsistency *(See also: H-9 — same issue, discovered independently)* | Session 11 | VERIFIED ✅ — bc2c9f4 (same fix as H-9) |
-| #179 | Sidebar | Sidebar collapse state not persisted — collapsing does not survive page reload | Session 13 | VERIFIED ✅ — 00e1551 — init.js: reads vaultlister_sidebar_collapsed from localStorage on startup |
+
+
+
+
 | #184 | Error Handling | 429 Too Many Requests shows generic error toast with no retry guidance | Session 14 | VERIFIED ✅ — api.js line 137: toast.warning('Too many requests. Please wait a moment before trying again.') confirmed in source (2026-04-07) |
 
 ---
@@ -774,7 +774,7 @@ Clicking "Sell" in the first breadcrumb (🏠 > Sell > Listings) does nothing �
 The left side of the Listing Health widget displays the text "Add listings to see your Listing Health Score" in an extremely cramped layout where each word wraps to its own line. The text is too small and the column too narrow to be readable at a glance. This section needs more horizontal space or a redesigned layout.
 15. Fee Calculator — Orphaned "Whatnot" Card — VERIFIED ✅ — 7a32167 — fee calculator cards changed to flex-wrap grid; all 5 display evenly
 The five platform cards (eBay, Poshmark, Depop, Facebook, Whatnot) are arranged in a 2×2 grid, leaving Whatnot alone at the bottom centered by itself. This looks visually unpolished. A 3×2 layout, horizontal scroll, or a row of 5 would be more balanced.
-16. Fee Calculator — Currency Prefix Rendering — PRE-EXISTING ✅ — input-group + input-prefix CSS is defined in main.css; rendering depends on browser/platform; no code defect
+16. Fee Calculator — Currency Prefix Rendering
 The Sale Price input field shows a "C$" prefix that renders oddly — it appears to overlap or sit awkwardly within the input box rather than being cleanly inset as a prefix symbol. This is a minor cosmetic issue.
 17. Score Distribution Icon Inconsistency — VERIFIED ✅ — 7a32167 — all three tiers standardized to check-circle icon
 In the Listing Health Score modal, the three Score Distribution tiers (Excellent, Good, Needs Work) use visually inconsistent icons: a filled green checkmark, an outlined circle, and a dot-in-circle. These should use a consistent icon family.
@@ -793,13 +793,13 @@ UX / POLISH ISSUES
 The empty-state "Add New Listing(s)" button opens the "Create New Listing" modal (Quick/Advanced chooser) directly, bypassing the dropdown options (Import from Marketplace, Import from CSV). This is inconsistent with the header button behavior and means users can't import from the empty state without discovering the header button first. Both paths should offer the same options.
 24. Listing Health Stats Are Not Clickable — VERIFIED ✅ — 7a32167 — stat counters get cursor:pointer + onclick to filter listings by status
 The stat counters in the Listing Health widget (Active, Drafts, Need Refresh, Avg Age) are not interactive. It would be expected user behavior to click "0 Active" and be taken to a filtered view of active listings, or to click the health score circle to open the Health modal. Neither action occurs.
-25. Platform Filter Emoji Rendering in Options vs. Selected State — PRE-EXISTING ✅ — native select options use emoji (browser-rendered); selected state uses CSS badge styling; browser limitation prevents uniform rendering inside native select elements
+25. Platform Filter Emoji Rendering in Options vs. Selected State
 The Platform dropdown shows emoji characters (🅿️ Poshmark, Ⓔ eBay, etc.) in its option list, but when a platform is selected, a custom styled icon badge ("P" in a colored square) appears in the selected state instead. While functional, the rendering inconsistency between the open options list and the selected display is slightly jarring.
 26. No "Import from Marketplace" Option in Empty-State Modal — VERIFIED ✅ — 7a32167 — fixed with UX 23; import options added to chooseListingMode modal
 Related to #23 — the modal accessible from the empty-state only offers Quick Cross List and Advanced Cross List (where Advanced is broken), with no path to import from a marketplace or CSV from that modal.
 27. Archived Sub-tab — No Filters — VERIFIED ✅ — 7a32167 — search filter input added to Archived sub-tab
 The Archived sub-tab shows no filtering options at all (no Folder, Status, or Search filter). For users with large archives, there's no way to search or narrow down archived listings. Whether intentional or not, it's a notable UX gap.
-28. "Dashboard" Breadcrumb Link Works, But Navigates Away Without Warning — PRE-EXISTING ✅ — breadcrumb navigation is standard SPA behavior; no modal is open during breadcrumb use in normal flow; low severity, no change needed
+28. "Dashboard" Breadcrumb Link Works, But Navigates Away Without Warning
 Clicking "Dashboard" in the secondary breadcrumb immediately navigates to the Dashboard — fine when no data is entered, but if a user has partially opened a form and then clicks the breadcrumb (or this fires during edge cases), it could discard unsaved work with no confirmation. Low severity currently but worth noting.
 WHAT WORKS WELL
 The following elements functioned correctly and looked good:
@@ -853,7 +853,6 @@ The Keyboard Shortcuts modal lists shortcuts as "Cmd+K", "Cmd+N", etc. On a Wind
 "Insteadof"C"
 The "Set Monthly Goal" modal labels the input as "Monthly Revenue Goal ()"—usingaplaindollarsign—whiletherestofthedashboardconsistentlydisplayscurrencyas"C)" — using a plain dollar sign — while the rest of the dashboard consistently displays currency as "C
 )"—usingaplaindollarsign—whiletherestofthedashboardconsistentlydisplayscurrencyas"C". This is an inconsistency.
-
 15. Stats Overview — "↓ 100% vs last week" for Total Inventory Appears Wrong — VERIFIED ✅ — 45cde41 — calcChange returns null when values identical; suppresses misleading -100% indicator
 Total Inventory shows "↓ 100% vs last week" in red, suggesting it dropped 100% — but the actual inventory has 3 items. This likely reflects a comparison from a period where inventory was also 3 to... still 3, or indicates a calculation bug. A 100% decrease in inventory that still shows 3 items is confusing and may be erroneous.
 16. Stats Overview Cards — Mysterious Tiny Colored Dots — PRE-EXISTING ✅ — colored dots are status/trend indicators by design; no change needed
@@ -904,7 +903,7 @@ The following elements functioned correctly and provided a good user experience:
 - Vault Buddy (when accessible) — chat panel opens with "Start New Chat" and "My Chats" tabs, clear capability descriptions, and a "Start New Chat" CTA.
 
 
-QA Report: Offers, Orders, & Shipping Tab
+Offers, Orders, & Shipping Tab:
 🐛 BUGS (Functional Issues)
 1. "Clear Filters" Button is Non-Functional (Orders Tab) — VERIFIED ✅ — d1ad0a9 — clearOrderFilters now resets DOM select values and re-renders filtered list
 Clicking the "Clear Filters" link shows a "Filters cleared" success toast but does NOT actually reset the filter dropdowns. The Status dropdown continued to display the previously selected value ("Delivered") and the "Clear Filters" link itself remained visible, confirming nothing was actually cleared. This is a broken feature.
@@ -927,30 +926,30 @@ The Orders action bar contains more buttons than can fit in the visible containe
 10. "Clear Filters" Link Only Appears When Using Pipeline Status Cards, Not Manual Dropdowns — VERIFIED ✅ — d1ad0a9 — Clear Filters link now shown when any dropdown filter is changed from default
 When a user manually changes the Platform or Status dropdown filter directly, the "Clear Filters" link does NOT appear. It only shows when a pipeline status card is clicked. Inconsistent filtering UX.
 🎨 VISUAL ISSUES
-1. View Toggle Buttons Have No Active State Indicator — VERIFIED ✅ — d1ad0a9 — active class added to current view mode button
+1. View Toggle Buttons Have No Active State Indicator
 The List, Grid, and Compact view toggle buttons in the Orders action bar have no visible active/selected state. A user can't tell which view mode is currently active at a glance.
-2. Offer History by Item Modal — Orphaned Stats Card (2+1 Layout) — VERIFIED ✅ — d1ad0a9 — changed to repeat(3, 1fr); all 3 stat cards in one row
+2. Offer History by Item Modal — Orphaned Stats Card (2+1 Layout)
 In the "Offer History by Item" modal, three stats cards render in a 2+1 pattern (two on top row, one alone on the bottom row). The "Overall Accept Rate" card is orphaned — the same orphaned card pattern seen throughout the app (Dashboard, Daily Summary, Profit Tracker modals).
-3. Platform Filter Inconsistency Between Orders and Offers Tabs — VERIFIED ✅ — d1ad0a9 — standardized to Poshmark, eBay, Whatnot, Depop, Facebook, Mercari across both tabs; Shopify removed from Orders
+3. Platform Filter Inconsistency Between Orders and Offers Tabs
 The Orders tab Platform filter includes: Poshmark, eBay, Whatnot, Depop, Shopify, Facebook. The Offers tab Platform filter includes: Poshmark, eBay, Whatnot, Depop, Mercari. Mercari appears in Offers but not Orders; Facebook and Shopify appear in Orders but not Offers. If these platforms are supported, their presence should be consistent across both tabs. If intentional, there is no explanation.
-4. Create Shipping Label — Validation Error Shows Toast Only, No Field Highlighting — VERIFIED ✅ — d1ad0a9 — input-error class added to invalid fields on submit
+4. Create Shipping Label — Validation Error Shows Toast Only, No Field Highlighting
 When submitting the Create Shipping Label form with missing required fields, a toast appears ("Recipient name is required") but the specific field is not highlighted or scrolled to in the form. Users must manually hunt for the problem field.
-5. URL Hash Shows #orders-sales Instead of Something More Intuitive — PRE-EXISTING ✅ — route alias is intentional; breadcrumb shows full display name "Offers, Orders, & Shipping"
+5. URL Hash Shows #orders-sales Instead of Something More Intuitive
 When landing on the Offers, Orders, & Shipping tab, the URL sets to #orders-sales, which doesn't match the page name shown in breadcrumbs or the sidebar ("Offers, Orders, & Shipping"). This could confuse users sharing or bookmarking URLs.
 🧩 UX/POLISH ISSUES
-1. No "Add Order" / Manual Order Entry Button — VERIFIED ✅ — d1ad0a9 — Add Order button added to Orders action bar; showAddOrder() modal with platform/buyer/title/price/status fields
+1. No "Add Order" / Manual Order Entry Button
 The Orders tab has no way to manually add an order. There's no equivalent of an "Add Item" button. If a user processes an offline sale or wants to manually log an order, there's no path to do so from this screen.
-2. Sync Button Only Shows Results Toast, Not What Was Synced — VERIFIED ✅ — d1ad0a9 — second toast fires 800ms later guiding user to My Shops
+2. Sync Button Only Shows Results Toast, Not What Was Synced
 When Sync is clicked and platforms are not connected, the toast says "No connected platforms found. Connect a marketplace in My Shops to sync orders." — this is helpful, but there's no inline link to "My Shops" directly from the toast for faster navigation.
-3. "Import Orders" Modal — Quick Sync Platform Buttons Have No Visual Feedback — VERIFIED ✅ — d1ad0a9 — loading toast fires immediately; success toast fires 1.5s later
+3. "Import Orders" Modal — Quick Sync Platform Buttons Have No Visual Feedback
 The Quick Sync by Platform buttons (Poshmark, Ebay, Whatnot, etc.) in the Import Orders modal are styled nicely but when clicked (on an account with no connected shops), no feedback is given. Users may think the sync is working silently.
-4. Offer History Section Is Not Reachable by Normal Scrolling — PRE-EXISTING ✅ — downstream of Bug 8 (Offers tab white gap); resolves when Bug 8 is fixed
+4. Offer History Section Is Not Reachable by Normal Scrolling
 Due to the white gap bug, the "Offer History" and "Offer Analytics" sections in the Offers tab are effectively hidden from the user. Even knowing they exist (via page source), a regular user would never see them. This makes the Offers tab feel incomplete.
-5. Offers Tab — No Way to Send/Create an Offer — PRE-EXISTING ✅ — offer creation/counter-offer flows are platform-side features; deferred to post-launch automation work
+5. Offers Tab — No Way to Send/Create an Offer
 The Offers tab only shows analytics and incoming offer history. There's no "Send Counter Offer," "Make an Offer," or offer creation flow visible. While some platforms handle this on their own side, a management panel might be expected to have offer-sending or auto-accept/decline automation options here.
-6. Offer History by Item — Modal Opening Already Provides Stats, Redundant With Offers Page Stats — PRE-EXISTING ✅ — modal shows item-level breakdown vs page-level aggregate; intentional design
+6. Offer History by Item — Modal Opening Already Provides Stats, Redundant With Offers Page Stats
 The "Item History" modal shows Items with Offers, Most Offers (Single Item), and Overall Accept Rate. These are different but closely related to what the main Offers page already shows (Pending Review, Acceptance Rate). The relationship between these isn't explained.
-7. Compare Rates vs. Shipping Calculator — Feature Overlap — PRE-EXISTING ✅ — Compare Rates depends on EasyPost (pending); Shipping Calculator is a standalone tool; overlap resolves when EasyPost is built
+7. Compare Rates vs. Shipping Calculator — Feature Overlap
 The "Compare Rates" button on the Shipping Labels page fails entirely, while the "Shipping Calculator" button on the Orders page works beautifully and does essentially the same thing. These appear to be duplicate features, with one broken and one working well.
 ✅ WHAT WORKS WELL
 - Shipping Cost Calculator (from Orders action bar) — This is excellent. Pre-filled dimensions, quick preset buttons (Envelope, Small Box, Medium Box, Large Box, Poly Mailer) that update dimensions and recalculate rates instantly with a success toast. Shows 6+ carrier/service options (USPS First Class, USPS Ground Advantage, Pirate Ship, USPS Priority Mail, FedEx Ground, UPS Ground, FedEx Express Saver, UPS 2nd Day Air) with prices in C$, transit times, and a "Best Value" badge. Also includes a Dimensional Weight calculator showing actual vs. billable weight. Excellent feature.
@@ -970,6 +969,58 @@ Back to Top button — Works on both Orders and Offers tabs.
 - Breadcrumb navigation — Home → Sell → Offers, Orders, & Shipping shows correctly and the hierarchy is logical.
 
 
+
+Financials Tab:
+🔴 Bugs / Broken Functionality
+1. Budget Progress – Missing Category Labels
+Severity: High
+All four Budget Progress bars have empty category name labels. The HTML structure clearly shows a blank <span></span> where the category title should appear (e.g., "Marketing," "Inventory," etc.). Users see only the dollar amounts (C$0/C$200, C$0/C$500, C$0/C$300, C$0/C$400) with no way to identify what each line item represents. This renders the widget essentially useless.
+2. Cash Flow Chart – Data Inconsistency with Financial Overview
+Severity: High
+The Financial Overview shows Net Profit: -C$35.99 and Expenses: C$35.99, but the Cash Flow Breakdown chart shows COGS: -C$22 and Net: -C$36. These figures are inconsistent in two ways:
+Net Profit (-$35.99) doesn't match the chart's Net value (-$36)
+Expenses ($35.99) doesn't equal COGS alone ($22) — the remaining ~$14 is unaccounted for in the chart (no expense category explains it)
+3. Tax Estimate Calculator – Currency Mismatch (USD vs CAD)
+Severity: MediumThe Tax Estimate Calculator uses USD denomination for its input fields (labeled "Gross Income ()","Deductions()", "Deductions (
+)","Deductions()", "Self-Employment Income ()").Theaccount/appisconfiguredinCanadianDollars(allpricesareshownasC)"). The account/app is configured in Canadian Dollars (all prices are shown as C
+)").Theaccount/appisconfiguredinCanadianDollars(allpricesareshownasC). The calculator should either use the user's local currency (CAD) or clearly state it calculates in USD. As-is, it's misleading.
+4. Multi-Currency Converter – Wrong Base Currency
+Severity: Medium
+The converter defaults to converting from USD (showing "1 USD = 0.925 EUR") but the entire app operates in CAD. The "Convert To" dropdown includes CAD as a target but not as the source. For a Canadian-currency account, the converter should default to CAD as the source currency, or let users choose the base currency.
+🟡 Visual / UX Issues
+5. Health Score – No Scale Indicator
+Severity: Medium
+The circular gauge shows "25" with a "Needs Attention" badge, but there is no indication of the scale (e.g., "out of 100" or any min/max label). A user has no context for whether 25 is very bad, moderately bad, or near-average. A label like "25/100" or a tooltip explaining the scoring criteria is needed.
+6. Cash Flow Breakdown – Misleading "+" Sign on $0 Values
+Severity: Low
+Revenue, Shipping, and Fees all display "+C$0" in green. Showing a positive sign on zero-value items is misleading — it implies a positive contribution when there is none. These should display as a neutral "C$0" without a sign, or simply be omitted/greyed out.
+7. Profit Margin Gauge – Misaligned Indicator Arrow
+Severity: Low
+The Profit Margin gauge shows a small red arrow/indicator that appears to be slightly mis-positioned relative to the 0.0% value — it sits slightly to the left of the label instead of directly at the pointer position on the arc. Small but visually sloppy.
+8. Financial Overview – Layout Difference at Responsive Width
+Severity: Low
+At the standard desktop width, the Financial Overview shows Revenue, Expenses, Net Profit, and Margin in a 2×2 grid (horizontal). At a slightly narrower/responsive viewport, they stack vertically in a single column. While this may be intentional for mobile, the stacked vertical layout for Margin takes up a lot of space unnecessarily and the layout shift is jarring.
+9. Financial Ratios – All Values Show "Review" Badge
+Severity: Low / Informational
+All three ratios (Gross Margin: N/A, Current Ratio: 0.00, Debt-to-Equity: N/A) display a "Review" status badge in red/pink. While this is understandable given no sales data, the "0.00" for Current Ratio is potentially incorrect — a Current Ratio of 0 typically means no current assets, which could be misleading if accounts haven't been set up. A tooltip or explanation of why these are "N/A" would help.
+🔵 Missing Features / Empty States
+10. Chart of Accounts – No Accounts Set Up (Expected, but Noted)
+The Chart of Accounts section shows an empty state: "No accounts set up — Create accounts to organize your financial transactions." The "Create Default Accounts" button is present. The "Sales" sub-tab in the sidebar nav has no content. This is expected for a new account but the empty state could benefit from a brief explanation of what default accounts look like.
+11. Cash Flow Projection – No Data
+Shows "No sales data yet. Cash flow projections will appear after your first sale." This is an expected empty state for a new account.
+12. Financial Goals – Empty
+"Set financial goals to track your progress" — no goals created yet. Functional empty state.
+13. Expense Categories – Empty
+"No expense data yet. Start selling to see expense breakdowns." Functional empty state.
+14. Bank Reconciliation – Zero Balances
+Bank Balance: C$0, Book Balance: C$0, Difference: C$0. No reconciliation has been performed. The "Start Reconciliation" CTA is present but no walkthroughs or guidance.
+✅ Things That Work Correctly
+- Budget and Export buttons are present and functional (Export has a dropdown with CSV, PDF Report, and Excel)
+- Collapsible widgets (▲ icons on each card) correctly toggle
+- Financial Statements tab has proper date range filters (This Month, Last Month, This Quarter, etc.) and a Generate button
+- P&L tab has a date range picker and Generate P&L Report button with a clear empty-state message
+- Categorization Rules and Add Account buttons in Chart of Accounts are present and visible
+- Multi-Currency common rates (EUR, GBP, CAD, AUD, JPY vs USD) display correctly
 
 
 Things to Implement:
