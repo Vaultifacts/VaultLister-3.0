@@ -27,6 +27,8 @@ function isRateLimitBypassed() {
     return IS_TEST_RUNTIME || process.env.NODE_ENV === 'development' || process.env.RATE_LIMIT_DISABLED === 'true';
 }
 
+let warnedRedisFallback = false;
+
 // Loopback IPs should never receive a permanent IP ban — they are always local
 // dev traffic or health checks, never real abuse.
 function isLoopbackIp(ip) {
@@ -110,6 +112,12 @@ class RateLimiter {
         }
         const now = Date.now();
         const config = RateLimiter.config[limitType];
+
+        if (!redis.isConnected() && !warnedRedisFallback) {
+            warnedRedisFallback = true;
+            logger.warn('[RateLimiter] Redis is unavailable during rate-limit check — using in-memory fallback. ' +
+                'Rate limits will NOT be shared across server instances until Redis reconnects.');
+        }
 
         // Check if blocked
         const blockedUntilStr = await redis.get('rl:block:' + key);
@@ -231,13 +239,6 @@ class RateLimiter {
     getTopOffenders(limit = 10) {
         return [];
     }
-}
-
-// Log a warning at startup if Redis is unavailable and rate limiter will use in-memory fallback.
-// In-memory fallback does not share state across multiple server instances (e.g. horizontal scaling).
-if (!redis.isConnected()) {
-    logger.warn('[RateLimiter] Redis is unavailable — rate limiter is using in-memory fallback. ' +
-        'Rate limits will NOT be shared across server instances. Ensure Redis is configured for production.');
 }
 
 // Singleton instance
