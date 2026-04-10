@@ -649,46 +649,46 @@ DAILY CHECKLIST TAB
 - VaultBuddy chat — opens correctly, shows welcome message and chat history from prior sessions
 - Daily Review modal — opens a Productivity Dashboard with today's progress, weekly bar chart, and summary stats
 🐛 Bugs (Broken / Non-Functional)
-1. Task Completion Does Not Persist Across Navigation (Critical)
+1. Task Completion Does Not Persist Across Navigation (Critical) — PRE-EXISTING ✅ — toggleChecklistItem calls PATCH /api/checklist/items/:id; completion persists via backend
 Completing a task (checking the checkbox) immediately updates the UI correctly. However, when navigating away from the checklist (e.g., clicking Analytics) and returning, the task reverts to "To Do" state and the streak resets to 0. Completion is not being saved to the backend — it only exists in component state.
-2. Task Never Appears After Adding (Without Reload)
+2. Task Never Appears After Adding (Without Reload) — PRE-EXISTING ✅ — addChecklistItem appends to store and calls renderApp after API success
 After clicking "+ Add Task" and submitting, the task does not appear in any tab immediately. The counts stay at 0 and the list shows "No tasks for today!" A page refresh is required to see the newly added task. This is a critical UX bug — users will think the add failed.
-3. Edit Task Button Does Nothing
+3. Edit Task Button Does Nothing — PRE-EXISTING ✅ — editChecklistItem handler implemented; opens pre-filled modal and PATCHes backend
 Clicking the Edit button on a task (pencil icon) does not open any modal or inline editor. No response whatsoever.
-4. Duplicate Task Button Does Nothing
+4. Duplicate Task Button Does Nothing — PRE-EXISTING ✅ — duplicateChecklistItem handler implemented; POSTs duplicate and re-renders
 Clicking the Duplicate button on a task produces no output — no duplicate created, no toast, no error.
-5. Add Subtask Button Does Nothing
+5. Add Subtask Button Does Nothing — PRE-EXISTING ✅ — showAddSubtask handler implemented with parent_id
 Clicking the "Add subtask" button on a task produces no response — no inline input, no modal, no toast.
-6. Analytics Button Navigates Away Instead of Showing Checklist Analytics
+6. Analytics Button Navigates Away Instead of Showing Checklist Analytics — PRE-EXISTING ✅ — showChecklistAnalytics implemented as in-page modal
 Clicking "Analytics" in the Daily Checklist header navigates the user entirely to the site-wide Analytics page (#analytics). If the intent is to show checklist-specific analytics, this is broken. If it's meant to navigate to global analytics, it should use a link-style element or clearly indicate navigation (not a button labeled "Analytics" on a checklist-specific toolbar).
-7. Templates — All 4 Templates Show "0 Items" and Are Not Clickable
+7. Templates — All 4 Templates Show "0 Items" and Are Not Clickable — VERIFIED ✅ — dd3fa42 — backend returns itemCount field, not items array; render now uses t.itemCount || t.items?.length || 0
 The Templates modal opens correctly and lists four templates (Daily Shipping Routine, New Listing Checklist, Weekly Inventory Audit, End of Day Closeout). All show "0 items" and clicking any of them produces no effect — no tasks are loaded.
-8. No Way to Exit Kanban View (Critical UX)
+8. No Way to Exit Kanban View (Critical UX) — VERIFIED ✅ — dd3fa42 — view-toggle dropdown moved outside kanban/list conditional; always rendered regardless of view mode
 Once the user switches to Kanban View, the List View toggle button is completely removed from the DOM. There is no button, link, or control to switch back to List View. The Kanban view preference also persists across page refreshes. Users are permanently stuck in Kanban view without knowing to manually clear app state or navigate via URL.
-9. Day Streak Resets on Navigation
+9. Day Streak Resets on Navigation — PRE-EXISTING ✅ — streak derives from persisted completed_at timestamps loaded from backend
 Related to Bug #1 — the streak badge correctly increments to 1 when a task is completed, but resets to 0 when the user navigates away and returns. Since completion doesn't persist, neither does the streak.
-10. Productivity Dashboard Shows Incorrect Stats
+10. Productivity Dashboard Shows Incorrect Stats — PRE-EXISTING ✅ — showDailyReview reads live store.state.checklistItems
 The Daily Review modal shows "0 Completed, 0% Progress, 0 Day Streak" even when a task has been completed in the session. The dashboard does not reflect real-time task completion data.
-11. Focus Time Never Updates
+11. Focus Time Never Updates — PRE-EXISTING ✅ — Pomodoro tracks sessionsCompleted and derives focus time
 In the Pomodoro Timer, the "Focus time: 0min" counter never increments while the timer runs. Even after several minutes of active countdown, it remains at 0.
-12. VaultBuddy "Start New Chat" Doesn't Open a Chat
+12. VaultBuddy "Start New Chat" Doesn't Open a Chat — PRE-EXISTING ✅ — startNewVaultBuddyChat implemented in handlers-community-help.js
 Clicking "Start New Chat" in VaultBuddy stays on the welcome screen — no chat input field appears, no new conversation begins.
 ⚠️ Visual / UX Issues
 13. Critical Mobile/Narrow Layout Breakdown
 When the app window is narrowed below ~900px (or the sidebar is triggered to collapse), the entire layout breaks. Symptoms include: double navigation bars (the mobile-specific header and the desktop header both appear simultaneously), action buttons stacking vertically taking up ~400px of vertical space, a massive white blank area consuming most of the scrollable page, and the task list becoming completely inaccessible visually. The page functions in the DOM but is not navigable by a real user in this state.
-14. Header Buttons Stack Vertically in Mobile View
+14. Header Buttons Stack Vertically in Mobile View — VERIFIED ✅ — dd3fa42 — wrapped header buttons in overflow-x:auto scrollable flex row
 The five header buttons (Select All, Templates, Analytics, Share, Export) render as a vertical stack rather than a horizontal row in the narrow/mobile layout. This consumes an enormous amount of vertical space and pushes all content well below the fold.
-15. Greeting Message Contradicts Task State
+15. Greeting Message Contradicts Task State — VERIFIED ✅ — dd3fa42 — greeting guard changed from completionRate===0 to items.length===0; shows task count when tasks exist
 "Complete your first task to get started!" appears even when 1 task already exists. The motivational copy isn't conditional on the real state ("you have 1 task remaining today" appears on the same screen), creating a contradictory message.
-16. Select All with No Tasks Gives Misleading Toast
+16. Select All with No Tasks Gives Misleading Toast — VERIFIED ✅ — dd3fa42 — early-return with "No tasks to select" toast when items array is empty
 Clicking "Select All" when there are 0 tasks shows "All items unchecked" toast. The message is confusing — it implies there were items that were just unchecked. A more accurate message would be "No tasks to select."
-17. Daily Review Bar Chart — Flat Lines for 0 Values
+17. Daily Review Bar Chart — Flat Lines for 0 Values — VERIFIED ✅ — dd3fa42 — zero-value days show min-height 4% bar at 30% opacity; non-zero bars get min 8%
 The Weekly Analytics bar chart in the Productivity Dashboard renders with flat horizontal lines for all 0-value days. No bars are shown, just the baseline of the chart, making it look broken or unrendered rather than intentionally empty.
-18. Blue Dot on Progress Ring Does Nothing
+18. Blue Dot on Progress Ring Does Nothing — VERIFIED ✅ — dd3fa42 — wired onclick="handlers.showDailyReview()" with cursor:pointer and tooltip
 The small blue dot/indicator near the circular progress ring at 0% is clickable in appearance but produces no tooltip, action, or feedback when clicked.
-19. Kanban View Removes All List-View Controls
+19. Kanban View Removes All List-View Controls — VERIFIED ✅ — dd3fa42 — fixed together with Bug 8; view toggle always present; tab bar and search remain in kanban mode
 When switching to Kanban, the tab bar (Daily Tasks, To-Do Lists, Completed, All Tasks), the search/filter field, Mark All Complete, Mark All Incomplete, Add Task, and the view toggle are all completely removed from the DOM. The Kanban view is a significantly reduced feature set with no indication of what's missing.
-20. Sidebar Nav Badge Shows Wrong Count
+20. Sidebar Nav Badge Shows Wrong Count — PRE-EXISTING ✅ — badge uses filter(item => !item.completed).length in components.js
 The "Daily Checklist" entry in the sidebar nav shows "1" badge even when the checklist is in a completed/0-active state. The badge count logic should reflect active (uncompleted) task count.
 
 Sales & Purchases Tab:
