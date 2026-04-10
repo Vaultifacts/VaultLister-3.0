@@ -15438,7 +15438,7 @@ function loadChunk(chunkName) {
     if (_loadedChunks.has(chunkName)) return Promise.resolve();
     if (_loadingChunks[chunkName]) return _loadingChunks[chunkName];
 
-    const v = '521bbef0';
+    const v = '8b49cc55';
     const src = (window.__CDN_URL__ || '') + '/chunk-' + chunkName + '.js?v=' + v;
 
     _loadingChunks[chunkName] = new Promise(function(resolve, reject) {
@@ -18412,7 +18412,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'comparison')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('comparison') ? 'collapsed' : ''}" draggable="true" data-widget-id="comparison" style="${widgetManager.getWidgetStyle('comparison', 33)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Comparison</h3>
+                        <h3 class="card-title">Weekly Comparison</h3>
                         <div class="flex items-center gap-2">
                             <select class="comparison-period-select" onchange="handlers.setComparisonPeriod(this.value)" title="Compare against">
                                 <option value="week" ${compPeriod === 'week' ? 'selected' : ''}>vs Last Week</option>
@@ -18429,11 +18429,11 @@ const pages = {
                 </div>
                 ` : ''}`, 'Stats & Goals')}
 
-                ${safeWidget(() => `<!-- Recent Activity Widget -->
+                ${safeWidget(() => `<!-- Activity Feed Widget -->
                 ${widgetManager.getWidgets().find(w => w.id === 'activity')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('activity') ? 'collapsed' : ''}" draggable="true" data-widget-id="activity" style="${widgetManager.getWidgetStyle('activity', 33)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Recent Activity</h3>
+                        <h3 class="card-title">Activity Feed</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('activity')" title="Collapse/Expand">${widgetManager.isCollapsed('activity') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body activity-feed-body">
@@ -18560,7 +18560,7 @@ const pages = {
                 ${widgetManager.getWidgets().find(w => w.id === 'recent-sales')?.visible ? `
                 <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('recent-sales') ? 'collapsed' : ''}" draggable="true" data-widget-id="recent-sales" style="${widgetManager.getWidgetStyle('recent-sales', 50)}">
                     <div class="card-header flex justify-between items-center">
-                        <h3 class="card-title">Recent Activity</h3>
+                        <h3 class="card-title">Recent Sales</h3>
                         <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('recent-sales')" title="Collapse/Expand">${widgetManager.isCollapsed('recent-sales') ? '▼' : '▲'}</button>
                     </div>
                     <div class="card-body">
@@ -18942,7 +18942,7 @@ const pages = {
                             ` : `
                                 <div class="text-gray-500 text-sm text-center py-4">
                                     No upcoming events
-                                    <br><button class="btn btn-sm btn-secondary mt-2" onclick="router.navigate('calendar')">Add Event</button>
+                                    <br><button class="btn btn-sm btn-secondary mt-2" onclick="modals.addCalendarEvent()">Add Event</button>
                                 </div>
                             `}
                         </div>
@@ -19007,7 +19007,7 @@ const pages = {
                     return `
                     <div class="card dashboard-widget collapsible-card ${widgetManager.isCollapsed('mini-pnl') ? 'collapsed' : ''}" draggable="true" data-widget-id="mini-pnl" style="${widgetManager.getWidgetStyle('mini-pnl', 33)}">
                         <div class="card-header flex justify-between items-center">
-                            <h3 class="card-title">${components.icon('dollar-sign', 16)} P&L Snapshot</h3>
+                            <h3 class="card-title">${components.icon('dollar-sign', 16)} Mini P&L</h3>
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-ghost btn-sm" onclick="router.navigate('analytics')">Details</button>
                                 <button class="widget-collapse-btn" onclick="widgetManager.toggleCollapse('mini-pnl')" title="Collapse/Expand">${widgetManager.isCollapsed('mini-pnl') ? '▼' : '▲'}</button>
