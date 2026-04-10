@@ -39,11 +39,26 @@ let isRunning = false;
 let lastRun = 0;
 
 async function writeHeartbeat() {
+    const heartbeatTime = lastRun || Date.now();
     await setRedisValue(
         HEARTBEAT_KEY,
-        JSON.stringify({ lastRun: new Date(lastRun).toISOString(), status: 'running' }),
+        JSON.stringify({ lastRun: new Date(heartbeatTime).toISOString(), status: 'running' }),
         HEARTBEAT_TTL_SECONDS
     );
+}
+
+function scheduleStartupHeartbeats() {
+    lastRun = Date.now();
+    const writeStartupHeartbeat = () => {
+        writeHeartbeat().catch(heartbeatError => {
+            logger.warn('[EmailPolling] Failed to write startup heartbeat', null, { detail: heartbeatError.message });
+        });
+    };
+    writeStartupHeartbeat();
+    for (const delayMs of [5000, 15000]) {
+        const timer = setTimeout(writeStartupHeartbeat, delayMs);
+        timer.unref?.();
+    }
 }
 
 /**
@@ -57,6 +72,7 @@ export function startEmailPollingWorker() {
 
     logger.info('[EmailPolling] Starting email polling worker...');
     logger.info(`[EmailPolling] Interval: ${POLL_INTERVAL_MS / 1000}s, Max accounts: ${MAX_ACCOUNTS_PER_CYCLE}`);
+    scheduleStartupHeartbeats();
 
     // Run immediately on start
     pollEmailAccounts();

@@ -25,11 +25,26 @@ let lastRun = 0;
 const POSHMARK_KEEPALIVE_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 async function writeHeartbeat() {
+    const heartbeatTime = lastRun || Date.now();
     await setRedisValue(
         HEARTBEAT_KEY,
-        JSON.stringify({ lastRun: new Date(lastRun).toISOString(), status: 'running' }),
+        JSON.stringify({ lastRun: new Date(heartbeatTime).toISOString(), status: 'running' }),
         HEARTBEAT_TTL_SECONDS
     );
+}
+
+function scheduleStartupHeartbeats() {
+    lastRun = Date.now();
+    const writeStartupHeartbeat = () => {
+        writeHeartbeat().catch(heartbeatError => {
+            logger.warn('[TokenRefresh] Failed to write startup heartbeat:', heartbeatError.message);
+        });
+    };
+    writeStartupHeartbeat();
+    for (const delayMs of [5000, 15000]) {
+        const timer = setTimeout(writeStartupHeartbeat, delayMs);
+        timer.unref?.();
+    }
 }
 
 /**
@@ -43,6 +58,7 @@ export async function startTokenRefreshScheduler() {
 
     logger.info('[TokenRefresh] Starting token refresh scheduler...');
     logger.info(`[TokenRefresh] Interval: ${REFRESH_INTERVAL_MS / 1000}s, Buffer: ${TOKEN_EXPIRY_BUFFER_MS / 60000}min`);
+    scheduleStartupHeartbeats();
 
     // Auto-reset shops that were disconnected due to refresh failures
     // This allows retry on server restart (e.g. after .env credentials are updated)
