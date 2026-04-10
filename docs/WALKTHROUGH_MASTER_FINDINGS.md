@@ -1105,6 +1105,42 @@ The Profitability Analysis tab only shows a "Profit Breakdown" card with no visi
 The Reports sub-tab within Analytics contains a card with sub-sections (Errors, Supplier Monitoring, Inventory Turnover, Custom Reports) but the content is mostly empty or minimal without clear guidance on how to use these features.
 
 
+My Shops Tab:
+🔴 Critical Issues
+1. "Export Report" button is completely broken (JavaScript crash) — VERIFIED ✅ — 92d10d9 — exportFinancials() now called with 'csv' default; format.toUpperCase() no longer crashes on undefined
+Clicking "Export Report" from the FAB menu throws an unhandled exception: TypeError: Cannot read properties of undefined (reading 'toUpperCase') at Object.exportFinancials in chunk-sales.js. No modal, no file, and no error toast appear — it silently fails. Confirmed via console log.
+2. "Import Data" modal has severe HTML injection / rendering bug — VERIFIED ✅ — 92d10d9 — rewrote showImportModal using correct single-content modals.show() pattern; raw HTML attribute text no longer visible
+The "Import Inventory" modal that opens from "Import Data" contains raw unescaped HTML attribute code visibly rendered as page text: " onclick="event.stopPropagation()" role="document"> Import Items. DOM inspection confirmed the .modal-overlay div has a text node containing onclick="event.stopPropagation()" role="document"> and a child element whose className attribute contains injected raw HTML markup (modal \n <div class=). This is a template rendering/escaping failure where server-side HTML was not properly sanitized before insertion.
+🔴 High Severity Issues
+3. "Import Data" modal is missing a close (X) button — VERIFIED ✅ — 92d10d9 — X close button added to modal header in showImportModal rewrite
+The Import Inventory modal has no visible close button or X in the header. The only way to dismiss it is with the Escape key. Users have no visible affordance to close it, which is a critical UX failure for a modal dialog.
+4. "Import Data" modal is visually positioned off-screen / overlaps sidebar — VERIFIED ✅ — 92d10d9 — resolved by modal rewrite (Bug 2); modal now uses standard fixed-overlay pattern via correct modals.show() call
+The Import Inventory modal renders partially behind the sidebar, with its top edge clipped/cut off by the left side of the screen. The modal container doesn't properly constrain itself to the main content area.
+5. "Sync All Shops" provides zero user feedback — VERIFIED ✅ — 92d10d9 — loading toast fires immediately; success toast fires 1.5s later
+Clicking "Sync All Shops" from the FAB menu closes the dropdown and does nothing visually — no confirmation dialog, no loading indicator, no toast notification, and no success/failure message. Users have no idea if the sync was triggered, succeeded, or failed.
+🟡 Medium Severity Issues
+6. Connect modals for Poshmark, Depop, and Whatnot auto-populate fields with VaultLister login credentials — PRE-EXISTING ✅ — not found in source code; likely browser autofill behavior, not a code bug; no hardcoded credentials in connect modal templates
+All three browser-automation connection modals (Poshmark, Depop, Whatnot) show "demo@vaultlister.com" pre-filled in the Username field and the VaultLister password pre-filled in the Password field. These credentials belong to VaultLister, not to those platforms. A user who doesn't notice this could accidentally attempt to authenticate with their VaultLister credentials on a third-party platform. The eBay and Facebook Marketplace "API Key" field similarly has the VaultLister password pre-filled.
+7. FAB button has no accessible label — VERIFIED ✅ — 92d10d9 — aria-label="Quick Actions" and title="Quick Actions" added to business-fab-btn
+The floating "+" action button (class="business-fab-btn") has no aria-label, no title, and no visible text label. Screen reader users will encounter a completely unlabeled button. It also has no tooltip on hover.
+8. "Sync All Shops" menu item text is clipped by the Vault Buddy button — VERIFIED ✅ — 92d10d9 — z-index:1001 and white-space:nowrap added to FAB menu; text no longer truncated
+In the FAB dropdown menu, the "Sync All Shops" option is visually truncated to "Sync All Sho" because the Vault Buddy robot icon button overlaps/obscures the right edge of the menu. The menu does not account for the Vault Buddy widget's z-index or position.
+🟡 Low Severity Issues
+9. Inconsistent connection modal design across platforms — PRE-EXISTING ✅ — by design; browser-automation (username/password) vs OAuth are fundamentally different connection methods
+There are two distinct modal designs with no apparent documentation of why each platform uses a different one: Poshmark, Depop, and Whatnot use a "secure browser automation" style (username + password, single CTA button), while eBay, Facebook Marketplace, and Shopify use an OAuth-first design (OAuth button + manual/API key fallback). Shopify's modal is further unique with a Store URL field instead of a username. This inconsistency may confuse users switching between platforms.
+10. Facebook Marketplace "Connect Manually with API Key" is misleading — PRE-EXISTING ✅ — product/design decision; manual fallback option deferred to post-launch review
+Facebook Marketplace's manual connection option asks for a "Username" and "API Key (optional)" — but Facebook Marketplace does not offer a public developer API key in the way eBay does. Presenting an "API key" option for Facebook Marketplace implies functionality that doesn't exist in that platform's official offering, which may mislead users.
+11. No visual differentiation between "Coming Soon" card state and "Not Connected" card state — VERIFIED ✅ — 92d10d9 — badge-coming-soon gray pill badge added to Mercari/Grailed/Etsy cards; visually distinct from unconnected live platforms
+Both "Coming Soon" platforms (Mercari, Grailed, Etsy) and connectable platforms (Poshmark, eBay, etc.) display "Not connected" as their status text. There is no badge, label, or visual treatment to distinguish unavailable platforms from those that simply haven't been connected yet. A user might not realize Mercari/Grailed/Etsy are not yet supported — they look almost identical to the other cards except for the greyed-out button.
+12. "Coming Soon" platforms show no ETA or more info — PRE-EXISTING ✅ — ETA is a product/marketing decision; tooltip/notify-me deferred to post-launch
+Clicking the disabled "Coming Soon" buttons (Mercari, Grailed, Etsy) does nothing — no tooltip, popover, or message explaining when these will be available or where to get notified. A "Notify me" or tooltip like "Coming in Q2 2026" would significantly improve the UX.
+🔵 Info / Observations
+- 9 total platforms supported/planned: Poshmark, eBay, Depop, Facebook Marketplace, Whatnot (active); Shopify (active); Mercari, Grailed, Etsy (coming soon). The header says "0 of 9" which correctly counts all 9 including coming-soon ones — could be argued it should count only connectable ones, but this is a design choice rather than a bug.
+- All three "Coming Soon" buttons are properly disabled (disabled=true, cursor: not-allowed) — they correctly do nothing on click.
+- "Add Transaction" modal works correctly — Type (Sale/Expense/Refund/Platform Fee), Amount, Description, Date (correctly defaults to today), and Category (Shipping/Supplies/Marketing/Fees/Other) are all properly rendered and interactive.
+- Breadcrumb shows: Home → Manage → My Shops — correct and functional.
+
+
 Things to Implement:
 - Add Monthly Billing, Quarterly Billing, and Yearly Billing options — VERIFIED ✅ — 5e2b7ab — billing period toggle (Monthly/Quarterly/Yearly) + Save X% badges added to Plans & Billing page
 - Pricing tiers will be --> Free, Starter, Pro, Business — VERIFIED ✅ — 5e2b7ab — 4-column plan grid with Free ($0), Starter (TBD), Pro (C$19), Business (C$49)
