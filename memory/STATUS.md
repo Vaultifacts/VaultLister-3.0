@@ -9,6 +9,26 @@
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
+## Completed This Session (2026-04-10, session 10)
+
+### Sales & Purchases tab fixes — 459772b
+- **Bug 1**: Add Purchase CSRF error — force-refresh token with `ensureCSRFToken(true)` before POST to prevent stale/consumed token
+- **Bug 2**: GST/HST/PST card "Failed to load tax nexus data" — added `showTaxNexus` handler fetching `/sales-tools/tax-nexus`
+- **Bug 3**: Buyer Profiles "Failed to load buyer profiles" — added `showBuyerProfiles` handler fetching `/sales-tools/buyers`
+- **Bug 4 + UX 10**: No way to add a sale — added `showAddSale`/`submitAddSale` handlers + "Log Sale" button in empty state
+- **Visual 5**: 4th stat card orphaned — set `grid-template-columns: repeat(4, 1fr)` on both Sales and Purchases stat grids
+- **Visual 6**: Large white gap above content — added `window.scrollTo(0, 0)` at top of `sales()` render function
+- **Visual 7**: Status filter persists across navigation — reset `salesStatusFilter`/`salesPlatformFilter` to 'all' in router on `sales` path (both branches)
+- **UX 8**: Feature cards no hover affordance — added `→` arrow indicator and `translateY(-1px)` hover lift to GST/HST/PST and Buyer Profiles cards
+- **UX 9**: Stat card icons appear interactive — added `pointer-events:none; cursor:default` to stat-card-icon in components.js
+- **UX 11**: "Sell" breadcrumb non-functional — breadcrumb section label is now a clickable link (Sell→inventory, Manage→analytics)
+- **UX 12**: AliExpress/Alibaba modals no Settings link — added "Go to Settings →" button in modal footer
+- **UX 13**: Add Purchase modal no delete on line items — added × remove button to dynamically-added purchase rows
+- **UX 14**: First Description field no placeholder — added `placeholder="e.g. Vintage jacket lot"`
+- **UX 16**: Inventory dropdown has duplicate items — added dedup filter (findIndex by id) in `showAddPurchase` and `addPurchaseItem`
+- Bundle rebuilt: version 00f97cf2, 1429 KB, 12 files; node --check clean on all source files
+- Skipped: UX 15 (modal height optimization — low priority per spec)
+
 ## Completed This Session (2026-04-10, session 9)
 
 ### Daily Checklist tab fixes — dd3fa42
