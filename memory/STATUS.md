@@ -9,6 +9,22 @@
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
+## Completed This Session (2026-04-10, session 9)
+
+### Daily Checklist tab fixes — dd3fa42
+- **Bug 7**: Templates modal showed "0 items" — backend returns `itemCount` field not `items` array; fixed to use `t.itemCount`
+- **Bug 8 / Visual 19**: Kanban view removed all controls (stuck) — moved view toggle dropdown outside kanban/list conditional; always rendered; Add Task/bulk actions shown only in list mode
+- **Visual 14**: Header action buttons stacked vertically on narrow viewports — wrapped in `overflow-x:auto` scrollable flex row
+- **Visual 15**: Greeting said "Complete your first task to get started!" even when tasks existed — changed guard from `completionRate===0` to `items.length===0`
+- **Visual 16**: Select All with 0 tasks showed misleading "All items unchecked" toast — early-return with "No tasks to select" when items empty
+- **Visual 17**: Daily review bar chart showed flat line for 0-value days — applied min-height 4% with reduced opacity; non-zero bars get min 8%
+- **Visual 18**: Progress ring circle was decorative/unresponsive — wired `onclick="handlers.showDailyReview()"` with cursor pointer + tooltip
+- **Bugs 1–6, 9–12 verified already implemented**: toggleChecklistItem/addChecklistItem/editChecklistItem/duplicateChecklistItem/addSubtask/showChecklistAnalytics all call backend API; VaultBuddy startNewVaultBuddyChat implemented in handlers-community-help.js; pomodoroTimer tracks sessionsCompleted; streak derives from persisted completed_at
+- **Visual 13**: Skipped (systemic mobile layout, out of scope)
+- **Visual 20**: Sidebar badge already correct — `filter(item => !item.completed).length` in components.js:191
+- Bundle rebuilt: version feb83507, 1429 KB, 12 files
+- Verified: node --check passes on both source files; bundle build succeeded
+
 ## Completed This Session (2026-04-10, session 8)
 
 ### Inventory tab fixes — 60fb51c + verified live — c7d24f4 (docs)
