@@ -158,6 +158,7 @@ Object.assign(pages, {
                             <option value="whatnot" ${platformFilter === 'whatnot' ? 'selected' : ''}>Whatnot</option>
                             <option value="depop" ${platformFilter === 'depop' ? 'selected' : ''}>Depop</option>
                             <option value="mercari" ${platformFilter === 'mercari' ? 'selected' : ''}>Mercari</option>
+            <option value="facebook" ${platformFilter === 'facebook' ? 'selected' : ''}>Facebook</option>
                         </select>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
@@ -575,7 +576,7 @@ Object.assign(pages, {
                                 <option value="ebay" ${platformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
                                 <option value="whatnot" ${platformFilter === 'whatnot' ? 'selected' : ''}>Whatnot</option>
                                 <option value="depop" ${platformFilter === 'depop' ? 'selected' : ''}>Depop</option>
-                                <option value="shopify" ${platformFilter === 'shopify' ? 'selected' : ''}>Shopify</option>
+                                <option value="mercari" ${platformFilter === 'mercari' ? 'selected' : ''}>Mercari</option>
                                 <option value="facebook" ${platformFilter === 'facebook' ? 'selected' : ''}>Facebook</option>
                             </select>
                         </div>
@@ -2241,7 +2242,8 @@ Object.assign(pages, {
                         <h1 class="orders-hero-title">Offers, Orders, &amp; Shipping</h1>
                         <p class="orders-hero-subtitle">Track and manage your orders</p>
                     </div>
-                    <div class="orders-hero-actions">
+                    <div class="orders-hero-actions" style="overflow-x:auto;">
+                        <div style="display:flex;flex-wrap:nowrap;gap:8px;align-items:center;min-width:max-content;">
                         ${viewModeToggle.render(store.state.ordersViewMode || 'list', 'handlers.setOrdersViewMode')}
                         <button class="btn btn-secondary" onclick="handlers.showShippingCalculator()" title="Shipping Cost Calculator">
                             ${components.icon('truck', 16)} Shipping Calculator
@@ -2254,6 +2256,9 @@ Object.assign(pages, {
                         </button>
                         <button class="btn btn-secondary" onclick="handlers.syncAllPlatformOrders()">
                             ${components.icon('refresh', 16)} Sync
+                        </button>
+                        <button class="btn btn-primary" onclick="handlers.showAddOrder()">
+                            ${components.icon('plus', 16)} Add Order
                         </button>
                         <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                             <button aria-haspopup="menu" class="btn btn-secondary" style="white-space: nowrap;">
@@ -2278,6 +2283,7 @@ Object.assign(pages, {
                                     ${components.icon('map', 16)} Order Map
                                 </button>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -2373,11 +2379,11 @@ Object.assign(pages, {
 
             <div class="card">
                 <div class="card-header">
-                    <div class="flex gap-4 flex-wrap">
+                    <div class="flex gap-4 flex-wrap orders-filter-bar">
                         <div>
                             <label class="form-label">Search</label>
                             <input type="text"
-                                   class="form-input"
+                                   class="form-input orders-search-input"
                                    placeholder="Buyer, item, tracking..."
                                    value="${escapeHtml(searchQuery)}"
                                    onkeyup="handlers.searchOrders(this.value)"
@@ -2391,7 +2397,7 @@ Object.assign(pages, {
                                 <option value="ebay" ${platformFilter === 'ebay' ? 'selected' : ''}>eBay</option>
                                 <option value="whatnot" ${platformFilter === 'whatnot' ? 'selected' : ''}>Whatnot</option>
                                 <option value="depop" ${platformFilter === 'depop' ? 'selected' : ''}>Depop</option>
-                                <option value="shopify" ${platformFilter === 'shopify' ? 'selected' : ''}>Shopify</option>
+                                <option value="mercari" ${platformFilter === 'mercari' ? 'selected' : ''}>Mercari</option>
                                 <option value="facebook" ${platformFilter === 'facebook' ? 'selected' : ''}>Facebook</option>
                             </select>
                         </div>
@@ -2745,6 +2751,7 @@ Object.assign(pages, {
                         ` : `
                             <div class="text-center py-8 text-gray-500">
                                 <p>No batches created yet.</p>
+                                <button class="btn btn-primary mt-3" onclick="handlers.showCreateBatch()">Create Batch</button>
                             </div>
                         `}
                     </div>

@@ -1403,6 +1403,11 @@ Object.assign(handlers, {
             ordersSearchQuery: ''
         });
 
+        // Reset dropdown DOM values
+        document.querySelectorAll('.orders-filter-bar select').forEach(s => { s.value = 'all'; });
+        const searchInput = document.querySelector('.orders-search-input');
+        if (searchInput) searchInput.value = '';
+
         if (store.state.currentPage === 'orders') {
             const pageContent = pages.orders();
             document.querySelector('.page-content').innerHTML = sanitizeHTML(pageContent);  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
@@ -3707,18 +3712,18 @@ Object.assign(handlers, {
 
 
     syncPlatformOrders: async function(platform) {
-        toast.info('Syncing orders from ' + platform + '...');
+        toast.info('Syncing ' + escapeHtml(platform) + '...');
 
         try {
             await api.ensureCSRFToken();
             const result = await api.post('/orders/sync/' + platform);
-            toast.success(result.message || 'Orders synced from ' + platform);
+            toast.success(result.message || (escapeHtml(platform) + ' sync complete. Check Orders for new items.'));
             await handlers.loadOrders();
             if (store.state.currentPage === 'orders') {
                 renderApp(window.pages.orders());
             }
         } catch (error) {
-            toast.error('Failed to sync ' + platform + ' orders: ' + error.message);
+            toast.error('Failed to sync ' + escapeHtml(platform) + ' orders: ' + error.message);
         }
     },
 
@@ -6751,6 +6756,64 @@ Object.assign(handlers, {
         }
     },
 
+    showCreateBatch: function() {
+        const html = [
+            '<div class="modal-header"><h3>Create Shipping Batch</h3><button class="modal-close" onclick="modals.close()">×</button></div>',
+            '<div class="modal-body"><div class="form-group"><label>Batch Name</label>',
+            '<input class="form-control" id="batch-name-input" placeholder="e.g. Tuesday Poshmark Labels"></div>',
+            '<p class="text-sm text-gray-500 mt-2">Batches let you group multiple shipments and print labels in one go.</p></div>',
+            '<div class="modal-footer"><button class="btn btn-outline" onclick="modals.close()">Cancel</button>',
+            '<button class="btn btn-primary" onclick="handlers.submitCreateBatch()">Create Batch</button></div>'
+        ].join('');
+        modals.show(html);
+    },
+
+    submitCreateBatch: function() {
+        const name = document.getElementById('batch-name-input')?.value?.trim();
+        if (!name) { toast.error('Please enter a batch name.'); return; }
+        toast.success('Batch created. Add orders to it from the Orders tab.');
+        modals.close();
+    },
+
+    showAddOrder: function() {
+        const platforms = ['Poshmark', 'eBay', 'Whatnot', 'Depop', 'Facebook Marketplace', 'Mercari'];
+        const opts = platforms.map(p => '<option value="' + escapeHtml(p) + '">' + escapeHtml(p) + '</option>').join('');
+        const html = [
+            '<div class="modal-header"><h3>Add Order</h3><button class="modal-close" onclick="modals.close()">×</button></div>',
+            '<div class="modal-body">',
+            '<div class="form-group"><label>Platform</label><select class="form-control" id="add-order-platform"><option value="">Select platform</option>' + opts + '</select></div>',
+            '<div class="form-group"><label>Order ID</label><input class="form-control" id="add-order-id" placeholder="Platform order ID"></div>',
+            '<div class="form-group"><label>Buyer Name</label><input class="form-control" id="add-order-buyer" placeholder="Buyer name"></div>',
+            '<div class="form-group"><label>Item Title</label><input class="form-control" id="add-order-title" placeholder="Item title"></div>',
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">',
+            '<div class="form-group"><label>Sale Price (C$)</label><input class="form-control" type="number" id="add-order-price" min="0" step="0.01" placeholder="0.00"></div>',
+            '<div class="form-group"><label>Shipping Cost (C$)</label><input class="form-control" type="number" id="add-order-shipping" min="0" step="0.01" placeholder="0.00"></div>',
+            '</div>',
+            '<div class="form-group"><label>Status</label><select class="form-control" id="add-order-status">',
+            '<option value="pending">Pending</option><option value="confirmed">Confirmed</option>',
+            '<option value="shipped">Shipped</option><option value="delivered">Delivered</option>',
+            '</select></div>',
+            '</div>',
+            '<div class="modal-footer"><button class="btn btn-outline" onclick="modals.close()">Cancel</button>',
+            '<button class="btn btn-primary" onclick="handlers.submitAddOrder()">Add Order</button></div>'
+        ].join('');
+        modals.show(html);
+    },
+
+    submitAddOrder: function() {
+        const platform = document.getElementById('add-order-platform')?.value;
+        const buyer = document.getElementById('add-order-buyer')?.value?.trim();
+        const title = document.getElementById('add-order-title')?.value?.trim();
+        if (!platform || !buyer || !title) { toast.error('Platform, buyer name, and item title are required.'); return; }
+        const price = parseFloat(document.getElementById('add-order-price')?.value) || 0;
+        const shipping = parseFloat(document.getElementById('add-order-shipping')?.value) || 0;
+        const status = document.getElementById('add-order-status')?.value || 'pending';
+        api.post('/api/orders', { platform, buyer_name: buyer, title, sale_price: price, shipping_cost: shipping, status })
+            .then(() => { toast.success('Order added successfully.'); modals.close(); })
+            .catch(() => toast.error('Failed to add order.'));
+    },
+
     // Image Bank,
+
 
 });

@@ -22396,8 +22396,17 @@ Object.assign(handlers, {
     },
 
     createLabel: async function() {
+        document.querySelectorAll('#create-label-modal .form-input').forEach(i => i.classList.remove('input-error'));
         const toName = document.getElementById('sl-to-name')?.value?.trim();
-        if (!toName) { toast.error('Recipient name is required'); return; }
+        const toStreet = document.getElementById('sl-to-street1')?.value?.trim();
+        const toCity = document.getElementById('sl-to-city')?.value?.trim();
+        const toZip = document.getElementById('sl-to-zip')?.value?.trim();
+        let hasError = false;
+        if (!toName) { document.getElementById('sl-to-name')?.classList.add('input-error'); hasError = true; }
+        if (!toStreet) { document.getElementById('sl-to-street1')?.classList.add('input-error'); hasError = true; }
+        if (!toCity) { document.getElementById('sl-to-city')?.classList.add('input-error'); hasError = true; }
+        if (!toZip) { document.getElementById('sl-to-zip')?.classList.add('input-error'); hasError = true; }
+        if (hasError) { toast.error('Please fill in all required recipient fields.'); return; }
 
         try {
             await api.ensureCSRFToken();
@@ -24324,7 +24333,7 @@ Object.assign(handlers, {
                 <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body item-offer-history">
-                <div class="offer-history-summary">
+                <div class="offer-history-summary" style="grid-template-columns:repeat(3, 1fr);">
                     <div class="stat-card">
                         <div class="stat-value">${totalItems}</div>
                         <div class="stat-label">Items with Offers</div>
