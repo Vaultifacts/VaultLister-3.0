@@ -152,7 +152,7 @@ Object.assign(handlers, {
                         <div class="weekly-chart">
                             ${weeklyData.map(d => `
                                 <div class="weekly-chart-bar ${d.isToday ? 'today' : ''}">
-                                    <div class="bar-fill" style="height: ${(d.completed / maxCompleted) * 100}%"></div>
+                                    <div class="bar-fill" style="height: ${d.completed > 0 ? Math.max((d.completed / maxCompleted) * 100, 8) : 4}%; ${d.completed === 0 ? 'opacity: 0.3;' : ''}"></div>
                                     <div class="bar-value">${d.completed}</div>
                                     <div class="bar-label">${d.day}</div>
                                 </div>
@@ -1207,6 +1207,10 @@ Object.assign(handlers, {
 
     selectAllChecklistItems: async function() {
         const items = store.state.checklistItems || [];
+        if (items.length === 0) {
+            toast.info('No tasks to select');
+            return;
+        }
         const allChecked = items.every(i => i.completed);
         const newStatus = !allChecked;
         let failCount = 0;
@@ -1255,7 +1259,7 @@ Object.assign(handlers, {
                                 <div class="card" style="padding: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'" onclick="handlers.createFromTemplate('${t.id}')">
                                     <h4 style="margin: 0 0 8px 0; font-weight: 600;">${escapeHtml(t.name)}</h4>
                                     <p style="color: var(--text-secondary); font-size: 13px; margin: 0 0 8px 0;">${escapeHtml(t.description || '')}</p>
-                                    <span class="badge" style="display: inline-block;">${t.items?.length || 0} items</span>
+                                    <span class="badge" style="display: inline-block;">${t.itemCount || t.items?.length || 0} items</span>
                                 </div>
                             `).join('')}
                         </div>

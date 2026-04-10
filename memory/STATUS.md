@@ -1,5 +1,5 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-08 MST (session 7)
+**Updated:** 2026-04-10 MST (session 8)
 
 ## Current State
 - **Launch Readiness Walkthrough COMPLETE** — 214 findings, 100% coverage (14 sessions)
@@ -8,6 +8,27 @@
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed: SQL ambiguity `df74d36`, display_name `421e4f0`, missing auth-callback route `1d40be6`, wrong redirect URLs `4dafcf8`, 401 interceptor bypass + hashParts URL parsing `9065bc1`/`5a4cf09`, Redis OTT → PostgreSQL-backed OTT `77a07e1`. Redeployed `ffb6e89`. ✅ VERIFIED LIVE: route registered, OTT endpoint responds, minified bundle has correct hash logic, raw fetch confirmed
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
+
+## Completed This Session (2026-04-10, session 8)
+
+### Inventory tab fixes — 60fb51c + verified live — c7d24f4 (docs)
+- **10 of 11 inventory findings fixed and VERIFIED live** against deployed chunks at https://vaultlister-app-production.up.railway.app
+- Fix #1: Analytics 8s timeout ("Unable to load analytics. Try refreshing.") — handlers-settings-account.js ✅
+- Fix #3: Tags column in Customize Columns modal ✅ (visual screenshot)
+- Fix #4: Profit gauge marker (triangle) in Profit Margin Calculator ✅
+- Fix #5: Bulk Price margin scale wrap (gradient + marker) in previewBulkPriceUpdate ✅
+- Fix #6: 0-stock outOfStock summary card = danger class; individual items = var(--error) red badge ✅
+- Fix #7: Age analysis reads item.status (not hardcoded "Listed") ✅
+- Fix #8: Low Stock Threshold default = 1 (min=0) in Add New Item modal — new bundle 0f6c2c2a ✅
+- Fix #9: 5 stat cards have filterByStatCard onclick (Active/Drafts/Low Stock/Out of Stock/Stale) ✅
+- Fix #10: Status filter column replaces text input with dropdown (All/Draft/Active/Not Listed) ✅
+- Fix #11: window.scrollTo(0,0) on page render; no white gap at top ✅
+- Bug #2 (duplicate items) NOT fixed — seeded/demo data issue, not a code bug
+- Walkthrough doc updated: 10 findings marked VERIFIED ✅ — c7d24f4
+- Note: Fix #8 is in new bundle 0f6c2c2a; Cloudflare caching old index.html (6e4d7794) — will self-resolve
+
+### Previously-built tasks verified live — session 8 start
+- All 9 tasks from commit 5e2b7ab verified against deployed site (billing toggle, admin metrics, modal fix, Terms/Privacy, profile fields, sales dropdown, plan usage, platform ordering, platform logos) — all VERIFIED markers added to walkthrough doc in 60fb51c
 
 ## Completed This Session (2026-04-08, session 7)
 

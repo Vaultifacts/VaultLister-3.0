@@ -119,7 +119,7 @@ Object.assign(pages, {
         // Time-based greeting
         const getProductivityGreeting = () => {
             const hour = new Date().getHours();
-            if (completionRate === 0) {
+            if (items.length === 0) {
                 if (hour < 12) return { greeting: 'Good morning', message: 'Complete your first task to get started!' };
                 if (hour < 17) return { greeting: 'Good afternoon', message: 'Complete your first task to get started!' };
                 if (hour < 21) return { greeting: 'Good evening', message: 'Complete your first task to get started!' };
@@ -138,7 +138,7 @@ Object.assign(pages, {
                     <h1 class="page-title">Daily Checklist</h1>
                     <p class="page-description">Manage your daily tasks and to-dos</p>
                 </div>
-                <div class="flex items-center gap-3">
+                <div style="display: flex; align-items: center; gap: 8px; overflow-x: auto; white-space: nowrap; flex-shrink: 0;">
                     ${streakCounter.render(streakDays)}
                     <button class="btn btn-secondary" onclick="handlers.selectAllChecklistItems()">
                         ${components.icon('check-square', 16)} Select All
@@ -184,7 +184,7 @@ Object.assign(pages, {
                         ` : ''}
                     </div>
                     <div class="greeting-illustration">
-                        <div class="progress-circle-large">
+                        <div class="progress-circle-large" onclick="handlers.showDailyReview()" title="View Productivity Dashboard" style="cursor: pointer;">
                             <svg viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="var(--gray-200)" stroke-width="8"/>
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="var(--primary-500)" stroke-width="8"
@@ -292,12 +292,9 @@ Object.assign(pages, {
                 </div>
             </div>
 
-            ${viewMode === 'kanban' ? `
-                <!-- Kanban Board View -->
-                ${kanbanBoard.render(kanbanTasks)}
-            ` : `
-                <!-- Add Task + Bulk Actions -->
+            <!-- Add Task + Bulk Actions (always visible, includes view toggle) -->
                 <div class="flex items-center gap-2 mb-4">
+                    ${viewMode !== 'kanban' ? `
                     <button class="btn btn-primary" onclick="handlers.showAddChecklistItem()">
                         ${components.icon('plus', 16)} Add Task
                     </button>
@@ -307,6 +304,7 @@ Object.assign(pages, {
                     <button class="btn btn-sm btn-secondary" onclick="handlers.bulkCompleteChecklist(false)" title="Uncomplete all tasks">
                         ${components.icon('square', 14)} Mark All Incomplete
                     </button>
+                    ` : ''}
                     <div class="dropdown" onclick="event.stopPropagation(); this.classList.toggle('open')">
                         <button class="btn btn-sm btn-secondary" aria-haspopup="menu">
                             ${components.icon(viewMode === 'kanban' ? 'columns' : 'list', 14)} ${viewMode === 'kanban' ? 'Kanban View' : 'List View'} ${components.icon('chevron-down', 12)}
@@ -320,13 +318,19 @@ Object.assign(pages, {
                             </button>
                         </div>
                     </div>
+                    ${viewMode !== 'kanban' ? `
                     <div class="keyboard-hints" style="display: flex; gap: 8px; font-size: 11px; color: var(--gray-400); align-items: center; margin-left: auto;">
                         <span title="Press N to add task"><kbd>N</kbd> Add</span>
                         <span title="Press A to select all"><kbd>A</kbd> Select</span>
                         <span title="Press / to focus search"><kbd>/</kbd> Search</span>
                     </div>
+                    ` : ''}
                 </div>
 
+            ${viewMode === 'kanban' ? `
+                <!-- Kanban Board View -->
+                ${kanbanBoard.render(kanbanTasks)}
+            ` : `
                 <!-- Tabs -->
             <div class="tabs mb-4" role="tablist">
                 <button class="tab ${currentTab === 'active' ? 'active' : ''}" role="tab" aria-selected="${currentTab === 'active' ? 'true' : 'false'}" onclick="handlers.switchChecklistTab('active')">
