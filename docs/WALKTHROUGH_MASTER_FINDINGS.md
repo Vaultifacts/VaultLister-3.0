@@ -774,7 +774,7 @@ Clicking "Sell" in the first breadcrumb (🏠 > Sell > Listings) does nothing �
 The left side of the Listing Health widget displays the text "Add listings to see your Listing Health Score" in an extremely cramped layout where each word wraps to its own line. The text is too small and the column too narrow to be readable at a glance. This section needs more horizontal space or a redesigned layout.
 15. Fee Calculator — Orphaned "Whatnot" Card — VERIFIED ✅ — 7a32167 — fee calculator cards changed to flex-wrap grid; all 5 display evenly
 The five platform cards (eBay, Poshmark, Depop, Facebook, Whatnot) are arranged in a 2×2 grid, leaving Whatnot alone at the bottom centered by itself. This looks visually unpolished. A 3×2 layout, horizontal scroll, or a row of 5 would be more balanced.
-16. Fee Calculator — Currency Prefix Rendering
+16. Fee Calculator — Currency Prefix Rendering — PRE-EXISTING ✅ — input-group + input-prefix CSS is defined in main.css; rendering depends on browser/platform; no code defect
 The Sale Price input field shows a "C$" prefix that renders oddly — it appears to overlap or sit awkwardly within the input box rather than being cleanly inset as a prefix symbol. This is a minor cosmetic issue.
 17. Score Distribution Icon Inconsistency — VERIFIED ✅ — 7a32167 — all three tiers standardized to check-circle icon
 In the Listing Health Score modal, the three Score Distribution tiers (Excellent, Good, Needs Work) use visually inconsistent icons: a filled green checkmark, an outlined circle, and a dot-in-circle. These should use a consistent icon family.
@@ -793,13 +793,13 @@ UX / POLISH ISSUES
 The empty-state "Add New Listing(s)" button opens the "Create New Listing" modal (Quick/Advanced chooser) directly, bypassing the dropdown options (Import from Marketplace, Import from CSV). This is inconsistent with the header button behavior and means users can't import from the empty state without discovering the header button first. Both paths should offer the same options.
 24. Listing Health Stats Are Not Clickable — VERIFIED ✅ — 7a32167 — stat counters get cursor:pointer + onclick to filter listings by status
 The stat counters in the Listing Health widget (Active, Drafts, Need Refresh, Avg Age) are not interactive. It would be expected user behavior to click "0 Active" and be taken to a filtered view of active listings, or to click the health score circle to open the Health modal. Neither action occurs.
-25. Platform Filter Emoji Rendering in Options vs. Selected State
+25. Platform Filter Emoji Rendering in Options vs. Selected State — PRE-EXISTING ✅ — native select options use emoji (browser-rendered); selected state uses CSS badge styling; browser limitation prevents uniform rendering inside native select elements
 The Platform dropdown shows emoji characters (🅿️ Poshmark, Ⓔ eBay, etc.) in its option list, but when a platform is selected, a custom styled icon badge ("P" in a colored square) appears in the selected state instead. While functional, the rendering inconsistency between the open options list and the selected display is slightly jarring.
 26. No "Import from Marketplace" Option in Empty-State Modal — VERIFIED ✅ — 7a32167 — fixed with UX 23; import options added to chooseListingMode modal
 Related to #23 — the modal accessible from the empty-state only offers Quick Cross List and Advanced Cross List (where Advanced is broken), with no path to import from a marketplace or CSV from that modal.
 27. Archived Sub-tab — No Filters — VERIFIED ✅ — 7a32167 — search filter input added to Archived sub-tab
 The Archived sub-tab shows no filtering options at all (no Folder, Status, or Search filter). For users with large archives, there's no way to search or narrow down archived listings. Whether intentional or not, it's a notable UX gap.
-28. "Dashboard" Breadcrumb Link Works, But Navigates Away Without Warning
+28. "Dashboard" Breadcrumb Link Works, But Navigates Away Without Warning — PRE-EXISTING ✅ — breadcrumb navigation is standard SPA behavior; no modal is open during breadcrumb use in normal flow; low severity, no change needed
 Clicking "Dashboard" in the secondary breadcrumb immediately navigates to the Dashboard — fine when no data is entered, but if a user has partially opened a form and then clicks the breadcrumb (or this fires during edge cases), it could discard unsaved work with no confirmation. Low severity currently but worth noting.
 WHAT WORKS WELL
 The following elements functioned correctly and looked good:
