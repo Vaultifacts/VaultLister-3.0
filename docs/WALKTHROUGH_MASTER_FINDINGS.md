@@ -693,39 +693,39 @@ The "Daily Checklist" entry in the sidebar nav shows "1" badge even when the che
 
 Sales & Purchases Tab:
 🔴 BUGS (Broken Functionality)
-1. Add Purchase form fails on submission — CSRF error
+1. Add Purchase form fails on submission — CSRF error — VERIFIED ✅ — 459772b — ensureCSRFToken(true) forces fresh token before POST; prevents consumed-token CSRF failures
 When filling out the Add Purchase modal completely (Vendor Name, Purchase Date, Line Items with Description and Unit Cost) and submitting, the form returns: "Failed to add purchase: Invalid or expired CSRF token." This is a critical bug — the entire Purchases feature is non-functional. No purchase can be saved.
-2. GST/HST/PST card — backend error
+2. GST/HST/PST card — backend error — VERIFIED ✅ — 459772b — showTaxNexus handler added; fetches /sales-tools/tax-nexus route (pre-existing in salesEnhancements.js)
 Clicking the GST/HST/PST feature card immediately shows: "Failed to load tax nexus data." This error is consistent across multiple clicks. The feature is completely broken.
-3. Buyer Profiles card — backend error
+3. Buyer Profiles card — backend error — VERIFIED ✅ — 459772b — showBuyerProfiles handler added; fetches /sales-tools/buyers route (pre-existing)
 Clicking the Buyer Profiles feature card shows: "Failed to load buyer profiles." This error is also consistent. The feature is completely broken. (Note: the toast dismisses very quickly — it can be missed on first click, but is reproducible.)
-4. No way to add a sale from the Sales tab
+4. No way to add a sale from the Sales tab — VERIFIED ✅ — 459772b — showAddSale()/submitAddSale() handlers added; Log Sale button added to header and empty state
 There is zero "Add Sale," "Record Sale," or equivalent button anywhere on the Sales tab. The empty state says "Your sales will appear here once you make your first sale" but provides no mechanism to make one. The only "Log Sale" button in the entire app exists on the Dashboard toolbar — a completely separate page. A user landing on the Sales tab with the intent to record a sale has no path forward.
 🟠 VISUAL ISSUES (Wrong Appearance / Layout)
-5. Stat card grid layout broken — orphaned 4th card
+5. Stat card grid layout broken — orphaned 4th card — VERIFIED ✅ — 459772b — stat grid changed to repeat(4, 1fr) on both Sales and Purchases tabs
 Both the Sales tab and the Purchases tab have 4 stat cards, but the layout renders as a 3-column grid. The 4th card ("Pending Shipments" on Sales; "This Month" on Purchases) wraps to a second row and sits alone on the left, taking up one-third of the full page width. The row below it is then completely empty. This creates an asymmetric, unbalanced layout. The cards should either use a 4-column grid, or a 2×2 grid.
-6. Large unexplained white gap — page content appears cut off
+6. Large unexplained white gap — page content appears cut off — VERIFIED ✅ — 459772b — window.scrollTo(0,0) added at top of sales() render function
 Both sub-tabs exhibit a significant blank white area above the visible content when the page is scrolled. The content area appears to have extra top padding or margin that pushes visible content far down the page. This makes it look like the page is broken/loading and wastes significant screen real estate.
-7. Status filter persists across navigation
+7. Status filter persists across navigation — VERIFIED ✅ — 459772b — router resets salesStatusFilter/salesPlatformFilter to 'all' on navigation
 When the Status filter was changed to "Shipped" during testing, it retained that value after navigating away to the Dashboard and returning to the Sales tab, and even after a full page navigation via the URL hash. Filters should reset when leaving and returning to the page, or at minimum on a full navigation.
 🟡 UX ISSUES (Poor Design / Behavior)
-8. Feature cards (GST/HST/PST, Buyer Profiles) appear as decorative cards but are actually clickable
+8. Feature cards (GST/HST/PST, Buyer Profiles) appear as decorative cards but are actually clickable — VERIFIED ✅ — 459772b — added → arrow indicator + translateY hover lift via onmouseover/onmouseout
 There is no visual affordance that these cards are interactive — no hover state, no arrow, no "Open" label. Users won't know to click them. Additionally, even when they do function, there is no indication of what they will do (open a modal? navigate to another page?). The cards just show a title and a subtitle.
-9. Stat card icons appear interactive but do nothing
+9. Stat card icons appear interactive but do nothing — VERIFIED ✅ — 459772b — stat-card-icon gets pointer-events:none; cursor:default in components.js
 Each stat card has an icon badge in the top-right corner. These visually resemble icon buttons (they have a padded, rounded-square style) but clicking them produces no response whatsoever. They look actionable but are purely decorative.
-10. Sales empty state has no call-to-action
+10. Sales empty state has no call-to-action — VERIFIED ✅ — 459772b — "Log Sale" btn-primary button added to sales empty state calling handlers.showAddSale()
 The empty state for the sales table reads "No sales yet — Your sales will appear here once you make your first sale" but includes no button to get started. In contrast, the Purchases tab has an "Add Purchase" button in the empty state. The Sales tab should similarly have an "Add Sale" / "Log Sale" button right in the empty state.
-11. "Sell" breadcrumb is non-functional
+11. "Sell" breadcrumb is non-functional — VERIFIED ✅ — 459772b — breadcrumb section label made clickable <a> tag; Sell→inventory, Manage→analytics
 The breadcrumb trail reads: 🏠 Home › Sell › Sales. The "Home" icon correctly navigates to the Dashboard. But "Sell" is static, non-clickable text — not a link. A user would naturally expect it to navigate to a "Sell" overview page or at least back to the first item in the Sell section.
-12. AliExpress and Alibaba modals have no direct link to Settings/Integrations
+12. AliExpress and Alibaba modals have no direct link to Settings/Integrations — VERIFIED ✅ — 459772b — "Go to Settings →" button added to AliExpress/Alibaba modal footers
 Both the "Connect AliExpress" and "Connect Alibaba" modals contain step-by-step instructions that require the user to go to Settings → Integrations to complete setup. However, the modal only has a "Close" button — there is no direct "Go to Settings" or "Open Integrations" link. Users have to close the modal and manually navigate there.
-13. Add Purchase modal — no delete button on line item rows
+13. Add Purchase modal — no delete button on line item rows — VERIFIED ✅ — 459772b — × remove button added to dynamically added line item rows
 When adding a purchase and clicking "+ Add Item" to create additional line item rows, there is no way to remove a row. If a user accidentally adds an extra line or wants to remove one, they are stuck with it. Every other multi-row form convention provides an "×" or trash icon to remove a row.
-14. Add Purchase modal — first Description field has no placeholder text
+14. Add Purchase modal — first Description field has no placeholder text — VERIFIED ✅ — 459772b — placeholder="e.g. Vintage jacket lot" added to first description field
 The Description field in the first (default) line item row has no placeholder text, while the other rows added via "+ Add Item" also have no placeholder. This is a minor omission but the Qty field shows "1" as a default and Unit Cost is blank — consistency would suggest Description should at least hint at expected input (e.g., "e.g. Vintage jacket lot").
 15. Add Purchase modal — action buttons near bottom of viewport, modal taller than comfortable
 The modal (765px tall) places the Cancel and "Add Purchase" submit buttons at approximately y:832–867px in a 1000px viewport. When the page is scrolled to a position where the gap bug kicks in, the modal's lower content becomes difficult to reach. While the buttons are technically within the viewport, the modal should ideally be scrollable internally or sized to always keep the footer buttons visible.
-16. Link to Inventory dropdown shows duplicate items
+16. Link to Inventory dropdown shows duplicate items — VERIFIED ✅ — 459772b — inventory items deduped by id in showAddPurchase and addPurchaseItem
 Inside the Add Purchase modal's Line Items, the "Link to Inventory" dropdown shows duplicate entries for inventory items. This is the same bug reported on the Inventory tab — the same item appears twice in the list.
 ✅ What Works Correctly
 - Switching between Sales and Purchases sub-tabs works correctly
