@@ -83,7 +83,20 @@ GitHub Actions runs `.github/workflows/production-smoke.yml`:
 - manually through `workflow_dispatch`
 - after the `Deploy` workflow completes successfully
 
-The workflow runs the full production smoke check with three attempts and a 30 second settle delay between attempts. If all attempts fail, it opens or updates a GitHub issue labeled `production-smoke-failure`. When checks recover, it closes the open issue.
+The workflow runs the CI-stable production smoke checks with three attempts and a 30 second settle delay between attempts:
+
+- app readiness
+- worker heartbeat health
+- safe `task_queue` smoke
+- queue backlog and failure thresholds
+
+WebSocket Redis pub/sub is intentionally excluded from the scheduled GitHub workflow because GitHub-hosted runners produced false WebSocket connect errors against the production edge while the same check passed from the Railway-linked operator shell. Keep WebSocket verification in the full manual smoke command:
+
+```powershell
+bun run ops:smoke:prod
+```
+
+If all scheduled attempts fail, the workflow opens or updates a GitHub issue labeled `production-smoke-failure`. When checks recover, it closes the open issue.
 
 Required GitHub repository secrets:
 

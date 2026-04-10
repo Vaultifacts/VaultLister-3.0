@@ -48,7 +48,11 @@ jobs:
           set -euo pipefail
           for attempt in 1 2 3; do
             echo "Production smoke attempt $attempt/3"
-            if bun scripts/launch-ops-check.mjs "$BASE_URL" --all --json | tee smoke-result.json; then
+            # GitHub-hosted runners have produced false WebSocket connect errors
+            # against the production edge. Keep this scheduled monitor focused on
+            # HTTP readiness, worker heartbeats, task_queue, and BullMQ. Run the
+            # full local smoke with --all for WebSocket Redis pub/sub verification.
+            if bun scripts/launch-ops-check.mjs "$BASE_URL" --task-queue --queue-metrics --json | tee smoke-result.json; then
               exit 0
             fi
             if [ "$attempt" -lt 3 ]; then
