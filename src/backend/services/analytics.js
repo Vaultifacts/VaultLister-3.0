@@ -264,7 +264,8 @@ const analyticsService = {
 
             // Get user IDs for next iteration
             const userIdsSql = sql.replace('COUNT(DISTINCT user_id) as users', 'DISTINCT user_id');
-            const userIds = await query.all(userIdsSql, params).map(r => r.user_id).filter(Boolean);
+            const userRows = await query.all(userIdsSql, params);
+            const userIds = userRows.map(r => r.user_id).filter(Boolean);
 
             const result = await query.get(sql, params);
             const prevCount = i > 0 ? results[i - 1].users : result.users;

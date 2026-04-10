@@ -1,5 +1,7 @@
 // Analytics Service Unit Tests
 import { describe, expect, test, mock, beforeEach, afterEach, afterAll } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const mockPrepare = mock(() => ({
     run: mock(),
@@ -9,6 +11,11 @@ const mockPrepare = mock(() => ({
 const mockQueryGet = mock(() => null);
 const mockQueryAll = mock(() => []);
 const mockQueryRun = mock(() => ({ changes: 1 }));
+const mockTransaction = mock((fn) => fn({
+    get: mockQueryGet,
+    all: mockQueryAll,
+    run: mockQueryRun
+}));
 
 mock.module('../backend/db/database.js', () => ({
     query: {
@@ -17,7 +24,7 @@ mock.module('../backend/db/database.js', () => ({
         run: mockQueryRun,
         prepare: mockPrepare,
         exec: mock(() => undefined),
-        transaction: mock((fn) => fn()),
+        transaction: mockTransaction,
         searchInventory: mock(() => []),
     },
     models: { create: mock(), findById: mock(), findOne: mock(), findMany: mock(() => []), update: mock(), delete: mock(), count: mock(() => 0) },
@@ -56,6 +63,12 @@ describe('analyticsService', () => {
         mockQueryAll.mockReturnValue([]);
         mockQueryRun.mockReset();
         mockQueryRun.mockReturnValue({ changes: 1 });
+        mockTransaction.mockReset();
+        mockTransaction.mockImplementation((fn) => fn({
+            get: mockQueryGet,
+            all: mockQueryAll,
+            run: mockQueryRun
+        }));
     });
 
     describe('anonymizeIp', () => {
@@ -508,14 +521,14 @@ describe('analyticsService — extended coverage', () => {
     // getEventCounts — query interaction
     // ------------------------------------------------------------------
     describe('getEventCounts — query behavior', () => {
-        test('calls query.all with date range', () => {
+        test('calls query.all with date range', async () => {
             mockQueryAll.mockReturnValue([
                 { name: 'page_view', count: 100, unique_users: 50, unique_sessions: 30 },
                 { name: 'user_action', count: 75, unique_users: 40, unique_sessions: 25 }
             ]);
             const start = new Date('2024-01-01');
             const end = new Date('2024-01-31');
-            const result = analyticsService.getEventCounts(start, end);
+            const result = await analyticsService.getEventCounts(start, end);
             expect(Array.isArray(result)).toBe(true);
             expect(result.length).toBe(2);
             expect(result[0].name).toBe('page_view');
@@ -523,9 +536,9 @@ describe('analyticsService — extended coverage', () => {
             expect(result[1].name).toBe('user_action');
         });
 
-        test('returns empty array when no events', () => {
+        test('returns empty array when no events', async () => {
             mockQueryAll.mockReturnValue([]);
-            const result = analyticsService.getEventCounts(new Date('2025-01-01'));
+            const result = await analyticsService.getEventCounts(new Date('2025-01-01'));
             expect(result).toEqual([]);
         });
 
@@ -541,22 +554,22 @@ describe('analyticsService — extended coverage', () => {
     // getPageViews — groupBy logic
     // ------------------------------------------------------------------
     describe('getPageViews — groupBy logic', () => {
-        test('returns page views grouped by day (default)', () => {
+        test('returns page views grouped by day (default)', async () => {
             mockQueryAll.mockReturnValue([
                 { period: '2024-01-15', page: '/home', views: 100, unique_users: 50 },
                 { period: '2024-01-15', page: '/inventory', views: 80, unique_users: 40 }
             ]);
-            const result = analyticsService.getPageViews(new Date('2024-01-01'), new Date('2024-01-31'));
+            const result = await analyticsService.getPageViews(new Date('2024-01-01'), new Date('2024-01-31'));
             expect(result.length).toBe(2);
             expect(result[0].period).toBe('2024-01-15');
             expect(result[0].page).toBe('/home');
         });
 
-        test('passes hour format when groupBy is hour', () => {
+        test('passes hour format when groupBy is hour', async () => {
             mockQueryAll.mockReturnValue([
                 { period: '2024-01-15 14:00', page: '/home', views: 20, unique_users: 10 }
             ]);
-            const result = analyticsService.getPageViews(
+            const result = await analyticsService.getPageViews(
                 new Date('2024-01-15'),
                 new Date('2024-01-16'),
                 'hour'
@@ -564,22 +577,22 @@ describe('analyticsService — extended coverage', () => {
             expect(result.length).toBe(1);
             // The first argument to query.all should be the hour format
             const callArgs = mockQueryAll.mock.calls[mockQueryAll.mock.calls.length - 1];
-            expect(callArgs[1][0]).toBe('%Y-%m-%d %H:00');
+            expect(callArgs[1][0]).toBe('YYYY-MM-DD HH24:00');
         });
 
         test('passes day format when groupBy is day', () => {
             mockQueryAll.mockReturnValue([]);
             analyticsService.getPageViews(new Date('2024-01-01'), new Date('2024-01-31'), 'day');
             const callArgs = mockQueryAll.mock.calls[mockQueryAll.mock.calls.length - 1];
-            expect(callArgs[1][0]).toBe('%Y-%m-%d');
+            expect(callArgs[1][0]).toBe('YYYY-MM-DD');
         });
 
         test('defaults to day format when groupBy is unrecognized', () => {
             mockQueryAll.mockReturnValue([]);
             analyticsService.getPageViews(new Date('2024-01-01'), new Date('2024-01-31'), 'month');
             const callArgs = mockQueryAll.mock.calls[mockQueryAll.mock.calls.length - 1];
-            // Anything not 'hour' falls to '%Y-%m-%d'
-            expect(callArgs[1][0]).toBe('%Y-%m-%d');
+            // Anything not 'hour' falls to YYYY-MM-DD.
+            expect(callArgs[1][0]).toBe('YYYY-MM-DD');
         });
     });
 
@@ -587,11 +600,11 @@ describe('analyticsService — extended coverage', () => {
     // getUserSessions — parameters
     // ------------------------------------------------------------------
     describe('getUserSessions — parameters', () => {
-        test('returns sessions for a specific user', () => {
+        test('returns sessions for a specific user', async () => {
             mockQueryAll.mockReturnValue([
                 { session_id: 'sess-1', start_time: '2024-01-15T10:00:00Z', end_time: '2024-01-15T10:30:00Z', event_count: 15, events: 'page_view,user_action' }
             ]);
-            const result = analyticsService.getUserSessions('user-42');
+            const result = await analyticsService.getUserSessions('user-42');
             expect(result.length).toBe(1);
             expect(result[0].session_id).toBe('sess-1');
             expect(result[0].event_count).toBe(15);
@@ -611,9 +624,9 @@ describe('analyticsService — extended coverage', () => {
             expect(callArgs[1][1]).toBe(25);
         });
 
-        test('returns empty array for user with no sessions', () => {
+        test('returns empty array for user with no sessions', async () => {
             mockQueryAll.mockReturnValue([]);
-            const result = analyticsService.getUserSessions('nonexistent-user');
+            const result = await analyticsService.getUserSessions('nonexistent-user');
             expect(result).toEqual([]);
         });
     });
@@ -622,13 +635,13 @@ describe('analyticsService — extended coverage', () => {
     // analyzeFunnel — step parsing and dropoff calculation
     // ------------------------------------------------------------------
     describe('analyzeFunnel — step parsing and dropoff calculation', () => {
-        test('parses step with event:target format', () => {
+        test('parses step with event:target format', async () => {
             // Set up mock to return user counts for funnel steps
             mockQueryGet.mockReturnValue({ users: 100 });
             mockQueryAll.mockReturnValue([{ user_id: 'u1' }, { user_id: 'u2' }]);
 
             const steps = ['page_view:signup'];
-            const result = analyticsService.analyzeFunnel(steps, new Date('2024-01-01'));
+            const result = await analyticsService.analyzeFunnel(steps, new Date('2024-01-01'));
             expect(Array.isArray(result)).toBe(true);
             expect(result.length).toBe(1);
             expect(result[0].step).toBe('page_view:signup');
@@ -636,17 +649,17 @@ describe('analyticsService — extended coverage', () => {
             expect(result[0]).toHaveProperty('dropoff');
         });
 
-        test('parses step without target', () => {
+        test('parses step without target', async () => {
             mockQueryGet.mockReturnValue({ users: 50 });
             mockQueryAll.mockReturnValue([{ user_id: 'u1' }]);
 
             const steps = ['page_view'];
-            const result = analyticsService.analyzeFunnel(steps, new Date('2024-01-01'));
+            const result = await analyticsService.analyzeFunnel(steps, new Date('2024-01-01'));
             expect(result.length).toBe(1);
             expect(result[0].step).toBe('page_view');
         });
 
-        test('calculates multi-step funnel', () => {
+        test('calculates multi-step funnel', async () => {
             // First step: 100 users
             // Second step: 60 users (40% dropoff)
             // Third step: 20 users (66.7% dropoff)
@@ -662,7 +675,7 @@ describe('analyticsService — extended coverage', () => {
             });
 
             const steps = ['page_view:home', 'user_action:form_start', 'conversion:signup'];
-            const result = analyticsService.analyzeFunnel(steps, new Date('2024-01-01'));
+            const result = await analyticsService.analyzeFunnel(steps, new Date('2024-01-01'));
             expect(result.length).toBe(3);
             // Each result should have step, users, dropoff, conversionRate
             for (const r of result) {
@@ -675,17 +688,17 @@ describe('analyticsService — extended coverage', () => {
             }
         });
 
-        test('returns empty results array for empty steps', () => {
-            const result = analyticsService.analyzeFunnel([], new Date('2024-01-01'));
+        test('returns empty results array for empty steps', async () => {
+            const result = await analyticsService.analyzeFunnel([], new Date('2024-01-01'));
             expect(result).toEqual([]);
         });
 
-        test('handles funnel step with zero users at a point', () => {
+        test('handles funnel step with zero users at a point', async () => {
             mockQueryGet.mockReturnValue({ users: 0 });
             mockQueryAll.mockReturnValue([]);
 
             const steps = ['page_view:nonexistent', 'conversion:nothing'];
-            const result = analyticsService.analyzeFunnel(steps, new Date('2024-01-01'));
+            const result = await analyticsService.analyzeFunnel(steps, new Date('2024-01-01'));
             expect(result.length).toBe(2);
             // Second step should show 100% dropoff when previous had users
             // or 0 users if first had 0
@@ -697,14 +710,14 @@ describe('analyticsService — extended coverage', () => {
     // getConversionMetrics — result shape
     // ------------------------------------------------------------------
     describe('getConversionMetrics — result shape', () => {
-        test('returns conversion metrics for a specific type', () => {
+        test('returns conversion metrics for a specific type', async () => {
             mockQueryGet.mockReturnValue({
                 total_conversions: 25,
                 unique_users: 20,
                 total_value: 1249.75,
                 avg_value: 49.99
             });
-            const result = analyticsService.getConversionMetrics('purchase', new Date('2024-01-01'));
+            const result = await analyticsService.getConversionMetrics('purchase', new Date('2024-01-01'));
             expect(result).toBeDefined();
             expect(result.total_conversions).toBe(25);
             expect(result.unique_users).toBe(20);
@@ -712,14 +725,14 @@ describe('analyticsService — extended coverage', () => {
             expect(result.avg_value).toBe(49.99);
         });
 
-        test('returns null values when no conversions exist', () => {
+        test('returns null values when no conversions exist', async () => {
             mockQueryGet.mockReturnValue({
                 total_conversions: 0,
                 unique_users: 0,
                 total_value: null,
                 avg_value: null
             });
-            const result = analyticsService.getConversionMetrics('nonexistent', new Date('2024-06-01'));
+            const result = await analyticsService.getConversionMetrics('nonexistent', new Date('2024-06-01'));
             expect(result.total_conversions).toBe(0);
             expect(result.total_value).toBeNull();
         });
@@ -740,13 +753,13 @@ describe('analyticsService — extended coverage', () => {
     // getRetentionCohorts — result handling
     // ------------------------------------------------------------------
     describe('getRetentionCohorts — result handling', () => {
-        test('returns cohort data array', () => {
+        test('returns cohort data array', async () => {
             mockQueryAll.mockReturnValue([
                 { cohort_week: '2024-01', weeks_since_first: 0, users: 50 },
                 { cohort_week: '2024-01', weeks_since_first: 1, users: 35 },
                 { cohort_week: '2024-01', weeks_since_first: 2, users: 20 }
             ]);
-            const result = analyticsService.getRetentionCohorts(new Date('2024-01-01'), new Date('2024-03-01'));
+            const result = await analyticsService.getRetentionCohorts(new Date('2024-01-01'), new Date('2024-03-01'));
             expect(result.length).toBe(3);
             expect(result[0].cohort_week).toBe('2024-01');
             expect(result[0].weeks_since_first).toBe(0);
@@ -767,9 +780,9 @@ describe('analyticsService — extended coverage', () => {
             expect(callArgs[1][3]).toBe(end.toISOString());
         });
 
-        test('returns empty array when no data', () => {
+        test('returns empty array when no data', async () => {
             mockQueryAll.mockReturnValue([]);
-            const result = analyticsService.getRetentionCohorts(new Date('2025-01-01'));
+            const result = await analyticsService.getRetentionCohorts(new Date('2025-01-01'));
             expect(result).toEqual([]);
         });
     });
@@ -811,13 +824,12 @@ describe('analyticsService — extended coverage', () => {
     // flush — queue processing & error recovery
     // ------------------------------------------------------------------
     describe('flush — queue processing and error recovery', () => {
-        test('flush calls query.prepare with INSERT statement', async () => {
+        test('flush writes queued events through the transaction runner', async () => {
             // Add an event to the queue first
             analyticsService.track('flush_test_event', { val: 1 });
             await analyticsService.flush();
-            // prepare should have been called (to insert the event)
-            expect(mockPrepare).toHaveBeenCalled();
-            const sql = mockPrepare.mock.calls[mockPrepare.mock.calls.length - 1][0];
+            expect(mockQueryRun).toHaveBeenCalled();
+            const sql = mockQueryRun.mock.calls[mockQueryRun.mock.calls.length - 1][0];
             expect(sql).toContain('INSERT INTO analytics_events');
         });
 
@@ -825,25 +837,24 @@ describe('analyticsService — extended coverage', () => {
             // Flush any existing events first
             try { await analyticsService.flush(); } catch { /* ok */ }
             // Reset mock call count
-            mockPrepare.mockClear();
+            mockQueryRun.mockClear();
             // Now flush empty queue
             await analyticsService.flush();
-            // prepare should NOT have been called for an empty queue
-            expect(mockPrepare).not.toHaveBeenCalled();
+            expect(mockQueryRun).not.toHaveBeenCalled();
         });
 
         test('flush re-queues events on error if queue is small', async () => {
-            mockPrepare.mockImplementation(() => { throw new Error('DB write failed'); });
+            mockQueryRun.mockImplementation(() => { throw new Error('DB write failed'); });
             // Add some events
             analyticsService.track('fail_event_1', {});
             analyticsService.track('fail_event_2', {});
             // Flush should catch the error and re-queue
             await analyticsService.flush();
-            // The events should be re-queued — flushing again should attempt prepare again
-            mockPrepare.mockClear();
-            mockPrepare.mockImplementation(() => { throw new Error('DB write failed again'); });
+            // The events should be re-queued — flushing again should attempt writes again.
+            mockQueryRun.mockClear();
+            mockQueryRun.mockImplementation(() => { throw new Error('DB write failed again'); });
             await analyticsService.flush();
-            expect(mockPrepare).toHaveBeenCalled();
+            expect(mockQueryRun).toHaveBeenCalled();
         });
     });
 
@@ -896,10 +907,10 @@ describe('analyticsService — extended coverage', () => {
             expect(mod.default).toBe(mod.analyticsService);
         });
 
-        test('migration is a named export with valid SQL', async () => {
+        test('migration export is intentionally empty because pg-schema owns analytics DDL', async () => {
             const mod = await import('../backend/services/analytics.js');
             expect(typeof mod.migration).toBe('string');
-            expect(mod.migration.length).toBeGreaterThan(100);
+            expect(mod.migration).toBe('');
         });
 
         test('analyticsService has exactly 16 public methods', async () => {
@@ -925,44 +936,43 @@ describe('analyticsService — extended coverage', () => {
     });
 
     // ------------------------------------------------------------------
-    // migration SQL — structural validation
+    // pg-schema SQL — structural validation
     // ------------------------------------------------------------------
-    describe('migration SQL — structural validation', () => {
-        let migration;
+    describe('pg-schema SQL — structural validation', () => {
+        let pgSchema;
         beforeEach(async () => {
-            const mod = await import('../backend/services/analytics.js');
-            migration = mod.migration;
+            pgSchema = readFileSync(join(process.cwd(), 'src/backend/db/pg-schema.sql'), 'utf8');
         });
 
-        test('defines analytics_events table with all 7 columns', () => {
+        test('defines analytics_events table with all tracked columns', () => {
             const columns = ['id', 'name', 'properties', 'user_id', 'session_id', 'timestamp', 'ip', 'user_agent'];
             for (const col of columns) {
-                expect(migration).toContain(col);
+                expect(pgSchema).toContain(col);
             }
         });
 
-        test('id is INTEGER PRIMARY KEY AUTOINCREMENT', () => {
-            expect(migration).toContain('id INTEGER PRIMARY KEY AUTOINCREMENT');
+        test('id is a serial primary key in Postgres schema', () => {
+            expect(pgSchema).toContain('id SERIAL PRIMARY KEY');
         });
 
         test('name is TEXT NOT NULL', () => {
-            expect(migration).toContain('name TEXT NOT NULL');
+            expect(pgSchema).toContain('name TEXT NOT NULL');
         });
 
-        test('timestamp is TEXT NOT NULL', () => {
-            expect(migration).toContain('timestamp TEXT NOT NULL');
+        test('timestamp is TIMESTAMPTZ with NOW default', () => {
+            expect(pgSchema).toContain('timestamp TIMESTAMPTZ DEFAULT NOW()');
         });
 
         test('has 4 CREATE INDEX statements', () => {
-            const matches = migration.match(/CREATE INDEX IF NOT EXISTS/g);
+            const matches = pgSchema.match(/CREATE INDEX IF NOT EXISTS idx_analytics_(name|user|session|timestamp)/g);
             expect(matches).not.toBeNull();
             expect(matches.length).toBe(4);
         });
 
         test('all indexes are on analytics_events table', () => {
-            const indexLines = migration.split('\n').filter(l => l.includes('CREATE INDEX'));
+            const indexLines = pgSchema.split('\n').filter(l => l.includes('CREATE INDEX') && l.includes('idx_analytics_'));
             for (const line of indexLines) {
-                expect(line).toContain('ON analytics_events');
+                if (!line.includes('snapshots')) expect(line).toContain('ON analytics_events');
             }
         });
     });
