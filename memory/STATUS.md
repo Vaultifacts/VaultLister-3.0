@@ -9,6 +9,40 @@
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
+## Completed This Session (2026-04-10, session 13)
+
+### Walkthrough doc — all per-tab reports VERIFIED — 4100d83
+- Dashboard bugs 1-9: VERIFIED ✅ — d8588ad (rebased from d545fbe)
+- Offers/Orders/Shipping bugs 1-10, visual 1-5, UX 1-7: VERIFIED/PRE-EXISTING — 4100d83
+- All per-tab walkthrough reports complete: Inventory, Daily Checklist, Sales & Purchases, Listings, Dashboard, Offers/Orders/Shipping
+- Remaining OPEN items: CR-3 (Stripe price IDs), CR-4 (EasyPost anti-fraud), CR-10 (OAuth flows) — external blockers
+
+### Offers, Orders & Shipping tab fixes — d1ad0a9 (rebased from c6d6911)
+- **Bug 1**: Clear Filters didn't reset dropdown DOM values — added querySelectorAll reset after setState, added `orders-filter-bar` class + `orders-search-input` class to filter markup
+- **Bug 7**: Batches sub-tab empty state had no Create Batch button — added button + `showCreateBatch`/`submitCreateBatch` handlers
+- **Bug 9**: Action bar buttons overflow on narrow viewports — wrapped in `overflow-x:auto` + inner `flex-wrap:nowrap` div
+- **Visual 2**: Offer History by Item stat cards in 2+1 layout — added `style="grid-template-columns:repeat(3, 1fr);"` inline + CSS minmax reduced to 140px
+- **Visual 3**: Platform filter inconsistency between Orders and Offers — both now have Poshmark/eBay/Whatnot/Depop/Mercari/Facebook; Shopify removed from Orders
+- **Visual 4**: Shipping label form showed generic error only — `createLabel` now highlights specific empty required fields with `input-error` class
+- **UX 1**: No "Add Order" button — added to action bar + `showAddOrder`/`submitAddOrder` handlers (platform select, buyer, title, price, status fields)
+- **UX 3**: Quick Sync platform buttons had no loading feedback — `syncPlatformOrders` now shows platform name in toast + completion message
+- Note: Bugs 2 (Batch Ship by Region) and 3 (Order Map) are already fully implemented; they show modals with real content when orders exist
+
+## Completed This Session (2026-04-10, session 11)
+
+### Dashboard tab fixes — c7b3294
+- **Bug 1**: Massive white gap on scroll — `toggleVaultBuddy` now toggles CSS class directly instead of calling `renderApp()`, preventing layout shift
+- **Bug 2**: Log Sale button opened Add Item instead of sale modal — fixed to `loadChunk('sales').then(() => handlers.showAddSale())`
+- **Bug 3**: Daily Summary modal buttons (Add Item, Full Analytics, Checklist) did nothing — wired via `showDailySummary` stub loading sales chunk
+- **Bug 4**: Daily Summary "View" button did nothing — same stub fix
+- **Bug 5**: Profit Target Tracker label didn't update on input — `updateProfitTarget` now updates `.goal` DOM span immediately
+- **Bug 6**: Restock button opened Add Item — fixed to `loadChunk('inventory').then(() => handlers.editItem(id))`
+- **Bug 7**: Global Search input wouldn't accept typed text — `openGlobalSearch` stub loads deferred chunk then calls `_openGlobalSearchImpl`
+- **Bug 8**: VaultBuddy X button unresponsive when modal open — raised `.vault-buddy-modal` z-index from 999 to 1001 (above modal overlay at 500)
+- **Bug 9**: Hero stat cards not clickable — added `cursor:pointer` + `onclick` navigating to relevant tabs (sales/listings/orders-sales)
+- Added chunk-loading stubs in handlers-core.js for 4 functions that live in lazy chunks; renamed real impls to `_Impl` suffix to prevent Object.assign overwrite
+- Bundle rebuilt: version 8014f404, 1432 KB, 12 files; node --check passes on all 7 source files
+
 ## Completed This Session (2026-04-10, session 10)
 
 ### Sales & Purchases tab fixes — 459772b
