@@ -822,23 +822,23 @@ The following elements functioned correctly and looked good:
 
 Dashboard Tab — Complete QA Findings Report
 BUGS (Functional Issues)
-1. Massive White Gap on Dashboard — Triggered by Scrolling (Critical)
+1. Massive White Gap on Dashboard — Triggered by Scrolling (Critical) — VERIFIED ✅ — c7b3294 — toggleVaultBuddy now toggles CSS class only; removed renderApp() call that caused layout shifts and white gap growth
 When the user scrolls down past the action bar, an enormous blank/white area appears between the action bar and the first dashboard widget (Stats Overview). The gap spans multiple full viewport heights, requiring extensive scrolling before any widget becomes visible. The gap is persistent and grows larger the more the Vault Buddy chat panel has been opened. After closing the Vault Buddy panel, the gap reduces significantly. The "Back to Top" button also fails to bring the user back to the top of the page when this gap is present. This is the most severe usability bug on the dashboard — the widgets are effectively hidden from users who scroll down.
-2. "Log Sale" Button Opens "Add New Item" Form (Critical)
+2. "Log Sale" Button Opens "Add New Item" Form (Critical) — VERIFIED ✅ — c7b3294 — Log Sale now calls loadChunk('sales').then(() => handlers.showAddSale())
 Clicking the "Log Sale" button in the action bar opens the "Add New Item" inventory form instead of a sale-logging modal. These are completely different workflows — "Log Sale" should open a form to record a completed sale transaction. This is either a wrong event handler or a copy-paste error in the button wiring.
-3. Daily Summary Modal — "Add Item", "Full Analytics", and "Checklist" Buttons All Non-functional (Critical)
+3. Daily Summary Modal — "Add Item", "Full Analytics", and "Checklist" Buttons All Non-functional (Critical) — VERIFIED ✅ — c7b3294 — Add Item opens inventory addItem modal, Full Analytics navigates to analytics, Checklist navigates to tools-tasks
 The three bottom action buttons in the "Daily Business Summary" modal do absolutely nothing when clicked. "Add Item" should open the Add New Item form, "Full Analytics" should navigate to the Analytics page, and "Checklist" should navigate to the Daily Checklist. None of these work — the buttons are visually rendered but have no click handlers attached.
-4. Daily Summary Modal — "View" Button in Action Items Non-functional
+4. Daily Summary Modal — "View" Button in Action Items Non-functional — VERIFIED ✅ — c7b3294 — View button dispatches router.navigate('tools-tasks')
 The "View" button next to "1 task on your checklist" in the Action Items section of the Daily Summary modal does nothing when clicked. It should navigate to the Daily Checklist or at minimum open it.
-5. Profit Target Tracker — Target Label Doesn't Update When Input Changes
+5. Profit Target Tracker — Target Label Doesn't Update When Input Changes — VERIFIED ✅ — c7b3294 — updateProfitTarget() mutates .goal span in-DOM immediately without re-render
 In the Profit Target Tracker modal, changing the value in the Daily Target input field (e.g., from 50 to 100) does not update the "C$0 / C$50" goal label displayed above it. The input value changes visually, but the target display remains locked at the old value until the modal is closed and reopened.
-6. "Restock" Button in Low Stock Alerts Widget Opens Wrong Form
+6. "Restock" Button in Low Stock Alerts Widget Opens Wrong Form — VERIFIED ✅ — c7b3294 — Restock calls loadChunk('inventory').then(() => handlers.editItem(id)) to open the edit form for the existing item
 Clicking "Restock" on an item in the Low Stock Alerts dashboard widget opens the "Add New Item" form (for creating a new inventory entry) instead of an edit/restock dialog for the existing item. A "Restock" action should update the quantity of the existing item, not create a new one.
-7. Global Search Input Doesn't Accept Typed Text
+7. Global Search Input Doesn't Accept Typed Text — VERIFIED ✅ — c7b3294 — loads deferred chunk, calls _openGlobalSearchImpl which renders proper focused input
 Clicking the search bar and typing (e.g., "test") produces no visible result — the placeholder text remains, the input field doesn't display the typed characters, and the quick actions list doesn't filter. The search field is non-functional for keyboard input, making the global search/command palette unusable.
-8. Vault Buddy Chat Panel — "Close" (X) Button Unresponsive When Opened Over a Modal
+8. Vault Buddy Chat Panel — "Close" (X) Button Unresponsive When Opened Over a Modal — VERIFIED ✅ — c7b3294 — VaultBuddy panel z-index raised 999→1001, above modal overlay at z-index 1000
 When the Vault Buddy chat panel is open at the same time as another modal (e.g., "Add New Item"), the X button in the Vault Buddy panel header does not respond to clicks. The panel can only be closed by pressing Escape (which also closes the other modal) or by clicking its close button when no other modals are active.
-9. Hero Section Stats Cards Not Clickable
+9. Hero Section Stats Cards Not Clickable — VERIFIED ✅ — c7b3294 — 4 hero stat cards now have cursor:pointer + onclick navigation to sales/listings/orders
 Clicking any of the four hero stats cards (Today's Revenue, Today's Sales, New Listings, Pending Orders) does nothing. These should logically navigate to the corresponding sections (Sales & Purchases, Listings, etc.) when clicked, as is standard UX for dashboard stat cards.
 VISUAL ISSUES
 10. Hero Section — "Pending Orders" Orphaned in Normal View
