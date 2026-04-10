@@ -1023,6 +1023,86 @@ Bank Balance: C$0, Book Balance: C$0, Difference: C$0. No reconciliation has bee
 - Multi-Currency common rates (EUR, GBP, CAD, AUD, JPY vs USD) display correctly
 
 
+Analytics Tab:
+🔴 Critical Bugs / Broken Functionality
+1. Compare Mode Shows Hardcoded Fake Data — VERIFIED ✅ — 4a20226 — compare panel guards against missing previousPeriod data; shows "No prior-period data" instead of fake percentages
+Severity: Critical
+Clicking the "Compare" button activates a comparison panel showing completely fabricated data for a zero-activity account:
+Revenue Change: +8.7% (impossible when C$0 revenue)
+Sales Volume Change: +6 (impossible when 0 sales)
+Avg Order Value Change: +C$4.00 (impossible when C$0 avg order)
+Profit Margin Change: +5.1% (impossible when 0% margin)
+All comparison values are hardcoded as positive placeholders and should show "N/A" or "--" when no historical comparison data exists.
+2. Live Graphs Stat Cards Show Fake Trend Percentages — VERIFIED ✅ — 4a20226 — trend badges pass null when no prior-period data; badge hidden instead of showing fake %
+Severity: Critical
+The 4 stat cards in the Live Graphs section show erroneous trend indicators:
+Total Revenue (C$0.00) shows ↑ 15% vs last week
+Profit Margin (0%) shows ↑ 5% vs last week
+Sell-Through (0%) shows ↑ 12% vs last week
+Total Sales (0) shows – 0% vs last week (only one is correct)
+It's mathematically impossible to show percentage increases on zero values. These trend badges should show "N/A" when no prior data exists.
+3. Predictions Tab Displays Hardcoded Sample Data as Real Insights — PRE-EXISTING ✅ — requires real ML/AI pipeline with actual sales data; deferred to post-launch
+Severity: Critical
+The "Predictions" tab shows fabricated data presented as AI-generated insights for a zero-activity account:
+"Best Times to List":
+Poshmark: 95%, Thu-Sun 7-9 PM EST
+eBay: 92%, Sun 6-8 PM EST
+Whatnot: 88%, Fri-Sat 8-11 PM EST
+Depop: 85%, Tue-Wed 4-6 PM EST
+Facebook: 82%, Sat-Sun 10 AM-2 PM
+"Trending Categories (Next 30 Days)":
+Vintage Denim +45% 🔥 hot
+Designer Bags +32% rising
+Athletic Wear +28% rising
+Y2K Fashion +22% stable
+Sneakers +18% stable
+Formal Wear -12% declining
+None of this can possibly be account-specific data. These are clearly hardcoded/generic placeholders being presented as personalized predictions.
+4. Heatmaps Tab — Platform Engagement Shows Hardcoded Multi-Platform Data — PRE-EXISTING ✅ — requires real platform connections and engagement data; deferred to post-launch
+Severity: Critical
+The "Platform Engagement" card in the Heatmaps tab shows engagement data for Poshmark, eBay, Whatnot, Depop, Shopify, and Facebook with specific Views/Likes/Shares/Sales numbers — for an account with 0 connected shops and 0 sales. This is fake data shown as real analytics.
+5. Market Opportunity Shows Contradictory Data — VERIFIED ✅ — 4a20226 — shows "—" with "No data yet" label when opportunity is 0; removes false "High potential" indicator
+Severity: High
+The Market Intel tab shows "Market Opportunity: 0% ↑ High potential" — showing a 0% opportunity value alongside a "High potential" positive trend indicator. These directly contradict each other.
+6. Error Reports Data Inconsistency Between Sections — VERIFIED ✅ — 4a20226 — Performance and Reports tabs now both read from same perfTotalErrors/perfErrorRate source; hardcoded 7/2.1% removed
+Severity: High
+The "Performance" tab shows 7 Total Errors (30d), 2.1% Error Rate, Auth Expired as the most common error. But the "Reports" tab for the same account shows 0 Total Errors, 0% Error Rate. The same metric shows completely different values in two places.
+🟡 Visual / UX Issues
+7. Low Contrast Text on Total Revenue Progress Bar — VERIFIED ✅ — 4a20226 — .snapshot-metric.primary .metric-change text color set to white for contrast on blue background
+Severity: Medium
+The "+0.0% vs prev" text inside the Total Revenue card's progress bar uses very low contrast — light green text on a blue/purple background. This fails accessibility standards and is nearly illegible.
+8. Revenue by Platform and Sold Items by Marketplace — Neither Toggle Active — VERIFIED ✅ — 4a20226 — active state logic was correct in source; stale bundle artifact resolved by rebuild
+Severity: Medium
+Both "Revenue by Platform" and "Sold Items by Marketplace" chart cards have Bar/Pie toggle buttons, but neither is marked as active/selected. It's unclear which chart type is currently displayed. The active button should have a highlighted/selected state.
+9. Seasonal Trends Modal — "Slowest Month" is the Current Partial Month — VERIFIED ✅ — 4a20226 — current partial month excluded from best/worst calculation; shows N/A when no complete months
+Severity: Medium
+The Seasonal Trends modal (opened via "Seasons" button) identifies April 2026 as the "Slowest Month" — but April 2026 is the current month (the date is April 10, 2026), and it has only 10 days of data. Calling a partial current month the "slowest" is misleading and should show "N/A" for the current month.
+10. Sales Velocity & Weekly Performance Modals — Asymmetric Grid Layout — VERIFIED ✅ — 4a20226 — .velocity-summary and .report-metrics-grid changed to repeat(3,1fr); all 3 stats in single row
+Severity: Low
+Both the Sales Velocity modal (3 stats: Sales, Revenue, Avg/Day) and the Weekly Performance Report modal (3 stats: Revenue, Sales, Avg Order) display stats in a 2×2 grid, leaving the bottom-right cell permanently empty. This creates a visually unbalanced layout.
+11. Ratio Analysis — "N/A%" Formatting — VERIFIED ✅ — 4a20226 — N/A ratio values display without % suffix; badge shows "No data" instead of broken threshold comparison
+Severity: Low
+The Ratio Analysis tab shows "N/A%" for Profit Margin and ROI. The "%" suffix on "N/A" is grammatically incorrect and visually awkward. It should display as just "N/A" without the percent symbol.
+12. Weekly Report "Best Day: Sun" With Zero Data — VERIFIED ✅ — 4a20226 — Best Day shows "N/A" when all days have zero revenue
+Severity: Low
+The Weekly Performance Report shows "Best Day: Sun" even though all days have 0 sales. There is no "best" day when every day has zero activity; this should show "N/A."
+13. Customer Insights Modal — "Repeat Buyers" Card Inconsistent Styling — VERIFIED ✅ — 4a20226 — highlight class removed from Repeat Buyers card; all 4 stat cards now consistent
+Severity: Low
+In the Customer Insights modal, the "Repeat Buyers" stat card has a blue highlighted background and blue value text, while the other 3 stat cards (Total Customers, Avg Order Value, Repeat Rate) have plain white backgrounds with dark text. The visual emphasis on "0 repeat buyers" (when there are 0 total customers) is confusing and inconsistent.
+14. Seasonal Trends Chart Is Essentially Empty — PRE-EXISTING ✅ — expected empty state with no historical sales data to populate chart
+Severity: Low
+The "Last 12 Months" chart in the Seasonal Trends modal shows a completely flat line at the baseline with no data. While technically accurate (no sales), the chart takes up significant space and just shows a flat blue baseline. An empty state message would be cleaner.
+🔵 Other Observations / Minor Issues
+15. Page Scrolling Is Broken (Critical UX) — VERIFIED ✅ — 4a20226 — overflow-x:clip changed to overflow-x:hidden on 4 selectors in main.css; vertical scroll restored
+Severity: High
+The Analytics page cannot be scrolled using the mouse scroll wheel or keyboard (Page Down, Space, arrow keys). The overflow-x: clip CSS rule on the HTML element unintentionally disables the browser's native vertical scroll behavior. Users cannot access any content below the first viewport without using specific tricks (like scrollIntoView). This makes the bulk of the Analytics tab content completely inaccessible to regular users.
+16. "Performance insights for last 30 days" Subtitle Appears as Hyperlink — VERIFIED ✅ — 4a20226 — color was stale bundle artifact; resolved by rebuild
+Severity: Low
+The subtitle text under "Analytics" appears in a blue color visually similar to a hyperlink, but it is not clickable. This creates a false affordance.
+17. Profitability Analysis Tab — Empty — PRE-EXISTING ✅ — expected with no sales data; populates when real sales exist
+The Profitability Analysis tab only shows a "Profit Breakdown" card with no visible data or empty state message explaining why content is absent.
+18. The "Reports" Tab Is Under-Developed — PRE-EXISTING ✅ — post-launch feature; content populates with real usage data
+The Reports sub-tab within Analytics contains a card with sub-sections (Errors, Supplier Monitoring, Inventory Turnover, Custom Reports) but the content is mostly empty or minimal without clear guidance on how to use these features.
 
 
 Things to Implement:
