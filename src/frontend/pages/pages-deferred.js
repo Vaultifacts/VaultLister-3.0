@@ -2984,12 +2984,15 @@ Object.assign(pages, {
             cashFlowChange: 0
         };
 
-        // Cash flow waterfall data
+        // Cash flow waterfall data — derived from same totalExpenses as overview cards
+        const waterfallShipping = (store.state.sales || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0);
+        const waterfallFees = (store.state.sales || []).reduce((sum, s) => sum + (s.platform_fee || 0), 0);
+        const waterfallCOGS = Math.max(0, totalExpenses - waterfallShipping - waterfallFees);
         const waterfallData = [
             { label: 'Revenue', value: totalRevenue, type: 'positive' },
-            { label: 'COGS', value: -totalExpenses * 0.6, type: 'negative' },
-            { label: 'Shipping', value: -(store.state.sales || []).reduce((sum, s) => sum + (s.shipping_cost || 0), 0), type: 'negative' },
-            { label: 'Fees', value: -(store.state.sales || []).reduce((sum, s) => sum + (s.platform_fee || 0), 0), type: 'negative' },
+            { label: 'COGS', value: -waterfallCOGS, type: 'negative' },
+            { label: 'Shipping', value: -waterfallShipping, type: 'negative' },
+            { label: 'Fees', value: -waterfallFees, type: 'negative' },
             { label: 'Net', value: netProfit, type: 'total' }
         ];
 
@@ -3075,6 +3078,7 @@ Object.assign(pages, {
                             </svg>
                             <div class="health-score-content">
                                 <span class="health-score-value">${financialHealthScore}</span>
+                                <span class="health-score-scale">/ 100</span>
                                 <span class="health-score-label">Health</span>
                             </div>
                         </div>
@@ -3219,16 +3223,16 @@ Object.assign(pages, {
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div class="form-group">
-                                    <label class="form-label">Gross Income ($)</label>
+                                    <label class="form-label">Gross Income (C$)</label>
                                     <input type="number" id="tax-gross-income" class="form-input" value="${(store.state.taxGrossIncome || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Deductions ($)</label>
+                                    <label class="form-label">Deductions (C$)</label>
                                     <input type="number" id="tax-deductions" class="form-input" value="${(store.state.taxDeductions || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Self-Employment Income ($)</label>
+                                <label class="form-label">Self-Employment Income (C$)</label>
                                 <input type="number" id="tax-self-employment" class="form-input" value="${(store.state.taxSelfEmployment || 0)}" min="0" step="100" onchange="handlers.recalcTaxEstimate()">
                             </div>
                             <button class="btn btn-primary" onclick="handlers.recalcTaxEstimate()">Calculate Estimate</button>
@@ -3317,36 +3321,47 @@ Object.assign(pages, {
                     <h3 class="card-title">${components.icon('globe', 18)} Multi-Currency Converter</h3>
                 </div>
                 <div class="card-body">
-                    <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 16px; align-items: end; margin-bottom: 20px;">
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Amount</label>
                             <input type="number" id="currency-amount" class="form-input" value="100" min="0" step="0.01" onchange="handlers.convertCurrency()">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">From</label>
+                            <select id="currency-from" class="form-select" onchange="handlers.convertCurrency()">
+                                <option value="CAD" selected>CAD (Canadian Dollar)</option>
+                                <option value="USD">USD (US Dollar)</option>
+                                <option value="EUR">EUR (Euro)</option>
+                                <option value="GBP">GBP (British Pound)</option>
+                                <option value="AUD">AUD (Australian Dollar)</option>
+                                <option value="JPY">JPY (Japanese Yen)</option>
+                            </select>
                         </div>
                         <div style="padding-bottom: 8px; font-size: 20px; color: var(--gray-400);">&rarr;</div>
                         <div class="form-group" style="margin: 0;">
                             <label class="form-label">Convert To</label>
                             <select id="currency-target" class="form-select" onchange="handlers.convertCurrency()">
+                                <option value="USD">USD (US Dollar)</option>
                                 <option value="EUR">EUR (Euro)</option>
                                 <option value="GBP">GBP (British Pound)</option>
-                                <option value="CAD">CAD (Canadian Dollar)</option>
                                 <option value="AUD">AUD (Australian Dollar)</option>
                                 <option value="JPY">JPY (Japanese Yen)</option>
                             </select>
                         </div>
                     </div>
                     <div id="currency-result" style="padding: 16px; background: var(--primary-50); border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">€92.50</div>
-                        <div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 USD = 0.925 EUR (indicative rate)</div>
+                        <div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">$73.26</div>
+                        <div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 CAD = 0.7326 USD (indicative rate)</div>
                     </div>
                     <div style="margin-top: 16px;">
-                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Common Rates (vs USD)</div>
+                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Common Rates (vs CAD)</div>
                         <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
                             ${[
-                                { code: 'EUR', rate: 0.925, symbol: '€' },
-                                { code: 'GBP', rate: 0.795, symbol: '£' },
-                                { code: 'CAD', rate: 1.365, symbol: 'C$' },
-                                { code: 'AUD', rate: 1.535, symbol: 'A$' },
-                                { code: 'JPY', rate: 149.8, symbol: '¥' }
+                                { code: 'USD', rate: 0.7326, symbol: '$' },
+                                { code: 'EUR', rate: 0.6779, symbol: '€' },
+                                { code: 'GBP', rate: 0.5826, symbol: '£' },
+                                { code: 'AUD', rate: 1.1243, symbol: 'A$' },
+                                { code: 'JPY', rate: 109.74, symbol: '¥' }
                             ].map(c => '<div style="text-align: center; padding: 8px; background: var(--gray-50); border-radius: 6px;">' +
                                 '<div style="font-size: 12px; font-weight: 600;">' + c.code + '</div>' +
                                 '<div style="font-size: 11px; color: var(--gray-500);">' + c.symbol + c.rate + '</div>' +

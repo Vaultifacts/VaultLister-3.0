@@ -26986,6 +26986,12 @@ body.dark-mode .dashboard-customize-section .btn:hover {
     font-weight: 500;
 }
 
+.health-score-scale {
+    font-size: var(--font-size-xs);
+    color: var(--gray-400);
+    font-weight: 400;
+}
+
 .health-score-tier {
     font-size: var(--font-size-xs);
     font-weight: 600;

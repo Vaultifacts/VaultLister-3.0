@@ -5579,6 +5579,11 @@ const profitMarginGauge = {
     render(margin) {
         const angle = Math.min(180, Math.max(0, (margin / 100) * 180));
         const color = margin >= 30 ? 'var(--success-500)' : margin >= 15 ? 'var(--warning-500)' : 'var(--error-500)';
+        // Needle: arc center is (50,50), radius 40. 0% = left end = 180deg, 100% = right end = 0deg.
+        // Angle from positive-x axis (clockwise in SVG): needle tip angle = 180 - angle (degrees).
+        const needleRad = ((180 - angle) * Math.PI) / 180;
+        const nx = 50 + 34 * Math.cos(needleRad);
+        const ny = 50 - 34 * Math.sin(needleRad);
 
         return `
             <div class="profit-margin-gauge">
@@ -5586,6 +5591,9 @@ const profitMarginGauge = {
                     <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="var(--gray-200)" stroke-width="8" stroke-linecap="round"/>
                     <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="${color}" stroke-width="8" stroke-linecap="round"
                           stroke-dasharray="${angle * 1.4}, 252" />
+                    <line x1="50" y1="50" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}"
+                          stroke="var(--gray-700)" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="50" cy="50" r="3" fill="var(--gray-700)"/>
                 </svg>
                 <div class="profit-margin-value" style="color: ${color}">${margin.toFixed(1)}%</div>
                 <div class="profit-margin-label">Profit Margin</div>
@@ -5616,7 +5624,7 @@ const waterfallChart = {
                     return `
                         <div class="waterfall-bar-container">
                             <div class="waterfall-value ${isPositive ? 'text-success' : 'text-error'}">
-                                ${isPositive ? '+' : '-'}C$${Math.abs(item.value).toFixed(0)}
+                                ${item.value === 0 ? '' : isPositive ? '+' : '-'}C$${Math.abs(item.value).toFixed(0)}
                             </div>
                             <div class="waterfall-bar ${isTotal ? 'total' : isPositive ? 'positive' : 'negative'}"
                                  style="height: ${height}px;">
@@ -5666,7 +5674,7 @@ const financialRatios = {
                     <div class="ratio-card">
                         <div class="ratio-value">${ratio.value}</div>
                         <div class="ratio-name">${ratio.name}</div>
-                        <div class="ratio-status ${ratio.status}">${ratio.status === 'good' ? 'Healthy' : ratio.status === 'warning' ? 'Monitor' : 'Review'}</div>
+                        <div class="ratio-status ${ratio.status}"${ratio.value === 'N/A' ? ' title="N/A — no sales data recorded yet"' : ''}>${ratio.status === 'good' ? 'Healthy' : ratio.status === 'warning' ? 'Monitor' : 'Review'}</div>
                     </div>
                 `).join('')}
             </div>
@@ -5885,10 +5893,11 @@ const budgetProgress = {
         return budgets.map(b => {
             const percent = (b.actual / b.budget) * 100;
             const status = percent <= 80 ? 'under' : percent <= 100 ? 'warning' : 'over';
+            const label = b.name || b.category || 'Uncategorized';
             return `
                 <div class="budget-progress">
                     <div class="budget-progress-header">
-                        <span>${escapeHtml(b.category)}</span>
+                        <span>${escapeHtml(label)}</span>
                         <span>C$${b.actual.toLocaleString()} / C$${b.budget.toLocaleString()}</span>
                     </div>
                     <div class="budget-progress-bar">

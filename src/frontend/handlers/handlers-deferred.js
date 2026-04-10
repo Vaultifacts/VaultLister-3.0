@@ -14103,27 +14103,32 @@ Object.assign(handlers, {
 
         const el = document.getElementById('tax-estimate-result');
         if (el && gross > 0) {
-            el.innerHTML = sanitizeHTML('<div style="text-align: center; margin-bottom: 20px;"><div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div><div style="font-size: 36px; font-weight: 700; color: var(--danger);">$') + Math.round(total).toLocaleString() + '</div><div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: $' + Math.round(quarterly).toLocaleString() + '</div></div>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
+            el.innerHTML = sanitizeHTML('<div style="text-align: center; margin-bottom: 20px;"><div style="font-size: 12px; color: var(--gray-500);">Estimated Annual Tax</div><div style="font-size: 36px; font-weight: 700; color: var(--danger);">C$') + Math.round(total).toLocaleString() + '</div><div style="font-size: 14px; color: var(--warning); margin-top: 4px;">Quarterly Payment: C$' + Math.round(quarterly).toLocaleString() + '</div></div>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
                 '<div style="display: grid; gap: 8px;">' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Taxable Income</span><span class="font-medium">$' + taxable.toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Income Tax</span><span class="font-medium">$' + Math.round(incomeTax).toLocaleString() + '</span></div>' +
-                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Self-Employment Tax</span><span class="font-medium">$' + Math.round(seTax).toLocaleString() + '</span></div>' +
+                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Taxable Income</span><span class="font-medium">C$' + taxable.toLocaleString() + '</span></div>' +
+                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Income Tax</span><span class="font-medium">C$' + Math.round(incomeTax).toLocaleString() + '</span></div>' +
+                '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); font-size: 13px;"><span>Self-Employment Tax</span><span class="font-medium">C$' + Math.round(seTax).toLocaleString() + '</span></div>' +
                 '<div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; font-weight: 600;"><span>Effective Rate</span><span>' + (total / gross * 100).toFixed(1) + '%</span></div></div>';
         }
     },
 
     convertCurrency: function() {
         const amount = parseFloat(document.getElementById('currency-amount')?.value || 100);
-        const target = document.getElementById('currency-target')?.value || 'EUR';
-        const rates = { EUR: 0.925, GBP: 0.795, CAD: 1.365, AUD: 1.535, JPY: 149.8 };
-        const symbols = { EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$', JPY: '¥' };
-        const rate = rates[target] || 1;
+        const from = document.getElementById('currency-from')?.value || 'CAD';
+        const target = document.getElementById('currency-target')?.value || 'USD';
+        // All rates expressed as units per 1 CAD
+        const ratesVsCAD = { CAD: 1, USD: 0.7326, EUR: 0.6779, GBP: 0.5826, AUD: 1.1243, JPY: 109.74 };
+        const symbols = { CAD: 'C$', USD: '$', EUR: '€', GBP: '£', AUD: 'A$', JPY: '¥' };
+        const fromRate = ratesVsCAD[from] || 1;
+        const toRate = ratesVsCAD[target] || 1;
+        const rate = toRate / fromRate;
         const converted = amount * rate;
         const el = document.getElementById('currency-result');
         if (el) {
+            const safeFrom = from.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
             const safeTarget = target.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
             el.innerHTML = sanitizeHTML('<div style="font-size: 24px; font-weight: 700; color: var(--primary-600);">') + (symbols[target] || '') + converted.toFixed(target === 'JPY' ? 0 : 2) + '</div>' +  // nosemgrep: javascript.browser.security.insecure-document-method.insecure-document-method
-                '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 USD = ' + rate + ' ' + safeTarget + ' (indicative rate)</div>';
+                '<div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">1 ' + safeFrom + ' = ' + rate.toFixed(4) + ' ' + safeTarget + ' (indicative rate)</div>';
         }
     },
 
