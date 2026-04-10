@@ -1,11 +1,13 @@
 // Task Worker for VaultLister
 // Processes background jobs from the task queue
 
+import { Queue, QueueEvents } from 'bullmq';
 import { v4 as uuidv4 } from 'uuid';
 import { randomInt } from 'node:crypto';
 import { query } from '../db/database.js';
 import { syncShop } from '../services/platformSync/index.js';
 import { createOAuthNotification, NotificationTypes } from '../services/notificationService.js';
+import { set as setRedisValue } from '../services/redis.js';
 import { logger } from '../shared/logger.js';
 import { auditLog } from '../services/platformSync/platformAuditLog.js';
 import { writeFileSync, mkdirSync } from 'fs';
@@ -16,6 +18,9 @@ const POLL_INTERVAL_MS = 10 * 1000; // 10 seconds
 const MAX_CONCURRENT_TASKS = 3;
 const DEFAULT_MAX_ATTEMPTS = 3;
 const BASE_RETRY_DELAY_MS = 5000; // 5 seconds base delay for exponential backoff
+const HEARTBEAT_KEY = 'worker:health:taskWorker';
+const HEARTBEAT_TTL_SECONDS = 120;
+const AUTOMATION_QUEUE_NAME = 'automation-jobs';
 
 // FIXED 2026-02-24: Automation schedule checking integrated into taskWorker (Issue #3)
 const AUTOMATION_CHECK_INTERVAL_MS = 60 * 1000;
@@ -30,6 +35,63 @@ let workerInterval = null;
 let isProcessing = false;
 let activeTasks = 0;
 let lastQueuePoll = 0;
+let automationQueue = null;
+let automationQueueEvents = null;
+
+async function writeHeartbeat() {
+    await setRedisValue(
+        HEARTBEAT_KEY,
+        JSON.stringify({ lastRun: new Date(lastQueuePoll).toISOString(), status: 'running' }),
+        HEARTBEAT_TTL_SECONDS
+    );
+}
+
+function getAutomationQueue() {
+    if (automationQueue) {
+        return automationQueue;
+    }
+
+    if (!process.env.REDIS_URL) {
+        throw new Error('REDIS_URL is required for automation worker jobs');
+    }
+
+    automationQueue = new Queue(AUTOMATION_QUEUE_NAME, {
+        connection: { url: process.env.REDIS_URL }
+    });
+    return automationQueue;
+}
+
+async function getAutomationQueueEvents() {
+    if (automationQueueEvents) {
+        return automationQueueEvents;
+    }
+
+    if (!process.env.REDIS_URL) {
+        throw new Error('REDIS_URL is required for automation worker jobs');
+    }
+
+    automationQueueEvents = new QueueEvents(AUTOMATION_QUEUE_NAME, {
+        connection: { url: process.env.REDIS_URL }
+    });
+    await automationQueueEvents.waitUntilReady();
+    return automationQueueEvents;
+}
+
+async function runAutomationWorkerJob(type, userId, payload) {
+    const queue = getAutomationQueue();
+    const queueEvents = await getAutomationQueueEvents();
+    const job = await queue.add(
+        type,
+        { userId, type, payload },
+        {
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 5000 },
+            timeout: 300000
+        }
+    );
+
+    return await job.waitUntilFinished(queueEvents, 300000);
+}
 
 /**
  * Start the task worker
@@ -119,50 +181,54 @@ async function processQueue() {
             return;
         }
 
-        const pendingTasks = await query.all(`
-            SELECT * FROM task_queue
-            WHERE status = 'pending'
-            AND scheduled_at <= NOW()
-            ORDER BY priority DESC, scheduled_at ASC
-            LIMIT ?
-        `, [availableSlots]);
-
-        if (pendingTasks.length === 0) {
-            return;
-        }
-
-        logger.info(`[TaskWorker] Processing ${pendingTasks.length} task(s)`);
-
-        // Process tasks concurrently
-        const promises = pendingTasks.map(task => processTask(task));
+        const promises = Array.from({ length: availableSlots }, () => processTask());
         await Promise.allSettled(promises);
 
     } catch (error) {
         logger.error('[TaskWorker] Error processing queue:', error);
     } finally {
+        try {
+            await writeHeartbeat();
+        } catch (heartbeatError) {
+            logger.warn('[TaskWorker] Failed to write heartbeat', null, { detail: heartbeatError.message });
+        }
         isProcessing = false;
     }
 }
 
 /**
  * Process a single task
- * @param {Object} task - Task record from database
  */
-async function processTask(task) {
+async function processTask() {
+    const task = await query.transaction(async (tx) => {
+        const rows = await tx.all(`
+            UPDATE task_queue
+            SET status = 'processing',
+                started_at = NOW(),
+                attempts = attempts + 1,
+                updated_at = NOW()
+            WHERE id = (
+                SELECT id FROM task_queue
+                WHERE status = 'pending'
+                    AND scheduled_at <= NOW()
+                ORDER BY priority DESC, scheduled_at ASC
+                LIMIT 1
+                FOR UPDATE SKIP LOCKED
+            )
+            RETURNING *
+        `, []);
+
+        return rows[0] || null;
+    });
+
+    if (!task) {
+        return null;
+    }
+
     activeTasks++;
     const startTime = Date.now();
 
     try {
-        // Mark task as processing
-        await query.run(`
-            UPDATE task_queue SET
-                status = 'processing',
-                started_at = NOW(),
-                attempts = attempts + 1,
-                updated_at = NOW()
-            WHERE id = ?
-        `, [task.id]);
-
         logger.info(`[TaskWorker] Processing task ${task.id} (${task.type})`);
 
         // Parse payload
@@ -212,7 +278,7 @@ async function processTask(task) {
     } catch (error) {
         logger.error(`[TaskWorker] Task ${task.id} failed:`, error.message);
 
-        const attempts = task.attempts + 1;
+        const attempts = task.attempts;
         const maxAttempts = task.max_attempts || DEFAULT_MAX_ATTEMPTS;
 
         if (attempts >= maxAttempts) {
@@ -1155,7 +1221,7 @@ async function executeCustom(rule, conditions, actions) {
     return { message: `Custom automation "${rule.name}" executed`, itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
 }
 
-const TASK_WORKER_LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'depop', 'facebook', 'whatnot']);
+const TASK_WORKER_LAUNCH_PLATFORMS = new Set(['poshmark', 'ebay', 'mercari', 'depop', 'grailed', 'facebook', 'whatnot']);
 
 async function executePlatformBot(platform, rule, conditions, actions) {
     switch (platform) {
@@ -1177,10 +1243,6 @@ async function executePlatformBot(platform, rule, conditions, actions) {
 
 async function executeMercariBot(rule, conditions, actions) {
     try {
-        const { getMercariBot } = await import('../../shared/automations/mercari-bot.js');
-        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
-        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
-
         const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'mercari']
@@ -1192,28 +1254,21 @@ async function executeMercariBot(rule, conditions, actions) {
         }
 
         auditLog('mercari', `${rule.type}_start`, { userId: rule.user_id });
-        const bot = await getMercariBot({ headless: true });
+        const result = await runAutomationWorkerJob('mercari_refresh', rule.user_id, {
+            maxItems: conditions.maxItems || 50
+        });
+        const refreshed = result?.refreshed || 0;
 
-        let result;
-        if (actions.relist) {
-            const maxItems = conditions.maxItems || 50;
-            result = await bot.refreshAllListings({ maxRefresh: maxItems, delayBetween: jitteredDelay(4000) });
-            const refreshed = result?.refreshed || 0;
-            logAutomationAction(rule.user_id, rule.id, rule.type, 'mercari', 'success', 'mercari_refresh', null,
-                `Refreshed ${refreshed} Mercari listings`);
-            auditLog('mercari', 'refresh_success', { userId: rule.user_id, refreshed });
-            await bot.close();
-            return { message: `Mercari refresh: ${refreshed} listings bumped`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
-        } else {
-            // Default: refresh all
-            result = await bot.refreshAllListings({ maxRefresh: conditions.maxItems || 50, delayBetween: jitteredDelay(4000) });
-            const refreshed = result?.refreshed || 0;
-            logAutomationAction(rule.user_id, rule.id, rule.type, 'mercari', 'success', 'mercari_share', null,
-                `Shared/refreshed ${refreshed} Mercari listings`);
-            auditLog('mercari', 'share_success', { userId: rule.user_id, refreshed });
-            await bot.close();
-            return { message: `Mercari share: ${refreshed} listings refreshed`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
-        }
+        logAutomationAction(rule.user_id, rule.id, rule.type, 'mercari', 'success', 'mercari_refresh', null,
+            `Refreshed ${refreshed} Mercari listings`);
+        auditLog('mercari', 'refresh_success', { userId: rule.user_id, refreshed });
+
+        return {
+            message: `Mercari refresh: ${refreshed} listings bumped`,
+            itemsProcessed: refreshed,
+            itemsSucceeded: refreshed,
+            itemsFailed: result?.skipped || 0
+        };
     } catch (err) {
         logAutomationAction(rule.user_id, rule.id, rule.type, 'mercari', 'failure', 'mercari_error', null, err.message);
         logger.error('[TaskWorker] Mercari bot failed:', err.message);
@@ -1223,10 +1278,6 @@ async function executeMercariBot(rule, conditions, actions) {
 
 async function executeDepopBot(rule, conditions, actions) {
     try {
-        const { getDepopBot } = await import('../../shared/automations/depop-bot.js');
-        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
-        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
-
         const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'depop']
@@ -1238,29 +1289,28 @@ async function executeDepopBot(rule, conditions, actions) {
         }
 
         auditLog('depop', `${rule.type}_start`, { userId: rule.user_id });
-        const bot = await getDepopBot({ headless: true });
+        if (!shop.platform_username) {
+            return { message: 'Depop: No platform username configured', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
+        }
 
-        let result;
-        if (rule.type === 'share' && shop.platform_username) {
-            result = await bot.refreshAllListings(shop.platform_username, { maxRefresh: conditions.maxItems || 50, delayBetween: jitteredDelay(3500) });
-            const refreshed = result?.refreshed || 0;
+        const jobType = rule.type === 'share' ? 'depop_share' : 'depop_refresh';
+        const result = await runAutomationWorkerJob(jobType, rule.user_id, {
+            maxItems: conditions.maxItems || 50,
+            platformUsername: shop.platform_username
+        });
+        const refreshed = result?.refreshed || 0;
+
+        if (jobType === 'depop_share') {
             logAutomationAction(rule.user_id, rule.id, 'share', 'depop', 'success', 'depop_share', null,
                 `Shared/refreshed ${refreshed} Depop listings`);
             auditLog('depop', 'share_success', { userId: rule.user_id, refreshed });
-            await bot.close();
             return { message: `Depop share: ${refreshed} listings refreshed`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
-        } else if (shop.platform_username) {
-            result = await bot.refreshAllListings(shop.platform_username, { maxRefresh: conditions.maxItems || 50, delayBetween: jitteredDelay(3500) });
-            const refreshed = result?.refreshed || 0;
-            logAutomationAction(rule.user_id, rule.id, rule.type, 'depop', 'success', 'depop_refresh', null,
-                `Refreshed ${refreshed} Depop listings`);
-            auditLog('depop', 'refresh_success', { userId: rule.user_id, refreshed });
-            await bot.close();
-            return { message: `Depop refresh: ${refreshed} listings bumped`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
-        } else {
-            await bot.close();
-            return { message: 'Depop: No platform username configured', itemsProcessed: 0, itemsSucceeded: 0, itemsFailed: 0 };
         }
+
+        logAutomationAction(rule.user_id, rule.id, rule.type, 'depop', 'success', 'depop_refresh', null,
+            `Refreshed ${refreshed} Depop listings`);
+        auditLog('depop', 'refresh_success', { userId: rule.user_id, refreshed });
+        return { message: `Depop refresh: ${refreshed} listings bumped`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
     } catch (err) {
         logAutomationAction(rule.user_id, rule.id, rule.type, 'depop', 'failure', 'depop_error', null, err.message);
         logger.error('[TaskWorker] Depop bot failed:', err.message);
@@ -1270,10 +1320,6 @@ async function executeDepopBot(rule, conditions, actions) {
 
 async function executeGrailedBot(rule, conditions, actions) {
     try {
-        const { getGrailedBot } = await import('../../shared/automations/grailed-bot.js');
-        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
-        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
-
         const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'grailed']
@@ -1285,14 +1331,14 @@ async function executeGrailedBot(rule, conditions, actions) {
         }
 
         auditLog('grailed', `${rule.type}_start`, { userId: rule.user_id });
-        const bot = await getGrailedBot({ headless: true });
-        const result = await bot.bumpAllListings({ maxBumps: conditions.maxItems || 50, delayBetween: jitteredDelay(4000) });
+        const result = await runAutomationWorkerJob('grailed_bump', rule.user_id, {
+            maxItems: conditions.maxItems || 50
+        });
         const bumped = result?.bumped || 0;
 
         logAutomationAction(rule.user_id, rule.id, rule.type, 'grailed', 'success', 'grailed_bump', null,
             `Bumped ${bumped} Grailed listings`);
         auditLog('grailed', 'bump_success', { userId: rule.user_id, bumped });
-        await bot.close();
         return { message: `Grailed bump: ${bumped} listings bumped`, itemsProcessed: bumped, itemsSucceeded: bumped, itemsFailed: result?.skipped || 0 };
     } catch (err) {
         logAutomationAction(rule.user_id, rule.id, rule.type, 'grailed', 'failure', 'grailed_error', null, err.message);
@@ -1303,10 +1349,6 @@ async function executeGrailedBot(rule, conditions, actions) {
 
 async function executeFacebookBot(rule, conditions, actions) {
     try {
-        const { getFacebookBot } = await import('../../shared/automations/facebook-bot.js');
-        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
-        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
-
         const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'facebook']
@@ -1318,14 +1360,14 @@ async function executeFacebookBot(rule, conditions, actions) {
         }
 
         auditLog('facebook', `${rule.type}_start`, { userId: rule.user_id });
-        const bot = await getFacebookBot({ headless: true });
-        const result = await bot.refreshAllListings({ maxRefresh: conditions.maxItems || 50, delayBetween: jitteredDelay(5000) });
+        const result = await runAutomationWorkerJob('facebook_refresh', rule.user_id, {
+            maxItems: conditions.maxItems || 50
+        });
         const refreshed = result?.refreshed || 0;
 
         logAutomationAction(rule.user_id, rule.id, rule.type, 'facebook', 'success', 'facebook_refresh', null,
             `Refreshed ${refreshed} Facebook Marketplace listings`);
         auditLog('facebook', 'refresh_success', { userId: rule.user_id, refreshed });
-        await bot.close();
         return { message: `Facebook refresh: ${refreshed} listings refreshed`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
     } catch (err) {
         logAutomationAction(rule.user_id, rule.id, rule.type, 'facebook', 'failure', 'facebook_error', null, err.message);
@@ -1336,10 +1378,6 @@ async function executeFacebookBot(rule, conditions, actions) {
 
 async function executeWhatnotBot(rule, conditions, actions) {
     try {
-        const { getWhatnotBot } = await import('../../shared/automations/whatnot-bot.js');
-        const { jitteredDelay } = await import('../../shared/automations/rate-limits.js');
-        const { auditLog } = await import('../services/platformSync/platformAuditLog.js');
-
         const shop = await query.get(
             'SELECT * FROM shops WHERE user_id = ? AND platform = ? AND is_connected = TRUE',
             [rule.user_id, 'whatnot']
@@ -1351,14 +1389,14 @@ async function executeWhatnotBot(rule, conditions, actions) {
         }
 
         auditLog('whatnot', `${rule.type}_start`, { userId: rule.user_id });
-        const bot = await getWhatnotBot({ headless: true });
-        const result = await bot.refreshAllListings({ maxRefresh: conditions.maxItems || 50, delayBetween: jitteredDelay(4000) });
+        const result = await runAutomationWorkerJob('whatnot_refresh', rule.user_id, {
+            maxItems: conditions.maxItems || 50
+        });
         const refreshed = result?.refreshed || 0;
 
         logAutomationAction(rule.user_id, rule.id, rule.type, 'whatnot', 'success', 'whatnot_refresh', null,
             `Refreshed ${refreshed} Whatnot listings`);
         auditLog('whatnot', 'refresh_success', { userId: rule.user_id, refreshed });
-        await bot.close();
         return { message: `Whatnot refresh: ${refreshed} listings refreshed`, itemsProcessed: refreshed, itemsSucceeded: refreshed, itemsFailed: result?.skipped || 0 };
     } catch (err) {
         logAutomationAction(rule.user_id, rule.id, rule.type, 'whatnot', 'failure', 'whatnot_error', null, err.message);

@@ -4,6 +4,7 @@
 import { query } from '../db/database.js';
 import { encryptToken, decryptToken } from '../utils/encryption.js';
 import { createOAuthNotification, NotificationTypes } from './notificationService.js';
+import { set as setRedisValue } from './redis.js';
 import logger from '../shared/logger.js';
 import { fetchWithTimeout } from '../shared/fetchWithTimeout.js';
 
@@ -14,12 +15,22 @@ const MAX_CONSECUTIVE_FAILURES = 5; // Auto-disconnect after this many failures
 const MAX_TRANSIENT_FAILURES = 10; // Higher threshold for transient errors (timeouts, 500s)
 const PERMANENT_ERROR_PATTERNS = ['invalid_client', 'invalid_grant', 'unauthorized_client'];
 const FAILURE_RESET_HOURS = 24; // Reset failure count after this many hours of no errors
+const HEARTBEAT_KEY = 'worker:health:tokenRefreshScheduler';
+const HEARTBEAT_TTL_SECONDS = 1800;
 
 let schedulerInterval = null;
 let poshmarkKeepAliveInterval = null;
 let isRunning = false;
 let lastRun = 0;
 const POSHMARK_KEEPALIVE_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+async function writeHeartbeat() {
+    await setRedisValue(
+        HEARTBEAT_KEY,
+        JSON.stringify({ lastRun: new Date(lastRun).toISOString(), status: 'running' }),
+        HEARTBEAT_TTL_SECONDS
+    );
+}
 
 /**
  * Start the token refresh scheduler
@@ -193,6 +204,11 @@ export async function refreshExpiringTokens() {
     } catch (error) {
         logger.error('[TokenRefresh] Error in refresh cycle:', error);
     } finally {
+        try {
+            await writeHeartbeat();
+        } catch (heartbeatError) {
+            logger.warn('[TokenRefresh] Failed to write heartbeat:', heartbeatError.message);
+        }
         isRunning = false;
     }
 }

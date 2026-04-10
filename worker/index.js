@@ -5,7 +5,15 @@
 // Required env vars: REDIS_URL, DATABASE_URL
 
 import { Worker, QueueEvents } from 'bullmq';
-import { query, initializeDatabase, closeDatabase } from '../src/backend/db/database.js';
+import { query, initializeDatabase, closeDatabase, cleanupExpiredData } from '../src/backend/db/database.js';
+import { startTokenRefreshScheduler, stopTokenRefreshScheduler } from '../src/backend/services/tokenRefreshScheduler.js';
+import { startSyncScheduler, stopSyncScheduler } from '../src/backend/services/syncScheduler.js';
+import { startTaskWorker, stopTaskWorker } from '../src/backend/workers/taskWorker.js';
+import { startEmailPollingWorker, stopEmailPollingWorker } from '../src/backend/workers/emailPollingWorker.js';
+import { startPriceCheckWorker, stopPriceCheckWorker } from '../src/backend/workers/priceCheckWorker.js';
+import { startGDPRWorker, stopGDPRWorker } from '../src/backend/workers/gdprWorker.js';
+import redisService from '../src/backend/services/redis.js';
+import { monitoring } from '../src/backend/services/monitoring.js';
 import { logger } from '../src/backend/shared/logger.js';
 
 const REDIS_URL = process.env.REDIS_URL;
@@ -20,8 +28,12 @@ if (!process.env.DATABASE_URL) {
 
 await initializeDatabase();
 logger.info('[Worker] Database connected');
+redisService.init();
+logger.info('[Worker] Redis service initialized');
 
 const connection = { url: REDIS_URL };
+let startupCleanupTimeout = null;
+let cleanupInterval = null;
 
 // Stale job detection: mark tasks stuck in 'active' state for > 10 minutes as failed
 const STALE_JOB_THRESHOLD_MS = 10 * 60 * 1000;
@@ -130,6 +142,65 @@ const worker = new Worker('automation-jobs', async (job) => {
                 break;
             }
 
+            case 'mercari_refresh': {
+                const { getMercariBot } = await import('./bots/mercari-bot.js');
+                const bot = await getMercariBot({ headless: true });
+                try {
+                    result = await bot.refreshAllListings({ maxRefresh: payload.maxItems || 50 });
+                } finally {
+                    await bot.close().catch(() => {});
+                }
+                break;
+            }
+
+            case 'depop_refresh':
+            case 'depop_share': {
+                const { getDepopBot } = await import('./bots/depop-bot.js');
+                if (!payload.platformUsername) {
+                    throw new Error('Depop platform username is required');
+                }
+                const bot = await getDepopBot({ headless: true });
+                try {
+                    result = await bot.refreshAllListings(payload.platformUsername, { maxRefresh: payload.maxItems || 50 });
+                } finally {
+                    await bot.close().catch(() => {});
+                }
+                break;
+            }
+
+            case 'grailed_bump': {
+                const { getGrailedBot } = await import('./bots/grailed-bot.js');
+                const bot = await getGrailedBot({ headless: true });
+                try {
+                    result = await bot.bumpAllListings({ maxBumps: payload.maxItems || 50 });
+                } finally {
+                    await bot.close().catch(() => {});
+                }
+                break;
+            }
+
+            case 'facebook_refresh': {
+                const { getFacebookBot } = await import('./bots/facebook-bot.js');
+                const bot = await getFacebookBot({ headless: true });
+                try {
+                    result = await bot.refreshAllListings({ maxRefresh: payload.maxItems || 50 });
+                } finally {
+                    await bot.close().catch(() => {});
+                }
+                break;
+            }
+
+            case 'whatnot_refresh': {
+                const { getWhatnotBot } = await import('./bots/whatnot-bot.js');
+                const bot = await getWhatnotBot({ headless: true });
+                try {
+                    result = await bot.refreshAllListings({ maxRefresh: payload.maxItems || 50 });
+                } finally {
+                    await bot.close().catch(() => {});
+                }
+                break;
+            }
+
             default:
                 throw new Error(`Unknown job type: ${type}`);
         }
@@ -169,12 +240,37 @@ worker.on('completed', (job) => logger.info(`[Worker] Job ${job.id} done`));
 worker.on('failed', (job, err) => logger.error(`[Worker] Job ${job?.id} error: ${err.message}`));
 
 logger.info('[Worker] Listening on queue: automation-jobs');
+await startTokenRefreshScheduler();
+startSyncScheduler();
+startTaskWorker();
+startEmailPollingWorker();
+startPriceCheckWorker();
+startGDPRWorker();
+monitoring.init();
+startupCleanupTimeout = setTimeout(() => cleanupExpiredData(), 30000);
+cleanupInterval = setInterval(() => cleanupExpiredData(), 24 * 60 * 60 * 1000);
 
 // Graceful shutdown
 async function shutdown() {
     logger.info('[Worker] Shutting down...');
     clearInterval(staleCleanupInterval);
+    if (startupCleanupTimeout) {
+        clearTimeout(startupCleanupTimeout);
+        startupCleanupTimeout = null;
+    }
+    if (cleanupInterval) {
+        clearInterval(cleanupInterval);
+        cleanupInterval = null;
+    }
+    stopTokenRefreshScheduler();
+    stopSyncScheduler();
+    stopTaskWorker();
+    stopEmailPollingWorker();
+    stopPriceCheckWorker();
+    stopGDPRWorker();
+    monitoring.stopMetricsCollection();
     await worker.close();
+    await redisService.close();
     await closeDatabase();
     process.exit(0);
 }

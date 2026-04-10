@@ -4,12 +4,23 @@
 import crypto from 'crypto';
 import { query } from '../db/database.js';
 import emailService from '../services/email.js';
+import { set as setRedisValue } from '../services/redis.js';
 import { logger } from '../shared/logger.js';
 import { getOAuthConfig, revokeToken } from '../routes/oauth.js';
 import { decryptToken } from '../utils/encryption.js';
 
 let intervalId = null;
 let lastRun = 0;
+const HEARTBEAT_KEY = 'worker:health:gdprWorker';
+const HEARTBEAT_TTL_SECONDS = 14400;
+
+async function writeHeartbeat() {
+    await setRedisValue(
+        HEARTBEAT_KEY,
+        JSON.stringify({ lastRun: new Date(lastRun).toISOString(), status: 'running' }),
+        HEARTBEAT_TTL_SECONDS
+    );
+}
 
 // Process pending deletions
 async function processAccountDeletions() {
@@ -207,21 +218,30 @@ async function cleanupExportRequests() {
     `, [sevenDaysAgo]);
 }
 
+async function runGDPRCycle() {
+    lastRun = Date.now();
+
+    await processAccountDeletions().catch(e => logger.error('[GDPRWorker] processAccountDeletions failed', null, { detail: e.message }));
+    await sendDeletionReminders().catch(e => logger.error('[GDPRWorker] sendDeletionReminders failed', null, { detail: e.message }));
+    await cleanupExportRequests().catch(e => logger.error('[GDPRWorker] cleanupExportRequests failed', null, { detail: e.message }));
+
+    try {
+        await writeHeartbeat();
+    } catch (heartbeatError) {
+        logger.warn('[GDPR Worker] Failed to write heartbeat', null, { detail: heartbeatError.message });
+    }
+}
+
 // Start the worker
 export function startGDPRWorker() {
     logger.info('[GDPR Worker] Starting...');
 
     // Run immediately on start
-    processAccountDeletions().catch(e => logger.error('[GDPRWorker] processAccountDeletions failed', null, { detail: e.message }));
-    sendDeletionReminders().catch(e => logger.error('[GDPRWorker] sendDeletionReminders failed', null, { detail: e.message }));
-    cleanupExportRequests().catch(e => logger.error('[GDPRWorker] cleanupExportRequests failed', null, { detail: e.message }));
+    runGDPRCycle().catch(e => logger.error('[GDPRWorker] initial cycle failed', null, { detail: e.message }));
 
     // Run every hour
     intervalId = setInterval(async () => {
-        lastRun = Date.now();
-        await processAccountDeletions().catch(e => logger.error('[GDPRWorker] processAccountDeletions failed', null, { detail: e.message }));
-        await sendDeletionReminders().catch(e => logger.error('[GDPRWorker] sendDeletionReminders failed', null, { detail: e.message }));
-        await cleanupExportRequests().catch(e => logger.error('[GDPRWorker] cleanupExportRequests failed', null, { detail: e.message }));
+        await runGDPRCycle().catch(e => logger.error('[GDPRWorker] scheduled cycle failed', null, { detail: e.message }));
     }, 60 * 60 * 1000); // 1 hour
 
     logger.info('[GDPR Worker] Started - running every hour');

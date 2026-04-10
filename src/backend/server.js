@@ -7,7 +7,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { join, dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
-import { initializeDatabase, closeDatabase, cleanupExpiredData, getStatementCacheStats } from './db/database.js';
+import { initializeDatabase, closeDatabase, getStatementCacheStats } from './db/database.js';
 import { authRouter } from './routes/auth.js';
 import { inventoryRouter } from './routes/inventory.js';
 import { listingsRouter } from './routes/listings.js';
@@ -83,7 +83,6 @@ import { onboardingRouter } from './routes/onboarding.js';
 import { offlineSyncRouter } from './routes/offlineSync.js';
 import { integrationsRouter } from './routes/integrations.js';
 import { currencyRouter } from './routes/currency.js';
-import { startGDPRWorker, stopGDPRWorker, getGDPRWorkerStatus } from './workers/gdprWorker.js';
 import { monitoring } from './services/monitoring.js';
 import { monitoringRouter } from './routes/monitoring.js';
 import { featureFlags } from './services/featureFlags.js';
@@ -92,6 +91,7 @@ import { accountRouter } from './routes/account.js';
 import { analyticsService } from './services/analytics.js';
 import { authenticateToken } from './middleware/auth.js';
 import redisService from './services/redis.js';
+import { get as redisGet } from './services/redis.js';
 import emailService from './services/email.js';
 import { applyRateLimit, stopRateLimiter } from './middleware/rateLimiter.js';
 import { applyCSRFProtection, addCSRFToken, stopCSRF } from './middleware/csrf.js';
@@ -101,11 +101,6 @@ import { logRequestComplete } from './middleware/requestLogger.js';
 import { generateETag, etagMatches } from './middleware/cache.js';
 import { CDN_URL, getPreloadHints } from './middleware/cdn.js';
 import { compressBody } from './middleware/compression.js';
-import { startTokenRefreshScheduler, stopTokenRefreshScheduler, getRefreshSchedulerStatus } from './services/tokenRefreshScheduler.js';
-import { startSyncScheduler, stopSyncScheduler } from './services/syncScheduler.js';
-import { startTaskWorker, stopTaskWorker, getTaskWorkerStatus } from './workers/taskWorker.js';
-import { startEmailPollingWorker, stopEmailPollingWorker, getEmailPollingStatus } from './workers/emailPollingWorker.js';
-import { startPriceCheckWorker, stopPriceCheckWorker, getPriceCheckWorkerStatus } from './workers/priceCheckWorker.js';
 import { logger } from './shared/logger.js';
 import { TIMEOUTS, INTERVALS } from './shared/constants.js';
 
@@ -175,8 +170,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Hoisted for access in gracefulShutdown (declared inside main())
 let server;
-let cleanupInterval;
-
 async function main() {
 
 // Initialize database
@@ -575,20 +568,28 @@ const apiRoutes = {
         // Public (no auth), matching the /api/health pattern. Safe for external monitoring.
         const now = Date.now();
         const workerDefs = [
-            { key: 'taskWorker',            status: getTaskWorkerStatus(),          staleThresholdMs: 30_000 },
-            { key: 'gdprWorker',            status: getGDPRWorkerStatus(),          staleThresholdMs: 3 * 60 * 60 * 1000 },
-            { key: 'priceCheckWorker',      status: getPriceCheckWorkerStatus(),    staleThresholdMs: 90 * 60 * 1000 },
-            { key: 'emailPollingWorker',    status: getEmailPollingStatus(),        staleThresholdMs: 15 * 60 * 1000 },
-            { key: 'tokenRefreshScheduler', status: getRefreshSchedulerStatus(),    staleThresholdMs: 15 * 60 * 1000 },
+            { key: 'taskWorker',            intervalMs: 10 * 1000,      staleThresholdMs: 30_000 },
+            { key: 'gdprWorker',            intervalMs: 60 * 60 * 1000, staleThresholdMs: 3 * 60 * 60 * 1000 },
+            { key: 'priceCheckWorker',      intervalMs: 30 * 60 * 1000, staleThresholdMs: 90 * 60 * 1000 },
+            { key: 'emailPollingWorker',    intervalMs: 5 * 60 * 1000,  staleThresholdMs: 15 * 60 * 1000 },
+            { key: 'tokenRefreshScheduler', intervalMs: 5 * 60 * 1000,  staleThresholdMs: 15 * 60 * 1000 },
         ];
 
         const workers = {};
         let overallOk = true;
 
-        for (const { key, status, staleThresholdMs } of workerDefs) {
-            const lastRunMs = status.lastRun ? new Date(status.lastRun).getTime() : 0;
+        for (const { key, intervalMs, staleThresholdMs } of workerDefs) {
+            let heartbeat = null;
+            try {
+                const rawHeartbeat = await redisGet(`worker:health:${key}`);
+                heartbeat = rawHeartbeat ? JSON.parse(rawHeartbeat) : null;
+            } catch {
+                heartbeat = null;
+            }
+
+            const lastRunMs = heartbeat?.lastRun ? new Date(heartbeat.lastRun).getTime() : 0;
             let workerStatus;
-            if (!status.running) {
+            if (!heartbeat) {
                 workerStatus = 'stopped';
                 overallOk = false;
             } else if (!lastRunMs) {
@@ -599,7 +600,7 @@ const apiRoutes = {
             } else {
                 workerStatus = 'ok';
             }
-            workers[key] = { status: workerStatus, lastRun: status.lastRun, intervalMs: status.intervalMs };
+            workers[key] = { status: workerStatus, lastRun: heartbeat?.lastRun || null, intervalMs };
         }
 
         return {
@@ -1600,6 +1601,7 @@ websocketService.heartbeatInterval = setInterval(
     () => websocketService.heartbeat(),
     INTERVALS.WEBSOCKET_HEARTBEAT_MS
 );
+await websocketService.initRedisPubSub();
 
 // Generate development HTML if index.html doesn't exist
 function generateDevHTML() {
@@ -1645,23 +1647,6 @@ log(`Server started`);
 const startupMs = Math.round(performance.now() - startTime);
 logger.info(`[Server] Started in ${startupMs}ms on port ${server.port}`);
 
-// Start background services
-startTokenRefreshScheduler();
-startSyncScheduler();
-startTaskWorker();
-startEmailPollingWorker();
-startPriceCheckWorker();
-startGDPRWorker();
-monitoring.init();
-log('Background services started (including GDPR worker and monitoring)');
-
-// Start cleanup scheduler (delayed startup call + daily interval)
-setTimeout(() => cleanupExpiredData(), TIMEOUTS.STARTUP_CLEANUP_DELAY_MS);
-cleanupInterval = setInterval(() => {
-    cleanupExpiredData();
-}, INTERVALS.DAILY_CLEANUP_MS);
-log('Database cleanup scheduler started (runs daily, first run in 30s)');
-
 } // end async function main()
 
 main().catch((err) => {
@@ -1681,18 +1666,11 @@ async function gracefulShutdown(signal) {
     }, TIMEOUTS.GRACEFUL_SHUTDOWN_MS);
     forceExitTimer.unref();
 
-    // Stop background services first
-    stopTokenRefreshScheduler();
-    stopSyncScheduler();
-    stopTaskWorker();
-    stopEmailPollingWorker();
-    stopPriceCheckWorker();
-    stopGDPRWorker();
+    // Stop API-local services first
     stopRateLimiter();
     stopCSRF();
-    clearInterval(cleanupInterval);
     monitoring.stopMetricsCollection();
-    websocketService.cleanup();
+    await websocketService.cleanup();
     auditLog.stop();
     emailMarketing.cleanup();
     stopRateLimitDashboard();

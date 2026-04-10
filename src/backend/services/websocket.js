@@ -3,6 +3,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
+import { getClient as getRedisClient } from './redis.js';
 import { logger } from '../shared/logger.js';
 import { INTERVALS } from '../shared/constants.js';
 
@@ -13,6 +14,7 @@ const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'producti
 const connections = new Map(); // userId -> Set of WebSocket connections
 const rooms = new Map(); // roomId -> Set of userIds
 const subscriptions = new Map(); // connectionId -> Set of topics
+const REDIS_BROADCAST_CHANNEL = 'vaultlister:ws:broadcast';
 
 // Message types
 const MESSAGE_TYPES = {
@@ -78,6 +80,7 @@ const MESSAGE_TYPES = {
 const websocketService = {
     // Initialize with Bun's WebSocket server or ws library
     server: null,
+    redisSubscriber: null,
 
     init(server) {
         this.server = server;
@@ -87,6 +90,72 @@ const websocketService = {
         this.heartbeatInterval = setInterval(() => this.heartbeat(), INTERVALS.WEBSOCKET_HEARTBEAT_MS);
 
         return this;
+    },
+
+    async initRedisPubSub() {
+        if (this.redisSubscriber) {
+            return;
+        }
+
+        const redisClient = getRedisClient();
+        if (!redisClient) {
+            logger.info('[WebSocket] Redis pub/sub unavailable - using local-only delivery');
+            return;
+        }
+
+        try {
+            const subscriber = redisClient.duplicate();
+            subscriber.on('message', (channel, message) => {
+                if (channel !== REDIS_BROADCAST_CHANNEL) {
+                    return;
+                }
+
+                try {
+                    const payload = JSON.parse(message);
+                    const { topic, data, excludeConnectionId = null } = payload || {};
+                    if (!topic) {
+                        return;
+                    }
+
+                    if (topic.startsWith('user.')) {
+                        this.sendToUserLocal(topic.slice(5), data, excludeConnectionId);
+                        return;
+                    }
+
+                    this.broadcastLocal(topic, data, excludeConnectionId);
+                } catch (error) {
+                    logger.warn('[WebSocket] Failed to process Redis pub/sub message', null, { detail: error.message });
+                }
+            });
+            subscriber.on('error', (error) => {
+                logger.warn('[WebSocket] Redis pub/sub subscriber error', null, { detail: error.message });
+            });
+
+            await subscriber.subscribe(REDIS_BROADCAST_CHANNEL);
+            this.redisSubscriber = subscriber;
+            logger.info('[WebSocket] Redis pub/sub subscriber started');
+        } catch (error) {
+            logger.warn('[WebSocket] Redis pub/sub init failed - using local-only delivery', null, { detail: error.message });
+        }
+    },
+
+    async closeRedisPubSub() {
+        if (!this.redisSubscriber) {
+            return;
+        }
+
+        try {
+            this.redisSubscriber.removeAllListeners();
+            await this.redisSubscriber.quit();
+        } catch (error) {
+            try {
+                this.redisSubscriber.disconnect();
+            } catch (_) {
+                // Ignore disconnect errors during shutdown.
+            }
+        } finally {
+            this.redisSubscriber = null;
+        }
     },
 
     // Handle new WebSocket connection (used by ws-library path; Bun uses the
@@ -462,25 +531,58 @@ const websocketService = {
         }
     },
 
-    // Send to specific user (all their connections)
-    sendToUser(userId, data) {
+    sendToUserLocal(userId, data, excludeConnectionId = null) {
         const userConnections = connections.get(userId);
         if (userConnections) {
             for (const ws of userConnections) {
+                if (excludeConnectionId && ws.data.connectionId === excludeConnectionId) {
+                    continue;
+                }
                 this.send(ws, data);
             }
         }
     },
 
-    // Broadcast to topic subscribers
-    broadcast(topic, data) {
+    async publishRedisMessage(topic, data, excludeConnectionId = null) {
+        const redisClient = getRedisClient();
+        if (!redisClient) {
+            return;
+        }
+
+        try {
+            await redisClient.publish(
+                REDIS_BROADCAST_CHANNEL,
+                JSON.stringify({ topic, data, excludeConnectionId })
+            );
+        } catch (error) {
+            logger.warn('[WebSocket] Redis pub/sub publish failed', null, { detail: error.message });
+        }
+    },
+
+    // Send to specific user (all their connections)
+    sendToUser(userId, data, excludeConnectionId = null) {
+        const topic = `user.${userId}`;
+        this.sendToUserLocal(userId, data, excludeConnectionId);
+        this.publishRedisMessage(topic, data, excludeConnectionId).catch(() => {});
+    },
+
+    broadcastLocal(topic, data, excludeConnectionId = null) {
         for (const [userId, userConnections] of connections) {
             for (const ws of userConnections) {
+                if (excludeConnectionId && ws.data.connectionId === excludeConnectionId) {
+                    continue;
+                }
                 if (ws.data.subscriptions.has(topic)) {
                     this.send(ws, data);
                 }
             }
         }
+    },
+
+    // Broadcast to topic subscribers
+    broadcast(topic, data, excludeConnectionId = null) {
+        this.broadcastLocal(topic, data, excludeConnectionId);
+        this.publishRedisMessage(topic, data, excludeConnectionId).catch(() => {});
     },
 
     // Broadcast to all connections
@@ -700,11 +802,12 @@ const websocketService = {
         // handleDisconnect will clean up connections/rooms when close fires
     },
 
-    cleanup() {
+    async cleanup() {
         if (this.heartbeatInterval) {
             clearInterval(this.heartbeatInterval);
             this.heartbeatInterval = null;
         }
+        await this.closeRedisPubSub();
     },
 
     // Get connection stats

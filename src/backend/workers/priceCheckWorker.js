@@ -4,16 +4,27 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/database.js';
 import { createNotification } from '../services/notificationService.js';
+import { set as setRedisValue } from '../services/redis.js';
 import { logger } from '../shared/logger.js';
 import { TIMEOUTS } from '../shared/constants.js';
 
 const POLL_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 const MAX_ITEMS_PER_CYCLE = 50;
 const CHECK_DELAY_MS = 500; // Delay between checks to avoid rate limiting
+const HEARTBEAT_KEY = 'worker:health:priceCheckWorker';
+const HEARTBEAT_TTL_SECONDS = 7200;
 
 let pollInterval = null;
 let isRunning = false;
 let lastRun = 0;
+
+async function writeHeartbeat() {
+    await setRedisValue(
+        HEARTBEAT_KEY,
+        JSON.stringify({ lastRun: new Date(lastRun).toISOString(), status: 'running' }),
+        HEARTBEAT_TTL_SECONDS
+    );
+}
 
 /**
  * Start the price check worker
@@ -106,6 +117,11 @@ async function runPriceChecks() {
     } catch (error) {
         logger.error('[PriceCheckWorker] Cycle failed:', error);
     } finally {
+        try {
+            await writeHeartbeat();
+        } catch (heartbeatError) {
+            logger.warn('[PriceCheckWorker] Failed to write heartbeat', null, { detail: heartbeatError.message });
+        }
         isRunning = false;
     }
 }

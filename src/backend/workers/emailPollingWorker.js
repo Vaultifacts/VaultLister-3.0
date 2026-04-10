@@ -18,6 +18,7 @@ import {
 } from '../services/outlookService.js';
 import { detectReceipt, extractVendorName, inferReceiptType } from '../services/receiptDetector.js';
 import { createNotification } from '../services/notificationService.js';
+import { set as setRedisValue } from '../services/redis.js';
 import { logger } from '../shared/logger.js';
 
 // Truncate account IDs in logs for PII safety
@@ -30,10 +31,20 @@ const MAX_ACCOUNTS_PER_CYCLE = 5;
 const MAX_EMAILS_PER_SYNC = 50;
 const MAX_CONSECUTIVE_FAILURES = parseInt(process.env.EMAIL_MAX_FAILURES) || 5;
 const TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000; // Refresh tokens expiring in 5 minutes
+const HEARTBEAT_KEY = 'worker:health:emailPollingWorker';
+const HEARTBEAT_TTL_SECONDS = 1800;
 
 let pollingInterval = null;
 let isRunning = false;
 let lastRun = 0;
+
+async function writeHeartbeat() {
+    await setRedisValue(
+        HEARTBEAT_KEY,
+        JSON.stringify({ lastRun: new Date(lastRun).toISOString(), status: 'running' }),
+        HEARTBEAT_TTL_SECONDS
+    );
+}
 
 /**
  * Start the email polling worker
@@ -112,6 +123,11 @@ async function pollEmailAccounts() {
     } catch (error) {
         logger.error('[EmailPolling] Error in poll cycle:', error);
     } finally {
+        try {
+            await writeHeartbeat();
+        } catch (heartbeatError) {
+            logger.warn('[EmailPolling] Failed to write heartbeat', null, { detail: heartbeatError.message });
+        }
         isRunning = false;
     }
 }
