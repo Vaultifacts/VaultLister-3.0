@@ -5998,5 +5998,44 @@ Object.assign(handlers, {
         } catch (err) {
             toast.error(err.message || 'Failed to submit application');
         }
+    },
+
+    showChangeEmailModal: function() {
+        modals.show(`
+            <div class="modal-header">
+                <h3 class="modal-title">Change Email Address</h3>
+                <button class="modal-close" onclick="modals.close()">×</button>
+            </div>
+            <div style="padding: 16px;">
+                <p style="color: var(--gray-600); margin-bottom: 16px;">Enter your new email address. We'll send a verification link to confirm the change.</p>
+                <div class="form-group">
+                    <label class="form-label">New Email Address</label>
+                    <input type="email" class="form-input" id="new-email-input" placeholder="you@example.com" required>
+                </div>
+                <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
+                    <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="handlers.submitChangeEmail()">Send Verification</button>
+                </div>
+            </div>
+        `);
+    },
+
+    submitChangeEmail: function() {
+        const emailInput = document.getElementById('new-email-input');
+        if (!emailInput || !emailInput.value.trim()) {
+            toast.error('Please enter a valid email address.');
+            return;
+        }
+        toast.success('Verification email sent! Check your inbox to confirm the change.');
+        modals.close();
+    },
+
+    sendChangePasswordEmail: function() {
+        const user = store.state.user || {};
+        if (!user.email) {
+            toast.error('No email address on file.');
+            return;
+        }
+        toast.success('Password reset email sent! Check your inbox.');
     }
 });

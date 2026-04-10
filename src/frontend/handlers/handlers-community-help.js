@@ -251,7 +251,11 @@ Object.assign(handlers, {
 
 
     subscribeToRoadmap: function() {
-        modals.show('Subscribe to Roadmap Updates', `
+        modals.show(`
+            <div class="modal-header">
+                <h3 class="modal-title">Subscribe to Roadmap Updates</h3>
+                <button class="modal-close" onclick="modals.close()">×</button>
+            </div>
             <div style="padding: 16px;">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when features you've voted for ship, or when new features are added to the roadmap.</p>
                 <form onsubmit="handlers.saveRoadmapSubscription(event)">
@@ -390,7 +394,11 @@ Object.assign(handlers, {
 
 
     subscribeToChangelog: function() {
-        modals.show('Subscribe to Updates', `
+        modals.show(`
+            <div class="modal-header">
+                <h3 class="modal-title">Subscribe to Updates</h3>
+                <button class="modal-close" onclick="modals.close()">×</button>
+            </div>
             <form onsubmit="handlers.subscribeChangelogEmail(event)" style="padding: 16px;">
                 <p style="color: var(--gray-600); margin-bottom: 16px;">Get notified when we release new features and improvements.</p>
                 <div class="form-group">

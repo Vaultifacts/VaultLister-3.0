@@ -111,7 +111,10 @@
       "WebFetch(domain:poshmark.com)",
       "WebFetch(domain:www.facebook.com)",
       "WebFetch(domain:closetassistantpm.com)",
-      "WebFetch(domain:www.primelister.com)"
+      "WebFetch(domain:www.primelister.com)",
+      "WebFetch(domain:api.cloudflare.com)",
+      "mcp__claude_ai_Cloudflare_Developer_Platform__set_active_account",
+      "mcp__claude_ai_Cloudflare_Developer_Platform__r2_buckets_list"
     ]
   },
   "hooks": {

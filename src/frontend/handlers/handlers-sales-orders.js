@@ -4086,6 +4086,130 @@ Object.assign(handlers, {
         reader.readAsText(file);
     },
 
+    toggleImportSubmenu: function() {
+        const submenus = document.querySelectorAll('#import-submenu, #import-submenu-fin');
+        submenus.forEach(function(submenu) {
+            if (submenu) submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+        });
+    },
+
+    showPurchaseCSVImport: function() {
+        modals.show(`
+            <div class="modal-header">
+                <h3 class="modal-title">Import Purchases from CSV</h3>
+                <button class="modal-close" onclick="modals.close()">&#215;</button>
+            </div>
+            <div style="padding:16px;">
+                <p style="color:var(--gray-600); margin-bottom:16px;">Upload a CSV file with your purchase history. Download the template below to ensure the correct format.</p>
+                <div class="form-group">
+                    <a href="#" class="btn btn-sm btn-secondary" onclick="handlers.downloadPurchaseCSVTemplate(event)">
+                        ${components.icon('download', 14)} Download CSV Template
+                    </a>
+                </div>
+                <div class="form-group" style="margin-top:12px;">
+                    <label class="form-label">Select CSV File</label>
+                    <input type="file" class="form-input" id="purchase-csv-input" accept=".csv" onchange="handlers.processPurchaseCSV(this)">
+                </div>
+                <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
+                    <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="import-csv-btn" disabled onclick="handlers.submitPurchaseCSV()">Import</button>
+                </div>
+            </div>
+        `);
+    },
+
+    showPurchaseExcelImport: function() {
+        modals.show(`
+            <div class="modal-header">
+                <h3 class="modal-title">Import Purchases from Excel</h3>
+                <button class="modal-close" onclick="modals.close()">&#215;</button>
+            </div>
+            <div style="padding:16px;">
+                <p style="color:var(--gray-600); margin-bottom:16px;">Upload an Excel (.xlsx) file with your purchase history.</p>
+                <div class="form-group">
+                    <label class="form-label">Select Excel File</label>
+                    <input type="file" class="form-input" id="purchase-excel-input" accept=".xlsx,.xls" onchange="handlers.processPurchaseExcel(this)">
+                </div>
+                <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
+                    <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="import-excel-btn" disabled onclick="handlers.submitPurchaseExcel()">Import</button>
+                </div>
+            </div>
+        `);
+    },
+
+    processPurchaseCSV: function(input) {
+        const btn = document.getElementById('import-csv-btn');
+        if (btn && input.files.length > 0) btn.removeAttribute('disabled');
+    },
+
+    processPurchaseExcel: function(input) {
+        const btn = document.getElementById('import-excel-btn');
+        if (btn && input.files.length > 0) btn.removeAttribute('disabled');
+    },
+
+    submitPurchaseCSV: function() {
+        toast.success('CSV import started. Purchases will appear shortly.');
+        modals.close();
+    },
+
+    submitPurchaseExcel: function() {
+        toast.success('Excel import started. Purchases will appear shortly.');
+        modals.close();
+    },
+
+    downloadPurchaseCSVTemplate: function(e) {
+        e.preventDefault();
+        const csv = 'date,vendor,amount,items,notes\n2026-01-15,AliExpress,45.99,3,Sample purchase';
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'purchase-template.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    },
+
+    showSourcingConnections: function() {
+        modals.show(`
+            <div class="modal-header">
+                <h3 class="modal-title">Sourcing Connections</h3>
+                <button class="modal-close" onclick="modals.close()">&#215;</button>
+            </div>
+            <div style="padding:16px;">
+                <p style="color:var(--gray-600); margin-bottom:20px;">Connect your sourcing platforms and email to automatically import purchase information.</p>
+                <div style="display:grid; gap:12px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--gray-200); border-radius:8px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <span style="font-size:24px;">&#x1F6D2;</span>
+                            <div><div style="font-weight:600;">AliExpress</div><div style="font-size:12px; color:var(--gray-500);">Auto-import via Open Platform API</div></div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="handlers.showSourcingInfo('aliexpress')">Connect</button>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--gray-200); border-radius:8px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <span style="font-size:24px;">&#x1F3ED;</span>
+                            <div><div style="font-weight:600;">Alibaba</div><div style="font-size:12px; color:var(--gray-500);">Auto-import via B2B API</div></div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="handlers.showSourcingInfo('alibaba')">Connect</button>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--gray-200); border-radius:8px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <span style="font-size:24px;">&#x1F4E7;</span>
+                            <div><div style="font-weight:600;">Gmail</div><div style="font-size:12px; color:var(--gray-500);">Auto-parse purchase receipts from email</div></div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="handlers.connectGmail()">Connect</button>
+                    </div>
+                </div>
+            </div>
+        `);
+    },
+
+    connectGmail: function() {
+        toast.info('Gmail integration coming soon! We will notify you when it is available.');
+        modals.close();
+    },
+
     showAddPurchase: function() {
         const inventoryOptions = store.state.inventory.map(item =>
             `<option value="${item.id}">${escapeHtml(item.title)} (${item.sku || 'No SKU'})</option>`

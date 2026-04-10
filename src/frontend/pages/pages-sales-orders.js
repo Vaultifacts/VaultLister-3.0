@@ -692,9 +692,44 @@ Object.assign(pages, {
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                     <h3 class="card-title">Purchase History</h3>
-                    <button class="btn btn-primary" onclick="handlers.showAddPurchase()">
-                        ${components.icon('plus', 16)} Add Purchase
-                    </button>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="dropdown" style="position:relative;" id="add-purchases-dropdown">
+                            <button class="btn btn-primary dropdown-toggle" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open');">
+                                ${components.icon('plus', 16)} Add Purchases Manually
+                                ${components.icon('chevron-down', 14)}
+                            </button>
+                            <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;">
+                                <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showAddPurchase(); this.closest('.dropdown').classList.remove('open');" style="display:flex; align-items:center; gap:8px;">
+                                    ${components.icon('edit', 14)} Add Manually
+                                </button>
+                                <div class="dropdown-divider"></div>
+                                <div style="padding:4px 16px; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--gray-400); letter-spacing:0.05em;">Import Purchases</div>
+                                <div class="import-submenu-container" style="position:relative;">
+                                    <button class="dropdown-item" onclick="event.stopPropagation(); handlers.toggleImportSubmenu();" style="display:flex; align-items:center; justify-content:space-between;">
+                                        <span style="display:flex; align-items:center; gap:8px;">${components.icon('download', 14)} Import Purchases</span>
+                                        ${components.icon('chevron-right', 12)}
+                                    </button>
+                                    <div id="import-submenu" style="display:none; position:absolute; left:100%; top:0; min-width:200px; background:var(--surface); border:1px solid var(--gray-200); border-radius:8px; box-shadow:var(--shadow-lg); padding:4px 0; z-index:201;">
+                                        <div style="padding:4px 12px; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--gray-400);">Platforms</div>
+                                        <button class="dropdown-item" onclick="handlers.showSourcingInfo('aliexpress');" style="display:flex; align-items:center; gap:8px; font-size:13px;">&#x1F6D2; AliExpress</button>
+                                        <button class="dropdown-item" onclick="handlers.showSourcingInfo('alibaba');" style="display:flex; align-items:center; gap:8px; font-size:13px;">&#x1F3ED; Alibaba</button>
+                                        <button class="dropdown-item" onclick="handlers.showTemuImport();" style="display:flex; align-items:center; gap:8px; font-size:13px;">&#x1F4E6; Temu</button>
+                                        <div style="height:1px; background:var(--gray-100); margin:4px 0;"></div>
+                                        <div style="padding:4px 12px; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--gray-400);">Documents</div>
+                                        <button class="dropdown-item" onclick="handlers.showPurchaseCSVImport();" style="display:flex; align-items:center; gap:8px; font-size:13px;">${components.icon('file-text', 13)} CSV</button>
+                                        <button class="dropdown-item" onclick="handlers.showPurchaseExcelImport();" style="display:flex; align-items:center; gap:8px; font-size:13px;">${components.icon('file', 13)} Excel (.xlsx)</button>
+                                    </div>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <button class="dropdown-item" onclick="event.stopPropagation(); router.navigate('receipt-parser'); this.closest('.dropdown').classList.remove('open');" style="display:flex; align-items:center; gap:8px;">
+                                    ${components.icon('camera', 14)} Receipts
+                                </button>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="handlers.showSourcingConnections()">
+                            ${components.icon('link', 16)} Connections
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     ${purchases.length === 0 ? `
@@ -702,7 +737,7 @@ Object.assign(pages, {
                             <div class="empty-state-icon">${components.icon('shopping-cart', 48)}</div>
                             <h3 class="empty-state-title">No purchases yet</h3>
                             <p class="empty-state-description">Connect a sourcing platform or add purchases manually to track your inventory costs.</p>
-                            <button class="btn btn-primary" onclick="handlers.showAddPurchase()">${components.icon('plus', 16)} Add Purchase</button>
+                            <button class="btn btn-primary" onclick="handlers.showAddPurchase()">${components.icon('plus', 16)} Add Manually</button>
                         </div>
                     ` : `
                         <table class="data-table">
@@ -764,9 +799,44 @@ Object.assign(pages, {
                 <div class="card">
                     <div class="card-header flex justify-between items-center">
                         <h3 class="card-title">Purchases</h3>
-                        <button class="btn btn-primary" onclick="handlers.showAddPurchase()">
-                            ${components.icon('plus', 16)} Add Purchase
-                        </button>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="dropdown" style="position:relative;" id="add-purchases-dropdown-fin">
+                                <button class="btn btn-primary dropdown-toggle" onclick="event.stopPropagation(); this.closest('.dropdown').classList.toggle('open');">
+                                    ${components.icon('plus', 16)} Add Purchases Manually
+                                    ${components.icon('chevron-down', 14)}
+                                </button>
+                                <div class="dropdown-menu" style="min-width:220px; right:0; z-index:200;">
+                                    <button class="dropdown-item" onclick="event.stopPropagation(); handlers.showAddPurchase(); this.closest('.dropdown').classList.remove('open');" style="display:flex; align-items:center; gap:8px;">
+                                        ${components.icon('edit', 14)} Add Manually
+                                    </button>
+                                    <div class="dropdown-divider"></div>
+                                    <div style="padding:4px 16px; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--gray-400); letter-spacing:0.05em;">Import Purchases</div>
+                                    <div class="import-submenu-container" style="position:relative;">
+                                        <button class="dropdown-item" onclick="event.stopPropagation(); handlers.toggleImportSubmenu();" style="display:flex; align-items:center; justify-content:space-between;">
+                                            <span style="display:flex; align-items:center; gap:8px;">${components.icon('download', 14)} Import Purchases</span>
+                                            ${components.icon('chevron-right', 12)}
+                                        </button>
+                                        <div id="import-submenu-fin" style="display:none; position:absolute; left:100%; top:0; min-width:200px; background:var(--surface); border:1px solid var(--gray-200); border-radius:8px; box-shadow:var(--shadow-lg); padding:4px 0; z-index:201;">
+                                            <div style="padding:4px 12px; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--gray-400);">Platforms</div>
+                                            <button class="dropdown-item" onclick="handlers.showSourcingInfo('aliexpress');" style="display:flex; align-items:center; gap:8px; font-size:13px;">&#x1F6D2; AliExpress</button>
+                                            <button class="dropdown-item" onclick="handlers.showSourcingInfo('alibaba');" style="display:flex; align-items:center; gap:8px; font-size:13px;">&#x1F3ED; Alibaba</button>
+                                            <button class="dropdown-item" onclick="handlers.showTemuImport();" style="display:flex; align-items:center; gap:8px; font-size:13px;">&#x1F4E6; Temu</button>
+                                            <div style="height:1px; background:var(--gray-100); margin:4px 0;"></div>
+                                            <div style="padding:4px 12px; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--gray-400);">Documents</div>
+                                            <button class="dropdown-item" onclick="handlers.showPurchaseCSVImport();" style="display:flex; align-items:center; gap:8px; font-size:13px;">${components.icon('file-text', 13)} CSV</button>
+                                            <button class="dropdown-item" onclick="handlers.showPurchaseExcelImport();" style="display:flex; align-items:center; gap:8px; font-size:13px;">${components.icon('file', 13)} Excel (.xlsx)</button>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <button class="dropdown-item" onclick="event.stopPropagation(); router.navigate('receipt-parser'); this.closest('.dropdown').classList.remove('open');" style="display:flex; align-items:center; gap:8px;">
+                                        ${components.icon('camera', 14)} Receipts
+                                    </button>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="handlers.showSourcingConnections()">
+                                ${components.icon('link', 16)} Connections
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body">
                         ${purchases.length === 0 ? `
@@ -774,7 +844,7 @@ Object.assign(pages, {
                                 <div class="empty-state-icon">${components.icon('dollar', 48)}</div>
                                 <h3 class="empty-state-title">No purchases yet</h3>
                                 <p class="empty-state-description">Track your inventory purchases to calculate accurate COGS</p>
-                                <button class="btn btn-primary" onclick="handlers.showAddPurchase()">Add First Purchase</button>
+                                <button class="btn btn-primary" onclick="handlers.showAddPurchase()">Add Manually</button>
                             </div>
                         ` : `
                             <table class="data-table">

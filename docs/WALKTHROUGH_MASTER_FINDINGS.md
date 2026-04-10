@@ -587,6 +587,244 @@ Reported by user during manual walkthrough session on 2026-04-08. Findings #191�
 *Document generated: 2026-04-05. Source: LAUNCH_READINESS_2026-04-05.md (185 findings, 14 sessions), LAUNCH_AUDIT_FINDINGS_2026-04-05.md (25 findings, code scan), post-walkthrough session fixes (#186-new–#189-new).*
 
 
+
+INVENTORY TAB
+✅ What Works
+- Catalog tab loads and displays items correctly with all stat cards
+- Bundle Builder modal opens, lists all 3 items
+- Restock Suggestions modal opens (shows "Not enough sales data")
+- Quick Item Lookup search works and returns results
+- Bulk Price Update modal — all three tabs (Percentage Change, Fixed Amount, Round Up) function and preview correctly
+- Inventory Age Analysis shows item data and breakdowns
+- Add New Item form opens with full feature set (AI Generate, Barcode Scan, Use Template, image upload, all fields)
+- Item row click → Item History modal with Purchases/Sales tabs and financial summary
+- Edit Item → full editable form
+- Search bar → filters items and updates stat cards dynamically
+- Filters panel → filter applies and shows "X filter applied" toast
+- Column sorting → works (ITEM column tested ascending)
+- Select All checkbox → selects all rows and reveals bulk action bar (Status, Price, Edit, - Crosslist, Export, Category, Delete)
+- Bulk Edit with 0 selected → "Please select items first" toast
+- Bulk Edit with items selected → opens modal with Action dropdown and field logic
+🐛 Bugs (Broken / Non-Functional)
+1. Analytics Sub-Tab — Infinite Loading (Critical)
+Clicking the Analytics tab shows "Loading analytics…" and never resolves. No error message, no timeout fallback. Waits indefinitely.
+2. Duplicate Inventory Items
+Two identical items exist with the same name ("Test Item"), same SKU (VL-1774975842425), and same price (C$12.99). This appears to be seeded/demo data, but duplication itself indicates a data integrity problem.
+3. Tags Column Missing from Customize Columns
+The Tags column is visible in the table but does not appear as an option in the "Customize Columns" settings modal. Users cannot toggle it.
+⚠️ Visual / UX Issues
+4. Profit Margin Calculator — No Visual Gauge Marker
+The "Loss | Break Even | Profit" scale renders correctly as text labels, but there is no marker, indicator, or slider showing where the current margin falls on the spectrum. The scale is purely decorative.
+5. Bulk Price Update Scale — Same Missing Gauge Marker
+Same issue as above appears in the Tools → Bulk Prices modal.
+6. Alerts Modal — "In Stock: 0" Shown in Green
+In the Low Stock Alerts modal, an item with 0 units in stock is displayed with a green badge. Zero stock should be red or a warning color, not green. Misleading to users scanning at a glance.
+7. Age Analysis — "Listed C$12.99" for Unlisted Item
+The Inventory Age Analysis labels the oldest item as "Listed C$12.99" when that item's status is "Not listed." The label is incorrect — it should reflect actual listing status, not a price display.
+8. Low Stock Threshold vs. Default Quantity Mismatch
+When adding a new item, the Low Stock Threshold defaults to 5 while the Quantity field defaults to 1. This immediately flags every new item as "Low Stock" before the user even saves. The default threshold should be lower than the default quantity, or zero.
+9. Stat Cards Not Filterable
+The stat cards at the top (Active, Drafts, Low Stock, Out of Stock, Stale, Avg Age) are not clickable/interactive. Clicking them does nothing. Users would expect a stat card to filter the table to matching items.
+10. Filter Value Field — Free Text for Categorical Filters
+When adding a filter on the "Status" column, the "Value" field is a free-text input. Status is a fixed set of values (Draft, Active, etc.) and should render a dropdown of valid options, not a free text box.
+11. Initial Page Load — White Gap at Top
+On first load, there is a noticeable white gap/blank area between the top of the viewport and the first visible content. Likely a layout padding or scroll-position issue on mount.
+
+DAILY CHECKLIST TAB
+✅ What Works
+- Page renders with greeting, streak badge, stats, Pomodoro, task panels
+- Collapse/Expand buttons on Today's Progress, Pomodoro Timer, and - Quick Stats panels all toggle correctly
+- Task creation via "+ Add Task" — the modal opens with all fields (Title, Recurring, Due Date, Priority, Notes, Attachments); task saves and appears correctly after reload
+- Marking a task complete (checkbox click) — immediately updates all UI: progress ring to 100%, streak to 1, High Priority count to 0, greeting message changes to "Keep up the momentum!"
+- Daily Tasks / Completed / All Tasks tabs all switch correctly and show accurate counts
+- Completed tab — shows completed task with timestamp (e.g., "Completed 4/9/2026 3:55:47 PM")
+- Delete task — clicking Delete opens a confirmation dialog ("Delete this task? / Cancel / Delete") — correct UX
+- Kanban View — switches layout to To Do / In Progress / Done columns
+- Kanban add-task buttons — each column's "Add task" button opens a column-specific modal ("Add New Task to To Do", etc.)
+- Task cards in kanban — are draggable (drag-and-drop is implemented)
+- To-Do Lists tab — accessible, shows "My To-Do List" with an inline add input
+- To-Do List items — can be added using JavaScript-native events; Enter key dispatching works properly with React's native setter
+- Export — clicking opens a dropdown with Markdown (.md) and Plain Text (.txt) options; both trigger a "Checklist exported as Markdown/Plain Text" toast and file download
+- Share button — opens a "Share Checklist" modal with Email/Username input, Permission Level selector (View Only / Can Edit / Full Access), and Share button
+- VaultBuddy chat — opens correctly, shows welcome message and chat history from prior sessions
+- Daily Review modal — opens a Productivity Dashboard with today's progress, weekly bar chart, and summary stats
+🐛 Bugs (Broken / Non-Functional)
+1. Task Completion Does Not Persist Across Navigation (Critical)
+Completing a task (checking the checkbox) immediately updates the UI correctly. However, when navigating away from the checklist (e.g., clicking Analytics) and returning, the task reverts to "To Do" state and the streak resets to 0. Completion is not being saved to the backend — it only exists in component state.
+2. Task Never Appears After Adding (Without Reload)
+After clicking "+ Add Task" and submitting, the task does not appear in any tab immediately. The counts stay at 0 and the list shows "No tasks for today!" A page refresh is required to see the newly added task. This is a critical UX bug — users will think the add failed.
+3. Edit Task Button Does Nothing
+Clicking the Edit button on a task (pencil icon) does not open any modal or inline editor. No response whatsoever.
+4. Duplicate Task Button Does Nothing
+Clicking the Duplicate button on a task produces no output — no duplicate created, no toast, no error.
+5. Add Subtask Button Does Nothing
+Clicking the "Add subtask" button on a task produces no response — no inline input, no modal, no toast.
+6. Analytics Button Navigates Away Instead of Showing Checklist Analytics
+Clicking "Analytics" in the Daily Checklist header navigates the user entirely to the site-wide Analytics page (#analytics). If the intent is to show checklist-specific analytics, this is broken. If it's meant to navigate to global analytics, it should use a link-style element or clearly indicate navigation (not a button labeled "Analytics" on a checklist-specific toolbar).
+7. Templates — All 4 Templates Show "0 Items" and Are Not Clickable
+The Templates modal opens correctly and lists four templates (Daily Shipping Routine, New Listing Checklist, Weekly Inventory Audit, End of Day Closeout). All show "0 items" and clicking any of them produces no effect — no tasks are loaded.
+8. No Way to Exit Kanban View (Critical UX)
+Once the user switches to Kanban View, the List View toggle button is completely removed from the DOM. There is no button, link, or control to switch back to List View. The Kanban view preference also persists across page refreshes. Users are permanently stuck in Kanban view without knowing to manually clear app state or navigate via URL.
+9. Day Streak Resets on Navigation
+Related to Bug #1 — the streak badge correctly increments to 1 when a task is completed, but resets to 0 when the user navigates away and returns. Since completion doesn't persist, neither does the streak.
+10. Productivity Dashboard Shows Incorrect Stats
+The Daily Review modal shows "0 Completed, 0% Progress, 0 Day Streak" even when a task has been completed in the session. The dashboard does not reflect real-time task completion data.
+11. Focus Time Never Updates
+In the Pomodoro Timer, the "Focus time: 0min" counter never increments while the timer runs. Even after several minutes of active countdown, it remains at 0.
+12. VaultBuddy "Start New Chat" Doesn't Open a Chat
+Clicking "Start New Chat" in VaultBuddy stays on the welcome screen — no chat input field appears, no new conversation begins.
+⚠️ Visual / UX Issues
+13. Critical Mobile/Narrow Layout Breakdown
+When the app window is narrowed below ~900px (or the sidebar is triggered to collapse), the entire layout breaks. Symptoms include: double navigation bars (the mobile-specific header and the desktop header both appear simultaneously), action buttons stacking vertically taking up ~400px of vertical space, a massive white blank area consuming most of the scrollable page, and the task list becoming completely inaccessible visually. The page functions in the DOM but is not navigable by a real user in this state.
+14. Header Buttons Stack Vertically in Mobile View
+The five header buttons (Select All, Templates, Analytics, Share, Export) render as a vertical stack rather than a horizontal row in the narrow/mobile layout. This consumes an enormous amount of vertical space and pushes all content well below the fold.
+15. Greeting Message Contradicts Task State
+"Complete your first task to get started!" appears even when 1 task already exists. The motivational copy isn't conditional on the real state ("you have 1 task remaining today" appears on the same screen), creating a contradictory message.
+16. Select All with No Tasks Gives Misleading Toast
+Clicking "Select All" when there are 0 tasks shows "All items unchecked" toast. The message is confusing — it implies there were items that were just unchecked. A more accurate message would be "No tasks to select."
+17. Daily Review Bar Chart — Flat Lines for 0 Values
+The Weekly Analytics bar chart in the Productivity Dashboard renders with flat horizontal lines for all 0-value days. No bars are shown, just the baseline of the chart, making it look broken or unrendered rather than intentionally empty.
+18. Blue Dot on Progress Ring Does Nothing
+The small blue dot/indicator near the circular progress ring at 0% is clickable in appearance but produces no tooltip, action, or feedback when clicked.
+19. Kanban View Removes All List-View Controls
+When switching to Kanban, the tab bar (Daily Tasks, To-Do Lists, Completed, All Tasks), the search/filter field, Mark All Complete, Mark All Incomplete, Add Task, and the view toggle are all completely removed from the DOM. The Kanban view is a significantly reduced feature set with no indication of what's missing.
+20. Sidebar Nav Badge Shows Wrong Count
+The "Daily Checklist" entry in the sidebar nav shows "1" badge even when the checklist is in a completed/0-active state. The badge count logic should reflect active (uncompleted) task count.
+
+Sales & Purchases Tab:
+🔴 BUGS (Broken Functionality)
+1. Add Purchase form fails on submission — CSRF error
+When filling out the Add Purchase modal completely (Vendor Name, Purchase Date, Line Items with Description and Unit Cost) and submitting, the form returns: "Failed to add purchase: Invalid or expired CSRF token." This is a critical bug — the entire Purchases feature is non-functional. No purchase can be saved.
+2. GST/HST/PST card — backend error
+Clicking the GST/HST/PST feature card immediately shows: "Failed to load tax nexus data." This error is consistent across multiple clicks. The feature is completely broken.
+3. Buyer Profiles card — backend error
+Clicking the Buyer Profiles feature card shows: "Failed to load buyer profiles." This error is also consistent. The feature is completely broken. (Note: the toast dismisses very quickly — it can be missed on first click, but is reproducible.)
+4. No way to add a sale from the Sales tab
+There is zero "Add Sale," "Record Sale," or equivalent button anywhere on the Sales tab. The empty state says "Your sales will appear here once you make your first sale" but provides no mechanism to make one. The only "Log Sale" button in the entire app exists on the Dashboard toolbar — a completely separate page. A user landing on the Sales tab with the intent to record a sale has no path forward.
+🟠 VISUAL ISSUES (Wrong Appearance / Layout)
+5. Stat card grid layout broken — orphaned 4th card
+Both the Sales tab and the Purchases tab have 4 stat cards, but the layout renders as a 3-column grid. The 4th card ("Pending Shipments" on Sales; "This Month" on Purchases) wraps to a second row and sits alone on the left, taking up one-third of the full page width. The row below it is then completely empty. This creates an asymmetric, unbalanced layout. The cards should either use a 4-column grid, or a 2×2 grid.
+6. Large unexplained white gap — page content appears cut off
+Both sub-tabs exhibit a significant blank white area above the visible content when the page is scrolled. The content area appears to have extra top padding or margin that pushes visible content far down the page. This makes it look like the page is broken/loading and wastes significant screen real estate.
+7. Status filter persists across navigation
+When the Status filter was changed to "Shipped" during testing, it retained that value after navigating away to the Dashboard and returning to the Sales tab, and even after a full page navigation via the URL hash. Filters should reset when leaving and returning to the page, or at minimum on a full navigation.
+🟡 UX ISSUES (Poor Design / Behavior)
+8. Feature cards (GST/HST/PST, Buyer Profiles) appear as decorative cards but are actually clickable
+There is no visual affordance that these cards are interactive — no hover state, no arrow, no "Open" label. Users won't know to click them. Additionally, even when they do function, there is no indication of what they will do (open a modal? navigate to another page?). The cards just show a title and a subtitle.
+9. Stat card icons appear interactive but do nothing
+Each stat card has an icon badge in the top-right corner. These visually resemble icon buttons (they have a padded, rounded-square style) but clicking them produces no response whatsoever. They look actionable but are purely decorative.
+10. Sales empty state has no call-to-action
+The empty state for the sales table reads "No sales yet — Your sales will appear here once you make your first sale" but includes no button to get started. In contrast, the Purchases tab has an "Add Purchase" button in the empty state. The Sales tab should similarly have an "Add Sale" / "Log Sale" button right in the empty state.
+11. "Sell" breadcrumb is non-functional
+The breadcrumb trail reads: 🏠 Home › Sell › Sales. The "Home" icon correctly navigates to the Dashboard. But "Sell" is static, non-clickable text — not a link. A user would naturally expect it to navigate to a "Sell" overview page or at least back to the first item in the Sell section.
+12. AliExpress and Alibaba modals have no direct link to Settings/Integrations
+Both the "Connect AliExpress" and "Connect Alibaba" modals contain step-by-step instructions that require the user to go to Settings → Integrations to complete setup. However, the modal only has a "Close" button — there is no direct "Go to Settings" or "Open Integrations" link. Users have to close the modal and manually navigate there.
+13. Add Purchase modal — no delete button on line item rows
+When adding a purchase and clicking "+ Add Item" to create additional line item rows, there is no way to remove a row. If a user accidentally adds an extra line or wants to remove one, they are stuck with it. Every other multi-row form convention provides an "×" or trash icon to remove a row.
+14. Add Purchase modal — first Description field has no placeholder text
+The Description field in the first (default) line item row has no placeholder text, while the other rows added via "+ Add Item" also have no placeholder. This is a minor omission but the Qty field shows "1" as a default and Unit Cost is blank — consistency would suggest Description should at least hint at expected input (e.g., "e.g. Vintage jacket lot").
+15. Add Purchase modal — action buttons near bottom of viewport, modal taller than comfortable
+The modal (765px tall) places the Cancel and "Add Purchase" submit buttons at approximately y:832–867px in a 1000px viewport. When the page is scrolled to a position where the gap bug kicks in, the modal's lower content becomes difficult to reach. While the buttons are technically within the viewport, the modal should ideally be scrollable internally or sized to always keep the footer buttons visible.
+16. Link to Inventory dropdown shows duplicate items
+Inside the Add Purchase modal's Line Items, the "Link to Inventory" dropdown shows duplicate entries for inventory items. This is the same bug reported on the Inventory tab — the same item appears twice in the list.
+✅ What Works Correctly
+- Switching between Sales and Purchases sub-tabs works correctly
+- All four filter dropdowns and search fields on the Sales tab function (Platform, Status, Item search, Buyer search)
+- The Temu "Import CSV" modal opens correctly and has a working file drop zone with Cancel button
+- The "+ Add Purchase" button in both the Purchase History header and the empty state both correctly open the Add Purchase modal
+- The Cancel button in the Add Purchase modal correctly dismisses it without saving
+- The "+ Add Item" button in the Add Purchase modal correctly appends new line item rows
+- Form validation in the Add Purchase modal correctly highlights empty required fields before submission
+- The Home (🏠) breadcrumb icon correctly navigates to the Dashboard
+- The Purchases tab empty state message is clear: "No purchases yet — Connect a sourcing platform or add purchases manually to track your inventory costs"
+- Both AliExpress and Alibaba modals open correctly and provide readable setup instructions
+
+
+Listings Tab — Complete QA Findings Report
+BUGS (Functional Issues)
+1. Advanced Cross List — Does Nothing (Critical)
+Clicking the "Advanced Cross List" card in the "Create New Listing" modal immediately closes the entire modal without opening any form or interface. The user is simply dropped back to the Listings page with no feedback, no form, and no error message. Tested multiple times, consistently reproducible via both the header dropdown and the empty-state button. This feature is completely non-functional.
+2. Sub-modal "Cancel" / "Apply to Form" Closes Parent Form Too (Critical)
+There is a systematic cascading modal closure bug affecting all sub-modals within the "Add New Item" form. Specifically: clicking "Cancel" in the AI Listing Generator sub-modal, clicking "Cancel" in the "Select a Template" sub-modal, and clicking "Apply to Form" in the Barcode Scanner sub-modal all close both the sub-modal AND the parent "Add New Item" form simultaneously. The user loses all data entered in the main form. Each of these three sub-modal dismiss actions should only close the sub-modal and return focus to the parent form.
+3. Fee Breakdown Section is Completely Static (Critical)
+In the Platform Fee Calculator modal, the "Fee Breakdown" section does not update when the Sale Price is changed, and does not update when a different platform card is clicked. The breakdown always stays locked to "eBay at C$50" regardless of user interaction. The platform cards themselves do visually update in real time (showing calculated fees), making the static Fee Breakdown a clear disconnect — the most actionable/detailed section of the modal is broken.
+4. Duplicate Folders in All Folder Dropdowns
+The Folder filter dropdown shows "Nintendo" twice and "Remotes" twice, each with different UUIDs, indicating duplicate database records. This appears across every folder-related dropdown on the tab.
+5. Header Action Buttons Disappear on Sub-tabs
+When switching to the "Archived" sub-tab, all four header action buttons (Health, New Folder, Fees, Add New Listing) completely disappear. On "Listing Templates" and "Recently Deleted" sub-tabs, only "New Folder" and "Add New Listing(s)" remain — Health and Fees both vanish. The set of available actions should be consistent or intentionally scoped, not randomly dropping buttons.
+6. New Folder — Empty Name Accepted Silently
+Opening the "Create Folder" modal and clicking OK with the name field empty silently closes the modal with no validation error, no toast, and no indication that anything was wrong. The user has no idea why nothing happened.
+7. Fetch Listing Data — No Validation Error
+In the "Import From Marketplace" modal, clicking "Fetch Listing Data" with the URL field empty does nothing visible (briefly focuses the field) but shows no error message, no tooltip, and no toast. Users are left confused about why the button didn't work.
+8. Empty Form Submission — Silent/Unclear Validation
+Clicking "Add & Publish" or "Save as Draft" on the empty Add New Item form only causes the Title field label to turn blue — there is no red highlight on required fields, no error message, no toast. Same behavior exists in the "Create Listing Template" modal. This is consistent across the tab but clearly insufficient validation feedback.
+9. Import From Marketplace Modal — No Close (X) Button
+The "Import From Marketplace" modal has no X button in the header. Users must find and click the "Cancel" button at the bottom to exit, which is a UX gap that could frustrate users who instinctively reach for the header close button.
+10. Barcode Scanner "Apply to Form" — Closes Parent Form
+As mentioned in Bug #2 above, this is also a specific manifestation of the cascading close bug. When a product IS successfully found via barcode lookup and the user clicks "Apply to Form," instead of applying data to the Add New Item form, it closes everything. The core functionality of the barcode scanner (auto-filling the form) is therefore completely broken.
+11. Filter Bar Temporarily Disappears After Barcode Scanner Interaction
+After the Apply to Form bug closes both modals, the Folder/Status/Platform filter row vanishes from the Listings sub-tab. It recovers after re-navigating to the tab, but the broken state is jarring.
+
+VISUAL ISSUES
+12. Double Breadcrumb
+Two separate breadcrumb systems appear simultaneously on the Listings sub-tab: a standard gray breadcrumb (🏠 > Sell > Listings) directly above the card, and a second blue-linked breadcrumb below it (🏠 Dashboard > Listings > Active). They are redundant, they display inconsistently across sub-tabs (the standard one disappears on Archived, the secondary one loses the filter segment on All Listings), and they create visual clutter.
+13. "Sell" Breadcrumb Link is Dead
+Clicking "Sell" in the first breadcrumb (🏠 > Sell > Listings) does nothing — the page does not navigate anywhere. If it's not a functional link, it should not be rendered as one or should be visually distinguished as non-interactive text.
+14. Listing Health Widget — Cramped, Tiny Text
+The left side of the Listing Health widget displays the text "Add listings to see your Listing Health Score" in an extremely cramped layout where each word wraps to its own line. The text is too small and the column too narrow to be readable at a glance. This section needs more horizontal space or a redesigned layout.
+15. Fee Calculator — Orphaned "Whatnot" Card
+The five platform cards (eBay, Poshmark, Depop, Facebook, Whatnot) are arranged in a 2×2 grid, leaving Whatnot alone at the bottom centered by itself. This looks visually unpolished. A 3×2 layout, horizontal scroll, or a row of 5 would be more balanced.
+16. Fee Calculator — Currency Prefix Rendering
+The Sale Price input field shows a "C$" prefix that renders oddly — it appears to overlap or sit awkwardly within the input box rather than being cleanly inset as a prefix symbol. This is a minor cosmetic issue.
+17. Score Distribution Icon Inconsistency
+In the Listing Health Score modal, the three Score Distribution tiers (Excellent, Good, Needs Work) use visually inconsistent icons: a filled green checkmark, an outlined circle, and a dot-in-circle. These should use a consistent icon family.
+18. Listing Templates Sub-tab — Wrong Subtitle
+The subtitle shown on the Listing Templates sub-tab reads "View and manage your listings across all platforms," which is the generic subtitle for the Listings tab. It should be scoped to say something relevant to templates (e.g., "Create and manage reusable listing templates").
+19. Recently Deleted Sub-tab — White Gap Bug
+A white/blank gap appears in the Recently Deleted sub-tab layout, the same visual gap bug observed on other tabs in the app.
+20. Columns/Customize Panel Cuts Off at Viewport Bottom
+The Customize Columns dropdown panel extends beyond the bottom of the browser viewport and is not scrollable, making some column toggle options potentially inaccessible without scrolling the entire page first. This is a positioning/overflow issue.
+21. Horizontal Scrollbar on Main Page
+A horizontal scrollbar appears at the bottom of the viewport on the Listings tab, indicating some content is wider than the viewport. The table header row (IMAGE, ITEM, PLATFORM, PRICE, STATUS, STALE LISTING, LISTED, ACTION) extends past the right edge and is getting cut off — the last column header ("ACTION" or similar) is not visible without horizontal scrolling.
+22. Import from CSV — Native File Input
+The CSV import modal uses a plain native browser <input type="file"> ("Choose File" button) rather than the styled drag-and-drop upload zone used everywhere else in the app (e.g., the "Add New Item" image uploader). This creates a visual and UX inconsistency.
+UX / POLISH ISSUES
+23. "Create New Listing" Modal Opens Directly from Empty-State Button
+The empty-state "Add New Listing(s)" button opens the "Create New Listing" modal (Quick/Advanced chooser) directly, bypassing the dropdown options (Import from Marketplace, Import from CSV). This is inconsistent with the header button behavior and means users can't import from the empty state without discovering the header button first. Both paths should offer the same options.
+24. Listing Health Stats Are Not Clickable
+The stat counters in the Listing Health widget (Active, Drafts, Need Refresh, Avg Age) are not interactive. It would be expected user behavior to click "0 Active" and be taken to a filtered view of active listings, or to click the health score circle to open the Health modal. Neither action occurs.
+25. Platform Filter Emoji Rendering in Options vs. Selected State
+The Platform dropdown shows emoji characters (🅿️ Poshmark, Ⓔ eBay, etc.) in its option list, but when a platform is selected, a custom styled icon badge ("P" in a colored square) appears in the selected state instead. While functional, the rendering inconsistency between the open options list and the selected display is slightly jarring.
+26. No "Import from Marketplace" Option in Empty-State Modal
+Related to #23 — the modal accessible from the empty-state only offers Quick Cross List and Advanced Cross List (where Advanced is broken), with no path to import from a marketplace or CSV from that modal.
+27. Archived Sub-tab — No Filters
+The Archived sub-tab shows no filtering options at all (no Folder, Status, or Search filter). For users with large archives, there's no way to search or narrow down archived listings. Whether intentional or not, it's a notable UX gap.
+28. "Dashboard" Breadcrumb Link Works, But Navigates Away Without Warning
+Clicking "Dashboard" in the secondary breadcrumb immediately navigates to the Dashboard — fine when no data is entered, but if a user has partially opened a form and then clicks the breadcrumb (or this fires during edge cases), it could discard unsaved work with no confirmation. Low severity currently but worth noting.
+WHAT WORKS WELL
+The following elements functioned correctly and looked good:
+- Health button / Listing Health Score modal — opens cleanly, displays score gauge, Quick Wins tips, and closes properly.
+- Create Folder — works when a name is provided, shows a success toast, and the new folder appears in dropdowns immediately.
+- Fee Calculator platform cards — all 5 cards are selectable with a visual highlight and do update their displayed fee values in real time as the price changes. Only the static Fee Breakdown section is broken.
+- Import From Marketplace marketplace selection — all 6 marketplace buttons are clickable and highlight correctly.
+- Add New Item form fields — comprehensively built. SKU Auto-Generate, Size Type/Size dependency, Condition, Variations, Platform Pricing per-platform override, eBay Promoted Listings - Simple/Advanced toggle, Warehouse Quick Select, rich text Description editor, Save as Draft dropdown (VaultLister Only / Platforms as Draft / Both), Save Template — all present and visually well-organized.
+- Image section — all four tabs (Upload Files, Image Bank, URL, Clipboard) are present and functional. The drag-and-drop zone is well designed. Aspect ratio selector is a nice touch.
+- AI Listing Generator modal — opens correctly, Target Platform dropdown shows all platforms with character limits, Analyze Image button is correctly disabled until an image is provided.
+- Barcode Scanner — opens correctly, shows a live camera feed, the manual UPC/EAN lookup works and successfully returns product data (Title, Brand, Category). "Apply to Form" becomes active after a successful lookup. The bug is in the dismissal behavior, not the lookup itself.
+- Import from CSV modal — correct instructions, CSV template download link present, Import Items button correctly disabled until a file is selected.
+- Listing Templates "Create Template" modal — well structured with all expected fields including title pattern variables, pricing strategy, and favorite toggle.
+- Recently Deleted filters — Deletion Reason and Item Type dropdowns are present with meaningful options (User Deleted, Expired, Sold Out, Duplicate).
+- Status and Platform filters — both update correctly (Platform shows styled icon for selected platform; Status correctly removes the breadcrumb filter segment when set to "All Listings").
+- Columns/Customize — toggling column visibility works and updates the table header in real time.
+- "Dashboard" secondary breadcrumb link — correctly navigates to the Dashboard page.
+- Empty states across all sub-tabs — all are well-written with helpful descriptions and appropriate CTAs.
+
+
+
+
+
+
+
 Things to Implement:
 - Add Monthly Billing, Quarterly Billing, and Yearly Billing options
 - Pricing tiers will be --> Free, Starter, Pro, Business
@@ -616,6 +854,20 @@ Things to Implement:
 - ![Instead of a Full Name field, I would like to have two seperate fields "First Name" and "Last Name". Also I would like to have a "Change Email" button below the Email Field, which allows the user to change their email for their account. Additionally I would like a Password Section display with this other information that has a "Change Password" button which allows the user to change their password after receiving an email prompting the user to change their password](image-3.png)
 - Please make the "Add Purchase" button on the "Sales & Purchases" page instead say "Add Purchases Manually", and I want you to make it a dropdown menu button with the following options on it --> "Import Purchases" dropdown menu button which beside the parent dropdown menu shows the import dropwdown menu showing platforms to import from as well as document import options like csv, excel, etc. Then I would like you to migrate the Receipts page to a that parent dropdown menu on the "Sales & Purchases" page. Then I would also like you to add a "Connections" button that allows the user to connect sourcing platforms, as well as their gmail so purchase information can be pulled automatically.
 - We need to have something that is displayed to show how much the user has used for their plan for the month regarding all included things with their plan, as well as when their limits reset.
+- On the My Shops page, reorder the appearance of the platforms, with the coming soon platforms appearing in the bottom row after all of the ones able to connect to
+
+
+- [Please use these Poshmark images as the associated Poshmark images across our app. Ensure you follow all of their official usage guidelines](../Poshmark-Logos.zip)
+- [Please use these Grailed images as the associated Grailed images across our app. Ensure you follow all of their official usage guidelines](../Grailed-logos.zip)
+- [Please use these Depop images as the associated Depop images across our app. Ensure you follow all of their official usage guidelines](../Depop-logos.zip)
+- [Please use these Shopify images as the associated Shopify images across our app. Ensure you follow all of their official usage guidelines](../Shopify-logos.zip)
+- [Please use these eBay images as the associated eBay images across our app. Ensure you follow all of their official usage guidelines](../ebay-logos.zip)
+- [Please use these Facebook images as the associated Facebook images across our app. Ensure you follow all of their official usage guidelines](../Facebook-logos.zip)
+- [Please use these Etsy images as the associated Etsy images across our app. Ensure you follow all of their official usage guidelines](../Etsy-logos.zip)
+- [Please use these Mercari images as the associated Mercari images across our app. Ensure you follow all of their official usage guidelines](../Mercari-logos.zip)
+- [Please use these Whatnot images as the associated Whatnot images across our app. Ensure you follow all of their official usage guidelines](../Whatnot-logos.zip)
 
 
 Now can you please click everything, test everything, and visual inspect everything on the "Inventory" page
+
+Act as a user would, interact and visually view everything on the Dashboard tab. Make note of anything that does not work, looks wrong visually, and anything else that should be addressed. Upon finishing, please output your findings to me.

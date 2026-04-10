@@ -133,6 +133,7 @@ Object.assign(pages, {
                                 <div class="connected-platforms-pills">
                                     ${connectedShops.map(shop => `
                                         <span class="platform-pill" style="--platform-color: ${platformColors[shop.platform] || '#6b7280'}">
+                                            ${components.platformLogo(shop.platform, 16)}
                                             ${shop.platform.charAt(0).toUpperCase() + shop.platform.slice(1)}
                                         </span>
                                     `).join('')}
@@ -760,13 +761,17 @@ Object.assign(pages, {
                             <h4 class="settings-section-title">Personal Information</h4>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-group">
-                                    <label class="form-label" for="settings-full-name">Full Name</label>
-                                    <input type="text" class="form-input" id="settings-full-name" value="${escapeHtml(user.full_name || '')}" oninput="handlers.markSettingsChanged()">
+                                    <label class="form-label" for="settings-first-name">First Name</label>
+                                    <input type="text" class="form-input" id="settings-first-name" value="${escapeHtml(user.first_name || (user.full_name || '').split(' ')[0] || '')}" oninput="handlers.markSettingsChanged()">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="settings-last-name">Last Name</label>
+                                    <input type="text" class="form-input" id="settings-last-name" value="${escapeHtml(user.last_name || (user.full_name || '').split(' ').slice(1).join(' ') || '')}" oninput="handlers.markSettingsChanged()">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Email</label>
                                     <input type="email" class="form-input" value="${escapeHtml(user.email || '')}" disabled>
-                                    <span class="form-hint">Contact <a href="mailto:hello@vaultlister.com">hello@vaultlister.com</a> to change your email address.</span>
+                                    <button class="btn btn-sm btn-secondary" style="margin-top: 8px;" onclick="handlers.showChangeEmailModal()">Change Email</button>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="settings-display-name">Display Name</label>
@@ -793,6 +798,19 @@ Object.assign(pages, {
                                 <button class="btn btn-sm btn-secondary" onclick="handlers.resetSettingsSection('profile')">
                                     ${components.icon('refresh-cw', 14)} Reset to Defaults
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Password Section -->
+                        <div class="settings-section">
+                            <h4 class="settings-section-title">Password</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="form-group">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" class="form-input" value="••••••••••••" disabled>
+                                    <span class="form-hint">For security, we'll send you an email to change your password.</span>
+                                    <button class="btn btn-sm btn-secondary" style="margin-top: 8px;" onclick="handlers.sendChangePasswordEmail()">Change Password</button>
+                                </div>
                             </div>
                         </div>
 
@@ -2353,6 +2371,51 @@ Object.assign(pages, {
                             </button>
                         `}
                     </div>
+                </div>
+            </div>
+
+            <!-- Plan Usage -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">This Month's Usage</h3>
+                    <span class="text-sm text-gray-500">Resets on the 1st of each month</span>
+                </div>
+                <div class="card-body">
+                    ${(() => {
+                        const usage = store.state.usage || {};
+                        const tier = currentPlan;
+                        const limits = {
+                            free:     { items: 100,       listings: 50,        ai: 0,   automations: 0   },
+                            starter:  { items: 500,       listings: 250,       ai: 25,  automations: 5   },
+                            pro:      { items: Infinity,  listings: Infinity,  ai: 50,  automations: 20  },
+                            business: { items: Infinity,  listings: Infinity,  ai: Infinity, automations: Infinity }
+                        };
+                        const planLimits = limits[tier] || limits.free;
+                        const metrics = [
+                            { label: 'Inventory Items', current: usage.inventory_items || 0, limit: planLimits.items, unit: 'items' },
+                            { label: 'Active Listings', current: usage.active_listings || 0, limit: planLimits.listings, unit: 'listings' },
+                            { label: 'AI Generations', current: usage.ai_generations || 0, limit: planLimits.ai, unit: 'this month' },
+                            { label: 'Automations', current: usage.automations || 0, limit: planLimits.automations, unit: 'active' },
+                        ];
+                        return metrics.map(m => {
+                            const isUnlimited = !isFinite(m.limit);
+                            const pct = isUnlimited ? 0 : Math.min(100, Math.round((m.current / m.limit) * 100));
+                            const color = pct >= 90 ? 'var(--danger)' : pct >= 70 ? 'var(--warning)' : 'var(--success)';
+                            const warningHtml = (pct >= 80 && !isUnlimited)
+                                ? '<span style="font-size:12px; color:' + color + '; margin-top:2px; display:block;">' + pct + '% used \u2014 consider upgrading</span>'
+                                : '';
+                            return '<div style="margin-bottom: 16px;">' +
+                                '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+                                    '<span style="font-size:14px; font-weight:500;">' + m.label + '</span>' +
+                                    '<span style="font-size:13px; color:var(--gray-500);">' + m.current + ' / ' + (isUnlimited ? 'Unlimited' : m.limit) + ' ' + m.unit + '</span>' +
+                                '</div>' +
+                                '<div style="height:6px; background:var(--gray-200); border-radius:3px; overflow:hidden;">' +
+                                    '<div style="height:100%; width:' + (isUnlimited ? 0 : pct) + '%; background:' + color + '; border-radius:3px; transition:width 0.3s;"></div>' +
+                                '</div>' +
+                                warningHtml +
+                            '</div>';
+                        }).join('');
+                    })()}
                 </div>
             </div>
 

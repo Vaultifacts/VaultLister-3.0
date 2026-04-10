@@ -1438,6 +1438,10 @@ const components = {
 
     // Platform logo for larger display (shop cards)
     platformLogoLarge(platform) {
+        const platformDef = (window.SUPPORTED_PLATFORMS || []).find(p => p.id === platform);
+        if (platformDef && platformDef.logoPath) {
+            return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;background:#fff;border:1px solid #e5e7eb;"><img src="${platformDef.logoPath}" alt="${platformDef.name}" width="36" height="36" style="object-fit:contain;"></div>`;
+        }
         const configs = {
             poshmark: { bg: '#AC1A2F', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>` },
             ebay: { bg: '#FFFFFF', border: '1px solid #e5e7eb', svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="#E53238"><path d="M2 8.5v7h2.5v-2.5H7V16h2.5v-7H7v2h-2.5v-2H2zm7.5 0v7H12c1.93 0 3.5-1.57 3.5-3.5S13.93 8.5 12 8.5H9.5zm2.5 2h.5c.83 0 1.5.67 1.5 1.5S13.33 13.5 12.5 13.5H12v-3zm4 0v5h5v-1.5h-3V13h2.5v-1.5H18v-1h3V8.5h-5v2z"/></svg>` },
@@ -1463,6 +1467,14 @@ const components = {
             return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;gap:0;border-radius:${radius};box-shadow:0 2px 8px rgba(0,0,0,0.1);background:${cfg.bg};${border}font-size:14px;font-weight:700;font-family:Arial,sans-serif">${cfg.letters.map(l => `<span style="color:${l.c}">${l.l}</span>`).join('')}</div>`;
         }
         return `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:${radius};box-shadow:0 2px 8px rgba(0,0,0,0.1);background:${cfg.bg};${border}color:${cfg.color};font-size:22px;font-weight:700;font-family:${cfg.font || 'Arial, sans-serif'}">${cfg.letter}</div>`;
+    },
+
+    platformLogo(platformId, size = 24, alt = '') {
+        const platform = (window.SUPPORTED_PLATFORMS || []).find(p => p.id === platformId);
+        if (platform && platform.logoPath) {
+            return `<img src="${platform.logoPath}" alt="${alt || platform.name}" width="${size}" height="${size}" style="object-fit:contain; vertical-align:middle;">`;
+        }
+        return `<span style="font-size:${size}px; line-height:1;">${platform ? platform.icon : '?'}</span>`;
     },
 
     // Loading spinner

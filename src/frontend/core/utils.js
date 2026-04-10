@@ -9,15 +9,17 @@
 // Supported Platforms (single source of truth)
 // ============================================
 const SUPPORTED_PLATFORMS = [
-    { id: 'poshmark', name: 'Poshmark', icon: '🅿️' },
-    { id: 'ebay', name: 'eBay', icon: 'Ⓔ' },
-    { id: 'mercari', name: 'Mercari', icon: 'Ⓜ️' },
-    { id: 'depop', name: 'Depop', icon: 'Ⓓ' },
-    { id: 'grailed', name: 'Grailed', icon: 'Ⓖ' },
-    { id: 'etsy', name: 'Etsy', icon: 'Ⓔ' },
-    { id: 'shopify', name: 'Shopify', icon: '🛍️' },
-    { id: 'facebook', name: 'Facebook', icon: 'Ⓕ' },
-    { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ' }
+    // Launch platforms (can connect now)
+    { id: 'poshmark', name: 'Poshmark', icon: '🅿️', logoPath: '/assets/logos/poshmark/logo.png' },
+    { id: 'ebay', name: 'eBay', icon: 'Ⓔ', logoPath: '/assets/logos/ebay/logo.svg' },
+    { id: 'depop', name: 'Depop', icon: 'Ⓓ', logoPath: '/assets/logos/depop/logo.svg' },
+    { id: 'facebook', name: 'Facebook', icon: 'Ⓕ', logoPath: '/assets/logos/facebook/logo.png' },
+    { id: 'whatnot', name: 'Whatnot', icon: 'Ⓦ', logoPath: '/assets/logos/whatnot/logo.svg' },
+    // Coming soon platforms
+    { id: 'mercari', name: 'Mercari', icon: 'Ⓜ️', logoPath: '/assets/logos/mercari/logo.svg' },
+    { id: 'grailed', name: 'Grailed', icon: 'Ⓖ', logoPath: '/assets/logos/grailed/logo.png' },
+    { id: 'etsy', name: 'Etsy', icon: 'Ⓔ', logoPath: '/assets/logos/etsy/logo.svg' },
+    { id: 'shopify', name: 'Shopify', icon: '🛍️', logoPath: '/assets/logos/shopify/logo.svg' },
 ];
 
 // Canada launch platforms only (post-launch platforms are feature-gated)
