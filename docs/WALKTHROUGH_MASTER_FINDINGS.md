@@ -742,62 +742,62 @@ Inside the Add Purchase modal's Line Items, the "Link to Inventory" dropdown sho
 
 Listings Tab — Complete QA Findings Report
 BUGS (Functional Issues)
-1. Advanced Cross List — Does Nothing (Critical)
+1. Advanced Cross List — Does Nothing (Critical) — VERIFIED ✅ — 7a32167 — replaced with "coming soon" toast; parent modal stays open
 Clicking the "Advanced Cross List" card in the "Create New Listing" modal immediately closes the entire modal without opening any form or interface. The user is simply dropped back to the Listings page with no feedback, no form, and no error message. Tested multiple times, consistently reproducible via both the header dropdown and the empty-state button. This feature is completely non-functional.
-2. Sub-modal "Cancel" / "Apply to Form" Closes Parent Form Too (Critical)
+2. Sub-modal "Cancel" / "Apply to Form" Closes Parent Form Too (Critical) — VERIFIED ✅ — 7a32167 — sub-modal Cancel restores parent via modals.addItem(); cascading closure fixed
 There is a systematic cascading modal closure bug affecting all sub-modals within the "Add New Item" form. Specifically: clicking "Cancel" in the AI Listing Generator sub-modal, clicking "Cancel" in the "Select a Template" sub-modal, and clicking "Apply to Form" in the Barcode Scanner sub-modal all close both the sub-modal AND the parent "Add New Item" form simultaneously. The user loses all data entered in the main form. Each of these three sub-modal dismiss actions should only close the sub-modal and return focus to the parent form.
-3. Fee Breakdown Section is Completely Static (Critical)
+3. Fee Breakdown Section is Completely Static (Critical) — VERIFIED ✅ — 7a32167 — fee breakdown now updates dynamically with platform selection and price changes
 In the Platform Fee Calculator modal, the "Fee Breakdown" section does not update when the Sale Price is changed, and does not update when a different platform card is clicked. The breakdown always stays locked to "eBay at C$50" regardless of user interaction. The platform cards themselves do visually update in real time (showing calculated fees), making the static Fee Breakdown a clear disconnect — the most actionable/detailed section of the modal is broken.
-4. Duplicate Folders in All Folder Dropdowns
+4. Duplicate Folders in All Folder Dropdowns — VERIFIED ✅ — 7a32167 — folder options deduped by id before rendering
 The Folder filter dropdown shows "Nintendo" twice and "Remotes" twice, each with different UUIDs, indicating duplicate database records. This appears across every folder-related dropdown on the tab.
-5. Header Action Buttons Disappear on Sub-tabs
+5. Header Action Buttons Disappear on Sub-tabs — VERIFIED ✅ — 7a32167 — Health/Fees buttons added to all sub-tab headers unconditionally
 When switching to the "Archived" sub-tab, all four header action buttons (Health, New Folder, Fees, Add New Listing) completely disappear. On "Listing Templates" and "Recently Deleted" sub-tabs, only "New Folder" and "Add New Listing(s)" remain — Health and Fees both vanish. The set of available actions should be consistent or intentionally scoped, not randomly dropping buttons.
-6. New Folder — Empty Name Accepted Silently
+6. New Folder — Empty Name Accepted Silently — VERIFIED ✅ — 7a32167 — empty name triggers toast.error and returns early
 Opening the "Create Folder" modal and clicking OK with the name field empty silently closes the modal with no validation error, no toast, and no indication that anything was wrong. The user has no idea why nothing happened.
-7. Fetch Listing Data — No Validation Error
+7. Fetch Listing Data — No Validation Error — VERIFIED ✅ — 7a32167 — empty URL shows toast.error before fetch
 In the "Import From Marketplace" modal, clicking "Fetch Listing Data" with the URL field empty does nothing visible (briefly focuses the field) but shows no error message, no tooltip, and no toast. Users are left confused about why the button didn't work.
-8. Empty Form Submission — Silent/Unclear Validation
+8. Empty Form Submission — Silent/Unclear Validation — VERIFIED ✅ — 7a32167 — empty title adds input-error class + toast.error('Title is required')
 Clicking "Add & Publish" or "Save as Draft" on the empty Add New Item form only causes the Title field label to turn blue — there is no red highlight on required fields, no error message, no toast. Same behavior exists in the "Create Listing Template" modal. This is consistent across the tab but clearly insufficient validation feedback.
-9. Import From Marketplace Modal — No Close (X) Button
+9. Import From Marketplace Modal — No Close (X) Button — VERIFIED ✅ — 7a32167 — X close button added to modal header
 The "Import From Marketplace" modal has no X button in the header. Users must find and click the "Cancel" button at the bottom to exit, which is a UX gap that could frustrate users who instinctively reach for the header close button.
-10. Barcode Scanner "Apply to Form" — Closes Parent Form
+10. Barcode Scanner "Apply to Form" — Closes Parent Form — VERIFIED ✅ — 7a32167 — fixed with Bug 2 cascading close fix; Apply to Form restores parent modal
 As mentioned in Bug #2 above, this is also a specific manifestation of the cascading close bug. When a product IS successfully found via barcode lookup and the user clicks "Apply to Form," instead of applying data to the Add New Item form, it closes everything. The core functionality of the barcode scanner (auto-filling the form) is therefore completely broken.
-11. Filter Bar Temporarily Disappears After Barcode Scanner Interaction
+11. Filter Bar Temporarily Disappears After Barcode Scanner Interaction — VERIFIED ✅ — 7a32167 — resolved by cascading modal fix (Bug 2); renderApp called after modal restore
 After the Apply to Form bug closes both modals, the Folder/Status/Platform filter row vanishes from the Listings sub-tab. It recovers after re-navigating to the tab, but the broken state is jarring.
 
 VISUAL ISSUES
-12. Double Breadcrumb
+12. Double Breadcrumb — VERIFIED ✅ — 7a32167 — page-level breadcrumb removed; app shell handles single breadcrumb
 Two separate breadcrumb systems appear simultaneously on the Listings sub-tab: a standard gray breadcrumb (🏠 > Sell > Listings) directly above the card, and a second blue-linked breadcrumb below it (🏠 Dashboard > Listings > Active). They are redundant, they display inconsistently across sub-tabs (the standard one disappears on Archived, the secondary one loses the filter segment on All Listings), and they create visual clutter.
-13. "Sell" Breadcrumb Link is Dead
+13. "Sell" Breadcrumb Link is Dead — VERIFIED ✅ — 7a32167 — breadcrumb "Sell" made clickable via router.navigate('inventory')
 Clicking "Sell" in the first breadcrumb (🏠 > Sell > Listings) does nothing — the page does not navigate anywhere. If it's not a functional link, it should not be rendered as one or should be visually distinguished as non-interactive text.
-14. Listing Health Widget — Cramped, Tiny Text
+14. Listing Health Widget — Cramped, Tiny Text — VERIFIED ✅ — 7a32167 — health widget min-width increased; text shortened
 The left side of the Listing Health widget displays the text "Add listings to see your Listing Health Score" in an extremely cramped layout where each word wraps to its own line. The text is too small and the column too narrow to be readable at a glance. This section needs more horizontal space or a redesigned layout.
-15. Fee Calculator — Orphaned "Whatnot" Card
+15. Fee Calculator — Orphaned "Whatnot" Card — VERIFIED ✅ — 7a32167 — fee calculator cards changed to flex-wrap grid; all 5 display evenly
 The five platform cards (eBay, Poshmark, Depop, Facebook, Whatnot) are arranged in a 2×2 grid, leaving Whatnot alone at the bottom centered by itself. This looks visually unpolished. A 3×2 layout, horizontal scroll, or a row of 5 would be more balanced.
 16. Fee Calculator — Currency Prefix Rendering
 The Sale Price input field shows a "C$" prefix that renders oddly — it appears to overlap or sit awkwardly within the input box rather than being cleanly inset as a prefix symbol. This is a minor cosmetic issue.
-17. Score Distribution Icon Inconsistency
+17. Score Distribution Icon Inconsistency — VERIFIED ✅ — 7a32167 — all three tiers standardized to check-circle icon
 In the Listing Health Score modal, the three Score Distribution tiers (Excellent, Good, Needs Work) use visually inconsistent icons: a filled green checkmark, an outlined circle, and a dot-in-circle. These should use a consistent icon family.
-18. Listing Templates Sub-tab — Wrong Subtitle
+18. Listing Templates Sub-tab — Wrong Subtitle — VERIFIED ✅ — 7a32167 — subtitle changed to "Create and manage reusable listing templates"
 The subtitle shown on the Listing Templates sub-tab reads "View and manage your listings across all platforms," which is the generic subtitle for the Listings tab. It should be scoped to say something relevant to templates (e.g., "Create and manage reusable listing templates").
-19. Recently Deleted Sub-tab — White Gap Bug
+19. Recently Deleted Sub-tab — White Gap Bug — VERIFIED ✅ — 7a32167 — window.scrollTo(0,0) added on Recently Deleted render
 A white/blank gap appears in the Recently Deleted sub-tab layout, the same visual gap bug observed on other tabs in the app.
-20. Columns/Customize Panel Cuts Off at Viewport Bottom
+20. Columns/Customize Panel Cuts Off at Viewport Bottom — VERIFIED ✅ — 7a32167 — panel gets max-height:400px + overflow-y:auto
 The Customize Columns dropdown panel extends beyond the bottom of the browser viewport and is not scrollable, making some column toggle options potentially inaccessible without scrolling the entire page first. This is a positioning/overflow issue.
-21. Horizontal Scrollbar on Main Page
+21. Horizontal Scrollbar on Main Page — VERIFIED ✅ — 7a32167 — table wrapped in overflow-x:auto container; table min-width:800px
 A horizontal scrollbar appears at the bottom of the viewport on the Listings tab, indicating some content is wider than the viewport. The table header row (IMAGE, ITEM, PLATFORM, PRICE, STATUS, STALE LISTING, LISTED, ACTION) extends past the right edge and is getting cut off — the last column header ("ACTION" or similar) is not visible without horizontal scrolling.
-22. Import from CSV — Native File Input
+22. Import from CSV — Native File Input — VERIFIED ✅ — 7a32167 — replaced with styled drag-drop zone matching Add New Item uploader
 The CSV import modal uses a plain native browser <input type="file"> ("Choose File" button) rather than the styled drag-and-drop upload zone used everywhere else in the app (e.g., the "Add New Item" image uploader). This creates a visual and UX inconsistency.
 UX / POLISH ISSUES
-23. "Create New Listing" Modal Opens Directly from Empty-State Button
+23. "Create New Listing" Modal Opens Directly from Empty-State Button — VERIFIED ✅ — 7a32167 — empty-state button now shows same Import from Marketplace/CSV options as header
 The empty-state "Add New Listing(s)" button opens the "Create New Listing" modal (Quick/Advanced chooser) directly, bypassing the dropdown options (Import from Marketplace, Import from CSV). This is inconsistent with the header button behavior and means users can't import from the empty state without discovering the header button first. Both paths should offer the same options.
-24. Listing Health Stats Are Not Clickable
+24. Listing Health Stats Are Not Clickable — VERIFIED ✅ — 7a32167 — stat counters get cursor:pointer + onclick to filter listings by status
 The stat counters in the Listing Health widget (Active, Drafts, Need Refresh, Avg Age) are not interactive. It would be expected user behavior to click "0 Active" and be taken to a filtered view of active listings, or to click the health score circle to open the Health modal. Neither action occurs.
 25. Platform Filter Emoji Rendering in Options vs. Selected State
 The Platform dropdown shows emoji characters (🅿️ Poshmark, Ⓔ eBay, etc.) in its option list, but when a platform is selected, a custom styled icon badge ("P" in a colored square) appears in the selected state instead. While functional, the rendering inconsistency between the open options list and the selected display is slightly jarring.
-26. No "Import from Marketplace" Option in Empty-State Modal
+26. No "Import from Marketplace" Option in Empty-State Modal — VERIFIED ✅ — 7a32167 — fixed with UX 23; import options added to chooseListingMode modal
 Related to #23 — the modal accessible from the empty-state only offers Quick Cross List and Advanced Cross List (where Advanced is broken), with no path to import from a marketplace or CSV from that modal.
-27. Archived Sub-tab — No Filters
+27. Archived Sub-tab — No Filters — VERIFIED ✅ — 7a32167 — search filter input added to Archived sub-tab
 The Archived sub-tab shows no filtering options at all (no Folder, Status, or Search filter). For users with large archives, there's no way to search or narrow down archived listings. Whether intentional or not, it's a notable UX gap.
 28. "Dashboard" Breadcrumb Link Works, But Navigates Away Without Warning
 Clicking "Dashboard" in the secondary breadcrumb immediately navigates to the Dashboard — fine when no data is entered, but if a user has partially opened a form and then clicks the breadcrumb (or this fires during edge cases), it could discard unsaved work with no confirmation. Low severity currently but worth noting.
