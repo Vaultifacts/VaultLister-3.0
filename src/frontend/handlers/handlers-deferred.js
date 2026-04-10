@@ -11437,7 +11437,7 @@ Object.assign(handlers, {
                     <div class="report-quick-stats">
                         <div class="quick-stat">
                             <span class="qs-label">Best Day</span>
-                            <span class="qs-value">${dailyData.reduce((best, d) => d.revenue > best.revenue ? d : best, dailyData[0]).day}</span>
+                            <span class="qs-value">${(() => { const best = dailyData.reduce((b, d) => d.revenue > b.revenue ? d : b, dailyData[0]); return best.revenue > 0 ? best.day : 'N/A'; })()}</span>
                         </div>
                         <div class="quick-stat">
                             <span class="qs-label">Active Inventory</span>
@@ -11674,7 +11674,7 @@ Object.assign(handlers, {
                             <div class="insight-value">${customerList.length}</div>
                             <div class="insight-label">Total Customers</div>
                         </div>
-                        <div class="insight-stat highlight">
+                        <div class="insight-stat">
                             <div class="insight-value">${repeatCustomers.length}</div>
                             <div class="insight-label">Repeat Buyers</div>
                         </div>
@@ -11924,10 +11924,11 @@ Object.assign(handlers, {
 
         const maxRevenue = Math.max(...monthlyData.map(m => m.revenue), 1);
 
-        // Identify best and worst months
-        const sortedByRevenue = [...monthlyData].sort((a, b) => b.revenue - a.revenue);
-        const bestMonth = sortedByRevenue[0];
-        const worstMonth = sortedByRevenue[sortedByRevenue.length - 1];
+        // Exclude the current (partial) month from best/worst calculation
+        const completedMonths = monthlyData.slice(0, monthlyData.length - 1);
+        const sortedByRevenue = [...completedMonths].sort((a, b) => b.revenue - a.revenue);
+        const bestMonth = sortedByRevenue.length > 0 ? sortedByRevenue[0] : null;
+        const worstMonth = sortedByRevenue.length > 0 ? sortedByRevenue[sortedByRevenue.length - 1] : null;
 
         // Calculate seasonal patterns
         const quarters = {
@@ -11972,16 +11973,16 @@ Object.assign(handlers, {
                             <div class="highlight-icon">${components.icon('trending-up', 20)}</div>
                             <div class="highlight-info">
                                 <div class="highlight-label">Best Month</div>
-                                <div class="highlight-value">${bestMonth.month} ${bestMonth.year}</div>
-                                <div class="highlight-amount">C$${bestMonth.revenue.toFixed(0)}</div>
+                                <div class="highlight-value">${bestMonth ? bestMonth.month + ' ' + bestMonth.year : 'N/A'}</div>
+                                <div class="highlight-amount">${bestMonth ? 'C$' + bestMonth.revenue.toFixed(0) : 'Insufficient data'}</div>
                             </div>
                         </div>
                         <div class="highlight-card worst">
                             <div class="highlight-icon">${components.icon('trending-down', 20)}</div>
                             <div class="highlight-info">
                                 <div class="highlight-label">Slowest Month</div>
-                                <div class="highlight-value">${worstMonth.month} ${worstMonth.year}</div>
-                                <div class="highlight-amount">C$${worstMonth.revenue.toFixed(0)}</div>
+                                <div class="highlight-value">${worstMonth ? worstMonth.month + ' ' + worstMonth.year : 'N/A'}</div>
+                                <div class="highlight-amount">${worstMonth ? 'C$' + worstMonth.revenue.toFixed(0) : 'Insufficient data'}</div>
                             </div>
                         </div>
                     </div>

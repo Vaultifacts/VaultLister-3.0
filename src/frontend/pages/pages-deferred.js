@@ -12677,8 +12677,8 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 </div>
                 <div class="card" style="padding: 20px; text-align: center;">
                     <div style="font-size: 13px; color: var(--gray-600); margin-bottom: 8px;">Market Opportunity</div>
-                    <div style="font-size: 36px; font-weight: 700; color: var(--success);">${marketTrends.opportunity}%</div>
-                    <div style="font-size: 11px; color: var(--success); margin-top: 4px;">↑ High potential</div>
+                    <div style="font-size: 36px; font-weight: 700; color: ${marketTrends.opportunity > 0 ? 'var(--success)' : 'var(--gray-500)'};">${marketTrends.opportunity > 0 ? marketTrends.opportunity + '%' : '—'}</div>
+                    <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">${marketTrends.opportunity > 0 ? '↑ High potential' : 'No data yet'}</div>
                 </div>
             </div>
 

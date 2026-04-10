@@ -1524,6 +1524,16 @@ const pages = {
             item.trendDirection = trend.length >= 2 ? (trend[trend.length - 1] > trend[0] ? 'up' : 'down') : 'stable';
         });
 
+        // Error stats shared between Performance and Reports tabs
+        const perfErrorSales = sales.filter(s => s.status === 'failed' || s.status === 'error');
+        const perfTotalErrors = perfErrorSales.length;
+        const perfErrorRate = sales.length > 0 ? ((perfTotalErrors / sales.length) * 100).toFixed(1) : '0';
+        const perfMostCommonError = perfTotalErrors === 0 ? 'None' : (() => {
+            const freq = {};
+            perfErrorSales.forEach(s => { const t = s.error_type || s.status || 'Error'; freq[t] = (freq[t] || 0) + 1; });
+            return Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Error';
+        })();
+
         // Slowest moving inventory (oldest active items)
         const slowMovers = [...activeItems]
             .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
@@ -1644,15 +1654,15 @@ const pages = {
                 <div class="card-body">
                     <div class="grid grid-cols-3 gap-4 mb-4">
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl font-bold text-error">7</div>
+                            <div class="text-2xl font-bold text-error">${perfTotalErrors}</div>
                             <div class="text-xs text-gray-500">Total Errors (30d)</div>
                         </div>
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl font-bold text-warning">2.1%</div>
+                            <div class="text-2xl font-bold text-warning">${perfErrorRate}%</div>
                             <div class="text-xs text-gray-500">Error Rate</div>
                         </div>
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl font-bold text-primary">Auth Expired</div>
+                            <div class="text-2xl font-bold text-primary">${escapeHtml(perfMostCommonError)}</div>
                             <div class="text-xs text-gray-500">Most Common Error</div>
                         </div>
                     </div>
@@ -1668,55 +1678,17 @@ const pages = {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Jan 27, 2026</td>
-                                    <td><span class="badge badge-gray">eBay</span></td>
-                                    <td>Pokemon Cards Lot</td>
-                                    <td>Image upload timeout</td>
-                                    <td><span class="badge badge-success">Resolved</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Jan 26, 2026</td>
-                                    <td><span class="badge badge-gray">Mercari</span></td>
-                                    <td>Ray-Ban Wayfarers</td>
-                                    <td>Auth token expired</td>
-                                    <td><span class="badge badge-success">Resolved</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Jan 25, 2026</td>
-                                    <td><span class="badge badge-gray">Poshmark</span></td>
-                                    <td>Anthropologie Cardigan</td>
-                                    <td>Sync conflict</td>
-                                    <td><span class="badge badge-warning">Pending</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Jan 23, 2026</td>
-                                    <td><span class="badge badge-gray">Depop</span></td>
-                                    <td>Free People Dress</td>
-                                    <td>Rate limit exceeded</td>
-                                    <td><span class="badge badge-success">Resolved</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Jan 20, 2026</td>
-                                    <td><span class="badge badge-gray">eBay</span></td>
-                                    <td>Vintage Starter Jacket</td>
-                                    <td>Category mismatch</td>
-                                    <td><span class="badge badge-success">Resolved</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Jan 18, 2026</td>
-                                    <td><span class="badge badge-gray">Grailed</span></td>
-                                    <td>Supreme Hoodie</td>
-                                    <td>Auth token expired</td>
-                                    <td><span class="badge badge-success">Resolved</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Jan 15, 2026</td>
-                                    <td><span class="badge badge-gray">Poshmark</span></td>
-                                    <td>Coach Handbag</td>
-                                    <td>Image upload timeout</td>
-                                    <td><span class="badge badge-warning">Pending</span></td>
-                                </tr>
+                                ${perfErrorSales.length === 0 ? `
+                                    <tr><td colspan="5" class="text-center text-gray-400 py-4">No errors recorded</td></tr>
+                                ` : perfErrorSales.slice(0, 10).map(s => `
+                                    <tr>
+                                        <td>${new Date(s.sale_date || s.created_at).toLocaleDateString()}</td>
+                                        <td><span class="badge badge-gray">${escapeHtml(s.platform || 'Unknown')}</span></td>
+                                        <td>${escapeHtml(s.title || s.item_title || 'Unknown Item')}</td>
+                                        <td>${escapeHtml(s.error_type || s.status || 'Error')}</td>
+                                        <td><span class="badge ${s.resolved ? 'badge-success' : 'badge-warning'}">${s.resolved ? 'Resolved' : 'Pending'}</span></td>
+                                    </tr>
+                                `).join('')}
                             </tbody>
                         </table>
                     </div>
@@ -2039,12 +2011,10 @@ const pages = {
                     </div>
                     <div class="card-body">
                         <div class="text-center">
-                            <div class="text-4xl font-bold text-primary mb-2">${profitMarginRatio}%</div>
+                            <div class="text-4xl font-bold text-primary mb-2">${profitMarginRatio === 'N/A' ? 'N/A' : profitMarginRatio + '%'}</div>
                             <div class="text-sm text-gray-500 mb-4">Percentage</div>
                             <div class="flex justify-center gap-2">
-                                <span class="badge ${profitMarginRatio >= 30 ? 'badge-success' : profitMarginRatio >= 15 ? 'badge-warning' : 'badge-error'}">
-                                    ${profitMarginRatio >= 30 ? 'Good' : profitMarginRatio >= 15 ? 'Average' : 'Poor'}
-                                </span>
+                                ${profitMarginRatio === 'N/A' ? '<span class="badge badge-gray">No data</span>' : `<span class="badge ${profitMarginRatio >= 30 ? 'badge-success' : profitMarginRatio >= 15 ? 'badge-warning' : 'badge-error'}">${profitMarginRatio >= 30 ? 'Good' : profitMarginRatio >= 15 ? 'Average' : 'Poor'}</span>`}
                             </div>
                         </div>
                     </div>
@@ -2058,12 +2028,10 @@ const pages = {
                     </div>
                     <div class="card-body">
                         <div class="text-center">
-                            <div class="text-4xl font-bold text-primary mb-2">${roiRatio}%</div>
+                            <div class="text-4xl font-bold text-primary mb-2">${roiRatio === 'N/A' ? 'N/A' : roiRatio + '%'}</div>
                             <div class="text-sm text-gray-500 mb-4">Percentage</div>
                             <div class="flex justify-center gap-2">
-                                <span class="badge ${roiRatio >= 50 ? 'badge-success' : roiRatio >= 20 ? 'badge-warning' : 'badge-error'}">
-                                    ${roiRatio >= 50 ? 'Good' : roiRatio >= 20 ? 'Average' : 'Poor'}
-                                </span>
+                                ${roiRatio === 'N/A' ? '<span class="badge badge-gray">No data</span>' : `<span class="badge ${roiRatio >= 50 ? 'badge-success' : roiRatio >= 20 ? 'badge-warning' : 'badge-error'}">${roiRatio >= 50 ? 'Good' : roiRatio >= 20 ? 'Average' : 'Poor'}</span>`}
                             </div>
                         </div>
                     </div>
@@ -2761,9 +2729,9 @@ const pages = {
             </div>
 
             <div class="stats-grid mb-6">
-                ${components.statCard('Total Revenue', 'C$' + totalRevenue.toFixed(2), 'analytics', 15)}
-                ${components.statCard('Profit Margin', profitMargin + '%', 'sales', 5)}
-                ${components.statCard('Sell-Through', sellThrough + '%', 'inventory', 12)}
+                ${components.statCard('Total Revenue', 'C$' + totalRevenue.toFixed(2), 'analytics', totalRevenue > 0 ? null : null)}
+                ${components.statCard('Profit Margin', profitMargin + '%', 'sales', null)}
+                ${components.statCard('Sell-Through', sellThrough + '%', 'inventory', null)}
                 ${components.statCard('Total Sales', totalSales, 'activity', 0)}
             </div>
 
@@ -2793,26 +2761,48 @@ const pages = {
                         })()}
                     </div>
                 </div>
-                ${store.state.analyticsCompareMode ? `
+                ${store.state.analyticsCompareMode ? (() => {
+                // Only show comparison if there is actual prior-period data to compare against
+                const hasPriorData = (salesAnalytics.previousPeriod?.revenue || 0) > 0;
+                if (!hasPriorData) {
+                    return `
+                    <div class="analytics-compare-summary">
+                        <div class="compare-no-data" style="text-align:center;padding:16px;color:var(--gray-500);font-size:14px;">
+                            No prior-period data available for comparison. Make some sales to see compare mode.
+                        </div>
+                    </div>`;
+                }
+                const prevRevenue = salesAnalytics.previousPeriod.revenue;
+                const prevSales = salesAnalytics.previousPeriod.salesCount || 0;
+                const prevAvgOrder = prevSales > 0 ? prevRevenue / prevSales : 0;
+                const prevProfit = salesAnalytics.previousPeriod.profit || 0;
+                const prevProfitMargin = prevRevenue > 0 ? (prevProfit / prevRevenue * 100) : 0;
+
+                const revenueChangePct = prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue * 100) : 0;
+                const salesVolChange = prevSales > 0 ? (totalSales - prevSales) : 0;
+                const avgOrderChange = prevAvgOrder > 0 ? (avgOrderValue - prevAvgOrder) : 0;
+                const profitMarginChange = prevProfitMargin > 0 ? (profitMargin - prevProfitMargin) : 0;
+
+                return `
                     <div class="analytics-compare-summary">
                         <div class="compare-stat">
                             <span class="compare-stat-label">Revenue Change</span>
-                            <span class="compare-stat-value positive">+${(Math.random() * 25 + 5).toFixed(1)}%</span>
+                            <span class="compare-stat-value ${revenueChangePct >= 0 ? 'positive' : 'negative'}">${revenueChangePct >= 0 ? '+' : ''}${revenueChangePct.toFixed(1)}%</span>
                         </div>
                         <div class="compare-stat">
                             <span class="compare-stat-label">Sales Volume Change</span>
-                            <span class="compare-stat-value positive">+${Math.floor(Math.random() * 15 + 2)}</span>
+                            <span class="compare-stat-value ${salesVolChange >= 0 ? 'positive' : 'negative'}">${salesVolChange >= 0 ? '+' : ''}${salesVolChange}</span>
                         </div>
                         <div class="compare-stat">
                             <span class="compare-stat-label">Avg Order Value Change</span>
-                            <span class="compare-stat-value ${Math.random() > 0.3 ? 'positive' : 'negative'}">${Math.random() > 0.3 ? '+' : '-'}C$${(Math.random() * 10 + 1).toFixed(2)}</span>
+                            <span class="compare-stat-value ${avgOrderChange >= 0 ? 'positive' : 'negative'}">${avgOrderChange >= 0 ? '+' : ''}C$${Math.abs(avgOrderChange).toFixed(2)}</span>
                         </div>
                         <div class="compare-stat">
                             <span class="compare-stat-label">Profit Margin Change</span>
-                            <span class="compare-stat-value positive">+${(Math.random() * 5 + 0.5).toFixed(1)}%</span>
+                            <span class="compare-stat-value ${profitMarginChange >= 0 ? 'positive' : 'negative'}">${profitMarginChange >= 0 ? '+' : ''}${profitMarginChange.toFixed(1)}%</span>
                         </div>
-                    </div>
-                ` : ''}
+                    </div>`;
+            })() : ''}
             </div>
 
             <!-- Gross Margin and COGS Trends -->
