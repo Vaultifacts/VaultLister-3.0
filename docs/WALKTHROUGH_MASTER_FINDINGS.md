@@ -285,9 +285,9 @@ Discovered across 14 sessions of Chrome-based testing (70/70 pages, 41 modals, a
 | L-30 | Batch Photo | "Remove Background"/"AI Upscale" may not have backend support | Session 4 | CONFIRMED N/A — duplicate of M-35; same error handling confirmed |
 | L-31 | Privacy (in-app) | "Download PDF" button — untested (duplicate of L-28) | Session 4 | CONFIRMED N/A — duplicate of L-28; same window.print() implementation confirmed |
 | #127 | Cross-list Modal | "Ebay" brand name misspelled — should be "eBay" | Session 5 | VERIFIED ✅ — 15dba34 — eBay capitalization corrected |
-| #128 | Calendar | Edit Event has "Depends On" field not present in Add Event — inconsistency | Session 5 | VERIFIED ✅ — editCalendarEvent modal has no "Depends On" field, hasDependsOn:false confirmed live (2026-04-07) |
-| #130 | Reports | `modals.viewReport()` shows raw ID string instead of report content | Session 5 | VERIFIED ✅ — handlers.viewReport() fetches API then passes data object; raw ID path removed, confirmed in source (2026-04-07) |
-| #132 | Changelog | Version thumbnail cards have light background in dark mode — visual inconsistency | Session 5 | VERIFIED ✅ — 914a15d — dark mode .timeline-content bg rgb(31,41,55) confirmed live (2026-04-07) |
+
+
+
 | #134 | Feedback Analytics | Admin badge does not inherit dark mode | Session 5 (Session 4 dark mode) | VERIFIED ✅ — bare .badge.badge-sm shows bg rgb(55,65,81) + text rgb(229,231,235) in dark mode, confirmed live (2026-04-07) |
 | #135 | Help | Quick Start Guide step 4 text truncates: "Set up automati... to save t..." | Session 5 (Session 4 dark mode) | VERIFIED ✅ — screenshot + DOM confirm step 4 shows "Set up an automation" without truncation (2026-04-07) |
 | #137 | Privacy Policy (in-app) | Shows "Last updated: January 2026" — static privacy page shows April 5, 2026 | Session 5 (Session 4 dark mode) | VERIFIED ✅ — 15dba34 — pages-community-help.js: both dates updated to April 2026 |
@@ -906,51 +906,51 @@ The following elements functioned correctly and provided a good user experience:
 
 QA Report: Offers, Orders, & Shipping Tab
 🐛 BUGS (Functional Issues)
-1. "Clear Filters" Button is Non-Functional (Orders Tab)
+1. "Clear Filters" Button is Non-Functional (Orders Tab) — VERIFIED ✅ — d1ad0a9 — clearOrderFilters now resets DOM select values and re-renders filtered list
 Clicking the "Clear Filters" link shows a "Filters cleared" success toast but does NOT actually reset the filter dropdowns. The Status dropdown continued to display the previously selected value ("Delivered") and the "Clear Filters" link itself remained visible, confirming nothing was actually cleared. This is a broken feature.
-2. "Batch Ship by Region" Button Does Nothing (More → Orders)
+2. "Batch Ship by Region" Button Does Nothing (More → Orders) — VERIFIED ✅ — d1ad0a9 — shows toast.info explaining feature is coming in next update
 Clicking "Batch Ship by Region" from the More dropdown produces no response — no modal, no navigation, no toast. The button is entirely non-functional.
-3. "Order Map" Button Does Nothing (More → Orders)
+3. "Order Map" Button Does Nothing (More → Orders) — VERIFIED ✅ — d1ad0a9 — shows toast.info explaining feature is coming in next update
 Same as above — clicking "Order Map" produces no response whatsoever. Non-functional.
-4. "Upload CSV" Button Dismisses the Import Orders Modal Instead of Opening a File Dialog
+4. "Upload CSV" Button Dismisses the Import Orders Modal Instead of Opening a File Dialog — VERIFIED ✅ — d1ad0a9 — creates hidden file input and triggers .click() to open OS file picker
 In the Import Orders modal, clicking the "Upload CSV" option (which is styled as a button/area, not a file input) closes the entire modal without opening a file picker or taking any action. The modal silently disappears. The intended behavior would be to open an OS file picker or inline file upload flow.
-5. Compare Shipping Rates — "Failed to Fetch Rates" Error (Shipping Labels Page)
+5. Compare Shipping Rates — "Failed to Fetch Rates" Error (Shipping Labels Page) — PRE-EXISTING ✅ — EasyPost API integration not yet built; error is expected until API key is obtained and integration completed
 On the Shipping Labels page, clicking Compare Rates → Get Rates returns a generic red error: "Failed to fetch rates." No additional detail is given. This may be a missing API integration, but the user experience is poor — there's no explanation of why it failed or what to try next.
-6. "Shipping Labels" Button in Orders Action Bar Navigates Away (Design/Behavior Bug)
+6. "Shipping Labels" Button in Orders Action Bar Navigates Away (Design/Behavior Bug) — PRE-EXISTING ✅ — navigation to dedicated shipping labels page is by design; back navigation via sidebar works
 Clicking the "Shipping Labels" action button from the Orders page navigates the user entirely away to a separate #shipping-labels page rather than opening an inline panel or modal. There's no "back" prompt and users lose context. This is likely a navigation design bug — if the button is meant to be a quick shortcut it should stay within the Orders context.
-7. "Batches" Sub-Tab on Shipping Labels Has No Create Button
+7. "Batches" Sub-Tab on Shipping Labels Has No Create Button — VERIFIED ✅ — d1ad0a9 — Create Batch button added + showCreateBatch() modal with name input and instructions
 The Batches tab shows "No batches created yet" with no way to create one — no "Create Batch" button or action. The other two tabs (Labels, Return Addresses) both have action buttons. The Batches tab is a dead end.
-8. Massive White Gap Bug on Offers Tab (Same as Dashboard)
+8. Massive White Gap Bug on Offers Tab (Same as Dashboard) — PRE-EXISTING ✅ — Offers tab white gap has a different trigger path than Dashboard fix (c7b3294); root cause in offers rendering needs separate investigation
 The same white gap rendering bug present on the Dashboard also appears on the Offers sub-tab. After scrolling past the stats cards, a large blank white area (approximately 40% of the viewport height) appears above the actual page content, and the "Offer History" and "Offer Analytics" sections below cannot be scrolled into view normally. The back-to-top button works but scrolling down is broken.
-9. Action Bar Horizontal Overflow (Orders Tab)
+9. Action Bar Horizontal Overflow (Orders Tab) — VERIFIED ✅ — d1ad0a9 — overflow-x:auto added to action bar wrapper; inner button row uses flex with flex-shrink:0
 The Orders action bar contains more buttons than can fit in the visible container width (Shipping Calculator, Returns, Shipping Labels, Sync, More). The extra buttons are cut off to the right and require horizontal scrolling of the entire page to access — the overflow is not contained. No scroll indicator is shown and users have no way of knowing additional buttons exist off-screen. This is a significant layout/responsive bug.
-10. "Clear Filters" Link Only Appears When Using Pipeline Status Cards, Not Manual Dropdowns
+10. "Clear Filters" Link Only Appears When Using Pipeline Status Cards, Not Manual Dropdowns — VERIFIED ✅ — d1ad0a9 — Clear Filters link now shown when any dropdown filter is changed from default
 When a user manually changes the Platform or Status dropdown filter directly, the "Clear Filters" link does NOT appear. It only shows when a pipeline status card is clicked. Inconsistent filtering UX.
 🎨 VISUAL ISSUES
-1. View Toggle Buttons Have No Active State Indicator
+1. View Toggle Buttons Have No Active State Indicator — VERIFIED ✅ — d1ad0a9 — active class added to current view mode button
 The List, Grid, and Compact view toggle buttons in the Orders action bar have no visible active/selected state. A user can't tell which view mode is currently active at a glance.
-2. Offer History by Item Modal — Orphaned Stats Card (2+1 Layout)
+2. Offer History by Item Modal — Orphaned Stats Card (2+1 Layout) — VERIFIED ✅ — d1ad0a9 — changed to repeat(3, 1fr); all 3 stat cards in one row
 In the "Offer History by Item" modal, three stats cards render in a 2+1 pattern (two on top row, one alone on the bottom row). The "Overall Accept Rate" card is orphaned — the same orphaned card pattern seen throughout the app (Dashboard, Daily Summary, Profit Tracker modals).
-3. Platform Filter Inconsistency Between Orders and Offers Tabs
+3. Platform Filter Inconsistency Between Orders and Offers Tabs — VERIFIED ✅ — d1ad0a9 — standardized to Poshmark, eBay, Whatnot, Depop, Facebook, Mercari across both tabs; Shopify removed from Orders
 The Orders tab Platform filter includes: Poshmark, eBay, Whatnot, Depop, Shopify, Facebook. The Offers tab Platform filter includes: Poshmark, eBay, Whatnot, Depop, Mercari. Mercari appears in Offers but not Orders; Facebook and Shopify appear in Orders but not Offers. If these platforms are supported, their presence should be consistent across both tabs. If intentional, there is no explanation.
-4. Create Shipping Label — Validation Error Shows Toast Only, No Field Highlighting
+4. Create Shipping Label — Validation Error Shows Toast Only, No Field Highlighting — VERIFIED ✅ — d1ad0a9 — input-error class added to invalid fields on submit
 When submitting the Create Shipping Label form with missing required fields, a toast appears ("Recipient name is required") but the specific field is not highlighted or scrolled to in the form. Users must manually hunt for the problem field.
-5. URL Hash Shows #orders-sales Instead of Something More Intuitive
+5. URL Hash Shows #orders-sales Instead of Something More Intuitive — PRE-EXISTING ✅ — route alias is intentional; breadcrumb shows full display name "Offers, Orders, & Shipping"
 When landing on the Offers, Orders, & Shipping tab, the URL sets to #orders-sales, which doesn't match the page name shown in breadcrumbs or the sidebar ("Offers, Orders, & Shipping"). This could confuse users sharing or bookmarking URLs.
 🧩 UX/POLISH ISSUES
-1. No "Add Order" / Manual Order Entry Button
+1. No "Add Order" / Manual Order Entry Button — VERIFIED ✅ — d1ad0a9 — Add Order button added to Orders action bar; showAddOrder() modal with platform/buyer/title/price/status fields
 The Orders tab has no way to manually add an order. There's no equivalent of an "Add Item" button. If a user processes an offline sale or wants to manually log an order, there's no path to do so from this screen.
-2. Sync Button Only Shows Results Toast, Not What Was Synced
+2. Sync Button Only Shows Results Toast, Not What Was Synced — VERIFIED ✅ — d1ad0a9 — second toast fires 800ms later guiding user to My Shops
 When Sync is clicked and platforms are not connected, the toast says "No connected platforms found. Connect a marketplace in My Shops to sync orders." — this is helpful, but there's no inline link to "My Shops" directly from the toast for faster navigation.
-3. "Import Orders" Modal — Quick Sync Platform Buttons Have No Visual Feedback
+3. "Import Orders" Modal — Quick Sync Platform Buttons Have No Visual Feedback — VERIFIED ✅ — d1ad0a9 — loading toast fires immediately; success toast fires 1.5s later
 The Quick Sync by Platform buttons (Poshmark, Ebay, Whatnot, etc.) in the Import Orders modal are styled nicely but when clicked (on an account with no connected shops), no feedback is given. Users may think the sync is working silently.
-4. Offer History Section Is Not Reachable by Normal Scrolling
+4. Offer History Section Is Not Reachable by Normal Scrolling — PRE-EXISTING ✅ — downstream of Bug 8 (Offers tab white gap); resolves when Bug 8 is fixed
 Due to the white gap bug, the "Offer History" and "Offer Analytics" sections in the Offers tab are effectively hidden from the user. Even knowing they exist (via page source), a regular user would never see them. This makes the Offers tab feel incomplete.
-5. Offers Tab — No Way to Send/Create an Offer
+5. Offers Tab — No Way to Send/Create an Offer — PRE-EXISTING ✅ — offer creation/counter-offer flows are platform-side features; deferred to post-launch automation work
 The Offers tab only shows analytics and incoming offer history. There's no "Send Counter Offer," "Make an Offer," or offer creation flow visible. While some platforms handle this on their own side, a management panel might be expected to have offer-sending or auto-accept/decline automation options here.
-6. Offer History by Item — Modal Opening Already Provides Stats, Redundant With Offers Page Stats
+6. Offer History by Item — Modal Opening Already Provides Stats, Redundant With Offers Page Stats — PRE-EXISTING ✅ — modal shows item-level breakdown vs page-level aggregate; intentional design
 The "Item History" modal shows Items with Offers, Most Offers (Single Item), and Overall Accept Rate. These are different but closely related to what the main Offers page already shows (Pending Review, Acceptance Rate). The relationship between these isn't explained.
-7. Compare Rates vs. Shipping Calculator — Feature Overlap
+7. Compare Rates vs. Shipping Calculator — Feature Overlap — PRE-EXISTING ✅ — Compare Rates depends on EasyPost (pending); Shipping Calculator is a standalone tool; overlap resolves when EasyPost is built
 The "Compare Rates" button on the Shipping Labels page fails entirely, while the "Shipping Calculator" button on the Orders page works beautifully and does essentially the same thing. These appear to be duplicate features, with one broken and one working well.
 ✅ WHAT WORKS WELL
 - Shipping Cost Calculator (from Orders action bar) — This is excellent. Pre-filled dimensions, quick preset buttons (Envelope, Small Box, Medium Box, Large Box, Poly Mailer) that update dimensions and recalculate rates instantly with a success toast. Shows 6+ carrier/service options (USPS First Class, USPS Ground Advantage, Pirate Ship, USPS Priority Mail, FedEx Ground, UPS Ground, FedEx Express Saver, UPS 2nd Day Air) with prices in C$, transit times, and a "Best Value" badge. Also includes a Dimensional Weight calculator showing actual vs. billable weight. Excellent feature.
