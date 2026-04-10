@@ -606,28 +606,28 @@ INVENTORY TAB
 - Bulk Edit with 0 selected → "Please select items first" toast
 - Bulk Edit with items selected → opens modal with Action dropdown and field logic
 🐛 Bugs (Broken / Non-Functional)
-1. Analytics Sub-Tab — Infinite Loading (Critical)
+1. Analytics Sub-Tab — Infinite Loading (Critical) — VERIFIED ✅ — 60fb51c — 8-second timeout added in switchInventoryTab; shows "Unable to load analytics. Try refreshing." if analytics hasn't resolved
 Clicking the Analytics tab shows "Loading analytics…" and never resolves. No error message, no timeout fallback. Waits indefinitely.
 2. Duplicate Inventory Items
 Two identical items exist with the same name ("Test Item"), same SKU (VL-1774975842425), and same price (C$12.99). This appears to be seeded/demo data, but duplication itself indicates a data integrity problem.
-3. Tags Column Missing from Customize Columns
+3. Tags Column Missing from Customize Columns — VERIFIED ✅ — 60fb51c — Tags column added to Customize Columns modal; confirmed live via visual screenshot
 The Tags column is visible in the table but does not appear as an option in the "Customize Columns" settings modal. Users cannot toggle it.
 ⚠️ Visual / UX Issues
-4. Profit Margin Calculator — No Visual Gauge Marker
+4. Profit Margin Calculator — No Visual Gauge Marker — VERIFIED ✅ — 60fb51c — profit-gauge-marker triangle added to updateProfitCalc; moves with calculated ROI position
 The "Loss | Break Even | Profit" scale renders correctly as text labels, but there is no marker, indicator, or slider showing where the current margin falls on the spectrum. The scale is purely decorative.
-5. Bulk Price Update Scale — Same Missing Gauge Marker
+5. Bulk Price Update Scale — Same Missing Gauge Marker — VERIFIED ✅ — 60fb51c — bulk-margin-scale-wrap gradient + marker added to previewBulkPriceUpdate; shows avg margin preview
 Same issue as above appears in the Tools → Bulk Prices modal.
-6. Alerts Modal — "In Stock: 0" Shown in Green
+6. Alerts Modal — "In Stock: 0" Shown in Green — VERIFIED ✅ — 60fb51c — outOfStock summary card uses class "danger"; individual 0-stock items show red badge (background:var(--error))
 In the Low Stock Alerts modal, an item with 0 units in stock is displayed with a green badge. Zero stock should be red or a warning color, not green. Misleading to users scanning at a glance.
-7. Age Analysis — "Listed C$12.99" for Unlisted Item
+7. Age Analysis — "Listed C$12.99" for Unlisted Item — VERIFIED ✅ — 60fb51c — showInventoryAgeAnalysis now reads item.status instead of hardcoding "Listed"
 The Inventory Age Analysis labels the oldest item as "Listed C$12.99" when that item's status is "Not listed." The label is incorrect — it should reflect actual listing status, not a price display.
-8. Low Stock Threshold vs. Default Quantity Mismatch
+8. Low Stock Threshold vs. Default Quantity Mismatch — VERIFIED ✅ — 60fb51c — Add New Item modal Low Stock Threshold changed from value="5" to value="1" min="0" in modals.js (new bundle 0f6c2c2a); confirmed in deployed bundle
 When adding a new item, the Low Stock Threshold defaults to 5 while the Quantity field defaults to 1. This immediately flags every new item as "Low Stock" before the user even saves. The default threshold should be lower than the default quantity, or zero.
-9. Stat Cards Not Filterable
+9. Stat Cards Not Filterable — VERIFIED ✅ — 60fb51c — All 5 filterable stat cards have cursor:pointer + onclick="handlers.filterByStatCard('...')"; table filters client-side on click; confirmed 5 DOM elements with filterByStatCard onclick
 The stat cards at the top (Active, Drafts, Low Stock, Out of Stock, Stale, Avg Age) are not clickable/interactive. Clicking them does nothing. Users would expect a stat card to filter the table to matching items.
-10. Filter Value Field — Free Text for Categorical Filters
+10. Filter Value Field — Free Text for Categorical Filters — VERIFIED ✅ — 60fb51c — filter-column select has onchange="handlers.onFilterColumnChange(this.value)"; selecting Status replaces Value input with dropdown showing All/Draft/Active/Not Listed; confirmed live via screenshot
 When adding a filter on the "Status" column, the "Value" field is a free-text input. Status is a fixed set of values (Draft, Active, etc.) and should render a dropdown of valid options, not a free text box.
-11. Initial Page Load — White Gap at Top
+11. Initial Page Load — White Gap at Top — VERIFIED ✅ — 60fb51c — window.scrollTo(0,0) added at render start; confirmed via live screenshot showing clean page load at top
 On first load, there is a noticeable white gap/blank area between the top of the viewport and the first visible content. Likely a layout padding or scroll-position issue on mount.
 
 DAILY CHECKLIST TAB
