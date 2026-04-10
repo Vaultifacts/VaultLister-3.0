@@ -4043,7 +4043,8 @@ Object.assign(handlers, {
                 ${p.note ? `<p class="text-muted" style="font-size:0.875rem">${escapeHtml(p.note)}</p>` : ''}
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="modals.close()">Close</button>
+                <button class="btn btn-secondary" onclick="modals.close(); router.navigate('settings')">Go to Settings →</button>
+                <button class="btn btn-primary" onclick="modals.close()">Close</button>
             </div>
         `);
     },
@@ -4211,9 +4212,11 @@ Object.assign(handlers, {
     },
 
     showAddPurchase: function() {
-        const inventoryOptions = store.state.inventory.map(item =>
-            `<option value="${item.id}">${escapeHtml(item.title)} (${item.sku || 'No SKU'})</option>`
-        ).join('');
+        const inventoryOptions = (store.state.inventory || [])
+            .filter((item, i, arr) => arr.findIndex(x => x.id === item.id) === i)
+            .map(item =>
+                `<option value="${item.id}">${escapeHtml(item.title)} (${item.sku || 'No SKU'})</option>`
+            ).join('');
 
         modals.show(`
             <div class="modal-header">
@@ -4249,7 +4252,7 @@ Object.assign(handlers, {
                         <div class="purchase-item grid grid-cols-5 gap-2 mb-2 items-end">
                             <div class="form-group col-span-2">
                                 <label class="form-label">Description *</label>
-                                <input type="text" name="itemDescription[]" class="form-input" required>
+                                <input type="text" name="itemDescription[]" class="form-input" placeholder="e.g. Vintage jacket lot" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Link to Inventory</label>
@@ -4295,13 +4298,15 @@ Object.assign(handlers, {
 
 
     addPurchaseItem: function() {
-        const inventoryOptions = store.state.inventory.map(item =>
-            `<option value="${item.id}">${escapeHtml(item.title)} (${item.sku || 'No SKU'})</option>`
-        ).join('');
+        const inventoryOptions = (store.state.inventory || [])
+            .filter((item, i, arr) => arr.findIndex(x => x.id === item.id) === i)
+            .map(item =>
+                `<option value="${item.id}">${escapeHtml(item.title)} (${item.sku || 'No SKU'})</option>`
+            ).join('');
 
         const itemHtml = `
-            <div class="purchase-item grid grid-cols-5 gap-2 mb-2 items-end">
-                <div class="form-group col-span-2">
+            <div class="purchase-line-item grid gap-2 mb-2 items-end" style="grid-template-columns: 2fr 1fr 60px 80px 32px;">
+                <div class="form-group">
                     <input type="text" name="itemDescription[]" class="form-input" placeholder="Description" required>
                 </div>
                 <div class="form-group">
@@ -4315,6 +4320,9 @@ Object.assign(handlers, {
                 </div>
                 <div class="form-group">
                     <input type="number" name="itemUnitCost[]" class="form-input" min="0" step="0.01" required>
+                </div>
+                <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:2px;">
+                    <button type="button" class="btn-icon" onclick="this.closest('.purchase-line-item').remove()" title="Remove row" style="color:var(--error);font-size:18px;line-height:1;padding:4px 6px;">&times;</button>
                 </div>
             </div>
         `;
@@ -4350,7 +4358,7 @@ Object.assign(handlers, {
         };
 
         try {
-            await api.ensureCSRFToken();
+            await api.ensureCSRFToken(true);
             await api.post('/financials/purchases', purchaseData);
             toast.success('Purchase added successfully');
             modals.close();
@@ -6580,6 +6588,167 @@ Object.assign(handlers, {
                 </div>
             </div>
         `);
+    },
+
+    showTaxNexus: async function() {
+        try {
+            const data = await api.get('/sales-tools/tax-nexus');
+            const nexus = data.nexus || data || [];
+            modals.show(`
+                <div class="modal-header">
+                    <h2>GST/HST/PST — Canadian Tax Nexus</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom:16px;color:var(--gray-600);">Track your Canadian tax obligations across provinces. Once you exceed the registration threshold in a province, you must collect and remit GST/HST/PST.</p>
+                    ${nexus.length === 0 ? `
+                        <div class="empty-state" style="padding:32px 0;">
+                            <p style="color:var(--gray-500);">No tax nexus data yet. Sales will appear here as you make them.</p>
+                        </div>
+                    ` : `
+                        <table class="data-table">
+                            <thead><tr><th>Province</th><th>Sales</th><th>Transactions</th><th>Threshold %</th><th>Registered</th></tr></thead>
+                            <tbody>
+                                ${nexus.map(n => `
+                                    <tr>
+                                        <td>${escapeHtml(n.state || n.province || '—')}</td>
+                                        <td>C$${(n.total_sales || 0).toFixed(2)}</td>
+                                        <td>${n.transaction_count || 0}</td>
+                                        <td>${n.nexus_percentage != null ? n.nexus_percentage.toFixed(1) + '%' : '—'}</td>
+                                        <td>${n.is_registered ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-gray">No</span>'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="modals.close(); router.navigate('settings')">Go to Settings →</button>
+                    <button class="btn btn-primary" onclick="modals.close()">Close</button>
+                </div>
+            `);
+        } catch (error) {
+            toast.error('Failed to load tax nexus data');
+        }
+    },
+
+    showBuyerProfiles: async function() {
+        try {
+            const data = await api.get('/sales-tools/buyers');
+            const profiles = data.profiles || data.buyers || data || [];
+            modals.show(`
+                <div class="modal-header">
+                    <h2>Buyer Profiles</h2>
+                    <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom:16px;color:var(--gray-600);">Manage your buyer relationships and track repeat customers across platforms.</p>
+                    ${profiles.length === 0 ? `
+                        <div class="empty-state" style="padding:32px 0;">
+                            <p style="color:var(--gray-500);">No buyer profiles yet. Profiles are created automatically as you complete sales.</p>
+                        </div>
+                    ` : `
+                        <table class="data-table">
+                            <thead><tr><th>Buyer</th><th>Platform</th><th>Total Purchases</th><th>Total Spent</th></tr></thead>
+                            <tbody>
+                                ${profiles.map(p => `
+                                    <tr>
+                                        <td>${escapeHtml(p.username || p.buyer_username || '—')}</td>
+                                        <td>${escapeHtml(p.platform || '—')}</td>
+                                        <td>${p.purchase_count || 0}</td>
+                                        <td>C$${(p.total_spent || 0).toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="modals.close()">Close</button>
+                </div>
+            `);
+        } catch (error) {
+            toast.error('Failed to load buyer profiles');
+        }
+    },
+
+    showAddSale: function() {
+        const inventoryOptions = (store.state.inventory || []).map(item =>
+            `<option value="${item.id}">${escapeHtml(item.title)} (${item.sku || 'No SKU'})</option>`
+        ).join('');
+        modals.show(`
+            <div class="modal-header">
+                <h2>Log Sale</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">&times;</button>
+            </div>
+            <form id="add-sale-form" onsubmit="handlers.submitAddSale(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Item *</label>
+                        <select name="inventoryId" class="form-select" required>
+                            <option value="">-- Select Item --</option>
+                            ${inventoryOptions}
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Platform *</label>
+                            <select name="platform" class="form-select" required>
+                                <option value="poshmark">Poshmark</option>
+                                <option value="ebay">eBay</option>
+                                <option value="depop">Depop</option>
+                                <option value="mercari">Mercari</option>
+                                <option value="whatnot">Whatnot</option>
+                                <option value="shopify">Shopify</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sale Date *</label>
+                            <input type="date" name="saleDate" class="form-input" required value="${toLocalDate(new Date())}">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Sale Price (C$) *</label>
+                            <input type="number" name="salePrice" class="form-input" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Buyer Username</label>
+                            <input type="text" name="buyerUsername" class="form-input" placeholder="e.g. buyer123">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Log Sale</button>
+                </div>
+            </form>
+        `, { size: 'md' });
+    },
+
+    submitAddSale: async function(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const saleData = {
+            inventoryId: formData.get('inventoryId'),
+            platform: formData.get('platform'),
+            saleDate: formData.get('saleDate'),
+            salePrice: parseFloat(formData.get('salePrice')) || 0,
+            buyerUsername: formData.get('buyerUsername') || null
+        };
+        try {
+            await api.ensureCSRFToken(true);
+            await api.post('/sales', saleData);
+            toast.success('Sale logged successfully');
+            modals.close();
+            await handlers.loadSales();
+            if (store.state.currentPage === 'sales') renderApp(window.pages.sales());
+        } catch (error) {
+            toast.error('Failed to log sale: ' + error.message);
+        }
     },
 
     // Image Bank,

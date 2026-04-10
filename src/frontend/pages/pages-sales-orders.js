@@ -479,6 +479,7 @@ Object.assign(pages, {
 
 
     sales() {
+        window.scrollTo(0, 0);
         const salesMainTab = store.state.salesMainTab || 'sales';
 
         // Apply filters
@@ -532,7 +533,7 @@ Object.assign(pages, {
             </div>
 
             ${salesMainTab === 'sales' ? `
-            <div class="stats-grid mb-6">
+            <div class="stats-grid mb-6" style="grid-template-columns: repeat(4, 1fr);">
                 ${components.statCard('Total Sales', sales.length, 'sales')}
                 ${components.statCard('Revenue', 'C$' + sales.reduce((s, x) => s + (x.sale_price || 0), 0).toFixed(2), 'analytics')}
                 ${components.statCard('Gross Profit', 'C$' + sales.reduce((s, x) => s + (x.net_profit || 0), 0).toFixed(2), 'activity')}
@@ -541,7 +542,7 @@ Object.assign(pages, {
 
             <!-- Sales Tools Section -->
             <div class="grid grid-cols-2 gap-4 mb-6">
-                <button class="card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onclick="handlers.showTaxNexus()">
+                <button class="card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onclick="handlers.showTaxNexus()" style="transition: box-shadow 0.15s ease, transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
                     <div style="flex-shrink: 0; width: 48px; height: 48px; background: var(--primary-50); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary-600);">
                         ${components.icon('map', 24)}
                     </div>
@@ -549,8 +550,9 @@ Object.assign(pages, {
                         <h4 style="margin: 0 0 4px 0; font-weight: 600;">GST/HST/PST</h4>
                         <p style="margin: 0; font-size: 13px; color: #666;">Track Canadian tax obligations</p>
                     </div>
+                    <span style="color: var(--gray-400); font-size: 18px;">→</span>
                 </button>
-                <button class="card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onclick="handlers.showBuyerProfiles()">
+                <button class="card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow" onclick="handlers.showBuyerProfiles()" style="transition: box-shadow 0.15s ease, transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
                     <div style="flex-shrink: 0; width: 48px; height: 48px; background: var(--success-50); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--success);">
                         ${components.icon('users', 24)}
                     </div>
@@ -558,6 +560,7 @@ Object.assign(pages, {
                         <h4 style="margin: 0 0 4px 0; font-weight: 600;">Buyer Profiles</h4>
                         <p style="margin: 0; font-size: 13px; color: #666;">Manage buyer relationships</p>
                     </div>
+                    <span style="color: var(--gray-400); font-size: 18px;">→</span>
                 </button>
             </div>
 
@@ -648,12 +651,17 @@ Object.assign(pages, {
                     </div>
                 ` : `
                     <div class="card-body">
-                        ${components.emptyState('No sales yet', 'Your sales will appear here once you make your first sale')}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">${components.icon('dollar-sign', 48)}</div>
+                            <h3 class="empty-state-title">No sales yet</h3>
+                            <p class="empty-state-description">Your sales will appear here once you make your first sale.</p>
+                            <button class="btn btn-primary mt-4" onclick="handlers.showAddSale()">${components.icon('plus', 16)} Log Sale</button>
+                        </div>
                     </div>
                 `}
             </div>
             ` : `
-            <div class="stats-grid mb-6">
+            <div class="stats-grid mb-6" style="grid-template-columns: repeat(4, 1fr);">
                 ${components.statCard('Total Purchases', purchases.length, 'activity')}
                 ${components.statCard('Total Spent', 'C$' + purchases.reduce((s, p) => s + (p.total_amount || 0), 0).toFixed(2), 'dollar')}
                 ${components.statCard('Pending', purchases.filter(p => p.status === 'pending').length, 'inventory')}

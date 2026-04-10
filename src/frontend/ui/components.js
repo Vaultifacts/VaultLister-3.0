@@ -600,7 +600,7 @@ const components = {
                     <span class="stat-card-title">${title}</span>
                     <div style="display:flex;align-items:center;gap:4px;">
                         ${dataType ? `<button class="btn btn-ghost btn-xs stat-chart-btn" onclick="event.stopPropagation();handlers.expandSparkline('${escapeHtml(dataType)}')" title="View chart" aria-label="View ${escapeHtml(title)} chart" style="padding:2px 4px;">${this.icon('bar-chart-2', 14)}</button>` : ''}
-                        <div class="stat-card-icon" style="background: var(--${color}-100); color: var(--${color}-600)">
+                        <div class="stat-card-icon" style="background: var(--${color}-100); color: var(--${color}-600); pointer-events: none; cursor: default;">
                             ${this.icon(icon)}
                         </div>
                     </div>
@@ -759,7 +759,7 @@ const components = {
                 </a>
                 <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>
                 ${info.section ? `
-                    <span class="breadcrumb-item">${info.section}</span>
+                    <a href="#" class="breadcrumb-item" onclick="router.navigate('${info.section === 'Sell' ? 'inventory' : info.section === 'Manage' ? 'analytics' : 'dashboard'}'); return false;" style="text-decoration:none;">${info.section}</a>
                     <span class="breadcrumb-separator">${this.icon('chevron-right', 14)}</span>
                 ` : ''}
                 <span class="breadcrumb-item current" aria-current="page">${info.label}</span>

@@ -421,6 +421,7 @@ const router = {
                         handlers.loadListingFolders()
                     ]);
                 } else if (path === 'sales') {
+                    store.setState({ salesStatusFilter: 'all', salesPlatformFilter: 'all' });
                     await handlers.loadSales();
                 } else if (path === 'recently-deleted') {
                     await handlers.loadDeletedItems();
@@ -564,6 +565,7 @@ const router = {
                 handlers.loadListingFolders()
             ]);
         } else if (path === 'sales') {
+            store.setState({ salesStatusFilter: 'all', salesPlatformFilter: 'all' });
             await handlers.loadSales();
         } else if (path === 'orders') {
             await handlers.loadOrders();
