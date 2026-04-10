@@ -5818,7 +5818,7 @@ const businessFAB = {
         const actions = [
             { icon: 'plus', label: 'Add Transaction', handler: 'handlers.showAddTransaction()' },
             { icon: 'upload', label: 'Import Data', handler: 'handlers.showImportModal()' },
-            { icon: 'download', label: 'Export Report', handler: 'handlers.exportFinancials()' },
+            { icon: 'download', label: 'Export Report', handler: 'handlers.exportFinancials(\'csv\')' },
             { icon: 'refresh', label: 'Sync All Shops', handler: 'handlers.syncAllShops()' }
         ];
 
@@ -5832,7 +5832,7 @@ const businessFAB = {
                         </div>
                     `).join('')}
                 </div>
-                <button class="business-fab-btn" onclick="businessFAB.toggle()">
+                <button class="business-fab-btn" aria-label="Quick Actions" title="Quick Actions" onclick="businessFAB.toggle()">
                     ${components.icon(this.isOpen ? 'x' : 'plus', 24)}
                 </button>
             </div>

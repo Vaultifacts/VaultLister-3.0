@@ -21335,6 +21335,18 @@ body.dark-mode .report-builder-canvas.drag-over {
 }
 
 /* Quick Actions FAB */
+.badge-coming-soon {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--gray-200);
+    color: var(--gray-500);
+    font-size: 11px;
+    font-style: italic;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
 .business-fab {
     position: fixed;
     bottom: 24px;
@@ -21375,6 +21387,7 @@ body.dark-mode .report-builder-canvas.drag-over {
     visibility: hidden;
     transform: translateY(10px);
     transition: all 0.2s ease;
+    z-index: 1001;
 }
 
 .business-fab.open .business-fab-menu {
@@ -21391,6 +21404,7 @@ body.dark-mode .report-builder-canvas.drag-over {
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: background 0.2s;
+    white-space: nowrap;
 }
 
 .business-fab-item:hover {

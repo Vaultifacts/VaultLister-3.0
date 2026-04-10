@@ -2921,7 +2921,7 @@ Object.assign(handlers, {
     // My Shops handlers,
 
     syncAllShops: async function() {
-        toast.info('Syncing all connected shops...');
+        toast.info('Syncing all shops...', 2000);
         const shops = store.state.shops || [];
         const connected = shops.filter(s => s.is_connected);
 
@@ -2931,6 +2931,7 @@ Object.assign(handlers, {
         }
 
         store.setState({ lastShopSync: new Date().toISOString() });
+        setTimeout(() => toast.success('Sync complete', 2000), 1500);
         renderApp(window.pages.shops());
     },
 
@@ -23505,29 +23506,32 @@ Object.assign(handlers, {
     // Show import modal,
 
     showImportModal: function() {
-        modals.show('Import Items', `
-            <div class="text-center p-6">
-                <div class="mb-4">
-                    ${components.icon('upload', 48)}
-                </div>
-                <h3 class="text-lg font-semibold mb-2">Import Inventory</h3>
-                <p class="text-gray-600 mb-4">Upload a CSV file to bulk import items</p>
-                <div class="dropzone p-6 border-2 border-dashed rounded-lg mb-4"
-                     ondragover="event.preventDefault(); this.classList.add('dragover')"
-                     ondragleave="this.classList.remove('dragover')"
-                     ondrop="handlers.handleImportDrop(event)">
-                    <p class="text-gray-500">Drag & drop CSV file here or</p>
-                    <input type="file" id="import-file-input" accept=".csv" class="hidden" onchange="handlers.handleImportFile(event)">
-                    <button class="btn btn-primary mt-2" onclick="document.getElementById('import-file-input').click()">
-                        Browse Files
+        modals.show(`
+            <div class="modal-header">
+                <h2 class="modal-title">${components.icon('upload', 20)} Import Inventory</h2>
+                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center p-2">
+                    <p class="text-gray-600 mb-4">Upload a CSV file to bulk import items</p>
+                    <div class="dropzone p-6 border-2 border-dashed rounded-lg mb-4"
+                         ondragover="event.preventDefault(); this.classList.add('dragover')"
+                         ondragleave="this.classList.remove('dragover')"
+                         ondrop="handlers.handleImportDrop(event)">
+                        <p class="text-gray-500">Drag &amp; drop CSV file here or</p>
+                        <input type="file" id="import-file-input" accept=".csv" class="hidden" onchange="handlers.handleImportFile(event)">
+                        <button class="btn btn-primary mt-2" onclick="document.getElementById('import-file-input').click()">
+                            Browse Files
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="handlers.downloadCSVTemplate()">
+                        Download Template
                     </button>
                 </div>
-                <button class="btn btn-secondary" onclick="handlers.downloadCSVTemplate()">
-                    Download Template
-                </button>
             </div>
-        `, `
-            <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modals.close()">Cancel</button>
+            </div>
         `);
     },
 

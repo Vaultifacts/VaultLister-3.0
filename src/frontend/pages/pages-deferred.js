@@ -3803,9 +3803,13 @@ Object.assign(pages, {
                     const connectionType = shop?.connection_type || 'manual';
                     const isOAuth = connectionType === 'oauth';
 
+                    const isPostLaunch = ['mercari', 'grailed', 'etsy'].includes(platform);
+
                     // Calculate status HTML before template literal
                     let statusHtml;
-                    if (!isConnected) {
+                    if (isPostLaunch && !isConnected) {
+                        statusHtml = '<span class="badge-coming-soon">Coming Soon</span>';
+                    } else if (!isConnected) {
                         statusHtml = '<div class="text-sm text-gray-500">Not connected</div>';
                     } else if (isOAuth) {
                         statusHtml = '<div class="text-xs text-success flex items-center gap-1" style="margin-top: 4px;">' + components.icon('check-circle', 14) + ' OAuth Connected</div>';
@@ -3818,7 +3822,6 @@ Object.assign(pages, {
                     // Health score for connected shops
                     const healthScore = isConnected ? Math.floor(Math.random() * 30) + 70 : null;
                     const healthColor = healthScore >= 80 ? 'var(--success)' : healthScore >= 60 ? 'var(--warning)' : 'var(--error)';
-                    const isPostLaunch = ['mercari', 'grailed', 'etsy', 'shopify'].includes(platform);
                     const platformDisplayName = PLATFORM_DISPLAY_NAMES[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
 
                     return `
