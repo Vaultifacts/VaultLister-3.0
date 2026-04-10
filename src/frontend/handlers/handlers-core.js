@@ -1946,7 +1946,10 @@ const handlers = {
     toggleVaultBuddy: function() {
         const isOpen = !store.state.vaultBuddyOpen;
         store.setState({ vaultBuddyOpen: isOpen });
-        if (store.state.currentPage) {
+        const panel = document.querySelector('.vault-buddy-modal');
+        if (panel) {
+            panel.classList.toggle('open', isOpen);
+        } else if (store.state.currentPage) {
             renderApp(window.pages[store.state.currentPage]());
         }
         if (isOpen && !store.state.vaultBuddyConversationsLoaded) {
@@ -1956,6 +1959,32 @@ const handlers = {
                 }
             }).catch(() => {});
         }
+    },
+
+    openGlobalSearch: function() {
+        loadChunk('deferred').then(() => {
+            if (handlers._openGlobalSearchImpl) {
+                handlers._openGlobalSearchImpl();
+            }
+        }).catch(() => toast.error('Failed to load search'));
+    },
+
+    showDailySummary: function() {
+        loadChunk('sales').then(() => {
+            if (handlers._showDailySummaryImpl) handlers._showDailySummaryImpl();
+        }).catch(() => toast.error('Failed to load daily summary'));
+    },
+
+    showProfitTargetTracker: function() {
+        loadChunk('deferred').then(() => {
+            if (handlers._showProfitTargetTrackerImpl) handlers._showProfitTargetTrackerImpl();
+        }).catch(() => toast.error('Failed to load profit tracker'));
+    },
+
+    showQuickNotes: function() {
+        loadChunk('tools').then(() => {
+            if (handlers._showQuickNotesImpl) handlers._showQuickNotesImpl();
+        }).catch(() => toast.error('Failed to load quick notes'));
     },
 
     submitCrosslistWithMethod: async function(itemIdsStr) {

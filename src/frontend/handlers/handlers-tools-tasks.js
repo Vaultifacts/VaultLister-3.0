@@ -1084,7 +1084,7 @@ Object.assign(handlers, {
     // My Shops handlers,
 
 
-    showQuickNotes: function() {
+    _showQuickNotesImpl: function() {
         const notes = store.state.quickNotes || [];
 
         modals.show(`
@@ -1168,7 +1168,7 @@ Object.assign(handlers, {
 
         store.setState({ quickNotes: notes });
         toast.success('Note added');
-        handlers.showQuickNotes(); // Refresh
+        handlers._showQuickNotesImpl(); // Refresh
     },
 
 
@@ -1177,7 +1177,7 @@ Object.assign(handlers, {
         notes.splice(index, 1);
         store.setState({ quickNotes: notes });
         toast.success('Note deleted');
-        handlers.showQuickNotes(); // Refresh
+        handlers._showQuickNotesImpl(); // Refresh
     },
 
 
@@ -1200,7 +1200,7 @@ Object.assign(handlers, {
             store.setState({ quickNotes: notes });
 
             toast.success('Converted to task');
-            handlers.showQuickNotes(); // Refresh
+            handlers._showQuickNotesImpl(); // Refresh
         }
     },
 

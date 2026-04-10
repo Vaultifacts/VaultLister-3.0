@@ -265,7 +265,7 @@ const pages = {
                         <p>Here's how your business is performing today</p>
                     </div>
                     <div class="dashboard-hero-today">
-                        <div class="today-stat">
+                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('sales')" title="View sales">
                             <div class="today-stat-icon sales">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="12" y1="1" x2="12" y2="23"></line>
@@ -277,7 +277,7 @@ const pages = {
                                 <span class="today-stat-label">Today's Revenue</span>
                             </div>
                         </div>
-                        <div class="today-stat">
+                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('sales')" title="View sales">
                             <div class="today-stat-icon orders">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="9" cy="21" r="1"></circle>
@@ -290,7 +290,7 @@ const pages = {
                                 <span class="today-stat-label">Today's Sales</span>
                             </div>
                         </div>
-                        <div class="today-stat">
+                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('listings')" title="View listings">
                             <div class="today-stat-icon listings">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -303,7 +303,7 @@ const pages = {
                                 <span class="today-stat-label">New Listings</span>
                             </div>
                         </div>
-                        <div class="today-stat">
+                        <div class="today-stat" style="cursor:pointer" onclick="router.navigate('orders-sales')" title="View orders">
                             <div class="today-stat-icon pending ${pendingOrders > 0 ? 'has-pending' : ''}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -406,7 +406,7 @@ const pages = {
                 <button class="btn btn-primary btn-sm" onclick="router.navigate('inventory'); setTimeout(() => modals.addItem(), 100)" title="Quick add inventory item">
                     ${components.icon('plus', 14)} Add Item
                 </button>
-                <button class="btn btn-success btn-sm" onclick="router.navigate('sales')" title="Log a sale">
+                <button class="btn btn-success btn-sm" onclick="loadChunk('sales').then(() => handlers.showAddSale()).catch(() => toast.error('Failed to load sale form'))" title="Log a sale">
                     ${components.icon('sales', 14)} Log Sale
                 </button>
                 <span class="dashboard-last-updated text-xs text-gray-400" style="margin-left: auto;">
@@ -901,7 +901,7 @@ const pages = {
                                                     </div>
                                                     <div class="text-xs text-gray-400">Threshold: ${item.low_stock_threshold || 5}</div>
                                                 </div>
-                                                <button class="btn btn-sm ${isOutOfStock ? 'btn-error' : 'btn-warning'}" onclick="router.navigate('inventory'); setTimeout(() => handlers.editItem('${item.id}'), 100)">
+                                                <button class="btn btn-sm ${isOutOfStock ? 'btn-error' : 'btn-warning'}" onclick="loadChunk('inventory').then(() => handlers.editItem('${item.id}')).catch(() => { router.navigate('inventory'); })">
                                                     Restock
                                                 </button>
                                             </div>

@@ -2069,7 +2069,7 @@ Object.assign(handlers, {
     // Set dashboard date range period,
 
 
-    showDailySummary: function() {
+    _showDailySummaryImpl: function() {
         const today = new Date();
         const todayStr = today.toDateString();
         const yesterday = new Date(today);
@@ -3010,7 +3010,7 @@ Object.assign(handlers, {
         if (await modals.confirm('Delete all notes? This cannot be undone.', { title: 'Delete All Notes', confirmText: 'Delete All', danger: true })) {
             store.setState({ quickNotes: [] });
             toast.success('All notes cleared');
-            handlers.showQuickNotes(); // Refresh
+            handlers._showQuickNotesImpl(); // Refresh
         }
     },
 

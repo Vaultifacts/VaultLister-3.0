@@ -2970,7 +2970,7 @@ Object.assign(handlers, {
     // Refresh a single listing (delist and relist),
 
 
-    openGlobalSearch: function() {
+    _openGlobalSearchImpl: function() {
         // Create search overlay
         const existingOverlay = document.querySelector('.global-search-overlay');
         if (existingOverlay) {

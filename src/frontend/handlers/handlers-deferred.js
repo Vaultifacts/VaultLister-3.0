@@ -9325,7 +9325,7 @@ Object.assign(handlers, {
 
     // Set dashboard date range period,
 
-    showDailySummary: function() {
+    _showDailySummaryImpl: function() {
         const today = new Date();
         const todayStr = today.toDateString();
         const yesterday = new Date(today);
@@ -10529,7 +10529,7 @@ Object.assign(handlers, {
 
         store.setState({ quickNotes: notes });
         toast.success('Note added');
-        handlers.showQuickNotes(); // Refresh
+        handlers._showQuickNotesImpl(); // Refresh
     },
 
     deleteQuickNote: function(index) {
@@ -10537,7 +10537,7 @@ Object.assign(handlers, {
         notes.splice(index, 1);
         store.setState({ quickNotes: notes });
         toast.success('Note deleted');
-        handlers.showQuickNotes(); // Refresh
+        handlers._showQuickNotesImpl(); // Refresh
     },
 
     copyNoteToClipboard: async function(index) {
@@ -10572,7 +10572,7 @@ Object.assign(handlers, {
             store.setState({ quickNotes: notes });
 
             toast.success('Converted to task');
-            handlers.showQuickNotes(); // Refresh
+            handlers._showQuickNotesImpl(); // Refresh
         }
     },
 
@@ -10580,7 +10580,7 @@ Object.assign(handlers, {
         if (await modals.confirm('Delete all notes? This cannot be undone.', { title: 'Delete All Notes', confirmText: 'Delete All', danger: true })) {
             store.setState({ quickNotes: [] });
             toast.success('All notes cleared');
-            handlers.showQuickNotes(); // Refresh
+            handlers._showQuickNotesImpl(); // Refresh
         }
     },
 
@@ -11107,7 +11107,7 @@ Object.assign(handlers, {
 
     // Profit Target Tracker,
 
-    showProfitTargetTracker: function() {
+    _showProfitTargetTrackerImpl: function() {
         const targets = store.state.profitTargets || {
             daily: 50,
             weekly: 300,
@@ -11272,7 +11272,16 @@ Object.assign(handlers, {
         const targets = store.state.profitTargets || { daily: 50, weekly: 300, monthly: 1000 };
         targets[period] = parseFloat(value) || 0;
         store.setState({ profitTargets: targets });
-        toast.success(`${period.charAt(0).toUpperCase() + period.slice(1)} target updated`);
+        const label = period.charAt(0).toUpperCase() + period.slice(1);
+        const cards = document.querySelectorAll('.target-card');
+        cards.forEach(card => {
+            const periodEl = card.querySelector('.target-period');
+            if (periodEl && periodEl.textContent.toLowerCase().startsWith(period)) {
+                const goalEl = card.querySelector('.goal');
+                if (goalEl) goalEl.textContent = `C$${targets[period]}`;
+            }
+        });
+        toast.success(`${label} target updated`);
     },
 
     // Weekly Performance Report,
@@ -17185,7 +17194,7 @@ Object.assign(handlers, {
     // Global Search (Cmd+K)
     // ========================================,
 
-    openGlobalSearch: function() {
+    _openGlobalSearchImpl: function() {
         // Create search overlay
         const existingOverlay = document.querySelector('.global-search-overlay');
         if (existingOverlay) {

@@ -5418,7 +5418,7 @@ body.dark-mode .vault-buddy-fab .buddy-avatar {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     display: none;
     flex-direction: column;
-    z-index: 999;
+    z-index: 1001;
     overflow: hidden;
     animation: slideUp 0.3s ease;
 }
