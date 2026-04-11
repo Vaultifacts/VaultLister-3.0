@@ -47,9 +47,9 @@ describe('notificationService', () => {
   });
 
   describe('createNotification', () => {
-    test('returns correct shape with all fields', () => {
+    test('returns correct shape with all fields', async () => {
       mockQueryRun.mockReturnValue({ changes: 1 });
-      const result = createNotification('user-1', {
+      const result = await createNotification('user-1', {
         type: 'info', title: 'Test', message: 'Hello'
       });
       expect(result).toHaveProperty('id');
@@ -61,130 +61,130 @@ describe('notificationService', () => {
       expect(result).toHaveProperty('created_at');
     });
 
-    test('stringifies data when provided', () => {
+    test('stringifies data when provided', async () => {
       mockQueryRun.mockReturnValue({ changes: 1 });
-      createNotification('user-1', {
+      await createNotification('user-1', {
         type: 'info', title: 'T', message: 'M', data: { key: 'val' }
       });
       expect(mockQueryRun.mock.calls[0][1][5]).toBe(JSON.stringify({ key: 'val' }));
     });
 
-    test('passes null for data when not provided', () => {
+    test('passes null for data when not provided', async () => {
       mockQueryRun.mockReturnValue({ changes: 1 });
-      createNotification('user-1', { type: 'info', title: 'T', message: 'M' });
+      await createNotification('user-1', { type: 'info', title: 'T', message: 'M' });
       expect(mockQueryRun.mock.calls[0][1][5]).toBeNull();
     });
 
-    test('propagates DB errors', () => {
+    test('propagates DB errors', async () => {
       mockQueryRun.mockImplementation(() => { throw new Error('DB error'); });
-      expect(() => createNotification('user-1', {
+      await expect(createNotification('user-1', {
         type: 'info', title: 'T', message: 'M'
-      })).toThrow('DB error');
+      })).rejects.toThrow('DB error');
     });
   });
 
   describe('getUnreadNotifications', () => {
-    test('returns parsed notifications with JSON data', () => {
+    test('returns parsed notifications with JSON data', async () => {
       mockQueryAll.mockReturnValue([
         { id: '1', type: 'info', is_read: 0, data: '{"key":"value"}' },
         { id: '2', type: 'warning', is_read: 0, data: null }
       ]);
-      const notifs = getUnreadNotifications('user-1');
+      const notifs = await getUnreadNotifications('user-1');
       expect(notifs).toHaveLength(2);
       expect(notifs[0].data).toEqual({ key: 'value' });
       expect(notifs[0].is_read).toBe(false);
       expect(notifs[1].data).toBeNull();
     });
 
-    test('returns empty array on DB error', () => {
+    test('returns empty array on DB error', async () => {
       mockQueryAll.mockImplementation(() => { throw new Error('DB error'); });
-      expect(getUnreadNotifications('user-1')).toEqual([]);
+      expect(await getUnreadNotifications('user-1')).toEqual([]);
     });
   });
 
   describe('getNotifications', () => {
-    test('returns paginated result', () => {
+    test('returns paginated result', async () => {
       mockQueryAll.mockReturnValue([{ id: '1', type: 'info', is_read: 1, data: null }]);
       mockQueryGet.mockReturnValue({ count: 5 });
-      const result = getNotifications('user-1', { page: 1, limit: 20 });
+      const result = await getNotifications('user-1', { page: 1, limit: 20 });
       expect(result.notifications).toHaveLength(1);
       expect(result.pagination.total).toBe(5);
       expect(result.pagination.pages).toBe(1);
     });
 
-    test('returns fallback on error', () => {
+    test('returns fallback on error', async () => {
       mockQueryAll.mockImplementation(() => { throw new Error('DB error'); });
-      const result = getNotifications('user-1');
+      const result = await getNotifications('user-1');
       expect(result.notifications).toEqual([]);
       expect(result.pagination.total).toBe(0);
     });
   });
 
   describe('markAsRead', () => {
-    test('returns true when notification updated', () => {
+    test('returns true when notification updated', async () => {
       mockQueryRun.mockReturnValue({ changes: 1 });
-      expect(markAsRead('n1', 'user-1')).toBe(true);
+      expect(await markAsRead('n1', 'user-1')).toBe(true);
     });
 
-    test('returns false when not found', () => {
+    test('returns false when not found', async () => {
       mockQueryRun.mockReturnValue({ changes: 0 });
-      expect(markAsRead('nonexistent', 'user-1')).toBe(false);
+      expect(await markAsRead('nonexistent', 'user-1')).toBe(false);
     });
   });
 
   describe('markAllAsRead', () => {
-    test('returns count of marked notifications', () => {
+    test('returns count of marked notifications', async () => {
       mockQueryRun.mockReturnValue({ changes: 3 });
-      expect(markAllAsRead('user-1')).toBe(3);
+      expect(await markAllAsRead('user-1')).toBe(3);
     });
 
-    test('returns 0 on error', () => {
+    test('returns 0 on error', async () => {
       mockQueryRun.mockImplementation(() => { throw new Error('DB error'); });
-      expect(markAllAsRead('user-1')).toBe(0);
+      expect(await markAllAsRead('user-1')).toBe(0);
     });
   });
 
   describe('deleteNotification', () => {
-    test('returns true on success', () => {
+    test('returns true on success', async () => {
       mockQueryRun.mockReturnValue({ changes: 1 });
-      expect(deleteNotification('n1', 'user-1')).toBe(true);
+      expect(await deleteNotification('n1', 'user-1')).toBe(true);
     });
 
-    test('returns false when not found', () => {
+    test('returns false when not found', async () => {
       mockQueryRun.mockReturnValue({ changes: 0 });
-      expect(deleteNotification('x', 'user-1')).toBe(false);
+      expect(await deleteNotification('x', 'user-1')).toBe(false);
     });
   });
 
   describe('cleanupOldNotifications', () => {
-    test('returns deleted count', () => {
+    test('returns deleted count', async () => {
       mockQueryRun.mockReturnValue({ changes: 10 });
-      expect(cleanupOldNotifications(30)).toBe(10);
+      expect(await cleanupOldNotifications(30)).toBe(10);
     });
 
-    test('defaults to 30 days', () => {
+    test('defaults to 30 days', async () => {
       mockQueryRun.mockReturnValue({ changes: 5 });
-      cleanupOldNotifications();
+      await cleanupOldNotifications();
       expect(mockQueryRun.mock.calls[0][1][0]).toBe(30);
     });
   });
 
   describe('getUnreadCount', () => {
-    test('returns count from DB', () => {
+    test('returns count from DB', async () => {
       mockQueryGet.mockReturnValue({ count: 7 });
-      expect(getUnreadCount('user-1')).toBe(7);
+      expect(await getUnreadCount('user-1')).toBe(7);
     });
 
-    test('returns 0 on error', () => {
+    test('returns 0 on error', async () => {
       mockQueryGet.mockImplementation(() => { throw new Error('DB error'); });
-      expect(getUnreadCount('user-1')).toBe(0);
+      expect(await getUnreadCount('user-1')).toBe(0);
     });
   });
 
   describe('createOAuthNotification', () => {
-    test('generates success message for TOKEN_REFRESH_SUCCESS', () => {
+    test('generates success message for TOKEN_REFRESH_SUCCESS', async () => {
       mockQueryRun.mockReturnValue({ changes: 1 });
-      const result = createOAuthNotification(
+      const result = await createOAuthNotification(
         'user-1', 'eBay', NotificationTypes.TOKEN_REFRESH_SUCCESS
       );
       expect(result.type).toBe('success');
@@ -192,27 +192,27 @@ describe('notificationService', () => {
       expect(result.title).toContain('refreshed');
     });
 
-    test('generates error message for TOKEN_REFRESH_FAILED', () => {
+    test('generates error message for TOKEN_REFRESH_FAILED', async () => {
       mockQueryRun.mockReturnValue({ changes: 1 });
-      const result = createOAuthNotification(
+      const result = await createOAuthNotification(
         'user-1', 'Poshmark', NotificationTypes.TOKEN_REFRESH_FAILED
       );
       expect(result.type).toBe('error');
       expect(result.title).toContain('failed');
     });
 
-    test('sanitizes platform name against XSS', () => {
+    test('sanitizes platform name against XSS', async () => {
       mockQueryRun.mockReturnValue({ changes: 1 });
-      const result = createOAuthNotification(
+      const result = await createOAuthNotification(
         'user-1', '<script>alert("xss")</script>', NotificationTypes.SYNC_COMPLETED
       );
       expect(result.title).not.toContain('<');
       expect(result.title).not.toContain('>');
     });
 
-    test('falls back to generic for unknown type', () => {
+    test('falls back to generic for unknown type', async () => {
       mockQueryRun.mockReturnValue({ changes: 1 });
-      const result = createOAuthNotification('user-1', 'eBay', 'unknown_type');
+      const result = await createOAuthNotification('user-1', 'eBay', 'unknown_type');
       expect(result.type).toBe('info');
     });
   });

@@ -88,42 +88,42 @@ describe('isGoogleConfigured', () => {
 // ===== buildGoogleAuthUrl =====
 
 describe('buildGoogleAuthUrl', () => {
-    test('should return authorizationUrl and state', () => {
-        const result = buildGoogleAuthUrl('user-1', 'drive', 'https://app.example.com');
+    test('should return authorizationUrl and state', async () => {
+        const result = await buildGoogleAuthUrl('user-1', 'drive', 'https://app.example.com');
         expect(result).toHaveProperty('authorizationUrl');
         expect(result).toHaveProperty('state', 'state-token-abcdef1234567890');
     });
 
-    test('should include client_id, redirect_uri, and state in authorization URL', () => {
-        const result = buildGoogleAuthUrl('user-1', 'drive', 'https://app.example.com');
+    test('should include client_id, redirect_uri, and state in authorization URL', async () => {
+        const result = await buildGoogleAuthUrl('user-1', 'drive', 'https://app.example.com');
         const url = new URL(result.authorizationUrl);
         expect(url.searchParams.get('client_id')).toBe('test-google-client-id');
         expect(url.searchParams.get('state')).toBe('state-token-abcdef1234567890');
         expect(url.searchParams.get('redirect_uri')).toContain('/api/integrations/google/callback');
     });
 
-    test('should set access_type=offline and prompt=consent', () => {
-        const result = buildGoogleAuthUrl('user-1', 'calendar', 'https://app.example.com');
+    test('should set access_type=offline and prompt=consent', async () => {
+        const result = await buildGoogleAuthUrl('user-1', 'calendar', 'https://app.example.com');
         const url = new URL(result.authorizationUrl);
         expect(url.searchParams.get('access_type')).toBe('offline');
         expect(url.searchParams.get('prompt')).toBe('consent');
     });
 
-    test('should persist state token to DB via query.run', () => {
-        buildGoogleAuthUrl('user-1', 'drive', 'https://app.example.com');
+    test('should persist state token to DB via query.run', async () => {
+        await buildGoogleAuthUrl('user-1', 'drive', 'https://app.example.com');
         expect(mockQueryRun.mock.calls.length).toBeGreaterThan(0);
         const [sql] = mockQueryRun.mock.calls[0];
         expect(sql).toContain('google_oauth_states');
     });
 
-    test('should include drive scopes for drive scope parameter', () => {
-        const result = buildGoogleAuthUrl('user-1', 'drive', 'https://app.example.com');
+    test('should include drive scopes for drive scope parameter', async () => {
+        const result = await buildGoogleAuthUrl('user-1', 'drive', 'https://app.example.com');
         const url = new URL(result.authorizationUrl);
         expect(url.searchParams.get('scope')).toContain('drive.file');
     });
 
-    test('should fall back to drive scopes for unknown scope parameter', () => {
-        const result = buildGoogleAuthUrl('user-1', 'unknown_scope', 'https://app.example.com');
+    test('should fall back to drive scopes for unknown scope parameter', async () => {
+        const result = await buildGoogleAuthUrl('user-1', 'unknown_scope', 'https://app.example.com');
         const url = new URL(result.authorizationUrl);
         expect(url.searchParams.get('scope')).toContain('drive.file');
     });
@@ -601,7 +601,7 @@ describe('exchangeGoogleCode', () => {
 
         const updateCalls = mockQueryRun.mock.calls.filter(([sql]) => sql.includes('UPDATE google_tokens'));
         const [updateSql, updateParams] = updateCalls[0];
-        expect(updateSql).toContain('is_connected = 1');
+        expect(updateSql).toContain('is_connected = TRUE');
 
         globalThis.fetch = originalFetch;
     });
@@ -750,7 +750,7 @@ describe('revokeGoogleToken', () => {
 
         expect(mockQueryRun.mock.calls.length).toBeGreaterThan(0);
         const [sql, params] = mockQueryRun.mock.calls[mockQueryRun.mock.calls.length - 1];
-        expect(sql).toContain('is_connected = 0');
+        expect(sql).toContain('is_connected = FALSE');
         expect(params).toContain('tok-5');
 
         globalThis.fetch = originalFetch;
@@ -760,19 +760,19 @@ describe('revokeGoogleToken', () => {
 // ===== getConnectionStatus =====
 
 describe('getConnectionStatus', () => {
-    test('should return connected: false when no record exists', () => {
+    test('should return connected: false when no record exists', async () => {
         mockQueryGet.mockImplementation(() => null);
-        const status = getConnectionStatus('user-1', 'drive');
+        const status = await getConnectionStatus('user-1', 'drive');
         expect(status).toEqual({ connected: false });
     });
 
-    test('should return connected: false when record is_connected is 0', () => {
+    test('should return connected: false when record is_connected is 0', async () => {
         mockQueryGet.mockImplementation(() => ({ is_connected: 0, email: 'test@example.com' }));
-        const status = getConnectionStatus('user-1', 'drive');
+        const status = await getConnectionStatus('user-1', 'drive');
         expect(status.connected).toBe(false);
     });
 
-    test('should return connected: true with email and timestamps when record is active', () => {
+    test('should return connected: true with email and timestamps when record is active', async () => {
         mockQueryGet.mockImplementation(() => ({
             is_connected: 1,
             email: 'user@gmail.com',
@@ -781,14 +781,14 @@ describe('getConnectionStatus', () => {
             updated_at: '2026-03-01T00:00:00Z'
         }));
 
-        const status = getConnectionStatus('user-1', 'drive');
+        const status = await getConnectionStatus('user-1', 'drive');
         expect(status.connected).toBe(true);
         expect(status.email).toBe('user@gmail.com');
         expect(status.tokenExpiresAt).toBeDefined();
         expect(status.connectedAt).toBeDefined();
     });
 
-    test('should not expose raw token fields in connection status', () => {
+    test('should not expose raw token fields in connection status', async () => {
         mockQueryGet.mockImplementation(() => ({
             is_connected: 1,
             email: 'user@gmail.com',
@@ -797,7 +797,7 @@ describe('getConnectionStatus', () => {
             updated_at: '2026-03-01T00:00:00Z'
         }));
 
-        const status = getConnectionStatus('user-1', 'drive');
+        const status = await getConnectionStatus('user-1', 'drive');
         expect(status.oauth_token).toBeUndefined();
         expect(status.oauth_refresh_token).toBeUndefined();
     });
@@ -935,31 +935,31 @@ describe('getAccessToken — refresh DB write', () => {
 // ===== buildGoogleAuthUrl — scope variants =====
 
 describe('buildGoogleAuthUrl — scope variants', () => {
-    test('should include calendar scope when scope parameter is calendar', () => {
-        const result = buildGoogleAuthUrl('user-cal', 'calendar', 'https://app.example.com');
+    test('should include calendar scope when scope parameter is calendar', async () => {
+        const result = await buildGoogleAuthUrl('user-cal', 'calendar', 'https://app.example.com');
         const url = new URL(result.authorizationUrl);
         expect(url.searchParams.get('scope')).toContain('calendar');
     });
 
-    test('should include both drive.file and calendar scopes for drive_and_calendar', () => {
-        const result = buildGoogleAuthUrl('user-both', 'drive_and_calendar', 'https://app.example.com');
+    test('should include both drive.file and calendar scopes for drive_and_calendar', async () => {
+        const result = await buildGoogleAuthUrl('user-both', 'drive_and_calendar', 'https://app.example.com');
         const url = new URL(result.authorizationUrl);
         const scope = url.searchParams.get('scope');
         expect(scope).toContain('drive.file');
         expect(scope).toContain('calendar');
     });
 
-    test('should always include userinfo.email in scope regardless of scope parameter', () => {
+    test('should always include userinfo.email in scope regardless of scope parameter', async () => {
         for (const s of ['drive', 'calendar', 'drive_and_calendar']) {
-            const result = buildGoogleAuthUrl('user-email-scope', s, 'https://app.example.com');
+            const result = await buildGoogleAuthUrl('user-email-scope', s, 'https://app.example.com');
             const url = new URL(result.authorizationUrl);
             expect(url.searchParams.get('scope')).toContain('userinfo.email');
         }
     });
 
-    test('should persist state token with correct scope to DB', () => {
+    test('should persist state token with correct scope to DB', async () => {
         mockQueryRun.mockReset();
-        buildGoogleAuthUrl('user-scope-db', 'calendar', 'https://app.example.com');
+        await buildGoogleAuthUrl('user-scope-db', 'calendar', 'https://app.example.com');
         expect(mockQueryRun.mock.calls.length).toBeGreaterThan(0);
         const [sql, params] = mockQueryRun.mock.calls[0];
         expect(sql).toContain('google_oauth_states');
@@ -1009,7 +1009,7 @@ describe('revokeGoogleToken — additional paths', () => {
         // but DB UPDATE to disconnect should still run
         expect(mockQueryRun.mock.calls.length).toBeGreaterThan(0);
         const [sql] = mockQueryRun.mock.calls[mockQueryRun.mock.calls.length - 1];
-        expect(sql).toContain('is_connected = 0');
+        expect(sql).toContain('is_connected = FALSE');
 
         globalThis.fetch = originalFetch;
     });
@@ -1028,7 +1028,7 @@ describe('revokeGoogleToken — additional paths', () => {
         // DB UPDATE should still be called even when fetch throws
         expect(mockQueryRun.mock.calls.length).toBeGreaterThan(0);
         const [sql, params] = mockQueryRun.mock.calls[mockQueryRun.mock.calls.length - 1];
-        expect(sql).toContain('is_connected = 0');
+        expect(sql).toContain('is_connected = FALSE');
         expect(params).toContain('tok-revoke-fail');
 
         globalThis.fetch = originalFetch;
