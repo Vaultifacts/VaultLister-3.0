@@ -22751,8 +22751,74 @@ Object.assign(handlers, {
             renderApp(window.pages.inventoryImport());
             toast.success(`Parsed ${result.preview?.total_rows || 0} rows`);
         } catch (err) {
-            toast.error('Failed to parse data: ' + err.message);
+            // Fall back to local client-side parser so the UI still advances to Step 2
+            try {
+                let headers = [];
+                let rows = [];
+                if (sourceType === 'json') {
+                    let parsed;
+                    try { parsed = JSON.parse(data); } catch (_) { parsed = null; }
+                    if (!Array.isArray(parsed) || parsed.length === 0) {
+                        toast.error('Invalid JSON — expected an array of objects');
+                        return;
+                    }
+                    headers = Object.keys(parsed[0]);
+                    rows = parsed.map(r => headers.map(h => r[h] != null ? String(r[h]) : ''));
+                } else {
+                    const delimiter = sourceType === 'tsv' ? '\t' : ',';
+                    const lines = data.split(/\r?\n/).filter(l => l.trim());
+                    if (lines.length === 0) { toast.error('No data found'); return; }
+                    const splitLine = (line) => {
+                        const cells = [];
+                        let cur = '';
+                        let inQuote = false;
+                        for (let i = 0; i < line.length; i++) {
+                            const ch = line[i];
+                            if (ch === '"' && !inQuote) { inQuote = true; }
+                            else if (ch === '"' && inQuote && line[i + 1] === '"') { cur += '"'; i++; }
+                            else if (ch === '"' && inQuote) { inQuote = false; }
+                            else if (ch === delimiter && !inQuote) { cells.push(cur); cur = ''; }
+                            else { cur += ch; }
+                        }
+                        cells.push(cur);
+                        return cells;
+                    };
+                    if (hasHeader) {
+                        headers = splitLine(lines[0]);
+                        rows = lines.slice(1).map(splitLine);
+                    } else {
+                        const firstRow = splitLine(lines[0]);
+                        headers = firstRow.map((_, i) => 'Column ' + (i + 1));
+                        rows = lines.map(splitLine);
+                    }
+                }
+                if (headers.length === 0) { toast.error('No columns detected'); return; }
+                const cellData = rows;
+                store.setState({
+                    currentImportJob: {
+                        id: null,
+                        preview: { headers, rows: [], cell_data: cellData, total_rows: rows.length }
+                    }
+                });
+                renderApp(window.pages.inventoryImport());
+                toast.success(`Parsed ${rows.length} rows (offline preview)`);
+            } catch (localErr) {
+                toast.error('Failed to parse data: ' + err.message);
+            }
         }
+    },
+
+    downloadImportTemplate: function() {
+        const csv = 'title,description,price,cost,condition,brand,size,color,sku\n"Example Item","Great condition hoodie",25.00,8.00,"Good","Nike","L","Black","SKU-001"';
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'vaultlister-import-template.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+        toast.success('Template downloaded');
     },
 
     // Import from paste via modal (simplified),

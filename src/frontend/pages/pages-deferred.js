@@ -14539,34 +14539,37 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         const jobs = store.state.importJobs || [];
         const mappings = store.state.importMappings || [];
         const currentJob = store.state.currentImportJob || null;
+        const importFormat = (store.state.importFormat || 'csv').toUpperCase();
 
         return `
             <div class="page-header">
                 <h1 class="page-title">Inventory Import</h1>
-                <p class="page-description">Import inventory from CSV, Excel, TSV, or JSON files</p>
+                <p class="page-description">Import inventory from CSV, TSV, Excel (.xlsx), or JSON files</p>
             </div>
 
-            <div class="tabs mb-6" role="tablist">
-                <button class="tab ${activeTab === 'upload' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'upload' ? 'true' : 'false'}"
+            <div class="tabs mb-6" role="tablist" aria-label="Import sections">
+                <button class="tab ${activeTab === 'upload' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'upload' ? 'true' : 'false'}" aria-controls="import-tab-panel"
                         onclick="store.setState({importTab:'upload'}); renderApp(pages.inventoryImport());">
                     Upload
                 </button>
-                <button class="tab ${activeTab === 'jobs' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'jobs' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'jobs' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'jobs' ? 'true' : 'false'}" aria-controls="import-tab-panel"
                         onclick="store.setState({importTab:'jobs'}); renderApp(pages.inventoryImport());">
                     Import History
                 </button>
-                <button class="tab ${activeTab === 'mappings' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'mappings' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'mappings' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'mappings' ? 'true' : 'false'}" aria-controls="import-tab-panel"
                         onclick="store.setState({importTab:'mappings'}); renderApp(pages.inventoryImport());">
                     Saved Mappings
                 </button>
             </div>
+
+            <div id="import-tab-panel" role="tabpanel">
 
             ${activeTab === 'upload' ? `
                 ${currentJob ? `
                     <!-- Field Mapping Step -->
                     <div class="card mb-6">
                         <div class="card-header">
-                            <h3 class="card-title">Step 2: Map Fields</h3>
+                            <h2 class="card-title">Step 2: Map Fields</h2>
                         </div>
                         <div class="card-body">
                             <p style="font-size:13px; color:#6b7280; margin-bottom:16px;">Use the dropdown in each column header to assign a VaultLister field. Columns set to "Skip" will be ignored.</p>
@@ -14680,12 +14683,17 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                 ` : `
                     <!-- Upload Step -->
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Step 1: Upload File</h3>
+                        <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
+                            <h2 class="card-title">Step 1: Upload File</h2>
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="handlers.downloadImportTemplate()">
+                                ${components.icon('download', 14)} Download Template
+                            </button>
                         </div>
                         <div class="card-body">
                             <div class="import-upload-zone" id="import-drop-zone"
+                                 role="button" tabindex="0" aria-label="Upload file — drag and drop or press Enter to browse"
                                  onclick="document.getElementById('import-file-input').click()"
+                                 onkeydown="if(event.key==='Enter'||event.key===' ') document.getElementById('import-file-input').click()"
                                  ondragover="event.preventDefault(); this.classList.add('dragover')"
                                  ondragleave="this.classList.remove('dragover')"
                                  ondrop="event.preventDefault(); this.classList.remove('dragover'); handlers.handleImportDrop(event)"
@@ -14698,18 +14706,20 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                        style="display:none" onchange="handlers.handleImportFile(this.files[0])" onclick="event.stopPropagation()">
                             </div>
                             <div class="mt-4" style="display:flex; gap:12px; align-items:center;">
-                                <button class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">
                                     ${components.icon('upload', 14)} Browse Files
                                 </button>
-                                <span class="text-sm text-gray-500">or paste CSV data:</span>
+                                <span class="text-sm text-gray-500">or paste ${importFormat} data:</span>
                             </div>
                             <textarea class="form-input mt-3" id="import-paste-area" rows="6"
-                                      placeholder="Paste CSV/TSV data here..."></textarea>
+                                      placeholder="Paste ${importFormat} data here..."></textarea>
                             <div class="mt-3" style="display:flex; gap:8px; align-items:center;">
-                                <select class="form-input" id="import-source-type" style="width:auto;">
-                                    <option value="csv">CSV</option>
-                                    <option value="tsv">TSV</option>
-                                    <option value="json">JSON</option>
+                                <label for="import-source-type" class="text-sm text-gray-500">Format</label>
+                                <select class="form-input" id="import-source-type" aria-label="Import format" style="width:auto;"
+                                        onchange="store.setState({importFormat:this.value}); renderApp(window.pages.inventoryImport());">
+                                    <option value="csv" ${importFormat === 'CSV' ? 'selected' : ''}>CSV</option>
+                                    <option value="tsv" ${importFormat === 'TSV' ? 'selected' : ''}>TSV</option>
+                                    <option value="json" ${importFormat === 'JSON' ? 'selected' : ''}>JSON</option>
                                 </select>
                                 <label class="flex items-center gap-2 text-sm">
                                     <input type="checkbox" id="import-has-header" checked> Has header row
@@ -14720,7 +14730,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                         ${mappings.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}
                                     </select>
                                 ` : ''}
-                                <button class="btn btn-primary" onclick="handlers.startImportFromPaste()">
+                                <button type="button" class="btn btn-primary" onclick="handlers.startImportFromPaste()">
                                     Parse Data
                                 </button>
                             </div>
@@ -14814,6 +14824,8 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                     </div>
                 </div>
             ` : ''}
+
+            </div>
         `;
     },
 

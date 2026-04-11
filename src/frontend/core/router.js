@@ -412,6 +412,7 @@ const router = {
             community: 'Community',
             'market-intel': 'Market Intel',
             import: 'Import',
+            'inventory-import': 'Import',
             shops: 'My Shops',
             support: 'Support',
             'report-bug': 'Report a Bug',
