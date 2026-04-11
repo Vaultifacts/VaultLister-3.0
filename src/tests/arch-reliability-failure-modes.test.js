@@ -241,7 +241,7 @@ describe('Webhook dispatch — failure handling', () => {
         await dispatchToUserEndpoints('u1', 'listing.sold', { title: 'Item' });
 
         const disableCalls = mockQueryRun.mock.calls.filter(c =>
-            typeof c[0] === 'string' && c[0].includes('is_enabled = 0')
+            typeof c[0] === 'string' && c[0].includes('is_enabled = FALSE')
         );
         expect(disableCalls.length).toBe(1);
         expect(mockCreateNotification).toHaveBeenCalled();
@@ -317,11 +317,14 @@ describe('Token refresh — consecutive failure tracking', () => {
     });
 
     test('should increment consecutive_refresh_failures on refresh error', async () => {
-        // performTokenRefresh will fail because fetch rejects
+        const origMode = process.env.OAUTH_MODE;
+        process.env.OAUTH_MODE = 'real';
         globalThis.fetch = mock(() => Promise.reject(new Error('Network error')));
         try {
             await refreshShopToken(makeShop(0));
         } catch (_) { /* expected */ }
+        if (origMode !== undefined) process.env.OAUTH_MODE = origMode;
+        else delete process.env.OAUTH_MODE;
 
         const failureCalls = mockQueryRun.mock.calls.filter(c =>
             typeof c[0] === 'string' && c[0].includes('consecutive_refresh_failures')
@@ -330,24 +333,38 @@ describe('Token refresh — consecutive failure tracking', () => {
     });
 
     test('should auto-disconnect shop after 5 consecutive failures', async () => {
-        // Network errors are transient — threshold is MAX_TRANSIENT_FAILURES=10
-        globalThis.fetch = mock(() => Promise.reject(new Error('Network error')));
+        const origMode = process.env.OAUTH_MODE;
+        process.env.OAUTH_MODE = 'real';
+        globalThis.fetch = mock(() => Promise.resolve({
+            ok: false,
+            status: 401,
+            text: () => Promise.resolve('invalid_grant: token expired')
+        }));
         try {
-            await refreshShopToken(makeShop(9)); // 9 + 1 = 10 >= MAX_TRANSIENT_FAILURES
+            await refreshShopToken(makeShop(4)); // 4 + 1 = 5 and permanent errors disconnect immediately
         } catch (_) { /* expected */ }
+        if (origMode !== undefined) process.env.OAUTH_MODE = origMode;
+        else delete process.env.OAUTH_MODE;
 
         const disconnectCalls = mockQueryRun.mock.calls.filter(c =>
-            typeof c[0] === 'string' && c[0].includes('is_connected = 0')
+            typeof c[0] === 'string' && c[0].includes('is_connected = FALSE')
         );
         expect(disconnectCalls.length).toBe(1);
     });
 
     test('should create OAUTH_DISCONNECTED notification on auto-disconnect', async () => {
-        // Network errors are transient — threshold is MAX_TRANSIENT_FAILURES=10
-        globalThis.fetch = mock(() => Promise.reject(new Error('Network error')));
+        const origMode = process.env.OAUTH_MODE;
+        process.env.OAUTH_MODE = 'real';
+        globalThis.fetch = mock(() => Promise.resolve({
+            ok: false,
+            status: 401,
+            text: () => Promise.resolve('invalid_grant: token expired')
+        }));
         try {
-            await refreshShopToken(makeShop(9)); // 9 + 1 = 10 >= MAX_TRANSIENT_FAILURES
+            await refreshShopToken(makeShop(4)); // 4 + 1 = 5 and permanent errors disconnect immediately
         } catch (_) { /* expected */ }
+        if (origMode !== undefined) process.env.OAUTH_MODE = origMode;
+        else delete process.env.OAUTH_MODE;
 
         // Should have two calls: TOKEN_REFRESH_FAILED and OAUTH_DISCONNECTED
         const disconnectCalls = mockCreateOAuthNotification.mock.calls.filter(c =>

@@ -97,6 +97,37 @@ ssh ubuntu@server "bash /opt/vaultlister-staging/deploy.sh"
 - Nginx reverse proxy (config in `nginx/nginx.staging.conf`)
 - SSL via Let's Encrypt (Certbot)
 
+### Railway Production
+- `vaultlister-app` serves HTTP/WebSocket traffic.
+- `vaultlister-worker` runs BullMQ automation jobs plus the moved background schedulers/workers.
+- Railway PostgreSQL backs the app and worker via `DATABASE_URL`.
+- Railway Redis is required in production for BullMQ, worker heartbeats, and cross-replica WebSocket fanout via `REDIS_URL`.
+
+Required production env vars:
+- `DATABASE_URL`
+- `REDIS_URL`
+- `JWT_SECRET`
+- `OAUTH_ENCRYPTION_KEY`
+- `OAUTH_MODE=real`
+- platform-specific OAuth/bot credentials as needed
+
+Worker deployment notes:
+- The worker service uses [`worker/railway.json`](worker/railway.json) and [`worker/Dockerfile`](worker/Dockerfile).
+- The worker Dockerfile path must be set to `worker/Dockerfile` in Railway.
+- The worker service must share the same `DATABASE_URL` and `REDIS_URL` as the app service.
+
+### Production Operations
+- App readiness: `GET /api/health/ready`
+- Worker heartbeats: `GET /api/workers/health`
+- Local production smoke:
+
+```bash
+bun scripts/launch-ops-check.mjs https://vaultlister.com --task-queue --queue-metrics --json
+```
+
+- GitHub Actions runs `.github/workflows/production-smoke.yml` every 15 minutes and after successful deploys.
+- If production smoke fails, GitHub automatically opens or updates a `production-smoke-failure` issue with the failing run link.
+
 ## Project Structure
 ```
 src/

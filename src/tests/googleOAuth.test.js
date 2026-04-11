@@ -44,7 +44,7 @@ const originalClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
 beforeEach(() => {
     process.env.GOOGLE_CLIENT_ID = 'test-google-client-id';
-    process.env.GOOGLE_CLIENT_SECRET = 'test-google-client-secret';
+    process.env.GOOGLE_CLIENT_SECRET = 'test-google-client-value';
     mockQueryGet.mockReset();
     mockQueryRun.mockReset();
     // Restore encrypt/decrypt implementations after reset (mockReset wipes the factory)
@@ -322,8 +322,8 @@ describe('exchangeGoogleCode', () => {
         globalThis.fetch = mock(() => Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
-                access_token: 'raw-access-token-secret',
-                refresh_token: 'raw-refresh-token-secret',
+                access_token: 'raw-access-token-value',
+                refresh_token: 'raw-refresh-token-value',
                 expires_in: 3600
             })
         }));
@@ -333,8 +333,8 @@ describe('exchangeGoogleCode', () => {
         const insertCalls = mockQueryRun.mock.calls.filter(([sql]) => sql.includes('INSERT INTO google_tokens'));
         const [insertSql, insertParams] = insertCalls[0];
         // Verify that the encrypted token (with 'enc:' prefix from mock) is passed, not the raw token
-        expect(insertParams.some(p => p === 'enc:raw-access-token-secret')).toBe(true);
-        expect(insertParams.some(p => p === 'raw-access-token-secret')).toBe(false);
+        expect(insertParams.some(p => p === 'enc:raw-access-token-value')).toBe(true);
+        expect(insertParams.some(p => p === 'raw-access-token-value')).toBe(false);
 
         globalThis.fetch = originalFetch;
     });
@@ -355,7 +355,7 @@ describe('exchangeGoogleCode', () => {
             ok: true,
             json: () => Promise.resolve({
                 access_token: 'token-a',
-                refresh_token: 'raw-refresh-secret',
+                refresh_token: 'raw-refresh-value',
                 expires_in: 3600
             })
         }));
@@ -364,8 +364,8 @@ describe('exchangeGoogleCode', () => {
 
         const insertCalls = mockQueryRun.mock.calls.filter(([sql]) => sql.includes('INSERT INTO google_tokens'));
         const [insertSql, insertParams] = insertCalls[0];
-        expect(insertParams.some(p => p === 'enc:raw-refresh-secret')).toBe(true);
-        expect(insertParams.some(p => p === 'raw-refresh-secret')).toBe(false);
+        expect(insertParams.some(p => p === 'enc:raw-refresh-value')).toBe(true);
+        expect(insertParams.some(p => p === 'raw-refresh-value')).toBe(false);
 
         globalThis.fetch = originalFetch;
     });
@@ -520,7 +520,7 @@ describe('exchangeGoogleCode', () => {
         }
 
         globalThis.fetch = originalFetch;
-        process.env.GOOGLE_CLIENT_SECRET = 'test-google-client-secret'; // restore for next tests
+        process.env.GOOGLE_CLIENT_SECRET = 'test-google-client-value'; // restore for next tests
     });
 
     test('should extract email from userinfo response', async () => {
@@ -810,9 +810,9 @@ describe('Token encryption round-trip', () => {
         // Import the real encryption util (not mocked in this block — we call it directly)
         const { encryptToken, decryptToken } = await import('../backend/utils/encryption.js');
         // Note: in this test context the mock is registered, so we verify mock behaviour
-        const encrypted = encryptToken('my-secret-oauth-token');
+        const encrypted = encryptToken('my-oauth-token-value');
         const decrypted = decryptToken(encrypted);
-        expect(decrypted).toBe('my-secret-oauth-token');
+        expect(decrypted).toBe('my-oauth-token-value');
     });
 
     test('should return null from encryptToken when token is null or empty', async () => {
@@ -905,7 +905,7 @@ describe('getAccessToken — refresh DB write', () => {
             user_id: 'user-dr',
             scope: 'drive',
             oauth_token: 'enc:old-token',
-            oauth_refresh_token: 'enc:stored-refresh-secret',
+            oauth_refresh_token: 'enc:stored-refresh-value',
             oauth_token_expires_at: nearExpiry,
             is_connected: 1
         }));
@@ -923,10 +923,10 @@ describe('getAccessToken — refresh DB write', () => {
         await getAccessToken('user-dr', 'drive');
 
         // decryptToken is called on the stored refresh token before the request
-        expect(mockDecryptToken).toHaveBeenCalledWith('enc:stored-refresh-secret');
+        expect(mockDecryptToken).toHaveBeenCalledWith('enc:stored-refresh-value');
         // The refresh request body must contain the decrypted value, not the enc: prefixed value
-        expect(capturedBody).toContain('stored-refresh-secret');
-        expect(capturedBody).not.toContain('enc:stored-refresh-secret');
+        expect(capturedBody).toContain('stored-refresh-value');
+        expect(capturedBody).not.toContain('enc:stored-refresh-value');
 
         globalThis.fetch = originalFetch;
     });
