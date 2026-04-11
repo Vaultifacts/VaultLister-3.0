@@ -1490,7 +1490,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                         const progressPercent = feature.status === 'completed' ? 100 :
                                                 feature.status === 'in_progress' ? (feature.progress || 50) : 0;
                         return `
-                            <div class="roadmap-feature-card ${feature.status}">
+                            <div class="roadmap-feature-card ${feature.status}" onmouseenter="if(!this.classList.contains('completed'))this.style.background='var(--gray-50)'" onmouseleave="if(!this.classList.contains('completed'))this.style.background=''"
                                 <!-- Vote Section -->
                                 <div class="feature-vote-section">
                                     <button class="vote-button ${feature.user_voted ? 'voted' : ''}" onclick="handlers.voteRoadmapFeature('${feature.id}')">

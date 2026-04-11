@@ -66729,11 +66729,18 @@ body.dark-mode .offers-urgency-item.urgent {
 
 /* Roadmap status change animation */
 .roadmap-feature-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.2s ease;
 }
 .roadmap-feature-card:hover {
     transform: translateX(4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: var(--gray-50);
+}
+.roadmap-feature-card.completed:hover {
+    background: var(--success-50, #f0fdf4);
+}
+.roadmap-feature-card.in_progress:hover {
+    border-left-color: var(--primary-500);
 }
 
 /* ============================================

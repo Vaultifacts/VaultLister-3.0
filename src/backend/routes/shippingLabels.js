@@ -759,5 +759,129 @@ export async function shippingLabelsRouter(ctx) {
         }
     }
 
+    // POST /api/shipping-labels/easypost/rates
+    if (method === 'POST' && path === '/easypost/rates') {
+        const { from_zip, from_country = 'US', to_zip, to_country = 'US', weight_oz, length, width, height } = body || {};
+        if (!from_zip || !to_zip || !weight_oz) {
+            return { status: 400, data: { error: 'from_zip, to_zip, and weight_oz are required' } };
+        }
+        if (!process.env.EASYPOST_API_KEY) {
+            return { status: 503, data: { error: 'EasyPost not configured', message: 'Set EASYPOST_API_KEY in .env to enable EasyPost rates.' } };
+        }
+        try {
+            const auth = Buffer.from(`${process.env.EASYPOST_API_KEY}:`).toString('base64');
+            const shipmentPayload = {
+                shipment: {
+                    from_address: { zip: from_zip, country: from_country },
+                    to_address: { zip: to_zip, country: to_country },
+                    parcel: {
+                        weight: parseFloat(weight_oz),
+                        ...(length ? { length: parseFloat(length) } : {}),
+                        ...(width ? { width: parseFloat(width) } : {}),
+                        ...(height ? { height: parseFloat(height) } : {})
+                    }
+                }
+            };
+            const res = await fetch('https://api.easypost.com/v2/shipments', {
+                method: 'POST',
+                headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(shipmentPayload)
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                logger.error('[EasyPost] Shipment create error', user?.id, { status: res.status, detail: err?.error?.message });
+                return { status: 502, data: { error: 'EasyPost API error', detail: err?.error?.message || 'Failed to retrieve rates' } };
+            }
+            const shipment = await res.json();
+            const rates = (shipment.rates || []).map(r => ({
+                id: r.id,
+                carrier: r.carrier,
+                service: r.service,
+                rate: parseFloat(r.rate),
+                delivery_days: r.delivery_days || null,
+                delivery_date: r.delivery_date || null,
+                shipment_id: shipment.id,
+                provider: 'easypost'
+            }));
+            rates.sort((a, b) => a.rate - b.rate);
+            return { status: 200, data: { rates, shipment_id: shipment.id } };
+        } catch (error) {
+            logger.error('[EasyPost] Error fetching rates', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to fetch EasyPost rates' } };
+        }
+    }
+
+    // POST /api/shipping-labels/easypost/buy
+    if (method === 'POST' && path === '/easypost/buy') {
+        const { shipment_id, rate_id, order_id, sale_id } = body || {};
+        if (!shipment_id || !rate_id) {
+            return { status: 400, data: { error: 'shipment_id and rate_id are required' } };
+        }
+        if (!process.env.EASYPOST_API_KEY) {
+            return { status: 503, data: { error: 'EasyPost not configured', message: 'Set EASYPOST_API_KEY in .env to enable EasyPost label purchase.' } };
+        }
+        try {
+            const auth = Buffer.from(`${process.env.EASYPOST_API_KEY}:`).toString('base64');
+            const res = await fetch(`https://api.easypost.com/v2/shipments/${shipment_id}/buy`, {
+                method: 'POST',
+                headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rate: { id: rate_id } })
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                logger.error('[EasyPost] Buy label error', user?.id, { status: res.status, detail: err?.error?.message });
+                return { status: 502, data: { error: 'EasyPost API error', detail: err?.error?.message || 'Failed to purchase label' } };
+            }
+            const shipment = await res.json();
+            const postageLabel = shipment.postage_label || {};
+            const tracking = shipment.tracking_code || null;
+            const cost = parseFloat(shipment.selected_rate?.rate || 0);
+            const labelId = uuidv4();
+            await query.run(
+                `INSERT INTO shipping_labels (id, user_id, order_id, sale_id, carrier, service_type, tracking_number, label_url, total_cost, status, purchased_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'purchased', NOW())`,
+                [labelId, user.id, order_id || null, sale_id || null,
+                 shipment.selected_rate?.carrier || 'EasyPost',
+                 shipment.selected_rate?.service || null,
+                 tracking, postageLabel.label_url || null, cost]
+            );
+            return { status: 200, data: {
+                label_id: labelId,
+                label_url: postageLabel.label_url || null,
+                tracking_number: tracking,
+                carrier: shipment.selected_rate?.carrier,
+                service: shipment.selected_rate?.service,
+                cost
+            }};
+        } catch (error) {
+            logger.error('[EasyPost] Error purchasing label', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to purchase EasyPost label' } };
+        }
+    }
+
+    // GET /api/shipping-labels/easypost/track/:trackingCode
+    const epTrackMatch = path.match(/^\/easypost\/track\/(.+)$/);
+    if (method === 'GET' && epTrackMatch) {
+        const trackingCode = epTrackMatch[1];
+        if (!process.env.EASYPOST_API_KEY) {
+            return { status: 503, data: { error: 'EasyPost not configured' } };
+        }
+        try {
+            const auth = Buffer.from(`${process.env.EASYPOST_API_KEY}:`).toString('base64');
+            const res = await fetch(`https://api.easypost.com/v2/trackers?tracking_code=${encodeURIComponent(trackingCode)}`, {
+                headers: { 'Authorization': `Basic ${auth}` }
+            });
+            if (!res.ok) {
+                return { status: 502, data: { error: 'EasyPost tracking error' } };
+            }
+            const data = await res.json();
+            const tracker = (data.trackers || [])[0] || null;
+            return { status: 200, data: { tracker } };
+        } catch (error) {
+            logger.error('[EasyPost] Error tracking shipment', user?.id, { detail: error?.message });
+            return { status: 500, data: { error: 'Failed to track shipment' } };
+        }
+    }
+
     return { status: 404, data: { error: 'Route not found' } };
 }
