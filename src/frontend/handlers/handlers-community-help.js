@@ -791,6 +791,7 @@ Object.assign(handlers, {
     setCommunityTab: async function(tab) {
         store.setState({ communityTab: tab });
         await handlers.loadCommunity();
+        renderApp(window.pages.community());
     },
 
     // View post details,
@@ -801,7 +802,26 @@ Object.assign(handlers, {
             const result = await api.get(`/community/posts/${postId}`);
             modals.viewPost(result);
         } catch (error) {
-            toast.error('Failed to load post: ' + error.message);
+            const posts = store.state.communityPosts || [];
+            const post = posts.find(p => p.id === postId);
+            if (!post) {
+                toast.error('Post not found');
+                return;
+            }
+            const author = post.author_name || post.author || store.state.user?.display_name || 'Unknown';
+            modals.show(`
+                <div class="modal-header">
+                    <h2 class="modal-title">${escapeHtml(post.title)}</h2>
+                    <button class="modal-close" type="button" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-sm text-gray-500 mb-4">by ${escapeHtml(author)} · ${escapeHtml(post.post_type || post.type || 'Discussion')}</p>
+                    <p>${escapeHtml(post.content || post.body || '')}</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" onclick="modals.close()">Close</button>
+                </div>
+            `);
         }
     },
 
@@ -815,8 +835,14 @@ Object.assign(handlers, {
 
         const title = (formData.get('title') || '').trim();
         const content = (formData.get('content') || '').trim();
-        if (!title || !content) {
-            toast.error('Please fill in the title and content.');
+        if (!title) {
+            document.getElementById('post-title')?.focus();
+            toast.error('Title is required');
+            return;
+        }
+        if (!content) {
+            document.getElementById('post-content')?.focus();
+            toast.error('Content is required');
             return;
         }
 
@@ -846,6 +872,7 @@ Object.assign(handlers, {
             toast.success('Post created successfully!');
             modals.close();
             await handlers.loadCommunity();
+            renderApp(window.pages.community());
         } catch (error) {
             toast.error('Failed to create post: ' + error.message);
         }

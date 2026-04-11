@@ -1890,12 +1890,12 @@ const modals = {
         this.show(`
             <div class="modal-header">
                 <h2 class="modal-title">Create Post</h2>
-                <button class="modal-close" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
+                <button class="modal-close" type="button" aria-label="Close" onclick="modals.close()">${components.icon('close')}</button>
             </div>
             <div class="modal-body">
                 <form onsubmit="handlers.submitCreatePost(event)">
                     <div class="form-group">
-                        <label class="form-label">Post Type</label>
+                        <label class="form-label" for="post-type-select">Post Type</label>
                         <select class="form-select" name="type" id="post-type-select" onchange="handlers.toggleSuccessFields()">
                             <option value="discussion" ${defaultType === 'discussion' ? 'selected' : ''}>Discussion</option>
                             <option value="success" ${defaultType === 'success' ? 'selected' : ''}>Success Story</option>
@@ -1904,31 +1904,31 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Title *</label>
-                        <input type="text" class="form-input" name="title" required maxlength="200"
+                        <label class="form-label" for="post-title">Title *</label>
+                        <input type="text" class="form-input" name="title" id="post-title" required maxlength="200"
                                placeholder="What's your post about?">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Content *</label>
-                        <textarea class="form-textarea" name="content" rows="6" required
+                        <label class="form-label" for="post-content">Content *</label>
+                        <textarea class="form-textarea" name="content" id="post-content" rows="6" required
                                   placeholder="Share your thoughts, questions, or experiences..."></textarea>
                     </div>
 
                     <div id="success-fields" class="hidden">
                         <div class="grid grid-cols-2 gap-4">
                             <div class="form-group">
-                                <label class="form-label">Sale Price</label>
-                                <input type="number" class="form-input" name="salePrice" step="0.01" placeholder="0.00">
+                                <label class="form-label" for="post-sale-price">Sale Price</label>
+                                <input type="number" class="form-input" name="salePrice" id="post-sale-price" step="0.01" placeholder="0.00">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Profit</label>
-                                <input type="number" class="form-input" name="profit" step="0.01" placeholder="0.00">
+                                <label class="form-label" for="post-profit">Profit</label>
+                                <input type="number" class="form-input" name="profit" id="post-profit" step="0.01" placeholder="0.00">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Platform</label>
-                            <select class="form-select" name="platform">
+                            <label class="form-label" for="post-platform">Platform</label>
+                            <select class="form-select" name="platform" id="post-platform">
                                 <option value="">Select platform...</option>
                                 <option value="poshmark">Poshmark</option>
                                 <option value="ebay">eBay</option>
@@ -1941,8 +1941,8 @@ const modals = {
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Tags (comma-separated)</label>
-                        <input type="text" class="form-input" name="tags"
+                        <label class="form-label" for="post-tags">Tags (comma-separated)</label>
+                        <input type="text" class="form-input" name="tags" id="post-tags"
                                placeholder="vintage, poshmark, tips">
                     </div>
 

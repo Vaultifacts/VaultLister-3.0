@@ -29,24 +29,25 @@ Object.assign(pages, {
 
             <!-- Tabs -->
             <div class="tabs mb-6" role="tablist">
-                <button class="tab ${activeTab === 'discussion' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'discussion' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'discussion' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'discussion' ? 'true' : 'false'}" aria-controls="community-tab-panel"
                         onclick="handlers.setCommunityTab('discussion')">
                     💬 Discussion Forum
                 </button>
-                <button class="tab ${activeTab === 'success' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'success' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'success' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'success' ? 'true' : 'false'}" aria-controls="community-tab-panel"
                         onclick="handlers.setCommunityTab('success')">
                     🏆 Success Stories
                 </button>
-                <button class="tab ${activeTab === 'tips' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'tips' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'tips' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'tips' ? 'true' : 'false'}" aria-controls="community-tab-panel"
                         onclick="handlers.setCommunityTab('tips')">
                     💡 Tips & Tricks
                 </button>
-                <button class="tab ${activeTab === 'leaderboard' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'leaderboard' ? 'true' : 'false'}"
+                <button class="tab ${activeTab === 'leaderboard' ? 'active' : ''}" role="tab" aria-selected="${activeTab === 'leaderboard' ? 'true' : 'false'}" aria-controls="community-tab-panel"
                         onclick="handlers.setCommunityTab('leaderboard')">
                     📊 Leaderboard
                 </button>
             </div>
 
+            <div id="community-tab-panel" role="tabpanel">
             ${activeTab === 'leaderboard' ? `
                 <!-- Leaderboard Tab -->
                 <div class="card">
@@ -89,9 +90,9 @@ Object.assign(pages, {
                         <div class="community-post-card" onclick="handlers.viewPost('${post.id}')">
                             <div class="post-header">
                                 <div>
-                                    <h3 class="post-title">${escapeHtml(post.title)}</h3>
+                                    <h2 class="post-title">${escapeHtml(post.title)}</h2>
                                     <div class="post-meta">
-                                        by ${escapeHtml(post.author_email?.split('@')[0] || 'Unknown')} •
+                                        by ${escapeHtml(post.author_name || post.author || post.author_email?.split('@')[0] || 'Unknown')} •
                                         ${new Date(post.created_at).toLocaleDateString()}
                                     </div>
                                 </div>
@@ -99,7 +100,7 @@ Object.assign(pages, {
                                   post.type === 'tip' ? '<div class="badge badge-primary">Tip</div>' : ''}
                             </div>
                             <div class="post-content-preview">
-                                ${escapeHtml(post.content || '').substring(0, 200)}${(post.content || '').length > 200 ? '...' : ''}
+                                ${escapeHtml((post.content || post.body || '').slice(0, 150))}${(post.content || post.body || '').length > 150 ? '...' : ''}
                             </div>
                             <div class="post-footer">
                                 <div class="post-stats">
@@ -122,7 +123,7 @@ Object.assign(pages, {
                                     ${activeTab === 'discussion' ? '💬' :
                                       activeTab === 'success' ? '🏆' : '💡'}
                                 </div>
-                                <h3 class="text-xl font-bold mb-2">No posts yet</h3>
+                                <p class="font-semibold text-gray-500">No posts yet</p>
                                 <p class="text-gray-600 mb-4">Be the first to share!</p>
                                 <button class="btn btn-primary" onclick="modals.createPost()">
                                     Create Post
@@ -132,6 +133,7 @@ Object.assign(pages, {
                     `}
                 </div>
             `}
+            </div>
         `;
     },
 
