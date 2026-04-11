@@ -14,7 +14,7 @@ beforeAll(async () => {
 describe('Push Subscriptions - VAPID Key', () => {
     test('GET /push-subscriptions/vapid-public-key returns key string', async () => {
         const { status, data } = await client.get('/push-subscriptions/vapid-public-key');
-        expect([200, 403]).toContain(status);
+        expect([200, 503]).toContain(status);
         if (status === 200) {
             expect(data.publicKey || data.vapidPublicKey).toBeDefined();
         }

@@ -135,8 +135,8 @@ describe('Push Subscriptions - VAPID Key', () => {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
-        // 200 on success, 403 if tier-gated on CI
-        expect([200, 403]).toContain(response.status);
+        // 200 when configured, 503 when VAPID keys are not configured in the environment.
+        expect([200, 503]).toContain(response.status);
         if (response.status === 200) {
             const data = await response.json();
             expect(data.publicKey).toBeDefined();

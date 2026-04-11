@@ -89,9 +89,9 @@ describe('Permissions Policy', () => {
     test('Permissions-Policy should restrict dangerous features', () => {
         const pp = headers['permissions-policy'];
         expect(pp).toBeTruthy();
-        // Should disable geolocation and camera at minimum
+        // Geolocation stays disabled; camera is intentionally limited to same-origin AR preview.
         expect(pp).toContain('geolocation=()');
-        expect(pp).toContain('camera=()');
+        expect(pp).toContain('camera=(self)');
     });
 });
 
