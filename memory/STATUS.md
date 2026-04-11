@@ -1,15 +1,48 @@
 # VaultLister 3.0 — Session Status
-**Updated:** 2026-04-10 MST (session 17)
+**Updated:** 2026-04-10 MST (session 17+)
 
 ## Current State
-- **Launch Readiness Walkthrough COMPLETE** — 214 findings, 100% coverage (14 sessions)
-- **Master findings doc COMPLETE + VERIFIED** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` (214 findings, Status column added)
+- **Launch Readiness Walkthrough COMPLETE** — all sections in WALKTHROUGH_MASTER_FINDINGS.md fixed + VERIFIED
+- **Master findings doc COMPLETE + VERIFIED** — `docs/WALKTHROUGH_MASTER_FINDINGS.md` — Roadmap tab (12/14 VERIFIED, ee7a337), Plans & Billing tab (15/15 VERIFIED, ed6b3f5)
 - **Post-walkthrough fix plan (6 batches) COMPLETE + VERIFIED** — all batches deployed to live site
 - **Google OAuth FULLY FIXED + DEPLOYED** — 6 layered bugs fixed: SQL ambiguity `df74d36`, display_name `421e4f0`, missing auth-callback route `1d40be6`, wrong redirect URLs `4dafcf8`, 401 interceptor bypass + hashParts URL parsing `9065bc1`/`5a4cf09`, Redis OTT → PostgreSQL-backed OTT `77a07e1`. Redeployed `ffb6e89`. ✅ VERIFIED LIVE: route registered, OTT endpoint responds, minified bundle has correct hash logic, raw fetch confirmed
 - Live site: https://vaultlister.com/?app=1
 - BROWSER NOTE: Always use `mcp__claude-in-chrome__*` tools. NEVER use `mcp__plugin_chrome-devtools-mcp`.
 
-## Completed This Session (2026-04-10, session 17)
+## Completed This Session (2026-04-10, session 17+)
+
+### Plans & Billing tab — 15/15 findings fixed — ed6b3f5
+- **PB-1**: selectPlan/showPlanComparison no longer corrupts page state; scrolls to #plan-cards
+- **PB-2**: Progress bar NaN% guard: max > 0 ? used/max*100 : 0
+- **PB-3**: Pro card always gets ring-2 ring-primary; current plan gets "Your Plan" badge
+- **PB-4**: Inventory Items usage reads store.state.inventory?.length directly
+- **PB-5**: Billing toggle shows hardcoded "Save 10%" / "Save 20%"; no placeholder
+- **PB-6**: showPlanComparison() scrolls to #plan-cards instead of re-navigating
+- **PB-7**: Billing toggle sets billingPeriod + renderApp(); prices recompute via getPrice()
+- **PB-8**: No "TBD" placeholder — all prices from getPrice() synchronously
+- **PB-9**: Pro card shows "20 active automations" matching comparison table
+- **PB-10**: Pro card container gets padding-top: 32px so badge clears viewport
+- **PB-11**: All plan action buttons changed to type="button"
+- **PB-12**: Section headings promoted to H2; plan tier names remain H3
+- **PB-13**: role="progressbar" aria-valuenow aria-valuemax aria-label on all usage bars
+- **PB-14**: Sidebar "Upgrade to Pro" CTA hidden when already on plans-billing page
+- **PB-15**: 'plans-billing' added to PAGE_TITLES — tab reads "Plans & Billing | VaultLister"
+
+### Roadmap tab — 12/14 findings fixed — ee7a337
+- **Road-1**: CSRF vote + optimistic rollback: api.ensureCSRFToken() before POST; old counts captured for rollback
+- **Road-2**: Search debounce 300ms — no more single-character input loss
+- **Road-3**: NOT FIXED — hover color stuck; CSS-only rendering glitch, no reliable fix
+- **Road-4**: NOT FIXED — hardcoded 50% progress; no progress field in API data
+- **Road-5**: Stat cards now count from filtered list when category filter active
+- **Road-6**: subscribeToRoadmap() pre-fills email from store.state.user.email
+- **Road-7**: Feature Detail + Subscribe modal buttons all type="button"
+- **Road-8**: Feature name headings H3→H2
+- **Road-9**: Category option labels title-cased in template
+- **Road-10**: Vote buttons get aria-label="Vote for {feature.name}"
+- **Road-11**: Feature cards show "View Changelog" (consistent with detail modal)
+- **Road-12**: Subscribe modal copy "ship"→"are released"
+- **Road-13**: roadmap in PAGE_TITLES — tab reads "Roadmap | VaultLister"
+- **Road-14**: Feature Detail modal gets aria-labelledby pointing to feature title
 
 ### Community tab — 11/14 findings fixed — 880f698
 - **Com-1**: setCommunityTab() + submitCreatePost() now call renderApp() — tabs and posts visible immediately
