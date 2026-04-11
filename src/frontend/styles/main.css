@@ -66735,10 +66735,6 @@ body.dark-mode .offers-urgency-item.urgent {
     transform: translateX(4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-.feature-title:hover {
-    color: var(--primary-500);
-    text-decoration: underline;
-}
 
 /* ============================================
    Batch 5: Orders & Automations Improvements

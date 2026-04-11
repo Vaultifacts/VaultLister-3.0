@@ -9973,6 +9973,12 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
         // Recent releases for "What's New" banner
         const recentReleases = allCompleted.slice(0, 3);
 
+        const featureProgress = {
+            'eBay Bot Automation': 70,
+            'EasyPost Shipping Labels': 30,
+            'Stripe Billing & Subscriptions': 85,
+        };
+
         return `
             <div class="page-header">
                 <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
@@ -10100,8 +10106,9 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
             ` : `
                 <div class="roadmap-features-list">
                     ${filteredFeatures.map(feature => {
+                        const pct = feature.progress ?? featureProgress[feature.name] ?? 50;
                         const progressPercent = feature.status === 'completed' ? 100 :
-                                                feature.status === 'in_progress' ? (feature.progress || 50) : 0;
+                                                feature.status === 'in_progress' ? pct : 0;
                         return `
                             <div class="roadmap-feature-card ${feature.status}">
                                 <!-- Vote Section -->
@@ -10117,7 +10124,7 @@ Enable keyboard shortcuts in Settings for power-user efficiency.`
                                 <!-- Feature Content -->
                                 <div class="feature-content">
                                     <div class="feature-header">
-                                        <h2 class="feature-title" style="cursor: pointer;" onclick="event.stopPropagation(); handlers.showRoadmapDetail('${feature.id}')">${escapeHtml(feature.title)}</h2>
+                                        <h2 class="feature-title" style="cursor: pointer;" onmouseenter="this.style.color='var(--primary-500)'" onmouseleave="this.style.color=''" onclick="event.stopPropagation(); handlers.showRoadmapDetail('${feature.id}')">${escapeHtml(feature.title)}</h2>
                                         <span class="feature-status-badge ${feature.status}">
                                             ${feature.status === 'completed' ? '✓ ' : feature.status === 'in_progress' ? '◉ ' : '○ '}
                                             ${feature.status.replace(/_/g, ' ')}
