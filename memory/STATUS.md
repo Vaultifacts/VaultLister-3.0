@@ -11,6 +11,20 @@
 
 ## Completed This Session (2026-04-10, session 17)
 
+### Import tab — 10/12 findings fixed — d8c7002
+- **I-1**: startImportFromPaste() now has client-side CSV/TSV/JSON parser → advances to Step 2
+- **I-2**: N/A — "Manage" breadcrumb not present in current codebase
+- **I-3**: N/A — Step 2 already renders conditionally; wizard logic was correct
+- **I-4**: Paste label + placeholder dynamic based on selected format
+- **I-5**: Format order standardized to "CSV, TSV, Excel (.xlsx), or JSON"
+- **I-6**: Download Template button added with canonical CSV blob download
+- **I-7**: Step headings H3 → H2
+- **I-8**: import route added to PAGE_TITLES in router
+- **I-9**: Drop zone gets role/tabindex/aria-label/onkeydown
+- **I-10**: Tabs get aria-controls; panel gets id + role=tabpanel
+- **I-11**: Browse Files button gets type="button"
+- **I-12**: Format select gets visible label + aria-label
+
 ### Settings tab — 12/13 findings fixed — 9f6f50d
 - **S-1**: changeAvatar() modal injection fixed — proper single-arg modals.show(html) structure
 - **S-2**: Integrations tab uses real store.state.shops data (no more hardcoded "Connected")

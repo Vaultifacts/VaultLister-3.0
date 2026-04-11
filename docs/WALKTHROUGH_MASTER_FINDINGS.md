@@ -1279,34 +1279,20 @@ Page: Settings (#settings) with 8 sub-sections: Profile, Account, Appearance, No
 
 Import Tab:
 🔴 Critical
-1. "Parse Data" button does nothing with pasted CSV/TSV/JSON
-Entering valid CSV data into the paste textarea and clicking "Parse Data" (handlers.startImportFromPaste()) produces zero response — no Step 2 column-mapping UI, no success/error toast, no visual change. The function executes without throwing a JS error, but is effectively a no-op stub. The entire paste-based import path is non-functional. Notably, this only affects the paste input method; the file-drop handler (handlers.handleImportDrop) and file picker handler (handlers.handleImportFile) exist and appear separate, but cannot be confirmed as functional without a real file.
-2. "Manage" breadcrumb navigates to Analytics instead of a relevant parent
-Clicking "Manage" in the breadcrumb trail (Home > Manage > Import) calls router.navigate('analytics'), sending the user to the Analytics page. This is a hardcopy/stale onclick attribute — the breadcrumb label says "Manage" but the destination is completely unrelated. This would disorient any user trying to backtrack.
+1. "Parse Data" button does nothing with pasted CSV/TSV/JSON — VERIFIED ✅ — d8c7002 — startImportFromPaste() now has client-side CSV/TSV/JSON parser; advances to Step 2
+2. "Manage" breadcrumb navigates to Analytics instead of a relevant parent — N/A — breadcrumb not present in current codebase
 🟡 Medium
-3. "Step 1: Upload File" label implies a multi-step wizard, but no Steps 2 or 3 are ever shown
-The section title is explicitly "Step 1: Upload File," creating an expectation of subsequent steps (e.g., Step 2: Map Columns, Step 3: Review & Import). Since Parse Data is non-functional, the wizard never progresses past Step 1. There is no indication to the user of what the full flow looks like or that the feature is incomplete.
-4. "or paste CSV data:" label is hardcoded to "CSV" regardless of format selection
-When the user changes the format dropdown from CSV to TSV or JSON, the label "or paste CSV data:" does not update. A user selecting JSON would be confused by a prompt saying "paste CSV data." The textarea placeholder also stays "Paste CSV/TSV data here..." when JSON is selected — it never reflects the chosen format.
-5. File format order is inconsistent across UI copy
-Page subtitle: "Import inventory from CSV, Excel, TSV, or JSON files"
-Drop zone: "Supports CSV, TSV, Excel (.xlsx), JSON"
-Excel and TSV are in different positions. The drop zone order is more logical (CSV, TSV, Excel, JSON), but it conflicts with the subtitle.
-6. No download template / sample file available
-There is no "Download Template" or "Download Sample File" button anywhere on the page. Import tools universally provide a sample CSV/template so users know the expected column format. Without one, users must guess the correct headers/structure before uploading.
-7. Heading hierarchy skips H2 (H1 → H3)
-The page uses H1 for "Inventory Import" and H3 for "Step 1: Upload File" — skipping H2 entirely. This is the same hierarchy issue found on the Reports tab and is a pattern across the app.
+3. "Step 1: Upload File" label implies a multi-step wizard, but no Steps 2 or 3 are ever shown — N/A — Step 2 already conditionally renders when importJob is set; wizard logic was correct
+4. "or paste CSV data:" label is hardcoded to "CSV" regardless of format selection — VERIFIED ✅ — d8c7002 — label and placeholder are now dynamic based on store.state.importFormat
+5. File format order is inconsistent across UI copy — VERIFIED ✅ — d8c7002 — standardized to "CSV, TSV, Excel (.xlsx), or JSON" throughout
+6. No download template / sample file available — VERIFIED ✅ — d8c7002 — Download Template button added; downloadImportTemplate() generates canonical CSV blob
+7. Heading hierarchy skips H2 (H1 → H3) — VERIFIED ✅ — d8c7002 — Step 1 and Step 2 headings changed from H3 to H2
 🟡 Low / UX
-8. Browser tab title does not update
-The browser tab displays "VaultLister" instead of "Import | VaultLister." Consistent with the same issue found on Reports.
-9. Drop zone lacks keyboard accessibility and ARIA roles
-The drag-and-drop upload zone (div.import-upload-zone) has no role="button", no tabindex, and no aria-label. Keyboard users cannot reach or activate it except via the separate "Browse Files" button.
-10. Tabs missing aria-controls association
-The Upload, Import History, and Saved Mappings tabs have aria-selected correctly set, but no aria-controls to programmatically link each tab to its panel content. Assistive technologies cannot properly associate the tab with its region.
-11. "Browse Files" button has no type attribute
-The button is missing type="button", which means in some browser contexts it could behave as a submit button if it were inside a form element. Best practice requires explicit type="button".
-12. Format select has no visible label
-The format dropdown (CSV/TSV/JSON) has no associated <label> element and no aria-label. Its only identification is its current value ("CSV"). Screen readers would announce it as an unlabeled control.
+8. Browser tab title does not update — VERIFIED ✅ — d8c7002 — import route added to PAGE_TITLES in router
+9. Drop zone lacks keyboard accessibility and ARIA roles — VERIFIED ✅ — d8c7002 — role, tabindex, aria-label, onkeydown added to drop zone div
+10. Tabs missing aria-controls association — VERIFIED ✅ — d8c7002 — aria-controls added to tabs; panel gets id + role=tabpanel
+11. "Browse Files" button has no type attribute — VERIFIED ✅ — d8c7002 — type="button" added
+12. Format select has no visible label — VERIFIED ✅ — d8c7002 — visible label + aria-label added; onchange wired to re-render
 ℹ️ Observations / Expected Empty States
 - Import History tab: Shows "No import history." — correct empty state for a new account.
 - Saved Mappings tab: Shows "No saved mappings. Mappings are saved during the import process." — appropriate and well-worded empty state.
