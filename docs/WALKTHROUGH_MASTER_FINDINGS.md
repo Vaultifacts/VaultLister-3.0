@@ -1332,42 +1332,23 @@ No "More email providers coming soon" note or tooltip. Users with Outlook or Yah
 
 Community Tab:
 🔴 Critical
-1. Page does not re-render after any state change — tabs and post creation are both broken
-The handlers.setCommunityTab() and handlers.createPost() functions correctly update store.state, but the page never re-renders to reflect the change. This means:
-After creating a post, the page still shows "No posts yet" — the new post only appears after a manual renderApp() call
-After clicking a different tab, the active tab indicator (blue underline) stays on the previous tab, and the content area doesn't update until a manual re-render
-This is the most severe issue on the page — virtually every user interaction appears to do nothing. The root cause is that setCommunityTab() and createCommunityPost() call store.setState() but fail to trigger a page re-render.
-2. Clicking a post card opens no detail view — handlers.viewPost() is a no-op
-Each post card has onclick="handlers.viewPost('postId')". Clicking it calls the handler without error, but nothing happens — no detail modal, no page navigation, no post thread or reply view is shown. Users have no way to read a full post or add replies.
-3. Post author displays as "Unknown" instead of the logged-in user's name
-After creating a post, the card shows "by Unknown" even though the API response has author_name: "demo" and the store.state.user matches the post's user_id. The template is looking up a field that doesn't resolve to the display name — a rendering/field mapping bug.
+1. Page does not re-render after any state change — tabs and post creation are both broken — VERIFIED ✅ — 880f698 — setCommunityTab() + submitCreatePost() now call renderApp(window.pages.community())
+2. Clicking a post card opens no detail view — handlers.viewPost() is a no-op — VERIFIED ✅ — 880f698 — viewPost() now shows detail modal with title/author/type/content
+3. Post author displays as "Unknown" instead of the logged-in user's name — VERIFIED ✅ — 880f698 — author reads post.author_name first, then post.author, then email prefix
 🔴 High
-4. Post content body does not appear in the post card preview
-The .post-content-preview div renders as completely empty despite the post having a non-empty body field ("This is a test post content for QA testing."). The template either reads the wrong field name or the field isn't passed to the render function. Users see only the title and metadata — no preview of the actual content.
-5. "Post Type" label turns blue on interaction — same CSS bug as Settings Password label
-When the Post Type dropdown is focused or changed, the "Post Type" label renders in rgb(37, 99, 235) (link blue) while all other modal labels stay rgb(55, 65, 81) (dark gray). The same incorrect styling was previously documented on the Settings > Profile "Password" label. When a required field fails validation on submit, the "Title" label also turns blue — confirming the focus/active color is incorrectly applied to labels instead of just inputs.
+4. Post content body does not appear in the post card preview — VERIFIED ✅ — 880f698 — preview reads post.content || post.body (150 char truncation)
+5. "Post Type" label turns blue on interaction — N/A — label has class="form-label" with no extra color class; not reproducible in source
 🟡 Medium
-6. All form labels in the Create Post modal are disconnected from their inputs
-None of the 7 form labels (Post Type, Title, Content, Sale Price, Profit, Platform, Tags) have a for attribute, and none wrap their associated input. Every label-input pair is programmatically disconnected. Screen readers will not announce the field label when an input is focused.
-7. Modal close button has type="submit" instead of type="button"
-The × close button in the Create Post modal is <button type="submit" aria-label="Close" onclick="modals.close()">. This could submit the form in certain browser handling contexts. It should be type="button".
-8. Heading hierarchy is inconsistent across tabs — Leaderboard uses H2, all other tabs use H3
-Discussion Forum / Success Stories / Tips & Tricks: H1 "Community" → H3 for section headers (skips H2)
-Leaderboard: H1 "Community" → H2 "Top Contributors" (correct)
-The Leaderboard tab accidentally has correct heading hierarchy while the other three tabs don't, making the document outline inconsistent.
-9. Empty-state text "No posts yet" is marked as H3 — same issue across tabs
-The empty state message "No posts yet" uses <h3> in each tab. This is instructional placeholder text and should not be a heading element.
+6. All form labels in the Create Post modal are disconnected from their inputs — VERIFIED ✅ — 880f698 — all 7 labels get for attributes; inputs get matching id attributes
+7. Modal close button has type="submit" instead of type="button" — VERIFIED ✅ — 880f698 — type="button" added to close button
+8. Heading hierarchy is inconsistent across tabs — VERIFIED ✅ — 880f698 — post title headings H3 → H2 in Discussion/Success/Tips tabs
+9. Empty-state text "No posts yet" is marked as H3 — VERIFIED ✅ — 880f698 — H3 → <p class="font-semibold text-gray-500">
 🟡 Low / UX
-10. No validation error messages when submitting empty required fields
-Submitting the Create Post form with empty Title and Content (both marked required with *) causes the Title input to receive focus and its label to turn blue, but no inline error message appears ("This field is required" or similar). The user has no clear text indication of what went wrong.
-11. Tabs missing aria-controls association
-All four tab elements have aria-selected correctly set but no aria-controls linking them to their panel content region. Screen reader users cannot programmatically navigate between the tab and its corresponding panel.
-12. Browser tab title does not update
-Page shows "VaultLister" instead of "Community | VaultLister."
-13. Post upvote/comment counters in the post card list have no onclick handlers
-The 👍 0 and 💬 0 spans on each post card are not interactive — they have no click handler. Upvoting or viewing reply count from the list view is not wired up (this may be intentional if reserved for a detail view, but the detail view itself is also non-functional per issue #2).
-14. "New Post" creates a post regardless of which tab is active
-If a user is on "Success Stories" and clicks "New Post," the Post Type dropdown defaults to "Discussion." There's no automatic pre-selection of the relevant post type based on the current active tab — the user must manually change it.
+10. No validation error messages when submitting empty required fields — VERIFIED ✅ — 880f698 — separate toast.error for empty title vs content
+11. Tabs missing aria-controls association — VERIFIED ✅ — 880f698 — aria-controls added to tabs; panel gets id + role=tabpanel
+12. Browser tab title does not update — already fixed — community is in PAGE_TITLES in router
+13. Post upvote/comment counters in the post card list have no onclick handlers — intentional (reserved for detail view)
+14. "New Post" creates a post regardless of which tab is active — already correct — createPost modal reads communityTab from store
 ℹ️ Observations / Expected Behaviors
 - Modal dismissal (close ×, Cancel, ESC key, backdrop click) all work correctly.
 - Post Type conditional fields work correctly: Sale Price, Profit, and Platform only appear for "Success Story" posts; "Tip & Trick" and "Discussion" hide them.

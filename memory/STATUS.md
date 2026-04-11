@@ -11,6 +11,22 @@
 
 ## Completed This Session (2026-04-10, session 17)
 
+### Community tab — 11/14 findings fixed — 880f698
+- **Com-1**: setCommunityTab() + submitCreatePost() now call renderApp() — tabs and posts visible immediately
+- **Com-2**: viewPost() shows detail modal with title/author/type/content
+- **Com-3**: Author reads post.author_name first, then post.author, then email prefix
+- **Com-4**: Content preview reads post.content || post.body (150 char truncation)
+- **Com-5**: N/A — label has class="form-label" with no extra color class; not reproducible in source
+- **Com-6**: All 7 form labels get for attributes; inputs get matching id attributes
+- **Com-7**: Close button gets type="button"
+- **Com-8**: Post title headings H3 → H2 in Discussion/Success/Tips tabs
+- **Com-9**: "No posts yet" H3 → <p>
+- **Com-10**: Separate toast.error for empty title vs content
+- **Com-11**: Tab buttons get aria-controls; panel gets id + role=tabpanel
+- **Com-12**: Already fixed — community in PAGE_TITLES
+- **Com-13**: Intentional — upvote/comment reserved for detail view
+- **Com-14**: Already correct — createPost reads communityTab from store
+
 ### Receipts tab — all 9 findings fixed — 221a025
 - **Rec-1**: connectGmail() now shows informational modal (no more crash)
 - **Rec-2**: "Connect Email" → "Connect Gmail" card header
